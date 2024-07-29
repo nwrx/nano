@@ -1,0 +1,39 @@
+{
+  "name": "@maestrau/app",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt dev",
+    "start": "nuxt start",
+    "build": "nuxt build",
+    "preview": "nuxt preview"
+  },
+  "devDependencies": {
+    "@unocss/nuxt": "0.61.0",
+    "@unocss/preset-mini": "0.61.0",
+    "@unocss/preset-typography": "0.61.0",
+    "@unocss/preset-uno": "0.61.0",
+    "@unserved/server": "0.0.1",
+    "@unshared/collection": "0.0.12",
+    "@unshared/color": "0.0.12",
+    "@unshared/string": "0.0.12",
+    "@unshared/types": "0.0.12",
+    "@unshared/unocss-preset": "0.0.12",
+    "@unshared/validation": "0.0.12",
+    "@unshared/vue": "0.0.12",
+    "@vueuse/core": "10.11.0",
+    "@vueuse/head": "2.0.0",
+    "@vueuse/motion": "2.2.3",
+    "@vueuse/nuxt": "10.11.0",
+    "@vueuse/shared": "10.11.0",
+    "codemirror": "6.0.1",
+    "crossws": "0.2.4",
+    "date-fns": "3.6.0",
+    "h3": "1.12.0",
+    "nuxt": "3.12.3",
+    "reflect-metadata": "0.2.2",
+    "sqlite3": "5.1.7",
+    "typeorm": "0.3.20",
+    "unocss": "0.61.0"
+  }
+}

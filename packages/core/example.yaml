@@ -1,0 +1,48 @@
+version: '1'
+name: Summarize E-mails
+description: This chain summarize an email and extract the most important information.
+author: Oblisk
+
+modules:
+  - core
+  - lm
+  - openai
+
+inputs:
+  from: 
+    name: From
+    type: core:string
+    description: The sender of the email
+  to: 
+    name: To
+    type: core:string
+    description: The recipient of the email
+  subject:
+    name: Subject
+    type: core:string
+    description: The subject of the email
+  body:
+    name: Body
+    type: core:string
+    description: The body of the email
+
+outputs:
+  summary:
+    name: Summary
+    type: core:string
+    description: The summary of the email
+
+nodes:
+  model: 
+    type: lm:ollama-api
+    data:
+      endpoint: $ENV.OLLAMA_API_ENDPOINT
+      apiKey: $ENV.OLLAMA_API_KEY
+
+  SUMMARIZE:
+    type: "lm:inference"
+    data:
+      prompt: $RESULT.body
+      model: $NODE.model.modelInstance
+      maxTokens: 100
+      temperature: 0.5

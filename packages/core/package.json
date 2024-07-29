@@ -1,0 +1,8 @@
+{
+  "name": "@maestrau/core",
+  "type": "module",
+  "sideEffects": false,
+  "dependencies": {
+    "unshared": "0.0.15"
+  }
+}

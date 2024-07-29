@@ -1,0 +1,6 @@
+{
+  "name": "@maestrau/module-core",
+  "dependencies": {
+    "@maestrau/core": "workspace:*"
+  }
+}
