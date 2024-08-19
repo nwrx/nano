@@ -1,0 +1,47 @@
+version: '1'
+name: Summarize E-mails
+description: Summarize an email and extract the most important information.
+author: Nanoworks
+
+modules:
+  - core
+
+nodes:
+  INPUT_KEY:
+    kind: core:input
+    key: key
+    type: core:string
+
+  INPUT_EMAIL_CONTENT:
+    kind: core:input
+    key: emailContent
+    type: core:string
+
+  PROMPT:
+    kind: core:template
+    emailContent: $NODE.INPUT_EMAIL_CONTENT.value
+    template: |
+      Summarize the email content.
+      - Extract the most important information.
+      - Keep the summary short and concise.
+      - Avoid repeating the same information.
+      
+      Email Content: {{ emailContent }}
+
+  MODEL: 
+    kind: core:ollama-api
+    model: $NODE.INPUT_KEY.value
+    endpoint: $ENV.OLLAMA_API_ENDPOINT
+    apiKey: $ENV.OLLAMA_API_KEY
+  
+  SUMMARIZE:
+    kind: core:inference
+    model: $NODE.MODEL.modelInstance
+    prompt: $NODE.PROMPT.value
+    maxTokens: 100
+    temperature: 0.5
+
+  OUTPUT_SUMMARY:
+    kind: core:output
+    type: core:string
+    value: $NODE.SUMMARIZE.value
