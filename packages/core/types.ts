@@ -1,42 +1,89 @@
-import { Pretty } from 'unshared'
-import { ChainType } from './defineChainType'
-import { ChainNode, ChainNodePort } from './defineChainNode'
+import type { Flow } from './createFlow'
+import type { FlowModule } from './defineFlowModule'
+import type { FlowNode, FlowNodePort, FlowSchema } from './defineFlowNode'
+import type { FlowType } from './defineFlowType'
 
 /**
- * A schema that contains the edges of a chain.
- */
-export type Schema = Record<string, ChainNodePort>
-
-/**
- * Extract the type of the given `ChainType` instance.
+ * Given a `Flow` instance or a `FlowModule` instance, infer the available node
+ * kinds that can be added to the flow. The node kinds are inferred from the
+ * `FlowModule` instances that are added to the flow.
  *
- * @template T The `ChainType` instance to extract the type from.
- * @example
- * type Type = ChainType<string>
- * type Result = InferType<Type> // string
+ * @template T The `FlowModule` instance to infer the node kinds from.
  */
-export type InferType<T> = T extends ChainType<infer U> ? U : never
+export type InferNodeKind<T extends Flow | FlowModule> =
+    T extends Flow<infer U extends FlowModule> ? InferNodeKind<U>
+      : T extends FlowModule<infer U, infer N> ? `${U}:${N[keyof N]['kind']}`
+        : never
 
 /**
- * Extract the type of the given `ChainNodePort` instance.
+ * Given a `Flow` instance or a `FlowModule` instance, infer the available node
+ * kinds that can be added to the flow. The node kinds are inferred from the
+ * `FlowModule` instances that are added to the flow.
  *
- * @template T The `ChainNodePort` instance to extract the type from.
+ * @template T The `FlowModule` or `Flow` instance to infer the node kinds from.
  * @example
- * type Port = ChainNodePort<string>
+ *
+ * // Infer the node kinds from a flow instance.
+ * type NodeKind = InferNodeKind<typeof flow>
+ *
+ * // Infer the node kinds from a module instance.
+ * type NodeKind = InferNodeKind<typeof module>
+ */
+export type InferNode<T extends Flow | FlowModule> =
+  T extends Flow<infer U extends FlowModule> ? InferNode<U>
+    : T extends FlowModule<string, infer N> ? N[keyof N]
+      : never
+
+/**
+ * Given a `Flow` instance or a `FlowModule` instance and a kind, infer the node
+ * that corresponds to the kind. The node is inferred from the `FlowModule`
+ * instances that are added to the flow.
+ *
+ * @template T The `FlowModule` or `Flow` instance to infer the node from.
+ * @template K The kind of the node to infer.
+ * @example
+ *
+ * // Infer the node from a flow instance.
+ * type Node = InferNode<typeof flow, 'example:parse:boolean'>
+ *
+ * // Infer the node from a module instance.
+ * type Node = InferNode<typeof module, 'example:parse:boolean'>
+ */
+export type InferNodeByKind<T extends Flow | FlowModule, K extends InferNodeKind<T>> =
+  K extends `${infer U}:${infer N}`
+
+    // Infer the node from a flow module instance.
+    ? T extends FlowModule<U, any, any>
+      ? InferNode<T> extends infer R ? R extends { kind: N } ? R : never : never
+
+      // Infer the node from a flow instance.
+      : T extends Flow<infer M extends FlowModule<U>>
+        ? K extends InferNodeKind<M> ? InferNodeByKind<M, K> : never : never
+
+    : never
+
+/**
+ * Extract the type of the given `FlowNodePort` instance.
+ *
+ * @template T The `FlowNodePort` instance to extract the type from.
+ * @example
+ * type Port = FlowNodePort<string>
  * type PortType = InferPortType<Port> // string
  */
-export type InferPortType<T extends ChainNodePort> = T extends ChainNodePort<infer U> ? U : never
+export type InferPortType<T extends FlowNodePort> =
+  T extends FlowNodePort<infer U> ? U : never
 
 /**
- * Infer the raw type contained in a `ChainNodeSchema` schema. The raw type is
+ * Infer the raw type contained in a `FlowNodeSchema` schema. The raw type is
  * the type that is parsed from the schema and used in the chain.
  *
  * @template T The schema to infer the raw type from.
  * @example
- * type Schema = { value: ChainNodePort<string>; other: ChainNodePort<number> }
+ * type Schema = { value: FlowNodePort<string>; other: FlowNodePort<number> }
  * type RawType = InferRawType<Schema> // { value: string; other: number }
  */
-export type InferSchemaType<T extends Schema> = Pretty<{ [K in keyof T]: InferPortType<T[K]> }>
+export type InferSchemaType<T extends FlowSchema> =
+  { [K in keyof T]: InferPortType<T[K]> }
 
 /**
  * Infer the keys of a schema. The keys are the names of the edges in the schema.
@@ -46,7 +93,8 @@ export type InferSchemaType<T extends Schema> = Pretty<{ [K in keyof T]: InferPo
  * type Schema = { value: { ... }; other: { ... } }
  * type Keys = InferSchemaKeys<Schema> // 'value' | 'other'
  */
-export type InferSchemaKeys<T extends Schema> = InferSchemaType<T> extends Record<infer K, any> ? K & string : never
+export type InferSchemaKeys<T extends FlowSchema> =
+  InferSchemaType<T> extends Record<infer K, any> ? K & string : never
 
 /**
  * Infer the value type of a schema by its key. The value type is the type that
@@ -58,16 +106,17 @@ export type InferSchemaKeys<T extends Schema> = InferSchemaType<T> extends Recor
  * type Schema = { value: { name: 'Value', type: TypePrimitiveString } }
  * type ValueType = InferValue<Schema, 'value'> // string
  */
-export type InferSchemaValue<T extends Schema, K extends InferSchemaKeys<T>> = InferSchemaType<T>[K]
+export type InferSchemaValue<T extends FlowSchema, K extends InferSchemaKeys<T>> =
+  InferSchemaType<T>[K]
 
 /**
- * Given a `ChainNode` instance, infer the schema of the data that the node
+ * Given a `FlowNode` instance, infer the schema of the data that the node
  * requires. The schema is the type that is parsed from the schema and used in
  * the chain.
  *
- * @template T The `ChainNode` instance to infer the data schema from.
+ * @template T The `FlowNode` instance to infer the data schema from.
  * @example
- * class Node extends ChainNode {
+ * class Node extends FlowNode {
  *   defineDataSchema() {
  *    return {
  *     value: { name: 'Value', type: TypePrimitiveString },
@@ -77,21 +126,21 @@ export type InferSchemaValue<T extends Schema, K extends InferSchemaKeys<T>> = I
  *
  * type Result = InferDataSchema<Node>
  * // {
- * //   value: { name: 'Value', type: ChainType<string> },
- * //   other: { name: 'Other', type: ChainType<number> },
+ * //   value: { name: 'Value', type: FlowType<string> },
+ * //   other: { name: 'Other', type: FlowType<number> },
  * // }
  */
 export type InferDataSchema<T extends object> =
-  T extends ChainNode<infer U, any> ? U : never
+  T extends FlowNode<string, infer U, any> ? U : never
 
 /**
- * Given a `ChainNode` instance, infer the schema of the result that the node
+ * Given a `FlowNode` instance, infer the schema of the result that the node
  * produces. The schema is the type that is parsed from the schema and used in
  * the chain.
  *
- * @template T The `ChainNode` instance to infer the result schema from.
+ * @template T The `FlowNode` instance to infer the result schema from.
  * @example
- * class Node extends ChainNode {
+ * class Node extends FlowNode {
  *   defineResultSchema() {
  *    return {
  *     value: { name: 'Value', type: TypePrimitiveString },
@@ -101,120 +150,152 @@ export type InferDataSchema<T extends object> =
  *
  * type Result = InferResultSchema<Node>
  * // {
- * //   value: { name: 'Value', type: ChainType<string> },
- * //   other: { name: 'Other', type: ChainType<number> },
+ * //   value: { name: 'Value', type: FlowType<string> },
+ * //   other: { name: 'Other', type: FlowType<number> },
  * // }
  */
 export type InferResultSchema<T extends object> =
-  T extends ChainNode<any, infer U> ? U : never
+  T extends FlowNode<any, any, infer U> ? U : never
 
 /**
- * Given a `ChainNode` instance, infer the result type that the node produces.
+ * Given a `FlowNode` instance, infer the type of the result that the node
+ * produces when the node is processed.
  *
- * @template T The `ChainNode` instance to infer the result from.
+ * @template T The `FlowNode` instance to infer the result from.
  * @example
- * class Node extends ChainNode {
- *   defineResultSchema() {
- *     return {
- *       value: { name: 'Value', type: TypePrimitiveString },
- *       other: { name: 'Other', type: TypePrimitiveNumber },
- *     }
+ * const node = defineFlowNode({
+ *   defineResultSchema: {
+ *     value: { name: 'Value', type: typeString },
+ *     other: { name: 'Other', type: typeNumber },
  *   }
- * }
+ * })
  *
- * type Result = InferResult<Node> // { value: string; other: number }
+ * type Result = InferResult<typeof node> // { value: string; other: number }
  */
 export type InferResult<T extends object> = InferSchemaType<InferResultSchema<T>>
 export type InferResultKeys<T extends object> = keyof InferResultSchema<T> & string
 export type InferResultValue<T extends object, K extends InferResultKeys<T>> = InferResult<T>[K]
 
+/**
+ * Given a `FlowNode` instance, infer the type of the data that the node expects
+ * when the node is processed.
+ *
+ * @template T The `FlowNode` instance to infer the data from.
+ * @example
+ * const node = defineFlowNode({
+ *   defineDataSchema: {
+ *     value: { name: 'Value', type: typeString },
+ *     other: { name: 'Other', type: typeNumber },
+ *   }
+ * })
+ *
+ * type Result = InferData<typeof node> // { value: string; other: number }
+ */
 export type InferData<T extends object> = InferSchemaType<InferDataSchema<T>>
 export type InferDataKeys<T extends object> = keyof InferDataSchema<T> & string
 export type InferDataValue<T extends object, K extends InferDataKeys<T>> = InferData<T>[K]
 
 /* v8 ignore start */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/consistent-type-definitions */
 if (import.meta.vitest) {
-  const { defineChainNode } = await import('./defineChainNode')
-  const { coreTypeString, coreTypeNumber } = await import('../core')
+  const { moduleExample, nodeParseBoolean, nodeParseNumber } = await import('./__fixtures__')
 
-  const node = defineChainNode({
-    name: 'node',
-    label: 'Node',
-    defineDataSchema: () => ({ text: { name: 'Text', type: coreTypeString } }),
-    defineResultSchema: () => ({ value: { name: 'Value', type: coreTypeNumber } }),
-    process: ({ data }) => ({ value: Number(data.text) }),
-  })
-  type Node = ReturnType<typeof node>
-
-  describe('common', () => {
-    it('should infer the `ChainType` type', () => {
-      type Type = ChainType<string>
-      type Result = InferType<Type>
-      expectTypeOf<Result>().toEqualTypeOf<string>()
+  describe('infer node', () => {
+    it('should infer the nodes of a `Flow` instance', () => {
+      type FlowInstance = Flow<typeof moduleExample>
+      type Result = InferNode<FlowInstance>
+      expectTypeOf<Result>().toEqualTypeOf<typeof nodeParseBoolean | typeof nodeParseNumber>()
     })
 
-    it('should infer the raw type of a `ChainNodePort`', () => {
-      type Schema = { value: { name: 'Value'; type: ChainType<string> } }
+    it('should infer the node kind of a `FlowModule` instance', () => {
+      type Result = InferNode<typeof moduleExample>
+      expectTypeOf<Result>().toEqualTypeOf<typeof nodeParseBoolean | typeof nodeParseNumber>()
+    })
+
+    it('should infer the node kind of a `Flow` instance', () => {
+      type FlowInstance = Flow<typeof moduleExample>
+      type Result = InferNodeKind<FlowInstance>
+      expectTypeOf<Result>().toEqualTypeOf<'example:parse-boolean' | 'example:parse-number' >()
+    })
+
+    it('should infer the node kind of a `FlowModule` instance', () => {
+      type Result = InferNodeKind<typeof moduleExample>
+      expectTypeOf<Result>().toEqualTypeOf<'example:parse-boolean' | 'example:parse-number' >()
+    })
+
+    it('should infer the node by kind of a `Flow` instance', () => {
+      type FlowInstance = Flow<typeof moduleExample>
+      type Result = InferNodeByKind<FlowInstance, 'example:parse-boolean'>
+      expectTypeOf<Result>().toEqualTypeOf<typeof nodeParseBoolean>()
+    })
+
+    it('should infer the node by kind of a `FlowModule` instance', () => {
+      type Result = InferNodeByKind<typeof moduleExample, 'example:parse-boolean'>
+      expectTypeOf<Result>().toEqualTypeOf<typeof nodeParseBoolean>()
+    })
+  })
+
+  describe('infer schema', () => {
+    it('should infer the raw type of a `FlowNodePort`', () => {
+      type Schema = { value: { name: 'Value'; type: FlowType<string> } }
       type Result = InferSchemaType<Schema>
       expectTypeOf<Result>().toEqualTypeOf<{ value: string }>()
     })
 
-    it('should infer the keys of a `ChainNodeSchema`', () => {
-      type Schema = { value: { name: 'Value'; type: ChainType<string> } }
+    it('should infer the keys of a `FlowNodeSchema`', () => {
+      type Schema = { value: { name: 'Value'; type: FlowType<string> } }
       type Result = InferSchemaKeys<Schema>
       expectTypeOf<Result>().toEqualTypeOf<'value'>()
     })
 
-    it('should infer the value type of a `ChainNodeSchema` by its key', () => {
-      type Schema = { value: { name: 'Value'; type: ChainType<string> } }
+    it('should infer the value type of a `FlowNodeSchema` by its key', () => {
+      type Schema = { value: { name: 'Value'; type: FlowType<string> } }
       type Result = InferSchemaValue<Schema, 'value'>
       expectTypeOf<Result>().toEqualTypeOf<string>()
     })
   })
 
-  describe('result', () => {
-    it('should infer the result schema of a `ChainNode`', () => {
-      type Result = InferResultSchema<Node>
-      expectTypeOf<Result>().toEqualTypeOf<{
-        value: { name: string; type: ChainType<number> }
-      }>()
+  describe('infer result', () => {
+    it('should infer the result schema of a `FlowNode`', () => {
+      type Result = InferResultSchema<typeof nodeParseBoolean>
+      expectTypeOf<Result>().toEqualTypeOf<{ boolean: { name: string; type: FlowType<boolean>; description: string } }>()
     })
 
-    it('should infer the result of a `ChainNode`', () => {
-      type Result = InferResult<Node>
-      expectTypeOf<Result>().toEqualTypeOf<{ value: number }>()
+    it('should infer the result of a `FlowNode`', () => {
+      type Result = InferResult<typeof nodeParseBoolean>
+      expectTypeOf<Result>().toEqualTypeOf<{ boolean: boolean }>()
     })
 
-    it('should infer the keys of the result of a `ChainNode`', () => {
-      type Result = InferResultKeys<Node>
-      expectTypeOf<Result>().toEqualTypeOf<'value'>()
+    it('should infer the keys of the result of a `FlowNode`', () => {
+      type Result = InferResultKeys<typeof nodeParseBoolean>
+      expectTypeOf<Result>().toEqualTypeOf<'boolean'>()
     })
 
-    it('should infer the value of the result of a `ChainNode`', () => {
-      type Result = InferResultValue<Node, 'value'>
-      expectTypeOf<Result>().toEqualTypeOf<number>()
+    it('should infer the value of the result of a `FlowNode`', () => {
+      type Result = InferResultValue<typeof nodeParseBoolean, 'boolean'>
+      expectTypeOf<Result>().toEqualTypeOf<boolean>()
     })
   })
 
-  describe('data', () => {
-    it('should infer the data schema of a `ChainNode`', () => {
-      type Result = InferDataSchema<Node>
-      expectTypeOf<Result>().toEqualTypeOf<{ text: { name: string; type: ChainType<string> } }>()
+  describe('infer data', () => {
+    it('should infer the data schema of a `FlowNode`', () => {
+      type Result = InferDataSchema<typeof nodeParseBoolean>
+      expectTypeOf<Result>().toEqualTypeOf<{ string: { name: string; type: FlowType<string>; description: string } }>()
     })
 
-    it('should infer the data of a `ChainNode`', () => {
-      type Result = InferData<Node>
-      expectTypeOf<Result>().toEqualTypeOf<{ text: string }>()
+    it('should infer the data of a `FlowNode`', () => {
+      type Result = InferData<typeof nodeParseBoolean>
+      expectTypeOf<Result>().toEqualTypeOf<{ string: string }>()
     })
 
-    it('should infer the keys of the data of a `ChainNode`', () => {
-      type Result = InferDataKeys<Node>
-      expectTypeOf<Result>().toEqualTypeOf<'text'>()
+    it('should infer the keys of the data of a `FlowNode`', () => {
+      type Result = InferDataKeys<typeof nodeParseBoolean>
+      expectTypeOf<Result>().toEqualTypeOf<'string'>()
     })
 
-    it('should infer the value of the data of a `ChainNode`', () => {
-      type Result = InferDataValue<Node, 'text'>
+    it('should infer the value of the data of a `FlowNode`', () => {
+      type Result = InferDataValue<typeof nodeParseBoolean, 'string'>
       expectTypeOf<Result>().toEqualTypeOf<string>()
     })
   })
