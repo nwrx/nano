@@ -1,6 +1,90 @@
 {
-  "name": "@maestrau/module-core",
+  "name": "@nanoworks/module-core",
+  "type": "module",
+  "version": "0.0.1",
+  "license": "MIT",
+  "sideEffects": false,
+  "author": "Stanley Horwood <stanley@hsjm.io>",
+  "bugs": "https://github.com/maestrau/maestrau-ce/issues",
+  "homepage": "https://github.com/maestrau/maestrau-ce#readme",
+  "repository": {
+    "directory": "packages/module-core",
+    "type": "git",
+    "url": "git@github.com:maestrau/maestrau-ce.git"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "exports": {
+    "./nodeInference": {
+      "require": "./dist/nodeInference.cjs",
+      "types": "./dist/nodeInference.d.ts",
+      "import": "./dist/nodeInference.js"
+    },
+    "./nodeInput": {
+      "require": "./dist/nodeInput.cjs",
+      "types": "./dist/nodeInput.d.ts",
+      "import": "./dist/nodeInput.js"
+    },
+    "./nodeJsonParse": {
+      "require": "./dist/nodeJsonParse.cjs",
+      "types": "./dist/nodeJsonParse.d.ts",
+      "import": "./dist/nodeJsonParse.js"
+    },
+    "./nodeModelOllama": {
+      "require": "./dist/nodeModelOllama.cjs",
+      "types": "./dist/nodeModelOllama.d.ts",
+      "import": "./dist/nodeModelOllama.js"
+    },
+    "./nodeModelOpenai": {
+      "require": "./dist/nodeModelOpenai.cjs",
+      "types": "./dist/nodeModelOpenai.d.ts",
+      "import": "./dist/nodeModelOpenai.js"
+    },
+    "./typeBoolean": {
+      "require": "./dist/typeBoolean.cjs",
+      "types": "./dist/typeBoolean.d.ts",
+      "import": "./dist/typeBoolean.js"
+    },
+    "./typeModel": {
+      "require": "./dist/typeModel.cjs",
+      "types": "./dist/typeModel.d.ts",
+      "import": "./dist/typeModel.js"
+    },
+    "./typeNumber": {
+      "require": "./dist/typeNumber.cjs",
+      "types": "./dist/typeNumber.d.ts",
+      "import": "./dist/typeNumber.js"
+    },
+    "./typeObject": {
+      "require": "./dist/typeObject.cjs",
+      "types": "./dist/typeObject.d.ts",
+      "import": "./dist/typeObject.js"
+    },
+    "./typeStream": {
+      "require": "./dist/typeStream.cjs",
+      "types": "./dist/typeStream.d.ts",
+      "import": "./dist/typeStream.js"
+    },
+    "./typeString": {
+      "require": "./dist/typeString.cjs",
+      "types": "./dist/typeString.d.ts",
+      "import": "./dist/typeString.js"
+    },
+    ".": {
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE.md"
+  ],
   "dependencies": {
-    "@maestrau/core": "workspace:*"
-  }
+    "@nanoworks/core": "workspace:*",
+    "@unshared/string": "0.0.16",
+    "@unshared/validation": "0.0.16"
+  },
+  "types": "./dist/index.d.ts"
 }
