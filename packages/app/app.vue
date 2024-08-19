@@ -1,15 +1,12 @@
 <script setup lang="ts">
-import type { ContentWebsiteObject } from '@unserved/server'
+import type { ContentWebsiteObject } from '@unserved/module-content'
 
-const router = useRouter()
-const client = useClient()
-
-// --- Provide data to the child components.
-const route = computed(() => router.currentRoute.value)
+// --- Extract route meta.
+const route = computed(() => useRouter().currentRoute.value)
 const meta = computed(() => route.value.meta as { title: string })
 
 // --- Fetch website data.
-const { data: website } = await client.useRequest('GET /api/website', {
+const { data: website } = await useRequest('GET /api/website', {
   default: () => ({}) as ContentWebsiteObject,
 })
 
