@@ -144,17 +144,6 @@ export default defineNuxtConfig({
   },
 
   vite: {
-    optimizeDeps: {
-      exclude: [
-        'node:async_hooks',
-        '@nanoworks/core',
-        '@nanoworks/module-core',
-        '@unshared/nuxt',
-        '@unshared/nuxt/useRequest',
-        '@unshared/nuxt/useClient',
-      ],
-      noDiscovery: true,
-    },
     server: {
       hmr: {
         port: Number.parseInt(process.env.PORT ?? '3000') + 1,
