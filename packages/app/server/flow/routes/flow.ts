@@ -2,7 +2,7 @@ import type { ModuleFlow } from '..'
 import { createRoute } from '@unserved/server'
 import { assertStringUuid, createSchema } from 'unshared'
 
-export function chainGet(this: ModuleFlow) {
+export function flowGet(this: ModuleFlow) {
   return createRoute(
     {
       name: 'GET /api/flows/:id',

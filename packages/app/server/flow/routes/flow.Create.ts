@@ -3,7 +3,7 @@ import { createRoute } from '@unserved/server'
 import { toSlug } from '@unshared/string'
 import { assertNil, assertString, createSchema } from '@unshared/validation'
 
-export function chainCreate(this: ModuleFlow) {
+export function flowCreate(this: ModuleFlow) {
   return createRoute(
     {
       name: 'POST /api/flows',
