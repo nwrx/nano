@@ -82,7 +82,7 @@ export const nodeModelOpenai = defineFlowNode({
       model: {
         apiKey: data.apiKey,
         modelName: data.modelName,
-        endpoint: 'https://api.openai.com/v1/engines/gpt-3/completions',
+        endpoint: 'https://api.openai.com/v1/completions',
       },
     }
   },
