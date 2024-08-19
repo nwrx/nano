@@ -1,11 +1,11 @@
+import type { ModuleForm } from '..'
 import { assertNil, assertString, assertStringUuid, createParser } from 'unshared'
-import { assertFields } from '../utils'
-import { ModuleUser } from '../../user'
-import { ModuleStorage } from '../../storage'
-import { ModuleIcon } from '../../icon'
-import { createRoute } from '../../core'
 import { toSlug } from '../../content/utils'
-import { ModuleForm } from '..'
+import { createRoute } from '../../core'
+import { ModuleIcon } from '../../icon'
+import { ModuleStorage } from '../../storage'
+import { ModuleUser } from '../../user'
+import { assertFields } from '../utils'
 
 export function formUpdate(this: ModuleForm) {
   return createRoute(

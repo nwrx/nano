@@ -1,25 +1,27 @@
+import type { FlowObject } from '../entities'
+import type { ModuleFlow } from '../index'
+import { ModuleUser } from '@unserved/module-user'
+import { createRoute } from '@unserved/server'
+import { assertString, assertStringNumber, assertUndefined, createParser } from '@unshared/validation'
 import { ILike } from 'typeorm'
-import { assertString, assertStringNumber, assertUndefined, createParser } from 'unshared'
-import { ModuleUser, createRoute } from '@unserved/server'
-import { ModuleChain } from '..'
 
-export function chainSearch(this: ModuleChain) {
+export function flowSearch(this: ModuleFlow) {
   return createRoute(
     {
-      name: 'GET /api/chains',
+      name: 'GET /api/flows',
       query: createParser({
         search: [[assertUndefined], [assertString]],
         page: [[assertUndefined], [assertStringNumber, Number.parseInt]],
         limit: [[assertUndefined], [assertStringNumber, Number.parseInt]],
       }),
     },
-    async({ event, query }) => {
+    async({ event, query }): Promise<FlowObject[]> => {
 
       // --- Check if the user has the right permissions.
       const userModule = this.getModule(ModuleUser)
       await userModule.a11n(event, {
         optional: true,
-        permissions: [this.permissions.CHAIN_SEARCH.id],
+        permissions: [this.permissions.FLOW_SEARCH.id],
       })
 
       // --- Deconstruct the query.
@@ -27,8 +29,8 @@ export function chainSearch(this: ModuleChain) {
       const { limit = 10, page = 1 } = query
 
       // --- Fetch the chains.
-      const { Chain } = this.entities
-      const chains = await Chain.find({
+      const { Flow } = this.entities
+      const flows = await Flow.find({
         where: [
           { name: search ? ILike(`%${search}%`) : undefined },
           { slug: search ? ILike(`%${search}%`) : undefined },
@@ -41,7 +43,7 @@ export function chainSearch(this: ModuleChain) {
       })
 
       // --- Return the form entities.
-      return chains.map(chain => chain.serialize())
+      return flows.map(chain => chain.serialize())
     },
   )
 }
