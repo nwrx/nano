@@ -1,6 +1,7 @@
 export * from './createFlow'
 export * from './createFlowNodeInstance'
 export * from './createSchemaParser'
+export * from './defineFlowCategory'
 export * from './defineFlowModule'
 export * from './defineFlowNode'
 export * from './defineFlowType'
