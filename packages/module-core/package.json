@@ -14,6 +14,7 @@
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     "./nodeInference": {
       "require": "./dist/nodeInference.cjs",
@@ -39,6 +40,11 @@
       "require": "./dist/nodeModelOpenai.cjs",
       "types": "./dist/nodeModelOpenai.d.ts",
       "import": "./dist/nodeModelOpenai.js"
+    },
+    "./nodeTemplate": {
+      "require": "./dist/nodeTemplate.cjs",
+      "types": "./dist/nodeTemplate.d.ts",
+      "import": "./dist/nodeTemplate.js"
     },
     "./typeBoolean": {
       "require": "./dist/typeBoolean.cjs",
@@ -85,6 +91,5 @@
     "@nanoworks/core": "workspace:*",
     "@unshared/string": "0.0.16",
     "@unshared/validation": "0.0.16"
-  },
-  "types": "./dist/index.d.ts"
+  }
 }
