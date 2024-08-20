@@ -25,6 +25,7 @@ export interface FlowNodePort<T = any> {
   type: FlowType<T>
   display?: FlowNodePortDisplay
   description?: string
+  defaultValue?: T
   disallowStatic?: boolean
   disallowDynamic?: boolean
   values?: Record<string, T> | T[]
@@ -38,6 +39,7 @@ export interface FlowNodePortJSON {
   type: FlowTypeJSON
   display?: FlowNodePortDisplay
   description?: string
+  defaultValue?: unknown
   disallowStatic?: boolean
   disallowDynamic?: boolean
   disallowEnvironment?: boolean
@@ -50,7 +52,7 @@ export interface FlowNodePortJSON {
 /** The serialized representation of a flow node. */
 export interface FlowNodeJSON {
   kind: string
-  name: string
+  name?: string
   icon?: string
   description?: string
   dataSchema?: Record<string, FlowNodePortJSON>
@@ -282,9 +284,7 @@ export interface FlowNode<
   N extends string = string,
   T extends FlowSchema = FlowSchema,
   U extends FlowSchema = FlowSchema,
-> extends
-  Pick<Required<FlowNodeOptions<N, T, U>>, 'name'>,
-  Omit<FlowNodeOptions<N, T, U>, 'name'> {
+> extends FlowNodeOptions<N, T, U> {
 
   /**
    * The unique identifier of the node. The identifier is used to identify
@@ -347,7 +347,7 @@ export function defineFlowNode<
   assertStringNotEmpty(options.kind)
   return {
     kind: options.kind,
-    name: options.name ?? options.kind,
+    name: options.name,
     icon: options.icon,
     description: options.description,
     defineDataSchema: options.defineDataSchema ?? {},
@@ -367,7 +367,7 @@ export function defineFlowNode<
 
       return {
         kind: options.kind,
-        name: options.name ?? options.kind,
+        name: options.name,
         icon: options.icon,
         description: options.description,
         dataSchema,
