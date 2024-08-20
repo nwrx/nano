@@ -61,10 +61,10 @@ function setDragLinkTarget() {
 }
 
 // --- On input on the text area element, automatically resize the height.
-function onTextAreaInput(event: InputEvent) {
+function onTextAreaInput(event: Event) {
   const target = event.target as HTMLTextAreaElement
   target.style.height = 'auto'
-  target.style.height = `${target.scrollHeight + 8}px`
+  target.style.height = `${target.scrollHeight + 2}px`
 }
 </script>
 
@@ -161,34 +161,28 @@ function onTextAreaInput(event: InputEvent) {
     </select>
 
     <!-- Display a textarea field -->
-    <div v-else-if="port.display === 'textarea'" class="w-full">
-      <textarea
-        v-model="model"
-        :placeholder="port.name"
-        autocapitalize="sentences"
-        autocomplete="off"
-        spellcheck="false"
-        wrap="hard"
-        rows="1"
-        :class="{ italic: !model }"
-        class="
-          w-full text-start px-2 py-1 outline-none
-          bg-transparent border-transparent border
-          appearance-none rounded-md
-          hover:bg-primary-200
-          focus:bg-primary-200
-          focus:border-primary-500
-          placeholder-black/50
-          resize-none
-          max-h-128
-        "
-        @input="(el) => onTextAreaInput(el)"
-      />
-
-      <div
-        :class="{ 'opacity-0': !model }"
-        class="w-full h-0.5 bg-primary-200"
-      />
-    </div>
+    <textarea
+      v-else-if="port.display === 'textarea'"
+      v-model="model"
+      :placeholder="port.name"
+      autocapitalize="sentences"
+      autocomplete="off"
+      spellcheck="false"
+      wrap="hard"
+      rows="1"
+      :class="{ italic: !model }"
+      class="
+        w-full text-start px-2 py-1 outline-none
+        bg-transparent border-transparent border
+        appearance-none rounded-md
+        hover:bg-primary-200
+        focus:bg-primary-200
+        focus:border-primary-500
+        placeholder-black/50
+        resize-none
+        max-h-128
+      "
+      @input="(el) => onTextAreaInput(el)"
+    />
   </div>
 </template>
