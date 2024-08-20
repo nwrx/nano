@@ -6,6 +6,8 @@ export const typeStream = defineFlowType({
   kind: 'stream',
   name: 'Stream',
   color: '#EEDCFF',
-  parse: createParser(createAssertInstance(ReadableStream<Uint8Array>)),
   description: 'A stream of data that can be read or written.',
+  parse: createParser(
+    [createAssertInstance(ReadableStream<Uint8Array>)],
+  ),
 })
