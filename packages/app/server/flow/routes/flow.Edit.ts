@@ -1,12 +1,12 @@
 import type { ModuleFlow } from '..'
 import { createRoute } from '@unserved/server'
 import {
+  assertNil,
   assertNotNull,
   assertNumber,
   assertString,
   assertStringNotEmpty,
   assertStringUuid,
-  assertUndefined,
   createSchema,
 } from '@unshared/validation'
 
@@ -30,10 +30,10 @@ export function flowEdit(this: ModuleFlow) {
             event: assertStringEquals('refreshFlow'),
           })],
           [createSchema({
-            event: assertStringEquals('updateSettings'),
-            name: [[assertUndefined], [assertStringNotEmpty]],
-            icon: [[assertUndefined], [assertStringNotEmpty]],
-            description: [[assertUndefined], [assertString]],
+            event: assertStringEquals('setSettings'),
+            name: [[assertNil], [assertString]],
+            icon: [[assertNil], [assertString]],
+            description: [[assertNil], [assertString]],
           })],
 
           // --- Node events.
@@ -84,8 +84,13 @@ export function flowEdit(this: ModuleFlow) {
         // --- Flow events.
         if (data.event === 'refreshFlow')
           peer.send({ event: 'flow:refresh', data: session.flow.toJSON() })
-        if (data.event === 'updateSettings')
+        if (data.event === 'setSettings') {
+          // if (data.icon) session.entity.icon = data.icon
+          if (data.name) session.entity.name = data.name
+          if (data.description) session.entity.description = data.description
+          await session.entity.save()
           session.flow.setSettings(data)
+        }
 
         // --- Node events.
         if (data.event === 'createNode')
@@ -102,6 +107,10 @@ export function flowEdit(this: ModuleFlow) {
           session.flow.createLink(data.source, data.target)
         if (data.event === 'removeLink')
           session.flow.removeLink(data.source)
+      },
+
+      onError(context) {
+        console.error('flowEdit', context.error)
       },
 
       onClose: ({ peer }) => {

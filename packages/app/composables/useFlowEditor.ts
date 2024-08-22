@@ -1,5 +1,6 @@
 import type { FlowJSON, FlowNodeInstanceJSON, FlowSchema, FlowSettings } from '@nanoworks/core'
 import type { UUID } from 'node:crypto'
+import { useClient } from '#imports'
 
 export function useFlowEditor(id: UUID) {
   const client = useClient()
@@ -28,12 +29,20 @@ export function useFlowEditor(id: UUID) {
     switch (payload.event) {
       case 'flow:refresh': {
         const data = payload.data as FlowJSON
+        flow.id = data.id
         flow.name = data.name
         flow.icon = data.icon
         flow.description = data.description
         flow.nodes = data.nodes
         // Update in a next tick to avoid reactivity issues.
         void nextTick(() => flow.links = data.links)
+        break
+      }
+      case 'flow:settings': {
+        const settings = payload.data as FlowSettings
+        flow.name = settings.name
+        flow.icon = settings.icon
+        flow.description = settings.description
         break
       }
 
@@ -174,8 +183,16 @@ export function useFlowEditor(id: UUID) {
      *
      * @param settings The settings to update.
      */
-    updateSettings: (settings: Partial<FlowSettings>) => {
-      session.send({ id, data: { event: 'updateSettings', ...settings as FlowSettings } })
+    setSettings: (settings: Partial<FlowSettings>) => {
+      session.send({
+        id,
+        data: {
+          event: 'setSettings',
+          name: settings.name,
+          icon: settings.icon,
+          description: settings.description,
+        },
+      })
     },
   }
 }
