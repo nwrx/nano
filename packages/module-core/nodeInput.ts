@@ -1,6 +1,7 @@
 import type { FlowType } from '@nanoworks/core'
 import { defineFlowNode } from '@nanoworks/core'
 import { dedent } from '@unshared/string'
+import { categoryBasic } from './categoryBasic'
 import { typeBoolean } from './typeBoolean'
 import { typeNumber } from './typeNumber'
 import { typeObject } from './typeObject'
@@ -11,6 +12,7 @@ export const nodeInput = defineFlowNode({
   kind: 'input',
   name: 'Input',
   icon: 'https://api.iconify.design/carbon:arrow-right.svg',
+  category: categoryBasic,
   description: dedent(`
     A value generated from an entrypoint in the flow. The value can be
     any type of data, such as a string, number, or boolean and is provided
@@ -63,9 +65,10 @@ export const nodeInput = defineFlowNode({
     },
   }),
 
-  process: ({ parameters, data }) => {
-    const { property } = data
-    if (!property) return
-    return { value: parameters[property] }
+  process: ({ flow, data }) => {
+    flow.on('flow:input', ({ property }) => {
+      if (property !== data.property) return
+
+    })
   },
 })
