@@ -1,3 +1,4 @@
+import type { RouteLocationRaw } from 'vue-router'
 import type { application } from '~/server'
 import type * as COLORS from './colors'
 
@@ -10,6 +11,34 @@ export type Size = 'large' | 'medium' | 'small'
 export type Variant = keyof typeof COLORS
 export type Alignment = 'center' | 'left' | 'right'
 
+export interface NavGroupItem {
+  icon?: string
+  imageUrl?: string
+  to?: RouteLocationRaw
+  label?: string
+  text?: string
+}
+
+export interface NavGroup {
+  imageUrl?: string
+  icon?: string
+  title?: string
+  description?: string
+  items?: NavGroupItem[]
+}
+
+export interface NavItem {
+  icon?: string
+  to?: RouteLocationRaw
+  label?: string
+  text?: string
+  links?: NavGroupItem[]
+  groups?: NavGroup[]
+  variant?: Variant
+  size?: Size
+  align?: Alignment
+}
+
 export interface FlowDragState {
   id: string
   color: string
@@ -20,9 +49,10 @@ export interface FlowDragState {
 export interface FlowLinkProps {
   sourceX: number
   sourceY: number
+  sourceColor: string
   targetX: number
   targetY: number
-  color: string
+  targetColor: string
 }
 
 export interface CardProps {
