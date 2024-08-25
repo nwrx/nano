@@ -11,7 +11,7 @@ import { typeString } from './typeString'
 export const nodeInput = defineFlowNode({
   kind: 'input',
   name: 'Input',
-  icon: 'https://api.iconify.design/carbon:arrow-right.svg',
+  icon: 'https://api.iconify.design/carbon:arrow-down.svg',
   category: categoryBasic,
   description: dedent(`
     A value generated from an entrypoint in the flow. The value can be

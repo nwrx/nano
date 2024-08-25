@@ -11,7 +11,7 @@ import { typeString } from './typeString'
 export const nodeOutput = defineFlowNode({
   kind: 'output',
   name: 'Output',
-  icon: 'https://api.iconify.design/carbon:arrow-left.svg',
+  icon: 'https://api.iconify.design/carbon:arrow-up.svg',
   category: categoryBasic,
   description: dedent(`
     A value that is sent to an exitpoint in the flow. The value can be
