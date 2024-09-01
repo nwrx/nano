@@ -1,5 +1,5 @@
-import { defineConfig } from 'vitest/config'
 import { resolvePackageNames } from '@unshared/scripts'
+import { defineConfig } from 'vitest/config'
 
 const packageNames = await resolvePackageNames()
 const includeSource = packageNames.map(name => `./packages/${name}/**/*.ts`)
@@ -7,8 +7,12 @@ const includeSource = packageNames.map(name => `./packages/${name}/**/*.ts`)
 const exclude = [
   '**/node_modules/**',
   '**/index.ts',
-  '**/__wip__/**',
+  '**/__wip__',
+  '**/dist',
   '**/*.d.ts',
+  'eslint.config.mjs',
+  'forcePnpm.js',
+  'vitest.config.ts',
 ]
 
 export default defineConfig({
@@ -36,9 +40,10 @@ export default defineConfig({
       clean: true,
       cleanOnRerun: true,
       enabled: false,
-      reporter: ['lcovonly', 'html-spa'],
+      reporter: ['lcovonly', 'html-spa', 'text'],
+      exclude: [...exclude, './packages/app'],
       reportOnFailure: true,
-      reportsDirectory: './coverage',
+      reportsDirectory: './.coverage',
     },
 
     // --- Type-checking configuration.
