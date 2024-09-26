@@ -1,87 +1,88 @@
 <script setup lang="ts">
-import type { FlowJSON } from '@nanoworks/core'
-import type { FlowModuleObject } from '~/server/flow'
-
 const props = defineProps<{
-  flow: FlowJSON
-  modules: FlowModuleObject[]
+  name: string
+  description: string
+  methods: string[]
+  secrets: Array<{ name: string }>
+  variables: Array<{ name: string; value: string }>
+  isMethodsOpen: boolean
+  isSecretsOpen: boolean
+  isVariablesOpen: boolean
 }>()
 
 const emit = defineEmits<{
-  'update:flow': [FlowJSON]
+  'update:name': [name: string]
+  'update:description': [description: string]
+  'update:methods': [methods: string[]]
+  'update:isMethodsOpen': [isMethodsOpen: boolean]
+  'update:isSecretsOpen': [isSecretsOpen: boolean]
+  'update:isVariablesOpen': [isVariablesOpen: boolean]
+  variableCreate: [name: string, value: string]
+  variableUpdate: [name: string, value: string]
+  variableRemove: [name: string]
+  secretCreate: [name: string, value: string]
+  secretUpdate: [name: string, value: string]
+  secretRemove: [name: string]
 }>()
 
-const flow = useVModel(props, 'flow', emit, {
-  deep: true,
-  passive: true,
-  eventName: 'update:flow',
-  defaultValue: {
-    name: '',
-    icon: 'i-carbon:flow',
-    description: '',
-    nodes: [],
-    links: [],
-  } as unknown as FlowJSON,
-})
-
-function onTextareaInput(event: Event) {
-  const target = event.target as HTMLTextAreaElement
-  target.style.height = 'auto'
-  target.style.height = `${target.scrollHeight + 2}px`
-}
+// --- Two-way binding
+const title = useVModel(props, 'name', emit, { passive: true })
+const description = useVModel(props, 'description', emit, { passive: true })
+const methods = useVModel(props, 'methods', emit, { passive: true })
+const isMethodsOpen = useVModel(props, 'isMethodsOpen', emit, { passive: true })
+const isSecretsOpen = useVModel(props, 'isSecretsOpen', emit, { passive: true })
+const isVariablesOpen = useVModel(props, 'isVariablesOpen', emit, { passive: true })
 </script>
 
 <template>
-  <div class="space-y-8 overflow-y-auto overflow-x-hidden">
+  <div>
 
     <!-- Title & Desscription -->
-    <div>
-      <input
-        v-model="flow.name"
-        placeholder="Give your flow a name..."
-        class="text-2xl font-bold outline-none bg-transparent w-full"
-      />
-      <textarea
-        v-model="flow.description"
-        placeholder="Describe your flow..."
-        class="text-sm outline-none bg-transparent w-full resize-none opacity-70"
-        @input="(event) => onTextareaInput(event)"
-      />
-    </div>
+    <FlowEditorPanelSectionName
+      v-model:name="name"
+      v-model:description="description"
+    />
 
-    <!-- Divider -->
-    <!-- <div class="border border-primary-200 rounded-full" /> -->
+    <!-- Input Methods -->
+    <FlowEditorPanelSectionToggle
+      v-model="methods"
+      v-model:isOpen="isMethodsOpen"
+      type="checkbox"
+      title="Trigger Methods"
+      text="Define how this flow can be triggered."
+      :values="[
+        { value: 'http', icon: 'i-carbon:code', label: 'HTTP', hint: 'Allow this flow to be triggered via HTTP requests.' },
+        { value: 'websocket', icon: 'i-carbon:arrows-vertical', label: 'WebSocket', hint: 'Allow this flow to be triggered via WebSocket requests.' },
+        { value: 'cron', icon: 'i-carbon:time', label: 'Schedule', hint: 'Allow this flow to be triggered via manual start.' },
+      ]"
+    />
 
-    <!--
-      <div>
-      <h3 class="text-lg font-bold">Chain Inputs</h3>
-      <p class="text-sm text-gray-500">Specify the inputs this chain expects.</p>
-      </div>
-    -->
+    <FlowEditorPanelSectionVariables
+      v-model:isOpen="isVariablesOpen"
+      :variables="variables"
+      title="Project Variables"
+      text="List and define variables."
+      createTitle="Create a new variable"
+      createText="Define a new variable with a name and value."
+      updateTitle="Update variable"
+      updateText="Update the value of the variable."
+      @create="(name, value) => emit('variableCreate', name, value)"
+      @update="(name, value) => emit('variableUpdate', name, value)"
+      @delete="(name) => emit('variableRemove', name)"
+    />
 
-    <!-- Chain settings / Inputs -->
-    <!--
-      <div class="w-full space-y-2">
-      <div v-for="input in inputs" :key="input.key" class="grid cols-2 gap-2">
-      <FlowEditorPanelField v-model="input.name" label="Name" />
-      <FlowEditorPanelField v-model="input.type" label="Type" />
-      </div>
-      </div>
-    -->
-
-    <!--
-      <div class="flex items-center justify-start">
-      <Button
-      label="Add new input"
-      icon="i-carbon:add"
-      eager
-      @click="() => addInput()"
-      />
-      </div>
-    -->
-
-    <!-- Divider -->
-    <div class="border border-gray-200 rounded-full" />
-
+    <FlowEditorPanelSectionVariables
+      v-model:isOpen="isSecretsOpen"
+      :variables="secrets"
+      title="Project Secrets"
+      text="Create, replace, or remove secrets."
+      createTitle="Create a new secret"
+      createText="Define a new secret with a name and value."
+      updateTitle="Update secret"
+      updateText="Update the value of the secret."
+      @create="(name, value) => emit('secretCreate', name, value)"
+      @update="(name, value) => emit('secretUpdate', name, value)"
+      @delete="(name) => emit('secretRemove', name)"
+    />
   </div>
 </template>

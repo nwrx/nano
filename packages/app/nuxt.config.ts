@@ -18,9 +18,16 @@ export default defineNuxtConfig({
     baseURL: '/',
   },
 
+  routeRules: {
+    '/api/**': {
+      security: {
+        enabled: false,
+      },
+    },
+  },
+
   serverHandlers: [{
     route: '/api/**',
-    method: 'all',
     handler: '~/server/index.ts',
   }],
 
@@ -70,6 +77,24 @@ export default defineNuxtConfig({
   },
 
   /**
+   * Configuration for @nuxt/fonts
+   *
+   * @see — https://www.npmjs.com/package/@nuxt/fonts
+   */
+  fonts: {
+    defaults: {
+      weights: ['200', '300', '400', '500', '600', '700', '800'],
+      styles: ['normal', 'italic'],
+      subsets: ['latin', 'latin-ext'],
+    },
+    families: [
+      { name: 'IBM Plex Sans', provider: 'google' },
+      { name: 'IBM Plex Serif', provider: 'google' },
+      { name: 'IBM Plex Mono', provider: 'google' },
+    ],
+  },
+
+  /**
    * UnoCSS is the instant atomic CSS engine, that is designed to be flexible and extensible.
    * The core is un-opinionated and all the CSS utilities are provided via presets.
    *
@@ -89,7 +114,7 @@ export default defineNuxtConfig({
    */
   components: {
     dirs: [{
-      path: '~/components',
+      path: new URL('components', import.meta.url).pathname,
       pattern: '**/*.vue',
       pathPrefix: false,
     }],

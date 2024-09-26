@@ -1,33 +1,47 @@
 <script setup lang="ts">
 import type { NavItem } from '~/utils/types'
 
-defineProps<{
+const props = defineProps<{
+  modelValue?: boolean
   itemsTop?: NavItem[]
   itemsBottom?: NavItem[]
+  isHidden?: boolean
 }>()
 
-const collapsed = ref(false)
+const emit = defineEmits<{
+  'update:isOpen': [isOpen: boolean]
+}>()
+
+const isOpen = useVModel(props, 'modelValue', emit, {
+  passive: true,
+  defaultValue: true,
+})
 </script>
 
 <template>
   <div
-    class="flex flex-col bg-primary-100 p-4 transition-all duration-300"
+    class="flex flex-col px-4 transition-all duration-200 overflow-x-hidden"
     :class="{
-      'w-64': !collapsed,
-      'w-20': collapsed,
+      'w-64': isOpen,
+      'w-18': !isOpen,
+      'w-8 -translate-x-4 !px-0 opacity-0': isHidden,
     }">
 
     <!-- Collapse switch -->
-    <Button
-      icon="i-carbon:menu"
-      @click="() => { collapsed = !collapsed }"
-    />
+    <BaseButton
+      class="flex justify-between items-center sticky top-0 w-full px-2 rounded z-10"
+      @click="() => { isOpen = !isOpen }">
+      <BaseIcon
+        class="w-6 h-6 opacity-80 hover:opacity-100"
+        :icon="isOpen ? 'i-carbon:side-panel-open-filled' : 'i-carbon:right-panel-open'"
+      />
+    </BaseButton>
 
     <!-- Nav -->
     <AppNavDrawerSection
       v-if="itemsTop"
       :items="itemsTop"
-      :collapsed="collapsed"
+      :isOpen="isOpen"
     />
 
     <!-- Bottom -->
@@ -35,7 +49,7 @@ const collapsed = ref(false)
       v-if="itemsBottom"
       class="!mt-auto"
       :items="itemsBottom"
-      :collapsed="collapsed"
+      :isOpen="isOpen"
     />
   </div>
 </template>

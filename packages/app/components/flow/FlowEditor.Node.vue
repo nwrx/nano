@@ -1,28 +1,36 @@
 <script setup lang="ts">
-import type { FlowSchemaJSON } from '@nanoworks/core'
+import type { FlowNodePortJSON } from '@nwrx/api'
+import type { FlowLink } from '@nwrx/core'
 
 const props = defineProps<{
-  isSelected?: boolean
-  id?: string
-  name?: string
-  icon?: string
-  data?: Record<string, unknown>
-  result?: Record<string, unknown>
-  dataSchema?: FlowSchemaJSON
-  resultSchema?: FlowSchemaJSON
-  position?: { x: number; y: number }
-  isCollapsed?: boolean
-  links?: Record<string, string>
+  id: string
+  name: string
+  icon: string
+  color: string
+  data: Record<string, unknown>
+  result: Record<string, unknown>
+  dataSchema: FlowNodePortJSON[]
+  resultSchema: FlowNodePortJSON[]
+  position: { x: number; y: number }
+  links: FlowLink[]
+  zoom: number
+  isRunning: boolean
+  isSelected: boolean
+  isCollapsed: boolean
 }>()
 
 const emit = defineEmits<{
-  select: []
-  move: [x: number, y: number]
+  run: []
+  abort: []
+  click: [event: MouseEvent]
   setDataValue: [portId: string, value: unknown]
-  dragLinkStart: [FlowDragState | undefined]
-  dragLinkTarget: [FlowDragState | undefined]
-  dragLinkDrop: []
   setCollapsed: [value: boolean]
+  portGrab: [FlowDragState]
+  portAssign: [FlowDragState | void]
+  portRelease: []
+  handleGrab: [event: MouseEvent]
+  handleMove: [event: MouseEvent]
+  handleRelease: [event: MouseEvent]
 }>()
 
 /**
@@ -30,10 +38,8 @@ const emit = defineEmits<{
  * displayed in a collapsed state or not. This state is two-way binded
  * to the parent component.
  */
-const isCollapsed = useVModel(props, 'isCollapsed', emit, {
-  passive: true,
-  eventName: 'setCollapsed',
-})
+const isCollapsed = ref(false)
+watch(isCollapsed, value => emit('setCollapsed', value))
 
 /**
  * Based on the dataSchema, links and the `isCollapsed` state, compute the
@@ -44,13 +50,12 @@ const isCollapsed = useVModel(props, 'isCollapsed', emit, {
  * will be displayed. If the node is not collapsed, all ports will be displayed.
  */
 const dataSchema = computed(() => {
+  if (!props.id) return []
+  if (!props.dataSchema) return []
+  if (!props.links) return props.dataSchema
   if (!isCollapsed.value) return props.dataSchema
-  const dataSchema: FlowSchemaJSON = {}
-  const linkValues = Object.values(props.links ?? {})
-
-  for (const [portId, port] of Object.entries(props.dataSchema ?? {}))
-    if (linkValues.includes(portId)) dataSchema[portId] = port
-  return dataSchema
+  const linkDataIds = new Set(props.links.map(link => link.target))
+  return props.dataSchema.filter(port => linkDataIds.has(`${props.id}:${port.key}`))
 })
 
 /**
@@ -62,12 +67,12 @@ const dataSchema = computed(() => {
  * will be displayed. If the node is not collapsed, all ports will be displayed.
  */
 const resultSchema = computed(() => {
+  if (!props.id) return []
+  if (!props.resultSchema) return []
+  if (!props.links) return props.resultSchema
   if (!isCollapsed.value) return props.resultSchema
-  const resultSchema: FlowSchemaJSON = {}
-  const linkKeys = Object.keys(props.links ?? {})
-  for (const [portId, port] of Object.entries(props.resultSchema ?? {}))
-    if (linkKeys.includes(portId)) resultSchema[portId] = port
-  return resultSchema
+  const linkResultIds = new Set(props.links.map(link => link.source))
+  return props.resultSchema.filter(port => linkResultIds.has(`${props.id}:${port.key}`))
 })
 
 const portsData = ref<Record<string, ComponentPublicInstance>>({})
@@ -78,65 +83,43 @@ const portsResult = ref<Record<string, ComponentPublicInstance>>({})
  * position can be accessed and used to create links between nodes.
  */
 defineExpose({ portsData, portsResult })
-
-const { x, y } = useMouse()
-const isDragging = ref(false)
-const dragOrigin = ref({ x: 0, y: 0 })
-const dragFrom = ref({ x: 0, y: 0 })
-
-watch([x, y], ([x, y]) => {
-  if (!isDragging.value) return
-  const newX = dragFrom.value.x + (x - dragOrigin.value.x)
-  const newY = dragFrom.value.y + (y - dragOrigin.value.y)
-  emit('move', newX, newY)
-
-})
-
-/**
- * Handle the start of the drag event. When triggered, it will set the
- * dragging state to true and store the origin and current position of
- * the node.
- */
-function handleDragStart() {
-  if (!props.position) return
-  isDragging.value = true
-  dragOrigin.value = { x: x.value, y: y.value }
-  dragFrom.value = { x: props.position.x, y: props.position.y }
-}
-
-/**
- * Handle the end of the drag event. When triggered, will set the dragging
- * state to false.
- */
-function handleDragStop() {
-  isDragging.value = false
-}
 </script>
 
 <template>
   <div
     :class="{
-      'border-primary-600': isSelected,
-      'border-primary-200': !isSelected,
+      'bg-primary-50/70': isSelected,
+      'bg-primary-50/70 ring-primary-100': !isSelected,
+      'animate-pulse': isRunning,
+    }"
+    :style="{
+      '--un-ring-color': isSelected && color ? color : undefined,
+      '--un-ring-width': zoom ? `${2 / zoom}px` : '1px',
     }"
     class="
-      absolute min-h-[80px] w-[350px]
-      backdrop-blur-sm cursor-pointer
-      rounded-md bg-primary-100/80 border-1
-      transition-colors duration-100
+      group
+      absolute min-h-[80px] w-96
+      backdrop-blur-md rounded ring
     "
-    @mousedown.stop="() => emit('select')">
+    @mousedown.stop="(event) => emit('click', event)">
 
     <!-- Graphflow Node Header -->
     <div
+      :class="{
+        'text-white': isSelected,
+        'bg-primary-100': !isSelected,
+      }"
+      :style="{
+        backgroundColor: isSelected ? `${color}!important` : undefined,
+      }"
       class="
         flex justify-start items-center
         h-8 w-full px-2 space-x-2
-        rounded-t-md
-        cursor-move bg-primary-200/80
+        rounded-t-md cursor-move
       "
-      @mouseup="() => handleDragStop()"
-      @mousedown="() => handleDragStart()">
+      @mousedown="(event) => emit('handleGrab', event)"
+      @mousemove="(event) => emit('handleMove', event)"
+      @mouseup="(event) => emit('handleRelease', event)">
 
       <!-- Circle/icon -->
       <BaseIcon
@@ -147,44 +130,70 @@ function handleDragStop() {
       />
 
       <!-- Title -->
-      <p class="font-black">
+      <p class="font-medium shrink-0">
         {{ name }}
       </p>
 
+      <!-- Debug ID -->
+      <p v-if="id" class="text-sm opacity-80 truncate">
+        ({{ id.slice(0, 8) }})
+      </p>
+
       <!-- Progress-bar -->
-      <div class="!ml-auto h-2 w-8 bg-green-500 rounded-full"></div>
+      <div
+        v-if="isRunning"
+        class=" h-2 w-8 bg-green-500 rounded-full"
+      />
+
+      <!-- Run button / play icon -->
+      <BaseButton
+        eager
+        class="
+          !ml-auto rounded h-5 w-5
+          flex items-center justify-center
+          opacity-0
+          !hover:opacity-90
+          group-hover:opacity-60
+          transition-opacity duration-100
+          "
+        @mousedown.stop
+        @click="() => isRunning ? emit('abort') : emit('run')">
+        <BaseIcon
+          :icon="isRunning ? 'i-carbon:stop' : 'i-carbon:play'"
+          class="w-4 h-4 text-white"
+        />
+      </BaseButton>
     </div>
 
     <!-- Graphflow Node Body -->
-    <div class="flex flex-col py-2">
+    <div class="flex flex-col py-2 space-y-1">
       <FlowEditorPort
-        v-for="(port, portId) in dataSchema"
-        :key="portId"
-        :ref="(component: ComponentPublicInstance) => portsData[portId] = component"
-        :port="port"
-        :portId="portId"
+        v-for="port in dataSchema"
+        v-bind="port"
+        :ref="(component) => portsData[port.key] = component as ComponentPublicInstance"
+        :portId="port.key"
         :nodeId="id"
-        :value="data?.[portId]"
-        :value-is-dynamic="false"
-        kind="data"
-        @dragLinkStart="(state: FlowDragState) => emit('dragLinkStart', state)"
-        @dragLinkTarget="(state: FlowDragState) => emit('dragLinkTarget', state)"
-        @dragLinkDrop="() => emit('dragLinkDrop')"
-        @setValue="(value: unknown) => emit('setDataValue', portId, value)"
+        :value="data?.[port.key]"
+        kind="target"
+        @setValue="(value) => emit('setDataValue', port.key, value)"
+        @grab="(state) => emit('portGrab', state)"
+        @assign="(state) => emit('portAssign', state)"
+        @release="() => emit('portRelease')"
+        @drop="() => emit('portRelease')"
       />
       <FlowEditorPort
-        v-for="(port, portId) in resultSchema"
-        :key="portId"
-        :ref="(component: ComponentPublicInstance) => portsResult[portId] = component"
-        :port="port"
-        :portId="portId"
+        v-for="port in resultSchema"
+        v-bind="port"
+        :ref="(component) => portsResult[port.key] = component as ComponentPublicInstance"
+        :portId="port.key"
         :nodeId="id"
-        :value="result?.[portId]"
-        :value-is-dynamic="false"
-        kind="result"
-        @dragLinkStart="(state: FlowDragState) => emit('dragLinkStart', state)"
-        @dragLinkTarget="(state: FlowDragState) => emit('dragLinkTarget', state)"
-        @dragLinkDrop="() => emit('dragLinkDrop')"
+        :value="result?.[port.key]"
+        kind="source"
+        @setValue="(value) => emit('setDataValue', port.key, value)"
+        @grab="(state) => emit('portGrab', state)"
+        @assign="(state) => emit('portAssign', state)"
+        @release="() => emit('portRelease')"
+        @drop="() => emit('portRelease')"
       />
     </div>
 
@@ -195,6 +204,7 @@ function handleDragStop() {
         h-8 w-full cursor-pointer
         hover:bg-primary-200
         transition-colors duration-100
+        rounded-b-md
       "
       @mousedown.stop="() => isCollapsed = !isCollapsed">
       <BaseIcon
