@@ -7,7 +7,7 @@
     "module": "ESNext",
     "moduleResolution": "Node",
     "paths": {
-      "@maestrau/*": ["./packages/*"]
+      "@nwrx/*": ["./packages/*"]
     },
     "types": [
       "@types/node",
@@ -27,6 +27,7 @@
     "examples",
     "tsup.config.ts",
     "vitest.config.ts",
+    "vitest.workspace.ts",
     "eslint.config.mjs",
     "forcePnpm.js"
   ],

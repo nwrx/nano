@@ -1,8 +1,10 @@
 import { resolvePackageNames } from '@unshared/scripts'
+import { cpus } from 'node:os'
 import { defineConfig } from 'vitest/config'
 
 const packageNames = await resolvePackageNames()
 const includeSource = packageNames.map(name => `./packages/${name}/**/*.ts`)
+const include = packageNames.map(name => `./packages/${name}/**/*.test.ts`)
 
 const exclude = [
   '**/node_modules/**',
@@ -20,12 +22,25 @@ export default defineConfig({
 
     exclude,
     globals: true,
-    include: [],
+    include,
     includeSource,
     reporters: ['basic'],
     setupFiles: './packages/setupTest.ts',
     testTimeout: process.env.DEBUGGER ? 100 : 0,
-    maxConcurrency: 50,
+    isolate: true,
+    pool: 'threads',
+    maxConcurrency: cpus().length,
+    poolOptions: {
+      threads: {
+        useAtomics: true,
+        maxThreads: cpus().length,
+        minThreads: cpus().length,
+      },
+      forks: {
+        maxForks: cpus().length,
+        minForks: cpus().length,
+      },
+    },
 
     // --- Benchmark configuration.
     benchmark: {
