@@ -1,4 +1,4 @@
-import { defineFlowType } from '@nanoworks/core'
+import { defineFlowType } from '@nwrx/core'
 import { assertString, createParser } from '@unshared/validation'
 
 export const typeModel = defineFlowType({

@@ -1,5 +1,5 @@
 /* eslint-disable n/no-unsupported-features/node-builtins */
-import { defineFlowType } from '@nanoworks/core'
+import { defineFlowType } from '@nwrx/core'
 import { createAssertInstance, createParser } from '@unshared/validation'
 
 export const typeStream = defineFlowType({
