@@ -1,16 +1,16 @@
 {
-  "name": "@nanoworks/module-core",
+  "name": "@nwrx/module-core",
   "type": "module",
   "version": "0.0.1",
   "license": "MIT",
   "sideEffects": false,
   "author": "Stanley Horwood <stanley@hsjm.io>",
-  "bugs": "https://github.com/maestrau/maestrau-ce/issues",
-  "homepage": "https://github.com/maestrau/maestrau-ce#readme",
+  "bugs": "https://github.com/nwrx/nano-ce.git/issues",
+  "homepage": "https://github.com/nwrx/nano-ce.git#readme",
   "repository": {
     "directory": "packages/module-core",
     "type": "git",
-    "url": "git@github.com:maestrau/maestrau-ce.git"
+    "url": "https://github.com/nwrx/nano-ce.git"
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -103,8 +103,8 @@
     "LICENSE.md"
   ],
   "dependencies": {
-    "@nanoworks/core": "workspace:*",
-    "@unshared/string": "0.0.16",
-    "@unshared/validation": "0.0.16"
+    "@nwrx/core": "workspace:*",
+    "@unshared/string": "0.0.19",
+    "@unshared/validation": "0.0.19"
   }
 }
