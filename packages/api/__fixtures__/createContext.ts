@@ -99,17 +99,19 @@ export async function createContext() {
         password: 'password',
       })
 
-      // --- Save the user and workspace.
-      const { User } = userModule.getRepositories()
-      const { Workspace } = workspaceModule.getRepositories()
-      await User.save(user)
-      await Workspace.save(workspace)
-
       // --- Create the cookie header.
-      const session = userModule.createSession(user, { address: '1.2.3.4', userAgent: 'Vitest' })
-      const token = userModule.createSessionToken(session)
+      const { session, token } = userModule.createSession(user, { address: '1.2.3.4', userAgent: 'Vitest' })
       const cookie = `${userModule.userSessionCookieName}=${token}`
       const headers = { cookie }
+
+      // --- Save the user and workspace.
+      const { User, UserSession } = userModule.getRepositories()
+      const { Workspace } = workspaceModule.getRepositories()
+      await User.save(user)
+      await UserSession.save(session)
+      await Workspace.save(workspace)
+
+      // --- Return all the created entities and the headers to use in requests.
       return { user, session, headers, cookie }
     },
 
