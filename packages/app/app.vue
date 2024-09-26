@@ -1,47 +1,31 @@
 <script setup lang="ts">
-import type { ContentWebsiteObject } from '@unserved/module-content'
-
-// --- Extract route meta.
 const route = computed(() => useRouter().currentRoute.value)
 const meta = computed(() => route.value.meta as { title: string })
 
-// --- Fetch website data.
-const { data: website } = await useRequest('GET /api/website', {
-  default: () => ({}) as ContentWebsiteObject,
-})
-
-// --- Head.
 useHead({
-  titleTemplate: `${website.value.name} - %s`,
-  link: [
-    { rel: 'icon', type: 'image/x-icon', href: website.value.iconUrl },
-    { rel: 'apple-touch-icon', href: website.value.iconUrl },
-  ],
+  titleTemplate: `%s | ${CONSTANTS.appTitle}`,
 })
 
-// --- SEO.
 useSeoMeta({
   charset: 'utf8',
   title: meta.value.title,
-  ogUrl: website.value.url,
-  ogTitle: meta.value.title,
-  ogSiteName: website.value.name,
-  ogDescription: website.value.description,
+  ogUrl: CONSTANTS.appCanonicalUrl,
+  ogTitle: CONSTANTS.appTitle,
+  ogSiteName: CONSTANTS.appTitle,
+  ogDescription: CONSTANTS.appDescription,
   viewport: 'width=device-width, initial-scale=1.0',
-  description: website.value.description,
-  themeColor: primary['600'],
-  applicationName: website.value.name,
+  description: CONSTANTS.appDescription,
+  themeColor: COLORS.primary['600'],
+  applicationName: CONSTANTS.appTitle,
 })
 </script>
 
 <template>
   <Suspense>
-    <div id="app" class="font-sans">
+    <div id="app" class="font-sans overflow-x-clip">
       <NuxtLoadingIndicator />
       <NuxtLayout>
-        <slot>
-          <NuxtPage />
-        </slot>
+        <NuxtPage />
       </NuxtLayout>
     </div>
   </Suspense>
