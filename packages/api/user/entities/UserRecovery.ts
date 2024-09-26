@@ -1,5 +1,5 @@
 import { BaseEntity, transformerDate } from '@unserved/server'
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm'
 import { User } from './User'
 
 /**
@@ -8,6 +8,7 @@ import { User } from './User'
  * is sent to the user by email and is used to verify the identity of the user.
  */
 @Entity('UserRecovery')
+@Unique('UserRecovery_user', ['user', 'consumedAt'])
 export class UserRecovery extends BaseEntity {
 
   /**
@@ -17,25 +18,8 @@ export class UserRecovery extends BaseEntity {
    * @example User { ... }
    */
   @JoinColumn()
-  @ManyToOne(() => User)
-  user: User
-
-  /**
-   * The address of the session. It is used to bind the session to a specific device.
-   *
-   * @example '192.168.1.1'
-   */
-  @Column('varchar', { length: 255 })
-  address: string
-
-  /**
-   * The user agent of the session. It is used to determine the device and browser
-   * that the user is using to access the application.
-   *
-   * @example 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
-   */
-  @Column('varchar', { length: 255 })
-  userAgent: string
+  @ManyToOne(() => User, { nullable: false, onDelete: 'CASCADE' })
+  user?: User
 
   /**
    * The date at which the recovery request was created. It is used to determine the
@@ -53,5 +37,5 @@ export class UserRecovery extends BaseEntity {
    * @example Date { ... }
    */
   @Column('varchar', { length: 255, nullable: true, transformer: transformerDate })
-  consumedAt?: Date
+  consumedAt?: Date | null
 }
