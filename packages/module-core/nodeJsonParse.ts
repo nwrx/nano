@@ -1,4 +1,4 @@
-import { defineFlowNode } from '@nanoworks/core'
+import { defineFlowNode } from '@nwrx/core'
 import { typeObject } from './typeObject'
 import { typeString } from './typeString'
 

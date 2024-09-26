@@ -1,10 +1,9 @@
-import type { FlowType } from '@nanoworks/core'
-import { defineFlowNode } from '@nanoworks/core'
+import type { FlowType } from '@nwrx/core'
+import { defineFlowNode } from '@nwrx/core'
 import { dedent } from '@unshared/string'
 import { categoryBasic } from './categoryBasic'
 import { typeBoolean } from './typeBoolean'
 import { typeNumber } from './typeNumber'
-import { typeObject } from './typeObject'
 import { typeStream } from './typeStream'
 import { typeString } from './typeString'
 
@@ -20,19 +19,6 @@ export const nodeInput = defineFlowNode({
   `),
 
   defineDataSchema: {
-    type: {
-      name: 'Type',
-      display: 'select',
-      type: typeObject as unknown as FlowType<FlowType>,
-      description: 'The type of the value.',
-      disallowDynamic: true,
-      values: {
-        'Text': typeString,
-        'Number': typeNumber,
-        'Yes/No': typeBoolean,
-        'Stream': typeStream,
-      },
-    },
     property: {
       name: 'Property',
       display: 'text',
@@ -43,32 +29,47 @@ export const nodeInput = defineFlowNode({
         to get the value from the input data.
       `),
     },
-    origin: {
-      name: 'Origin',
+    type: {
+      name: 'Type',
       display: 'select',
-      type: typeString as FlowType<'any' | 'http' | 'ws'>,
-      description: 'The origin of the entrypoint.',
+      type: typeString as FlowType<'boolean' | 'number' | 'stream' | 'text'>,
+      description: 'The type of the value.',
       disallowDynamic: true,
       values: {
-        'Any': 'any',
-        'HTTP Request': 'http',
-        'WebSocket Message': 'ws',
+        'Text': 'text',
+        'Number': 'number',
+        'Yes/No': 'boolean',
+        'Stream': 'stream',
       },
     },
   },
 
-  defineResultSchema: ({ data }) => ({
-    value: {
-      name: 'Value',
-      type: data.type ?? typeString,
-      description: 'The value of the entrypoint.',
-    },
-  }),
-
-  process: ({ flow, data }) => {
-    flow.on('flow:input', ({ property }) => {
-      if (property !== data.property) return
-
-    })
+  defineResultSchema: ({ data }) => {
+    let type: FlowType<any> = typeString
+    if (data.type === 'number') type = typeNumber
+    else if (data.type === 'boolean') type = typeBoolean
+    else if (data.type === 'stream') type = typeStream
+    return {
+      value: {
+        name: 'Value',
+        type,
+        description: 'The value of the entrypoint.',
+      },
+    }
   },
+
+  process: async({ flow, data, abortSignal }) =>
+    await new Promise<{ value: unknown }>((resolve) => {
+
+      // --- On abort, resolve with undefined.
+      abortSignal.addEventListener('abort', () => {
+        resolve({ value: undefined })
+      })
+
+      // --- On flow:input, resolve with the value.
+      flow.on('flow:input', (property, value) => {
+        if (property !== data.property) return
+        resolve({ value })
+      })
+    }),
 })
