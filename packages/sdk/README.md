@@ -7,7 +7,7 @@ The Nano SDK is a collection of utilities and tools that helps developers integr
 To install the Nano SDK, you can use the following command:
 
 ```bash
-npm install @nanoworks/sdk
+npm install @nwrx/sdk
 ```
 
 ## Usage
@@ -15,7 +15,7 @@ npm install @nanoworks/sdk
 To use the Nano SDK, you can import the library and create a new instance of the SDK with the URL of the Nano instance you want to interact with:
 
 ```typescript
-import { Nano } from '@nanoworks/sdk';
+import { Nano } from '@nwrx/sdk';
 
 // Instantiate the SDK with the URL of the Nano instance.
 const Nano = new Nano('https://app.nanoworks.io', {
