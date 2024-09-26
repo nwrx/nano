@@ -1,0 +1,29 @@
+{
+  "name": "@nwrx/api",
+  "type": "module",
+  "private": true,
+  "main": "./index.ts",
+  "dependencies": {
+    "@aws-sdk/client-s3": "3.658.0",
+    "@azure/storage-blob": "12.25.0",
+    "@nwrx/core": "workspace:*",
+    "@nwrx/module-core": "workspace:*",
+    "@unserved/server": "0.0.15",
+    "@unshared/binary": "0.0.19",
+    "@unshared/eslint-config": "0.0.19",
+    "@unshared/functions": "0.0.19",
+    "@unshared/string": "0.0.19",
+    "@unshared/types": "0.0.19",
+    "@unshared/unocss-preset": "0.0.19",
+    "@unshared/validation": "0.0.19",
+    "crossws": "0.2.4",
+    "h3": "1.12.0",
+    "nodemailer": "6.9.15",
+    "nuxt": "3.13.1",
+    "typeorm": "0.3.20",
+    "unocss": "0.62.3"
+  },
+  "devDependencies": {
+    "sqlite3": "5.1.7"
+  }
+}
