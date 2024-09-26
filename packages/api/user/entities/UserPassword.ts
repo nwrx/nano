@@ -10,21 +10,28 @@ import { User } from './User'
 export class UserPassword extends BaseEntity {
 
   /**
-   * The hashed password of the user.
-   */
-  @Column('varchar', { length: 255 })
-  password: string
-
-  /**
-   * The options used to hash the current password of the user.
-   */
-  @Column('text', { transformer: transformerJson, nullable: true })
-  passwordOptions?: PasswordOptions
-
-  /**
    * The user associated with this password.
    */
   @JoinColumn()
   @ManyToOne(() => User, user => user.passwords)
   user: User
+
+  /**
+   * The hashed password of the user.
+   */
+  @Column('varchar', { length: 255 })
+  hash: string
+
+  /**
+   * The options used to hash the current password of the user.
+   */
+  @Column('text', { transformer: transformerJson, nullable: true })
+  options?: PasswordOptions
+
+  /**
+   * The expiration date of the password. It is used to determine when the password
+   * will expire and the user will have to change it.
+   */
+  @Column('varchar', { length: 255, nullable: true, transformer: transformerJson })
+  expiresAt?: Date
 }

@@ -1,6 +1,5 @@
-import { BaseEntity, transformerDate, transformerJson } from '@unserved/server'
+import { BaseEntity, transformerDate } from '@unserved/server'
 import { Column, Entity, OneToMany, OneToOne } from 'typeorm'
-import { createPassword, PasswordOptions } from '../utils'
 import { UserPassword } from './UserPassword'
 import { UserProfile } from './UserProfile'
 import { UserSession } from './UserSession'
@@ -60,12 +59,20 @@ export class User extends BaseEntity {
   verifiedAt?: Date
 
   /**
+   * The list of passwords associated with the user. It is used to store the history of all passwords of the user.
+   *
+   * @example [UserPassword { ... }]
+   */
+  @OneToMany(() => UserPassword, password => password.user, { cascade: true })
+  passwords?: UserPassword[]
+
+  /**
    * The list of sessions associated with the user. It is used to determine the devices
    * and browsers that the user is using to access the application.
    *
    * @example [UserSession { ... }]
    */
-  @OneToMany(() => UserSession, session => session.user)
+  @OneToMany(() => UserSession, session => session.user, { cascade: true })
   sessions?: UserSession[]
 
   /**
@@ -73,16 +80,8 @@ export class User extends BaseEntity {
    *
    * @example [UserProfile { ... }]
    */
-  @OneToOne(() => UserProfile, profile => profile.user)
-  profile?: UserProfile
-
-  /**
-   * The list of passwords associated with the user. It is used to store the history of all passwords of the user.
-   *
-   * @example [UserPassword { ... }]
-   */
-  @OneToMany(() => UserPassword, password => password.user)
-  passwords?: UserPassword[]
+  @OneToOne(() => UserProfile, profile => profile.user, { nullable: false, eager: true, cascade: true })
+  profile: UserProfile
 
   /**
    * Return a copy if the exposed properties of the user. It is used to send the user
