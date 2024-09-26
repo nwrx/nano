@@ -48,11 +48,11 @@ export const ERRORS = {
     statusMessage: 'Forbidden',
     message: 'The user is not allowed to perform this operation',
   }),
-  USER_EMAIL_TAKEN: () => createError({
-    name: 'E_USER_EMAIL_TAKEN',
+  USER_EMAIL_OR_NAME_TAKEN: () => createError({
+    name: 'E_USER_EMAIL_OR_NAME_TAKEN',
     statusCode: 409,
     statusMessage: 'Conflict',
-    message: 'The email is already taken',
+    message: 'The email or username is already taken',
   }),
 
   // Sessions
