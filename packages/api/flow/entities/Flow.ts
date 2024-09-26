@@ -1,0 +1,72 @@
+import { FlowExport } from '@nwrx/core'
+import { BaseEntity, transformerJson } from '@unserved/server'
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
+import { WorkspaceProject } from '../../workspace'
+
+/**
+ * The Flow entity represents a flow of nodes that are connected to each other
+ * and executed in sequence. The flow is used to define the flow of data between
+ * the nodes and the order in which they are executed.
+ */
+@Entity({ name: 'Flow' })
+export class Flow extends BaseEntity {
+
+  /**
+   * The URL slug of the flow. The slug is used to generate the URL of the flow.
+   * It is also used to identify the flow in the database.
+   *
+   * @example 'resume-article'
+   */
+  @Column('varchar', { length: 255, unique: true })
+  name: string
+
+  /**
+   * The name of the flow as displayed in the UI.
+   *
+   * @example 'Resume Article'
+   */
+  @Column('varchar', { length: 255 })
+  title: string
+
+  /**
+   * Description of the flow.
+   *
+   * @example 'This flow is used to resume an article.'
+   */
+  @Column('text', { nullable: true })
+  description?: string
+
+  /**
+   * The nodes that are part of the flow.
+   *
+   * @example [Node, Node, Node]
+   */
+  @Column('json', { default: '{"version":"1"}', transformer: transformerJson })
+  data: FlowExport = { version: '1' }
+
+  /**
+   * The project that the flow is part of.
+   *
+   * @example WorkspaceProject { ... }
+   */
+  @JoinColumn()
+  @ManyToOne(() => WorkspaceProject, project => project.flows, { onDelete: 'CASCADE', nullable: false })
+  project?: WorkspaceProject
+
+  /**
+   * @returns The object representation of the icon.
+   */
+  serialize(): FlowObject {
+    return {
+      name: this.name,
+      title: this.title,
+      description: this.description,
+    }
+  }
+}
+
+export interface FlowObject {
+  name: string
+  title: string
+  description?: string
+}
