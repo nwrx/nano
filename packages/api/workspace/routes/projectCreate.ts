@@ -18,7 +18,8 @@ export function projectCreate(this: ModuleWorkspace) {
       }),
     },
     async({ event, body, parameters }): Promise<WorkspaceProjectObject> => {
-      const user = await this.getModule(ModuleUser).authenticate(event)
+      const userModule = this.getModule(ModuleUser)
+      const { user } = await userModule.authenticate(event)
       const { name, title, description } = body
       const { workspace: workspaceName } = parameters
 

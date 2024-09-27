@@ -17,7 +17,8 @@ export function projectSetName(this: ModuleWorkspace) {
       }),
     },
     async({ event, parameters, body }) => {
-      const user = await this.getModule(ModuleUser).authenticate(event)
+      const userModule = this.getModule(ModuleUser)
+      const { user } = await userModule.authenticate(event)
       const { project, workspace } = parameters
       const { name } = body
 
