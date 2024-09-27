@@ -9,23 +9,38 @@ import { User } from './User'
 export class UserProfile extends BaseEntity {
 
   /**
+   * The user associated with this profile.
+   */
+  @JoinColumn()
+  @OneToOne(() => User, user => user.profile)
+  user: User
+
+  /**
    * The display name of the user. It is used to show the user's name in the
    * application. It can be the first name, the last name, or a combination of both.
    */
-  @Column('varchar', { length: 255, nullable: true })
-  displayName?: string
+  @Column('varchar', { length: 255 })
+  displayName: string
 
   /**
    * A short biography of the user.
    */
-  @Column('text', { nullable: true })
-  bio?: string
+  @Column('text', { default: '' })
+  biography?: string
 
   /**
    * The user's personal or professional website.
    */
-  @Column('varchar', { length: 255, nullable: true })
+  @Column('varchar', { length: 255, default: '' })
   website?: string
+
+  /**
+   * The company where the user works.
+   *
+   * @example 'Google'
+   */
+  @Column('varchar', { length: 255, default: '' })
+  company?: string
 
   /**
    * The user's social media links.
@@ -34,9 +49,23 @@ export class UserProfile extends BaseEntity {
   socials?: Record<string, string>
 
   /**
-   * The user associated with this profile.
+   * @returns The serialized profile object.
    */
-  @JoinColumn()
-  @OneToOne(() => User, user => user.profile)
-  user: User
+  serialize(): UserProfileObject {
+    return {
+      displayName: this.displayName,
+      biography: this.biography,
+      company: this.company,
+      website: this.website,
+      socials: this.socials,
+    }
+  }
+}
+
+export interface UserProfileObject {
+  displayName?: string
+  biography?: string
+  company?: string
+  website?: string
+  socials?: Record<string, string>
 }

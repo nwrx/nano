@@ -1,7 +1,7 @@
 import { BaseEntity, transformerDate } from '@unserved/server'
 import { Column, Entity, OneToMany, OneToOne } from 'typeorm'
 import { UserPassword } from './UserPassword'
-import { UserProfile } from './UserProfile'
+import { UserProfile, UserProfileObject } from './UserProfile'
 import { UserSession } from './UserSession'
 
 /**
@@ -92,6 +92,8 @@ export class User extends BaseEntity {
   serialize(): UserObject {
     return {
       username: this.username,
+      ...this.profile?.serialize(),
+      displayName: this.profile?.displayName ?? this.username,
     }
   }
 }
@@ -100,6 +102,7 @@ export class User extends BaseEntity {
  * The user object returned to the client. It is used to send the user data to the client
  * without exposing sensitive information.
  */
-export interface UserObject {
+export interface UserObject extends UserProfileObject {
   username: string
+  displayName: string
 }
