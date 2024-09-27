@@ -90,7 +90,7 @@ export async function createContext() {
       return this.application.getModule(ModuleUser)
     },
 
-    async createUser(name = 'jdoe') {
+    async createUser(name = 'jdoe', options: Partial<User> = {}) {
       const userModule = this.application.getModule(ModuleUser)
       const workspaceModule = this.application.getModule(ModuleWorkspace)
       const { user, workspace } = await userModule.createUser({
@@ -98,6 +98,9 @@ export async function createContext() {
         username: name,
         password: 'password',
       })
+
+      // --- Assign the super administrator role.
+      if (options.isSuperAdministrator) user.isSuperAdministrator = true
 
       // --- Create the cookie header.
       const { session, token } = userModule.createSession(user, { address: '1.2.3.4', userAgent: 'Vitest' })
