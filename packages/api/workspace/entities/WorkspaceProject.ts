@@ -30,24 +30,16 @@ export class WorkspaceProject extends BaseEntity {
    *
    * @example 'Resume Article'
    */
-  @Column('varchar', { length: 255, nullable: true })
-  title?: string = undefined
-
-  /**
-   * The icon of the project.
-   *
-   * @example 'i-carbon:article'
-   */
-  @Column('varchar', { length: 255, nullable: true })
-  icon?: string = undefined
+  @Column('varchar', { length: 255 })
+  title: string
 
   /**
    * Description of the project.
    *
    * @example 'This project is used to resume an article.'
    */
-  @Column('text', { nullable: true })
-  description?: string = undefined
+  @Column('text', { default: '' })
+  description?: string
 
   /**
    * Flag to declare the project as public. If the project is public, it can be viewed
@@ -101,16 +93,6 @@ export class WorkspaceProject extends BaseEntity {
   workspace?: Workspace
 
   /**
-   * Get the display name of the project. The function will return the title of the project
-   * if it is defined. Otherwise, it will return the name of the project.
-   *
-   * @returns The display name of the project.
-   */
-  get displayName(): string {
-    return this.title ?? this.name
-  }
-
-  /**
    * Get the assignments grouped by users. The function will return an array of objects
    * where each object contains the user and a list of permissions assigned to the user.
    *
@@ -141,7 +123,7 @@ export class WorkspaceProject extends BaseEntity {
     return {
       name: this.name,
       title: this.title,
-      description: this.description,
+      description: this.description ?? undefined,
       flows: this.flows?.map(flow => flow.serialize()),
       secrets: this.secrets?.map(secret => secret.serialize()),
       variables: this.variables?.map(variable => variable.serialize()),
