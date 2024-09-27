@@ -11,9 +11,13 @@ export function userGet(this: ModuleUser) {
       }),
     },
     async({ event, parameters }) => {
-      const user = await this.authenticate(event)
+      const { user } = await this.authenticate(event)
       const { User } = this.getRepositories()
       const { username } = parameters
+
+      // --- If the request is made by a user other than the super administrator, return an error.
+      if (user.username !== username && !user.isSuperAdministrator)
+        throw this.errors.USER_NOT_ALLOWED()
 
       // --- Fetch the user with the given ID.
       const result = await User.findOne({
