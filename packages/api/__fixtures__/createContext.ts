@@ -147,7 +147,7 @@ export async function createContext() {
 
     async createProject(name = 'my-project', workspace: Workspace, isPublic = false) {
       const { WorkspaceProject } = this.ModuleWorkspace.getRepositories()
-      const project = WorkspaceProject.create({ name, workspace, isPublic })
+      const project = WorkspaceProject.create({ name, title: name, workspace, isPublic })
       return { project: await WorkspaceProject.save(project) }
     },
 
