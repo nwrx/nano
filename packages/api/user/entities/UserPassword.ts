@@ -26,7 +26,7 @@ export class UserPassword extends BaseEntity {
    * The options used to hash the current password of the user.
    */
   @Column('text', { transformer: transformerJson, nullable: true })
-  options?: PasswordOptions
+  options: PasswordOptions
 
   /**
    * The expiration date of the password. It is used to determine when the password
