@@ -1,12 +1,15 @@
-import type { StorageDownloadOptions, StorageDownloadResult } from '~/storage/utils'
-import type { StoragePoolAzure } from '.'
 import type { StorageFile } from '../../entities'
+import type { StorageDownloadOptions, StorageDownloadResult } from '../../utils'
+import type { StoragePoolAzure } from './index'
 import { BlobSASPermissions } from '@azure/storage-blob'
+import { createResolvable } from '@unshared/functions'
 import { Readable } from 'node:stream'
 
 export function download(this: StoragePoolAzure, file: StorageFile, options: StorageDownloadOptions = {}): StorageDownloadResult {
   const { offset, size, abortSignal } = options
   const blockBlobClient = this.containerClient.getBlockBlobClient(file.id)
+  const streamPromise = createResolvable<Readable>()
+  const dataPromise = createResolvable<Buffer>()
 
   return {
     async getUrl() {
@@ -18,20 +21,23 @@ export function download(this: StoragePoolAzure, file: StorageFile, options: Sto
     },
 
     async getStream() {
+      if (streamPromise.isPending || streamPromise.isResolved) return streamPromise.promise
       const response = await blockBlobClient.download(offset, size, { abortSignal })
       if (!response.readableStreamBody) throw new Error('The response body is not readable.')
       const stream = response.readableStreamBody
-      return Readable.from(stream)
+      const readable = Readable.from(stream)
+      streamPromise.resolve(readable)
+      return streamPromise.promise
     },
 
     async getData() {
+      if (dataPromise.isPending || dataPromise.isResolved) return dataPromise.promise
       const stream = await this.getStream()
-      return new Promise<Buffer>((resolve, reject) => {
-        const chunks: Uint8Array[] = []
-        stream.on('data', (chunk: Uint8Array) => chunks.push(chunk))
-        stream.on('end', () => resolve(Buffer.concat(chunks)))
-        stream.on('error', reject)
-      })
+      const chunks: Uint8Array[] = []
+      stream.on('data', (chunk: Uint8Array) => chunks.push(chunk))
+      stream.on('end', () => dataPromise.resolve(Buffer.concat(chunks)))
+      stream.on('error', dataPromise.reject)
+      return dataPromise.promise
     },
 
     async getText() {
