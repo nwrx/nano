@@ -80,8 +80,8 @@ export class User extends BaseEntity {
    *
    * @example [UserProfile { ... }]
    */
-  @OneToOne(() => UserProfile, profile => profile.user, { nullable: false, eager: true, cascade: true })
-  profile: UserProfile
+  @OneToOne(() => UserProfile, profile => profile.user, { nullable: false, cascade: true })
+  profile?: UserProfile
 
   /**
    * Return a copy if the exposed properties of the user. It is used to send the user
