@@ -1,39 +1,42 @@
+import type { UserObject } from '../entities'
 import type { ModuleUser } from '../index'
 import { createRoute } from '@unserved/server'
-import { assertNil, assertString, createArrayParser, createSchema } from '@unshared/validation'
+import { toSlug } from '@unshared/string'
+import { assertStringEmail, assertStringNotEmpty, createSchema } from '@unshared/validation'
+import { setResponseStatus } from 'h3'
+import { ModuleWorkspace } from '../../workspace'
 
 export function userCreate(this: ModuleUser) {
   return createRoute(
     {
       name: 'POST /api/users',
       body: createSchema({
-        username: assertString,
-        password: assertString,
-        passwordConfirm: assertString,
+        email: assertStringEmail,
+        username: [assertStringNotEmpty, toSlug],
       }),
     },
-    async({ event, body }) => {
+    async({ event, body }): Promise<UserObject> => {
+      const workspaceModule = this.getModule(ModuleWorkspace)
+      const { user } = await this.authenticate(event)
+      const { User } = this.getRepositories()
+      const { Workspace } = workspaceModule.getRepositories()
+      const { username, email } = body
 
-      // --- Check if the user has the right permissions.
-      await this.authenticate(event)
+      // --- Only super administrators can create users.
+      if (!user.isSuperAdministrator) throw this.errors.USER_NOT_ALLOWED()
 
-      // --- Check if the username is already taken.
-      const { username } = body
-      const { User } = this.entities
-      const userExists = await User.findOneBy({ username })
-      if (userExists) return this.errors.USER_EMAIL_TAKEN
+      // --- Save the user to the database and return the serialized user.
+      const { user: userToCreate, workspace } = await this.createUser({ username, email })
 
-      // --- Create the user.
-      const user = User.create()
-      user.username = username
+      // --- Save the user and workspace in a transaction.
+      await this.withTransaction(async() => {
+        await User.save(userToCreate)
+        await Workspace.save(workspace)
+      })
 
-      // --- Update the password.
-      if (body.password !== body.passwordConfirm) throw this.errors.USER_PASSWORD_MISMATCH()
-      await user.setPassword(body.password)
-
-      // --- Save and return the user.
-      await user.save()
-      return user.serialize()
+      // --- Return the serialized user.
+      setResponseStatus(event, 201)
+      return userToCreate.serialize()
     },
   )
 }
