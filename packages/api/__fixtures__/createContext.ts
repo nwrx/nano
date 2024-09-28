@@ -106,8 +106,9 @@ export async function createContext() {
       })
 
       // --- Assign the super administrator role.
-      if (options.email) user.email = options.email
-      if (options.isSuperAdministrator) user.isSuperAdministrator = true
+      // @ts-expect-error: allow unsafe assignment.
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      for (const property in options) user[property] = options[property]
 
       // --- Create the cookie header.
       const { session, token } = userModule.createSession(user, { address: '1.2.3.4', userAgent: 'Vitest' })
