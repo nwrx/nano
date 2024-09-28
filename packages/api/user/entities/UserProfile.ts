@@ -1,4 +1,4 @@
-import { BaseEntity } from '@unserved/server'
+import { BaseEntity, transformerJson } from '@unserved/server'
 import { Column, Entity, JoinColumn, OneToOne } from 'typeorm'
 import { User } from './User'
 
@@ -45,8 +45,8 @@ export class UserProfile extends BaseEntity {
   /**
    * The user's social media links.
    */
-  @Column('json', { nullable: true })
-  socials?: Record<string, string>
+  @Column('text', { transformer: transformerJson, default: '[]' })
+  socials?: string[]
 
   /**
    * @returns The serialized profile object.
@@ -67,5 +67,5 @@ export interface UserProfileObject {
   biography?: string
   company?: string
   website?: string
-  socials?: Record<string, string>
+  socials?: string[]
 }
