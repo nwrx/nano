@@ -1,6 +1,7 @@
 import type { ModuleUser } from '../index'
 import { createRoute } from '@unserved/server'
-import { assertStringNotEmpty, createSchema } from '@unshared/validation'
+import { parseBoolean } from '@unshared/string'
+import { assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
 
 export function userGet(this: ModuleUser) {
   return createRoute(
@@ -9,8 +10,11 @@ export function userGet(this: ModuleUser) {
       parameters: createSchema({
         username: assertStringNotEmpty,
       }),
+      query: createSchema({
+        withProfile: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
+      }),
     },
-    async({ event, parameters }) => {
+    async({ event, parameters, query }) => {
       const { user } = await this.authenticate(event)
       const { User } = this.getRepositories()
       const { username } = parameters
@@ -23,6 +27,9 @@ export function userGet(this: ModuleUser) {
       const result = await User.findOne({
         where: { username },
         withDeleted: user.isSuperAdministrator,
+        relations: {
+          profile: query.withProfile,
+        },
       })
 
       // --- If the request is made by a super administrator, add additional information.
