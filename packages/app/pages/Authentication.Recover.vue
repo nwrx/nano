@@ -2,7 +2,7 @@
 definePageMeta({
   name: 'AuthenticationRecover',
   path: '/auth/recover',
-  middleware: 'guest',
+  middleware: 'redirect-when-authenticated',
 })
 </script>
 

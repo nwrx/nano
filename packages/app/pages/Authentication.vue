@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { useAlerts, useClient } from '#imports'
-
 definePageMeta({
-  name: 'AuthenticationSignin',
+  name: 'Authentication',
   path: '/auth/signin',
   alias: ['/auth/login', '/auth'],
-  middleware: 'guest',
+  middleware: 'redirect-when-authenticated',
 })
 
 useSeoMeta({
@@ -14,24 +12,9 @@ useSeoMeta({
 })
 
 // Sign-in form
+const session = useSession()
 const username = ref('')
 const password = ref('')
-
-// Sign-up with email and password
-async function signinWithPassword() {
-  await useClient().requestAttempt('POST /api/signin', {
-    onError: error => useAlerts().error(error),
-    onSuccess: async() => {
-      const redirect = useRoute().query.redirect as string | undefined
-      useAlerts().success('Logged in successfully')
-      await useRouter().replace(redirect ?? '/flows')
-    },
-    data: {
-      username: username.value,
-      password: password.value,
-    },
-  })
-}
 
 // Auto-fill form in development
 onMounted(() => {
@@ -48,7 +31,7 @@ onMounted(() => {
       <AuthenticationDivider>or</AuthenticationDivider>
       <form
         class="flex flex-col space-y-2"
-        @submit.prevent="() => signinWithPassword()">
+        @submit.prevent="() => session.signinWithPassword({ username, password })">
 
         <!-- Email -->
         <InputText
