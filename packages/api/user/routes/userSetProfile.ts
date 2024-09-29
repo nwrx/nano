@@ -26,10 +26,11 @@ export function userSetProfile(this: ModuleUser) {
 
       // --- Find the user by the ID.
       const userToUpdate = await this.resolveUser(username, { profile: true })
-      if (body.displayName !== undefined) userToUpdate.profile!.displayName = body.displayName
-      if (body.biography !== undefined) userToUpdate.profile!.biography = body.biography
-      if (body.company !== undefined) userToUpdate.profile!.company = body.company
-      if (body.website !== undefined) userToUpdate.profile!.website = body.website
+      if (!userToUpdate.profile) throw new Error('Profile not found.')
+      if (body.displayName !== undefined) userToUpdate.profile.displayName = body.displayName
+      if (body.biography !== undefined) userToUpdate.profile.biography = body.biography
+      if (body.company !== undefined) userToUpdate.profile.company = body.company
+      if (body.website !== undefined) userToUpdate.profile.website = body.website
 
       // --- Save and return the user.
       const { User } = this.getRepositories()
