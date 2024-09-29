@@ -16,7 +16,6 @@ export function userSetPassword(this: ModuleUser) {
       }),
     },
     async({ event, parameters, body }): Promise<void> => {
-      const { User, UserPassword } = this.getRepositories()
       const { username } = parameters
       const { newPassword, oldPassword, oldPasswordConfirm } = body
       const { user } = await this.authenticate(event)
@@ -25,23 +24,25 @@ export function userSetPassword(this: ModuleUser) {
       if (user.username !== username && !user.isSuperAdministrator)
         throw this.errors.USER_NOT_ALLOWED()
 
-      // --- Check if the old password matches the user's password.
+      // --- Check the old password.
       if (oldPassword !== oldPasswordConfirm) throw this.errors.USER_PASSWORD_MISMATCH()
+      const isOldPasswordValid = await this.checkPassword(user, oldPassword)
+      if (!isOldPasswordValid) throw this.errors.USER_WRONG_PASSWORD()
 
       // --- Expire the old password.
-      const oldPasswordEntity = await UserPassword.findOne({ where: { user } })
-      if (oldPasswordEntity) oldPasswordEntity.expiresAt = new Date()
-
-      // --- Create a new password entity and add it to the user.
+      const { User } = this.getRepositories()
       const userToSave = await this.resolveUser(username, { passwords: true })
-      const newPasswordEntity = await this.createPassword(userToSave, newPassword)
+      for (const password of userToSave.passwords!) {
+        if (password.expiredAt) continue
+        password.expiredAt = new Date()
+      }
+
+      // --- Append the new password to the user's password history.
+      const newPasswordEntity = await this.createPassword(newPassword)
       userToSave.passwords!.push(newPasswordEntity)
 
       // --- Save the password entities.
-      await this.withTransaction(async() => {
-        await User.save(userToSave)
-        if (oldPasswordEntity) await UserPassword.save(oldPasswordEntity)
-      })
+      await User.save(userToSave)
     },
   )
 }
