@@ -1,4 +1,5 @@
 import type { ScryptOptions } from 'node:crypto'
+import type { User } from '../entities'
 import type { ModuleUser } from '../index'
 import { randomBytes, scrypt } from 'node:crypto'
 
@@ -7,6 +8,12 @@ import { randomBytes, scrypt } from 'node:crypto'
  * hash that will be generated.
  */
 export interface PasswordOptions extends ScryptOptions {
+
+  /**
+   * The user to create the password for. If provided, the password will be
+   * associated with the user and can be used to authenticate the user.
+   */
+  user?: User
 
   /**
    * Length of the hash that will be generated. It is recommended to use
@@ -56,6 +63,7 @@ export interface PasswordOptions extends ScryptOptions {
  */
 export async function createPassword(this: ModuleUser, password: string, options: Partial<PasswordOptions> = {}) {
   const {
+    user,
     keylen = 512,
     encoding = 'hex',
     N = 16384,
@@ -78,5 +86,5 @@ export async function createPassword(this: ModuleUser, password: string, options
   const expiredAt = duration > 0 ? new Date(Date.now() + duration) : undefined
   const passwordOptions = { algorithm: 'scrypt', ...hashOptions, keylen, encoding, salt }
   const { UserPassword } = this.getRepositories()
-  return UserPassword.create({ hash, expiredAt, options: passwordOptions })
+  return UserPassword.create({ user, hash, expiredAt, options: passwordOptions })
 }
