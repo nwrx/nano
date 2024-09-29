@@ -5,6 +5,7 @@ import { useAlerts, useClient } from '#imports'
 
 type UseUserOptions = Omit<InferInput<typeof application, 'GET /api/users/:username'>, 'username'>
 export type UserSetProfileOptions = Omit<InferInput<typeof application, 'PUT /api/users/:username/profile'>, 'username'>
+export type UserSetAvatarOptions = Omit<InferInput<typeof application, 'PUT /api/users/:username/avatar'>, 'username'>
 
 /**
  * Fetch the current user data from the API and provide methods to interact with it.
@@ -14,9 +15,12 @@ export type UserSetProfileOptions = Omit<InferInput<typeof application, 'PUT /ap
  * @returns The user data and methods to interact with it.
  */
 export function useUser(username: MaybeRef<string>, options: UseUserOptions = {}) {
+  const client = useClient()
+  const alerts = useAlerts()
   const data = ref<UserObject>({} as UserObject)
+
   const refresh = async() => {
-    await useClient().requestAttempt('GET /api/users/:username', {
+    await client.requestAttempt('GET /api/users/:username', {
       onData: user => data.value = user,
       onError: error => showError(error),
       data: {
@@ -37,10 +41,30 @@ export function useUser(username: MaybeRef<string>, options: UseUserOptions = {}
      * @returns A promise that resolves when the request is complete.
      */
     async setProfile(options: UserSetProfileOptions) {
-      await useClient().requestAttempt('PUT /api/users/:username/profile', {
-        onError: error => showError(error),
+      await client.requestAttempt('PUT /api/users/:username/profile', {
+        onError: error => alerts.error(error),
         onSuccess: () => {
-          useAlerts().success('Profile updated successfully.')
+          alerts.success('Profile updated successfully.')
+          void refresh()
+        },
+        data: {
+          username: unref(username),
+          ...options,
+        },
+      })
+    },
+
+    /**
+     * Set the user avatar to the given file.
+     *
+     * @param options The options to pass to the request.
+     * @returns A promise that resolves when the request is complete.
+     */
+    async setAvatar(options: UserSetAvatarOptions) {
+      await client.requestAttempt('PUT /api/users/:username/avatar', {
+        onError: error => alerts.error(error),
+        onSuccess: () => {
+          alerts.success('Avatar updated successfully.')
           void refresh()
         },
         data: {
