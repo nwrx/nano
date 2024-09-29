@@ -66,6 +66,12 @@ export const ERRORS = {
     statusMessage: 'Forbidden',
     message: 'The user is not allowed to perform this operation',
   }),
+  USER_AVATAR_NOT_IMAGE: () => createError({
+    name: 'E_USER_AVATAR_NOT_IMAGE',
+    statusCode: 400,
+    statusMessage: 'Bad Request',
+    message: 'The avatar is not an image',
+  }),
   USER_EMAIL_OR_NAME_TAKEN: () => createError({
     name: 'E_USER_EMAIL_OR_NAME_TAKEN',
     statusCode: 409,
