@@ -62,6 +62,7 @@ export default defineNuxtConfig({
         'img-src': [
           '\'self\'',
           'data:',
+          'blob:',
           'https://*',
         ],
         'script-src': [
@@ -139,10 +140,12 @@ export default defineNuxtConfig({
    */
   router: {
     options: {
+      end: true,
+      strict: true,
+      sensitive: true,
       linkActiveClass: 'active',
       linkExactActiveClass: 'exact-active',
       scrollBehaviorType: 'smooth',
-      strict: true,
     },
   },
 
