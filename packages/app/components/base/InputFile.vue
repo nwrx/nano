@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import type { BaseInputFileProps, InputFiles } from '@unshared/vue'
+import type { BaseInputFileProps } from '@unshared/vue'
 
 const props = defineProps<{
   label?: string
   clearable?: boolean
-  modelValue?: InputFiles
 } & BaseInputFileProps>()
 
 const model = useVModel(props, 'modelValue', undefined, { passive: true })
