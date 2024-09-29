@@ -19,7 +19,7 @@ export async function createUser(this: ModuleUser, options: CreateUserOptions) {
   const { username, password, email } = options
 
   // --- Check if the username or email is already taken.
-  const { User } = this.getRepositories()
+  const { User, UserProfile } = this.getRepositories()
   const exists = await User.findOne({ where: [{ username }, { email }] })
   if (exists) throw this.errors.USER_EMAIL_OR_NAME_TAKEN()
 
@@ -27,7 +27,7 @@ export async function createUser(this: ModuleUser, options: CreateUserOptions) {
   const user = User.create({ email, username })
   if (password) user.passwords = [await this.createPassword(user, password)]
   const workspace = await workspaceModule.createWorkspace({ user, name: user.username, isPublic: true })
-  user.profile = this.createProfile({ displayName: user.username, user })
+  user.profile = UserProfile.create({ displayName: user.username })
 
   // --- Return the entities to save.
   return { user, workspace }
