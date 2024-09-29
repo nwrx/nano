@@ -1,7 +1,6 @@
 import type { ModuleUser } from '../index'
 import { createRoute } from '@unserved/server'
 import { assertStringNotEmpty, createSchema } from '@unshared/validation'
-import { setCookie } from 'h3'
 
 export function userSigninWithPassword(this: ModuleUser) {
   return createRoute(
@@ -33,16 +32,11 @@ export function userSigninWithPassword(this: ModuleUser) {
 
       // --- Create a session for the user.
       const { UserSession } = this.getRepositories()
-      const { session, token } = this.createSession(event, { user })
+      const session = this.createSession(event)
       await UserSession.save(session)
 
       // --- Set the response status, content type, and user session cookie.
-      setCookie(event, this.userSessionCookieName, token, {
-        secure: true,
-        httpOnly: true,
-        sameSite: 'strict',
-        maxAge: (session.expiresAt.getTime() - Date.now()) / 1000,
-      })
+      this.setSessionCookie(event, session)
     },
   )
 }
