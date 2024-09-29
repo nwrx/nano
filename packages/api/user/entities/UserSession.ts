@@ -18,7 +18,7 @@ export class UserSession extends BaseEntity {
    *
    * @example User { ... }
    */
-  @ManyToOne(() => User, user => user.sessions, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, user => user.sessions, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn()
   user?: User
 
