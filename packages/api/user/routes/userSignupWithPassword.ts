@@ -1,7 +1,7 @@
 import type { ModuleUser } from '../index'
 import { createRoute } from '@unserved/server'
 import { assertStringEmail, assertStringNotEmpty, createSchema } from '@unshared/validation'
-import { getHeader, getRequestIP, setCookie } from 'h3'
+import { setCookie } from 'h3'
 import { ModuleWorkspace } from '../../workspace'
 
 export function userSignupWithPassword(this: ModuleUser) {
@@ -26,20 +26,15 @@ export function userSignupWithPassword(this: ModuleUser) {
       const isSignedIn = await this.authenticate(event, { optional: true })
       if (isSignedIn) return this.errors.USER_ALREADY_SIGNED_IN()
 
-      // --- Create the user if the passwords match.
+      // --- Create the user and session.
       if (password !== passwordConfirm) throw this.errors.USER_PASSWORD_MISMATCH()
       const { user, workspace } = await this.createUser({ email, username, password })
-
-      // --- Create a session for the user.
-      const address = getRequestIP(event, { xForwardedFor: this.userTrustProxy })
-      const userAgent = getHeader(event, 'User-Agent')
-      const userSession = this.createSession(user, { address, userAgent })
-      const token = this.createSessionToken(userSession)
+      const { session, token } = this.createSession(event, { user })
 
       // --- Save all entities in a transaction.
       await this.withTransaction(async() => {
         await User.save(user)
-        await UserSession.save(userSession)
+        await UserSession.save(session)
         await Workspace.save(workspace)
       })
 
@@ -48,7 +43,7 @@ export function userSignupWithPassword(this: ModuleUser) {
         secure: true,
         httpOnly: true,
         sameSite: 'strict',
-        maxAge: (userSession.expiresAt.getTime() - Date.now()) / 1000,
+        maxAge: (session.expiresAt.getTime() - Date.now()) / 1000,
       })
     },
   )
