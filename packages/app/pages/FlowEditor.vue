@@ -2,7 +2,7 @@
 definePageMeta({
   name: 'FlowEditor',
   path: '/:workspace/:project/:flow',
-  middleware: ['protected', 'workspace'],
+  middleware: ['redirect-when-guest', 'abort-reserved'],
 })
 
 // --- Start the WebSocket connection with the server and
