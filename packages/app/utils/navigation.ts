@@ -1,5 +1,5 @@
 export const NAV_DRAWER_START = asyncComputed<NavItem[]>(async() => {
-  const { username } = await useSession()
+  const { username } = await useSession().refresh()
   return [
     {
       items: [
