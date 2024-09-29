@@ -20,7 +20,7 @@ export function useProject(workspace: MaybeRef<string>, project: MaybeRef<string
   const data = ref<WorkspaceProjectObject>({} as WorkspaceProjectObject)
   const refresh = async() => {
     await useClient().requestAttempt('GET /api/workspaces/:workspace/:project', {
-      onError: error => useAlerts().error(error),
+      onError: error => showError(error),
       onData: project => data.value = project,
       data: {
         workspace: unref(workspace),
