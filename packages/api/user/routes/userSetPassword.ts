@@ -10,14 +10,14 @@ export function userSetPassword(this: ModuleUser) {
         username: assertStringNotEmpty,
       }),
       body: createSchema({
-        newPassword: assertStringNotEmpty,
         oldPassword: assertStringNotEmpty,
-        oldPasswordConfirm: assertStringNotEmpty,
+        newPassword: assertStringNotEmpty,
+        newPasswordConfirm: assertStringNotEmpty,
       }),
     },
     async({ event, parameters, body }): Promise<void> => {
       const { username } = parameters
-      const { newPassword, oldPassword, oldPasswordConfirm } = body
+      const { oldPassword, newPassword, newPasswordConfirm } = body
       const { user } = await this.authenticate(event)
 
       // --- If the request is made by a user other than the super administrator, return an error.
@@ -25,7 +25,7 @@ export function userSetPassword(this: ModuleUser) {
         throw this.errors.USER_NOT_ALLOWED()
 
       // --- Check the old password.
-      if (oldPassword !== oldPasswordConfirm) throw this.errors.USER_PASSWORD_MISMATCH()
+      if (newPassword !== newPasswordConfirm) throw this.errors.USER_PASSWORD_MISMATCH()
       const isOldPasswordValid = await this.checkPassword(user, oldPassword)
       if (!isOldPasswordValid) throw this.errors.USER_WRONG_PASSWORD()
 
