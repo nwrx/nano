@@ -32,7 +32,7 @@ export function userSigninWithPassword(this: ModuleUser) {
 
       // --- Create a session for the user.
       const { UserSession } = this.getRepositories()
-      const session = this.createSession(event)
+      const session = this.createSession(event, { user })
       await UserSession.save(session)
 
       // --- Set the response status, content type, and user session cookie.
