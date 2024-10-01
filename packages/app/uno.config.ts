@@ -35,7 +35,10 @@ export default defineConfig({
       mono: '"IBM Plex Mono", monospace',
     },
     width: {
-      page: '1440px',
+      container: '1440px',
+    },
+    maxWidth: {
+      container: '1440px',
     },
   },
 })
