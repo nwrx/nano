@@ -1,7 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
   name: 'AuthenticationRecover',
-  path: '/auth/recover',
+  path: '/recover',
   middleware: 'redirect-when-authenticated',
 })
 </script>

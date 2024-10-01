@@ -1,7 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
   name: 'AuthenticationForgot',
-  path: '/auth/forgot-password',
+  path: '/forgot-password',
   middleware: 'redirect-when-authenticated',
 })
 </script>

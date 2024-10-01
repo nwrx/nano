@@ -1,8 +1,8 @@
 <script setup lang="ts">
 definePageMeta({
   name: 'AuthenticationSignup',
-  path: '/auth/signup',
-  alias: ['/auth/register', '/auth/sign-up'],
+  path: '/register',
+  alias: ['/signup', '/sign-up'],
   middleware: 'redirect-when-authenticated',
 })
 
