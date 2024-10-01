@@ -15,10 +15,9 @@ export const useSession = createSharedComposable(() => {
   const router = useRouter()
   const session = ref<SessionObject>({})
 
-  const refresh = async() => {
-    if (session.value.username) return session.value
+  const refresh = async(force = false) => {
+    if (!force && session.value.username) return session.value
     return await client.request('GET /api/session', {
-      onError: error => useAlerts().error(error),
       onData: data => session.value = data,
     })
   }
@@ -35,9 +34,11 @@ export const useSession = createSharedComposable(() => {
     signupWithPassword: async(credentials: SessionSignupCredentials) => {
       await useClient().requestAttempt('POST /api/signup', {
         onError: error => useAlerts().error(error),
-        onSuccess: () => {
-          useAlerts().success('Account created successfully')
-          void useRouter().replace({ name: 'Workspace', params: { workspace: session.value.username } })
+        onSuccess: () => useAlerts().success('Account created successfully'),
+        onData: () => {
+          const redirect = useRoute().query.redirect as string | undefined
+          session.value = { username: credentials.username }
+          void router.replace(redirect ?? { name: 'Workspace', params: { workspace: session.value.username } })
         },
         data: {
           email: credentials.email,
@@ -56,10 +57,12 @@ export const useSession = createSharedComposable(() => {
     signinWithPassword: async(credentials: SessionSigninCredentials) => {
       await useClient().requestAttempt('POST /api/session', {
         onError: error => useAlerts().error(error),
-        onData: () => {
-          const redirect = useRoute().query.redirect as string | undefined
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        onSuccess: async() => {
           useAlerts().success('Logged in successfully')
-          void router.replace(redirect ?? '/')
+          const redirect = useRoute().query.redirect as string | undefined
+          await refresh(true)
+          return router.replace(redirect ?? { name: 'Workspace', params: { workspace: session.value.username } })
         },
         data: {
           username: credentials.username,
