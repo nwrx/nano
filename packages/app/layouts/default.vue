@@ -6,7 +6,10 @@ import { NAV_BAR_END, NAV_BAR_START, NAV_DRAWER_END, NAV_DRAWER_START } from '~/
 const route = useRoute()
 const session = useSession()
 const isDrawerOpen = useLocalStorage('__DrawerOpen', true)
-const isAuthenticationRoute = computed(() => route.path.startsWith('/auth'))
+const isAuthenticationRoute = computed(() => {
+  if (typeof route.name !== 'string') return false
+  return route.name.startsWith('Authentication')
+})
 </script>
 
 <template>
@@ -19,8 +22,9 @@ const isAuthenticationRoute = computed(() => route.path.startsWith('/auth'))
       :imageUrl="ASSET_NWRX_LOGO"
       :itemsStart="NAV_BAR_START"
       :itemsEnd="NAV_BAR_END"
-      :userDisplayName="session.data.displayName"
       :userAvatarUrl="session.data.avatarUrl"
+      :userEmail="session.data.email"
+      :userDisplayName="session.data.displayName"
       @signout="() => session.signout()"
     />
 

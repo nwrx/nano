@@ -5,6 +5,7 @@ const props = defineProps<{
   itemsStart?: NavItem[]
   itemsEnd?: NavItem[]
   userAvatarUrl?: string
+  userEmail?: string
   userDisplayName?: string
   search?: string
   searchOpen?: boolean
@@ -72,6 +73,8 @@ const searchOpen = useVModel(props, 'searchOpen', emit, { passive: true })
     <!-- User -->
     <AppNavBarUser
       :avatarUrl="userAvatarUrl"
+      :email="userEmail"
+      :displayName="userDisplayName"
       @signout="() => emit('signout')"
     />
   </header>

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 defineProps<{
+  email?: string
   avatarUrl?: string
+  displayName?: string
 }>()
 
 const emit = defineEmits<{
@@ -20,16 +22,29 @@ const emit = defineEmits<{
 
     <!-- Menu -->
     <template #menu="{ close }">
+      <div class="flex items-center space-x-4 pb-2">
+        <img
+          v-if="avatarUrl"
+          :src="avatarUrl"
+          alt="User Avatar"
+          class="w-10 h-10 rounded-full"
+        />
+        <div class="text-sm font-medium text-black/80">
+          <p class="text-sm truncate text-black">{{ displayName }}</p>
+          <p class="text-sm truncate text-black/60">{{ email }}</p>
+        </div>
+      </div>
+      <ContextMenuDivider />
       <ContextMenuItem
         label="Profile"
         icon="i-carbon:user"
-        :to="{ name: 'SettingsProfile' }"
+        :to="{ name: 'UserSettingsProfile' }"
         @click="() => close()"
       />
       <ContextMenuItem
-        label="Settings"
+        label="Account"
         icon="i-carbon:settings"
-        :to="{ name: 'SettingsAccount' }"
+        :to="{ name: 'UserSettingsAccount' }"
         @click="() => close()"
       />
       <ContextMenuItem
