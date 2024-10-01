@@ -51,6 +51,15 @@ export class UserSession extends BaseEntity {
   expiresAt: Date
 
   /**
+   * The last time the session was used. It is used to determine if the session is still
+   * active or not.
+   *
+   * @example '2022-12-31T23:59:59.999Z'
+   */
+  @Column('varchar', { transformer: transformerDate, length: 255 })
+  lastUsedAt = new Date()
+
+  /**
    * Parse the user agent and extract the device information.
    *
    * @returns The device information of the session.
@@ -71,8 +80,7 @@ export class UserSession extends BaseEntity {
     return {
       ...this.getDevice(),
       address: this.address,
-      createdAt: this.createdAt.toISOString(),
-      expiresAt: this.expiresAt.toISOString(),
+      lastUsedAt: this.lastUsedAt.toISOString(),
     }
   }
 }
@@ -85,6 +93,5 @@ export interface UserSessionDevice {
 
 export interface UserSessionObject extends UserSessionDevice {
   address: string
-  createdAt: string
-  expiresAt: string
+  lastUsedAt: string
 }
