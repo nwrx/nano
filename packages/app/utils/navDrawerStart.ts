@@ -1,5 +1,9 @@
-export const NAV_DRAWER_START = asyncComputed<NavItem[]>(async() => {
-  const { username } = await useSession().refresh()
+export const NAV_DRAWER_START = computed<NavItem[]>(() => {
+
+  // --- If user is not logged in, abort with empty array.
+  const session = useSession()
+  if (!session.data.username) return []
+
   return [
     {
       items: [
@@ -9,7 +13,7 @@ export const NAV_DRAWER_START = asyncComputed<NavItem[]>(async() => {
           icon: 'i-carbon:home',
         },
         {
-          to: { name: 'Workspace', params: { workspace: username } },
+          to: { name: 'Workspace', params: { workspace: session.data.username } },
           label: 'Workspace',
           icon: 'i-carbon:flow',
         },
@@ -45,7 +49,7 @@ export const NAV_DRAWER_START = asyncComputed<NavItem[]>(async() => {
         },
         {
           to: '/settings',
-          label: 'Settings',
+          label: 'UserSettings',
           icon: 'i-carbon:settings',
         },
         {
@@ -67,34 +71,3 @@ export const NAV_DRAWER_START = asyncComputed<NavItem[]>(async() => {
     },
   ]
 })
-
-export const NAV_DRAWER_END = computed<NavItem[]>(() => [
-  {
-    items: [
-      {
-        to: '/help',
-        label: 'Help',
-        icon: 'i-carbon:help',
-      },
-      {
-        to: '/support',
-        label: 'Support',
-        icon: 'i-carbon:chat',
-      },
-      {
-        to: '/feedback',
-        label: 'Feedback',
-        icon: 'i-carbon:user-feedback',
-      },
-    ],
-  },
-])
-
-export const NAV_BAR_START = computed<NavItem[]>(() => [
-])
-
-export const NAV_BAR_END = computed<NavItem[]>(() => [
-  { to: '/help', label: 'Help' },
-  { to: '/support', label: 'Support' },
-  { to: '/feedback', label: 'Feedback' },
-])
