@@ -6,6 +6,7 @@ import { useAlerts, useClient } from '#imports'
 type UseUserOptions = Omit<InferInput<typeof application, 'GET /api/users/:username'>, 'username'>
 export type UserSetProfileOptions = Omit<InferInput<typeof application, 'PUT /api/users/:username/profile'>, 'username'>
 export type UserSetAvatarOptions = Omit<InferInput<typeof application, 'PUT /api/users/:username/avatar'>, 'username'>
+export type UserSetPasswordOptions = Omit<InferInput<typeof application, 'PUT /api/users/:username/password'>, 'username'>
 
 /**
  * Fetch the current user data from the API and provide methods to interact with it.
@@ -65,6 +66,26 @@ export function useUser(username: MaybeRef<string>, options: UseUserOptions = {}
         onError: error => alerts.error(error),
         onSuccess: () => {
           alerts.success('Avatar updated successfully.')
+          void refresh()
+        },
+        data: {
+          username: unref(username),
+          ...options,
+        },
+      })
+    },
+
+    /**
+     * Set the user password to the given value.
+     *
+     * @param options The options to pass to the request.
+     * @returns A promise that resolves when the request is complete.
+     */
+    async setPassword(options: UserSetPasswordOptions) {
+      await client.requestAttempt('PUT /api/users/:username/password', {
+        onError: error => alerts.error(error),
+        onSuccess: () => {
+          alerts.success('Password updated successfully.')
           void refresh()
         },
         data: {
