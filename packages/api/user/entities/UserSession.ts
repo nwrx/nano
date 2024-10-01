@@ -1,4 +1,5 @@
 import { BaseEntity, transformerDate } from '@unserved/server'
+import { default as DeviceDetector } from 'node-device-detector'
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
 import { User } from './User'
 
@@ -48,4 +49,42 @@ export class UserSession extends BaseEntity {
    */
   @Column('varchar', { transformer: transformerDate, length: 255 })
   expiresAt: Date
+
+  /**
+   * Parse the user agent and extract the device information.
+   *
+   * @returns The device information of the session.
+   */
+  getDevice(): UserSessionDevice {
+    const { os, client, device } = new DeviceDetector().detect(this.userAgent)
+    return {
+      os: os.name,
+      browser: client.name,
+      device: [device.brand, device.model].filter(Boolean).join(' '),
+    }
+  }
+
+  /**
+   * @returns The serialized object of the entity.
+   */
+  serialize(): UserSessionObject {
+    return {
+      ...this.getDevice(),
+      address: this.address,
+      createdAt: this.createdAt.toISOString(),
+      expiresAt: this.expiresAt.toISOString(),
+    }
+  }
+}
+
+export interface UserSessionDevice {
+  os: string
+  device: string
+  browser: string
+}
+
+export interface UserSessionObject extends UserSessionDevice {
+  address: string
+  createdAt: string
+  expiresAt: string
 }
