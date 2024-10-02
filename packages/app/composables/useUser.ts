@@ -33,6 +33,12 @@ export function useUser(username: MaybeRef<string>, options: UseUserOptions = {}
 
   return {
     data: toReactive(data) as UserObject,
+
+    /**
+     * Refresh the current user data. This will fetch the user data from the API and update the reactive data.
+     *
+     * @returns A promise that resolves when the request is complete.
+     */
     refresh,
 
     /**
