@@ -14,9 +14,12 @@ export type CreateProjectOptions = Omit<InferInput<typeof application, 'POST /ap
  * @returns The project data and methods to interact with it.
  */
 export function useWorkspace(workspace: MaybeRef<string>, options: UseProjectOptions = {}) {
+  const client = useClient()
+  const alerts = useAlerts()
   const data = ref<WorkspaceObject>({} as WorkspaceObject)
   const refresh = async() => {
-    await useClient().requestAttempt('GET /api/workspaces/:workspace', {
+
+    await client.requestAttempt('GET /api/workspaces/:workspace', {
       onError: error => showError(error),
       onData: project => data.value = project,
       data: {
@@ -37,9 +40,9 @@ export function useWorkspace(workspace: MaybeRef<string>, options: UseProjectOpt
      * @returns The created project object.
      */
     createProject: async(options: CreateProjectOptions) =>
-      await useClient().requestAttempt('POST /api/workspaces/:workspace', {
-        onError: error => useAlerts().error(error),
-        onSuccess: () => useAlerts().success('Project created successfully'),
+      await client.requestAttempt('POST /api/workspaces/:workspace', {
+        onError: error => alerts.error(error),
+        onSuccess: () => alerts.success('Project created successfully'),
         onEnd: () => { void refresh() },
         data: { workspace: unref(workspace), ...options },
       }),
@@ -51,9 +54,9 @@ export function useWorkspace(workspace: MaybeRef<string>, options: UseProjectOpt
      * @returns The created flow object.
      */
     createFlow: async(project: string) =>
-      await useClient().requestAttempt('POST /api/workspaces/:workspace/:project', {
-        onError: error => useAlerts().error(error),
-        onSuccess: () => useAlerts().success('Flow created successfully'),
+      await client.requestAttempt('POST /api/workspaces/:workspace/:project', {
+        onError: error => alerts.error(error),
+        onSuccess: () => alerts.success('Flow created successfully'),
         onEnd: () => { void refresh() },
         data: { workspace: unref(workspace), project },
       }),
@@ -66,9 +69,9 @@ export function useWorkspace(workspace: MaybeRef<string>, options: UseProjectOpt
      * @returns A promise that resolves when the flow is deleted.
      */
     deleteFlow: async(project: string, flow: string) =>
-      await useClient().requestAttempt('DELETE /api/workspaces/:workspace/:project/:flow', {
-        onError: error => useAlerts().error(error),
-        onSuccess: () => useAlerts().success('Flow deleted successfully'),
+      await client.requestAttempt('DELETE /api/workspaces/:workspace/:project/:flow', {
+        onError: error => alerts.error(error),
+        onSuccess: () => alerts.success('Flow deleted successfully'),
         onEnd: () => { void refresh() },
         data: { workspace: unref(workspace), project, flow },
       }),
@@ -80,9 +83,9 @@ export function useWorkspace(workspace: MaybeRef<string>, options: UseProjectOpt
      * @returns A promise that resolves when the project is deleted.
      */
     // deleteProject: async(project: string) =>
-    //   await useClient().requestAttempt('DELETE /api/workspaces/:workspace/:project', {
-    //     onError: error => useAlerts().error(error),
-    //     onSuccess: () => useAlerts().success('Project deleted successfully'),
+    //   await client.requestAttempt('DELETE /api/workspaces/:workspace/:project', {
+    //     onError: error => alerts.error(error),
+    //     onSuccess: () => alerts.success('Project deleted successfully'),
     //     onEnd: () => { void refresh() },
     //     data: { workspace: unref(workspace), project },
     //   }),
