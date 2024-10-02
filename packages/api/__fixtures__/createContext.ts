@@ -7,6 +7,7 @@ import { createCipheriv, createHash, randomUUID } from 'node:crypto'
 import { rm } from 'node:fs/promises'
 import { request } from 'node:http'
 import { ModuleFlow } from '../flow'
+import { ModuleStorage, StoragePoolFS } from '../storage'
 import { ModuleUser } from '../user'
 import { ModuleWorkspace } from '../workspace'
 
@@ -18,9 +19,17 @@ export interface Context {
 export async function createContext() {
   const id = randomUUID()
   const socket = `/tmp/${id}.sock`
-  const application = await Application.initialize([ModuleFlow, ModuleUser, ModuleWorkspace], {
+  const application = await Application.initialize([
+    ModuleFlow,
+    ModuleStorage,
+    ModuleUser,
+    ModuleWorkspace,
+  ], {
     projectSecretKey: 'TEST_SECRET_KEY',
     userTrustProxy: true,
+    storagePools: [
+      new StoragePoolFS('Default', { path: '.data/storage' }),
+    ],
     dataSource: {
       name: id,
       type: 'sqlite',
