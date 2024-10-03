@@ -4,11 +4,10 @@ import type { Peer } from 'crossws'
 import type { Flow } from '../entities'
 import type { FlowNodeInstanceJSON } from './serializeFlowNodeInstance'
 import type { FlowNodePortJSON } from './serializeFlowSchema'
-import type { FlowSessionJSON } from './serializeFlowSession'
 import { type FlowEvents, flowToJson } from '@nwrx/core'
-import { randomBytes } from 'node:crypto'
 import { serializeFlowNodeInstance } from './serializeFlowNodeInstance'
 import { serializeFlowSchema } from './serializeFlowSchema'
+import { type FlowSessionJSON, serializeFlowSession } from './serializeFlowSession'
 
 /**
  * A `FlowSessionParticipant` represents a peer that is subscribed to a flow session.
@@ -16,12 +15,11 @@ import { serializeFlowSchema } from './serializeFlowSchema'
  * assigned to it so that the flow editor can display the peer in the UI.
  */
 export interface FlowSessionParticipant {
-  peer?: Peer
+  peer: Peer
   user: User
   color: string
   position: { x: number; y: number }
   selectedNodes: string[]
-  accessToken: string
 }
 
 /**
@@ -32,14 +30,13 @@ export interface FlowSessionParticipant {
 export interface FlowSessionEvents extends Record<keyof FlowEvents, unknown> {
 
   // Flow
-  'flow:token': string
   'flow:refresh': FlowSessionJSON
   'flow:metaValue': { key: string; value: unknown }
   'flow:input': { key: string; value: unknown }
   'flow:output': { key: string; value: unknown }
-  'flow:abort': void
-  'flow:start': void
-  'flow:end': void
+  'flow:abort': object
+  'flow:start': object
+  'flow:end': object
 
   // Node
   'node:create': FlowNodeInstanceJSON
@@ -68,9 +65,8 @@ export interface FlowSessionEvents extends Record<keyof FlowEvents, unknown> {
 }
 
 /** The payload of a flow session event. */
-export type FlowSessionPayload = {
-  [K in keyof FlowSessionEvents]: { event: K; data: FlowSessionEvents[K] }
-}[keyof FlowSessionEvents]
+export type FlowSessionPayload<K extends keyof FlowSessionEvents = keyof FlowSessionEvents> =
+  { [P in K]: { event: P } & FlowSessionEvents[P] }[K]
 
 export class FlowSession {
 
@@ -86,29 +82,29 @@ export class FlowSession {
   ) {
 
     // --- Flow events.
-    this.flow.on('flow:metaValue', (key, value) => this.broadcast('flow:metaValue', { key, value }))
-    this.flow.on('flow:input', (key, value) => this.broadcast('flow:input', { key, value }))
-    this.flow.on('flow:output', (key, value) => this.broadcast('flow:output', { key, value }))
-    this.flow.on('flow:start', () => this.broadcast('flow:start', void 0))
-    this.flow.on('flow:abort', () => this.broadcast('flow:abort', void 0))
-    this.flow.on('flow:end', () => this.broadcast('flow:end', void 0))
+    this.flow.on('flow:metaValue', (key, value) => this.broadcast({ event: 'flow:metaValue', key, value }))
+    this.flow.on('flow:input', (key, value) => this.broadcast({ event: 'flow:input', key, value }))
+    this.flow.on('flow:output', (key, value) => this.broadcast({ event: 'flow:output', key, value }))
+    this.flow.on('flow:start', () => this.broadcast({ event: 'flow:start' }))
+    this.flow.on('flow:abort', () => this.broadcast({ event: 'flow:abort' }))
+    this.flow.on('flow:end', () => this.broadcast({ event: 'flow:end' }))
 
     // --- Node events.
-    this.flow.on('node:create', node => this.broadcast('node:create', serializeFlowNodeInstance(node)))
-    this.flow.on('node:remove', id => this.broadcast('node:remove', { id }))
-    this.flow.on('node:metaValue', (id, key, value) => this.broadcast('node:metaValue', { id, key, value }))
-    this.flow.on('node:data', (id, data) => this.broadcast('node:data', { id, data }))
-    this.flow.on('node:dataSchema', (id, schema) => this.broadcast('node:dataSchema', { id, schema: serializeFlowSchema(schema) }))
-    this.flow.on('node:result', (id, result) => this.broadcast('node:result', { id, result }))
-    this.flow.on('node:resultSchema', (id, schema) => this.broadcast('node:resultSchema', { id, schema: serializeFlowSchema(schema) }))
-    this.flow.on('node:start', id => this.broadcast('node:start', { id }))
-    this.flow.on('node:abort', id => this.broadcast('node:abort', { id }))
-    this.flow.on('node:error', (id, error) => this.broadcast('node:error', { id, message: error.message }))
-    this.flow.on('node:end', id => this.broadcast('node:end', { id }))
+    this.flow.on('node:create', node => this.broadcast({ event: 'node:create', ...serializeFlowNodeInstance(node) }))
+    this.flow.on('node:remove', id => this.broadcast({ event: 'node:remove', id }))
+    this.flow.on('node:metaValue', (id, key, value) => this.broadcast({ event: 'node:metaValue', id, key, value }))
+    this.flow.on('node:data', (id, data) => this.broadcast({ event: 'node:data', id, data }))
+    this.flow.on('node:dataSchema', (id, schema) => this.broadcast({ event: 'node:dataSchema', id, schema: serializeFlowSchema(schema) }))
+    this.flow.on('node:result', (id, result) => this.broadcast({ event: 'node:result', id, result }))
+    this.flow.on('node:resultSchema', (id, schema) => this.broadcast({ event: 'node:resultSchema', id, schema: serializeFlowSchema(schema) }))
+    this.flow.on('node:start', id => this.broadcast({ event: 'node:start', id }))
+    this.flow.on('node:abort', id => this.broadcast({ event: 'node:abort', id }))
+    this.flow.on('node:error', (id, error) => this.broadcast({ event: 'node:error', id, message: error.message }))
+    this.flow.on('node:end', id => this.broadcast({ event: 'node:end', id }))
 
     // --- Link events.
-    this.flow.on('link:create', ({ source, target }) => this.broadcast('link:create', { source, target }))
-    this.flow.on('link:remove', ({ source, target }) => this.broadcast('link:remove', { source, target }))
+    this.flow.on('link:create', ({ source, target }) => this.broadcast({ event: 'link:create', source, target }))
+    this.flow.on('link:remove', ({ source, target }) => this.broadcast({ event: 'link:remove', source, target }))
   }
 
   /** The peers that are subscribed to the flow session. */
@@ -128,42 +124,33 @@ export class FlowSession {
    * Subscribe a peer to the flow session with the given access token.
    *
    * @param peer The peer to subscribe.
-   * @param accessToken The access token to use to authenticate the peer.
+   * @param user The user that the peer represents.
    */
-  subscribe(peer: Peer, accessToken: string) {
+  subscribe(peer: Peer, user: User) {
     if (this.isSubscribed(peer)) return
-    const participant = this.participants.find(p => p.accessToken === accessToken)
 
     // --- If the participant is not found, throw an error.
-    if (!participant) throw new Error('Invalid access token.')
-
-    // --- Bind the peer to the participant.
-    participant.peer = peer
-    this.broadcast('user:join', {
-      id: peer.id,
-      name: participant?.user.displayName,
-      color: 'red',
-    })
-  }
-
-  /**
-   * Given an access token, prepare a `FlowSessionParticipant` for a future WebSocket connection
-   * to bind the peer to the flow session. The access token is used to authenticate the
-   * peer and to ensure that the peer has access to the flow session.
-   *
-   * @param user The user to create the access token for.
-   * @returns The access token that the user can use to connect to the flow session.
-   */
-  createAccessToken(user: User) {
-    const accessToken = randomBytes(32).toString('hex')
     this.participants.push({
+      peer,
       user,
       color: 'red',
       position: { x: 0, y: 0 },
       selectedNodes: [],
-      accessToken,
     })
-    return accessToken
+
+    // --- Bind the peer to the participant.
+    this.broadcast({
+      event: 'user:join',
+      id: peer.id,
+      color: 'red',
+      name: user.profile?.displayName ?? user.username,
+    })
+
+    // --- Send the flow session data to the peer.
+    peer.send({
+      event: 'flow:refresh',
+      ...serializeFlowSession(this, peer),
+    })
   }
 
   /**
@@ -177,7 +164,7 @@ export class FlowSession {
 
     // --- Remove the peer from the participants list.
     this.participants = this.participants.filter(p => p.peer?.id !== peer.id)
-    this.broadcast('user:leave', { id: peer.id })
+    this.broadcast({ event: 'user:leave', id: peer.id })
 
     // --- If there are no more peers, stop the flow.
     if (this.participants.length === 0) this.flow.abort()
@@ -186,25 +173,23 @@ export class FlowSession {
   /**
    * Broadcast a message to all subscribed peers.
    *
-   * @param event The event to broadcast.
-   * @param data The data to broadcast.
+   * @param payload The payload to send to the peers.
    */
-  broadcast<T extends keyof FlowSessionEvents>(event: T, data: FlowSessionEvents[T]) {
+  broadcast<T extends keyof FlowSessionEvents>(payload: FlowSessionPayload<T>) {
     for (const participant of this.participants) {
       if (!participant.peer) continue
-      participant.peer.send({ event, data })
+      participant.peer.send(payload)
     }
   }
 
   /**
    * Save the current state of the flow to the database.
    */
-  async save() {
+  save() {
     this.entity.title = this.flow.meta.name ?? 'Untitled Flow'
     // this.entity.icon = this.flow.icon
     this.entity.description = this.flow.meta.description ?? ''
     this.entity.data = flowToJson(this.flow)
-    await this.entity.save()
   }
 }
 
