@@ -1,10 +1,16 @@
-import type { FlowNodePortJSON, FlowSessionJSON, FlowSessionPayload } from '@nwrx/api'
-import type { UUID } from 'node:crypto'
+import type { FlowSessionJSON, FlowSessionPayload } from '@nwrx/api'
 import { useAlerts, useClient } from '#imports'
 
-export function useFlowSession(id: UUID) {
+export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<string>, name: MaybeRef<string>) {
   const client = useClient()
-  const session = client.connect('WS /api/flows/session')
+  const alerts = useAlerts()
+  const session = client.connect('WS /api/workspaces/:ws/:project/:flow/ws', {
+    data: {
+      ws: unref(workspace),
+      project: unref(project),
+      flow: unref(name),
+    },
+  })
 
   /** The current flow state. */
   const flow = reactive({
@@ -20,34 +26,25 @@ export function useFlowSession(id: UUID) {
   }) as FlowSessionJSON
 
   /**
-   * Once the session is open, send the user join event to the server so that
-   * the client can receive the current state of the flow session.
-   */
-  session.on('open', () => {
-    session.send({ slug: id, data: { event: 'userJoin' } })
-  })
-
-  /**
    * Handle the incoming messages from the server. This function is called
    * whenever the server-side flow is manipulated by the client or another peer.
    */
   session.on('message', (payload: FlowSessionPayload) => {
     switch (payload.event) {
       case 'flow:refresh': {
-        const data = payload.data
-        flow.peerId = data.peerId
-        flow.name = data.name
-        flow.icon = data.icon
-        flow.description = data.description
-        flow.isRunning = data.isRunning
-        flow.peers.push(...data.peers.filter(p => p.id !== flow.peerId))
-        flow.nodes.push(...data.nodes)
-        flow.categories.push(...data.categories)
-        void nextTick(() => flow.links.push(...data.links))
+        flow.peerId = payload.peerId
+        flow.name = payload.name
+        flow.icon = payload.icon
+        flow.description = payload.description
+        flow.isRunning = payload.isRunning
+        flow.peers.push(...payload.peers.filter(p => p.id !== flow.peerId))
+        flow.nodes.push(...payload.nodes)
+        flow.categories.push(...payload.categories)
+        void nextTick(() => flow.links.push(...payload.links))
         break
       }
       case 'flow:metaValue': {
-        const { key, value } = payload.data
+        const { key, value } = payload
         if (key === 'name') flow.name = value as string
         if (key === 'icon') flow.icon = value as string
         if (key === 'description') flow.description = value as string
@@ -65,12 +62,14 @@ export function useFlowSession(id: UUID) {
 
       // --- Node events.
       case 'node:create': {
-        flow.nodes.push(payload.data)
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { event: _, ...node } = payload
+        flow.nodes.push(node)
         flow.nodes = [...flow.nodes]
         break
       }
       case 'node:start': {
-        const { id } = payload.data
+        const { id } = payload
         const node = flow.nodes.find(n => n.id === id)
         if (!node) return
         node.isRunning = true
@@ -79,7 +78,7 @@ export function useFlowSession(id: UUID) {
       }
       case 'node:end':
       case 'node:abort': {
-        const { id } = payload.data
+        const { id } = payload
         const node = flow.nodes.find(n => n.id === id)
         if (!node) return
         node.isRunning = false
@@ -87,7 +86,7 @@ export function useFlowSession(id: UUID) {
         break
       }
       case 'node:data': {
-        const { id, data } = payload.data as { id: string; data: Record<string, unknown> }
+        const { id, data } = payload
         const node = flow.nodes.find(n => n.id === id)
         if (!node) return
         node.data = data
@@ -95,7 +94,7 @@ export function useFlowSession(id: UUID) {
         break
       }
       case 'node:dataSchema': {
-        const { id, schema } = payload.data as { id: string; schema: FlowNodePortJSON[] }
+        const { id, schema } = payload
         const node = flow.nodes.find(n => n.id === id)
         if (!node) return
         node.dataSchema = schema
@@ -103,7 +102,7 @@ export function useFlowSession(id: UUID) {
         break
       }
       case 'node:result': {
-        const { id, result } = payload.data
+        const { id, result } = payload
         const node = flow.nodes.find(n => n.id === id)
         if (!node) return
         node.result = result
@@ -111,7 +110,7 @@ export function useFlowSession(id: UUID) {
         break
       }
       case 'node:resultSchema': {
-        const { id, schema } = payload.data
+        const { id, schema } = payload
         const node = flow.nodes.find(n => n.id === id)
         if (!node) return
         node.resultSchema = schema
@@ -119,7 +118,7 @@ export function useFlowSession(id: UUID) {
         break
       }
       case 'node:metaValue': {
-        const { id, key, value } = payload.data
+        const { id, key, value } = payload
         const node = flow.nodes.find(n => n.id === id)
         if (!node) return
         if (key === 'label') node.label = value as string
@@ -129,7 +128,7 @@ export function useFlowSession(id: UUID) {
         break
       }
       case 'node:remove': {
-        const { id } = payload.data as { id: string }
+        const { id } = payload
         flow.links.forEach((link, index) => {
           if (!link.source.startsWith(id) || !link.target.startsWith(id)) return
           flow.links.splice(index, 1)
@@ -141,12 +140,12 @@ export function useFlowSession(id: UUID) {
 
       // --- Link events.
       case 'link:create': {
-        const { source, target } = payload.data
+        const { source, target } = payload
         flow.links.push({ source, target })
         break
       }
       case 'link:remove': {
-        const { source, target } = payload.data
+        const { source, target } = payload
         const index = flow.links.findIndex(x => x.source === source && x.target === target)
         flow.links.splice(index, 1)
         break
@@ -154,13 +153,13 @@ export function useFlowSession(id: UUID) {
 
       // --- User events.
       case 'user:join': {
-        const peer = payload.data
+        const peer = payload
         if (peer.id === flow.peerId) return
         flow.peers.push({ ...peer, position: { x: 0, y: 0 } })
         break
       }
       case 'user:position': {
-        const { id, x, y } = payload.data
+        const { id, x, y } = payload
         const peer = flow.peers.find(p => p.id === id)
         if (!peer) return
         peer.position.x = x
@@ -168,14 +167,15 @@ export function useFlowSession(id: UUID) {
         break
       }
       case 'user:leave': {
-        const { id } = payload.data
+        const { id } = payload
         flow.peers = flow.peers.filter(p => p.id !== id)
         break
       }
 
       // --- Error handling.
       case 'error': {
-        useAlerts().error(payload.data.message)
+        const { message } = payload
+        alerts.error(message)
         break
       }
     }
@@ -195,7 +195,7 @@ export function useFlowSession(id: UUID) {
      */
     userSetPosition: (x: number, y: number) => {
       if (flow.peers.length < 2) return
-      session.send({ slug: id, data: { event: 'userSetPosition', x, y } })
+      session.send({ event: 'userSetPosition', x, y })
     },
 
     /**
@@ -203,7 +203,7 @@ export function useFlowSession(id: UUID) {
      * remove the user from the list of peers in the flow editor.
      */
     userLeave: () => {
-      session.send({ slug: id, data: { event: 'userLeave' } })
+      session.send({ event: 'userLeave' })
       session.close()
     },
 
@@ -213,7 +213,7 @@ export function useFlowSession(id: UUID) {
      * The server will then execute the nodes in the flow in sequence.
      */
     flowRun: () => {
-      session.send({ slug: id, data: { event: 'flowRun' } })
+      session.send({ event: 'flowRun' })
     },
 
     /**
@@ -222,7 +222,7 @@ export function useFlowSession(id: UUID) {
      * The server will then stop the execution of the nodes in the flow.
      */
     flowAbort: () => {
-      session.send({ slug: id, data: { event: 'flowAbort' } })
+      session.send({ event: 'flowAbort' })
     },
 
     /**
@@ -233,7 +233,7 @@ export function useFlowSession(id: UUID) {
      * @param value The new value of the property.
      */
     flowSetMetaValue: (key: string, value: unknown) => {
-      session.send({ slug: id, data: { event: 'flowSetMetaValue', key, value } })
+      session.send({ event: 'flowSetMetaValue', key, value })
     },
 
     /**
@@ -245,7 +245,7 @@ export function useFlowSession(id: UUID) {
      * @param y The y coordinate of the node.
      */
     nodeCreate: (kind: string, x: number, y: number) => {
-      session.send({ slug: id, data: { event: 'nodeCreate', kind, x, y } })
+      session.send({ event: 'nodeCreate', kind, x, y })
     },
 
     /**
@@ -257,7 +257,7 @@ export function useFlowSession(id: UUID) {
      * @param y The y coordinate of the duplicated node.
      */
     nodeDuplicate: (nodeId: string, x: number, y: number) => {
-      session.send({ slug: id, data: { event: 'nodeDuplicate', nodeId, x, y } })
+      session.send({ event: 'nodeDuplicate', nodeId, x, y })
     },
 
     /**
@@ -267,7 +267,7 @@ export function useFlowSession(id: UUID) {
      * @param nodeId The node id.
      */
     nodeStart: (nodeId: string) => {
-      session.send({ slug: id, data: { event: 'nodeStart', nodeId } })
+      session.send({ event: 'nodeStart', nodeId })
     },
 
     /**
@@ -277,7 +277,7 @@ export function useFlowSession(id: UUID) {
      * @param nodeId The node id.
      */
     nodeAbort: (nodeId: string) => {
-      session.send({ slug: id, data: { event: 'nodeAbort', nodeId } })
+      session.send({ event: 'nodeAbort', nodeId })
     },
 
     /**
@@ -288,7 +288,7 @@ export function useFlowSession(id: UUID) {
      */
     nodeSetPosition: (...nodes: FlowNodePosition[]) => {
       const payload = nodes.map(({ nodeId, x, y }) => ({ nodeId, key: 'position', value: { x, y } }))
-      session.send({ slug: id, data: { event: 'nodeSetMetaValue', nodes: payload } })
+      session.send({ event: 'nodeSetMetaValue', nodes: payload })
     },
 
     /**
@@ -300,7 +300,7 @@ export function useFlowSession(id: UUID) {
      */
     nodeSetLabel: (nodeId: string, label: string) => {
       const payload = { nodeId, key: 'label', value: label }
-      session.send({ slug: id, data: { event: 'nodeSetMetaValue', nodes: [payload] } })
+      session.send({ event: 'nodeSetMetaValue', nodes: [payload] })
     },
 
     /**
@@ -312,7 +312,7 @@ export function useFlowSession(id: UUID) {
      * @param value The new value of the port.
      */
     nodeSetDataValue: (nodeId: string, portId: string, value: unknown) => {
-      session.send({ slug: id, data: { event: 'nodeSetDataValue', nodeId, portId, value } })
+      session.send({ event: 'nodeSetDataValue', nodeId, portId, value })
     },
 
     /**
@@ -322,7 +322,7 @@ export function useFlowSession(id: UUID) {
      * @param nodeIds The list of node ids to remove.
      */
     nodeRemove: (nodeIds: string[]) => {
-      session.send({ slug: id, data: { event: 'nodesRemove', nodeIds } })
+      session.send({ event: 'nodesRemove', nodeIds })
     },
 
     /**
@@ -332,7 +332,7 @@ export function useFlowSession(id: UUID) {
      * @param target The target node:port ID.
      */
     linkCreate: (source: string, target: string) => {
-      session.send({ slug: id, data: { event: 'linkCreate', source, target } })
+      session.send({ event: 'linkCreate', source, target })
     },
 
     /**
@@ -341,7 +341,7 @@ export function useFlowSession(id: UUID) {
      * @param source The source node id.
      */
     linkRemove: (source: string) => {
-      session.send({ slug: id, data: { event: 'linkRemove', source } })
+      session.send({ event: 'linkRemove', source })
     },
   }
 }
