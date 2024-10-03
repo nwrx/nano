@@ -29,7 +29,7 @@ function onSubmit() {
 <template>
   <AppPageForm
     title="General"
-    submit-label="Save Changes"
+    label="Save Changes"
     @submit="() => onSubmit()">
     <template #text>
       Describe and name your project. You can also define the URL slug that will be used in the API
