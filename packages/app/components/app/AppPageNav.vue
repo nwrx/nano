@@ -5,8 +5,8 @@ defineProps<{ groups: NavItem[] }>()
 <template>
   <div
     class="
-      flex flex-col w-full max-w-80 h-full rounded gap-2 p-6
-      bg-white border border-black/10 shadow-sm
+      flex flex-col w-full h-full max-w-80 gap-2 pr-6
+      bg-white border-r border-black/10
     ">
 
     <AppPageNavGroup
