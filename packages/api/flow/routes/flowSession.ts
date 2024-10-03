@@ -8,9 +8,9 @@ import { ModuleWorkspace } from '../../workspace'
 export function flowSession(this: ModuleFlow) {
   return createRoute(
     {
-      name: 'WS /api/workspaces/:ws/:project/:flow/ws',
+      name: 'WS /ws/workspaces/:workspace/:project/:flow',
       parameters: createSchema({
-        ws: assertStringNotEmpty,
+        workspace: assertStringNotEmpty,
         project: assertStringNotEmpty,
         flow: assertStringNotEmpty,
       }),
@@ -110,7 +110,7 @@ export function flowSession(this: ModuleFlow) {
         const userModule = this.getModule(ModuleUser)
         const workspaceModule = this.getModule(ModuleWorkspace)
         const { user } = await userModule.authenticate(peer)
-        const { ws, project, flow } = parameters
+        const { workspace: ws, project, flow } = parameters
 
         // --- Resolve the flow and check if the user has access to it.
         const workspaceResolved = await workspaceModule.resolveWorkspace({ user, name: ws, permission: 'Read' })
@@ -129,8 +129,7 @@ export function flowSession(this: ModuleFlow) {
 
       onClose: ({ peer }) => {
         const session = this.resolveFlowSessionByPeer(peer)
-        if (!session) return
-        session.unsubscribe(peer)
+        if (session) session.unsubscribe(peer)
       },
 
       onMessage: async({ peer, message }) => {
@@ -156,6 +155,8 @@ export function flowSession(this: ModuleFlow) {
             case 'flowSetMetaValue': {
               const { key, value } = message
               session.flow.setMetaValue(key, value)
+              if (session.flow.meta.name) session.entity.title = session.flow.meta.name
+              if (session.flow.meta.description) session.entity.description = session.flow.meta.description
               await Flow.save(session.entity)
               break
             }

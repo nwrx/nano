@@ -4,9 +4,9 @@ import { useAlerts, useClient } from '#imports'
 export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<string>, name: MaybeRef<string>) {
   const client = useClient()
   const alerts = useAlerts()
-  const session = client.connect('WS /api/workspaces/:ws/:project/:flow/ws', {
+  const session = client.connect('WS /ws/workspaces/:workspace/:project/:flow', {
     data: {
-      ws: unref(workspace),
+      workspace: unref(workspace),
       project: unref(project),
       flow: unref(name),
     },
