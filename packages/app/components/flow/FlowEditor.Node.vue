@@ -115,7 +115,7 @@ defineExpose({ portsData, portsResult })
       class="
         flex justify-start items-center
         h-8 w-full px-2 space-x-2
-        rounded-t-md cursor-move
+        rounded-t cursor-move
       "
       @mousedown="(event) => emit('handleGrab', event)"
       @mousemove="(event) => emit('handleMove', event)"
