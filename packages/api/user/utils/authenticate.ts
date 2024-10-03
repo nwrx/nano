@@ -1,8 +1,8 @@
+import type { Peer } from 'crossws'
 import type { H3Event } from 'h3'
 import type { User, UserSession } from '../entities'
 import type { ModuleUser } from '../index'
 import { EXP_UUID } from '@unshared/validation'
-import { getCookie, getHeader, getRequestIP } from 'h3'
 import { createDecipheriv, createHash, type UUID } from 'node:crypto'
 
 export interface AuthenticateOptions<U extends boolean = boolean> {
@@ -25,15 +25,15 @@ export type AuthenticateResult = { user: User } & UserSession
  * @param event The H3 event to authenticate the user from.
  * @returns The user associated with the user session.
  */
-export async function authenticate(this: ModuleUser, event: H3Event): Promise<AuthenticateResult>
-export async function authenticate(this: ModuleUser, event: H3Event, options: AuthenticateOptions<false>): Promise<AuthenticateResult>
-export async function authenticate(this: ModuleUser, event: H3Event, options: AuthenticateOptions<true>): Promise<AuthenticateResult | undefined>
-export async function authenticate(this: ModuleUser, event: H3Event, options: AuthenticateOptions = {}): Promise<AuthenticateResult | undefined> {
+export async function authenticate(this: ModuleUser, event: H3Event | Peer): Promise<AuthenticateResult>
+export async function authenticate(this: ModuleUser, event: H3Event | Peer, options: AuthenticateOptions<false>): Promise<AuthenticateResult>
+export async function authenticate(this: ModuleUser, event: H3Event | Peer, options: AuthenticateOptions<true>): Promise<AuthenticateResult | undefined>
+export async function authenticate(this: ModuleUser, event: H3Event | Peer, options: AuthenticateOptions = {}): Promise<AuthenticateResult | undefined> {
   const { optional = false } = options
 
   // --- Extract and decrypt the token from the cookie.
   try {
-    const token = getCookie(event, this.userSessionCookieName)
+    const { token, address, userAgent } = this.getEventInformation(event)
     if (!token) throw this.errors.USER_NOT_AUTHENTICATED()
 
     // --- Decrypt the token to get the user session id.
@@ -50,11 +50,6 @@ export async function authenticate(this: ModuleUser, event: H3Event, options: Au
       relations: { user: true },
       withDeleted: true,
     })
-
-    // --- Get the IP address and user agent.
-    const requestIp = getRequestIP(event, { xForwardedFor: this.userTrustProxy })
-    const userAgent = getHeader(event, 'User-Agent')
-    const address = requestIp?.split(':')[0]
 
     // --- Assert the session exists and the user is not soft deleted.
     const now = new Date()

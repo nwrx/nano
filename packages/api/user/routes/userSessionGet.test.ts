@@ -13,12 +13,17 @@ describe.concurrent<Context>('userSessionGet', () => {
 
   describe<Context>('with authenticated user', (it) => {
     it('should return the username of the authenticated user', async({ expect, ctx }) => {
-      const { user, headers } = await ctx.createUser()
+      const { headers } = await ctx.createUser()
       const response = await ctx.fetch('/api/session', { method: 'GET', headers })
       const body = await response.json() as Record<string, string>
       expect(response.status).toBe(200)
       expect(response.headers.get('Content-Type')).toBe('application/json')
-      expect(body).toStrictEqual({ username: user.username })
+      expect(body).toStrictEqual({
+        avatarUrl: '/api/users/jdoe/avatar',
+        displayName: 'jdoe',
+        email: 'jdoe@acme.com',
+        username: 'jdoe',
+      })
     })
 
     it('should return empty object if the user is not authenticated', async({ expect, ctx }) => {
