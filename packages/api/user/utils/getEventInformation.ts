@@ -40,8 +40,6 @@ export function getEventInformation(this: ModuleUser, event: H3Event | Peer) {
     result.address = this.userTrustProxy ? headers['x-forwarded-for'] : node.req.socket.remoteAddress
   }
 
-  console.log({ eventInfo: result })
-
   // --- Return the event information.
   return result
 }
