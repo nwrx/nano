@@ -32,7 +32,7 @@ export default defineConfig({
     fontFamily: {
       sans: '"IBM Plex Sans", sans-serif',
       serif: '"IBM Plex Serif", serif',
-      mono: '"FiraCode", monospace',
+      mono: '"Fira Code", monospace',
     },
     width: {
       container: '1440px',
