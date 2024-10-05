@@ -1,14 +1,7 @@
 import type { Loose } from '@unshared/types'
 import type { WorkspaceProject } from '../entities'
 import type { ModuleWorkspace } from '../index'
-import {
-  assertBoolean,
-  assertString,
-  assertStringNotEmpty,
-  assertStringUuid,
-  assertUndefined,
-  createSchema,
-} from '@unshared/validation'
+import { assertBoolean, assertString, assertStringNotEmpty, assertStringUuid, assertUndefined, createSchema } from '@unshared/validation'
 
 const CREATE_PROJECT_OPTIONS = createSchema({
 
