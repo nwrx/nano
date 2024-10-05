@@ -18,6 +18,27 @@ export interface FlowSessionParticipantJSON {
 }
 
 /**
+ * The serialized secret data that is sent to the client. The secret data includes
+ * the secret's name as well as where it is comming from. Either from the
+ * project or from the workspace.
+ */
+export interface FlowSessionSecretJSON {
+  name: string
+  from: 'project' | 'workspace'
+}
+
+/**
+ * The serialized variable data that is sent to the client. The variable data includes
+ * the variable's name and value as well as where it is comming from. Either from the
+ * project or from the workspace.
+ */
+export interface FlowSessionVariableJSON {
+  name: string
+  value: string
+  from: 'project' | 'workspace'
+}
+
+/**
  * The serialized flow session data that is sent to the client. The flow session
  * data includes the flow, the peers and the events that have been triggered.
  */
@@ -28,6 +49,8 @@ export interface FlowSessionJSON {
   nodes: FlowNodeInstanceJSON[]
   links: FlowLink[]
   categories: FlowCategoryNodesJSON[]
+  secrets: FlowSessionSecretJSON[]
+  variables: FlowSessionVariableJSON[]
   isRunning: boolean
   peerId: string
   peers: FlowSessionParticipantJSON[]
@@ -49,6 +72,8 @@ export function serializeFlowSession(session: FlowSession, peer: Peer): FlowSess
     links: session.flow.links,
     categories: serializeFlowCategories(session.flow),
     isRunning: session.flow.isRunning,
+    secrets: Object.keys(session.flow.secrets).map(name => ({ name, from: 'project' })),
+    variables: Object.entries(session.flow.variables).map(([name, value]) => ({ name, value, from: 'project' })),
     // isLocked: session.entity.isLocked,
     // isTouched: session.entity.isTouched,
     // isPublished: session.entity.isPublished,
