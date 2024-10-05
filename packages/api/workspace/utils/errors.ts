@@ -24,6 +24,34 @@ export const ERRORS = {
     message: `The project name "${project}" is already taken in workspace "${workspace}"`,
     data: { workspace, project },
   }),
+  PROJECT_VARIABLE_NAME_TAKEN: (workspace: string, project: string, variable: string) => createError({
+    name: 'E_PROJECT_VARIABLE_NAME_TAKEN',
+    statusCode: 409,
+    statusMessage: 'Conflict',
+    message: `The variable name "${variable}" is already taken in project "${workspace}/${project}"`,
+    data: { workspace, project, variable },
+  }),
+  PROJECT_VARIABLE_NOT_FOUND: (workspace: string, project: string, variable: string) => createError({
+    name: 'E_PROJECT_VARIABLE_NOT_FOUND',
+    statusCode: 404,
+    statusMessage: 'Not Found',
+    message: `Variable "${variable}" not found in project "${workspace}/${project}"`,
+    data: { workspace, project, variable },
+  }),
+  PROJECT_SECRET_NAME_TAKEN: (workspace: string, project: string, secret: string) => createError({
+    name: 'E_PROJECT_SECRET_NAME_TAKEN',
+    statusCode: 409,
+    statusMessage: 'Conflict',
+    message: `The secret name "${secret}" is already taken in project "${workspace}/${project}"`,
+    data: { workspace, project, secret },
+  }),
+  PROJECT_SECRET_NOT_FOUND: (workspace: string, project: string, secret: string) => createError({
+    name: 'E_PROJECT_SECRET_NOT_FOUND',
+    statusCode: 404,
+    statusMessage: 'Not Found',
+    message: `Secret "${secret}" not found in project "${workspace}/${project}"`,
+    data: { workspace, project, secret },
+  }),
 
   // Workspace
   WORKSPACE_NOT_FOUND: (workspace: string) => createError({
