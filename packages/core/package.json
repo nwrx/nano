@@ -15,68 +15,15 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "exports": {
-    "./createFlow": {
-      "require": "./dist/createFlow.cjs",
-      "types": "./dist/createFlow.d.ts",
-      "import": "./dist/createFlow.js"
-    },
-    "./createFlowNodeInstance": {
-      "require": "./dist/createFlowNodeInstance.cjs",
-      "types": "./dist/createFlowNodeInstance.d.ts",
-      "import": "./dist/createFlowNodeInstance.js"
-    },
-    "./createSchemaParser": {
-      "require": "./dist/createSchemaParser.cjs",
-      "types": "./dist/createSchemaParser.d.ts",
-      "import": "./dist/createSchemaParser.js"
-    },
-    "./defineFlowCategory": {
-      "require": "./dist/defineFlowCategory.cjs",
-      "types": "./dist/defineFlowCategory.d.ts",
-      "import": "./dist/defineFlowCategory.js"
-    },
-    "./defineFlowModule": {
-      "require": "./dist/defineFlowModule.cjs",
-      "types": "./dist/defineFlowModule.d.ts",
-      "import": "./dist/defineFlowModule.js"
-    },
-    "./defineFlowNode": {
-      "require": "./dist/defineFlowNode.cjs",
-      "types": "./dist/defineFlowNode.d.ts",
-      "import": "./dist/defineFlowNode.js"
-    },
-    "./defineFlowType": {
-      "require": "./dist/defineFlowType.cjs",
-      "types": "./dist/defineFlowType.d.ts",
-      "import": "./dist/defineFlowType.js"
-    },
-    "./flowFromJsonV1": {
-      "require": "./dist/flowFromJsonV1.cjs",
-      "types": "./dist/flowFromJsonV1.d.ts",
-      "import": "./dist/flowFromJsonV1.js"
-    },
-    "./flowToJson": {
-      "require": "./dist/flowToJson.cjs",
-      "types": "./dist/flowToJson.d.ts",
-      "import": "./dist/flowToJson.js"
-    },
-    "./types": {
-      "require": "./dist/types.cjs",
-      "types": "./dist/types.d.ts",
-      "import": "./dist/types.js"
-    },
-    ".": {
-      "require": "./dist/index.cjs",
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
-  },
   "files": [
     "dist",
     "README.md",
     "LICENSE.md"
   ],
+  "scripts": {
+    "dev": "rollup -c ../../rollup.config.mjs -w",
+    "build": "rollup -c ../../rollup.config.mjs"
+  },
   "dependencies": {
     "@unshared/collection": "0.0.19",
     "@unshared/string": "0.0.19",

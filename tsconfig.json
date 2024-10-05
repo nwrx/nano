@@ -25,7 +25,7 @@
     "packages",
     "scripts",
     "examples",
-    "tsup.config.ts",
+    "rollup.config.mjs",
     "vitest.config.ts",
     "vitest.workspace.ts",
     "eslint.config.mjs",
