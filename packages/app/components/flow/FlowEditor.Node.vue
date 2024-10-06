@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import type { FlowNodePortJSON } from '@nwrx/api'
-import type { FlowLink } from '@nwrx/core'
+import type { FlowNodePortJSON, FlowSessionSecretJSON, FlowSessionVariableJSON } from '@nwrx/api'
 
 const props = defineProps<{
   id: string
@@ -12,11 +11,13 @@ const props = defineProps<{
   dataSchema: FlowNodePortJSON[]
   resultSchema: FlowNodePortJSON[]
   position: { x: number; y: number }
-  links: FlowLink[]
   zoom: number
   isRunning: boolean
   isSelected: boolean
   isCollapsed: boolean
+  secrets: FlowSessionSecretJSON[]
+  variables: FlowSessionVariableJSON[]
+  error?: string
 }>()
 
 const emit = defineEmits<{
@@ -42,37 +43,28 @@ const isCollapsed = ref(false)
 watch(isCollapsed, value => emit('setCollapsed', value))
 
 /**
- * Based on the dataSchema, links and the `isCollapsed` state, compute the
- * data schema that should be displayed in the node. This will be used to
- * render or hide the ports in the node.
- *
- * If the node is collapsed, only the ports that are linked to other nodes
- * will be displayed. If the node is not collapsed, all ports will be displayed.
+ * When the node is collapsed, we only want to display the ports that
+ * are connected to other nodes. Anything else should be hidden.
  */
 const dataSchema = computed(() => {
   if (!props.id) return []
   if (!props.dataSchema) return []
-  if (!props.links) return props.dataSchema
   if (!isCollapsed.value) return props.dataSchema
-  const linkDataIds = new Set(props.links.map(link => link.target))
-  return props.dataSchema.filter(port => linkDataIds.has(`${props.id}:${port.key}`))
+  return props.dataSchema.filter((port) => {
+    const value = props.data?.[port.key]
+    if (typeof value !== 'string') return false
+    return value.startsWith('$NODE.')
+  })
 })
 
 /**
- * Based on the resultSchema, links and the `isCollapsed` state, compute the
- * result schema that should be displayed in the node. This will be used to
- * render or hide the ports in the node.
- *
- * If the node is collapsed, only the ports that are linked to other nodes
- * will be displayed. If the node is not collapsed, all ports will be displayed.
+ * Default the result schema to an empty array if the `dataSchema` is
+ * not provided. This is to prevent the component from crashing.
  */
 const resultSchema = computed(() => {
   if (!props.id) return []
   if (!props.resultSchema) return []
-  if (!props.links) return props.resultSchema
-  if (!isCollapsed.value) return props.resultSchema
-  const linkResultIds = new Set(props.links.map(link => link.source))
-  return props.resultSchema.filter(port => linkResultIds.has(`${props.id}:${port.key}`))
+  return props.resultSchema
 })
 
 const portsData = ref<Record<string, ComponentPublicInstance>>({})
@@ -89,84 +81,34 @@ defineExpose({ portsData, portsResult })
   <div
     :class="{
       'bg-primary-50/70': isSelected,
-      'bg-primary-50/70 ring-primary-100': !isSelected,
-      'animate-pulse': isRunning,
+      'bg-primary-50/70 ring-transparent': !isSelected,
     }"
     :style="{
-      '--un-ring-color': isSelected && color ? color : undefined,
-      '--un-ring-width': zoom ? `${2 / zoom}px` : '1px',
+      '--un-ring-color': isSelected && color ? color : `${color}D0`,
+      '--un-ring-width': isSelected ? `${3 / zoom}px` : `${1.25 / zoom}px`,
     }"
     class="
-      group
-      absolute min-h-[80px] w-96
+      absolute min-h-24 w-96
       backdrop-blur-md rounded ring
+      transition-all duration-100
     "
     @mousedown.stop="(event) => emit('click', event)">
 
-    <!-- Graphflow Node Header -->
-    <div
-      :class="{
-        'text-white': isSelected,
-        'bg-primary-100': !isSelected,
-      }"
-      :style="{
-        backgroundColor: isSelected ? `${color}!important` : undefined,
-      }"
-      class="
-        flex justify-start items-center
-        h-8 w-full px-2 space-x-2
-        rounded-t cursor-move
-      "
-      @mousedown="(event) => emit('handleGrab', event)"
-      @mousemove="(event) => emit('handleMove', event)"
-      @mouseup="(event) => emit('handleRelease', event)">
-
-      <!-- Circle/icon -->
-      <BaseIcon
-        v-if="icon"
-        :icon="icon"
-        class="w-4 h-4"
-        load
-      />
-
-      <!-- Title -->
-      <p class="font-medium shrink-0">
-        {{ name }}
-      </p>
-
-      <!-- Debug ID -->
-      <p v-if="id" class="text-sm opacity-80 truncate">
-        ({{ id.slice(0, 8) }})
-      </p>
-
-      <!-- Progress-bar -->
-      <div
-        v-if="isRunning"
-        class=" h-2 w-8 bg-green-500 rounded-full"
-      />
-
-      <!-- Run button / play icon -->
-      <BaseButton
-        eager
-        class="
-          !ml-auto rounded h-5 w-5
-          flex items-center justify-center
-          opacity-0
-          !hover:opacity-90
-          group-hover:opacity-60
-          transition-opacity duration-100
-          "
-        @mousedown.stop
-        @click="() => isRunning ? emit('abort') : emit('run')">
-        <BaseIcon
-          :icon="isRunning ? 'i-carbon:stop' : 'i-carbon:play'"
-          class="w-4 h-4 text-white"
-        />
-      </BaseButton>
-    </div>
+    <FlowEditorNodeHeader
+      :id="id"
+      :name="name"
+      :icon="icon"
+      :color="isSelected ? color : `${color}D0`"
+      :isRunning="isRunning"
+      @run="() => emit('run')"
+      @abort="() => emit('abort')"
+      @handleGrab="(event) => emit('handleGrab', event)"
+      @handleMove="(event) => emit('handleMove', event)"
+      @handleRelease="(event) => emit('handleRelease', event)"
+    />
 
     <!-- Graphflow Node Body -->
-    <div class="flex flex-col py-2 space-y-1">
+    <div class="flex flex-col py-2">
       <FlowEditorPort
         v-for="port in dataSchema"
         v-bind="port"
@@ -174,6 +116,8 @@ defineExpose({ portsData, portsResult })
         :portId="port.key"
         :nodeId="id"
         :value="data?.[port.key]"
+        :secrets="secrets"
+        :variables="variables"
         kind="target"
         @setValue="(value) => emit('setDataValue', port.key, value)"
         @grab="(state) => emit('portGrab', state)"
@@ -202,16 +146,23 @@ defineExpose({ portsData, portsResult })
       class="
         flex justify-center items-center
         h-8 w-full cursor-pointer
-        hover:bg-primary-200
-        transition-colors duration-100
+        opacity-0 hover:opacity-100
+        bg-primary-500/5
+        transition-all duration-100
         rounded-b-md
       "
       @mousedown.stop="() => isCollapsed = !isCollapsed">
       <BaseIcon
         :icon="isCollapsed ? 'i-carbon:chevron-down' : 'i-carbon:chevron-up'"
         class="w-4 h-4"
-        load
       />
+    </div>
+
+    <!-- Error message -->
+    <div v-if="error" class="absolute w-full mt-2">
+      <div class="bg-danger-100 text-danger-500 border border-danger-500 p-1 text-xs rounded">
+        <span>{{ error }}</span>
+      </div>
     </div>
   </div>
 </template>

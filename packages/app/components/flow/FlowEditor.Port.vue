@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import type { FlowNodePortJSON } from '@nwrx/api'
+import type { FlowNodePortJSON, FlowSessionSecretJSON, FlowSessionVariableJSON } from '@nwrx/api'
 
 const props = defineProps<{
   nodeId: string
   portId: string
   kind: 'source' | 'target'
   value: unknown
+  secrets?: FlowSessionSecretJSON[]
+  variables?: FlowSessionVariableJSON[]
 } & FlowNodePortJSON>()
 
 const emit = defineEmits<{
@@ -19,6 +21,13 @@ const emit = defineEmits<{
 const model = useVModel(props, 'value', emit, {
   passive: true,
   eventName: 'setValue',
+})
+
+// --- Determine if the pin is linked to another node.
+const isLinked = computed(() => {
+  if (!model.value) return false
+  if (typeof model.value !== 'string') return false
+  return model.value.startsWith('$NODE.')
 })
 
 // --- Reference to the color pin HTML element.
@@ -74,14 +83,13 @@ function onRelease() {
 <template>
   <div
     class="
-      flex items-start gap-2
-      w-full group
+      flex items-start gap-2 w-full
     "
     :class="{
       'h-8': props.display !== 'textarea',
       'pr-5 flex-row': props.kind === 'target',
       'pl-5 flex-row-reverse': props.kind === 'source',
-      'hover:bg-primary-200': !props.display || props.disallowStatic,
+      'hover:bg-primary-500/10': !props.display || isLinked,
     }"
     @mousedown="(event: MouseEvent) => onGrab(event)"
     @mouseover="() => onAssign()"
@@ -91,7 +99,7 @@ function onRelease() {
     <!-- Node pin, used to connect to other nodes. -->
     <div
       ref="pin"
-      class="h-2 group-hover:scale-115 transition-transform duration-50 shrink-0 mt-3"
+      class="h-2 group-hover:scale-125 transition-transform duration-50 shrink-0 mt-3"
       :style="{ backgroundColor: props.typeColor }"
       :class="{
         'rounded-r-lg': kind === 'target',
@@ -101,33 +109,46 @@ function onRelease() {
       }"
     />
 
+    <FlowEditorPortVariable
+      v-if="disallowStatic && disallowDynamic && !isLinked"
+      v-model="model as string"
+      :name="name"
+      :secrets="secrets"
+      :variables="variables"
+      @mousedown.stop
+    />
+
     <!-- Display the name -->
     <span
-      v-if="!props.display || props.disallowStatic"
+      v-else-if="!display || isLinked"
       class="truncate text-start px-2 py-1 outline-none"
       v-text="props.name"
     />
 
     <!-- Display an input field -->
     <FlowEditorPortText
-      v-else-if="props.display === 'text'"
-      v-model="model as string"
+      v-else-if="display === 'text'"
+      v-model="model"
       :name="name"
+      @mousedown.stop
     />
 
     <!-- Display a select field -->
     <FlowEditorPortSelect
-      v-else-if="props.display === 'select'"
-      v-model="model as string"
+      v-else-if="display === 'select'"
+      v-model="model"
       :name="name"
-      :values="values as string[]"
+      :values="values"
+      @mousedown.stop
     />
 
     <!-- Display a textarea field -->
     <FlowEditorPortTextarea
       v-else-if="props.display === 'textarea'"
-      v-model="model as string"
+      v-model="model"
+      :defaultValue="defaultValue"
       :name="name"
+      @mousedown.stop
     />
   </div>
 </template>
