@@ -287,7 +287,11 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
      * @param nodes The list of nodes to move.
      */
     nodeSetPosition: (...nodes: FlowNodePosition[]) => {
-      const payload = nodes.map(({ nodeId, x, y }) => ({ nodeId, key: 'position', value: { x, y } }))
+      const payload = nodes.map(({ nodeId, x, y }) => ({
+        nodeId,
+        key: 'position',
+        value: { x: Math.round(x), y: Math.round(y) },
+      }))
       session.send({ event: 'nodeSetMetaValue', nodes: payload })
     },
 
