@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/cognitive-complexity */
 import type { FlowSessionJSON, FlowSessionPayload } from '@nwrx/api'
 import { useAlerts, useClient } from '#imports'
 
@@ -20,6 +21,8 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
     nodes: [],
     links: [],
     categories: [],
+    secrets: [],
+    variables: [],
     isRunning: false,
     peers: [],
     peerId: '',
@@ -40,6 +43,8 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
         flow.peers.push(...payload.peers.filter(p => p.id !== flow.peerId))
         flow.nodes.push(...payload.nodes)
         flow.categories.push(...payload.categories)
+        flow.secrets.push(...payload.secrets)
+        flow.variables.push(...payload.variables)
         void nextTick(() => flow.links.push(...payload.links))
         break
       }
@@ -60,6 +65,41 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
         break
       }
 
+      // --- Variable events.
+      case 'variables:create': {
+        const { name, value } = payload
+        flow.variables.push({ name, value, from: 'project' })
+        alerts.success(`Variable "${name}" created.`)
+        break
+      }
+      case 'variables:update': {
+        const { name, value } = payload
+        const variable = flow.variables.find(v => v.name === name)
+        if (!variable) return
+        variable.value = value
+        alerts.success(`Variable "${name}" updated.`)
+        break
+      }
+      case 'variables:remove': {
+        const { name } = payload
+        flow.variables = flow.variables.filter(v => v.name !== name)
+        alerts.success(`Variable "${name}" removed.`)
+        break
+      }
+
+      // --- Secret events.
+      case 'secrets:create': {
+        const { name } = payload
+        flow.secrets.push({ name, from: 'project' })
+        break
+      }
+      case 'secrets:remove': {
+        const { name } = payload
+        const index = flow.secrets.findIndex(s => s.name === name)
+        flow.secrets.splice(index, 1)
+        break
+      }
+
       // --- Node events.
       case 'node:create': {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -72,6 +112,7 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
         const { id } = payload
         const node = flow.nodes.find(n => n.id === id)
         if (!node) return
+        node.error = undefined
         node.isRunning = true
         flow.nodes = [...flow.nodes]
         break
@@ -137,17 +178,12 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
         flow.nodes.splice(indexNode, 1)
         break
       }
-
-      // --- Link events.
-      case 'link:create': {
-        const { source, target } = payload
-        flow.links.push({ source, target })
-        break
-      }
-      case 'link:remove': {
-        const { source, target } = payload
-        const index = flow.links.findIndex(x => x.source === source && x.target === target)
-        flow.links.splice(index, 1)
+      case 'node:error': {
+        const { id, message } = payload
+        const node = flow.nodes.find(n => n.id === id)
+        if (!node) return
+        node.error = message
+        flow.nodes = [...flow.nodes]
         break
       }
 
@@ -234,6 +270,72 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
      */
     flowSetMetaValue: (key: string, value: unknown) => {
       session.send({ event: 'flowSetMetaValue', key, value })
+    },
+
+    /**
+     * Create a new variable in the flow and broadcast the creation to all clients including
+     * the current client. The variable is used to store data that can be accessed by nodes
+     * in the flow.
+     *
+     * @param name The name of the variable.
+     * @param value The value of the variable.
+     */
+    flowVariableCreate: (name: string, value: string) => {
+      session.send({ event: 'flowVariableCreate', name, value })
+    },
+
+    /**
+     * Trigger the server to update the value of the variable with the given name and broadcast
+     * the update to all clients including the current client.
+     *
+     * @param name The name of the variable.
+     * @param value The new value of the variable.
+     */
+    flowVariableUpdate: (name: string, value: string) => {
+      session.send({ event: 'flowVariableUpdate', name, value })
+    },
+
+    /**
+     * Trigger the server to remove the variable with the given name and broadcast the removal
+     * to all clients including the current client.
+     *
+     * @param name The name of the variable.
+     */
+    flowVariableRemove: (name: string) => {
+      session.send({ event: 'flowVariableRemove', name })
+    },
+
+    /**
+     * Trigger the server to create a secret with the given name and value and broadcast the creation
+     * to all clients including the current client. The secret is used to store sensitive data that
+     * should not be exposed to other clients.
+     *
+     * @param name The name of the secret.
+     * @param value The value of the secret.
+     */
+    flowSecretCreate: (name: string, value: string) => {
+      session.send({ event: 'flowSecretCreate', name, value })
+    },
+
+    /**
+     * Trigger the server to update the value of the secret with the given name and broadcast
+     * the update to all clients including the current client.
+     *
+     * @param name The name of the secret.
+     * @param value The new value of the secret.
+     */
+    flowSecretUpdate: (name: string, value: string) => {
+      session.send({ event: 'flowSecretUpdate', name, value })
+    },
+
+    /**
+     * Trigger the server to remove the secret with the given name and broadcast the removal
+     * to all clients including the current client.
+     *
+     * @param name The name of the secret.
+     */
+    flowSecretRemove: (name: string) => {
+      session.send({ event: 'flowSecretRemove', name })
     },
 
     /**
