@@ -2,6 +2,13 @@ import * as Nwrx from '@nwrx/api'
 import { Application } from '@unserved/server'
 import Consola from 'consola'
 
+// --- Import the core and module-core packages in development mode.
+// --- This allows HMR to work when making changes to those packages.
+if (import.meta.dev) {
+  await import('../../core/index')
+  await import('../../module-core/index')
+}
+
 // --- Expose the application for type inference.
 export const application = await Application.initialize([
   Nwrx.ModuleUser,
