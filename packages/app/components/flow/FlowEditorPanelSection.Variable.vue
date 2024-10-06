@@ -1,72 +1,76 @@
 <script setup lang="ts">
+import { toConstantCase } from '@unshared/string'
+
 const props = defineProps<{
-  title: string
-  text: string
   name: string
   value?: string
-  isOpen?: boolean
+  isCreating?: boolean
+  isEditable?: boolean
 }>()
 
 const emit = defineEmits<{
-  'update:isOpen': [isOpen: boolean]
-  'update': [name: string, value: string]
-  'delete': [name: string]
+  'create': [name: string, value: string]
+  'update': [value: string]
+  'delete': []
 }>()
 
-// --- Two-way binding
-const newValue = ref('')
-const isOpen = useVModel(props, 'isOpen', emit, { passive: true })
-
-// --- Reset the value.
-function reset() {
-  newValue.value = props.value ?? ''
-}
+const name = useVModel(props, 'name', emit, { passive: true, defaultValue: '' })
+const value = useVModel(props, 'value', emit, { passive: true, defaultValue: '' }) as Ref<string>
+const isEditable = useVModel(props, 'isEditable', emit, { passive: true })
 </script>
 
 <template>
-  <AppDialog
-    v-model="isOpen"
-    :title="title"
-    :text="text"
-    @open="() => reset()">
+  <div class="flex space-x-4">
 
-    <template #default="{ open }">
-      <div class="flex">
-        <BaseButton
-          eager
-          class="font-mono font-medium text-xs bg-primary-900 text-primary-100 px-2 py-1 rounded"
-          @click="() => open()"
-        />
+    <!-- Name -->
+    <BaseContentEditable
+      v-model="name"
+      eager
+      :readonly="!isCreating"
+      :parse="(value) => toConstantCase(value.toUpperCase())"
+      placeholder="VARIABLE_NAME"
+      :class="{
+        'text-primary-500 bg-primary-500/10': isEditable,
+        'text-white bg-primary-500': isCreating,
+      }"
+      class="
+        font-mono font-medium text-xs outline-none
+        px-2 py-1 h-6 rounded"
+    />
 
-        <!-- CTA -->
-        <div class="flex items-center justify-end space-x-4 flex-1 opacity-0 group-hover:opacity-80">
-          <BaseButton>
-            <BaseIcon icon="i-carbon:pen" class="w-4 h-4" />
-          </BaseButton>
-          <BaseButton>
-            <BaseIcon icon="i-carbon:delete" class="w-4 h-4" />
-          </BaseButton>
-        </div>
-      </div>
-    </template>
+    <!-- Value -->
+    <BaseInputText
+      v-model="value"
+      placeholder="VALUE"
+      eager
+      :class="{
+        'w-0': !isEditable,
+      }"
+      class="
+        font-mono text-xs
+        border border-primary-100 outline-none
+        px-2 py-1 h-6 rounded w-full
+      "
+    />
 
-    <template #dialog="{ close }">
-      <div class="space-y-4">
-        <InputText
-          :value="name"
-          readonly
-        />
-        <InputText
-          v-model="newValue"
-          type="textarea"
-          placeholder="Value"
-        />
-        <Button
-          link
-          label="Update variable"
-          @click="() => { emit('update', name, newValue); close() }"
-        />
-      </div>
-    </template>
-  </AppDialog>
+    <!-- Create -->
+    <BaseButton v-if="value && isCreating" @click="() => emit('create', name, value)">
+      <BaseIcon icon="i-carbon:checkmark" class="w-4 h-4" />
+    </BaseButton>
+
+    <!-- Cancel -->
+    <BaseButton v-else-if="!value && isCreating" @click="() => emit('delete')">
+      <BaseIcon icon="i-carbon:close" class="w-4 h-4" />
+    </BaseButton>
+
+    <!-- Update -->
+    <BaseButton v-else-if="isEditable" @click="() => emit('update', value)">
+      <BaseIcon icon="i-carbon:checkmark" class="w-4 h-4" />
+    </BaseButton>
+
+    <!-- Delete -->
+    <BaseButton v-else @click="() => emit('delete')">
+      <BaseIcon icon="i-carbon:close" class="w-4 h-4" />
+    </BaseButton>
+  </div>
 </template>
