@@ -42,7 +42,7 @@ export function flowToJson(flow: Flow<FlowModule<string, any, any>>): FlowExport
       const linkTarget = `${node.id}:${key}`
       const linkFrom = flow.links.find(link => link.target === linkTarget)
       if (linkFrom) nodeData[key] = `$NODE.${linkFrom.source}`
-      if (node.data[key] !== undefined) nodeData[key] = String(node.data[key])
+      if (node.dataRaw[key] !== undefined) nodeData[key] = String(node.dataRaw[key])
     }
 
     // --- Collect the node meta data.
