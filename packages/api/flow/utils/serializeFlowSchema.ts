@@ -1,5 +1,6 @@
-import type { FlowNodePortDisplay, FlowSchema } from '@nwrx/core'
+import type { FlowNodePortDisplay, FlowNodePortValue, FlowSchema } from '@nwrx/core'
 import type { MaybeFunction, MaybePromise } from '@unshared/types'
+import { serializeFlowNodePortValues } from './serializeFlowNodePortValues'
 
 /** The serialized representation of a flow node port. */
 export interface FlowNodePortJSON {
@@ -14,8 +15,7 @@ export interface FlowNodePortJSON {
   defaultValue?: unknown
   disallowStatic?: boolean
   disallowDynamic?: boolean
-  disallowEnvironment?: boolean
-  values?: Record<string, unknown> | unknown[]
+  values?: FlowNodePortValue[]
   numberMax?: number
   numberMin?: number
   numberStep?: number
@@ -32,6 +32,8 @@ export function serializeFlowSchema(schema?: MaybeFunction<MaybePromise<FlowSche
   if (!schema) return []
   if (typeof schema === 'function') return []
   if (schema instanceof Promise) return []
+
+  // --- Map the schema object to an array of serialized ports.
   return Object.entries(schema).map(([key, port]) => ({
     key,
     name: port.name ?? key,
@@ -44,7 +46,7 @@ export function serializeFlowSchema(schema?: MaybeFunction<MaybePromise<FlowSche
     defaultValue: port.defaultValue,
     disallowStatic: port.disallowStatic,
     disallowDynamic: port.disallowDynamic,
-    values: port.values,
+    values: serializeFlowNodePortValues(port.values),
     numberMax: port.numberMax,
     numberMin: port.numberMin,
     numberStep: port.numberStep,
