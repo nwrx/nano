@@ -25,9 +25,9 @@
     "build": "rollup -c ../../rollup.config.mjs"
   },
   "dependencies": {
-    "@unshared/collection": "0.0.19",
-    "@unshared/string": "0.0.19",
-    "@unshared/types": "0.0.19",
-    "@unshared/validation": "0.0.19"
+    "@unshared/collection": "0.0.20",
+    "@unshared/string": "0.0.20",
+    "@unshared/types": "0.0.20",
+    "@unshared/validation": "0.0.20"
   }
 }
