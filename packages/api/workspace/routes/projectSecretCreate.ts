@@ -2,7 +2,6 @@ import type { ModuleWorkspace } from '../index'
 import { ModuleUser } from '@nwrx/api'
 import { createRoute } from '@unserved/server'
 import { assertStringConstantCase, assertStringNotEmpty, assertStringUuid, createSchema } from '@unshared/validation'
-import { createCipheriv, createHash } from 'node:crypto'
 
 export function projectSecretCreate(this: ModuleWorkspace) {
   return createRoute(
@@ -18,24 +17,19 @@ export function projectSecretCreate(this: ModuleWorkspace) {
       }),
     },
     async({ event, body, parameters }) => {
-      const user = await this.getModule(ModuleUser).authenticate(event)
+      const userModule = this.getModule(ModuleUser)
+      const { user } = await userModule.authenticate(event)
+      const { workspace: workspaceName, project: projectName } = parameters
       const { name, value } = body
-      const { workspace, project } = parameters
 
-      // --- Fetch the project.
-      const workspaceResolved = await this.resolveWorkspace({ user, name: workspace, permission: 'Read' })
-      const { id } = await this.resolveProject({ user, workspace: workspaceResolved, name: project, permission: 'WriteSecrets' })
+      // --- Resolve the project and assert the user has Write access to it.
+      const workspace = await this.resolveWorkspace({ name: workspaceName, user, permission: 'Read' })
+      const project = await this.resolveProject({ workspace, name: projectName, permission: 'WriteSecrets' })
 
-      // --- Encrypt the value using the external secret key.
-      const iv = Buffer.alloc(16, 0)
-      const key = createHash('sha256').update(this.projectSecretKey).digest()
-      const valueEncrypted = createCipheriv('aes-256-cbc', key, iv).setAutoPadding(true).update(value).toString('hex')
-
-      // --- Create the secret.
-      const { WorkspaceProject, WorkspaceProjectSecret } = this.getRepositories()
-      const projectToUpdate = await WorkspaceProject.findOneByOrFail({ id })
-      const secret = WorkspaceProjectSecret.create({ name, value: valueEncrypted, project: { id } })
-      projectToUpdate.secrets!.push(secret)
+      // --- Generate a new secret for the project.
+      const { WorkspaceProjectSecret } = this.getRepositories()
+      const secret = await this.createProjectSecret({ workspace, project, name, value })
+      await WorkspaceProjectSecret.save(secret)
     },
   )
 }
