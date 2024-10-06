@@ -1,6 +1,6 @@
 <script setup lang="ts">
 definePageMeta({
-  name: 'SettingsAccount',
+  name: 'UserSettingsAccount',
   path: '/settings/account',
   middleware: 'redirect-when-guest',
 })
@@ -19,10 +19,14 @@ onMounted(async() => {
 
 <template>
   <UserSettings>
-    <UserSettingsUsername @submitRename="(profile) => user.setProfile(profile)"/>
+    <UserSettingsUsername
+      :username="user.data.username"
+      @submitRename="(profile) => user.setProfile(profile)"
+    />
+    <UserSettingsDangerZone @submit="(password) => user.setPassword(password)"/>
     <AppPageDivider />
-    <UserSettingsEmail @submit="(email) => user.setEmail(email)"/>
+    <!-- <UserSettingsEmail @submit="(email) => user.setEmail(email)"/> -->
     <AppPageDivider />
-    <UserSettingsDangerZone @submitDelete="() => user.delete()"/>
+    <!-- <UserSettingsDangerZone @submitDelete="() => user.delete()"/> -->
   </UserSettings>
 </template>
