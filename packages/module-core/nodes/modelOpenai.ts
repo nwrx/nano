@@ -73,7 +73,7 @@ export const modelOpenai = defineFlowNode({
     // --- Attempt to fill the model names from the API.
     try {
       const { token = '' } = data as Record<string, string>
-      const url = new URL('/api/tags', OPENAI_BASE_URL)
+      const url = new URL('/api/models', OPENAI_BASE_URL)
       const response = await fetch(url.href, { signal: abortSignal, headers: { Authorization: `Bearer ${token}` } })
       const models = await response.json() as OpenaiModelResponse
       dataSchema.model.values = models.data.filter(x => x.object === 'model').map(x => ({
