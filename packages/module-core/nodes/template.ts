@@ -1,25 +1,24 @@
-import type { FlowNodePort, FlowSchema } from '@nwrx/core'
+import type { FlowNodeContext, FlowNodePort, FlowSchema } from '@nwrx/core'
 import { defineFlowNode } from '@nwrx/core'
-import { typeString } from './typeString'
+import { string } from '../types'
 
 /** The regular expression for extracting variables from the template. */
 const EXP_VAR_REGEX = /{{\s*(\w+)\s*}}/g
 
-export const nodeTemplate = defineFlowNode({
+export const template = defineFlowNode({
   kind: 'template',
   name: 'Template',
   icon: 'https://api.iconify.design/carbon:template.svg',
   description: 'A template for generating a string based on the input.',
 
   // --- Create the data schema that infers the variables from the template.
-  defineDataSchema: ({ data }) => {
-    const { template = '' } = data as { template: string }
+  defineDataSchema: ({ data }: FlowNodeContext) => {
 
     // --- Define the schema for the template and its variables.
     const dataSchema = {
       template: {
         name: 'Template',
-        type: typeString,
+        type: string,
         display: 'textarea',
         disallowDynamic: true,
         description: 'The template for generating the string.',
@@ -27,6 +26,7 @@ export const nodeTemplate = defineFlowNode({
     } satisfies FlowSchema
 
     // --- Extract the variables from the template.
+    const { template = '' } = data as { template: string }
     const matches = template.match(EXP_VAR_REGEX) ?? []
     for (const match of matches) {
       const key = match.slice(2, -2).trim()
@@ -35,10 +35,8 @@ export const nodeTemplate = defineFlowNode({
       // @ts-expect-error: key is dynamic.
       dataSchema[key] = {
         name: key,
-        type: typeString,
-        display: 'text',
-        disallowStatic: true,
-        description: `The value for the variable '{{${key}}}'.`,
+        type: string,
+        description: `The value for the template variable '${key}'.`,
       } as FlowNodePort
     }
 
@@ -50,24 +48,21 @@ export const nodeTemplate = defineFlowNode({
   defineResultSchema: {
     compiled: {
       name: 'Compiled',
-      type: typeString,
+      type: string,
+      description: 'The compiled string generated from the template.',
     },
   },
 
   // --- Process the template by replacing the variables with the values.
   process: ({ data }) => {
-    const { template = '', ...values } = data as Record<string, string>
+    const { template = '' } = data
 
     // --- Replace the variables in the template with the values.
-    // let compiled = template
-    // const matches = template.match(/{{(\w+)}}/g) ?? []
-    // matches.forEach((match) => {
-    //   const key = match.slice(2, -2)
-    //   compiled = compiled.replace(match, values[key] ?? '')
-    // })
-
-    // Replace template.match() with template.replace()
-    const compiled = template.replaceAll(EXP_VAR_REGEX, (match, key: string) => values[key] ?? '')
+    const compiled = template.replaceAll(EXP_VAR_REGEX, (_, key: string) => {
+      if (key === 'template') return ''
+      if (key in data) return (data as Record<string, string>)[key]
+      return ''
+    })
 
     // --- Return the compiled string.
     return { compiled }

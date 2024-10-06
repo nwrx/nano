@@ -1,7 +1,7 @@
 import { defineFlowType } from '@nwrx/core'
 import { assertObject, createParser } from '@unshared/validation'
 
-export const typeObject = defineFlowType({
+export const object = defineFlowType({
   kind: 'object',
   name: 'Object',
   color: '#BD3249',

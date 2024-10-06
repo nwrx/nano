@@ -1,24 +1,26 @@
 import { defineFlowNode } from '@nwrx/core'
-import { typeObject } from './typeObject'
-import { typeString } from './typeString'
+import { object, string } from '../types'
 
-export const nodeJsonParse = defineFlowNode({
-  kind: 'json-parse',
-  name: 'JSON Parse',
+export const parseJson = defineFlowNode({
+  kind: 'parse-json',
+  name: 'Parse JSON',
   icon: 'https://api.iconify.design/carbon:json.svg',
   description: 'Parses a JSON string into an object.',
 
   defineDataSchema: {
     json: {
       name: 'JSON',
-      type: typeString,
+      type: string,
+      defaultValue: '{}',
+      description: 'The JSON string to parse.',
     },
   },
 
   defineResultSchema: {
     object: {
       name: 'Object',
-      type: typeObject,
+      type: object,
+      description: 'The parsed JSON object as a key-value map.',
     },
   },
 
