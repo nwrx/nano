@@ -1,5 +1,4 @@
 import { defineFlowNode } from '@nwrx/core'
-import { deburr } from '@unshared/string'
 import { compute } from '../categories'
 import { model, string } from '../types'
 
