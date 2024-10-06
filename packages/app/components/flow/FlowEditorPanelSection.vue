@@ -46,7 +46,7 @@ onMounted(() => {
 
 <template>
   <div
-    class="border-t border-black/0
+    class="border-t border-black/10
       bg-transparent hover:bg-primary-50/50
       opacity-80 hover:opacity-100
       transition-all duration-100
