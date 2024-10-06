@@ -1,7 +1,7 @@
-import type { FlowNodeContext } from '@nwrx/core'
+import type { FlowNodeContext, FlowNodePortValue, FlowSchema } from '@nwrx/core'
 import { defineFlowNode } from '@nwrx/core'
-import { lmModel } from '../categories'
-import { model, string } from '../types'
+import { languageModel } from '../categories'
+import { languageModelInstance, string } from '../types'
 
 const OPENAI_BASE_URL = 'https://api.openai.com/v1'
 
@@ -47,23 +47,11 @@ export const modelOpenai = defineFlowNode({
   name: 'OpenAI API',
   icon: 'https://api.iconify.design/simple-icons:openai.svg',
   description: 'Generates a completion based on the OpenAI language model.',
-  category: lmModel,
+  category: languageModel,
 
   // --- Define the inputs of the node.
   defineDataSchema: async({ data, abortSignal }: FlowNodeContext) => {
-
-    // --- Fetch the list of models from the OpenAI API.
-    const token = data.token as string
-    const response = await fetch('https://api.openai.com/v1/models', {
-      headers: token ? { Authorization: `Bearer ${token}` }: undefined,
-      signal: abortSignal,
-    })
-
-    // --- If the models could not be fetched, return an empty list.
-    const models = (response.ok ? await response.json() : { data: [] }) as OpenaiModelResponse
-
-    // --- Return the model names as a select input.
-    return {
+    const dataSchema = {
       token: {
         name: 'API Key',
         type: string,
@@ -73,26 +61,39 @@ export const modelOpenai = defineFlowNode({
         description: 'The API key for the OpenAI API.',
       },
       model: {
-        name: 'Model Name',
         type: string,
         display: 'select',
-        disallowDynamic: true,
+        name: 'Model Name',
         description: 'The name of the model to use for generating completions.',
-        values: models.data.filter(x => x.object === 'model').map(x => ({
-          value: x.id,
-          label: x.id,
-          description: x.owned_by,
-          icon: 'https://api.iconify.design/simple-icons:openai.svg',
-        })),
+        disallowDynamic: true,
+        values: [] as Array<FlowNodePortValue<string>>,
       },
+    } satisfies FlowSchema
+
+    // --- Attempt to fill the model names from the API.
+    try {
+      const { token = '' } = data as Record<string, string>
+      const url = new URL('/api/tags', OPENAI_BASE_URL)
+      const response = await fetch(url.href, { signal: abortSignal, headers: { Authorization: `Bearer ${token}` } })
+      const models = await response.json() as OpenaiModelResponse
+      dataSchema.model.values = models.data.filter(x => x.object === 'model').map(x => ({
+        value: x.id,
+        label: x.id,
+        description: x.owned_by,
+        icon: 'https://api.iconify.design/simple-icons:openai.svg',
+      }))
     }
+    catch { /* Ignore errors */ }
+
+    // --- Return the data schema.
+    return dataSchema
   },
 
   // --- Define the outputs of the node.
   defineResultSchema: {
     model: {
       name: 'Model',
-      type: model,
+      type: languageModelInstance,
       description: 'The model information to use for generating completions.',
     },
   },

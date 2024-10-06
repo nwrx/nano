@@ -1,5 +1,5 @@
 export * from './boolean'
-export * from './model'
+export * from './languageModelInstance'
 export * from './number'
 export * from './object'
 export * from './stream'

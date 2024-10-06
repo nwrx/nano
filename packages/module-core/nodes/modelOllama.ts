@@ -1,7 +1,7 @@
 import type { FlowNodeContext, FlowNodePortValue, FlowSchema } from '@nwrx/core'
 import { defineFlowNode } from '@nwrx/core'
-import { lmModel } from '../categories'
-import { model, string } from '../types'
+import { languageModel } from '../categories'
+import { languageModelInstance, string } from '../types'
 
 interface OllamaModel {
   name: string
@@ -42,7 +42,7 @@ export const modelOllama = defineFlowNode({
   name: 'Ollama API',
   icon: 'https://api.iconify.design/simple-icons:ollama.svg',
   description: 'Generates a completion based on the OpenAI language model.',
-  category: lmModel,
+  category: languageModel,
 
   // --- Define the inputs of the node.
   defineDataSchema: async({ data, abortSignal }: FlowNodeContext) => {
@@ -87,7 +87,7 @@ export const modelOllama = defineFlowNode({
   defineResultSchema: {
     model: {
       name: 'Model',
-      type: model,
+      type: languageModelInstance,
       description: 'The model information to use for generating completions.',
     },
   },
