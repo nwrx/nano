@@ -72,7 +72,7 @@ export const nodeInput = defineFlowNode({
   }),
 
   process: ({ flow, data }) => {
-    flow.on('flow:input', ({ property }) => {
+    flow.on('flow:input', (property) => {
       if (property !== data.property) return
     })
   },
@@ -108,7 +108,7 @@ export const nodeOutput = defineFlowNode({
 })
 
 export const nodeJsonParse = defineFlowNode({
-  kind: 'json-parse',
+  kind: 'parse-json',
   name: 'JSON Parse',
   icon: 'https://api.iconify.design/carbon:json.svg',
   description: 'Parses a JSON string into an object.',
