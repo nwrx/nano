@@ -33,7 +33,7 @@ export function getEventInformation(this: ModuleUser, event: H3Event | Peer) {
     const node = event.ctx.node as NodeEventContext
     const headers = event.headers as Record<string, string>
     const cookiesValue = headers.cookie ?? ''
-    const cookiesEntries = cookiesValue.split(';').map(x => x.split('='))
+    const cookiesEntries = cookiesValue.split(/\s*;\s*/).map(x => x.split('='))
     const cookies = Object.fromEntries(cookiesEntries) as Record<string, string>
     result.token = cookies[this.userSessionCookieName]
     result.userAgent = headers['user-agent'] ?? undefined
