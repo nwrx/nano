@@ -39,21 +39,4 @@ export class WorkspaceProjectAssignment extends BaseEntity {
    */
   @Column('varchar', { length: 32 })
   permission: WorkspaceProjectPermission
-
-  /**
-   * @returns The object representation of the icon.
-   */
-  serialize(): WorkspaceProjectAssignmentObject {
-    return {
-      userName: this.user?.username,
-      userDisplayName: this.user?.profile?.displayName,
-      permission: this.permission,
-    }
-  }
-}
-
-export interface WorkspaceProjectAssignmentObject {
-  userName?: string
-  userDisplayName?: string
-  permission?: WorkspaceProjectPermission
 }
