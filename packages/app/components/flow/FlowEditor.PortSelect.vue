@@ -1,6 +1,6 @@
 <script setup lang="ts" generic="T">
 import type { FlowNodePortValue } from '@nwrx/core'
-import type { BaseInputProps } from '@unshared/vue'
+import type { BaseInputListProps } from '@unshared/vue'
 import type { BaseInputList } from '#components'
 import type { ComponentInstance } from 'vue'
 
@@ -9,7 +9,7 @@ const props = defineProps<{
   modelValue: unknown
   values: Array<FlowNodePortValue<T>>
   badge?: boolean
-} & BaseInputProps<unknown, unknown, false>>()
+} & BaseInputListProps<unknown, unknown, false>>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
