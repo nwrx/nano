@@ -32,18 +32,6 @@ async function searchUsers(search: string) {
   })
 }
 
-// --- Set the name of the project and navigate to the new URL.
-async function onSetName(name: string) {
-  await project.setName(name)
-  await useRouter().replace({ name: 'ProjectSettings', params: { workspace: workspace.value, name } })
-}
-
-// --- Delete and navigate to the workspace.
-async function onDelete() {
-  await project.delete()
-  await useRouter().replace({ name: 'Workspace', params: { name: workspace.value } })
-}
-
 onMounted(async() => {
   await project.refresh()
 })
@@ -78,8 +66,8 @@ onMounted(async() => {
         :workspace="workspace"
         :project="name"
         :title="project.data.title"
-        @submitName="name => onSetName(name)"
-        @submitDelete="() => onDelete()"
+        @submitName="name => project.setName(name)"
+        @submitDelete="() => project.delete()"
         @submitTransfer="username => project.setName(username)"
       />
     </AppPageContainer>
