@@ -3,7 +3,7 @@ import { defineFlowCategory } from '@nwrx/core'
 export const compute = defineFlowCategory({
   kind: 'compute',
   name: 'Compute',
-  color: '#A1C3D1',
+  color: '#DB504A',
   icon: 'https://api.iconify.design/ph:cpu.svg',
   description: 'A collection of nodes for performing computational operations.',
 })
