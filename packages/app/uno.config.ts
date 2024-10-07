@@ -1,11 +1,12 @@
 import type { PresetOrFactory } from 'unocss'
 import { presetUnshared } from '@unshared/unocss-preset'
-import { defineConfig, presetIcons, presetUno } from 'unocss'
+import { defineConfig, presetIcons, presetTypography, presetUno } from 'unocss'
 import { COLORS } from './utils/colors'
 
 export default defineConfig({
   presets: [
     presetUno(),
+    presetTypography(),
     presetIcons({ cdn: 'https://esm.sh/' }),
     presetUnshared() as PresetOrFactory,
   ],
