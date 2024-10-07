@@ -36,6 +36,7 @@ export default defineNuxtConfig({
     '@nuxt/eslint',
     '@nuxt/fonts',
     '@nuxt/image',
+    '@nuxtjs/i18n',
     '@vueuse/nuxt',
     '@unocss/nuxt',
     '@unshared/vue',
@@ -104,6 +105,36 @@ export default defineNuxtConfig({
   unocss: {
     preflight: true,
     configFile: './uno.config.ts',
+  },
+
+  /**
+   * I18n (Internationalization) module for your Nuxt project powered by Vue I18n.
+   *
+   * @see https://i18n.nuxtjs.org/
+   */
+  i18n: {
+    lazy: true,
+    strategy: 'no_prefix',
+    defaultLocale: 'en',
+    locales: [
+      {
+        code: 'en',
+        language: 'English',
+      },
+      {
+        code: 'fr',
+        name: 'French',
+        language: 'Français',
+      },
+      {
+        code: 'de',
+        name: 'German',
+      },
+      {
+        code: 'cn',
+        name: 'Chinese',
+      },
+    ],
   },
 
   /**
