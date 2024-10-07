@@ -73,7 +73,7 @@ export const modelOpenai = defineFlowNode({
     // --- Attempt to fill the model names from the API.
     try {
       const { token = '' } = data as Record<string, string>
-      const url = new URL('/api/models', OPENAI_BASE_URL)
+      const url = new URL('/v1/models', OPENAI_BASE_URL)
       const response = await fetch(url.href, { signal: abortSignal, headers: { Authorization: `Bearer ${token}` } })
       const models = await response.json() as OpenaiModelResponse
       dataSchema.model.values = models.data.filter(x => x.object === 'model').map(x => ({
@@ -106,7 +106,8 @@ export const modelOpenai = defineFlowNode({
     if (!model) throw new Error('Please select the model name to use for generating completions.')
 
     // --- Check the API is accessible and the model name is valid.
-    const response = await fetch('https://api.openai.com/v1/models', {
+    const url = new URL('/v1/models', OPENAI_BASE_URL)
+    const response = await fetch(url.href, {
       headers: { Authorization: `Bearer ${token}` },
       signal: abortSignal,
     })
