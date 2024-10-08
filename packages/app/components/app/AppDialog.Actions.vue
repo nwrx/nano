@@ -1,43 +1,35 @@
 <script setup lang="ts">
-import type { BaseButtonProps } from '@unshared/vue'
-
-const props = defineProps<{
-  label: string
+defineProps<{
+  labelCancel: string
+  labelConfirm: string
   variant?: Variant
-  hideCancel?: boolean
-  manualClose?: boolean
-} & BaseButtonProps>()
+}>()
 
 const emit = defineEmits<{
   close: []
   confirm: []
 }>()
-
-function onClick() {
-  emit('confirm')
-  if (!props.manualClose) emit('close')
-}
 </script>
 
 <template>
   <div class="flex items-center justify-between w-full">
     <Button
-      v-if="!hideCancel"
-      label="Cancel"
+      :label="labelCancel"
       icon="i-carbon:close"
       size="sm"
+      class="ml-2"
       link
       @click="() => emit('close')"
     />
     <Button
-      v-bind="props"
+      light
+      outlined
       :variant="variant ?? 'success'"
-      :label="label"
+      :label="labelConfirm"
       icon-append="i-carbon:chevron-right"
       icon-expand
       size="sm"
-      filled
-      @click="() => onClick()"
+      @click="() => emit('confirm')"
     />
   </div>
 </template>
