@@ -8,7 +8,10 @@ fr:
 de:
   cancel: Abbrechen
   confirm: Bestätigen
-cn:
+es:
+  cancel: Cancelar
+  confirm: Confirmar
+zh:
   cancel: 取消
   confirm: 确认
 </i18n>
@@ -21,16 +24,16 @@ const props = defineProps<{
   text?: string
   icon?: string
   variant?: Variant
+  disabled?: boolean
   labelConfirm?: string
   labelCancel?: string
-  disabled?: boolean
 } & BaseDialogProps>()
 
-const { t } = useI18n({ useScope: 'local' })
+const { t, locale } = useI18n({ useScope: 'local' })
 </script>
 
 <template>
-  <Teleport to="#layout" defer>
+  <Teleport :key="locale" to="#layout" defer>
     <LazyBaseDialog
       v-bind="props"
       title=""

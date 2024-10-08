@@ -1,20 +1,23 @@
 <script setup lang="ts">
+import type { LocaleObject } from '@nuxtjs/i18n'
+
 const props = defineProps<{
-  modelValue: string
-  languages: Array<{
-    code: string
-    name: string
-    icon: string
-  }>
+  modelValue?: string
+  locales?: Array<{ icon: string } & LocaleObject>
 }>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
-const icon = computed(() => props.languages.find(language => language.code === props.modelValue)?.icon)
+// --- Value and icon for the current locale.
 const model = useVModel(props, 'modelValue', emit, { passive: true })
-const languagesSorted = computed(() => props.languages.sort((a, b) => a.code.localeCompare(b.code)))
+const icon = computed(() => props.locales?.find(language => language.code === model.value)?.icon)
+
+// --- Sort locales by code and filter out invalid locales.
+const locales = computed(() => props.locales
+  ?.filter(language => language.name && language.code)
+  ?.sort((a, b) => a.code.localeCompare(b.code)))
 </script>
 
 <template>
@@ -27,9 +30,9 @@ const languagesSorted = computed(() => props.languages.sort((a, b) => a.code.loc
     <template #menu="{ close }">
       <div class="flex flex-col space-y-2">
         <ContextMenuItem
-          v-for="language in languagesSorted"
+          v-for="language in locales"
           :key="language.code"
-          :label="language.name"
+          :label="language.name!"
           :class="{ 'font-semibold': language.code === model }"
           :icon="language.icon"
           :keybind="language.code"
