@@ -3,6 +3,7 @@ defineProps<{
   labelCancel: string
   labelConfirm: string
   variant?: Variant
+  disabled?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -29,6 +30,7 @@ const emit = defineEmits<{
       icon-append="i-carbon:chevron-right"
       icon-expand
       size="sm"
+      :disabled="disabled"
       @click="() => emit('confirm')"
     />
   </div>

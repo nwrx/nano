@@ -23,6 +23,7 @@ const props = defineProps<{
   variant?: Variant
   labelConfirm?: string
   labelCancel?: string
+  disabled?: boolean
 } & BaseDialogProps>()
 
 const { t } = useI18n({ useScope: 'local' })
@@ -32,6 +33,7 @@ const { t } = useI18n({ useScope: 'local' })
   <Teleport to="#layout" defer>
     <LazyBaseDialog
       v-bind="props"
+      title=""
       :class="{
         'backdrop-brightness-40': modelValue,
         'pointer-events-none': !modelValue,
@@ -39,7 +41,7 @@ const { t } = useI18n({ useScope: 'local' })
       class="
         fixed left-0 top-0 z-50 w-full h-full scale-105 bg-transparent
         inline-flex items-center justify-center backdrop:bg-transparent
-        transition-all duration-200 p-0
+        transition-all duration-200 p-0 dark
       ">
 
       <!-- Content -->
@@ -85,6 +87,7 @@ const { t } = useI18n({ useScope: 'local' })
                 :labelCancel="labelCancel ?? t('cancel')"
                 :labelConfirm="labelConfirm ?? t('confirm')"
                 :variant="variant"
+                :disabled="disabled"
                 @close="slots.close"
                 @confirm="() => slots.returnValue(true)"
               />
