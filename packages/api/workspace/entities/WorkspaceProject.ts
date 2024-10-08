@@ -147,7 +147,7 @@ export interface WorkspaceProjectUserPermissionsObject {
 
 export interface WorkspaceProjectObject {
   name: string
-  title?: string
+  title: string
   description?: string
   flows?: FlowObject[]
   secrets?: WorkspaceProjectSecretObject[]
