@@ -1,4 +1,5 @@
 import { BaseEntity, transformerDate } from '@unserved/server'
+import { UUID } from 'node:crypto'
 import { Column, Entity, OneToMany, OneToOne } from 'typeorm'
 import { UserPassword } from './UserPassword'
 import { UserProfile, UserProfileObject } from './UserProfile'
@@ -84,32 +85,73 @@ export class User extends BaseEntity {
   profile?: UserProfile
 
   /**
+   * Get the most recent session used by the user. It is used to determine the last time
+   * the user was seen in the application. It is also used to determine if the user is
+   * currently online or offline.
+   *
+   * @returns The most recent session.
+   * @example UserSession { ... }
+   */
+  get lastSession(): UserSession | undefined {
+    if (!this.sessions) return undefined
+    return this.sessions
+      .sort((a, b) => (a.lastUsedAt > b.lastUsedAt ? -1 : 1))
+      .shift()
+  }
+
+  /**
    * Return a copy if the exposed properties of the user. It is used to send the user
    * data to the client without exposing sensitive information.
    *
+   * @param options The options to serialize the user with.
    * @returns The user data.
    */
-  serialize(): UserObject {
+  serialize(options: SerializeOptions = {}): UserObject {
     return {
-      username: this.username,
+
+      // Public properties.
       ...this.profile?.serialize(),
+      username: this.username,
       displayName: this.profile?.displayName ?? this.username,
       avatarUrl: `/api/users/${this.username}/avatar`,
-      sessions: this.sessions
-        ?.filter(session => session.expiresAt > new Date())
-        .filter(session => !session.deletedAt)
-        .map(session => session.serialize()),
+
+      // Protected properties.
+      id: options.withProtected ? this.id : undefined,
+      email: options.withProtected ? this.email : undefined,
+      verifiedAt: options.withProtected ? this.verifiedAt?.toISOString() : undefined,
+      disabledAt: options.withProtected ? this.disabledAt?.toISOString() : undefined,
+      createdAt: options.withProtected ? this.createdAt?.toISOString() : undefined,
+      updatedAt: options.withProtected ? this.updatedAt?.toISOString() : undefined,
+
+      // Sessions.
+      lastSeenAt: this.lastSession?.lastUsedAt?.toISOString(),
+      sessions: options.withSessions
+        ? this.sessions
+          ?.filter(session => session.expiresAt > new Date())
+          .filter(session => !session.deletedAt)
+          .map(session => session.serialize())
+        : undefined,
     }
   }
 }
 
-/**
- * The user object returned to the client. It is used to send the user data to the client
- * without exposing sensitive information.
- */
+interface SerializeOptions {
+  withProtected?: boolean
+  withSessions?: boolean
+}
+
 export interface UserObject extends UserProfileObject {
   username: string
   displayName: string
   avatarUrl?: string
+
+  id?: UUID
+  email?: string
+  verifiedAt?: string
+  disabledAt?: string
+  createdAt?: string
+  updatedAt?: string
+
+  lastSeenAt?: string
   sessions?: UserSessionObject[]
 }
