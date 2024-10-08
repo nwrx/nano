@@ -15,13 +15,15 @@ defineProps<{
 
     <!-- Items -->
     <div class="flex flex-col">
-      <AppPageNavItem
-        v-for="item in items"
-        :key="item.label"
-        :icon="item.icon"
-        :label="item.label"
-        :to="item.to"
-      />
+      <slot>
+        <AppPageNavItem
+          v-for="item in items"
+          :key="item.label"
+          :icon="item.icon"
+          :label="item.label"
+          :to="item.to"
+        />
+      </slot>
     </div>
   </div>
 </template>
