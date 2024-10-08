@@ -19,23 +19,28 @@ export function userGet(this: ModuleUser) {
       const { id, user } = await this.authenticate(event)
       const { User } = this.getRepositories()
       const { username } = parameters
+      const { withProfile = false, withSessions = false } = query
 
-      // --- If the request is made by a user other than the super administrator, return an error.
-      if (user.username !== username && !user.isSuperAdministrator)
-        throw this.errors.USER_NOT_ALLOWED()
+      // --- Check if the user is allowed to make the request.
+      const isPrivilegedQuery = withSessions
+      const isPrivilegedUser = user.username === username || user.isSuperAdministrator
+      if (isPrivilegedQuery && !isPrivilegedUser) throw this.errors.USER_NOT_ALLOWED()
 
       // --- Fetch the user with the given ID.
       const result = await User.findOne({
         where: { username },
         withDeleted: user.isSuperAdministrator,
         relations: {
-          profile: query.withProfile,
-          sessions: query.withSessions,
+          profile: withProfile,
+          sessions: withSessions,
         },
       })
 
+      // --- If the user is not found, return an error.
+      if (!result) throw this.errors.USER_NOT_FOUND(username)
+
       // --- If the `withSession is provided, put the current session at the top of the list.
-      if (query.withSessions) {
+      if (withSessions) {
         result?.sessions?.sort((a, b) => {
           if (a.id === id) return -1
           if (b.id === id) return 1
@@ -44,8 +49,10 @@ export function userGet(this: ModuleUser) {
       }
 
       // --- If the request is made by a super administrator, add additional information.
-      if (!result) throw this.errors.USER_NOT_FOUND(username)
-      return result.serialize()
+      return result.serialize({
+        withProtected: isPrivilegedUser,
+        withSessions: isPrivilegedQuery,
+      })
     },
   )
 }
