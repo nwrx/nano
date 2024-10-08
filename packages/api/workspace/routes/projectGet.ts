@@ -36,7 +36,7 @@ export function projectGet(this: ModuleWorkspace) {
           flows: query.withFlows,
           secrets: query.withSecrets,
           variables: query.withVariables,
-          assignments: query.withAssignments ? { user: true } : false,
+          assignments: query.withAssignments ? { user: { profile: true } } : false,
         },
       })
 
