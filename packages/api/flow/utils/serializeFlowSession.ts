@@ -1,6 +1,6 @@
 import type { FlowLink } from '@nwrx/core'
 import type { Peer } from 'crossws'
-import type { FlowSession } from './createFlowSession'
+import type { FlowSession } from './resolveFlowSession'
 import type { FlowCategoryNodesJSON } from './serializeFlowCategories'
 import type { FlowNodeInstanceJSON } from './serializeFlowNodeInstance'
 import { serializeFlowCategories } from './serializeFlowCategories'
