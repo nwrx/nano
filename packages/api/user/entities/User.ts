@@ -143,7 +143,7 @@ interface SerializeOptions {
 export interface UserObject extends UserProfileObject {
   username: string
   displayName: string
-  avatarUrl?: string
+  avatarUrl: string
 
   id?: UUID
   email?: string
