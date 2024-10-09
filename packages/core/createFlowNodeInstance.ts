@@ -321,13 +321,16 @@ export class FlowNodeInstance<T extends FlowNode = FlowNode> implements FlowNode
     // --- If the value is a secret, get the value of the secret.
     else if (typeof value === 'string' && value.startsWith('$SECRET.')) {
       const name = value.slice(8)
-      return parse(this.flow.secrets[name])
+      const result = this.flow.secrets[name]
+      if (!result) return
+      return parse(result)
     }
 
     // --- If the value is a result of another node, resolve it's value.
     if (typeof value === 'string' && value.startsWith('$NODE.')) {
       const [id, portId] = value.slice(6).split(':')
       const result = this.flow.getNodeInstance(id).getResultValue(portId as InferResultKeys<T>)
+      if (!result) return
       return parse(result)
     }
 
@@ -346,7 +349,6 @@ export class FlowNodeInstance<T extends FlowNode = FlowNode> implements FlowNode
     const that = this
     return new Proxy(this.dataRaw as InferData<T>, {
       get(_, key: string) { return that.resolveDataValue(key) },
-      ownKeys() { return that.dataSchema ? Object.keys(that.dataSchema) : [] },
     })
   }
 
