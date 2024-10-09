@@ -1,5 +1,5 @@
 /* eslint-disable sonarjs/cognitive-complexity */
-import type { FlowSessionJSON, FlowSessionPayload } from '@nwrx/api'
+import type { FlowSessionEventPayload, FlowSessionJSON } from '@nwrx/api'
 import { useAlerts, useClient } from '#imports'
 
 export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<string>, name: MaybeRef<string>) {
@@ -32,7 +32,7 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
    * Handle the incoming messages from the server. This function is called
    * whenever the server-side flow is manipulated by the client or another peer.
    */
-  session.on('message', (payload: FlowSessionPayload) => {
+  session.on('message', (payload: FlowSessionEventPayload) => {
     switch (payload.event) {
       case 'flow:refresh': {
         flow.peerId = payload.peerId
