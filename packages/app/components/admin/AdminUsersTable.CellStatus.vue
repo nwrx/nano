@@ -29,13 +29,16 @@ const isDialogImpersonateOpen = ref(false)
 </script>
 
 <template>
-  <div class="flex items-center justify-between space-x-sm font-normal relative">
+  <div class="flex items-center space-x-sm font-normal relative w-full">
 
     <!-- Creation Date -->
     <div :key="locale" class="lt-md:hidden">
       <p class="text-sm">{{ t('lastSeen', { distance: formatDateFromNow(lastSeenAt) }) }}</p>
       <p class="text-xs text-page-muted">{{ t('createdAt', { date: formatDate(createdAt) }) }}</p>
     </div>
+
+    <!-- Spacer -->
+    <div class="grow" />
 
     <!-- Context Menu -->
     <ContextMenu x="right" y="top" @mousedown.stop>
@@ -100,6 +103,8 @@ const isDialogImpersonateOpen = ref(false)
     <AdminUserVerifyDialog
       v-model="isDialogVerifyOpen"
       :username="username"
+      :displayName="displayName"
+      :avatarUrl="avatarUrl"
       @submit="() => emit('submitVerify')"
     />
 
