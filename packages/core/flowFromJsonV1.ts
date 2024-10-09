@@ -26,7 +26,7 @@ export interface FlowExportV1 {
  * @param modules The modules that are available to the flow.
  * @returns The new flow instance.
  */
-export async function flowFromJsonV1<T extends FlowModule = FlowModule>(json: FlowExportV1, modules: T[] = []): Promise<Flow<T>> {
+export function flowFromJsonV1<T extends FlowModule = FlowModule>(json: FlowExportV1, modules: T[] = []): Flow<T> {
   const { version, nodes = {}, ...meta } = json
 
   // --- Assert that the version is supported.
@@ -77,7 +77,7 @@ export async function flowFromJsonV1<T extends FlowModule = FlowModule>(json: Fl
     }
 
     // --- Create the node instance.
-    await flow.nodeCreate(kind, { id, meta, initialData })
+    flow.nodeCreate(kind, { id, meta, initialData })
   }
 
   // --- Return the flow instance.
