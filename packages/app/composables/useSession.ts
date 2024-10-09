@@ -1,8 +1,8 @@
-import type { InferInput, InferOutput } from '@unserved/client'
+import type { UserObject } from '@nwrx/api'
+import type { InferInput } from '@unserved/client'
 import type { application } from '~/server'
 import { useAlerts, useClient, useRouter } from '#imports'
 
-export type SessionObject = InferOutput<typeof application, 'GET /api/session'>
 export type SessionSigninCredentials = InferInput<typeof application, 'POST /api/session'>
 export type SessionSignupCredentials = InferInput<typeof application, 'POST /api/signup'>
 
@@ -14,7 +14,7 @@ export const useSession = createSharedComposable(() => {
   const client = useClient()
   const router = useRouter()
   const alerts = useAlerts()
-  const session = ref<SessionObject>({})
+  const session = ref<Partial<UserObject>>({})
 
   const refresh = async(force = false) => {
     if (!force && session.value.username) return session.value
@@ -67,7 +67,6 @@ export const useSession = createSharedComposable(() => {
     signinWithPassword: async(credentials: SessionSigninCredentials) => {
       await useClient().requestAttempt('POST /api/session', {
         onError: error => alerts.error(error),
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         onSuccess: async() => {
           alerts.success('Logged in successfully')
           const redirect = useRoute().query.redirect as string | undefined
