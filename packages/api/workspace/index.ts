@@ -53,9 +53,13 @@ export class ModuleWorkspace extends ModuleBase implements ModuleWorkspaceOption
   createProjectSecret = UTILS.createProjectSecret.bind(this)
   createProjectVariable = UTILS.createProjectVariable.bind(this)
   createWorkspace = UTILS.createWorkspace.bind(this)
+  removeProjectSecret = UTILS.removeProjectSecret.bind(this)
+  removeProjectVariable = UTILS.removeProjectVariable.bind(this)
   resolveWorkspace = UTILS.resolveWorkspace.bind(this)
   resolveProject = UTILS.resolveProject.bind(this)
   searchProjects = UTILS.searchProjects.bind(this)
+  updateProjectSecret = UTILS.updateProjectSecret.bind(this)
+  updateProjectVariable = UTILS.updateProjectVariable.bind(this)
 
   initialize(): Promise<void> {
     if (!this.projectSecretKey) throw new Error('The project secret key is required.')
