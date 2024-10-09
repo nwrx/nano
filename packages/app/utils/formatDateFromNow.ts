@@ -1,6 +1,7 @@
 import { formatDistanceToNow } from 'date-fns/formatDistanceToNow'
 import { de } from 'date-fns/locale/de'
 import { enUS as en } from 'date-fns/locale/en-US'
+import { es } from 'date-fns/locale/es'
 import { fr } from 'date-fns/locale/fr'
 import { zhCN as zh } from 'date-fns/locale/zh-CN'
 
@@ -10,11 +11,9 @@ import { zhCN as zh } from 'date-fns/locale/zh-CN'
  * @param date The date to format.
  * @returns The formatted date.
  */
-export function formatDateFromNow(date?: string) {
+export function formatDateFromNow(date?: string): string {
   if (!date) return '-'
   const { locale } = useI18n()
-  return formatDistanceToNow(new Date(date), {
-    addSuffix: true,
-    locale: { de, en, fr, zh }[locale.value],
-  })
+  const localeObject = { de, en, fr, zh, es }[locale.value.split('-')[0]]
+  return formatDistanceToNow(date, { addSuffix: true, locale: localeObject })
 }
