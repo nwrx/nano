@@ -48,7 +48,7 @@ export class User extends BaseEntity {
    * @example Date { ... }
    */
   @Column('varchar', { length: 255, nullable: true, transformer: transformerDate })
-  disabledAt?: Date
+  disabledAt?: Date | null
 
   /**
    * Date at which the user was verified. It is used to determine if the user has
@@ -57,7 +57,7 @@ export class User extends BaseEntity {
    * @example Date { ... }
    */
   @Column('varchar', { length: 255, nullable: true, transformer: transformerDate })
-  verifiedAt?: Date
+  verifiedAt?: Date | null
 
   /**
    * The list of passwords associated with the user. It is used to store the history of all passwords of the user.
