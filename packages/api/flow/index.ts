@@ -7,7 +7,7 @@ import * as ROUTES from './routes'
 import * as UTILS from './utils'
 
 export * from './entities'
-export type * from './utils/createFlowSession'
+export type * from './utils/resolveFlowSession'
 export type * from './utils/serializeFlowCategories'
 export type * from './utils/serializeFlowNode'
 export type * from './utils/serializeFlowNodeInstance'
