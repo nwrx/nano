@@ -17,7 +17,7 @@ export function userResetPassword(this: ModuleUser) {
 
       // --- Create a recovery request for the user.
       const { UserRecovery } = this.getRepositories()
-      const user = await this.resolveUser(username)
+      const user = await this.resolveUser({ username })
       const expiredAt = new Date(Date.now() + this.userRecoveryDuration)
       const request = UserRecovery.create({ user, expiredAt })
 

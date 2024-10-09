@@ -20,7 +20,15 @@ export function userEnable(this: ModuleUser) {
       if (!user.isSuperAdministrator) throw this.errors.USER_NOT_ALLOWED()
 
       // --- Resolve the user to enable.
-      const userToEnable = await this.resolveUser(username)
+      const userToEnable = await this.resolveUser({
+        user,
+        username,
+        withDeleted: true,
+        withDisabled: true,
+      })
+
+      // --- If the user is not disabled, throw an error.
+      if (!userToEnable.disabledAt) throw this.errors.USER_ALREADY_ENABLED()
 
       // --- Enable the user and save the changes.
       const { User } = this.getRepositories()

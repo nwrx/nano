@@ -41,7 +41,7 @@ export function userSetAvatar(this: ModuleUser) {
 
       // // --- Find the user and upload the avatar.
       const { User } = this.getRepositories()
-      const userToUpdate = await this.resolveUser(username, { profile: true })
+      const userToUpdate = await this.resolveUser({ user, username, withProfile: true })
       if (!userToUpdate.profile) throw new Error('Profile not found.')
       userToUpdate.profile.avatar = await moduleStorage.upload(file, { abortSignal })
       await User.save(userToUpdate)

@@ -25,12 +25,11 @@ export function userSetProfile(this: ModuleUser) {
         throw this.errors.USER_NOT_ALLOWED()
 
       // --- Find the user by the ID.
-      const userToUpdate = await this.resolveUser(username, { profile: true })
-      if (!userToUpdate.profile) throw new Error('Profile not found.')
-      if (body.displayName !== undefined) userToUpdate.profile.displayName = body.displayName
-      if (body.biography !== undefined) userToUpdate.profile.biography = body.biography
-      if (body.company !== undefined) userToUpdate.profile.company = body.company
-      if (body.website !== undefined) userToUpdate.profile.website = body.website
+      const userToUpdate = await this.resolveUser({ user, username, withProfile: true })
+      if (body.displayName !== undefined) userToUpdate.profile!.displayName = body.displayName
+      if (body.biography !== undefined) userToUpdate.profile!.biography = body.biography
+      if (body.company !== undefined) userToUpdate.profile!.company = body.company
+      if (body.website !== undefined) userToUpdate.profile!.website = body.website
 
       // --- Save and return the user.
       const { User } = this.getRepositories()
