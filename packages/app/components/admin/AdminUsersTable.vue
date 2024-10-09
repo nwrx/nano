@@ -50,7 +50,7 @@ const { t } = useI18n({ useScope: 'local' })
       </template>
 
       <!-- Cell / Email -->
-      <template #cell.email="{ email, verifiedAt }">
+      <template #cell.email="{ email, verifiedAt, disabledAt }">
         <div class="flex items-center justify-start space-x-4 font-normal">
           <Badge
             size="small"
@@ -65,6 +65,13 @@ const { t } = useI18n({ useScope: 'local' })
             :icon="verifiedAt ? 'i-carbon:checkmark' : 'i-carbon:close'"
             :variant="verifiedAt ? 'success' : 'danger'"
             :label="verifiedAt ? t('verified') : t('unverified')"
+          />
+          <Badge
+            size="small"
+            class="font-normal"
+            :icon="disabledAt ? 'i-carbon:close' : 'i-carbon:checkmark'"
+            :variant="disabledAt ? 'danger' : 'success'"
+            :label="disabledAt ? t('disabled') : t('enabled')"
           />
         </div>
       </template>
@@ -94,6 +101,8 @@ const { t } = useI18n({ useScope: 'local' })
     header.name: Name
     header.email: Email
     header.status: Status
+    disabled: Disabled
+    enabled: Enabled
     verified: Verified
     unverified: Unverified
     createdAt: Created at {date}
@@ -102,6 +111,8 @@ const { t } = useI18n({ useScope: 'local' })
     header.name: Nom
     header.email: Email
     header.status: Statut
+    disabled: Désactivé
+    enabled: Activé
     verified: Vérifié
     unverified: Non vérifié
     createdAt: Créé le {date}
@@ -110,6 +121,8 @@ const { t } = useI18n({ useScope: 'local' })
     header.name: Name
     header.email: E-Mail
     header.status: Status
+    disabled: Deaktiviert
+    enabled: Aktiviert
     verified: Verifiziert
     unverified: Nicht verifiziert
     createdAt: Erstellt am {date}
@@ -118,6 +131,8 @@ const { t } = useI18n({ useScope: 'local' })
     header.name: Nombre
     header.email: Correo electrónico
     header.status: Estado
+    disabled: Desactivado
+    enabled: Activado
     verified: Verificado
     unverified: No verificado
     createdAt: Creado en {date}
@@ -126,6 +141,8 @@ const { t } = useI18n({ useScope: 'local' })
     header.name: 名称
     header.email: 电子邮件
     header.status: 状态
+    disabled: 已禁用
+    enabled: 已启用
     verified: 已验证
     unverified: 未验证
     createdAt: 创建于 {date}

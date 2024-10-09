@@ -9,30 +9,35 @@ const LOCALES = {
     'user.disabled': 'User disabled successfully.',
     'user.enabled': 'User enabled successfully.',
     'user.deleted': 'User deleted successfully.',
+    'user.verified': 'User verified successfully.',
   },
   fr: {
     'user.created': 'Utilisateur créé avec succès.',
     'user.disabled': 'Utilisateur désactivé avec succès.',
     'user.enabled': 'Utilisateur activé avec succès.',
     'user.deleted': 'Utilisateur supprimé avec succès.',
+    'user.verified': 'Utilisateur vérifié avec succès.',
   },
   de: {
     'user.created': 'Benutzer erfolgreich erstellt.',
     'user.disabled': 'Benutzer erfolgreich deaktiviert.',
     'user.enabled': 'Benutzer erfolgreich aktiviert.',
     'user.deleted': 'Benutzer erfolgreich gelöscht.',
+    'user.verified': 'Benutzer erfolgreich verifiziert.',
   },
   es: {
     'user.created': 'Usuario creado correctamente.',
     'user.disabled': 'Usuario deshabilitado correctamente.',
     'user.enabled': 'Usuario habilitado correctamente.',
     'user.deleted': 'Usuario eliminado correctamente.',
+    'user.verified': 'Usuario verificado correctamente.',
   },
   zh: {
     'user.created': '用户已成功创建。',
     'user.disabled': '用户已成功禁用。',
     'user.enabled': '用户已成功启用。',
     'user.deleted': '用户已成功删除。',
+    'user.verified': '用户已成功验证。',
   },
 }
 
@@ -78,6 +83,7 @@ export function useUsers(options: UseUserOptions = {}) {
       await client.requestAttempt('POST /api/users', {
         onError: error => alerts.error(error),
         onSuccess: () => alerts.success(t('user.created')),
+        onEnd: () => refresh(),
         data: options,
       })
     },
@@ -94,6 +100,7 @@ export function useUsers(options: UseUserOptions = {}) {
       await client.requestAttempt('PATCH /api/users/:username/disable', {
         onError: error => alerts.error(error),
         onSuccess: () => alerts.success(t('user.disabled')),
+        onEnd: () => refresh(),
         data: { username },
       })
     },
@@ -110,6 +117,7 @@ export function useUsers(options: UseUserOptions = {}) {
       await client.requestAttempt('PATCH /api/users/:username/enable', {
         onError: error => alerts.error(error),
         onSuccess: () => alerts.success(t('user.enabled')),
+        onEnd: () => refresh(),
         data: { username },
       })
     },
@@ -125,6 +133,25 @@ export function useUsers(options: UseUserOptions = {}) {
       await client.requestAttempt('DELETE /api/users/:username', {
         onError: error => alerts.error(error),
         onSuccess: () => alerts.success(t('user.deleted')),
+        onEnd: () => refresh(),
+        data: { username },
+      })
+    },
+
+    /**
+     * Verify the user with the given username. This will set the `verifiedAt` field of the user
+     * to the current date and time in the database. Effectively verifying the user's email address.
+     * Note that this method is only available to super administrators.
+     *
+     * @param username The username of the user to verify.
+     * @returns A promise that resolves when the user has been verified.
+     * @example await users.verify('jdoe')
+     */
+    verify: async(username: string) => {
+      await client.requestAttempt('PATCH /api/users/:username/verify', {
+        onError: error => alerts.error(error),
+        onSuccess: () => alerts.success(t('user.verified')),
+        onEnd: () => refresh(),
         data: { username },
       })
     },
