@@ -28,6 +28,9 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
     peerId: '',
   }) as FlowSessionJSON
 
+  /** The events that occur during the flow execution. */
+  const events = ref<FlowSessionEventPayload[]>([])
+
   /**
    * Handle the incoming messages from the server. This function is called
    * whenever the server-side flow is manipulated by the client or another peer.
@@ -57,11 +60,13 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
       }
       case 'flow:start': {
         flow.isRunning = true
+        events.value.push(payload)
         break
       }
       case 'flow:end':
       case 'flow:abort': {
         flow.isRunning = false
+        events.value.push(payload)
         break
       }
 
@@ -115,6 +120,7 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
         node.error = undefined
         node.isRunning = true
         flow.nodes = [...flow.nodes]
+        events.value.push(payload)
         break
       }
       case 'node:end':
@@ -148,6 +154,7 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
         if (!node) return
         node.result = result
         flow.nodes = [...flow.nodes]
+        events.value.push(payload)
         break
       }
       case 'node:resultSchema': {
@@ -184,6 +191,7 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
         if (!node) return
         node.error = message
         flow.nodes = [...flow.nodes]
+        events.value.push(payload)
         break
       }
 
@@ -212,6 +220,7 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
       case 'error': {
         const { message } = payload
         alerts.error(message)
+        events.value.push(payload)
         break
       }
     }
@@ -220,6 +229,7 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
   // --- Return the flow editor composable.
   return {
     flow,
+    events,
 
     /**
      * Broadcast the current user's cursor position to all clients.
