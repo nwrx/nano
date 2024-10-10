@@ -150,6 +150,8 @@ watch(() => props.nodeSelected, () => {
         :node="node"
         :name="node.name"
         :description="node.description"
+        @update:isDataOpen="(isOpen) => emit('update:isNodeDataOpen', isOpen)"
+        @update:isResultOpen="(isOpen) => emit('update:isNodeResultOpen', isOpen)"
       />
     </div>
   </div>
