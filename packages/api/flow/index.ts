@@ -1,4 +1,4 @@
-import type { FlowSession } from './utils'
+import type { FlowSessionInstance } from './utils'
 import { ModuleBase } from '@unserved/server'
 import { ModuleUser } from '../user'
 import { ModuleWorkspace } from '../workspace'
@@ -27,7 +27,7 @@ export interface ModuleFlowOptions {
    * are stored as .tgz files in this directory and are extracted when
    * imported.
    */
-  flowSessions?: Map<string, FlowSession>
+  flowSessions?: Map<string, FlowSessionInstance>
 }
 
 /**
@@ -47,7 +47,7 @@ export class ModuleFlow extends ModuleBase implements ModuleFlowOptions {
     if (options.flowModuleDir) this.flowModuleDir = options.flowModuleDir
   }
 
-  flowSessions = new Map<string, FlowSession>()
+  flowSessions = new Map<string, FlowSessionInstance>()
   flowModuleDir = '../.data/modules'
   resolveFlow = UTILS.resolveFlow.bind(this)
   resolveFlowModule = UTILS.resolveFlowModule.bind(this)

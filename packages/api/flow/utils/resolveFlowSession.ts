@@ -80,7 +80,7 @@ export type FlowSessionEventName = keyof FlowSessionEventMap
 export type FlowSessionEventPayload<K extends keyof FlowSessionEventMap = keyof FlowSessionEventMap> =
   { [P in K]: { event: P } & FlowSessionEventMap[P] }[K]
 
-export class FlowSession {
+export class FlowSessionInstance {
 
   /**
    * Instantiate a new `FlowSession` with the given flow.
@@ -210,7 +210,7 @@ export class FlowSession {
  * @param flow The flow to resolve the session for.
  * @returns The `FlowSession` that corresponds to the given ID.
  */
-export async function resolveFlowSession(this: ModuleFlow, flow: Flow): Promise<FlowSession> {
+export async function resolveFlowSession(this: ModuleFlow, flow: Flow): Promise<FlowSessionInstance> {
 
   // --- Check if the chain session is already in memory.
   // --- If so, return the chain session from memory.
@@ -230,13 +230,17 @@ export async function resolveFlowSession(this: ModuleFlow, flow: Flow): Promise<
   for (const variable of flow.project.variables) flowInstance.variables[variable.name] = variable.value
 
   // --- Resolve all the nodes in the flow.
-  const promisesData = flowInstance.nodes.map(node => node.resolveDataSchema())
-  const promisesResult = flowInstance.nodes.map(node => node.resolveResultSchema())
-  await Promise.all([...promisesData, ...promisesResult])
+  // const promisesData = flowInstance.nodes.map(node => node.resolveDataSchema())
+  // const promisesResult = flowInstance.nodes.map(node => node.resolveResultSchema())
+  // await Promise.all([...promisesData, ...promisesResult])
+  for (const node of flowInstance.nodes) {
+    await node.resolveDataSchema()
+    await node.resolveResultSchema()
+  }
 
   // --- Create the flow session and store it in memory.
   const { Flow } = this.getRepositories()
-  const session = new FlowSession(flowInstance, flow, Flow)
+  const session = new FlowSessionInstance(flowInstance, flow, Flow)
   this.flowSessions.set(flow.id, session)
   return session
 }

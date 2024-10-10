@@ -1,6 +1,6 @@
 import type { Peer } from 'crossws'
 import type { ModuleFlow } from '..'
-import type { FlowSession } from './resolveFlowSession'
+import type { FlowSessionInstance } from './resolveFlowSession'
 
 /**
  * Given a `Peer` instance, find the chain session that the peer is
@@ -10,7 +10,7 @@ import type { FlowSession } from './resolveFlowSession'
  * @param peer The peer to find the chain session for.
  * @returns The chain session that the peer is subscribed to.
  */
-export function resolveFlowSessionByPeer(this: ModuleFlow, peer: Peer<any>): FlowSession | undefined {
+export function resolveFlowSessionByPeer(this: ModuleFlow, peer: Peer<any>): FlowSessionInstance | undefined {
   for (const [,session] of this.flowSessions) {
     for (const sessionPeer of session.participants) {
       if (sessionPeer.peer.id === peer.id)

@@ -1,6 +1,6 @@
 import type { FlowLink } from '@nwrx/core'
 import type { Peer } from 'crossws'
-import type { FlowSession } from './resolveFlowSession'
+import type { FlowSessionInstance } from './resolveFlowSession'
 import type { FlowCategoryNodesJSON } from './serializeFlowCategories'
 import type { FlowNodeInstanceJSON } from './serializeFlowNodeInstance'
 import { serializeFlowCategories } from './serializeFlowCategories'
@@ -63,7 +63,7 @@ export interface FlowSessionJSON {
  * @param peer The peer that requested the serialization.
  * @returns The serialized flow session.
  */
-export function serializeFlowSession(session: FlowSession, peer: Peer): FlowSessionJSON {
+export function serializeFlowSession(session: FlowSessionInstance, peer: Peer): FlowSessionJSON {
   return {
     name: session.flow.meta.name ?? 'Untitled Flow',
     icon: session.flow.meta.icon ?? 'i-carbon:flow',
