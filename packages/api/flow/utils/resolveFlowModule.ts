@@ -16,7 +16,7 @@ export interface ResolvedFlowModule {
 export async function resolveFlowModule(this: ModuleFlow, idOrKind: string): Promise<ResolvedFlowModule> {
 
   // --- Find the entity that is associated with the module.
-  const { FlowModule } = this.entities
+  const { FlowModule } = this.getRepositories()
   const isUUID = EXP_UUID.test(idOrKind)
   const moduleEntity = await FlowModule.findOneBy({ [isUUID ? 'id' : 'kind']: idOrKind })
   if (!moduleEntity) throw new Error(`Failed to find module: ${idOrKind}`)
