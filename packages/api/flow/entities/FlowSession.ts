@@ -1,8 +1,9 @@
 import { BaseEntity } from '@unserved/server'
 import { Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm'
 import { UserObject } from '../../user'
+import { FlowSessionEventPayload } from '../utils'
 import { Flow, FlowObject } from './Flow'
-import { FlowSessionEvent, FlowSessionEventObject } from './FlowSessionEvent'
+import { FlowSessionEvent } from './FlowSessionEvent'
 
 /**
  * A `FlowSession` is used to log the execution of a flow. It is used to store the
@@ -44,5 +45,5 @@ export interface FlowSessionObject {
   id: string
   flow: FlowObject
   user?: UserObject
-  events?: FlowSessionEventObject[]
+  events?: FlowSessionEventPayload[]
 }

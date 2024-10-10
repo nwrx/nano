@@ -1,7 +1,7 @@
 import { BaseEntity, transformerJson } from '@unserved/server'
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
 import { User } from '../../user'
-import { FlowSessionEventMap, FlowSessionEventName } from '../utils'
+import { FlowSessionEventName, FlowSessionEventPayload } from '../utils'
 import { FlowSession } from './FlowSession'
 
 /**
@@ -28,7 +28,7 @@ export class FlowSessionEvent<T extends FlowSessionEventName = FlowSessionEventN
    * @example { message: 'Flow started' }
    */
   @Column('json', { default: '{}', transformer: transformerJson })
-  data: FlowSessionEventMap[T]
+  data: FlowSessionEventPayload<T>
 
   /**
    * The flow run that the event is part of.
@@ -53,17 +53,7 @@ export class FlowSessionEvent<T extends FlowSessionEventName = FlowSessionEventN
   /**
    * @returns The object representation of the event.
    */
-  serialize(): FlowSessionEventObject {
-    return {
-      id: this.id,
-      event: this.event,
-      data: this.data,
-    }
+  serialize(): FlowSessionEventPayload<T> {
+    return this.data
   }
-}
-
-export interface FlowSessionEventObject<T extends FlowSessionEventName = FlowSessionEventName> {
-  id: string
-  event: T
-  data: FlowSessionEventMap[T]
 }
