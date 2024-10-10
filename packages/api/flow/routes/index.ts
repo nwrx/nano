@@ -1,4 +1,5 @@
 export * from './flowCreate'
 export * from './flowDelete'
+export * from './flowExport'
 export * from './flowGet'
 export * from './flowSession'

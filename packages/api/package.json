@@ -20,7 +20,8 @@
     "h3": "1.12.0",
     "node-device-detector": "2.1.5",
     "nodemailer": "6.9.15",
-    "typeorm": "0.3.20"
+    "typeorm": "0.3.20",
+    "yaml": "2.5.1"
   },
   "devDependencies": {
     "sqlite3": "5.1.7"
