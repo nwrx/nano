@@ -27,49 +27,40 @@ useHead(() => ({
 
 async function searchUsers(search: string) {
   return await useClient().request('GET /api/users', {
-    data: { search, limit: 5 },
+    data: { search, limit: 5, withProfile: true },
     onError: error => useAlerts().error(error),
   })
 }
 
-onMounted(async() => {
-  await project.refresh()
-})
+onMounted(project.refresh)
 </script>
 
 <template>
-  <AppPage>
-    <AppPageHeader
-      icon="i-carbon:settings"
-      headline="Flows"
-      title="Project Settings"
-      description="Manage your project settings, and configurations."
+  <ProjectSettings>
+    <ProjectSettingsGeneral
+      :project="name"
+      :title="project.data.title"
+      :description="project.data.description"
+      :workspace="workspace"
+      @submit="({ title, description }) => project.setSettings({ title, description })"
     />
-
-    <!-- Toolbar -->
-    <AppPageContainer class="bg-white grow pt-32">
-      <ProjectSettingsGeneral
-        :name="name"
-        :title="project.data.title"
-        :description="project.data.description"
-        :workspace="workspace"
-        @submit="({ title, description }) => project.setSettings({ title, description })"
-      />
-      <ProjectSettingsAssigments
-        v-if="project.data.assignments"
-        :assigments="project.data.assignments"
-        :searchUsers="searchUsers"
-        @submit="(username, permissions) => project.setUserAssignments(username, permissions)"
-      />
-      <ProjectSettingsDangerZone
-        :searchUsers="searchUsers"
-        :workspace="workspace"
-        :project="name"
-        :title="project.data.title"
-        @submitName="name => project.setName(name)"
-        @submitDelete="() => project.delete()"
-        @submitTransfer="username => project.setName(username)"
-      />
-    </AppPageContainer>
-  </AppPage>
+    <ProjectSettingsAssigments
+      v-if="project.data.assignments"
+      :workspace="workspace"
+      :project="name"
+      :title="project.data.title"
+      :assigments="project.data.assignments"
+      :searchUsers="searchUsers"
+      @submit="(username, permissions) => project.setUserAssignments(username, permissions)"
+    />
+    <ProjectSettingsDangerZone
+      :searchUsers="searchUsers"
+      :workspace="workspace"
+      :project="name"
+      :title="project.data.title"
+      @submitName="name => project.setName(name)"
+      @submitDelete="() => project.delete()"
+      @submitTransfer="username => project.setName(username)"
+    />
+  </ProjectSettings>
 </template>

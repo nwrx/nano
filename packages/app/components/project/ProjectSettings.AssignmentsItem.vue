@@ -3,8 +3,12 @@ import type { WorkspaceProjectPermission } from '@nwrx/api'
 
 const props = defineProps<{
   modelValue: string[]
-  userName: string
+  workspace: string
+  project: string
+  title: string
+  username: string
   userDisplayName: string
+  userAvatarUrl: string
   permissions: WorkspaceProjectPermission[]
   disabled?: boolean
 }>()
@@ -15,6 +19,8 @@ const emit = defineEmits<{
 
 const isDialogManageOpen = ref(false)
 const isDialogUnassignOpen = ref(false)
+
+const { t } = useI18n({ useScope: 'local' })
 const model = useVModel(props, 'modelValue', emit, { passive: true })
 const permissions = useVModel(props, 'permissions', emit, { passive: true })
 </script>
@@ -23,20 +29,19 @@ const permissions = useVModel(props, 'permissions', emit, { passive: true })
   <div class="hover:bg-primary-50 border-b border-black/10">
     <div class="flex items-center justify-start space-x-4 py-4 px-8">
 
+      <!-- Select -->
       <BaseInputToggle
         v-model="model"
-        :value="userName"
+        :value="username"
         type="checkbox"
       />
 
       <!-- Image -->
-      <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
-        <BaseIcon icon="i-carbon:user" class="w-6 h-6" />
-      </div>
+      <img :src="userAvatarUrl" class="w-12 h12 rounded-full" />
 
       <div class="text-sm grow">
         <Button link variant="primary">{{ userDisplayName }}</Button>
-        <p class="text-sm">{{ userName }}</p>
+        <p class="text-sm">{{ username }}</p>
       </div>
 
       <!-- Access -->
@@ -65,7 +70,7 @@ const permissions = useVModel(props, 'permissions', emit, { passive: true })
         <Badge
           v-if="permissions?.includes('Owner')"
           icon="i-carbon:user-certification"
-          label="Owner"
+          :label="t('permission.owner')"
           size="xsmall"
           variant="primary"
           outlined
@@ -73,7 +78,7 @@ const permissions = useVModel(props, 'permissions', emit, { passive: true })
         <Badge
           v-else-if="permissions?.includes('Write')"
           icon="i-carbon:edit"
-          label="Edit"
+          :label="t('permission.write')"
           size="xsmall"
           variant="primary"
           filled
@@ -81,7 +86,7 @@ const permissions = useVModel(props, 'permissions', emit, { passive: true })
         <Badge
           v-else-if="permissions?.includes('Read')"
           icon="i-carbon:view"
-          label="View"
+          :label="t('permission.read')"
           size="xsmall"
           variant="primary"
         />
@@ -91,19 +96,19 @@ const permissions = useVModel(props, 'permissions', emit, { passive: true })
         <template #menu>
           <ContextMenuItem
             icon="i-carbon:edit"
-            label="Manage"
+            :label="t('menu.manage')"
             keybind="Ctrl + E"
             :disabled="disabled"
             @click="() => isDialogManageOpen = true"
           />
           <ContextMenuItem
             icon="i-carbon:user"
-            label="Profile"
+            :label="t('menu.profile')"
             keybind="Ctrl + P"
           />
           <ContextMenuItem
             icon="i-carbon:delete"
-            label="Unassign"
+            :label="t('menu.unassign')"
             keybind="Backspace"
             :disabled="disabled"
             @click="() => isDialogUnassignOpen = true"
@@ -123,9 +128,50 @@ const permissions = useVModel(props, 'permissions', emit, { passive: true })
     <!-- Unassign Dialog -->
     <ProjectSettingsAssignmentDialogUnassign
       v-model="isDialogUnassignOpen"
-      :userName="userName"
+      :workspace="workspace"
+      :project="project"
+      :title="title"
+      :username="username"
       :userDisplayName="userDisplayName"
       @submit="() => emit('submit', [])"
     />
   </div>
 </template>
+
+<i18n lang="yaml">
+  en:
+    menu.manage: Manage
+    menu.profile: Profile
+    menu.unassign: Unassign
+    permission.write: Write
+    permission.read: Read
+    permission.owner: Owner
+  fr:
+    menu.manage: Gérer
+    menu.profile: Profil
+    menu.unassign: Désassigner
+    permission.write: Écrire
+    permission.read: Lire
+    permission.owner: Propriétaire
+  de:
+    menu.manage: Verwalten
+    menu.profile: Profil
+    menu.unassign: Entfernen
+    permission.write: Schreiben
+    permission.read: Lesen
+    permission.owner: Besitzer
+  es:
+    menu.manage: Administrar
+    menu.profile: Perfil
+    menu.unassign: Desasignar
+    permission.write: Escribir
+    permission.read: Leer
+    permission.owner: Propietario
+  zh:
+    menu.manage: 管理
+    menu.profile: 档案
+    menu.unassign: 取消分配
+    permission.write: 写
+    permission.read: 读
+    permission.owner: 所有者
+</i18n>
