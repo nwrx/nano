@@ -15,7 +15,7 @@ function getAlertIconColor(alert: Alert) {
   if (alert.type === 'error') return 'text-danger-500'
   if (alert.type === 'success') return 'text-success-500'
   if (alert.type === 'warning') return 'text-warning-500'
-  return 'text-white'
+  return 'text-layout'
 }
 </script>
 
@@ -39,7 +39,7 @@ function getAlertIconColor(alert: Alert) {
         :key="alert.id"
         class="
           bg-layout text-white
-          border border-layout
+          border border-app
           flex items-center gap-2
           px-2 py-1 rounded
         ">
