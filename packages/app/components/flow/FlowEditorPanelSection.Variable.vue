@@ -28,7 +28,6 @@ const isEditable = useVModel(props, 'isEditable', emit, { passive: true })
       eager
       :readonly="!isCreating"
       :parse="(value) => toConstantCase(value.toUpperCase())"
-      placeholder="VARIABLE_NAME"
       :class="{
         'text-primary-500 bg-primary-500/10': isEditable,
         'text-white bg-primary-500': isCreating,
@@ -58,18 +57,13 @@ const isEditable = useVModel(props, 'isEditable', emit, { passive: true })
       <BaseIcon icon="i-carbon:checkmark" class="w-4 h-4" />
     </BaseButton>
 
-    <!-- Cancel -->
-    <BaseButton v-else-if="!value && isCreating" @click="() => emit('delete')">
-      <BaseIcon icon="i-carbon:close" class="w-4 h-4" />
-    </BaseButton>
-
     <!-- Update -->
     <BaseButton v-else-if="isEditable" @click="() => emit('update', value)">
       <BaseIcon icon="i-carbon:checkmark" class="w-4 h-4" />
     </BaseButton>
 
     <!-- Delete -->
-    <BaseButton v-else @click="() => emit('delete')">
+    <BaseButton @click="() => emit('delete')">
       <BaseIcon icon="i-carbon:close" class="w-4 h-4" />
     </BaseButton>
   </div>
