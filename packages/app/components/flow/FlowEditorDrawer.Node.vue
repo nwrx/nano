@@ -24,24 +24,21 @@ const typeColors = computed(() => {
   <div
     draggable="true"
     class="
-      w-full px-2 py-2
-      children:pointer-events-none cursor-grab
-      hover:bg-white rounded
-      border border-transparent
-      hover:border-primary-600
-      transition-colors duration-200
+      w-full p-sm children:pointer-events-none rd cursor-grab
+      border border-transparent hover:border-prominent
+      hover:bg-prominent
     "
     @mousedown.stop
     @dragstart="(event) => onDragStart(event)">
 
-    <div class="flex items-center space-x-2">
+    <div class="flex items-center space-x-sm">
 
       <!-- Icon -->
-      <BaseIcon :icon="icon" class="w-6 h-6" load />
+      <BaseIcon :icon="icon" class="size-6" load />
 
       <!-- Name & Description -->
       <div class="w-full">
-        <div class="text-base font-medium flex items-center w-full space-x-2">
+        <div class="text-base font-medium flex items-center w-full space-x-sm">
 
           <!-- Name -->
           <span class="mr-auto">
@@ -54,7 +51,7 @@ const typeColors = computed(() => {
             :key="color"
             :style="{ color }"
             icon="i-carbon:circle-solid"
-            class="w-3 h-3 inline-block"
+            class="size-3 inline-block"
           />
         </div>
 

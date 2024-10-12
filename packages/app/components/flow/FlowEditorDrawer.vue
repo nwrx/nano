@@ -4,48 +4,64 @@ import type { FlowCategoryNodesJSON } from '@nwrx/api'
 defineProps<{
   categories: FlowCategoryNodesJSON[]
 }>()
+
+const activeCategory = ref<FlowCategoryNodesJSON >()
 </script>
 
 <template>
-  <!-- Drawer where all available modules are listed. -->
-  <div
-    class="
-      bg-primary-50/20 rounded
-      border border-black/10
-      backdrop-blur-md
-      max-h-[calc(100%-6rem)]
-    ">
+  <div class="flex space-x-md items-end" @mouseleave="() => activeCategory = undefined">
 
     <!-- Categories -->
-    <div
-      v-for="category in categories"
-      :key="category.kind"
-      class="group">
+    <div class="bg-editor-panel rounded border border-editor backdrop-blur-2xl max-w-16">
+      <div
+        v-for="category in categories"
+        :key="category.kind"
+        :class="{
+          'text-app': activeCategory === category,
+          'text-subtle': activeCategory !== category,
+        }"
+        class="w-16 my-md flex items-center justify-center"
+        @mouseenter="() => activeCategory = category">
 
-      <!-- Trigger -->
-      <div class="w-16 my-4 flex items-center justify-center">
+        <!-- Trigger -->
         <BaseIcon
           load
           :icon="category.icon"
-          class="w-8 h-8 transition-all text-black duration-300 cursor-pointer opacity-60 group-hover:opacity-100"
-        />
-      </div>
-
-      <!-- Menu -->
-      <div
-        class="
-          flex items-end
-          absolute bottom-0 top-0 left-full pl-4
-          group-hover:opacity-100 opacity-0
-          group-hover:translate-x-0 -translate-x-4
-          group-hover:pointer-events-auto pointer-events-none
-          transition-all duration-100
-        ">
-        <FlowEditorDrawerCategory
-          v-bind="category"
-          class="w-64"
+          class="size-8 transition cursor-pointer group-hover:text-app"
         />
       </div>
     </div>
+
+    <!-- Menu -->
+    <Transition
+      :duration="200"
+      enter-active-class="transition duration-200"
+      leave-active-class="transition duration-200"
+      enter-from="opacity-0"
+      enter-to="opacity-100"
+      leave-from="opacity-100"
+      leave-to="opacity-0">
+      <div
+        v-if="activeCategory"
+        class="
+          transition pl-md min-w-64 max-w-96
+          p-4 bg-editor-panel rounded border border-editor backdrop-blur-md
+        ">
+
+        <!-- Title -->
+        <div class="text-xs font-medium text-subtle uppercase">
+          {{ activeCategory.name }}
+        </div>
+
+        <!-- Nodes -->
+        <div class="flex flex-col space-y-1 mt-4">
+          <FlowEditorDrawerNode
+            v-for="node in activeCategory.nodes"
+            :key="node.kind"
+            v-bind="node"
+          />
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
