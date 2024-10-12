@@ -1,46 +1,34 @@
 <script setup lang="ts">
 import type { BaseButtonProps } from '@unshared/vue'
 
-const props = defineProps<{
+defineProps<{
   title: string
   text: string
-  variant: Variant
+  icon?: string
 } & BaseButtonProps>()
 
 const emit = defineEmits<{
   click: []
 }>()
-
-const classes = computed(() => ({
-  'border-danger-200': props.variant === 'danger',
-  'border-primary-200': props.variant === 'primary',
-  'border-success-200': props.variant === 'success',
-  'border-warning-200': props.variant === 'warning',
-  'border-black/10': !props.variant,
-}))
 </script>
 
 <template>
-  <div
-    class="flex items-center space-x-4 border-t first:border-t-0 p-4"
-    :class="classes">
+  <div class="flex items-center space-x-md border-t first:border-t-0 p-md">
 
     <!-- Description -->
     <div class="grow">
       <h3 class="text-base font-medium">
         <slot name="title">{{ title }}</slot>
       </h3>
-      <p class="text-sm">
+      <p class="text-sm text-subtle">
         <slot name="text">{{ text }}</slot>
       </p>
     </div>
 
     <!-- CTA -->
     <Button
-      filled
-      size="sm"
       :label="label"
-      :variant
+      :icon-append="icon"
       class="shrink-0"
       @click="() => emit('click')"
     />

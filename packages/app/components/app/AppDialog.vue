@@ -27,11 +27,11 @@ const { t, locale } = useI18n({ useScope: 'local' })
       v-bind="props"
       title=""
       :class="{
-        'backdrop-brightness-50': modelValue,
+        'backdrop-contrast-90 backdrop-brightness-50': modelValue,
         'pointer-events-none': !modelValue,
       }"
       class="
-        fixed left-0 top-0 z-50 w-full h-full scale-100 bg-transparent
+        fixed left-0 top-0 z-9999 w-screen h-screen scale-105 bg-transparent
         inline-flex items-center justify-center backdrop:bg-transparent
         transition dark
       "

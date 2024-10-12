@@ -6,10 +6,10 @@ defineProps<{
 </script>
 
 <template>
-  <div class="flex flex-col gap-2 not-last:border-b border-white/20 py-2 first:pt-0 last:pb-0">
+  <div class="flex flex-col py-sm first:pt-0 last:pb-0">
 
     <!-- Label -->
-    <div v-if="label" class="text-sm font-medium opacity-80">
+    <div v-if="label" class="text-xs text-subtle uppercase ml-md">
       {{ label }}
     </div>
 

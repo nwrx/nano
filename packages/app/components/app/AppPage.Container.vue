@@ -6,8 +6,8 @@ defineProps<{
 
 <template>
   <div
-    class="flex flex-col sm:p-16 p-8 items-center w-full h-full"
-    :class="{ 'max-w-container mx-auto': contained }">
+    class="flex flex-col sm:p-2xl p-lg items-center w-full h-full"
+    :class="{ 'max-w-page mx-auto': contained }">
     <slot/>
   </div>
 </template>

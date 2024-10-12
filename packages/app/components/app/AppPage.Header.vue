@@ -9,24 +9,30 @@ defineProps<{
 </script>
 
 <template>
-  <div
-    class="
-    flex items-center justify-between w-full px-8 md:px-16 py-16 relative
-    bg-gradient-to-b from-primary-100 to-transparent
-  ">
+  <div class="w-full p-lg pb-0">
+    <div
+      class="
+        flex flex-col justify-start w-full p-lg h-48
+        bg-layout text-layout rounded border border-app
+      ">
 
-    <!-- Title -->
-    <div class="flex flex-col">
-      <p class="text-3xl font-medium flex items-center gap-2">
-        <BaseIcon v-if="icon" :icon="icon" />
+      <!-- Title -->
+      <div class="flex items-center gap-md self-start">
+        <div class="bg-prominent rounded p-sm">
+          <BaseIcon v-if="icon" :icon="icon" class="text-app size-5"/>
+        </div>
+        <span class="text-4xl font-medium ">
+          {{ title }}
+        </span>
+      </div>
+
+      <!-- Breadcrumb -->
+      <RouterLink to="/" class="flex items-center gap-sm self-end mt-auto">
+        <BaseIcon icon="i-carbon:home" class="size-4"/>
+        <span>Home</span>
+        <BaseIcon icon="i-carbon:chevron-right" class="size-4"/>
         <span>{{ title }}</span>
-        <Badge v-if="badge" :label="badge" size="medium" :variant="badgeVariant" filled/>
-      </p>
-
-      <!-- Description -->
-      <p class="text-sm opacity-60">
-        {{ description }}
-      </p>
+      </RouterLink>
     </div>
   </div>
 </template>
