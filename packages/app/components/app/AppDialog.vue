@@ -75,7 +75,7 @@ const { t, locale } = useI18n({ useScope: 'local' })
           </div>
 
           <!-- CTA -->
-          <div class="p-md w-full bg-layout-emphasized">
+          <div class="p-md w-full bg-layout-prominent">
             <slot name="actions" v-bind="slots">
               <div class="flex items-center justify-between w-full">
                 <Button
