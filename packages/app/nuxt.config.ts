@@ -19,14 +19,6 @@ export default defineNuxtConfig({
     baseURL: '/',
   },
 
-  routeRules: {
-    '/api/**': {
-      security: {
-        enabled: false,
-      },
-    },
-  },
-
   serverHandlers: [
     { route: '/api/**', handler: '~/server/index.ts' },
     { route: '/ws/**', handler: '~/server/index.ts' },
@@ -42,6 +34,7 @@ export default defineNuxtConfig({
     '@unocss/nuxt',
     '@unshared/vue',
     '@unserved/nuxt',
+    '@nuxtjs/storybook',
   ],
 
   /**
@@ -51,15 +44,14 @@ export default defineNuxtConfig({
    * @see https://nuxt-security.vercel.app/
    */
   security: {
-    enabled: true,
-    nonce: true,
+    enabled: false,
+    hidePoweredBy: true,
     rateLimiter: {
       headers: true,
       interval: 60 * 1000,
       tokensPerInterval: 1000,
     },
     headers: {
-      crossOriginEmbedderPolicy: false,
       contentSecurityPolicy: {
         'img-src': [
           '\'self\'',
@@ -70,10 +62,18 @@ export default defineNuxtConfig({
         'script-src': [
           '\'nonce-{{nonce}}\'',
           '\'strict-dynamic\'',
+          '\'self\'',
+          'localhost:*',
         ],
         'frame-src': [
           '\'self\'',
+          'http://localhost:*',
           'https://*',
+        ],
+        'connect-src': [
+          '\'self\'',
+          'ws://localhost:*',
+          'http://localhost:*',
         ],
       },
     },
@@ -135,6 +135,10 @@ export default defineNuxtConfig({
     }],
   },
 
+  storybook: {
+    enabled: true,
+  },
+
   /**
    * Enables the experimental <NuxtClientFallback> component for rendering content on
    * the client if there's an error in SSR.
@@ -185,11 +189,40 @@ export default defineNuxtConfig({
     },
   },
 
+  /**
+   * Configuration for Nuxt's TypeScript integration. We extend the `include` option
+   * to include the Storybook configuration file. This is necessary to ensure that
+   * ESLint and TypeScript checks are run on the Storybook configuration file.
+   */
+  typescript: {
+    tsConfig: {
+      include: [
+        '../.storybook/*.ts',
+      ],
+    },
+  },
+
   vite: {
     optimizeDeps: {
       exclude: [
         '@unserved/nuxt/useClient',
         '@unserved/nuxt/useRequest',
+      ],
+      include: [
+        'date-fns/locale/de',
+        'date-fns/locale/en-US',
+        'date-fns/locale/fr',
+        'date-fns/locale/zh-CN',
+        'date-fns/locale/es',
+
+        /**
+         * Fixes the `index.js does not provide an export named 'parse'` error introduced
+         * in `storybook@8.3.?` when using the `jsdoc-type-pratt-parser` package.
+         *
+         * @see https://github.com/nuxt-modules/storybook/issues/776
+         */
+        '@storybook/addon-docs',
+        'jsdoc-type-pratt-parser',
       ],
     },
     server: {
