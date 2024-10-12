@@ -38,8 +38,8 @@ function getAlertIconColor(alert: Alert) {
         v-for="alert in alerts"
         :key="alert.id"
         class="
-          bg-primary-900 text-white
-          border border-primary-800
+          bg-layout text-white
+          border border-layout
           flex items-center gap-2
           px-2 py-1 rounded
         ">
