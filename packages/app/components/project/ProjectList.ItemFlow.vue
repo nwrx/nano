@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const props = defineProps<{
+defineProps<{
   workspace: string
   project: string
   name: string
@@ -17,144 +17,66 @@ const emit = defineEmits<{
   duplicate: []
 }>()
 
-interface Status {
-  visible: boolean
-  label: string
-  variant: Variant
-  icon: string
-  size: Size
-  outlined?: boolean
-}
-
-const status = computed(() => [
-  {
-    visible: Math.random() > 0.5,
-    variant: 'danger',
-    icon: 'i-carbon:arrow-down',
-    size: 'small',
-  },
-  {
-    visible: Math.random() > 0.5,
-    variant: 'danger',
-    icon: 'i-carbon:timer',
-    size: 'small',
-  },
-  {
-    visible: Math.random() > 0.5,
-    variant: 'danger',
-    icon: 'i-carbon:code',
-    size: 'small',
-  },
-  {
-    visible: !props.isDeployed,
-    label: 'Draft',
-    variant: 'accent',
-    icon: 'i-carbon:dot-mark',
-    size: 'xsmall',
-    outlined: true,
-  },
-  {
-    visible: props.isDeployed,
-    label: 'Deployed',
-    variant: 'secondary',
-    icon: 'i-carbon:dot-mark',
-    size: 'xsmall',
-  },
-  {
-    visible: props.isRunning,
-    label: 'Running',
-    variant: 'accent',
-    icon: 'i-carbon:dot-mark',
-    size: 'xsmall',
-  },
-].filter(badge => badge.visible) as Status[])
-
-// const imageUrl = computed(() => {
-//   const imageMock = [
-//     'https://images.ctfassets.net/qop92tnevinq/2oekTQfw0dDMkyy63lsAKO/62b255d7a1f5210a6792464eafd7421b/Agile-roadmap-preview.png?fm=webp&q=80',
-//     'https://images.ctfassets.net/qop92tnevinq/3SwucPZWH8ltJiv1iekcJC/224d76c492d597d4194062723fdbb35f/product-development-roadmap-web.png?fm=webp&q=80',
-//     'https://images.ctfassets.net/qop92tnevinq/2sF7FnYVATAFPl4Gknd8k4/19a78238c3e4e55ff0c39832657b9425/One_on_One_Meeting-thumb-web.png',
-//     'https://images.ctfassets.net/qop92tnevinq/36G1iEMXOc0HEWszNqNUGm/ef4bdeb33bcb218ed84881427e531135/Value_Scale-thumb-web.png',
-//   ]
-//   return imageMock[Math.floor(Math.random() * imageMock.length)]
-// })
-
-function getFlowRoute(workspace: string, project: string, flow: string) {
-  if (!workspace || !project || !flow) return '/'
-  return {
-    name: 'FlowEditor',
-    params: { workspace, project, flow },
-  }
-}
+const { t } = useI18n({ useScope: 'local' })
 </script>
 
 <template>
   <div
     class="
-      flex items-center justify-between p-4 pr-12
-      rounded space-x-4
-      transition-all duration-100
-      bg-transparent
-      hover:bg-primary-100/30
-      ring-1 ring-transparent
-      hover:ring-primary-500/50
-      text-opacity-80
+      flex items-center justify-between p-md pr-xl rd space-x-md transition
+      ring ring-transparent hover:bg-emphasized hover:ring-prominent
     ">
-
-    <!-- Image -->
-    <!--
-      <div
-      :style="{ backgroundImage: `url(${imageUrl})` }"
-      class="
-      aspect-1/1 shrink-0
-      w-16 bg-cover bg-center rounded
-      border border-black/10
-      "
-      />
-    -->
 
     <!-- Left - Name & Description -->
     <div class="w-full">
-
-      <!-- Name & Icon -->
-      <div class="flex items-center space-x-4">
+      <div class="flex items-center space-x-md">
         <Button
           link
           eager
           :icon="icon"
           :label="title"
-          :to="getFlowRoute(workspace, project, name)"
+          :to="{ name: 'FlowEditor', params: { workspace, project, flow: name } }"
           class="font-medium text-left whitespace-nowrap"
         />
       </div>
 
       <!-- Description -->
-      <p class="text-sm text-black/60 text-left line-clamp-2">
+      <p class="text-sm text-subtle text-left line-clamp-2">
         {{ description }}
       </p>
 
+      <!-- Status -->
       <div class="flex flex-wrap items-center gap-2 mt-2">
         <Badge
-          v-for="badge in status"
-          :key="badge.label"
-          :label="badge.label"
-          :variant="badge.variant"
-          :icon="badge.icon"
-          :size="badge.size"
-          :outlined="badge.outlined"
+          class="badge-secondary"
+          icon="i-carbon:timer"
+        />
+        <Badge
+          label="Draft"
+          class="badge-primary badge-soft"
+          icon="i-carbon:dot-mark"
+        />
+        <Badge
+          label="Deployed"
+          class="badge-success badge-soft"
+          icon="i-carbon:dot-mark"
+        />
+        <Badge
+          label="Running"
+          class="badge-success"
+          icon="i-carbon:dot-mark"
+        />
+        <Badge
+          class="badge-danger"
+          icon="i-carbon:error"
         />
       </div>
-      <!-- Last changed -->
-      <!--
-        <p class="text-xs text-black/50">
-        Last changed 2 days ago by <span class="font-medium">John Doe</span>
-        </p>
-      -->
+
     </div>
 
     <!-- Right - Statistics -->
-    <div class="flex items-center justify-center space-x-4 shrink-0">
-      <div class="flex divide-x divide-black/10 grow lt-md:hidden">
+    <div class="flex items-center justify-center space-x-md shrink-0">
+      <div class="flex divide-x divide-app grow lt-md:hidden">
         <ProjectListItemStatistic
           name="Executions"
           trend="up"
@@ -167,36 +89,36 @@ function getFlowRoute(workspace: string, project: string, flow: string) {
       <ContextMenu x="right" y="top">
         <template #menu="{ close }">
           <ContextMenuItem
-            label="Edit"
+            :label="t('menu.edit')"
             icon="i-carbon:edit"
             keybind="Ctrl + E"
-            :to="getFlowRoute(workspace, project, name)"
+            :to="{ name: 'FlowEditor', params: { workspace, project, flow: name } }"
           />
           <ContextMenuItem
-            label="Delete"
+            :label="t('menu.delete')"
             icon="i-carbon:delete"
             keybind="Backspace"
             @click="() => { emit('delete'); close() }"
           />
           <ContextMenuItem
-            label="Duplicate"
+            :label="t('menu.duplicate')"
             icon="i-carbon:copy"
             keybind="Ctrl + D"
             @click="() => { emit('duplicate'); close() }"
           />
           <ContextMenuDivider />
           <ContextMenuItem
-            label="Export"
+            :label="t('menu.export')"
             icon="i-carbon:download"
             keybind="Ctrl + E"
           />
           <ContextMenuItem
-            label="Publish"
+            :label="t('menu.publish')"
             icon="i-carbon:upload"
             keybind="Ctrl + B"
           />
           <ContextMenuItem
-            label="Settings"
+            :label="t('menu.settings')"
             icon="i-carbon:settings"
             keybind="Ctrl + ,"
             @click="() => close()"
@@ -206,3 +128,41 @@ function getFlowRoute(workspace: string, project: string, flow: string) {
     </div>
   </div>
 </template>
+
+<i18n lang="yaml">
+  en:
+    menu.edit: Edit
+    menu.delete: Delete
+    menu.duplicate: Duplicate
+    menu.export: Export
+    menu.publish: Publish
+    menu.settings: Settings
+  fr:
+    menu.edit: Modifier
+    menu.delete: Supprimer
+    menu.duplicate: Dupliquer
+    menu.export: Exporter
+    menu.publish: Publier
+    menu.settings: Paramètres
+  de:
+    menu.edit: Bearbeiten
+    menu.delete: Löschen
+    menu.duplicate: Duplizieren
+    menu.export: Exportieren
+    menu.publish: Veröffentlichen
+    menu.settings: Einstellungen
+  es:
+    menu.edit: Editar
+    menu.delete: Eliminar
+    menu.duplicate: Duplicar
+    menu.export: Exportar
+    menu.publish: Publicar
+    menu.settings: Ajustes
+  zh:
+    menu.edit: 编辑
+    menu.delete: 删除
+    menu.duplicate: 复制
+    menu.export: 导出
+    menu.publish: 发布
+    menu.settings: 设置
+</i18n>
