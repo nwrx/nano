@@ -11,23 +11,29 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <ContextMenu x="right" y="below">
+  <ContextMenu x="right" y="below" @mouseleave="">
 
-    <img
-      v-if="avatarUrl"
-      :src="avatarUrl"
-      alt="User Avatar"
-      class="w-8 h-8 rounded-full cursor-pointer"
-    />
-
-    <!-- Menu -->
-    <template #menu="{ close }">
-      <div class="flex items-center space-x-4 pb-2">
+    <template #default="{ open, toggle }">
+      <AppNavFab
+        @mouseenter="() => open()"
+        @click="() => toggle()">
         <img
           v-if="avatarUrl"
           :src="avatarUrl"
           alt="User Avatar"
-          class="w-10 h-10 rounded-full"
+          class="size-6 rounded-full cursor-pointer"
+        />
+      </AppNavFab>
+    </template>
+
+    <!-- Menu -->
+    <template #menu="{ close }">
+      <div class="flex items-center space-x-md pb-sm">
+        <img
+          v-if="avatarUrl"
+          :src="avatarUrl"
+          alt="User Avatar"
+          class="size-10 rounded-full"
         />
         <div class="text-sm font-medium">
           <p class="text-sm truncate text-app">{{ displayName }}</p>
