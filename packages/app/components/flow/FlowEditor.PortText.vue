@@ -20,14 +20,14 @@ const model = useVModel(props, 'modelValue', emit, {
   <FlowEditorPortGroup class="cursor-text" @click="() => input?.focus()">
 
     <!-- Label -->
-    <FlowEditorPortLabel :label="name" />
+    <FlowEditorPortLabel light :label="name" />
 
     <!-- Field -->
     <input
       ref="input"
       v-model="model"
       :placeholder="defaultValue"
-      :class="{ 'text-black/50 italic': !model }"
+      :class="{ 'text-editor-node italic': !model }"
       class="w-full outline-none bg-transparent text-sm"
     />
   </FlowEditorPortGroup>

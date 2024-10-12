@@ -13,7 +13,7 @@ defineProps<{
     :class="{
       'bg-primary-500 ring-white text-white': primary,
       'bg-primary-100 ring-primary-500 text-primary-500': light,
-      'text-black/50 ring-black/10 italic': !light && !primary,
+      'text-subtle ring-app italic': !light && !primary,
       'ring-1': outlined,
     }"
     class="
@@ -27,7 +27,7 @@ defineProps<{
     <BaseIcon
       v-if="icon"
       :icon="icon"
-      class="w-4 h-4"
+      class="suze-4"
     />
 
     <!-- Label -->

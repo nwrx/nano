@@ -49,16 +49,14 @@ onMounted(() => {
       autocomplete="off"
       spellcheck="false"
       rows="1"
-      :class="{
-        'font-mono': model,
-      }"
       class="
-      w-full text-start outline-none py-1
-      bg-transparent appearance-none rounded max-h-128 resize-none
-      transition-all duration-100 text-sm whitespace-pre-wrap
-      text-black/70 placeholder-black/50
-    "
+        w-full text-start outline-none py-1
+        bg-transparent appearance-none rd max-h-64 resize-none
+        transition text-sm whitespace-pre-wrap
+        text-editor-node
+      "
       @input="(event) => onTextAreaInput(event)"
+      @wheel.stop
     />
   </FlowEditorPortGroup>
 </template>

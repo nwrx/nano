@@ -43,12 +43,12 @@ function onClick() {
       :options="values"
       :option-value="value => value.value"
       :option-label="value => value.label"
-      :class="{ 'text-black/50 italic': !model }"
+      :class="{ 'text-editor-node italic': !model }"
       class="flex items-center w-full h-full outline-none bg-transparent truncate">
 
       <!-- Current value -->
       <template #values="{ values }">
-        <span v-if="values.length === 0" class="text-black/50 italic text-sm">
+        <span v-if="values.length === 0" class="text-editor-node italic text-sm">
           No values
         </span>
         <FlowEditorPortLabel
@@ -77,9 +77,9 @@ function onClick() {
         <div
           v-if="isOpen"
           class="
-            absolute left-0 top-full mt-1
-            bg-white border border-primary-300
-            rounded w-full z-9999 divide-y divide-black/10
+            absolute left-0 top-full mt-xs
+            bg-app border border-editor divide-y divide-app
+            rounded w-full z-9999
             max-h-60 overflow-y-auto
           "
           @mousedown="() => close()"
@@ -90,8 +90,8 @@ function onClick() {
             v-for="(option, index) in options"
             :key="index"
             :class="{
-              'bg-primary-500/10': option.value === model,
-              'font-medium': option.isSelected(),
+              'bg-app-prominent': option.value === model,
+              'font-bold': option.isSelected(),
             }"
             class="
               flex items-center w-full p-2 cursor-pointer
@@ -104,17 +104,17 @@ function onClick() {
               v-if="option.option.icon"
               :icon="option.option.icon"
               :class="{
-                'w-4 h-4': !option.option.description,
-                'w-6 h-6': option.option.description,
+                'size-4': !option.option.description,
+                'size-6': option.option.description,
               }"
-              class="text-primary-500 mr-4"
+              class="text-app mr-4"
               load
             />
 
             <!-- Name -->
             <div class="truncate">
-              <div class="text-sm text-black/80">{{ option.label }}</div>
-              <div class="text-xs text-black/50 truncate">{{ option.option.description }}</div>
+              <div class="text-sm text-app truncate">{{ option.label }}</div>
+              <div class="text-xs text-subtle truncate">{{ option.option.description }}</div>
             </div>
           </div>
         </div>
