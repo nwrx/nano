@@ -79,7 +79,7 @@ export const Default: StoryObj<typeof Badge> = {
  * The `Icon` story demonstrates the use of icons within the `Badge` component.
  * Icons can be appended, prepended, or used as the main icon within the badge.
  */
-export const Icon = {
+export const WithIcon = {
   ...Default,
   render: () => <div class="flex space-x-md">
     <Badge label="User" icon="i-carbon:user" />
@@ -97,7 +97,7 @@ export const Icon = {
  * - `Danger`: To highlight errors, warnings, or critical statuses.
  * - `Warning`: To draw attention to cautionary information or warnings.
  */
-export const Colors = {
+export const WithColors = {
   ...Default,
   render: () => <div class="flex space-x-md">
     <Badge label="Primary" class="badge-primary" />
