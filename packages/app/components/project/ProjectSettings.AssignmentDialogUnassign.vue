@@ -20,7 +20,7 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
 <template>
   <AppDialog
     v-model="model"
-    variant="danger"
+    class-hint="hint-danger"
     :title="t('title', { userDisplayName, title })"
     :text="t('text', { userDisplayName })"
     :labelCancel="t('button.cancel')"

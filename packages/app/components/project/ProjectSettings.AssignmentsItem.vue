@@ -26,7 +26,7 @@ const permissions = useVModel(props, 'permissions', emit, { passive: true })
 </script>
 
 <template>
-  <div class="hover:bg-primary-50 border-b border-black/10">
+  <div class="hover:bg-primary-50 border-b border-app">
     <div class="flex items-center justify-start space-x-4 py-4 px-8">
 
       <!-- Select -->

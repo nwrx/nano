@@ -29,7 +29,7 @@ watch(search, async() => {
 <template>
   <AppDialog
     v-model="model"
-    variant="accent"
+    class-hint="hint-warning"
     icon="i-carbon:warning"
     :title="t('title', { title })"
     :text="t('text', { workspace, project })"
