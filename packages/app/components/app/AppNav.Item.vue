@@ -12,15 +12,7 @@ defineProps<{
     eager
     :to="to"
     :label="label"
-    class="
-      flex items-center
-      text-base
-      text-white
-      opacity-60
-      h-16 px-4
-      hover:opacity-100
-      transition-opacity duration-200
-    ">
+    class="flex items-center text-subtle hover:text-app transition">
 
     <!-- Label -->
     <span>{{ label }}</span>
