@@ -62,7 +62,7 @@ const { t, locale } = useI18n({ useScope: 'local' })
           </div>
 
           <!-- Hint -->
-          <div v-if="title || $slots.title" class="flex space-x-md p-md border-x-0 hint hint-success rd-0" >
+          <div v-if="title || $slots.title" class="flex space-x-md p-md border-x-0 hint rd-0" :class="classHint">
             <BaseIcon v-if="icon" :icon="icon" class="size-4 shrink-0 mt-xs"/>
             <slot name="text">
               <p v-markdown="text" class="text-sm"/>
@@ -70,12 +70,12 @@ const { t, locale } = useI18n({ useScope: 'local' })
           </div>
 
           <!-- Dialog content -->
-          <div class="p-md w-full">
+          <div class="p-lg w-full">
             <slot v-bind="slots" />
           </div>
 
           <!-- CTA -->
-          <div class="p-md w-full bg-layout-subtle">
+          <div class="p-md w-full bg-layout-emphasized">
             <slot name="actions" v-bind="slots">
               <div class="flex items-center justify-between w-full">
                 <Button
