@@ -14,20 +14,17 @@ const props = defineProps<{
     eager
     class="
       flex items-center justify-start
-      w-full p-2 space-x-3 rounded
-
-      text-black/60
-      hover:text-black/100
-
-      bg-transparent
-      hover:bg-primary-100/30
+      w-full p-sm space-x-md rounded
+      text-subtle hover:text-app-emphasis
+      hover:bg-prominent
+      transition
     ">
 
     <!-- Icon -->
     <BaseIcon
       v-if="icon"
       :icon="icon"
-      class="w-4 h-4"
+      class="size-4"
     />
 
     <!-- Label -->
@@ -39,7 +36,7 @@ const props = defineProps<{
     <Keybind
       v-if="keybind"
       :label="keybind"
-      class="border border-black/10 rounded ml-auto"
+      class="border border-app rounded ml-auto"
     />
   </BaseButton>
 </template>
