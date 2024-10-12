@@ -1,15 +1,22 @@
 <script setup lang="ts">
 import type { BaseDialogProps } from '@unshared/vue'
+import { vMarkdown } from '#imports'
 
 const props = defineProps<{
   title?: string
   text?: string
   icon?: string
+  classHint?: string
   variant?: Variant
   disabled?: boolean
   labelConfirm?: string
   labelCancel?: string
 } & BaseDialogProps>()
+
+const emit = defineEmits<{
+  close: []
+  confirm: []
+}>()
 
 const { t, locale } = useI18n({ useScope: 'local' })
 </script>
@@ -24,27 +31,20 @@ const { t, locale } = useI18n({ useScope: 'local' })
         'pointer-events-none': !modelValue,
       }"
       class="
-        fixed left-0 top-0 z-50 w-full h-full scale-105 bg-transparent
+        fixed left-0 top-0 z-50 w-full h-full scale-100 bg-transparent
         inline-flex items-center justify-center backdrop:bg-transparent
-        transition-all duration-100 dark
-      ">
+        transition dark
+      "
+      @return="() => emit('confirm')"
+      @close="() => emit('close')">
 
       <!-- Content -->
       <template #dialog="slots">
         <div
           class="
-            rounded max-w-xl pointer-events-auto border
-             transition-all duration-100 backdrop-blur-lg
-
-            shadow-xl
-            light:bg-white/10
-            light:text-black
-            light:border-light
-
-            dark:shadow-2xl
-            dark:border-primary-900
-            dark:bg-primary-900
-            dark:text-white
+            rd max-w-xl pointer-events-auto
+            border border-app bg-app text-app
+            transition backdrop-blur-lg
           "
           :class="{
             'scale-100 opacity-100 pointer-events-auto': slots.isOpen,
@@ -52,38 +52,52 @@ const { t, locale } = useI18n({ useScope: 'local' })
           }">
 
           <!-- Title -->
-          <AppDialogHeader
-            :title="title"
-            :isOpen="slots.isOpen"
-            @close="() => slots.close()">
-            <slot name="title" />
-          </AppDialogHeader>
+          <div class="flex items-center justify-between p-md">
+            <slot name="title">
+              <h3 v-markdown="title"/>
+            </slot>
+            <BaseButton eager class="group p-sm absolute right-sm" @click="() => slots.close()">
+              <div class="bg-danger-600 opacity-60 group-hover:opacity-100 transition rounded-full size-4"/>
+            </BaseButton>
+          </div>
 
           <!-- Hint -->
-          <AppDialogText
-            v-if="text || $slots.text"
-            :text="text"
-            :icon="icon"
-            :variant="variant">
-            <slot name="text" />
-          </AppDialogText>
+          <div v-if="title || $slots.title" class="flex space-x-md p-md border-x-0 hint hint-success rd-0" >
+            <BaseIcon v-if="icon" :icon="icon" class="size-4 shrink-0 mt-xs"/>
+            <slot name="text">
+              <p v-markdown="text" class="text-sm"/>
+            </slot>
+          </div>
 
           <!-- Dialog content -->
-          <div class="p-4 w-full">
+          <div class="p-md w-full">
             <slot v-bind="slots" />
           </div>
 
           <!-- CTA -->
-          <div class="p-4 w-full bg-primary-500/10">
+          <div class="p-md w-full bg-layout-subtle">
             <slot name="actions" v-bind="slots">
-              <AppDialogActions
-                :labelCancel="labelCancel ?? t('button.cancel')"
-                :labelConfirm="labelConfirm ?? t('button.confirm')"
-                :variant="variant"
-                :disabled="disabled"
-                @close="slots.close"
-                @confirm="() => slots.returnValue(true)"
-              />
+              <div class="flex items-center justify-between w-full">
+                <Button
+                  :label="labelCancel ?? t('button.cancel')"
+                  icon="i-carbon:close"
+                  size="sm"
+                  class="mr-xl"
+                  link
+                  @click="() => slots.close()"
+                />
+                <Button
+                  light
+                  outlined
+                  :variant="variant ?? 'success'"
+                  :label="labelConfirm ?? t('button.confirm')"
+                  icon-append="i-carbon:chevron-right"
+                  icon-expand
+                  size="sm"
+                  :disabled="disabled"
+                  @click="() => slots.returnValue(true)"
+                />
+              </div>
             </slot>
           </div>
         </div>
