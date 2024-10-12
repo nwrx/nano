@@ -18,26 +18,24 @@ const emit = defineEmits<{
       'flex-col lg:flex-row': !vertical,
     }"
     class="
-      flex gap-x-8 sm:gap-x-16 w-full
-      not-first:mt-16
-      not-first:pt-16
-      not-first:border-t
-      border-app
+      flex gap-x-lg lg:gap-x-xl w-full
+      not-first:mt-xl not-first:pt-xl
+      not-first:border-t border-app
     ">
 
     <!-- Title and Text -->
-    <div class="w-full" :class="{ 'lg:w-2/5 min-w-96': !vertical }">
+    <div class="w-full" :class="{ 'lg:basis-1/3': !vertical }">
       <h2 class="text-2xl font-medium">
         <slot name="title">{{ title }}</slot>
       </h2>
-      <p class="text-sm opacity-60 mt-1">
+      <p class="text-sm text-subtle mt-1">
         <slot name="text">{{ text }}</slot>
       </p>
     </div>
 
     <!-- Form -->
     <form
-      class="flex items-start flex-col gap-4 grow w-full mt-8"
+      class="flex items-start flex-col gap-md grow lg:basis-2/3 mt-lg"
       :class="{ 'lg:mt-0': !vertical }"
       @submit.prevent="() => emit('submit')">
       <slot/>
