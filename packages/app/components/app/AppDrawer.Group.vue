@@ -6,13 +6,13 @@ defineProps<{ isOpen?: boolean } & NavItem>()
 <template>
   <div>
     <h2
-      class="text-sm ml-2 transition-opacity duration-300"
-      :class="isOpen ? 'opacity-50' : 'opacity-0'"
+      class="text-sm ml-md transition text-layout-subtle"
+      :class="{ 'opacity-0': !isOpen }"
       v-text="label"
     />
 
-    <div class="w-full mt-4 space-y-2">
-      <AppNavDrawerItem
+    <div class="w-full mt-md space-y-sm">
+      <AppDrawerItem
         v-for="(item, index) in items"
         :key="index"
         :to="item.to"
