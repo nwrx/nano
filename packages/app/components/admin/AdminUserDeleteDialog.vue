@@ -18,7 +18,7 @@ const confirm = ref('')
 <template>
   <AppDialog
     v-model="model"
-    variant="danger"
+    class-hint="hint-danger"
     icon="i-carbon:trash-can"
     :title="t('title', { username: props.username })"
     :text="t('hint', { username: props.username })"
