@@ -19,10 +19,10 @@ const model = useVModel(props, 'modelValue', emit, {
   passive: true,
 })
 
-function getProjectRoute(workspace: string, name: string, tab?: string) {
+function getProjectRoute(workspace: string, project: string, tab?: string) {
   return {
     name: 'ProjectSettings',
-    params: { workspace, name },
+    params: { workspace, project },
     query: tab ? { tab } : undefined,
   }
 }
@@ -36,8 +36,8 @@ function getProjectRoute(workspace: string, name: string, tab?: string) {
       eager
       class="
         flex items-center justify-start
-        p-4 pr-12 gap-4 rounded w-full
-      bg-white border border-black/10
+        p-md pr-xl gap-md rounded w-full
+        border border-app bg-subtle
         cursor-pointer group
       "
       @click="() => { model = !model }">
@@ -46,7 +46,7 @@ function getProjectRoute(workspace: string, name: string, tab?: string) {
       <BaseIcon
         icon="i-carbon:chevron-down"
         :class="{ 'rotate-180': model }"
-        class="cursor-pointer w-8 h-8 opacity-0 group-hover:opacity-50 transition-all duration-200"
+        class="cursor-pointer size-8 opacity-40 group-hover:opacity-100 transition duration-slow"
       />
 
       <!-- Header -->
@@ -54,7 +54,7 @@ function getProjectRoute(workspace: string, name: string, tab?: string) {
         <h3 class="text-lg font-medium">
           {{ title }}
         </h3>
-        <p class="text-sm text-black/50 line-clamp-2">
+        <p class="text-sm text-subtle line-clamp-2">
           {{ description }}
         </p>
       </div>
@@ -95,9 +95,9 @@ function getProjectRoute(workspace: string, name: string, tab?: string) {
       vertical
       :isOpen="model"
       :class="{ 'opacity-0': !model }"
-      class="border-l border-black/10 ml-8 pl-8 transition-all duration-300 ease-in-out">
+      class="border-l border-app ml-lg pl-lg transition-all duration-slow">
 
-      <div class="flex flex-col space-y-2 pt-4 mb-4">
+      <div class="flex flex-col space-y-xs pt-md mb-md">
         <ProjectListItemFlow
           v-for="flow in flows"
           :key="flow.name"
@@ -118,7 +118,7 @@ function getProjectRoute(workspace: string, name: string, tab?: string) {
       <Button
         link
         label="Create a new Flow in this Project"
-        class="mb-8 !opacity-60 !hover:opacity-100"
+        class="mb-sm text-subtle"
         icon-prepend="i-carbon:flow"
         icon-append="i-carbon:chevron-right"
         icon-expand

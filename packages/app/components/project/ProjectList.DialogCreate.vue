@@ -25,6 +25,7 @@ const options = ref<CreateProjectOptions>({
   <AppDialog
     v-model="model"
     variant="success"
+    class-hint="hint-success"
     icon="i-carbon:flow"
     :title="t('title', { workspace })"
     :text="t('text')"
