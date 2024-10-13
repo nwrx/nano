@@ -3,7 +3,7 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <AppPage class="flex flex-col overflow-hidden w-full">
+  <AppPage>
 
     <!-- Header -->
     <AppPageHeader
@@ -13,30 +13,28 @@ const { t } = useI18n()
     />
 
     <!-- Side menu -->
-    <div class="flex w-full h-full my-lg">
-      <div class="flex w-full h-full gap-xl">
-        <AppPageNav class="h-full shrink">
-          <AppPageNavGroup>
-            <AppPageNavItem :label="t('nav.settings.settings')" icon="i-carbon:settings" :to="{ name: 'ProjectSettings' }" />
-            <AppPageNavItem :label="t('nav.settings.access')" icon="i-carbon:user" to="/settings/access" />
-            <AppPageNavItem :label="t('nav.settings.integrations')" icon="i-carbon:connect" to="/settings/integrations" />
-            <AppPageNavItem :label="t('nav.settings.webhooks')" icon="i-carbon:webhook" to="/settings/webhooks" />
-            <AppPageNavItem :label="t('nav.settings.variables')" icon="i-carbon:label" to="/settings/variables" />
-            <AppPageNavItem :label="t('nav.settings.apiKeys')" icon="i-carbon:api-key" to="/settings/security/api-keys" />
-          </AppPageNavGroup>
+    <div class="flex w-full gap-lg py-lg">
+      <AppPageNav class="shrink">
+        <AppPageNavGroup>
+          <AppPageNavItem :label="t('nav.settings.settings')" icon="i-carbon:settings" :to="{ name: 'ProjectSettings' }" />
+          <AppPageNavItem :label="t('nav.settings.access')" icon="i-carbon:user" to="/settings/access" />
+          <AppPageNavItem :label="t('nav.settings.integrations')" icon="i-carbon:connect" to="/settings/integrations" />
+          <AppPageNavItem :label="t('nav.settings.webhooks')" icon="i-carbon:webhook" to="/settings/webhooks" />
+          <AppPageNavItem :label="t('nav.settings.variables')" icon="i-carbon:label" to="/settings/variables" />
+          <AppPageNavItem :label="t('nav.settings.apiKeys')" icon="i-carbon:api-key" to="/settings/security/api-keys" />
+        </AppPageNavGroup>
 
-          <AppPageNavGroup :label="t('nav.monitoring')">
-            <AppPageNavItem :label="t('nav.monitoring.logs')" icon="i-carbon:activity" to="/settings/monitoring/logs" />
-            <AppPageNavItem :label="t('nav.monitoring.metrics')" icon="i-carbon:dashboard" to="/settings/monitoring/metrics" />
-            <AppPageNavItem :label="t('nav.monitoring.alerts')" icon="i-carbon:notification" to="/settings/monitoring/alerts" />
-          </AppPageNavGroup>
-        </AppPageNav>
+        <AppPageNavGroup :label="t('nav.monitoring')">
+          <AppPageNavItem :label="t('nav.monitoring.logs')" icon="i-carbon:activity" to="/settings/monitoring/logs" />
+          <AppPageNavItem :label="t('nav.monitoring.metrics')" icon="i-carbon:dashboard" to="/settings/monitoring/metrics" />
+          <AppPageNavItem :label="t('nav.monitoring.alerts')" icon="i-carbon:notification" to="/settings/monitoring/alerts" />
+        </AppPageNavGroup>
+      </AppPageNav>
 
-        <!-- Content -->
-        <AppPageContainer contained>
-          <slot/>
-        </AppPageContainer>
-      </div>
+      <!-- Content -->
+      <AppPageContainer contained>
+        <slot/>
+      </AppPageContainer>
     </div>
   </AppPage>
 </template>
