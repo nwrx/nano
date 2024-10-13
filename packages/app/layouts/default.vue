@@ -16,8 +16,8 @@ const themeColor = useLocalStorage('__ThemeColor', 'system')
 
 // --- On theme change, disable transitions for a moment.
 watch(themeColor, () => {
-  document.documentElement.classList.add('no-transition')
-  setTimeout(() => document.documentElement.classList.remove('no-transition'), 1)
+  document.documentElement.classList.add('theme-change')
+  setTimeout(() => document.documentElement.classList.remove('theme-change'), 100)
 })
 
 // --- Locale
@@ -84,8 +84,8 @@ const { setLocale, locale } = useI18n()
 </template>
 
 <style>
-.no-transition * {
-  transition: none!important;
+.theme-change * {
+  transition: 100ms all ease-in-out !important;
 }
 
 /* Scrollbar should be light, thin and hidden when not in use. */
