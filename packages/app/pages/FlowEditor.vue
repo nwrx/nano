@@ -41,7 +41,7 @@ const isPanelNodeResultOpen = useLocalStorage<boolean>('__FlowEditorPanel_NodeRe
 </script>
 
 <template>
-  <div class="bg-gradient-to-br from-primary-500 via-secondary-500 to-warning-500 bg-repeat-revert bg-[size:50%] w-full h-full p-0.5">
+  <div class="bg-gradient-to-br from-primary-500 via-secondary-500 to-primary-500 w-full h-full p-xs dark:p-2px">
     <AppPage class="relative w-full h-full flex flex-col rounded-3.5">
       <FlowEditor
         v-model:isPanelOpen="isPanelOpen"
