@@ -14,6 +14,12 @@ const isAuthenticationRoute = computed(() => {
 const isDrawerOpen = useLocalStorage('__DrawerOpen', true)
 const themeColor = useLocalStorage('__ThemeColor', 'system')
 
+// --- On theme change, disable transitions for a moment.
+watch(themeColor, () => {
+  document.documentElement.classList.add('no-transition')
+  setTimeout(() => document.documentElement.classList.remove('no-transition'), 1)
+})
+
 // --- Locale
 const { setLocale, locale } = useI18n()
 </script>
@@ -76,3 +82,9 @@ const { setLocale, locale } = useI18n()
     </div>
   </div>
 </template>
+
+<style>
+.no-transition * {
+  transition: none!important;
+}
+</style>
