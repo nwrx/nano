@@ -1,8 +1,10 @@
-import type { FlowNodeInstanceMeta, FlowNodeInstanceOptions } from './createFlowNodeInstance'
-import type { FlowModule } from './defineFlowModule'
-import type { FlowNode, FlowNodePort, FlowSchema } from './defineFlowNode'
+import type { NodeInstanceMeta, NodeInstanceOptions } from './createNodeInstance'
+import type { DataSchema, DataSocket } from './defineDataSocket'
+import type { Module } from './defineModule'
+import type { Node } from './defineNode'
+import type { ResultSchema, ResultSocket } from './defineResultSocket'
 import type { InferNodeByKind, InferNodeKind } from './types'
-import { createFlowNodeInstance, FlowNodeInstance } from './createFlowNodeInstance'
+import { createFlowNodeInstance, NodeInstance } from './createNodeInstance'
 
 /**
  * A map of events that can be dispatched by a flow node and the parameters
@@ -11,14 +13,14 @@ import { createFlowNodeInstance, FlowNodeInstance } from './createFlowNodeInstan
 export interface FlowEvents {
 
   // Node
-  'node:create': [FlowNodeInstance]
-  'node:meta': [id: string, FlowNodeInstanceMeta]
+  'node:create': [NodeInstance]
+  'node:meta': [id: string, NodeInstanceMeta]
   'node:metaValue': [id: string, key: string, value: unknown]
   'node:data': [id: string, data: Record<string, unknown>]
   'node:dataRaw': [id: string, data: Record<string, unknown>]
-  'node:dataSchema': [id: string, schema: FlowSchema]
+  'node:dataSchema': [id: string, schema: DataSchema]
   'node:result': [id: string, result: Record<string, unknown>]
-  'node:resultSchema': [id: string, schema: FlowSchema]
+  'node:resultSchema': [id: string, schema: ResultSchema]
   'node:position': [id: string, x: number, y: number]
   'node:remove': [id: string]
   'node:error': [id: string, error: Error]
@@ -59,7 +61,7 @@ export interface FlowMeta {
  * flow that are displayed in the UI. The settings can be updated by calling the
  * `setMeta` method on the flow.
  */
-export interface FlowOptions<T extends FlowModule = FlowModule> {
+export interface FlowOptions<T extends Module = Module> {
   modules?: T[]
   meta?: FlowMeta
   secrets?: Record<string, string>
@@ -84,7 +86,7 @@ export interface FlowLink {
  * The flow also provides a way to dispatch and listen for events that are
  * triggered by changes in the flow.
  */
-export class Flow<T extends FlowModule = FlowModule> implements FlowOptions<T> {
+export class Flow<T extends Module = Module> implements FlowOptions<T> {
 
   /**
    * Create a createFlow instance. The flow is a collection of nodes that are
@@ -105,7 +107,7 @@ export class Flow<T extends FlowModule = FlowModule> implements FlowOptions<T> {
 
   public meta: FlowMeta = {}
   public modules: T[] = []
-  public nodes: FlowNodeInstance[] = []
+  public nodes: NodeInstance[] = []
   public secrets = {} as Record<string, string>
   public variables = {} as Record<string, string>
   public isRunning = false
@@ -176,7 +178,7 @@ export class Flow<T extends FlowModule = FlowModule> implements FlowOptions<T> {
     const [moduleKind, nodeKind] = kind.split(':')
     const module = this.modules.find(module => module.kind === moduleKind)
     if (!module) throw new Error(`Module "${moduleKind}" was not found`)
-    const nodeDefinition = module.nodes?.find(node => node.kind === nodeKind) as FlowNode<string, any, any>
+    const nodeDefinition = module.nodes?.find(node => node.kind === nodeKind) as Node<string, any, any>
     if (!nodeDefinition) throw new Error(`Node definition "${nodeKind}" was not found in module "${moduleKind}"`)
     return nodeDefinition as InferNodeByKind<T, K>
   }
@@ -188,8 +190,8 @@ export class Flow<T extends FlowModule = FlowModule> implements FlowOptions<T> {
    * @param node The node definition or instance to get the module for.
    * @returns The module that the node originates from.
    */
-  public resolveNodeModule(node: FlowNode | FlowNodeInstance): T {
-    const nodeDefinition = node instanceof FlowNodeInstance ? node.node : node
+  public resolveNodeModule(node: Node | NodeInstance): T {
+    const nodeDefinition = node instanceof NodeInstance ? node.node : node
     for (const module of this.modules) {
       if (!module.nodes) continue
       if (module.nodes.includes(nodeDefinition)) return module
@@ -210,10 +212,10 @@ export class Flow<T extends FlowModule = FlowModule> implements FlowOptions<T> {
    * flow.nodeCreate(Core.nodes.Entrypoint)
    * flow.nodeCreate(Core.nodes.Log)
    */
-  public nodeCreate<T extends FlowNode<string, any, any>>(node: T, options?: Omit<FlowNodeInstanceOptions<T>, 'flow' | 'node'>): FlowNodeInstance<T>
-  public nodeCreate<K extends InferNodeKind<T>>(node: K, options?: Omit<FlowNodeInstanceOptions<InferNodeByKind<T, K>>, 'flow' | 'node'>): FlowNodeInstance<InferNodeByKind<T, K>>
-  public nodeCreate(node: FlowNode | string, options?: Omit<FlowNodeInstanceOptions, 'flow' | 'node'>): FlowNodeInstance
-  public nodeCreate(node: FlowNode | string, options: Omit<FlowNodeInstanceOptions, 'flow' | 'node'> = {}) {
+  public nodeCreate<T extends Node<string, any, any>>(node: T, options?: Omit<NodeInstanceOptions<T>, 'flow' | 'node'>): NodeInstance<T>
+  public nodeCreate<K extends InferNodeKind<T>>(node: K, options?: Omit<NodeInstanceOptions<InferNodeByKind<T, K>>, 'flow' | 'node'>): NodeInstance<InferNodeByKind<T, K>>
+  public nodeCreate(node: Node | string, options?: Omit<NodeInstanceOptions, 'flow' | 'node'>): NodeInstance
+  public nodeCreate(node: Node | string, options: Omit<NodeInstanceOptions, 'flow' | 'node'> = {}) {
 
     // --- If the node is a string, get the node from the modules.
     if (typeof node === 'string') node = this.resolveNodeDefinition(node as InferNodeKind<T>)
@@ -254,10 +256,10 @@ export class Flow<T extends FlowModule = FlowModule> implements FlowOptions<T> {
   /**
    * Given a node ID, get the `FlowNode` that corresponds to the node ID.
    *
-   * @param id The node ID to get the port and node for.
+   * @param id The node ID to get the socket and node for.
    * @returns The node that corresponds to the node ID.
    */
-  public getNodeInstance(id: string): FlowNodeInstance {
+  public getNodeInstance(id: string): NodeInstance {
     const nodes = [...this.nodes]
     const node = nodes.find(node => node.id === id)
     if (!node) throw new Error(`Node instance with ID "${id}" does not exist`)
@@ -265,31 +267,31 @@ export class Flow<T extends FlowModule = FlowModule> implements FlowOptions<T> {
   }
 
   /**
-   * Given an composite ID, get the `FlowNodePort` that corresponds to the
+   * Given an composite ID, get the `FlowNodeSocket` that corresponds to the
    * `{nodeId}:{edgeId}`. The composite ID is the ID of the node and the ID of
-   * the port separated by a colon.
+   * the socket separated by a colon.
    *
-   * @param compositeId The composite ID to get the port and node for.
-   * @returns The port that corresponds to the composite ID.
+   * @param compositeId The composite ID to get the socket and node for.
+   * @returns The socket that corresponds to the composite ID.
    */
-  public getResultPort(compositeId: string): FlowNodePort {
+  public getResultSocket(compositeId: string): ResultSocket {
     const [nodeId, edgeId] = compositeId.split(':')
     const node = this.getNodeInstance(nodeId)
-    return node.getResultPort(edgeId)
+    return node.getResultSocket(edgeId)
   }
 
   /**
-   * Given an composite ID, get the `FlowNodePort` that corresponds to the
+   * Given an composite ID, get the `FlowNodeSocket` that corresponds to the
    * `{nodeId}:{edgeId}`. The composite ID is the ID of the node and the ID of
-   * the port separated by a colon.
+   * the socket separated by a colon.
    *
-   * @param compositeId The composite ID to get the port and node for.
-   * @returns The port that corresponds to the composite ID.
+   * @param compositeId The composite ID to get the socket and node for.
+   * @returns The socket that corresponds to the composite ID.
    */
-  public getDataPort(compositeId: string): FlowNodePort {
+  public getDataSocket(compositeId: string): DataSocket {
     const [nodeId, edgeId] = compositeId.split(':')
     const node = this.getNodeInstance(nodeId)
-    return node.getDataPort(edgeId)
+    return node.getDataSocket(edgeId)
   }
 
   /**
@@ -325,11 +327,11 @@ export class Flow<T extends FlowModule = FlowModule> implements FlowOptions<T> {
    */
   public linkCreate(source: string, target: string): void {
 
-    // --- Resolve the source and target ports.
-    const [sourceNodeId, sourcePortId] = source.split(':')
-    const [targetNodeId, targetPortId] = target.split(':')
-    const sourceNode = this.getResultPort(source)
-    const targetNode = this.getDataPort(target)
+    // --- Resolve the source and target socket.
+    const [sourceNodeId, sourceSocketId] = source.split(':')
+    const [targetNodeId, targetSocketId] = target.split(':')
+    const sourceNode = this.getResultSocket(source)
+    const targetNode = this.getDataSocket(target)
 
     // --- Check if the nodes can be linked.
     if (sourceNodeId === targetNodeId)
@@ -342,33 +344,33 @@ export class Flow<T extends FlowModule = FlowModule> implements FlowOptions<T> {
 
     // --- Create the link and dispatch the event.
     const nodeTarget = this.getNodeInstance(targetNodeId)
-    nodeTarget.setDataValue(targetPortId, `$NODE.${sourceNodeId}:${sourcePortId}`)
+    nodeTarget.setDataValue(targetSocketId, `$NODE.${sourceNodeId}:${sourceSocketId}`)
   }
 
   /**
-   * Unlink a node port from all other nodes.
+   * Unlink a node socket from all other nodes.
    *
-   * @param compositeId The node ID and port ID of which to remove the link.
-   * @example flow.linkRemove('01234567-89ab-cdef-0123-456789abcdef:port')
+   * @param socket The node ID and socket ID of which to remove the link.
+   * @example flow.linkRemove('01234567-89ab-cdef-0123-456789abcdef:socket')
    */
-  public linkRemove(compositeId: string): void {
+  public linkRemove(socket: string): void {
 
-    // --- Find the node that contains the port.
-    const [id, edge] = compositeId.split(':')
-    const node = this.getNodeInstance(id)
-    const isTargetEdge = edge in node.dataSchema
+    // --- Find the node that contains the socket.
+    const [nodeId, socketId] = socket.split(':')
+    const node = this.getNodeInstance(nodeId)
+    const isDataSocket = socketId in node.dataSchema
 
-    // --- If the port is a data port, remove the link from the data port.
-    if (isTargetEdge) {
-      node.setDataValue(edge, undefined)
+    // --- If the socket is a data socket, remove the link from the data socket.
+    if (isDataSocket) {
+      node.setDataValue(socketId, undefined)
     }
 
-    // --- If the port is a result port, remove all links that are connected to the result port.
+    // --- If the socket is a result socket, remove all links that are connected to the result socket.
     else {
       for (const targetNode of this.nodes) {
-        for (const targetEdge in targetNode.dataRaw) {
-          if (targetNode.dataRaw[targetEdge] === `$NODE.${id}:${edge}`)
-            targetNode.setDataValue(targetEdge, undefined)
+        for (const targetSocket in targetNode.dataRaw) {
+          if (targetNode.dataRaw[targetSocket] === `$NODE.${nodeId}:${socketId}`)
+            targetNode.setDataValue(targetSocket, undefined)
         }
       }
     }
@@ -475,6 +477,6 @@ export class Flow<T extends FlowModule = FlowModule> implements FlowOptions<T> {
  * flow.nodeCreate(Core.nodes.Entrypoint)
  * flow.nodeCreate('nwrx/core:log')
  */
-export function createFlow<T extends FlowModule>(options?: FlowOptions<T>): Flow<T> {
+export function createFlow<T extends Module>(options?: FlowOptions<T>): Flow<T> {
   return new Flow<T>(options)
 }

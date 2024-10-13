@@ -1,12 +1,12 @@
-import type { FlowNode } from './defineFlowNode'
-import type { FlowType } from './defineFlowType'
+import type { Node } from './defineNode'
+import type { SocketType } from './defineSocketType'
 import { assertNotNil, assertStringNotEmpty } from '@unshared/validation'
 
 /** The options for defining a flow module. */
-export interface FlowModule<
-  Kind extends string = string,
-  Node extends FlowNode = FlowNode,
-  Type extends FlowType = FlowType,
+export interface Module<
+  K extends string = string,
+  N extends Node = Node,
+  T extends SocketType = SocketType,
 > {
 
   /**
@@ -16,7 +16,7 @@ export interface FlowModule<
    *
    * @example 'microsoft-azure'
    */
-  kind: Kind
+  kind: K
 
   /**
    * The display name of the flow module. The label is used to display the module
@@ -51,7 +51,7 @@ export interface FlowModule<
    *
    * @example { CheckCredentials, CreateResource, DeleteResource }
    */
-  nodes?: Node[]
+  nodes?: N[]
 
   /**
    * The types that are defined in the flow module. The types are used to define
@@ -60,7 +60,7 @@ export interface FlowModule<
    *
    * @example { AzureCredentials, AzureResource }
    */
-  types?: Type[]
+  types?: T[]
 }
 
 /**
@@ -70,11 +70,11 @@ export interface FlowModule<
  * @param options The options to define the flow module with.
  * @returns The flow module created with the given options.
  */
-export function defineFlowModule<
-  Kind extends string,
-  Node extends FlowNode,
-  Type extends FlowType,
->(options: FlowModule<Kind, Node, Type>): FlowModule<Kind, Node, Type> {
+export function defineModule<
+  K extends string,
+  N extends Node,
+  T extends SocketType,
+>(options: Module<K, N, T>): Module<K, N, T> {
   assertNotNil(options)
   assertStringNotEmpty(options.kind)
   return {
@@ -82,7 +82,7 @@ export function defineFlowModule<
     name: options.name ?? options.kind,
     icon: options.icon,
     description: options.description,
-    nodes: options.nodes ?? [] as Node[],
-    types: options.types ?? [] as Type[],
+    nodes: options.nodes ?? [] as N[],
+    types: options.types ?? [] as T[],
   }
 }

@@ -1,5 +1,5 @@
 import type { Flow } from './createFlow'
-import type { FlowModule } from './defineFlowModule'
+import type { Module } from './defineModule'
 import type { FlowExportV1, FlowNodeExportV1 } from './flowFromJsonV1'
 
 /**
@@ -26,7 +26,7 @@ export type FlowExport = FlowExportV1
  * @param flow The flow object to serialize.
  * @returns The serialized flow object.
  */
-export function flowToJson(flow: Flow<FlowModule<string, any, any>>): FlowExport {
+export function flowToJson(flow: Flow<Module<string, any, any>>): FlowExport {
   const nodes: Record<string, FlowNodeExportV1> = {}
   const modules = new Set<string>()
 

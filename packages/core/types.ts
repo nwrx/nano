@@ -1,6 +1,17 @@
 import type { Flow } from './createFlow'
-import type { FlowModule } from './defineFlowModule'
-import type { FlowNode, FlowNodePort, FlowSchema } from './defineFlowNode'
+import type { DataSchema, DataSocket } from './defineDataSocket'
+import type { Module } from './defineModule'
+import type { Node } from './defineNode'
+import type { ResultSchema, ResultSocket } from './defineResultSocket'
+
+export type MaybePromise<T> = Promise<T> | T
+
+/**
+ * A schema that is either a data schema or a result schema. The schema contains
+ * the ports of a flow and allows the definition of the label as well as the type
+ * of the socket that is used in the flow.
+ */
+export type FlowNodeSchema = DataSchema | ResultSchema
 
 /**
  * Given a `Flow` instance or a `FlowModule` instance, infer the available node
@@ -9,9 +20,9 @@ import type { FlowNode, FlowNodePort, FlowSchema } from './defineFlowNode'
  *
  * @template T The `FlowModule` instance to infer the node kinds from.
  */
-export type InferNodeKind<T extends Flow | FlowModule> =
-    T extends Flow<infer U extends FlowModule> ? InferNodeKind<U>
-      : T extends FlowModule<infer U, infer N> ? `${U}:${N['kind']}`
+export type InferNodeKind<T extends Flow | Module> =
+    T extends Flow<infer U extends Module> ? InferNodeKind<U>
+      : T extends Module<infer U, infer N> ? `${U}:${N['kind']}`
         : never
 
 /**
@@ -28,9 +39,9 @@ export type InferNodeKind<T extends Flow | FlowModule> =
  * // Infer the node kinds from a module instance.
  * type NodeKind = InferNodeKind<typeof module>
  */
-export type InferNode<T extends Flow | FlowModule> =
-  T extends Flow<infer U extends FlowModule> ? InferNode<U>
-    : T extends FlowModule<string, infer N> ? N
+export type InferNode<T extends Flow | Module> =
+  T extends Flow<infer U extends Module> ? InferNode<U>
+    : T extends Module<string, infer N> ? N
       : never
 
 /**
@@ -48,15 +59,15 @@ export type InferNode<T extends Flow | FlowModule> =
  * // Infer the node from a module instance.
  * type Node = InferNode<typeof module, 'example:parse:boolean'>
  */
-export type InferNodeByKind<T extends Flow | FlowModule, K extends InferNodeKind<T>> =
+export type InferNodeByKind<T extends Flow | Module, K extends InferNodeKind<T>> =
   K extends `${infer U}:${infer N}`
 
     // Infer the node from a flow module instance.
-    ? T extends FlowModule<U, any, any>
+    ? T extends Module<U, any, any>
       ? InferNode<T> extends infer R ? R extends { kind: N } ? R : never : never
 
       // Infer the node from a flow instance.
-      : T extends Flow<infer M extends FlowModule<U>>
+      : T extends Flow<infer M extends Module<U>>
         ? K extends InferNodeKind<M> ? InferNodeByKind<M, K> : never : never
 
     : never
@@ -66,11 +77,13 @@ export type InferNodeByKind<T extends Flow | FlowModule, K extends InferNodeKind
  *
  * @template T The `FlowNodePort` instance to extract the type from.
  * @example
- * type Port = FlowNodePort<string>
- * type PortType = InferPortType<Port> // string
+ * type Port = DataSocket<string>
+ * type PortType = InferSocketType<Port> // string
  */
-export type InferPortType<T extends FlowNodePort> =
-  T extends FlowNodePort<infer U> ? U : never
+export type InferSocketType<T extends DataSocket | ResultSocket> =
+  T extends DataSocket<infer U> ? U
+    : T extends ResultSocket<infer U> ? U
+      : never
 
 /**
  * Infer the raw type contained in a `FlowNodeSchema` schema. The raw type is
@@ -81,8 +94,8 @@ export type InferPortType<T extends FlowNodePort> =
  * type Schema = { value: FlowNodePort<string>; other: FlowNodePort<number> }
  * type RawType = InferRawType<Schema> // { value: string; other: number }
  */
-export type InferSchemaType<T extends FlowSchema> =
-  { [K in keyof T]: InferPortType<T[K]> }
+export type InferSchemaType<T extends FlowNodeSchema> =
+  { [K in keyof T]: InferSocketType<T[K]> }
 
 /**
  * Infer the keys of a schema. The keys are the names of the edges in the schema.
@@ -92,7 +105,7 @@ export type InferSchemaType<T extends FlowSchema> =
  * type Schema = { value: { ... }; other: { ... } }
  * type Keys = InferSchemaKeys<Schema> // 'value' | 'other'
  */
-export type InferSchemaKeys<T extends FlowSchema> =
+export type InferSchemaKeys<T extends FlowNodeSchema> =
   InferSchemaType<T> extends Record<infer K, any> ? K & string : never
 
 /**
@@ -105,7 +118,7 @@ export type InferSchemaKeys<T extends FlowSchema> =
  * type Schema = { value: { name: 'Value', type: TypePrimitiveString } }
  * type ValueType = InferValue<Schema, 'value'> // string
  */
-export type InferSchemaValue<T extends FlowSchema, K extends InferSchemaKeys<T>> =
+export type InferSchemaValue<T extends FlowNodeSchema, K extends InferSchemaKeys<T>> =
   InferSchemaType<T>[K]
 
 /**
@@ -125,12 +138,12 @@ export type InferSchemaValue<T extends FlowSchema, K extends InferSchemaKeys<T>>
  *
  * type Result = InferDataSchema<Node>
  * // {
- * //   value: { name: 'Value', type: FlowType<string> },
- * //   other: { name: 'Other', type: FlowType<number> },
+ * //   value: { name: 'Value', type: SocketType<string> },
+ * //   other: { name: 'Other', type: SocketType<number> },
  * // }
  */
-export type InferDataSchema<T extends FlowNode> =
-  T extends FlowNode<string, infer U extends FlowSchema, any> ? U : never
+export type InferDataSchema<T extends Node> =
+  T extends Node<string, infer U extends DataSchema, any> ? U : never
 
 /**
  * Given a `FlowNode` instance, infer the schema of the result that the node
@@ -149,12 +162,12 @@ export type InferDataSchema<T extends FlowNode> =
  *
  * type Result = InferResultSchema<Node>
  * // {
- * //   value: { name: 'Value', type: FlowType<string> },
- * //   other: { name: 'Other', type: FlowType<number> },
+ * //   value: { name: 'Value', type: SocketType<string> },
+ * //   other: { name: 'Other', type: SocketType<number> },
  * // }
  */
-export type InferResultSchema<T extends FlowNode> =
-  T extends FlowNode<any, any, infer U> ? U : never
+export type InferResultSchema<T extends Node> =
+  T extends Node<any, any, infer U extends ResultSchema> ? U : never
 
 /**
  * Given a `FlowNode` instance, infer the type of the result that the node
@@ -162,7 +175,7 @@ export type InferResultSchema<T extends FlowNode> =
  *
  * @template T The `FlowNode` instance to infer the result from.
  * @example
- * const node = defineFlowNode({
+ * const node = defineNode({
  *   defineResultSchema: {
  *     value: { name: 'Value', type: typeString },
  *     other: { name: 'Other', type: typeNumber },
@@ -171,9 +184,9 @@ export type InferResultSchema<T extends FlowNode> =
  *
  * type Result = InferResult<typeof node> // { value: string; other: number }
  */
-export type InferResult<T extends FlowNode> = InferSchemaType<InferResultSchema<T>>
-export type InferResultKeys<T extends FlowNode> = keyof InferResultSchema<T> & string
-export type InferResultValue<T extends FlowNode, K extends InferResultKeys<T>> = InferResult<T>[K]
+export type InferResult<T extends Node> = InferSchemaType<InferResultSchema<T>>
+export type InferResultKeys<T extends Node> = keyof InferResultSchema<T> & string
+export type InferResultValue<T extends Node, K extends InferResultKeys<T>> = InferResult<T>[K]
 
 /**
  * Given a `FlowNode` instance, infer the type of the data that the node expects
@@ -181,7 +194,7 @@ export type InferResultValue<T extends FlowNode, K extends InferResultKeys<T>> =
  *
  * @template T The `FlowNode` instance to infer the data from.
  * @example
- * const node = defineFlowNode({
+ * const node = defineNode({
  *   defineDataSchema: {
  *     value: { name: 'Value', type: typeString },
  *     other: { name: 'Other', type: typeNumber },
@@ -190,6 +203,6 @@ export type InferResultValue<T extends FlowNode, K extends InferResultKeys<T>> =
  *
  * type Result = InferData<typeof node> // { value: string; other: number }
  */
-export type InferData<T extends FlowNode> = InferSchemaType<InferDataSchema<T>>
-export type InferDataKeys<T extends FlowNode> = keyof InferDataSchema<T> & string
-export type InferDataValue<T extends FlowNode, K extends InferDataKeys<T>> = InferData<T>[K]
+export type InferData<T extends Node> = InferSchemaType<InferDataSchema<T>>
+export type InferDataKeys<T extends Node> = keyof InferDataSchema<T> & string
+export type InferDataValue<T extends Node, K extends InferDataKeys<T>> = InferData<T>[K]

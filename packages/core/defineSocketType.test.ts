@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type { FlowType, InferType } from './defineFlowType'
-import { defineFlowType } from './defineFlowType'
+import type { InferType, SocketType } from './defineSocketType'
+import { defineSocketType } from './defineSocketType'
 
-describe('defineFlowType', () => {
-  describe('defineFlowType', () => {
+describe('defineSocketType', () => {
+  describe('defineSocketType', () => {
     it('should define a flow type with the given options', () => {
       const parse = vi.fn()
-      const type = defineFlowType({
+      const type = defineSocketType({
         kind: 'type-id',
         name: 'String',
         color: '#ff0000',
@@ -27,7 +27,7 @@ describe('defineFlowType', () => {
 
     it('should define a flow type with minimal options', () => {
       const parse = vi.fn()
-      const type = defineFlowType({ kind: 'type-id', parse })
+      const type = defineSocketType({ kind: 'type-id', parse })
 
       expect(type).toStrictEqual({
         kind: 'type-id',
@@ -41,7 +41,7 @@ describe('defineFlowType', () => {
 
     it('should not return the same object', () => {
       const object = { kind: 'type-id', parse: vi.fn() }
-      const type = defineFlowType(object)
+      const type = defineSocketType(object)
       expect(type).not.toBe(object)
     })
   })
@@ -49,44 +49,44 @@ describe('defineFlowType', () => {
   describe('error cases', () => {
     it('should throw an error if options is undefined', () => {
     // @ts-expect-error: test invalid input
-      const shouldThrow = () => defineFlowType()
+      const shouldThrow = () => defineSocketType()
       expect(shouldThrow).toThrow('Expected value not to be null or undefined')
     })
 
     it('should throw an error if the kind is undefined', () => {
     // @ts-expect-error: test invalid input
-      const shouldThrow = () => defineFlowType({ kind: undefined })
+      const shouldThrow = () => defineSocketType({ kind: undefined })
       expect(shouldThrow).toThrow('Expected value to be a string but received: undefined')
     })
 
     it('should throw an error if the kind is null', () => {
     // @ts-expect-error: test invalid input
     // eslint-disable-next-line unicorn/no-null
-      const shouldThrow = () => defineFlowType({ kind: null })
+      const shouldThrow = () => defineSocketType({ kind: null })
       expect(shouldThrow).toThrow('Expected value to be a string but received: null')
     })
 
     it('should throw an error if the kind is an empty string', () => {
     // @ts-expect-error: test invalid input
-      const shouldThrow = () => defineFlowType({ kind: '' })
+      const shouldThrow = () => defineSocketType({ kind: '' })
       expect(shouldThrow).toThrow('Expected value to be a non-empty string but received an empty string')
     })
 
     it('should throw an error if the kind is not a string', () => {
     // @ts-expect-error: test invalid input
-      const shouldThrow = () => defineFlowType({ kind: 123 })
+      const shouldThrow = () => defineSocketType({ kind: 123 })
       expect(shouldThrow).toThrow('Expected value to be a string but received: number')
     })
   })
 
   describe('type inference', () => {
     it('should return the type of a flow type', () => {
-      const type = defineFlowType({ kind: 'type-id', parse: (): string => '' })
+      const type = defineSocketType({ kind: 'type-id', parse: (): string => '' })
       expectTypeOf<InferType<typeof type>>().toEqualTypeOf<string>()
     })
 
     it('should infer the type of a flow type', () => {
-      type Type = FlowType<string>
+      type Type = SocketType<string>
       type Result = InferType<Type>
       expectTypeOf<Result>().toEqualTypeOf<string>()
     })

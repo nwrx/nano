@@ -1,9 +1,9 @@
 import { assertNotNil, assertStringNotEmpty } from '@unshared/validation'
 
 /**
- * A `FlowCategory` defines a collection of node that have a common purpose.
+ * A `Category` defines a collection of node that have a common purpose.
  */
-export interface FlowCategory {
+export interface Category {
 
   /**
    * The internal kind of the category for identification
@@ -47,12 +47,12 @@ export interface FlowCategory {
 }
 
 /**
- * Defines a new `FlowCategory` with the specified properties.
+ * Defines a new `Category` with the specified properties.
  *
  * @param category The properties of the category.
  * @returns The defined category.
  */
-export function defineFlowCategory(category: FlowCategory): FlowCategory {
+export function defineCategory(category: Category): Category {
   assertNotNil(category)
   assertStringNotEmpty(category.kind)
   return {

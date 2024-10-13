@@ -1,6 +1,6 @@
 import type { Pretty } from '@unshared/types'
 import type { Flow } from './createFlow'
-import type { FlowNode, FlowNodeContext } from './defineFlowNode'
+import type { Node, NodeInstanceContext } from './defineNode'
 import type {
   InferData,
   InferDataKeys,
@@ -12,14 +12,13 @@ import type {
   InferResultValue,
 } from './types'
 import { randomUUID } from 'node:crypto'
-import { createSchemaParser } from './createSchemaParser'
 
 /**
  * A map of events that can be dispatched by a flow node and the variables
  * that are passed to the event listeners.
  */
-export interface FlowNodeEvents<T extends FlowNode> {
-  meta: [meta: Partial<FlowNodeInstanceMeta>]
+export interface NodeEvents<T extends Node> {
+  meta: [meta: Partial<NodeInstanceMeta>]
   metaValue: [key: string, value: unknown]
   data: [data: Record<string, unknown>]
   result: [result: Partial<InferResult<T>>]
@@ -36,15 +35,15 @@ export interface FlowNodeEvents<T extends FlowNode> {
  * A listener for a flow node event. The listener is called when the event is
  * dispatched by the flow node.
  */
-export type FlowNodeListener<T extends FlowNode, K extends keyof FlowNodeEvents<T>> =
-  (...parameters: FlowNodeEvents<T>[K]) => Promise<void> | void
+export type NodeListener<T extends Node, K extends keyof NodeEvents<T>> =
+  (...parameters: NodeEvents<T>[K]) => Promise<void> | void
 
 /**
  * Additional properties that can be set on a flow node instance. They are used to
  * provide additional information about the node instance, such as a label, a comment,
  * a position, and other meta information that are context-specific.
  */
-export interface FlowNodeInstanceMeta {
+export interface NodeInstanceMeta {
   label?: string
   comment?: string
   position?: { x: number; y: number }
@@ -61,11 +60,11 @@ export interface FlowNodeInstanceMeta {
  * @template T The schema of the data that the node expects.
  * @template U The schema of the result that the node produces.
  */
-export interface FlowNodeInstanceOptions<T extends FlowNode = FlowNode> {
+export interface NodeInstanceOptions<T extends Node = Node> {
   id?: string
   flow: Flow
   node: T
-  meta?: FlowNodeInstanceMeta
+  meta?: NodeInstanceMeta
   initialData?: Partial<InferData<T>>
   initialResult?: Partial<InferResult<T>>
 }
@@ -77,8 +76,8 @@ export interface FlowNodeInstanceOptions<T extends FlowNode = FlowNode> {
  *
  * @example new ChainNode({ id: 'core:entrypoint', name: 'Entrypoint' })
  */
-export class FlowNodeInstance<T extends FlowNode = FlowNode> implements FlowNodeInstanceOptions<T> {
-  constructor(options: FlowNodeInstanceOptions<T>) {
+export class NodeInstance<T extends Node = Node> implements NodeInstanceOptions<T> {
+  constructor(options: NodeInstanceOptions<T>) {
     this.flow = options.flow
     this.node = options.node
     if (options.id) this.id = options.id
@@ -91,7 +90,7 @@ export class FlowNodeInstance<T extends FlowNode = FlowNode> implements FlowNode
 
   public flow
   public node
-  public meta: FlowNodeInstanceMeta = {}
+  public meta: NodeInstanceMeta = {}
   public id = randomUUID() as string
 
   public error: Error | undefined
@@ -112,7 +111,7 @@ export class FlowNodeInstance<T extends FlowNode = FlowNode> implements FlowNode
    * @param event The event to dispatch.
    * @param data The parameters to pass to the event listeners.
    */
-  public dispatch<K extends keyof FlowNodeEvents<T>>(event: K, ...data: FlowNodeEvents<T>[K]) {
+  public dispatch<K extends keyof NodeEvents<T>>(event: K, ...data: NodeEvents<T>[K]) {
     const customEvent = new CustomEvent(event as string, { detail: data })
     this.eventTarget.dispatchEvent(customEvent)
   }
@@ -125,8 +124,8 @@ export class FlowNodeInstance<T extends FlowNode = FlowNode> implements FlowNode
    * @param listener The listener to call when the event is dispatched.
    * @returns A function that removes the listener when called.
    */
-  public on<K extends keyof FlowNodeEvents<T>>(event: K, listener: FlowNodeListener<T, K>): () => void {
-    const handler = (event: Event) => { void listener(...(event as CustomEvent<FlowNodeEvents<T>[K]>).detail) }
+  public on<K extends keyof NodeEvents<T>>(event: K, listener: NodeListener<T, K>): () => void {
+    const handler = (event: Event) => { void listener(...(event as CustomEvent<NodeEvents<T>[K]>).detail) }
     this.eventTarget.addEventListener(event, handler)
     this.eventHandlers.set(event, handler)
     return () => this.eventTarget.removeEventListener(event, handler)
@@ -140,7 +139,7 @@ export class FlowNodeInstance<T extends FlowNode = FlowNode> implements FlowNode
    * @param meta The settings to set for the flow.
    * @example flow.flowSetMeta({ name: 'Flow', icon: 'flow', description: 'A flow' })
    */
-  public setMeta(meta: Partial<FlowNodeInstanceMeta>) {
+  public setMeta(meta: Partial<NodeInstanceMeta>) {
     this.meta = { ...this.meta, ...meta }
     this.dispatch('meta', this.meta)
   }
@@ -207,7 +206,7 @@ export class FlowNodeInstance<T extends FlowNode = FlowNode> implements FlowNode
    * @param key The key of the data schema to get the port for.
    * @returns The port that corresponds to the key of the data schema.
    */
-  public getDataPort<K extends InferDataKeys<T>>(key: K): InferDataSchema<T>[K] {
+  public getDataSocket<K extends InferDataKeys<T>>(key: K): InferDataSchema<T>[K] {
     if (key in this.dataSchema) return this.dataSchema[key]
     throw new Error(`The data schema of node "${this.id}" does not contain a port with the key "${key}" or has not been resolved yet`)
   }
@@ -219,7 +218,7 @@ export class FlowNodeInstance<T extends FlowNode = FlowNode> implements FlowNode
    * @param value The value of the data property.
    */
   public setDataValue<K extends InferDataKeys<T>>(key: K, value: InferDataValue<T, K>): void {
-    this.getDataPort(key)
+    this.getDataSocket(key)
     this.dataRaw[key] = value
     this.dispatch('data', this.dataRaw)
   }
@@ -230,7 +229,7 @@ export class FlowNodeInstance<T extends FlowNode = FlowNode> implements FlowNode
    * @param data The data to set.
    */
   public setData(data: InferData<T>): void {
-    for (const key in data) this.getDataPort(key)
+    for (const key in data) this.getDataSocket(key)
     this.dataRaw = data
     this.dispatch('data', this.dataRaw)
   }
@@ -242,7 +241,7 @@ export class FlowNodeInstance<T extends FlowNode = FlowNode> implements FlowNode
    * @param key The key of the result schema to get the port for.
    * @returns The port that corresponds to the key of the result schema.
    */
-  public getResultPort<K extends InferResultKeys<T>>(key: K): InferResultSchema<T>[K] {
+  public getResultSocket<K extends InferResultKeys<T>>(key: K): InferResultSchema<T>[K] {
     if (key in this.resultSchema) return this.resultSchema[key]
     throw new Error(`The result schema of node "${this.id}" does not contain a port with the key "${key}" or has not been resolved yet`)
   }
@@ -255,7 +254,7 @@ export class FlowNodeInstance<T extends FlowNode = FlowNode> implements FlowNode
    * @returns The value of the result property of the node by key.
    */
   public getResultValue<K extends InferResultKeys<T>>(key: K): InferResultValue<T, K> {
-    this.getResultPort(key)
+    this.getResultSocket(key)
     return this.result[key] as InferResultValue<T, K>
   }
 
@@ -266,7 +265,7 @@ export class FlowNodeInstance<T extends FlowNode = FlowNode> implements FlowNode
    * @param value The value of the result property.
    */
   public setResultValue<K extends InferResultKeys<T>>(key: K, value: InferResultValue<T, K>): void {
-    const port = this.getResultPort(key)
+    const port = this.getResultSocket(key)
     this.result[key] = port.type.parse(value) as InferResultValue<T, K>
     this.dispatch('result', this.result)
   }
@@ -277,10 +276,14 @@ export class FlowNodeInstance<T extends FlowNode = FlowNode> implements FlowNode
    * @param result The result to set.
    */
   public setResult(result: InferResult<T>): void {
-    if (!this.resultSchema) throw new Error('Result schema not resolved')
-    const parse = createSchemaParser(this.resultSchema)
-    this.result = parse(result)
-    this.dispatch('result', this.result)
+    if (!this.resultSchema) throw new Error('Cannot set the result of the node before the result schema has been resolved')
+    const newResult: Record<string, unknown> = {}
+    for (const key in this.resultSchema) {
+      const socket = this.resultSchema[key]
+      const parse = socket.type.parse ?? ((value: unknown) => value)
+      newResult[key] = parse(result[key])
+    }
+    this.dispatch('result', this.result = newResult as InferResult<T>)
   }
 
   /**
@@ -359,7 +362,7 @@ export class FlowNodeInstance<T extends FlowNode = FlowNode> implements FlowNode
    *
    * @returns The context object that is used to process the node.
    */
-  public get context(): FlowNodeContext<InferDataSchema<T>, InferResultSchema<T>> {
+  public get context(): NodeInstanceContext<InferDataSchema<T>, InferResultSchema<T>> {
     return {
       flow: this.flow,
       data: this.data as Pretty<Partial<InferData<T>>>,
@@ -454,6 +457,6 @@ export class FlowNodeInstance<T extends FlowNode = FlowNode> implements FlowNode
  * @param options The options to create the flow node instance with.
  * @returns The flow node instance created with the given options.
  */
-export function createFlowNodeInstance<T extends FlowNode<string, any, any>>(options: FlowNodeInstanceOptions<T>) {
-  return new FlowNodeInstance(options)
+export function createFlowNodeInstance<T extends Node<string, any, any>>(options: NodeInstanceOptions<T>) {
+  return new NodeInstance(options)
 }
