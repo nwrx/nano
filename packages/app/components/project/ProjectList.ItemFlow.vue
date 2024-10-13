@@ -18,6 +18,14 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n({ useScope: 'local' })
+
+function getFlowRoute(workspace: string, project: string, flow: string) {
+  if (!workspace || !project || !flow) return
+  return {
+    name: 'FlowEditor',
+    params: { workspace, project, flow },
+  }
+}
 </script>
 
 <template>
@@ -35,7 +43,7 @@ const { t } = useI18n({ useScope: 'local' })
           eager
           :icon="icon"
           :label="title"
-          :to="{ name: 'FlowEditor', params: { workspace, project, flow: name } }"
+          :to="getFlowRoute(workspace, project, name)"
           class="font-medium text-left whitespace-nowrap"
         />
       </div>
@@ -92,7 +100,7 @@ const { t } = useI18n({ useScope: 'local' })
             :label="t('menu.edit')"
             icon="i-carbon:edit"
             keybind="Ctrl + E"
-            :to="{ name: 'FlowEditor', params: { workspace, project, flow: name } }"
+            :to="getFlowRoute(workspace, project, name)"
           />
           <ContextMenuItem
             :label="t('menu.delete')"
