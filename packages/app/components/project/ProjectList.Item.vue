@@ -15,15 +15,16 @@ const emit = defineEmits<{
   'update:modelValue': [value: boolean]
 }>()
 
+const { t } = useI18n()
 const model = useVModel(props, 'modelValue', emit, {
   passive: true,
 })
 
-function getProjectRoute(workspace: string, project: string, tab?: string) {
+function getProjectRoute(workspace: string, project: string) {
+  if (!workspace || !project) return
   return {
     name: 'ProjectSettings',
     params: { workspace, project },
-    query: tab ? { tab } : undefined,
   }
 }
 </script>
@@ -66,22 +67,22 @@ function getProjectRoute(workspace: string, project: string, tab?: string) {
       <ContextMenu x="right" y="top" @mousedown.stop>
         <template #menu="{ close }">
           <ContextMenuItem
-            label="Settings"
+            :label="t('menu.settings')"
             icon="i-carbon:settings"
             keybind="Ctrl + Shift + S"
             :to="getProjectRoute(workspace, name)"
             @click="() => close()"
           />
           <ContextMenuItem
-            label="Access"
+            :label="t('menu.access')"
             icon="i-carbon:group"
             keybind="Ctrl + Shift + C"
-            :to="getProjectRoute(workspace, name, 'access')"
+            :to="getProjectRoute(workspace, name)"
             @click="() => close()"
           />
           <ContextMenuDivider />
           <ContextMenuItem
-            label="Delete"
+            :label="t('menu.delete')"
             icon="i-carbon:delete"
             keybind="Backspace"
             @click="() => { emit('delete'); close() }"
@@ -117,7 +118,7 @@ function getProjectRoute(workspace: string, project: string, tab?: string) {
       <!-- Create flow button -->
       <Button
         link
-        label="Create a new Flow in this Project"
+        :label="t('createFlow')"
         class="mb-sm text-subtle"
         icon-prepend="i-carbon:flow"
         icon-append="i-carbon:chevron-right"
@@ -128,3 +129,31 @@ function getProjectRoute(workspace: string, project: string, tab?: string) {
     </BaseCollapse>
   </div>
 </template>
+
+<i18n lang="yaml">
+  en:
+    menu.settings: Edit
+    menu.access: Access
+    menu.delete: Delete
+    createFlow: Create a new Flow in this Project
+  fr:
+    menu.settings: Modifier
+    menu.access: Accès
+    menu.delete: Supprimer
+    createFlow: Créer un nouveau Flow dans ce projet
+  de:
+    menu.settings: Bearbeiten
+    menu.access: Zugriff
+    menu.delete: Löschen
+    createFlow: Erstellen Sie einen neuen Flow in diesem Projekt
+  es:
+    menu.settings: Editar
+    menu.access: Acceso
+    menu.delete: Borrar
+    createFlow: Crear un nuevo flujo en este proyecto
+  zh:
+    menu.settings: 编辑
+    menu.access: 访问
+    menu.delete: 删除
+    createFlow: 在此项目中创建新流程
+</i18n>
