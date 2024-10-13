@@ -19,7 +19,7 @@ defineProps<{
     />
 
     <!-- Content -->
-    <slot v-if="label">
+    <slot v-if="label || $slots.default">
       <span>{{ label }}</span>
     </slot>
 
