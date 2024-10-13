@@ -174,7 +174,7 @@ const editor = useFlowEditor({
         v-for="(link, index) in editor.linksProps"
         :key="index"
         v-bind="link"
-        class="absolute z-9999 pointer-events-none"
+        class="absolute z-0 pointer-events-none"
         :zoom="editor.viewZoom"
       />
 
@@ -182,7 +182,7 @@ const editor = useFlowEditor({
       <FlowEditorLink
         v-if="editor.linkDragProps"
         v-bind="editor.linkDragProps"
-        class="absolute z-9999 pointer-events-none"
+        class="absolute z-0 pointer-events-none"
         :zoom="editor.viewZoom"
       />
     </div>
