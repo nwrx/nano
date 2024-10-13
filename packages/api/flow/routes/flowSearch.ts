@@ -17,20 +17,15 @@ export function flowSearch(this: ModuleFlow) {
       }),
     },
     async({ event, query }): Promise<FlowObject[]> => {
-
-      // --- Check if the user has the right permissions.
-      // const userModule = this.getModule(ModuleUser)
-      // await userModule.a11n(event, {
-      //   optional: true,
-      //   permissions: [this.permissions.FLOW_SEARCH.id],
-      // })
+      const userModule = this.getModule(ModuleUser)
+      await userModule.authenticate(event)
 
       // --- Deconstruct the query.
       const { search } = query
       const { limit = 10, page = 1 } = query
 
       // --- Fetch the chains.
-      const { Flow } = this.entities
+      const { Flow } = this.getRepositories()
       const flows = await Flow.find({
         where: [
           { title: search ? ILike(`%${search}%`) : undefined },
