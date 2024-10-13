@@ -1,11 +1,11 @@
 <!-- eslint-disable vue/no-setup-props-reactivity-loss -->
 <script setup lang="ts">
-import type { FlowNodeInstanceJSON } from '@nwrx/api'
+import type { NodeInstanceJSON } from '@nwrx/api'
 
 const props = defineProps<{
   name: string
   description: string
-  node: FlowNodeInstanceJSON
+  node: NodeInstanceJSON
   isDataOpen: boolean
   isResultOpen: boolean
 }>()

@@ -1,5 +1,6 @@
-import type { Flow, FlowNode } from '@nwrx/core'
-import { type FlowNodeJSON, serializeFlowNode } from './serializeFlowNode'
+import type { Flow, Node } from '@nwrx/core'
+import type { NodeJSON } from './serializeNode'
+import { serializeNode } from './serializeNode'
 
 /** The serialized representation of a flow category. */
 export interface FlowCategoryNodesJSON {
@@ -7,7 +8,7 @@ export interface FlowCategoryNodesJSON {
   name?: string
   icon?: string
   description?: string
-  nodes: FlowNodeJSON[]
+  nodes: NodeJSON[]
 }
 
 /**
@@ -17,7 +18,7 @@ export interface FlowCategoryNodesJSON {
  * @param flow The `Flow` object to serialize.
  * @returns The serialized version of the `Flow` object.
  */
-export function serializeFlowCategories(flow: Flow) {
+export function serializeCategories(flow: Flow) {
   const categories: FlowCategoryNodesJSON[] = [{
     kind: 'uncategorized',
     name: 'Uncategorized',
@@ -30,18 +31,18 @@ export function serializeFlowCategories(flow: Flow) {
   for (const module of flow.modules) {
     if (!module.nodes) continue
     for (const node of Object.values(module.nodes)) {
-      const nodeJson = serializeFlowNode({ ...node, kind: `${module.kind}:${node.kind}` })
+      const nodeJson = serializeNode({ ...node, kind: `${module.kind}:${node.kind}` })
 
       // --- If the node has no category, add it to the uncategorized category.
       if (!nodeJson.categoryKind) {
-        categories[0].nodes.push(serializeFlowNode(nodeJson as FlowNode))
+        categories[0].nodes.push(serializeNode(nodeJson as Node))
         continue
       }
 
       // --- If the category already exists, add the node to the category.
       // --- Otherwise, create a new category and add the node to the category.
       const category = categories.find(c => c.kind === nodeJson.categoryKind)
-      if (category) { category.nodes.push(nodeJson as FlowNode) }
+      if (category) { category.nodes.push(nodeJson as Node) }
       else {
         categories.push({
           kind: nodeJson.categoryKind,

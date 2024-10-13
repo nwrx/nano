@@ -1,16 +1,9 @@
 <script setup lang="ts">
-import type { FlowNodePortJSON, FlowSessionSecretJSON, FlowSessionVariableJSON } from '@nwrx/api'
+import type { FlowSessionSecretJSON, FlowSessionVariableJSON, NodeInstanceJSON } from '@nwrx/api'
 
 const props = defineProps<{
   id: string
-  name: string
-  icon: string
   color: string
-  data: Record<string, unknown>
-  result: Record<string, unknown>
-  dataSchema: FlowNodePortJSON[]
-  resultSchema: FlowNodePortJSON[]
-  position: { x: number; y: number }
   zoom: number
   isRunning: boolean
   isDragging: boolean
@@ -18,8 +11,7 @@ const props = defineProps<{
   isCollapsed: boolean
   secrets: FlowSessionSecretJSON[]
   variables: FlowSessionVariableJSON[]
-  error?: string
-}>()
+} & NodeInstanceJSON>()
 
 const emit = defineEmits<{
   run: []

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FlowNodePortJSON, FlowSessionSecretJSON, FlowSessionVariableJSON } from '@nwrx/api'
+import type { DataSocketJSON, FlowSessionSecretJSON, FlowSessionVariableJSON } from '@nwrx/api'
 
 const props = defineProps<{
   nodeId: string
@@ -8,7 +8,7 @@ const props = defineProps<{
   value: unknown
   secrets?: FlowSessionSecretJSON[]
   variables?: FlowSessionVariableJSON[]
-} & FlowNodePortJSON>()
+} & DataSocketJSON>()
 
 const emit = defineEmits<{
   setValue: [value: unknown]
@@ -30,6 +30,9 @@ const isLinked = computed(() => {
   return model.value.startsWith('$NODE.')
 })
 
+// --- Assert if the control is linkea to another node.
+const isLinkeable = computed(() => props.control === 'socket' || !props.control || isLinked.value)
+
 // --- Reference to the color pin HTML element.
 const pin = ref<HTMLDivElement>()
 defineExpose({ pin })
@@ -37,7 +40,7 @@ defineExpose({ pin })
 // --- Handle dragging from this pin to create a new
 function onGrab(event: MouseEvent) {
   if (!pin.value) return
-  if (props.disallowDynamic) return
+  if (!isLinkeable.value) return
   if (event.target instanceof HTMLInputElement) return
   if (event.target instanceof HTMLTextAreaElement) return
   if (event.target instanceof HTMLSelectElement) return
@@ -56,7 +59,7 @@ function onGrab(event: MouseEvent) {
 // --- When the mouse hovers over a pin, set the target of the new
 function onAssign() {
   if (!pin.value) return
-  if (props.disallowDynamic) return
+  if (!isLinkeable.value) return
   const { x, y, width, height } = pin.value.getBoundingClientRect()
   emit('assign', {
     id: `${props.nodeId}:${props.portId}`,
@@ -86,7 +89,7 @@ function onRelease() {
     :class="{
       'pr-5 flex-row': kind === 'target',
       'pl-5 flex-row-reverse': kind === 'source',
-      'hover:bg-app cursor-pointer': (!display && isLinked && !disallowDynamic && !disallowStatic) || kind === 'source',
+      'hover:bg-app cursor-pointer': isLinkeable,
     }"
     @mousedown="(event: MouseEvent) => onGrab(event)"
     @mouseover="() => onAssign()"
@@ -101,13 +104,20 @@ function onRelease() {
       :class="{
         'rounded-r-lg': kind === 'target',
         'rounded-l-lg': kind === 'source',
-        'w-4': !disallowDynamic,
-        'w-2 ml-2 rounded-lg': disallowDynamic,
+        'w-4': isLinkeable,
+        'w-2 ml-2 rounded-lg': !isLinkeable,
       }"
     />
 
+    <!-- Display the name -->
+    <span
+      v-if="!control || control === 'socket' || isLinked"
+      class="truncate text-start px-sm py-xs outline-none"
+      v-text="name"
+    />
+
     <FlowEditorPortVariable
-      v-if="disallowStatic && disallowDynamic && !isLinked"
+      v-else-if="control === 'variable'"
       v-model="(model as string)"
       :name="name"
       :secrets="secrets"
@@ -115,36 +125,27 @@ function onRelease() {
       @mousedown.stop
     />
 
-    <!-- Display the name -->
-    <span
-      v-else-if="!display || isLinked"
-      class="truncate text-start px-sm py-xs outline-none"
-      v-text="name"
-    />
-
     <!-- Display an input field -->
     <FlowEditorPortText
-      v-else-if="display === 'text'"
+      v-else-if="control === 'text'"
       v-model="(model as string)"
-      :defaultValue="defaultValue"
       :name="name"
       @mousedown.stop
     />
 
     <!-- Display a select field -->
     <FlowEditorPortSelect
-      v-else-if="display === 'select'"
+      v-else-if="control === 'select'"
       v-model="model"
       :name="name"
-      :values="values"
+      :options="options"
       @mousedown.stop
     />
 
     <!-- Display a textarea field -->
     <FlowEditorPortTextarea
-      v-else-if="display === 'textarea'"
+      v-else-if="control === 'textarea'"
       v-model="(model as string)"
-      :defaultValue="defaultValue"
       :name="name"
       @mousedown.stop
     />

@@ -1,10 +1,10 @@
-import type { FlowModule as FlowModuleInstance } from '@nwrx/core'
-import type { FlowModule as FlowModuleEntity, ModuleFlow } from '../index'
+import type { Module } from '@nwrx/core'
+import type { FlowModule, ModuleFlow } from '../index'
 import { EXP_UUID } from '@unshared/validation'
 
 export interface ResolvedFlowModule {
-  module: FlowModuleInstance
-  entity: FlowModuleEntity
+  module: Module
+  entity: FlowModule
 }
 
 /**
@@ -13,7 +13,7 @@ export interface ResolvedFlowModule {
  * @param idOrKind The module identifier of the module to resolve.
  * @returns The module that is associated with the module.
  */
-export async function resolveFlowModule(this: ModuleFlow, idOrKind: string): Promise<ResolvedFlowModule> {
+export async function resolveModule(this: ModuleFlow, idOrKind: string): Promise<ResolvedFlowModule> {
 
   // --- Find the entity that is associated with the module.
   const { FlowModule } = this.getRepositories()
@@ -21,7 +21,7 @@ export async function resolveFlowModule(this: ModuleFlow, idOrKind: string): Pro
   const moduleEntity = await FlowModule.findOneBy({ [isUUID ? 'id' : 'kind']: idOrKind })
   if (!moduleEntity) throw new Error(`Failed to find module: ${idOrKind}`)
 
-  const moduleImport = await import(moduleEntity.moduleId) as { default: FlowModuleInstance }
+  const moduleImport = await import(moduleEntity.moduleId) as { default: Module }
   if (!moduleImport) throw new Error(`Failed to load module: ${idOrKind}`)
   if (!moduleImport.default) throw new Error(`Module does not have a default export: ${idOrKind}`)
 

@@ -34,7 +34,7 @@ const values = computed(() => [
   <FlowEditorPortSelect
     v-model="model"
     :name="name"
-    :values="values"
+    :options="values"
     badge
   />
 </template>

@@ -1,5 +1,5 @@
 /* eslint-disable unicorn/prevent-abbreviations */
-import type { FlowNodeInstanceJSON, FlowSessionParticipantJSON } from '@nwrx/api'
+import type { NodeInstanceJSON, FlowSessionParticipantJSON } from '@nwrx/api'
 import type { Position } from '@vueuse/core'
 import type { FlowEditorNode } from '#build/components'
 import type { CSSProperties } from 'vue'
@@ -23,7 +23,7 @@ export interface UseFlowEditorOptions {
    *
    * @default []
    */
-  nodes: Ref<FlowNodeInstanceJSON[]>
+  nodes: Ref<NodeInstanceJSON[]>
 
   /**
    * The size of the viewplane. This is used to determine the size of internal
@@ -52,7 +52,7 @@ export interface UseFlowEditorOptions {
    *
    * @param nodes The list of selected nodes in the flow editor.
    */
-  onNodesSelect?: (nodes: FlowNodeInstanceJSON[]) => void
+  onNodesSelect?: (nodes: NodeInstanceJSON[]) => void
 
   /**
    * The function to call when one or more nodes are moved in the flow editor.
@@ -329,7 +329,7 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
      * @param node The node that should be styled.
      * @returns The style object that should be applied to the node.
      */
-    getNodeStyle: (node: FlowNodeInstanceJSON): CSSProperties => {
+    getNodeStyle: (node: NodeInstanceJSON): CSSProperties => {
       const { x, y } = worldToView(node.position)
       const isSelected = nodeSelectedIds.value.has(node.id)
       return {

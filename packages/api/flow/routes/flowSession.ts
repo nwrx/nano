@@ -302,7 +302,7 @@ export function flowSession(this: ModuleFlow) {
           // --- Node events.
           case 'nodeCreate': {
             const { kind, x, y } = message
-            const node = session.flow.nodeCreate(kind, {
+            const node = session.flow.createNode(kind, {
               meta: { position: { x, y } },
               initialData: {},
               initialResult: {},
@@ -316,7 +316,7 @@ export function flowSession(this: ModuleFlow) {
             const { nodeId, x, y } = message
             const instance = session.flow.getNodeInstance(nodeId)
             const kind = `${instance.flow.resolveNodeModule(instance).kind}:${instance.node.kind}`
-            const node = session.flow.nodeCreate(kind, {
+            const node = session.flow.createNode(kind, {
               meta: { position: { x, y } },
               initialData: instance.dataRaw,
             })
@@ -353,7 +353,7 @@ export function flowSession(this: ModuleFlow) {
             const { nodeIds } = message
             for (const nodeId of nodeIds) {
               session.flow.getNodeInstance(nodeId).abort()
-              session.flow.nodeRemove(nodeId)
+              session.flow.removeNode(nodeId)
             }
             await session.save()
             break
@@ -362,13 +362,13 @@ export function flowSession(this: ModuleFlow) {
           // --- Link events.
           case 'linkCreate': {
             const { source, target } = message
-            session.flow.linkCreate(source, target)
+            session.flow.createLink(source, target)
             await session.save()
             break
           }
           case 'linkRemove': {
             const { source } = message
-            session.flow.linkRemove(source)
+            session.flow.removeLink(source)
             await session.save()
             break
           }

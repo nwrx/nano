@@ -1,9 +1,11 @@
-import type { FlowNode } from '@nwrx/core'
-import type { FlowNodePortJSON } from './serializeFlowSchema'
-import { serializeFlowSchema } from './serializeFlowSchema'
+import type { Node } from '@nwrx/core'
+import type { DataSocketJSON } from './serializeDataSchema'
+import type { ResultSocketJSON } from './serializeResultSchema'
+import { serializeDataSchema } from './serializeDataSchema'
+import { serializeResultSchema } from './serializeResultSchema'
 
 /** The serialized representation of a flow node. */
-export interface FlowNodeJSON {
+export interface NodeJSON {
   kind: string
   name?: string
   icon?: string
@@ -13,8 +15,8 @@ export interface FlowNodeJSON {
   categoryColor?: string
   categoryDescription?: string
   description?: string
-  dataSchema?: FlowNodePortJSON[]
-  resultSchema?: FlowNodePortJSON[]
+  dataSchema?: DataSocketJSON[]
+  resultSchema?: ResultSocketJSON[]
 }
 
 /**
@@ -24,7 +26,7 @@ export interface FlowNodeJSON {
  * @param node The flow node to serialize.
  * @returns The serialized version of the flow node.
  */
-export function serializeFlowNode(node: FlowNode): FlowNodeJSON {
+export function serializeNode(node: Node): NodeJSON {
   return {
     kind: node.kind,
     icon: node.icon,
@@ -35,7 +37,7 @@ export function serializeFlowNode(node: FlowNode): FlowNodeJSON {
     categoryIcon: node.category?.icon,
     categoryColor: node.category?.color ?? '#000000',
     categoryDescription: node.category?.description,
-    dataSchema: serializeFlowSchema(node.defineDataSchema),
-    resultSchema: serializeFlowSchema(node.defineResultSchema),
+    dataSchema: serializeDataSchema(node.defineDataSchema),
+    resultSchema: serializeResultSchema(node.defineResultSchema),
   }
 }
