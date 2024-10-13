@@ -30,10 +30,8 @@ export function flowGet(this: ModuleFlow) {
       const flow = await this.resolveFlow({ name: flowName, project, workspace })
 
       // --- Return the serialized flow.
-      return {
-        ...flow.serialize(),
-        data: query.withData ? flow.data : undefined,
-      }
+      const { withData = false } = query
+      return flow.serialize({ withData })
     },
   )
 }
