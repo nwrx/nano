@@ -4,7 +4,7 @@ import type { Module } from './defineModule'
 import type { Node } from './defineNode'
 import type { ResultSchema, ResultSocket } from './defineResultSocket'
 import type { InferNodeByKind, InferNodeKind } from './types'
-import { createFlowNodeInstance, NodeInstance } from './createNodeInstance'
+import { createFlowNodeInstance as createNodeInstance, NodeInstance } from './createNodeInstance'
 
 /**
  * A map of events that can be dispatched by a flow node and the parameters
@@ -79,7 +79,7 @@ export interface FlowLink {
 }
 
 /**
- * a `Flow` is a collection of `FlowNode`s that are linked together. The flow
+ * a `Flow` is a collection of `Node`s that are linked together. The flow
  * is processed by executing the entrypoint and letting the nodes trigger each
  * other.
  *
@@ -184,7 +184,7 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
   }
 
   /**
-   * Given a `FlowNode` or `FlowNodeInstance`, reslove the module from which the node
+   * Given a `Node` or `NodeInstance`, reslove the module from which the node
    * originates.
    *
    * @param node The node definition or instance to get the module for.
@@ -209,19 +209,19 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
    *
    * // Create a flow with an entrypoint and a log node.
    * using flow = createFlow()
-   * flow.nodeCreate(Core.nodes.Entrypoint)
-   * flow.nodeCreate(Core.nodes.Log)
+   * flow.createNode(Core.nodes.Entrypoint)
+   * flow.createNode('nwrx/core:log')
    */
-  public nodeCreate<T extends Node<string, any, any>>(node: T, options?: Omit<NodeInstanceOptions<T>, 'flow' | 'node'>): NodeInstance<T>
-  public nodeCreate<K extends InferNodeKind<T>>(node: K, options?: Omit<NodeInstanceOptions<InferNodeByKind<T, K>>, 'flow' | 'node'>): NodeInstance<InferNodeByKind<T, K>>
-  public nodeCreate(node: Node | string, options?: Omit<NodeInstanceOptions, 'flow' | 'node'>): NodeInstance
-  public nodeCreate(node: Node | string, options: Omit<NodeInstanceOptions, 'flow' | 'node'> = {}) {
+  public createNode<T extends Node<string, any, any>>(node: T, options?: Omit<NodeInstanceOptions<T>, 'flow' | 'node'>): NodeInstance<T>
+  public createNode<K extends InferNodeKind<T>>(node: K, options?: Omit<NodeInstanceOptions<InferNodeByKind<T, K>>, 'flow' | 'node'>): NodeInstance<InferNodeByKind<T, K>>
+  public createNode(node: Node | string, options?: Omit<NodeInstanceOptions, 'flow' | 'node'>): NodeInstance
+  public createNode(node: Node | string, options: Omit<NodeInstanceOptions, 'flow' | 'node'> = {}) {
 
     // --- If the node is a string, get the node from the modules.
     if (typeof node === 'string') node = this.resolveNodeDefinition(node as InferNodeKind<T>)
 
     // --- Create the node instance and add it to the flow.
-    const instance = createFlowNodeInstance({ ...options, flow: this, node })
+    const instance = createNodeInstance({ ...options, flow: this, node })
     this.nodes.push(instance)
     this.dispatch('node:create', instance)
     instance.on('data', data => this.dispatch('node:data', instance.id, data))
@@ -245,7 +245,7 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
    * @param ids The IDs of the nodes to remove from the flow.
    * @example flow.nodeRemove('01234567-89ab-cdef-0123-456789abcdef')
    */
-  public nodeRemove(...ids: string[]) {
+  public removeNode(...ids: string[]) {
     for (const id of ids) {
       this.getNodeInstance(id)
       this.nodes = this.nodes.filter(node => node.id !== id)
@@ -254,7 +254,7 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
   }
 
   /**
-   * Given a node ID, get the `FlowNode` that corresponds to the node ID.
+   * Given a node ID, get the `Node` that corresponds to the node ID.
    *
    * @param id The node ID to get the socket and node for.
    * @returns The node that corresponds to the node ID.
@@ -323,9 +323,9 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
    *
    * @param source The ID of the source node.
    * @param target The ID of the target node.
-   * @example flow.linkCreate('nwrx/core:entrypoint', 'nwrx/core:log')
+   * @example flow.createLink('nwrx/core:entrypoint', 'nwrx/core:log')
    */
-  public linkCreate(source: string, target: string): void {
+  public createLink(source: string, target: string): void {
 
     // --- Resolve the source and target socket.
     const [sourceNodeId, sourceSocketId] = source.split(':')
@@ -340,7 +340,7 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
       throw new Error(`Cannot link ${sourceNode.type.name} to ${targetNode.type.name}`)
 
     // --- If the target is already linked, remove the link.
-    this.linkRemove(target)
+    this.removeLink(target)
 
     // --- Create the link and dispatch the event.
     const nodeTarget = this.getNodeInstance(targetNodeId)
@@ -353,7 +353,7 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
    * @param socket The node ID and socket ID of which to remove the link.
    * @example flow.linkRemove('01234567-89ab-cdef-0123-456789abcdef:socket')
    */
-  public linkRemove(socket: string): void {
+  public removeLink(socket: string): void {
 
     // --- Find the node that contains the socket.
     const [nodeId, socketId] = socket.split(':')
