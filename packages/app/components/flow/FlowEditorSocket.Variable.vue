@@ -31,7 +31,7 @@ const values = computed(() => [
 </script>
 
 <template>
-  <FlowEditorPortSelect
+  <FlowEditorSocketSelect
     v-model="model"
     :name="name"
     :options="values"

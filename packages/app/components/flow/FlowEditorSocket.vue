@@ -116,7 +116,7 @@ function onRelease() {
       v-text="name"
     />
 
-    <FlowEditorPortVariable
+    <FlowEditorSocketVariable
       v-else-if="control === 'variable'"
       v-model="(model as string)"
       :name="name"
@@ -126,7 +126,7 @@ function onRelease() {
     />
 
     <!-- Display an input field -->
-    <FlowEditorPortText
+    <FlowEditorSocketText
       v-else-if="control === 'text'"
       v-model="(model as string)"
       :name="name"
@@ -134,7 +134,7 @@ function onRelease() {
     />
 
     <!-- Display a select field -->
-    <FlowEditorPortSelect
+    <FlowEditorSocketSelect
       v-else-if="control === 'select'"
       v-model="model"
       :name="name"
@@ -143,7 +143,7 @@ function onRelease() {
     />
 
     <!-- Display a textarea field -->
-    <FlowEditorPortTextarea
+    <FlowEditorSocketTextarea
       v-else-if="control === 'textarea'"
       v-model="(model as string)"
       :name="name"
