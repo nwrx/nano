@@ -1,6 +1,6 @@
-import { defineFlowCategory } from '@nwrx/core'
+import { defineCategory } from '@nwrx/core'
 
-export const languageModel = defineFlowCategory({
+export const languageModel = defineCategory({
   kind: 'languageModel',
   name: 'Language Models',
   color: '#160D45',

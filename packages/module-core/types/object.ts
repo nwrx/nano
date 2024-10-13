@@ -1,7 +1,7 @@
-import { defineFlowType } from '@nwrx/core'
+import { defineSocketType } from '@nwrx/core'
 import { assertObject, createParser } from '@unshared/validation'
 
-export const object = defineFlowType({
+export const object = defineSocketType({
   kind: 'object',
   name: 'Object',
   color: '#BD3249',

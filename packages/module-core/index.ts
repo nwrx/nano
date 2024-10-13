@@ -1,8 +1,8 @@
-import { defineFlowModule } from '@nwrx/core'
+import { defineModule } from '@nwrx/core'
 import * as NODES from './nodes'
 import * as TYPES from './types'
 
-export default defineFlowModule({
+export default defineModule({
   kind: 'nwrx/core',
   name: 'Core',
   icon: 'https://api.iconify.design/carbon:ibm-cloud-kubernetes-service.svg',

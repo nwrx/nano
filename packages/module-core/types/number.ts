@@ -1,7 +1,7 @@
-import { defineFlowType } from '@nwrx/core'
+import { defineSocketType } from '@nwrx/core'
 import { assertNumber, assertStringNumber, createParser } from '@unshared/validation'
 
-export const number = defineFlowType({
+export const number = defineSocketType({
   kind: 'number',
   name: 'Number',
   color: '#FF1648',

@@ -1,6 +1,6 @@
-import { defineFlowCategory } from '@nwrx/core'
+import { defineCategory } from '@nwrx/core'
 
-export const compute = defineFlowCategory({
+export const compute = defineCategory({
   kind: 'compute',
   name: 'Compute',
   color: '#DB504A',
