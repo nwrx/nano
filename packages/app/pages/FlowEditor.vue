@@ -41,58 +41,53 @@ const isPanelNodeResultOpen = useLocalStorage<boolean>('__FlowEditorPanel_NodeRe
 </script>
 
 <template>
-  <AppPage class="relative w-full h-full flex flex-col">
-    <FlowEditor
-      v-model:isPanelOpen="isPanelOpen"
-      v-model:isPanelFlowMethodsOpen="isPanelFlowMethodsOpen"
-      v-model:isPanelFlowSecretsOpen="isPanelFlowSecretsOpen"
-      v-model:isPanelFlowEnvironmentsOpen="isPanelFlowEnvironmentsOpen"
-      v-model:isPanelNodeDataOpen="isPanelNodeDataOpen"
-      v-model:isPanelNodeResultOpen="isPanelNodeResultOpen"
-
-      :name="session.flow.name"
-      :icon="session.flow.icon"
-      :description="session.flow.description"
-      :nodes="session.flow.nodes"
-      :links="session.flow.links"
-      :methods="[]"
-      :categories="session.flow.categories"
-      :secrets="session.flow.secrets"
-      :variables="session.flow.variables"
-      :peers="session.flow.peers"
-      :peerId="session.flow.peerId"
-      :events="session.events.value"
-
-      :isLocked="isLocked"
-      :isRunning="session.flow.isRunning"
-      :isBookmarked="isBookmarked"
-
-      @run="() => session.flowRun()"
-      @abort="() => session.flowAbort()"
-      @setName="(name) => session.flowSetMetaValue('name', name)"
-      @setMethods="(methods) => session.flowSetMetaValue('methods', methods)"
-      @setDescription="(description) => session.flowSetMetaValue('description', description)"
-      @variableCreate="(name, value) => session.flowVariableCreate(name, value)"
-      @variableUpdate="(name, value) => session.flowVariableUpdate(name, value)"
-      @variableRemove="(name) => session.flowVariableRemove(name)"
-      @secretCreate="(name, value) => session.flowSecretCreate(name, value)"
-      @secretUpdate="(name, value) => session.flowSecretUpdate(name, value)"
-      @secretRemove="(name) => session.flowSecretRemove(name)"
-
-      @nodeStart="(id) => session.nodeStart(id)"
-      @nodeAbort="(id) => session.nodeAbort(id)"
-      @nodeCreate="(kind, x, y) => session.nodeCreate(kind, x, y)"
-      @nodeDuplicate="(nodeId, x, y) => session.nodeDuplicate(nodeId, x, y)"
-      @nodesMove="(nodes) => session.nodeSetPosition(...nodes)"
-      @nodeSetDataValue="(id, portId, value) => session.nodeSetDataValue(id, portId, value)"
-      @nodesRemove="(ids) => session.nodeRemove(ids)"
-
-      @linkRemove="(id) => session.linkRemove(id)"
-      @linkCreate="(source, target) => session.linkCreate(source, target)"
-
-      @userSetPosition="(x, y) => session.userSetPosition(x, y)"
-
-      @eventsClear="() => session.eventsClear()"
-    />
-  </AppPage>
+  <div class="bg-gradient-to-br from-primary-500 via-secondary-500 to-warning-500 bg-repeat-revert bg-[size:50%] w-full h-full p-0.5">
+    <AppPage class="relative w-full h-full flex flex-col rounded-3.5">
+      <FlowEditor
+        v-model:isPanelOpen="isPanelOpen"
+        v-model:isPanelFlowMethodsOpen="isPanelFlowMethodsOpen"
+        v-model:isPanelFlowSecretsOpen="isPanelFlowSecretsOpen"
+        v-model:isPanelFlowEnvironmentsOpen="isPanelFlowEnvironmentsOpen"
+        v-model:isPanelNodeDataOpen="isPanelNodeDataOpen"
+        v-model:isPanelNodeResultOpen="isPanelNodeResultOpen"
+        :name="session.flow.name"
+        :icon="session.flow.icon"
+        :description="session.flow.description"
+        :nodes="session.flow.nodes"
+        :links="session.flow.links"
+        :methods="[]"
+        :categories="session.flow.categories"
+        :secrets="session.flow.secrets"
+        :variables="session.flow.variables"
+        :peers="session.flow.peers"
+        :peerId="session.flow.peerId"
+        :events="session.events.value"
+        :isLocked="isLocked"
+        :isRunning="session.flow.isRunning"
+        :isBookmarked="isBookmarked"
+        @run="() => session.flowRun()"
+        @abort="() => session.flowAbort()"
+        @setName="(name) => session.flowSetMetaValue('name', name)"
+        @setMethods="(methods) => session.flowSetMetaValue('methods', methods)"
+        @setDescription="(description) => session.flowSetMetaValue('description', description)"
+        @variableCreate="(name, value) => session.flowVariableCreate(name, value)"
+        @variableUpdate="(name, value) => session.flowVariableUpdate(name, value)"
+        @variableRemove="(name) => session.flowVariableRemove(name)"
+        @secretCreate="(name, value) => session.flowSecretCreate(name, value)"
+        @secretUpdate="(name, value) => session.flowSecretUpdate(name, value)"
+        @secretRemove="(name) => session.flowSecretRemove(name)"
+        @nodeStart="(id) => session.nodeStart(id)"
+        @nodeAbort="(id) => session.nodeAbort(id)"
+        @nodeCreate="(kind, x, y) => session.nodeCreate(kind, x, y)"
+        @nodeDuplicate="(nodeId, x, y) => session.nodeDuplicate(nodeId, x, y)"
+        @nodesMove="(nodes) => session.nodeSetPosition(...nodes)"
+        @nodeSetDataValue="(id, portId, value) => session.nodeSetDataValue(id, portId, value)"
+        @nodesRemove="(ids) => session.nodeRemove(ids)"
+        @linkRemove="(id) => session.linkRemove(id)"
+        @linkCreate="(source, target) => session.linkCreate(source, target)"
+        @userSetPosition="(x, y) => session.userSetPosition(x, y)"
+        @eventsClear="() => session.eventsClear()"
+      />
+    </AppPage>
+  </div>
 </template>
