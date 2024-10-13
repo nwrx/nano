@@ -4,7 +4,7 @@ import type { ResultSocket } from './defineResultSocket'
 /**
  * Describes the type of control the socket has in the editor.
  */
-export type DataSocketControl =
+export type SocketControl =
   | 'autocomplete'
   | 'select'
   | 'slider'
@@ -20,7 +20,7 @@ export type DataSocketControl =
  * Each option contains a value and a label displayed to the user in the editor.
  * It can also include an optional icon and description for further clarification.
  */
-export interface DataSocketOption<T = unknown> {
+export interface SocketOption<T = unknown> {
 
   /** The internal value of the option. */
   value: T
@@ -36,8 +36,11 @@ export interface DataSocketOption<T = unknown> {
 }
 
 /**
- * Defines the schema for a flow node data socket, including its control type,
- * options, and other properties relevant to its behavior in the editor.
+ * Defines a socket that can be used to connect to another node in the flow.
+ * The socket contains a type that is used to validate the data that is passed
+ * to the socket and to provide information about the type of the data that is
+ * expected. It contains a `parser` function that is used to parse and validate
+ * the data that is passed to the socket.
  */
 export interface DataSocket<T = unknown> extends ResultSocket<T> {
 
@@ -55,7 +58,7 @@ export interface DataSocket<T = unknown> extends ResultSocket<T> {
    * - `toggle` - Allows the user to enable or disable a value via a toggle input.
    * - `variable` - Allows the user to select a variable from the project via a variable input.
    */
-  control?: MaybeLiteral<DataSocketControl>
+  control?: MaybeLiteral<SocketControl>
 
   /**
    * Defines the selectable options for `autocomplete` or `select` controls.
@@ -68,7 +71,7 @@ export interface DataSocket<T = unknown> extends ResultSocket<T> {
    *   { label: 'Blue', value: '#0000ff' },
    * ]
    */
-  options?: Array<DataSocketOption<NoInfer<T>>> | Array<NoInfer<T> & string>
+  options?: Array<NoInfer<T> & string> | Array<SocketOption<NoInfer<T>>>
 
   /**
    * The maximum value for a `slider` control. Ignored if the control is not a `slider`.
