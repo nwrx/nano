@@ -36,7 +36,7 @@ onMounted(project.refresh)
 </script>
 
 <template>
-  <ProjectSettings>
+  <ProjectSettings :workspace="workspace" :project="name">
     <ProjectSettingsGeneral
       :project="name"
       :title="project.data.title"
