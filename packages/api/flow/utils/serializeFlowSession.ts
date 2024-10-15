@@ -1,4 +1,4 @@
-import type { FlowLink } from '@nwrx/core'
+import type { Link } from '@nwrx/core'
 import type { Peer } from 'crossws'
 import type { FlowSessionInstance } from './resolveFlowSession'
 import type { FlowCategoryNodesJSON } from './serializeCategories'
@@ -47,7 +47,7 @@ export interface FlowSessionJSON {
   icon: string
   description: string
   nodes: NodeInstanceJSON[]
-  links: FlowLink[]
+  links: Link[]
   categories: FlowCategoryNodesJSON[]
   secrets: FlowSessionSecretJSON[]
   variables: FlowSessionVariableJSON[]

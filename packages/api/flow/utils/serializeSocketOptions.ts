@@ -1,4 +1,4 @@
-import type { SocketOption } from '@nwrx/core'
+import type { SocketListOption } from '@nwrx/core'
 
 /**
  * Serializes the values of a flow node port.
@@ -6,7 +6,7 @@ import type { SocketOption } from '@nwrx/core'
  * @param options The values to serialize.
  * @returns The serialized values of the flow node port.
  */
-export function serializeSocketOptions(options?: Array<SocketOption | string>): SocketOption[] {
+export function serializeSocketOptions(options?: Array<SocketListOption | string>): SocketListOption[] {
   if (!options) return []
 
   // --- Map the values to an array of serialized values.

@@ -37,7 +37,7 @@ export function serializeNode(node: Node): NodeJSON {
     categoryIcon: node.category?.icon,
     categoryColor: node.category?.color ?? '#000000',
     categoryDescription: node.category?.description,
-    dataSchema: serializeDataSchema(node.defineDataSchema),
-    resultSchema: serializeResultSchema(node.defineResultSchema),
+    dataSchema: serializeDataSchema(node.dataSchema),
+    resultSchema: serializeResultSchema(node.resultSchema),
   }
 }
