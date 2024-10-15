@@ -14,19 +14,13 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div
-    class="
-      flex items-center gap-4 px-4 h-16 rd
-      bg-editor-panel border border-editor
-      backdrop-blur-2xl
-    ">
-
+  <div class="flex items-center gap-md px-md h-16 rd bg-editor-panel border border-editor backdrop-blur-2xl">
     <h1 class="text-xl">
       {{ name }}
     </h1>
 
     <!-- Favorite -->
-    <FlowEditorToolbarButton
+    <FlowEditorFab
       :icon="isBookmarked ? 'i-carbon:bookmark-add' : 'i-carbon:bookmark'"
       @click="() => emit('bookmark')"
     />
@@ -35,16 +29,16 @@ const emit = defineEmits<{
     <div class="h-full border-r border-editor" />
 
     <!-- Settings -->
-    <FlowEditorToolbarButton icon="i-carbon:settings"/>
+    <FlowEditorFab icon="i-carbon:settings"/>
 
     <!-- Export -->
-    <FlowEditorToolbarButton
+    <FlowEditorFab
       icon="i-carbon:download"
       @click="() => emit('download')"
     />
 
     <!-- Start -->
-    <FlowEditorToolbarButton
+    <FlowEditorFab
       :isActive="isRunning"
       :icon="isRunning ? 'i-line-md:loading-loop' : 'i-carbon:play'"
       @click="() => isRunning ? emit('abort') : emit('run')"
