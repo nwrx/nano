@@ -62,6 +62,24 @@ export function useWorkspace(workspace: MaybeRef<string>, options: UseProjectOpt
       }),
 
     /**
+     * Import a flow from the given `File` object into the given project.
+     * The file should either be a JSON or YAML file containing the flow data.
+     *
+     * @param project The name of the project to import the flow into.
+     * @param file The file to import the flow from.
+     */
+    importFlow: async(project: string, file: File) => {
+      const formData = new FormData()
+      formData.append('file', file)
+      await client.requestAttempt('POST /api/workspaces/:workspace/:project/import', {
+        onError: error => alerts.error(error),
+        onSuccess: () => alerts.success('Flow imported successfully'),
+        onEnd: () => { void refresh() },
+        data: { workspace: unref(workspace), project, file },
+      })
+    },
+
+    /**
      * Delete the given flow from the given project.
      *
      * @param project The name of the project to delete the flow from.

@@ -11,6 +11,7 @@ const emit = defineEmits<{
   projectDelete: [project: string]
   flowCreate: [project: string]
   flowDelete: [project: string, flow: string]
+  flowImport: [project: string, file: File]
   flowDuplicate: [project: string, flow: string]
   'update:modelValue': [value: Record<string, boolean>]
 }>()
@@ -22,7 +23,7 @@ const model = useVModel(props, 'modelValue', emit, {
 </script>
 
 <template>
-  <div class="flex flex-col space-y-4 w-full">
+  <div class="flex flex-col w-full">
     <ProjectListItem
       v-for="project in projects"
       :key="project.name"
@@ -31,6 +32,7 @@ const model = useVModel(props, 'modelValue', emit, {
       :workspace="workspace"
       @delete="() => emit('projectDelete', project.name)"
       @flowCreate="() => emit('flowCreate', project.name)"
+      @flowImport="file => emit('flowImport', project.name, file)"
       @flowDelete="flow => emit('flowDelete', project.name, flow)"
       @flowDuplicate="flow => emit('flowDuplicate', project.name, flow)"
     />
