@@ -407,13 +407,9 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
   public start(): void {
     if (this.isRunning) return
     this.isRunning = true
-
-    // --- Cleanup all results from the previous runs.
     this.reset()
 
-    // --- Start listening for node result events. Each time a node result is set,
-    // --- we start searching for the target nodes that are linked to the source node
-    // --- and send then the result of the source node.
+    // --- Start listening for node result events.
     const stop = this.on('node:result', (id) => {
       const targetLinks = this.links.filter(link => link.source.startsWith(id))
       for (const { target } of targetLinks) {
@@ -421,23 +417,26 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
         const targetNode = this.getNodeInstance(targetId)
         void targetNode.process()
       }
+
+      // --- If the node has no target links, check if all nodes are done.
+      // --- If so, stop the flow and dispatch the flow:end event.
+      if (targetLinks.length === 0) {
+        setTimeout(() => {
+          for (const node of this.nodes) if (node.isRunning) return
+          this.isRunning = false
+          stop()
+          this.dispatch('flow:end')
+        }, 0)
+      }
     })
 
-    // --- When all nodes are done, we stop the flow and remove the listener.
-    const unsubscribe = this.on('node:end', () => {
-      for (const node of this.nodes) if (node.isRunning) return
-      this.isRunning = false
-      stop()
-      unsubscribe()
-      this.dispatch('flow:end')
-    })
+    // --- Check from time to time if at least one node is still running.
 
     // --- Find nodes that don't have any incoming links and set them as the entrypoints.
-    const entrypoints = this.nodes.filter(node => !this.links.some(link => link.target.startsWith(node.id)))
-    for (const node of entrypoints) void node.process()
-
-    // --- Start the flow by dispatching the start event.
     this.dispatch('flow:start')
+    this.nodes
+      .filter(node => !this.links.some(link => link.target.startsWith(node.id)))
+      .forEach(node => void node.process())
   }
 
   /**

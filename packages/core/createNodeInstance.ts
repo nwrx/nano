@@ -95,6 +95,7 @@ export class NodeInstance<
   public dataSchema: T
   public resultSchema: U
 
+  public isDone = false
   public isRunning = false
   public eventTarget = new EventTarget()
   public eventHandlers = new Map<string, EventListener>()
@@ -290,6 +291,7 @@ export class NodeInstance<
    * @example node.reset()
    */
   public reset() {
+    this.isDone = false
     this.result = {} as DataFromSchema<U>
     this.dispatch('reset')
   }
@@ -313,21 +315,24 @@ export class NodeInstance<
     // --- If the value is a variable, get the value of the variable.
     if (typeof raw === 'string' && raw.startsWith('$VARIABLE.')) {
       const name = raw.slice(10)
-      return parse(this.flow.variables[name])
+      const value = this.flow.variables[name]
+      return parse(value)
     }
 
     // --- If the value is a secret, get the value of the secret.
     else if (typeof raw === 'string' && raw.startsWith('$SECRET.')) {
       const name = raw.slice(8)
-      const result = this.flow.secrets[name]
-      return parse(result)
+      const value = this.flow.secrets[name]
+      return parse(value)
     }
 
     // --- If the value is a result of another node, resolve it's value.
     if (typeof raw === 'string' && raw.startsWith('$NODE.')) {
-      const [node, key] = raw.slice(6).split(':')
-      const result = this.flow.getNodeInstance(node).getResultValue(key)
-      return parse(result)
+      const [id, key] = raw.slice(6).split(':')
+      const node = this.flow.getNodeInstance(id)
+      if (!node.isDone) return
+      const value = node.getResultValue(key)
+      return parse(value)
     }
 
     // --- Otherwise, parse and return the value as is.
@@ -400,25 +405,28 @@ export class NodeInstance<
   public async process(): Promise<void> {
     if (!this.node.process) return
     try {
-      // await this.resolveDataSchema()
-      // await this.resolveResultSchema()
+      this.isRunning = true
+      await this.resolveDataSchema()
+      await this.resolveResultSchema()
 
-      // --- Assert that all the required data properties are set.
+      // --- If any of the required data properties are missing,
+      // --- do not start processing the node and return early.
       for (const key in this.dataSchema) {
         const { isOptional } = this.dataSchema[key]
         const value = this.data[key]
-        if (isOptional && value === undefined) return
+        if (value === undefined && !isOptional) return
       }
 
-      this.isRunning = true
       this.dispatch('start')
       const result = await this.node.process(this.context)
-      if (result) this.setResult(result)
+      this.setResult(result)
+      this.isDone = true
     }
 
     // --- If an error occurs, dispatch the error event so that listeners
     // --- can handle the error and take appropriate action.
     catch (error) {
+      console.warn(error)
       this.dispatch('error', error as Error)
     }
 
