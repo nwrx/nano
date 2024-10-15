@@ -85,11 +85,11 @@ function onRelease() {
 
 <template>
   <div
-    class="flex items-center space-x-sm w-full hover:bg-emphasized rounded-lg"
+    class="flex items-center space-x-sm w-full"
     :class="{
       'pr-5 flex-row': kind === 'target',
       'pl-5 flex-row-reverse': kind === 'source',
-      'hover:bg-app cursor-pointer': isLinkeable,
+      'hover:bg-emphasized cursor-pointer': isLinkeable,
     }"
     @mousedown="(event: MouseEvent) => onGrab(event)"
     @mouseover="() => onAssign()"
