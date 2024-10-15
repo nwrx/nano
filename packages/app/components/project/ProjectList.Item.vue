@@ -9,17 +9,20 @@ const props = defineProps<{
 const emit = defineEmits<{
   delete: []
   flowCreate: []
-  flowDelete: [flowSlug: string]
-  flowDownload: [flowSlug: string]
-  flowDuplicate: [flowSlug: string]
+  flowDelete: [flow: string]
+  flowDownload: [flow: string]
+  flowDuplicate: [flow: string]
+  flowImport: [file: File]
   'update:modelValue': [value: boolean]
 }>()
 
-const { t } = useI18n()
+// --- Localize & VModel
+const { t } = useI18n({ useScope: 'local' })
 const model = useVModel(props, 'modelValue', emit, {
   passive: true,
 })
 
+// --- Safely get the project route.
 function getProjectRoute(workspace: string, project: string) {
   if (!workspace || !project) return
   return {
@@ -27,10 +30,27 @@ function getProjectRoute(workspace: string, project: string) {
     params: { workspace, project },
   }
 }
+
+// --- Dropzone for importing flows.
+const dropzone = ref<HTMLDivElement>()
+const { isOverDropZone } = useDropZone(dropzone, {
+  onDrop: (files) => {
+    if (!files) return
+    if (files.length === 0) return
+    emit('flowImport', files[0])
+  },
+})
 </script>
 
 <template>
-  <div class="w-full">
+  <div ref="dropzone" class="w-full h-full relative pb-md">
+
+    <!-- Dropzone -->
+    <Dropzone
+      :isOver="isOverDropZone"
+      :text="t('dropZone', { title })"
+      :vertical="model"
+    />
 
     <!-- Header -->
     <BaseButton
@@ -52,12 +72,8 @@ function getProjectRoute(workspace: string, project: string) {
 
       <!-- Header -->
       <div class="text-left grow">
-        <h3 class="text-lg font-medium">
-          {{ title }}
-        </h3>
-        <p class="text-sm text-subtle line-clamp-2">
-          {{ description }}
-        </p>
+        <h3 class="text-lg font-medium" v-text="title"/>
+        <p class="text-sm text-subtle line-clamp-2" v-text="description"/>
       </div>
 
       <!-- Collaborators -->
@@ -91,12 +107,12 @@ function getProjectRoute(workspace: string, project: string) {
       </ContextMenu>
     </BaseButton>
 
-    <!-- Blocks that lists the flows -->
+    <!-- Flow list -->
     <BaseCollapse
       vertical
       :isOpen="model"
       :class="{ 'opacity-0': !model }"
-      class="border-l border-app ml-lg pl-lg transition-all duration-slow">
+      class="relative border-l border-app ml-lg pl-lg transition-all duration-slow pb-md">
 
       <div class="flex flex-col space-y-xs pt-md mb-md">
         <ProjectListItemFlow
@@ -136,24 +152,29 @@ function getProjectRoute(workspace: string, project: string) {
     menu.access: Access
     menu.delete: Delete
     createFlow: Create a new Flow in this Project
+    dropZone: Import a flow in the **{title}** project.
   fr:
     menu.settings: Modifier
     menu.access: Accès
     menu.delete: Supprimer
     createFlow: Créer un nouveau Flow dans ce projet
+    dropZone: Importer un flux dans le projet **{title}**.
   de:
     menu.settings: Bearbeiten
     menu.access: Zugriff
     menu.delete: Löschen
     createFlow: Erstellen Sie einen neuen Flow in diesem Projekt
+    dropZone: Importieren Sie einen Flow in das Projekt **{title}**.
   es:
     menu.settings: Editar
     menu.access: Acceso
     menu.delete: Borrar
     createFlow: Crear un nuevo flujo en este proyecto
+    dropZone: Importar un flujo en el proyecto **{title}**.
   zh:
     menu.settings: 编辑
     menu.access: 访问
     menu.delete: 删除
     createFlow: 在此项目中创建新流程
+    dropZone: 在 **{title}** 项目中导入流程。
 </i18n>
