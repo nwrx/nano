@@ -1,24 +1,22 @@
 <script setup lang="ts">
 import type { NavItem } from '~/utils/types'
-import { NuxtLink } from '#components'
 
 defineProps<{ isOpen?: boolean } & NavItem>()
 </script>
 
 <template>
   <BaseButton
-    :as="NuxtLink"
     :to="to"
     eager
     :class="{
-      'opacity-40': !to,
+      'cursor-pointer': to,
     }"
     class-active="
-      !bg-layout-prominent text-layout-prominent
-      border-prominent font-medium"
+      !bg-layout-prominent text-layout-prominent font-medium
+    "
     class="
-      flex items-center w-full p-sm rounded transition
-      text-layout-emphasized  hover:text-layout-prominent
+      flex items-center w-full p-sm rounded
+      text-layout-emphasized  hover:text-layout
       border border-transparent hover:border-prominent
       bg-layout hover:bg-layout-prominent
     ">
