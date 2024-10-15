@@ -6,34 +6,22 @@ defineProps<{
   value: unknown
 }>()
 
-const md = new Markdown({
-  html: true,
-  linkify: true,
-  typographer: true,
-})
+const asMarkdown = ref(true)
+const md = new Markdown({ html: true })
 </script>
 
 <template>
-  <div class="flex flex-wrap">
+  <div class="flex flex-wrap text-sm not-first:border-t border-editor">
 
     <!-- Name -->
-    <div class="text-sm w-4/12 px-sm py-xs border-r border-editor font-sans">
+    <div class="w-3/12 px-sm py-xs border-r border-editor font-sans">
       {{ name }}
     </div>
 
-    <!-- Object -->
-    <template v-if="typeof value === 'object'">
-      <div class="w-full border-t border-editor"/>
-      <template v-for="(value, key) in value">
-        <div class="text-sm w-4/12 px-sm py-xs truncate font-mono border-r border-editor">{{ key }}</div>
-        <div class="text-sm w-8/12 px-sm py-xs truncate font-mono">{{ value }}</div>
-      </template>
-    </template>
-
     <!-- $NODE. -->
     <div
-      v-else-if="typeof value === 'string' && value.startsWith('$NODE.')"
-      class="flex items-center px-sm w-2/3 truncate">
+      v-if="typeof value === 'string' && value.startsWith('$NODE.')"
+      class="flex items-center px-sm truncate">
       <span class="font-mono">Link from {{ value.split(':').pop() }}</span>
     </div>
 
@@ -41,10 +29,10 @@ const md = new Markdown({
     <div
       v-else-if="typeof value === 'string' && value.startsWith('$VARIABLE.')"
       class="flex items-center px-sm w-2/3 truncate">
-      <div class="flex items-center justify-center bg-layout text-layout px-.5 py-.25 rounded mr-1">
-        <BaseIcon icon="i-carbon:tag" class="size-4" />
+      <div class="flex items-center justify-center bg-primary-500 text-layout size-5 rounded mr-sm">
+        <BaseIcon icon="i-carbon:code" class="size-3" />
       </div>
-      <span class="text-sm font-mono">{{ value.split('.').pop() }}</span>
+      <span class="font-mono">{{ value.split('.').pop() }}</span>
     </div>
 
     <!-- $SECRET. -->
@@ -52,14 +40,36 @@ const md = new Markdown({
       v-else-if="typeof value === 'string' && value.startsWith('$SECRET.')"
       class="flex items-center px-sm w-2/3 truncate">
       <BaseIcon icon="i-carbon:ibm-cloud-key-protect" class="size-4 mr-1" />
-      <span class="text-sm font-mono">{{ value.split('.').pop() }}</span>
+      <span class="font-mono">{{ value.split('.').pop() }}</span>
     </div>
 
     <!-- String -->
     <div
       v-else-if="typeof value === 'string'"
-      class="text-sm w-8/12 px-sm py-xs font-mono whitespace-pre-wrap max-h-128 overflow-y-auto"
-      v-html="md.render(value).trim()"
-    />
+      class="w-8/12 px-sm py-xs whitespace-pre-wrap max-h-128 overflow-y-auto relative">
+
+      <!-- Markdown -->
+      <span
+        v-if="asMarkdown"
+        class="line-height-tight"
+        v-html="md.render(value).trim()"
+      />
+
+      <!-- Raw -->
+      <span
+        v-else
+        class="font-mono"
+        v-text="value"
+      />
+    </div>
+
+    <!-- Object -->
+    <template v-else-if="typeof value === 'object'">
+      <div class="w-full border-t border-editor"/>
+      <template v-for="(value, key) in value">
+        <div class="w-3/12 px-sm py-xs truncate font-mono border-r border-editor">{{ key }}</div>
+        <div class="w-9/12 px-sm py-xs truncate font-mono">{{ value }}</div>
+      </template>
+    </template>
   </div>
 </template>

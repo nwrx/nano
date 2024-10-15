@@ -32,9 +32,7 @@ const { t } = useI18n()
 
 // --- Two-way binding
 const name = useVModel(props, 'name', emit, { passive: true, eventName: 'setName' })
-const methods = useVModel(props, 'methods', emit, { passive: true, eventName: 'setMethods' })
 const description = useVModel(props, 'description', emit, { passive: true, eventName: 'setDescription' })
-const isMethodsOpen = useVModel(props, 'isMethodsOpen', emit, { passive: true })
 const isSecretsOpen = useVModel(props, 'isSecretsOpen', emit, { passive: true })
 const isVariablesOpen = useVModel(props, 'isVariablesOpen', emit, { passive: true })
 </script>
@@ -42,41 +40,70 @@ const isVariablesOpen = useVModel(props, 'isVariablesOpen', emit, { passive: tru
 <template>
   <div>
 
-    <!-- Title & Desscription -->
+    <!-- Name -->
     <FlowEditorPanelSectionName
       v-model:name="name"
       v-model:description="description"
     />
 
-    <!-- Input Methods -->
-    <FlowEditorPanelSectionToggle
-      v-model="methods"
-      v-model:isOpen="isMethodsOpen"
-      type="checkbox"
-      title="Trigger Methods"
-      text="Define how this flow can be triggered."
-      :values="[
-        { value: 'http', icon: 'i-carbon:code', label: 'HTTP', hint: 'Allow this flow to be triggered via HTTP requests.' },
-        { value: 'websocket', icon: 'i-carbon:arrows-vertical', label: 'WebSocket', hint: 'Allow this flow to be triggered via WebSocket requests.' },
-        { value: 'cron', icon: 'i-carbon:time', label: 'Schedule', hint: 'Allow this flow to be triggered via manual start.' },
-      ]"
-    />
+    <!--
+      HTTP - Configure the HTTP endpoint of this flow.
 
+      # Specifications
+      - The user can enable or disable the HTTP trigger.
+      - Allow user to override the variables and secrets through HEADERS.
+      - Expose an HTTP endpoint with the JSON schema of the input.
+      - Expose an HTTP endpoint with the JSON schema of the output.
+
+    -->
+    <FlowEditorPanelSection
+      classContent="space-y-md"
+      title="HTTP"
+      text="Define the behavior of the HTTP trigger.">
+
+      <div>
+        <InputText
+          placeholder="https://example.com/schema/input.json"
+          classGroup="input-sm bg-editor-panel-data"
+        />
+        <InputText
+          :modelValue="`${CONSTANTS.appHost}/john-doe/sfdc-lead-automation/unsightly-mango`"
+          classGroup="input-sm bg-editor-panel-data"
+        />
+      </div>
+      <div>
+        <FlowEditorPanelSectionInputSwitch
+          label="Enabled"
+          hint="Allow this flow to be triggered via HTTP requests."
+        />
+        <FlowEditorPanelSectionInputSwitch
+          label="Override Variables"
+          hint="Allow the user to override the variables via HTTP Headers."
+        />
+        <FlowEditorPanelSectionInputSwitch
+          label="Override Secrets"
+          hint="Allow the user to override the secrets via HTTP Headers."
+        />
+      </div>
+    </FlowEditorPanelSection>
+
+    <!-- Variables -->
     <FlowEditorPanelSectionVariables
       v-model:isOpen="isVariablesOpen"
       :variables="variables"
-      title="Variables"
-      text="List and define variables."
-      createTitle="Create a new variable"
-      createText="Define a new variable with a name and value."
-      createLabel="+ CREATE_NEW_VARIABLE"
-      updateTitle="Update variable"
-      updateText="Update the value of the variable."
+      :title="t('variable.title')"
+      :text="t('variable.text')"
+      :createTitle="t('variable.create.title')"
+      :createText="t('variable.create.text')"
+      :createLabel="t('variable.create.label')"
+      :updateTitle="t('variable.update.title')"
+      :updateText="t('variable.update.text')"
       @create="(name, value) => emit('variableCreate', name, value)"
       @update="(name, value) => emit('variableUpdate', name, value)"
       @delete="(name) => emit('variableRemove', name)"
     />
 
+    <!-- Secrets -->
     <FlowEditorPanelSectionVariables
       v-model:isOpen="isSecretsOpen"
       :variables="secrets"
