@@ -6,7 +6,7 @@ describe('defineType', () => {
       const parse = vi.fn()
       const type = defineType({
         kind: 'type-id',
-        label: 'String',
+        name: 'String',
         color: '#ff0000',
         parse,
         description: 'The string type.',
