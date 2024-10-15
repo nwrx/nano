@@ -23,15 +23,28 @@ const { t, locale } = useI18n({ useScope: 'local' })
 
 <template>
   <Teleport :key="locale" to="#layout" defer>
+
+    <!-- Backdrop -->
+    <div
+      :class="{
+        'op-0': !modelValue,
+        'backdrop-brightness-60 backdrop-blur': modelValue,
+      }"
+      class="
+        fixed left-0 top-0 w-screen h-screen pointer-events-none
+        transition z-100
+      "
+    />
+
+    <!-- Dialog -->
     <LazyBaseDialog
       v-bind="props"
       title=""
       :class="{
-        'backdrop-contrast-90 backdrop-brightness-50': modelValue,
         'pointer-events-none': !modelValue,
       }"
       class="
-        fixed left-0 top-0 w-screen h-screen bg-transparent
+        fixed left-0 top-0 w-screen h-screen bg-transparent z-1000
         inline-flex items-center justify-center backdrop:bg-transparent
         transition dark
       "
