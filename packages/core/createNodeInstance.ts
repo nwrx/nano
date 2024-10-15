@@ -1,29 +1,22 @@
-import type { Pretty } from '@unshared/types'
+import type { MaybeLiteral } from '@unshared/types'
 import type { Flow } from './createFlow'
+import type { DataFromSchema, DataSchema } from './defineDataSchema'
 import type { Node, NodeInstanceContext } from './defineNode'
-import type {
-  InferData,
-  InferDataKeys,
-  InferDataSchema,
-  InferDataValue,
-  InferResult,
-  InferResultKeys,
-  InferResultSchema,
-  InferResultValue,
-} from './types'
+import type { ResultFromSchema, ResultSchema } from './defineResultSchema'
 import { randomUUID } from 'node:crypto'
 
 /**
  * A map of events that can be dispatched by a flow node and the variables
  * that are passed to the event listeners.
  */
-export interface NodeEvents<T extends Node> {
-  meta: [meta: Partial<NodeInstanceMeta>]
+export interface NodeEvents<T extends DataSchema, U extends ResultSchema> {
+  meta: [meta: NodeInstanceMeta]
   metaValue: [key: string, value: unknown]
-  data: [data: Record<string, unknown>]
-  result: [result: Partial<InferResult<T>>]
-  dataSchema: [schema: InferDataSchema<T>]
-  resultSchema: [schema: InferResultSchema<T>]
+  data: [data: DataFromSchema<T>]
+  dataRaw: [data: Record<string, unknown>]
+  result: [result: ResultFromSchema<U>]
+  dataSchema: [schema: T]
+  resultSchema: [schema: U]
   start: []
   abort: []
   end: []
@@ -35,8 +28,8 @@ export interface NodeEvents<T extends Node> {
  * A listener for a flow node event. The listener is called when the event is
  * dispatched by the flow node.
  */
-export type NodeListener<T extends Node, K extends keyof NodeEvents<T>> =
-  (...parameters: NodeEvents<T>[K]) => Promise<void> | void
+export type NodeListener<T extends DataSchema, U extends ResultSchema, K extends keyof NodeEvents<T, U>> =
+  (...parameters: NodeEvents<T, U>[K]) => Promise<void> | void
 
 /**
  * Additional properties that can be set on a flow node instance. They are used to
@@ -60,13 +53,13 @@ export interface NodeInstanceMeta {
  * @template T The schema of the data that the node expects.
  * @template U The schema of the result that the node produces.
  */
-export interface NodeInstanceOptions<T extends Node = Node> {
+export interface NodeInstanceOptions<T extends DataSchema, U extends ResultSchema> {
   id?: string
   flow: Flow
-  node: T
+  node: Node<string, T, U>
   meta?: NodeInstanceMeta
-  initialData?: Partial<InferData<T>>
-  initialResult?: Partial<InferResult<T>>
+  initialData?: Partial<DataFromSchema<T>>
+  initialResult?: Partial<ResultFromSchema<U>>
 }
 
 /**
@@ -76,16 +69,19 @@ export interface NodeInstanceOptions<T extends Node = Node> {
  *
  * @example new ChainNode({ id: 'core:entrypoint', name: 'Entrypoint' })
  */
-export class NodeInstance<T extends Node = Node> implements NodeInstanceOptions<T> {
-  constructor(options: NodeInstanceOptions<T>) {
+export class NodeInstance<
+  T extends DataSchema = DataSchema,
+  U extends ResultSchema = ResultSchema,
+> implements NodeInstanceOptions<T, U> {
+  constructor(options: NodeInstanceOptions<T, U>) {
     this.flow = options.flow
     this.node = options.node
     if (options.id) this.id = options.id
     if (options.meta) this.meta = options.meta
-    this.dataRaw = { ...options.initialData } as InferData<T>
-    this.result = { ...options.initialResult } as InferResult<T>
-    this.dataSchema = (typeof this.node.defineDataSchema === 'function' ? {} : this.node.defineDataSchema) as InferDataSchema<T>
-    this.resultSchema = (typeof this.node.defineResultSchema === 'function' ? {} : this.node.defineResultSchema) as InferResultSchema<T>
+    this.dataRaw = { ...options.initialData }
+    this.result = { ...options.initialResult } as DataFromSchema<U>
+    this.dataSchema = (typeof this.node.dataSchema === 'function' ? {} : this.node.dataSchema) as T
+    this.resultSchema = (typeof this.node.resultSchema === 'function' ? {} : this.node.resultSchema) as U
   }
 
   public flow
@@ -95,9 +91,9 @@ export class NodeInstance<T extends Node = Node> implements NodeInstanceOptions<
 
   public error: Error | undefined
   public dataRaw = {} as Record<string, unknown>
-  public result = {} as Partial<InferResult<T>>
-  public dataSchema: InferDataSchema<T>
-  public resultSchema: InferResultSchema<T>
+  public result = {} as DataFromSchema<U>
+  public dataSchema: T
+  public resultSchema: U
 
   public isRunning = false
   public eventTarget = new EventTarget()
@@ -111,7 +107,7 @@ export class NodeInstance<T extends Node = Node> implements NodeInstanceOptions<
    * @param event The event to dispatch.
    * @param data The parameters to pass to the event listeners.
    */
-  public dispatch<K extends keyof NodeEvents<T>>(event: K, ...data: NodeEvents<T>[K]) {
+  public dispatch<K extends keyof NodeEvents<T, U>>(event: K, ...data: NodeEvents<T, U>[K]) {
     const customEvent = new CustomEvent(event as string, { detail: data })
     this.eventTarget.dispatchEvent(customEvent)
   }
@@ -124,8 +120,8 @@ export class NodeInstance<T extends Node = Node> implements NodeInstanceOptions<
    * @param listener The listener to call when the event is dispatched.
    * @returns A function that removes the listener when called.
    */
-  public on<K extends keyof NodeEvents<T>>(event: K, listener: NodeListener<T, K>): () => void {
-    const handler = (event: Event) => { void listener(...(event as CustomEvent<NodeEvents<T>[K]>).detail) }
+  public on<K extends keyof NodeEvents<T, U>>(event: K, listener: NodeListener<T, U, K>): () => void {
+    const handler = (event: Event) => { void listener(...(event as CustomEvent<NodeEvents<T, U>[K]>).detail) }
     this.eventTarget.addEventListener(event, handler)
     this.eventHandlers.set(event, handler)
     return () => this.eventTarget.removeEventListener(event, handler)
@@ -160,15 +156,15 @@ export class NodeInstance<T extends Node = Node> implements NodeInstanceOptions<
   /**
    * Resolve the schema of the data that the node expects. If the schema is
    * already resolved, the resolved schema is returned. Otherwise, the given
-   * `defineDataSchema` function is called to resolve the schema and the schema
+   * `dataSchema` function is called to resolve the schema and the schema
    * is stored in the state.
    *
    * @returns The schema of the data that the node expects.
    */
-  public async resolveDataSchema(): Promise<InferDataSchema<T>> {
+  public async resolveDataSchema(): Promise<T> {
     try {
-      if (typeof this.node.defineDataSchema !== 'function') return this.dataSchema
-      this.dataSchema = await this.node.defineDataSchema(this.context) as InferDataSchema<T>
+      if (typeof this.node.dataSchema !== 'function') return this.dataSchema
+      this.dataSchema = await this.node.dataSchema(this.context)
       this.dispatch('dataSchema', this.dataSchema)
       return this.dataSchema
     }
@@ -186,10 +182,10 @@ export class NodeInstance<T extends Node = Node> implements NodeInstanceOptions<
    *
    * @returns The schema of the result that the node produces.
    */
-  public async resolveResultSchema(): Promise<InferResultSchema<T>> {
+  public async resolveResultSchema(): Promise<U> {
     try {
-      if (typeof this.node.defineResultSchema !== 'function') return this.resultSchema
-      this.resultSchema = await this.node.defineResultSchema(this.context) as InferResultSchema<T>
+      if (typeof this.node.resultSchema !== 'function') return this.resultSchema
+      this.resultSchema = await this.node.resultSchema(this.context)
       this.dispatch('resultSchema', this.resultSchema)
       return this.resultSchema
     }
@@ -206,9 +202,9 @@ export class NodeInstance<T extends Node = Node> implements NodeInstanceOptions<
    * @param key The key of the data schema to get the port for.
    * @returns The port that corresponds to the key of the data schema.
    */
-  public getDataSocket<K extends InferDataKeys<T>>(key: K): InferDataSchema<T>[K] {
+  public getDataSocket<K extends keyof T>(key: K): T[K] {
     if (key in this.dataSchema) return this.dataSchema[key]
-    throw new Error(`The data schema of node "${this.id}" does not contain a port with the key "${key}" or has not been resolved yet`)
+    throw new Error(`The data schema of node "${this.id}" does not contain a port with the key "${key as string}" or has not been resolved yet`)
   }
 
   /**
@@ -217,10 +213,11 @@ export class NodeInstance<T extends Node = Node> implements NodeInstanceOptions<
    * @param key The key of the data property.
    * @param value The value of the data property.
    */
-  public setDataValue<K extends InferDataKeys<T>>(key: K, value: InferDataValue<T, K>): void {
+  public setDataValue<K extends keyof T>(key: K, value: DataFromSchema<T>[K]): void {
     this.getDataSocket(key)
-    this.dataRaw[key] = value
-    this.dispatch('data', this.dataRaw)
+    this.dataRaw[key as string] = value
+    this.dispatch('data', this.data)
+    this.dispatch('dataRaw', this.dataRaw)
   }
 
   /**
@@ -228,10 +225,11 @@ export class NodeInstance<T extends Node = Node> implements NodeInstanceOptions<
    *
    * @param data The data to set.
    */
-  public setData(data: InferData<T>): void {
+  public setData(data: DataFromSchema<T>): void {
     for (const key in data) this.getDataSocket(key)
     this.dataRaw = data
-    this.dispatch('data', this.dataRaw)
+    this.dispatch('data', this.data)
+    this.dispatch('dataRaw', this.dataRaw)
   }
 
   /**
@@ -241,9 +239,9 @@ export class NodeInstance<T extends Node = Node> implements NodeInstanceOptions<
    * @param key The key of the result schema to get the port for.
    * @returns The port that corresponds to the key of the result schema.
    */
-  public getResultSocket<K extends InferResultKeys<T>>(key: K): InferResultSchema<T>[K] {
+  public getResultSocket<K extends keyof U>(key: K): U[K] {
     if (key in this.resultSchema) return this.resultSchema[key]
-    throw new Error(`The result schema of node "${this.id}" does not contain a port with the key "${key}" or has not been resolved yet`)
+    throw new Error(`The result schema of node "${this.id}" does not contain a port with the key "${key as string}" or has not been resolved yet`)
   }
 
   /**
@@ -253,9 +251,9 @@ export class NodeInstance<T extends Node = Node> implements NodeInstanceOptions<
    * @param key The key of the result property to get.
    * @returns The value of the result property of the node by key.
    */
-  public getResultValue<K extends InferResultKeys<T>>(key: K): InferResultValue<T, K> {
+  public getResultValue<K extends keyof U>(key: K): ResultFromSchema<U>[K] {
     this.getResultSocket(key)
-    return this.result[key] as InferResultValue<T, K>
+    return this.result[key]
   }
 
   /**
@@ -264,9 +262,9 @@ export class NodeInstance<T extends Node = Node> implements NodeInstanceOptions<
    * @param key The key of the result property.
    * @param value The value of the result property.
    */
-  public setResultValue<K extends InferResultKeys<T>>(key: K, value: InferResultValue<T, K>): void {
+  public setResultValue<K extends keyof U>(key: K, value: ResultFromSchema<U>[K]): void {
     const port = this.getResultSocket(key)
-    this.result[key] = port.type.parse(value) as InferResultValue<T, K>
+    this.result[key] = port.type.parse(value) as ResultFromSchema<U>[K]
     this.dispatch('result', this.result)
   }
 
@@ -275,15 +273,13 @@ export class NodeInstance<T extends Node = Node> implements NodeInstanceOptions<
    *
    * @param result The result to set.
    */
-  public setResult(result: InferResult<T>): void {
+  public setResult(result: DataFromSchema<U>): void {
     if (!this.resultSchema) throw new Error('Cannot set the result of the node before the result schema has been resolved')
     const newResult: Record<string, unknown> = {}
-    for (const key in this.resultSchema) {
-      const socket = this.resultSchema[key]
-      const parse = socket.type.parse ?? ((value: unknown) => value)
-      newResult[key] = parse(result[key])
-    }
-    this.dispatch('result', this.result = newResult as InferResult<T>)
+    for (const key in this.resultSchema)
+      newResult[key] = this.resultSchema[key].type.parse(result[key])
+    this.result = newResult as DataFromSchema<U>
+    this.dispatch('result', this.result)
   }
 
   /**
@@ -294,7 +290,7 @@ export class NodeInstance<T extends Node = Node> implements NodeInstanceOptions<
    * @example node.reset()
    */
   public reset() {
-    this.result = {} as InferResult<T>
+    this.result = {} as DataFromSchema<U>
     this.dispatch('reset')
   }
 
@@ -306,39 +302,36 @@ export class NodeInstance<T extends Node = Node> implements NodeInstanceOptions<
    * @param key The key of the data property to resolve.
    * @returns The resolved data value of the node by key.
    */
-  public resolveDataValue<K extends InferDataKeys<T>>(key: K): InferDataValue<T, K> | undefined {
-    const value = this.dataRaw[key]
-    if (value === undefined) return
+  public resolveDataValue<K extends keyof DataFromSchema<T>>(key: MaybeLiteral<K & string>): DataFromSchema<T>[K] | undefined {
 
     // --- Get the parser for the data property.
-    const parse = key in this.dataSchema
-      ? this.dataSchema[key].type.parse as (value: unknown) => InferDataValue<T, K>
-      : () => undefined as InferDataValue<T, K>
+    const raw = this.dataRaw[key]
+    const socket = this.dataSchema[key]
+    if (!socket) return
+    const parse = socket.type.parse as (value: unknown) => DataFromSchema<T>[K]
 
     // --- If the value is a variable, get the value of the variable.
-    if (typeof value === 'string' && value.startsWith('$VARIABLE.')) {
-      const name = value.slice(10)
+    if (typeof raw === 'string' && raw.startsWith('$VARIABLE.')) {
+      const name = raw.slice(10)
       return parse(this.flow.variables[name])
     }
 
     // --- If the value is a secret, get the value of the secret.
-    else if (typeof value === 'string' && value.startsWith('$SECRET.')) {
-      const name = value.slice(8)
+    else if (typeof raw === 'string' && raw.startsWith('$SECRET.')) {
+      const name = raw.slice(8)
       const result = this.flow.secrets[name]
-      if (!result) return
       return parse(result)
     }
 
     // --- If the value is a result of another node, resolve it's value.
-    if (typeof value === 'string' && value.startsWith('$NODE.')) {
-      const [id, portId] = value.slice(6).split(':')
-      const result = this.flow.getNodeInstance(id).getResultValue(portId as InferResultKeys<T>)
-      if (!result) return
+    if (typeof raw === 'string' && raw.startsWith('$NODE.')) {
+      const [node, key] = raw.slice(6).split(':')
+      const result = this.flow.getNodeInstance(node).getResultValue(key)
       return parse(result)
     }
 
-    // --- Otherwise, return the value as is.
-    return parse(value)
+    // --- Otherwise, parse and return the value as is.
+    return parse(raw)
   }
 
   /**
@@ -347,12 +340,12 @@ export class NodeInstance<T extends Node = Node> implements NodeInstanceOptions<
    *
    * @returns A proxy object that is used to access the data of the node.
    */
-  public get data() {
+  public get data(): DataFromSchema<T> {
     // eslint-disable-next-line unicorn/no-this-assignment, @typescript-eslint/no-this-alias
     const that = this
-    return new Proxy(this.dataRaw as InferData<T>, {
-      get(_, key: string) { return that.resolveDataValue(key) },
-    })
+    return new Proxy(this.dataRaw, {
+      get(_, key: keyof T & string) { return that.resolveDataValue(key) },
+    }) as DataFromSchema<T>
   }
 
   /**
@@ -362,11 +355,11 @@ export class NodeInstance<T extends Node = Node> implements NodeInstanceOptions<
    *
    * @returns The context object that is used to process the node.
    */
-  public get context(): NodeInstanceContext<InferDataSchema<T>, InferResultSchema<T>> {
+  public get context(): NodeInstanceContext<T, U> {
     return {
       flow: this.flow,
-      data: this.data as Pretty<Partial<InferData<T>>>,
-      result: this.result as Pretty<Partial<InferResult<T>>>,
+      data: this.data as NodeInstanceContext<T, U>['data'],
+      result: this.result as NodeInstanceContext<T, U>['result'],
       dataSchema: this.dataSchema,
       resultSchema: this.resultSchema,
       secrets: this.flow.secrets,
@@ -407,12 +400,20 @@ export class NodeInstance<T extends Node = Node> implements NodeInstanceOptions<
   public async process(): Promise<void> {
     if (!this.node.process) return
     try {
+      // await this.resolveDataSchema()
+      // await this.resolveResultSchema()
+
+      // --- Assert that all the required data properties are set.
+      for (const key in this.dataSchema) {
+        const { isOptional } = this.dataSchema[key]
+        const value = this.data[key]
+        if (isOptional && value === undefined) return
+      }
+
       this.isRunning = true
       this.dispatch('start')
-      await this.resolveDataSchema()
-      await this.resolveResultSchema()
       const result = await this.node.process(this.context)
-      if (result) this.setResult(result as InferResult<T>)
+      if (result) this.setResult(result)
     }
 
     // --- If an error occurs, dispatch the error event so that listeners
@@ -457,6 +458,9 @@ export class NodeInstance<T extends Node = Node> implements NodeInstanceOptions<
  * @param options The options to create the flow node instance with.
  * @returns The flow node instance created with the given options.
  */
-export function createFlowNodeInstance<T extends Node<string, any, any>>(options: NodeInstanceOptions<T>) {
+export function createFlowNodeInstance<
+  T extends DataSchema,
+  U extends ResultSchema,
+>(options: NodeInstanceOptions<T, U>): NodeInstance<T, U> {
   return new NodeInstance(options)
 }

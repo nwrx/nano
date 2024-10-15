@@ -1,7 +1,7 @@
 import { defineCategory } from '../defineCategory'
 import { defineModule } from '../defineModule'
 import { defineNode } from '../defineNode'
-import { defineSocketType } from '../defineSocketType'
+import { defineType } from '../defineType'
 
 export const categoryBasic = defineCategory({
   kind: 'basic',
@@ -10,7 +10,7 @@ export const categoryBasic = defineCategory({
   description: 'A collection of basic nodes for working with data.',
 })
 
-export const typeString = defineSocketType({
+export const typeString = defineType({
   kind: 'string',
   name: 'String',
   parse: (value) => {
@@ -19,7 +19,7 @@ export const typeString = defineSocketType({
   },
 })
 
-export const typeObject = defineSocketType({
+export const typeObject = defineType({
   kind: 'object',
   name: 'Object',
   parse: (value) => {
@@ -28,7 +28,7 @@ export const typeObject = defineSocketType({
   },
 })
 
-export const typeNumber = defineSocketType({
+export const typeNumber = defineType({
   kind: 'number',
   name: 'Number',
   parse: (value) => {
@@ -37,7 +37,7 @@ export const typeNumber = defineSocketType({
   },
 })
 
-export const typeBoolean = defineSocketType({
+export const typeBoolean = defineType({
   kind: 'boolean',
   name: 'Boolean',
   parse: (value) => {
@@ -53,7 +53,7 @@ export const nodeInput = defineNode({
   category: categoryBasic,
   description: 'A value generated from an entrypoint in the flow.',
 
-  defineDataSchema: {
+  dataSchema: {
     property: {
       name: 'Property',
       control: 'text',
@@ -62,7 +62,7 @@ export const nodeInput = defineNode({
     },
   },
 
-  defineResultSchema: () => ({
+  resultSchema: () => ({
     value: {
       name: 'Value',
       type: typeString,
@@ -70,11 +70,12 @@ export const nodeInput = defineNode({
     },
   }),
 
-  process: ({ flow, data }) => {
-    flow.on('flow:input', (property) => {
+  process: async({ flow, data }) => await new Promise((resolve) => {
+    flow.on('flow:input', (property, value) => {
       if (property !== data.property) return
+      resolve({ value: value as string })
     })
-  },
+  }),
 })
 
 export const nodeOutput = defineNode({
@@ -84,7 +85,7 @@ export const nodeOutput = defineNode({
   category: categoryBasic,
   description: 'A value that is sent to an exitpoint in the flow.',
 
-  defineDataSchema: () => ({
+  dataSchema: {
     property: {
       name: 'Property',
       type: typeString,
@@ -96,12 +97,11 @@ export const nodeOutput = defineNode({
       type: typeString,
       description: 'The value to send to the exitpoint.',
     },
-  }),
+  },
 
   process: ({ flow, data }) => {
-    if (!data.value) return
-    if (!data.property) return
     flow.dispatch('flow:output', data.property, data.value)
+    return {}
   },
 })
 
@@ -111,24 +111,23 @@ export const nodeJsonParse = defineNode({
   icon: 'https://api.iconify.design/carbon:json.svg',
   description: 'Parses a JSON string into an object.',
 
-  defineDataSchema: {
+  dataSchema: {
     json: {
-      name: 'JSON',
+      label: 'JSON',
       type: typeString,
     },
   },
 
-  defineResultSchema: {
+  resultSchema: {
     object: {
-      name: 'Object',
+      label: 'Object',
       type: typeObject,
     },
   },
 
-  process: ({ data }) => {
-    const { json = '{}' } = data
-    return { object: JSON.parse(json) as Record<string, unknown> }
-  },
+  process: ({ data }) => ({
+    object: JSON.parse(data.json) as Record<string, unknown>,
+  }),
 })
 
 export const moduleCore = defineModule({

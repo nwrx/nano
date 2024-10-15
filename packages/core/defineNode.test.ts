@@ -1,11 +1,11 @@
 import type { Node } from './defineNode'
-import type { SocketType } from './defineSocketType'
 import { categoryBasic, typeBoolean } from './__fixtures__'
+import { defineDataSchema } from './defineDataSchema'
 import { defineNode } from './defineNode'
 
 describe('defineNode', () => {
-  const defineDataSchema = vi.fn()
-  const defineResultSchema = vi.fn()
+  const dataSchema = vi.fn()
+  const resultSchema = vi.fn()
   const process = vi.fn()
 
   describe('defineNode', () => {
@@ -16,8 +16,8 @@ describe('defineNode', () => {
         icon: 'https://api.iconify.design/carbon:json.svg',
         description: 'Parses JSON data into a JavaScript object.',
         category: categoryBasic,
-        defineDataSchema,
-        defineResultSchema,
+        dataSchema,
+        resultSchema,
         process,
       })
 
@@ -27,8 +27,8 @@ describe('defineNode', () => {
         icon: 'https://api.iconify.design/carbon:json.svg',
         description: 'Parses JSON data into a JavaScript object.',
         category: categoryBasic,
-        defineDataSchema,
-        defineResultSchema,
+        dataSchema,
+        resultSchema,
         process,
       })
     })
@@ -41,8 +41,8 @@ describe('defineNode', () => {
         icon: undefined,
         description: undefined,
         category: undefined,
-        defineDataSchema: {},
-        defineResultSchema: {},
+        dataSchema: {},
+        resultSchema: {},
         process: undefined,
       })
     })
@@ -90,15 +90,11 @@ describe('defineNode', () => {
     it('should return the type of a flow node', () => {
       const node = defineNode({
         kind: 'node',
-        defineDataSchema: { data: { name: 'Data', type: typeBoolean } },
-        defineResultSchema: { result: { name: 'Result', type: typeBoolean } },
+        dataSchema: { data: { label: 'Data', type: typeBoolean, isOptional: true } },
+        resultSchema: { result: { label: 'Result', type: typeBoolean } },
         process,
       })
-      expectTypeOf(node).toEqualTypeOf<Node<
-        'node',
-        { data: { name: string; type: SocketType<boolean> } },
-        { result: { name: string; type: SocketType<boolean> } }
-      >>()
+      expectTypeOf(node).toMatchTypeOf<Node<'node', { data?: boolean }, { result: boolean }>>()
     })
   })
 })

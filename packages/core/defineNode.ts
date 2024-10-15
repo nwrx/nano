@@ -1,10 +1,10 @@
 import type { Pretty } from '@unshared/types'
 import type { Flow } from './createFlow'
 import type { Category } from './defineCategory'
-import type { DataSchema } from './defineDataSocket'
-import type { ResultSchema } from './defineResultSocket'
+import type { DataFromSchema } from './defineDataSchema'
+import type { DataSchema } from './defineDataSchema'
+import type { ResultFromSchema, ResultSchema } from './defineResultSchema'
 import type { MaybePromise } from './types'
-import type { InferSchemaType } from './types'
 import { assertNotNil, assertStringNotEmpty } from '@unshared/validation'
 
 /**
@@ -27,19 +27,19 @@ export interface NodeInstanceContext<
    * The data that is passed to the node when it is executed. The data comes
    * from the previous nodes or can be statically defined in the flow.
    */
-  data: Pretty<Partial<InferSchemaType<T>>>
+  data: Pretty<DataFromSchema<NoInfer<T>>>
 
   /**
    * The current result that is produced by the node when it is executed. The
    * result is used to pass the output of the node to the next nodes in the flow.
    * The result can be modified by the node to produce the desired output.
    */
-  result: Pretty<Partial<InferSchemaType<U>>>
+  result: Pretty<ResultFromSchema<NoInfer<U>>>
 
   /**
    * The resolved data schema that is used to validate the data that is passed
    * to the node when it is executed. The data schema is resolved from the
-   * defineDataSchema function of the node.
+   * dataSchema function of the node.
    *
    * @example
    * {
@@ -50,7 +50,7 @@ export interface NodeInstanceContext<
    *   },
    * }
    */
-  dataSchema: DataSchema extends T ? any : T
+  dataSchema: NoInfer<T>
 
   /**
    * The resolved result schema that is used to validate the result that is
@@ -66,7 +66,7 @@ export interface NodeInstanceContext<
    *   },
    * }
    */
-  resultSchema: ResultSchema extends U ? any : U
+  resultSchema: NoInfer<U>
 
   /**
    * Secrets that are passed to the node when it is executed. The secrets
@@ -116,13 +116,14 @@ export interface NodeInstanceContext<
  * name, label, icon, description, initial data, data schema, result schema,
  * and the process function of the flow node.
  *
+ * @template K The kind of the node. The kind is used to identify the type of the node.
  * @template T The schema of the data that the node expects.
  * @template U The schema of the result that the node produces.
  */
 export interface Node<
   K extends string = string,
-  T extends DataSchema = DataSchema,
-  U extends ResultSchema = ResultSchema,
+  T extends DataSchema = any,
+  U extends ResultSchema = any,
 > {
 
   /**
@@ -172,7 +173,7 @@ export interface Node<
    *
    * @returns The schema of the data that the node expects.
    */
-  defineDataSchema?: ((context: NodeInstanceContext<NoInfer<T>, NoInfer<U>>) => MaybePromise<T>) | Readonly<T>
+  dataSchema?: ((context: NodeInstanceContext<T, U>) => MaybePromise<T>) | T
 
   /**
    * A function that defines the schema of the result that the node produces.
@@ -181,7 +182,7 @@ export interface Node<
    *
    * @returns The schema of the result that the node produces.
    */
-  defineResultSchema?: ((context: NodeInstanceContext<NoInfer<T>, NoInfer<U>>) => MaybePromise<U>) | Readonly<U>
+  resultSchema?: ((context: NodeInstanceContext<T, U>) => MaybePromise<U>) | U
 
   /**
    * A function that processes the data of the node and produces a result.
@@ -199,7 +200,7 @@ export interface Node<
    *   },
    * })
    */
-  process?: (context: NodeInstanceContext<NoInfer<T>, NoInfer<U>>) => MaybePromise<InferSchemaType<NoInfer<U>> | void>
+  process?: (context: NodeInstanceContext<NoInfer<T>, NoInfer<U>>) => MaybePromise<ResultFromSchema<NoInfer<U>>>
 }
 
 /**
@@ -217,7 +218,7 @@ export interface Node<
  *   description: 'Parses JSON data into a JavaScript object.',
  *
  *   // The node expects a JSON data string as input.
- *   defineDataSchema: () => ({
+ *   dataSchema: () => ({
  *     json: {
  *       name: 'JSON',
  *       type: typeString,
@@ -240,11 +241,7 @@ export interface Node<
  *   }),
  * })
  */
-export function defineNode<
-  N extends string,
-  T extends DataSchema = DataSchema,
-  U extends ResultSchema = ResultSchema,
->(options: Node<N, T, U>): Node<N, T, U> {
+export function defineNode<N extends string, T extends DataSchema, U extends ResultSchema>(options: Node<N, T, U>): Node<N, T, U> {
   assertNotNil(options)
   assertStringNotEmpty(options.kind)
   return {
@@ -253,8 +250,8 @@ export function defineNode<
     icon: options.icon,
     category: options.category,
     description: options.description,
-    defineDataSchema: options.defineDataSchema ?? {} as T,
-    defineResultSchema: options.defineResultSchema ?? {} as U,
+    dataSchema: options.dataSchema,
+    resultSchema: options.resultSchema,
     process: options.process,
   }
 }

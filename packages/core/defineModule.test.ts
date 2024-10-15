@@ -1,6 +1,6 @@
 import type { Module } from './defineModule'
 import type { Node } from './defineNode'
-import type { SocketType } from './defineSocketType'
+import type { Type } from './defineType'
 import { nodeInput, nodeJsonParse, typeBoolean, typeNumber, typeString } from './__fixtures__'
 import { defineModule } from './defineModule'
 
@@ -91,7 +91,7 @@ describe('defineFlowModule', () => {
         Module<
           'microsoft-azure',
           Node<'input' | 'parse-json', any, any>,
-          SocketType<boolean | number | string>
+          Type<boolean | number | string>
         >
       >()
     })
