@@ -13,13 +13,13 @@ defineProps<{
     <div
       class="
         flex flex-col justify-start w-full p-lg h-48
-        bg-layout text-layout rounded border border-app
+        bg-layout text-layout rounded
       ">
 
       <!-- Title -->
       <div class="flex items-center gap-md self-start">
         <div class="bg-prominent rounded p-sm">
-          <BaseIcon v-if="icon" :icon="icon" class="text-app size-5"/>
+          <BaseIcon v-if="icon" :icon="icon" class="text-prominent size-5"/>
         </div>
         <span class="text-4xl font-medium ">
           {{ title }}
@@ -28,8 +28,6 @@ defineProps<{
 
       <!-- Breadcrumb -->
       <RouterLink to="/" class="flex items-center gap-sm self-end mt-auto">
-        <BaseIcon icon="i-carbon:home" class="size-4"/>
-        <span>Home</span>
         <BaseIcon icon="i-carbon:chevron-right" class="size-4"/>
         <span>{{ title }}</span>
       </RouterLink>
