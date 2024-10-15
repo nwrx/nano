@@ -1,4 +1,4 @@
-import type { FlowNodePortValue, SocketType } from '@nwrx/core'
+import type { Type } from '@nwrx/core'
 import { defineNode } from '@nwrx/core'
 import { basic } from '../categories'
 import { boolean, number, stream, string } from '../types'
@@ -10,22 +10,19 @@ export const input = defineNode({
   category: basic,
   description: 'A value generated from an entrypoint in the flow. The value can be any type of data, such as a string, number, or boolean and is provided as an input to the flow.',
 
-  defineDataSchema: {
+  dataSchema: {
     property: {
-      name: 'Property',
-      display: 'text',
       type: string,
-      disallowDynamic: true,
+      name: 'Property',
+      control: 'text',
       description: 'The name of the entrypoint. It is used to identify the property to get the value from the input data.',
     },
     type: {
       name: 'Type',
-      display: 'select',
-      type: string as SocketType<'boolean' | 'number' | 'stream' | 'text'>,
+      control: 'select',
+      type: string as Type<'boolean' | 'number' | 'stream' | 'text'>,
       description: 'The type of the value.',
-      defaultValue: 'text',
-      disallowDynamic: true,
-      values: [
+      options: [
         {
           value: 'text',
           label: 'Text',
@@ -50,27 +47,23 @@ export const input = defineNode({
           icon: 'https://api.iconify.design/carbon:data-1.svg',
           description: 'A stream of data, such as an audio or video stream.',
         },
-      ] satisfies FlowNodePortValue[],
+      ],
     },
   },
 
-  defineResultSchema: ({ data }) => {
-    let type: SocketType<any> = string
-    if (data.type === 'number') type = number
-    else if (data.type === 'boolean') type = boolean
-    else if (data.type === 'stream') type = stream
-
-    return {
-      value: {
-        name: 'Value',
-        type,
-        description: 'The value of the entrypoint.',
-      },
-    }
-  },
+  resultSchema: ({ data }) => ({
+    value: {
+      name: 'Value',
+      type: { number, boolean, stream, text: string }[data.type ?? 'text'],
+      description: 'The value of the entrypoint.',
+    },
+  }),
 
   process: async({ flow, data, abortSignal }) =>
-    await new Promise<{ value: unknown }>((resolve) => {
+    await new Promise<{ value: unknown }>((resolve, reject) => {
+
+      // --- If no data was provided within 1 second, reject.
+      setTimeout(() => reject(new Error('No data provided.')), 1000)
 
       // --- On abort, resolve with undefined.
       abortSignal.addEventListener('abort', () => {

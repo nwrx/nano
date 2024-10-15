@@ -1,5 +1,6 @@
-import type { NodeInstanceContext } from '@nwrx/core'
-import { defineDataSocket, defineNode } from '@nwrx/core'
+import type { NodeInstanceContext, SocketListOption } from '@nwrx/core'
+import { defineNode } from '@nwrx/core'
+import { defineDataSchema } from '@nwrx/core'
 import { languageModel } from '../categories'
 import { languageModelInstance, string } from '../types'
 
@@ -50,22 +51,22 @@ export const modelOpenai = defineNode({
   category: languageModel,
 
   // --- Define the inputs of the node.
-  defineDataSchema: async({ data, abortSignal }: NodeInstanceContext) => {
-    const dataSchema = {
-      token: defineDataSocket({
+  dataSchema: async({ data, abortSignal }: NodeInstanceContext) => {
+    const dataSchema = defineDataSchema({
+      token: {
         name: 'API Key',
         type: string,
         control: 'variable',
         description: 'The API key for the OpenAI API.',
-      }),
-      model: defineDataSocket({
+      },
+      model: {
         type: string,
         control: 'select',
         name: 'Model Name',
         description: 'The name of the model to use for generating completions.',
-        options: [],
-      }),
-    }
+        options: [] as Array<SocketListOption<string>>,
+      },
+    })
 
     // --- Attempt to fill the model names from the API.
     try {
@@ -87,7 +88,7 @@ export const modelOpenai = defineNode({
   },
 
   // --- Define the outputs of the node.
-  defineResultSchema: {
+  resultSchema: {
     model: {
       name: 'Model',
       type: languageModelInstance,

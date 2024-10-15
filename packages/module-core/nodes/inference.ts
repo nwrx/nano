@@ -9,30 +9,31 @@ export const inference = defineNode({
   description: 'Generates a completion based on a language model.',
   category: compute,
 
-  defineDataSchema: {
+  dataSchema: {
     model: {
       name: 'Model',
-      description: 'The language model used to generate the completion.',
+      control: 'socket',
       type: languageModelInstance,
+      description: 'The language model used to generate the completion.',
     },
     prompt: {
-      name: 'Prompt',
-      description: 'The message to generate a completion for.',
       type: string,
+      name: 'Prompt',
+      control: 'socket',
+      description: 'The message to generate a completion for.',
     },
   },
 
-  defineResultSchema: {
+  resultSchema: {
     completion: {
-      name: 'Completion',
       type: string,
+      name: 'Completion',
+      description: 'The generated completion based on the prompt.',
     },
   },
 
   process: async({ data }) => {
     const { model, prompt } = data
-    if (!model) return
-    if (!prompt) return
 
     // --- Generate the completion based on the model and prompt.
     const body = model.getBody({ prompt })
