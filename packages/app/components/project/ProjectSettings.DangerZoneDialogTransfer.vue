@@ -29,8 +29,8 @@ watch(search, async() => {
 <template>
   <AppDialog
     v-model="model"
-    variant="danger"
     icon="i-carbon:warning"
+    class-hint="hint-danger"
     :title="t('title', { title })"
     :text="t('text', { workspace, project })"
     :labelCancel="t('button.cancel')"
