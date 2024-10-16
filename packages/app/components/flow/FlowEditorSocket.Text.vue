@@ -26,7 +26,7 @@ const model = useVModel(props, 'modelValue', emit, {
       ref="input"
       v-model="model"
       :class="{ 'text-editor-node italic': !model }"
-      class="w-full outline-none bg-transparent text-sm"
+      class="w-full outline-none bg-transparent text-sm h-8"
     />
   </FlowEditorSocketGroup>
 </template>
