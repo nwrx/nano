@@ -14,6 +14,8 @@ const emit = defineEmits<{
 
 const { t } = useI18n({ useScope: 'local' })
 const url = computed(() => `${CONSTANTS.appHost}/${props.workspace}/`)
+const title = useVModel(props, 'title', emit, { passive: true })
+const description = useVModel(props, 'description', emit, { passive: true })
 </script>
 
 <template>
@@ -34,24 +36,22 @@ const url = computed(() => `${CONSTANTS.appHost}/${props.workspace}/`)
 
     <!-- Project Title -->
     <InputText
-      :modelValue="title"
+      v-model="title"
       icon="i-carbon:label"
       :placeholder="t('field.title.description')"
-      class="w-full"
     />
 
     <!-- Project Name / Readonly -->
     <InputText
-      readonly
+      disabled
       :modelValue="project"
       :text-before="url"
       :hint="t('field.name.description')"
-      class="w-full"
     />
 
     <!-- Project Description -->
     <InputText
-      :modelValue="description"
+      v-model="description"
       :placeholder="t('field.description.description')"
       type="textarea"
       class-input="!h-32"
