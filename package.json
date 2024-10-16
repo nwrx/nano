@@ -18,7 +18,8 @@
       ]
     },
     "patchedDependencies": {
-      "@unserved/client": "patches/@unserved__client.patch"
+      "@unserved/client": "patches/@unserved__client.patch",
+      "@unshared/validation": "patches/@unshared__validation.patch"
     }
   },
   "scripts": {
@@ -43,6 +44,7 @@
     "@types/nodemailer": "6.4.16",
     "@unshared/eslint-config": "0.0.20",
     "@unshared/scripts": "0.0.20",
+    "@unshared/validation": "0.0.20",
     "@vitest/coverage-v8": "2.1.2",
     "@vitest/ui": "2.1.2",
     "@vitest/utils": "2.1.2",
