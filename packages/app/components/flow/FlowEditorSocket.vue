@@ -99,7 +99,7 @@ function onRelease() {
     <!-- Node pin, used to connect to other nodes. -->
     <div
       ref="pin"
-      class="h-2 shrink-0"
+      class="self-start mt-3 h-2 shrink-0"
       :style="{ backgroundColor: typeColor }"
       :class="{
         'rounded-r-lg': kind === 'target',
