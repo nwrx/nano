@@ -82,6 +82,18 @@ export interface Link {
 }
 
 /**
+ * The `FlowContext` is a map of variables that are shared between all nodes
+ * in the flow during the execution of the flow. The context is used to store
+ * variables that are used by multiple nodes in the flow and that need to be
+ * shared between the nodes. Note that the context is not persisted between
+ * flow executions and is reset when the flow is started.
+ */
+// eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
+export interface FlowContext {
+  [key: PropertyKey]: unknown
+}
+
+/**
  * a `Flow` is a collection of `Node`s that are linked together. The flow
  * is processed by executing the entrypoint and letting the nodes trigger each
  * other.
@@ -112,7 +124,7 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
   public modules: T[] = []
   public nodes: NodeInstance[] = []
   public secrets = {} as Record<string, string>
-  public context = {} as Record<string, unknown>
+  public context = {} as FlowContext
   public variables = {} as Record<string, string>
   public isRunning = false
   public eventTarget = new EventTarget()
