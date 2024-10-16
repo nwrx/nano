@@ -8,34 +8,37 @@ defineProps<{
 const emit = defineEmits<{
   signout: []
 }>()
+
+const isOpen = ref(false)
 </script>
 
 <template>
-  <ContextMenu x="right" y="below" @mouseleave="">
+  <ContextMenu
+    v-model="isOpen"
+    x="right"
+    y="below"
+    @mouseenter="() => isOpen = true"
+    @mouseleave="() => isOpen = false">
 
-    <template #default="{ open, toggle }">
-      <AppNavFab
-        @mouseenter="() => open()"
-        @click="() => toggle()">
-        <img
-          v-if="avatarUrl"
-          :src="avatarUrl"
-          alt="User Avatar"
-          class="size-6 rounded-full cursor-pointer"
-        />
-      </AppNavFab>
-    </template>
+    <AppNavFab>
+      <img
+        v-if="avatarUrl"
+        :src="avatarUrl"
+        alt="User Avatar"
+        class="size-6 rounded-full cursor-pointer"
+      />
+    </AppNavFab>
 
     <!-- Menu -->
     <template #menu="{ close }">
-      <div class="flex items-center space-x-md pb-sm">
+      <div class="flex items-center space-x-md pb-sm w-48">
         <img
           v-if="avatarUrl"
           :src="avatarUrl"
           alt="User Avatar"
           class="size-10 rounded-full"
         />
-        <div class="text-sm font-medium">
+        <div class="truncate">
           <p class="text-sm truncate text-app">{{ displayName }}</p>
           <p class="text-sm truncate text-subtle">{{ email }}</p>
         </div>
