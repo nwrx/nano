@@ -1,7 +1,7 @@
 import type { WorkspaceProjectObject, WorkspaceProjectPermission } from '@nwrx/api'
 import type { InferInput } from '@unserved/client'
 import type { application } from '~/server'
-import { useAlerts, useClient, userAlerts, useRouter } from '#imports'
+import { useAlerts, useClient, useRouter } from '#imports'
 
 /** The options to pass to the {@linkcode useProject} composable. */
 export type UseProjectOptions = Omit<InferInput<typeof application, 'GET /api/workspaces/:workspace/:project'>, 'project' | 'workspace'>
