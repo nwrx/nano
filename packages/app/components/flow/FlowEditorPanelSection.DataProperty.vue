@@ -11,7 +11,7 @@ const md = new Markdown({ html: true })
 </script>
 
 <template>
-  <div class="flex flex-wrap text-sm not-first:border-t border-editor">
+  <div class="flex flex-wrap items-center text-sm not-first:border-t border-editor">
 
     <!-- Name -->
     <div class="w-3/12 px-sm py-xs border-r border-editor font-sans">
@@ -62,6 +62,14 @@ const md = new Markdown({ html: true })
         v-text="value"
       />
     </div>
+
+    <!-- Boolean -->
+    <Badge
+      v-else-if="typeof value === 'boolean'"
+      class="ml-xs !h-5 truncate badge-soft font-mono"
+      :class="value ? 'badge-success' : 'badge-danger'"
+      :label="value ? 'True' : 'False'"
+    />
 
     <!-- Object -->
     <template v-else-if="typeof value === 'object'">
