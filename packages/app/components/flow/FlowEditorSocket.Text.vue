@@ -19,7 +19,7 @@ const model = useVModel(props, 'modelValue', emit, {
   <FlowEditorSocketGroup class="cursor-text" @click="() => input?.focus()">
 
     <!-- Label -->
-    <FlowEditorSocketLabel light :label="name" />
+    <FlowEditorSocketLabel :label="name" />
 
     <!-- Field -->
     <input

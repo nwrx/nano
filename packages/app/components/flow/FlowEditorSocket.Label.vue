@@ -2,37 +2,22 @@
 defineProps<{
   label: string
   icon?: string
-  light?: boolean
-  primary?: boolean
-  outlined?: boolean
 }>()
 </script>
 
 <template>
-  <span
-    :class="{
-      'bg-primary-500 ring-white text-white': primary,
-      'bg-primary-100 ring-primary-500 text-primary-500': light,
-      'text-subtle ring-app italic': !light && !primary,
-      'ring-1': outlined,
-    }"
-    class="
-      flex items-center space-x-2 h-6 px-2 rounded text-sm
-      transition-colors duration-200
-      bg-opacity-90 hover:bg-opacity-100
-      text-opacity-80 hover:text-opacity-100
-    ">
+  <div class="flex items-center space-x-sm h-full pl-sm text-sm text-subtle">
 
     <!-- Icon -->
     <BaseIcon
       v-if="icon"
       :icon="icon"
-      class="suze-4"
+      class="size-4"
     />
 
     <!-- Label -->
-    <span class="whitespace-nowrap truncate">
-      {{ label }}{{ !light && !primary ? ':' : '' }}
-    </span>
-  </span>
+    <p class="whitespace-nowrap truncate">
+      {{ label }}:
+    </p>
+  </div>
 </template>
