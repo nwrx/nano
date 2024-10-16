@@ -129,6 +129,7 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
         if (!node) return
         node.isRunning = false
         flow.nodes = [...flow.nodes]
+        events.value.push(payload)
         break
       }
       case 'node:data': {
@@ -153,7 +154,6 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
         if (!node) return
         node.result = result
         flow.nodes = [...flow.nodes]
-        events.value.push(payload)
         break
       }
       case 'node:resultSchema': {

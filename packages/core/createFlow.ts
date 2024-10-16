@@ -1,5 +1,5 @@
 import type { MaybeLiteral } from '@unshared/types'
-import type { NodeInstanceMeta, NodeInstanceOptions } from './createNodeInstance'
+import type { NodeInstanceMeta, NodeInstanceOptions, NodeRunEvent } from './createNodeInstance'
 import type { DataSchema, DataSocket } from './defineDataSchema'
 import type { Module } from './defineModule'
 import type { Node } from './defineNode'
@@ -25,19 +25,19 @@ export interface FlowEvents {
   'node:resultSchema': [id: string, schema: ResultSchema]
   'node:position': [id: string, x: number, y: number]
   'node:remove': [id: string]
+  'node:start': [id: string, NodeRunEvent]
+  'node:end': [id: string, NodeRunEvent]
+  'node:abort': [id: string, NodeRunEvent]
   'node:error': [id: string, error: Error]
-  'node:start': [id: string]
-  'node:end': [id: string]
-  'node:abort': [id: string]
 
   // Flow
   'flow:meta': [FlowMeta]
   'flow:metaValue': [key: string, value: unknown]
   'flow:input': [property: string, value: unknown]
   'flow:output': [property: string, value: unknown]
-  'flow:start': [id: string]
-  'flow:abort': [id: string, duration: number]
-  'flow:end': [id: string, duration: number]
+  'flow:start': [runId: string]
+  'flow:abort': [runId: string, duration: number]
+  'flow:end': [runId: string, duration: number]
 }
 
 /**
@@ -230,15 +230,15 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
     this.dispatch('node:create', instance as NodeInstance)
     instance.on('data', data => this.dispatch('node:data', instance.id, data))
     instance.on('dataRaw', data => this.dispatch('node:dataRaw', instance.id, data))
-    instance.on('result', result => this.dispatch('node:result', instance.id, result))
     instance.on('dataSchema', schema => this.dispatch('node:dataSchema', instance.id, schema))
+    instance.on('result', result => this.dispatch('node:result', instance.id, result))
     instance.on('resultSchema', schema => this.dispatch('node:resultSchema', instance.id, schema))
-    instance.on('start', () => this.dispatch('node:start', instance.id))
     instance.on('meta', meta => this.dispatch('node:meta', instance.id, meta))
     instance.on('metaValue', (key, value) => this.dispatch('node:metaValue', instance.id, key, value))
+    instance.on('start', event => this.dispatch('node:start', instance.id, event))
+    instance.on('abort', event => this.dispatch('node:abort', instance.id, event))
+    instance.on('end', event => this.dispatch('node:end', instance.id, event))
     instance.on('error', error => this.dispatch('node:error', instance.id, error))
-    instance.on('abort', () => this.dispatch('node:abort', instance.id))
-    instance.on('end', () => this.dispatch('node:end', instance.id))
     return instance
   }
 
@@ -387,7 +387,6 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
    * useful when the flow needs to be reprocessed with new input.
    */
   public reset(): void {
-    this.runId = randomUUID() as string
     for (const node of this.nodes)
       node.reset()
   }
@@ -399,7 +398,7 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
    */
   public abort(): void {
     for (const node of this.nodes) node.abort()
-    this.dispatch('flow:abort', this.runId, performance.now() - this.runStart)
+    this.dispatch('flow:abort', this.runId, Date.now() - this.runStart)
     this.isRunning = false
   }
 
@@ -412,7 +411,7 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
     this.isRunning = true
     this.reset()
     this.runId = randomUUID() as string
-    this.runStart = performance.now()
+    this.runStart = Date.now()
 
     // --- Start listening for node result events.
     const stop = this.on('node:result', (id) => {
@@ -431,7 +430,7 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
       this.isRunning = false
       clearInterval(interval)
       stop()
-      this.dispatch('flow:end', this.runId, performance.now() - this.runStart)
+      this.dispatch('flow:end', this.runId, Date.now() - this.runStart)
     }, 100)
 
     // --- Find nodes that don't have any incoming links and set them as the entrypoints.
