@@ -11,10 +11,10 @@ const md = new Markdown({ html: true })
 </script>
 
 <template>
-  <div class="flex flex-wrap items-center text-sm not-first:border-t border-editor">
+  <div class="flex flex-wrap items-stretch text-sm not-first:border-t border-editor">
 
     <!-- Name -->
-    <div class="w-3/12 self-start px-sm py-xs border-r border-editor font-sans">
+    <div class="w-3/12 px-sm py-xs border-r border-editor font-sans">
       {{ name }}
     </div>
 
