@@ -113,7 +113,7 @@ export type ResultFromSchema<T extends ResultSchema> =
  * })
  */
 export function defineResultSchema<T extends ResultSchema>(socket: T): T
-export function defineResultSchema<T>(socket: ResultSocket<T>): ResultSocket<T>
-export function defineResultSchema(socket: ResultSocket): ResultSocket {
+export function defineResultSchema<T extends ObjectLike>(socket: ResultSchema<T>): ResultSchema<T>
+export function defineResultSchema(socket: ResultSchema): ResultSchema {
   return socket
 }
