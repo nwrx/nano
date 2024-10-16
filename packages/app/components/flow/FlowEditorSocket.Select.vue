@@ -8,7 +8,7 @@ const props = defineProps<{
   name: string
   modelValue: unknown
   badge?: boolean
-} & BaseInputListProps<SocketListOption, unknown, false>>()
+} & BaseInputListProps<SocketListOption<unknown>, unknown, false>>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
