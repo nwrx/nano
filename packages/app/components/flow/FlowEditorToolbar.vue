@@ -6,7 +6,7 @@ defineProps<{
 }>()
 
 const emit = defineEmits<{
-  run: []
+  start: []
   abort: []
   bookmark: []
   download: []
@@ -41,7 +41,7 @@ const emit = defineEmits<{
     <FlowEditorFab
       :isActive="isRunning"
       :icon="isRunning ? 'i-line-md:loading-loop' : 'i-carbon:play'"
-      @click="() => isRunning ? emit('abort') : emit('run')"
+      @click="() => isRunning ? emit('abort') : emit('start')"
     />
   </div>
 </template>

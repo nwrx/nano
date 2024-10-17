@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import type { FlowSessionEventPayload, NodeInstanceJSON } from '@nwrx/api'
 
-const props = defineProps<{
+defineProps<{
   event: FlowSessionEventPayload
-  nodes: NodeInstanceJSON[]
+  node?: NodeInstanceJSON
 }>()
 
 // --- Localization
 const { t } = useI18n()
 const isOpen = ref(false)
-const node = computed(() => props.nodes.find(node => node.id === props.event.id))
 </script>
 
 <template>
@@ -38,7 +37,6 @@ const node = computed(() => props.nodes.find(node => node.id === props.event.id)
       />
       <!-- Duration -->
       <div v-if="'duration' in event" class="flex items-center space-x-md ml-auto text-end">
-        <p v-if="'id' in event" class="w-40 text-xs font-normal text-subtle truncate">{{ event.id }}</p>
         <p class="w-12 text-xs text-subtle">{{ event.duration }}ms</p>
       </div>
     </BaseButton>

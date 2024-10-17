@@ -65,7 +65,7 @@ const isPanelNodeResultOpen = useLocalStorage<boolean>('__FlowEditorPanel_NodeRe
         :isLocked="isLocked"
         :isRunning="session.flow.isRunning"
         :isBookmarked="isBookmarked"
-        @run="() => session.flowRun()"
+        @start="(input) => session.flowStart(input)"
         @abort="() => session.flowAbort()"
         @setName="(name) => session.flowSetMetaValue('name', name)"
         @setMethods="(methods) => session.flowSetMetaValue('methods', methods)"

@@ -25,6 +25,7 @@ const emit = defineEmits<{
   'update:isFlowVariablesOpen': [isOpen: boolean]
   'update:isNodeDataOpen': [isOpen: boolean]
   'update:isNodeResultOpen': [isOpen: boolean]
+  start: [Record<string, string>]
   setName: [name: string]
   setMethods: [methods: string[]]
   setDescription: [description: string]
@@ -54,7 +55,10 @@ const isNodeResultOpen = useVModel(props, 'isNodeResultOpen', emit, { passive: t
 const selectedTab = ref('flow')
 const tabs = computed(() => {
   const nodeSelected = props.nodeSelected ?? []
-  const tabs = [{ label: 'Events', id: 'events' }]
+  const tabs = [
+    { label: 'Events', id: 'events' },
+    { label: 'Playground', id: 'playground' },
+  ]
   if (nodeSelected.length > 0) tabs.unshift({ label: 'Node', id: 'node' })
   else tabs.unshift({ label: 'Settings', id: 'flow' })
   return tabs
@@ -116,7 +120,7 @@ watch(() => props.events, scrollToBottom, { deep: true })
     />
 
     <!-- Flow -->
-    <div ref="container" class="flex flex-col overflow-y-auto transition" :class="{ 'op-0': !isOpen }">
+    <div ref="container" class="flex flex-col h-full overflow-y-auto transition" :class="{ 'op-0': !isOpen }">
       <FlowEditorPanelFlow
         v-if="selectedTab === 'flow'"
         v-model:isMethodsOpen="isFlowMethodsOpen"
@@ -156,6 +160,14 @@ watch(() => props.events, scrollToBottom, { deep: true })
         :events="events"
         :nodes="nodes"
         @clear="() => emit('eventsClear')"
+      />
+
+      <!-- Playground -->
+      <FlowEditorPanelPlayground
+        v-else-if="selectedTab === 'playground'"
+        :nodes="nodes"
+        :events="events"
+        @start="(input) => emit('start', input)"
       />
     </div>
   </div>

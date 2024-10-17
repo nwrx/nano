@@ -36,7 +36,7 @@ const props = defineProps<{
 const emit = defineEmits<{
 
   // --- Flow.
-  run: []
+  start: [Record<string, string>]
   abort: []
   setName: [name: string]
   setMethods: [methods: string[]]
@@ -203,7 +203,7 @@ const editor = useFlowEditor({
           class="pointer-events-auto justify-self-start"
           :name="name"
           :isRunning="isRunning"
-          @run="() => emit('run')"
+          @start="() => emit('start', {})"
           @abort="() => emit('abort')"
           @mousedown.stop
         />
@@ -225,6 +225,7 @@ const editor = useFlowEditor({
           :nodeSelected="editor.nodeSelected"
           :events="events"
           :nodes="nodes"
+          @start="(input) => emit('start', input)"
           @setName="(name) => emit('setName', name)"
           @setMethods="(methods) => emit('setMethods', methods)"
           @setDescription="(description) => emit('setDescription', description)"

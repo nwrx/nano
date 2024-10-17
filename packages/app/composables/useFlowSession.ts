@@ -69,6 +69,14 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
         events.value.push(payload)
         break
       }
+      case 'flow:input': {
+        events.value.push(payload)
+        break
+      }
+      case 'flow:output': {
+        events.value.push(payload)
+        break
+      }
 
       // --- Variable events.
       case 'variables:create': {
@@ -256,9 +264,11 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
      * Start the flow execution. This will trigger the server to start the flow
      * execution and broadcast the start event to all clients including the current client.
      * The server will then execute the nodes in the flow in sequence.
+     *
+     * @param input The input data to start the flow execution with
      */
-    flowRun: () => {
-      session.send({ event: 'flowRun' })
+    flowStart: (input: Record<string, unknown>) => {
+      session.send({ event: 'flowStart', input })
     },
 
     /**
