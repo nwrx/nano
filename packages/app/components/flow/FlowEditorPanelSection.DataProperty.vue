@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { vMarkdown } from '#imports';
+import { vMarkdown } from '#imports'
 
 defineProps<{
   name: string
@@ -50,8 +50,8 @@ const asMarkdown = ref(false)
       <!-- Markdown -->
       <span
         v-if="asMarkdown"
-        class="line-height-tight"
         v-markdown="value"
+        class="line-height-tight"
       />
 
       <!-- Raw -->
