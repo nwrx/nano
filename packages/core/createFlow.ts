@@ -428,11 +428,13 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
     this.runStart = Date.now()
 
     // --- Start listening for node result events.
-    const stop = this.on('node:result', (id) => {
-      const targetLinks = this.links.filter(link => link.source.startsWith(id))
-      for (const { target } of targetLinks) {
-        const [targetId] = target.split(':')
-        const targetNode = this.getNodeInstance(targetId)
+    const stop = this.on('node:result', (id, result) => {
+      const links = this.links.filter(link => link.source.startsWith(id))
+      for (const { source, target } of links) {
+        const [node] = target.split(':')
+        const [, key] = source.split(':')
+        if (result[key] === undefined) continue
+        const targetNode = this.getNodeInstance(node)
         void targetNode.process()
       }
     })
