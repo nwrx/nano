@@ -297,19 +297,6 @@ export class NodeInstance<
   }
 
   /**
-   * Clear the result of the node by resetting the result to an empty object.
-   * This is used when restarting the node and avoiding side effects from the
-   * previous execution of the node.
-   *
-   * @example node.reset()
-   */
-  public reset() {
-    this.isDone = false
-    this.result = {} as DataFromSchema<U>
-    this.dispatch('reset')
-  }
-
-  /**
    * Resolve the data value of the node by key. The data value is resolved by
    * extracting variables or secrets from the flow or by getting the result
    * of another node in the flow.

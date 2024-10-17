@@ -56,6 +56,7 @@ export const input = defineNode({
       name: 'Value',
       type: { number, boolean, stream, text: string }[data.type ?? 'text'],
       description: 'The value of the entrypoint.',
+      isOptional: true,
     },
   }),
 
@@ -63,7 +64,7 @@ export const input = defineNode({
     await new Promise<{ value: unknown }>((resolve, reject) => {
 
       // --- If no data was provided within 1 second, reject.
-      setTimeout(() => reject(new Error('No data provided.')), 1000)
+      const timeout = setTimeout(() => reject(new Error('No data provided.')), 1)
 
       // --- On abort, resolve with undefined.
       abortSignal.addEventListener('abort', () => {
@@ -71,8 +72,11 @@ export const input = defineNode({
       })
 
       // --- On flow:input, resolve with the value.
-      flow.on('flow:input', (property, value) => {
+      flow.on('flow:input', (run, property, value) => {
+        if (abortSignal.aborted) return
+        if (run !== flow.run) return
         if (property !== data.property) return
+        clearTimeout(timeout)
         resolve({ value })
       })
     }),
