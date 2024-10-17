@@ -360,6 +360,18 @@ export class NodeInstance<
   }
 
   /**
+   * Resolve the full kind of the node by resolving the kind of the node and
+   * the kind of the module that the node belongs to. The full kind is used
+   * to uniquely identify the node in the flow.
+   *
+   * @returns The full kind of the node.
+   */
+  public get kind(): string {
+    const module = this.flow.resolveNodeModule(this.node)
+    return `${module.kind}:${this.node.kind}`
+  }
+
+  /**
    * A proxy object that is used to access the data of the node. The proxy
    * object is used to resolve the data value of the node by key.
    *
@@ -407,7 +419,7 @@ export class NodeInstance<
     this.abortController = new AbortController()
     this.dispatch('abort', {
       run: this.flow.run,
-      kind: this.node.kind,
+      kind: this.kind,
       duration: Date.now() - this.runStart,
       timestamp: Date.now(),
       data: this.data,
@@ -451,7 +463,7 @@ export class NodeInstance<
       // --- is stored to calculate the duration of the run.
       this.dispatch('start', {
         run: this.flow.run,
-        kind: this.node.kind,
+        kind: this.kind,
         duration: 0,
         timestamp: this.runStart,
         data: this.data,
@@ -477,7 +489,7 @@ export class NodeInstance<
       this.isRunning = false
       this.dispatch('end', {
         run: this.flow.run,
-        kind: this.node.kind,
+        kind: this.kind,
         duration: Date.now() - this.runStart,
         timestamp: Date.now(),
         data: this.data,
