@@ -27,7 +27,7 @@ function handleClick(event: MouseEvent) {
       <Transition>
         <div
           v-if="isOpenDebounced"
-          class="rd bg-editor-panel b-2 b-app backdrop-blur-2xl"
+          class="rd bg-editor-panel b b-editor backdrop-blur-2xl"
           @mousedown="(event: MouseEvent) => handleClick(event)">
           <slot name="tooltip" />
         </div>
