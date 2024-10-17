@@ -35,9 +35,9 @@ export interface FlowEvents {
   'flow:metaValue': [key: string, value: unknown]
   'flow:input': [property: string, value: unknown]
   'flow:output': [property: string, value: unknown]
-  'flow:start': [runId: string]
-  'flow:abort': [runId: string, duration: number]
-  'flow:end': [runId: string, duration: number]
+  'flow:start': [run: string]
+  'flow:abort': [run: string, duration: number]
+  'flow:end': [run: string, duration: number]
 }
 
 /**
@@ -129,7 +129,7 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
   public isRunning = false
   public eventTarget = new EventTarget()
   public eventHandlers = new Map<string, EventListener>()
-  public runId = ''
+  public run = ''
   public runStart = 0
 
   /**
@@ -412,7 +412,7 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
    */
   public abort(): void {
     for (const node of this.nodes) node.abort()
-    this.dispatch('flow:abort', this.runId, Date.now() - this.runStart)
+    this.dispatch('flow:abort', this.run, Date.now() - this.runStart)
     this.isRunning = false
   }
 
@@ -424,7 +424,7 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
     if (this.isRunning) return
     this.isRunning = true
     this.reset()
-    this.runId = randomUUID() as string
+    this.run = randomUUID() as string
     this.runStart = Date.now()
 
     // --- Start listening for node result events.
@@ -446,11 +446,11 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
       this.isRunning = false
       clearInterval(interval)
       stop()
-      this.dispatch('flow:end', this.runId, Date.now() - this.runStart)
+      this.dispatch('flow:end', this.run, Date.now() - this.runStart)
     }, 100)
 
     // --- Find nodes that don't have any incoming links and set them as the entrypoints.
-    this.dispatch('flow:start', this.runId)
+    this.dispatch('flow:start', this.run)
     this.nodes
       .filter(node => !this.links.some(link => link.target.startsWith(node.id)))
       .forEach(node => void node.process())

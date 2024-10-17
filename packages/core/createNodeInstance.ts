@@ -6,7 +6,8 @@ import type { ResultFromSchema, ResultSchema } from './defineResultSchema'
 import { randomUUID } from 'node:crypto'
 
 export interface NodeRunEvent<T extends DataSchema = DataSchema, U extends ResultSchema = ResultSchema> {
-  runId: string
+  run: string
+  kind: string
   duration: number
   timestamp: number
   data: DataFromSchema<T>
@@ -108,7 +109,6 @@ export class NodeInstance<
   public eventTarget = new EventTarget()
   public eventHandlers = new Map<string, EventListener>()
   public abortController = new AbortController()
-  public runId = ''
   public runStart = 0
 
   /**
@@ -406,7 +406,8 @@ export class NodeInstance<
     this.abortController.abort(error)
     this.abortController = new AbortController()
     this.dispatch('abort', {
-      runId: this.runId,
+      run: this.flow.run,
+      kind: this.node.kind,
       duration: Date.now() - this.runStart,
       timestamp: Date.now(),
       data: this.data,
@@ -449,7 +450,8 @@ export class NodeInstance<
       // --- to identify the current run of the node and the start timestamp
       // --- is stored to calculate the duration of the run.
       this.dispatch('start', {
-        runId: this.runId = randomUUID(),
+        run: this.flow.run,
+        kind: this.node.kind,
         duration: 0,
         timestamp: this.runStart,
         data: this.data,
@@ -474,7 +476,8 @@ export class NodeInstance<
     finally {
       this.isRunning = false
       this.dispatch('end', {
-        runId: this.runId,
+        run: this.flow.run,
+        kind: this.node.kind,
         duration: Date.now() - this.runStart,
         timestamp: Date.now(),
         data: this.data,
