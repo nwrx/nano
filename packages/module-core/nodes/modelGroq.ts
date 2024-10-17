@@ -3,22 +3,33 @@ import { defineNode } from '@nwrx/core'
 import { defineDataSchema } from '@nwrx/core'
 import { languageModel } from '../categories'
 import { languageModelInstance, string } from '../types'
+import modelGroqDescription from './modelGroq.md?raw'
 
 const GROQ_BASE_URL = 'https://api.groq.com'
+const GROQ_MODEL_OWNER_ICON: Record<string, string> = {
+  'Mistral AI': 'https://api.iconify.design/logos:mistral-ai-icon.svg',
+  'Meta': 'https://api.iconify.design/logos:meta-icon.svg',
+  'OpenAI': 'https://api.iconify.design/simple-icons:openai.svg',
+  'Other': 'https://api.iconify.design/carbon:flow-stream.svg',
+  'Google': 'https://api.iconify.design/logos:google-icon.svg',
+  'Groq': 'https://api.iconify.design/logos:groq-icon.svg',
+  'Hugging Face': 'https://api.iconify.design/logos:hugging-face-icon.svg',
+  'Microsoft': 'https://api.iconify.design/logos:microsoft-icon.svg',
+}
 
-interface OpenaiModel {
+interface GroqModel {
   id: string
   object: string
   created: number
   owned_by: string
 }
 
-interface OpenaiModelResponse {
+interface GroqModelResponse {
   object: 'list'
-  data: OpenaiModel[]
+  data: GroqModel[]
 }
 
-interface OpenaiChatResponse {
+interface GroqChatResponse {
   id: string
   object: string
   created: number
@@ -47,7 +58,7 @@ export const modelGroq = defineNode({
   kind: 'groq-api',
   name: 'Groq API',
   icon: 'https://api.iconify.design/simple-icons:openai.svg',
-  description: 'Generates a completion based on the OpenAI language model.',
+  description: modelGroqDescription,
   category: languageModel,
 
   // --- Define the inputs of the node.
@@ -73,12 +84,12 @@ export const modelGroq = defineNode({
       const { token = '' } = data as Record<string, string>
       const url = new URL('/openai/v1/models', GROQ_BASE_URL)
       const response = await fetch(url.href, { signal: abortSignal, headers: { Authorization: `Bearer ${token}` } })
-      const models = await response.json() as OpenaiModelResponse
+      const models = await response.json() as GroqModelResponse
       dataSchema.model.options = models.data.filter(x => x.object === 'model').map(x => ({
         value: x.id,
         label: x.id,
         description: x.owned_by,
-        icon: 'https://api.iconify.design/simple-icons:openai.svg',
+        icon: GROQ_MODEL_OWNER_ICON[x.owned_by],
       }))
     }
     catch { /* Ignore errors */ }
@@ -117,7 +128,7 @@ export const modelGroq = defineNode({
     }
 
     // --- Check if the model name is valid.
-    const models = await response.json() as OpenaiModelResponse
+    const models = await response.json() as GroqModelResponse
     const modelExists = models.data.some(x => x.id === data.model)
     if (!modelExists) throw new Error(`Could not find the model with the name "${data.model}".`)
 
@@ -131,7 +142,7 @@ export const modelGroq = defineNode({
           model: data.model,
           messages: [{ role: 'user', content: prompt }],
         }),
-        getCompletion: ({ choices }: OpenaiChatResponse) => {
+        getCompletion: ({ choices }: GroqChatResponse) => {
           const choice = choices.find(x => x.finish_reason === 'stop')
           return choice?.message.content ?? ''
         },
