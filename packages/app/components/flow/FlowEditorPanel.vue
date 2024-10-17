@@ -71,6 +71,20 @@ watch(() => props.nodeSelected, () => {
   if (nodeSelected.length > 0 && selectedTab.value === 'flow') selectedTab.value = 'node'
   if (nodeSelected.length === 0 && selectedTab.value === 'node') selectedTab.value = 'flow'
 })
+
+// --- Scroll to bottom if the container is already at the bottom.
+const container = ref<HTMLElement>()
+async function scrollToBottom() {
+  if (!container.value) return
+  const { scrollHeight, scrollTop, clientHeight } = container.value
+  const stickyHeight = 250
+  if (scrollHeight - scrollTop > clientHeight + stickyHeight) return
+  await nextTick()
+  container.value.scrollTo({ top: scrollHeight, behavior: 'smooth' })
+}
+
+// --- When a new event is added, scroll to the bottom if the container is already at the bottom.
+watch(() => props.events, scrollToBottom, { deep: true })
 </script>
 
 <template>
@@ -102,9 +116,7 @@ watch(() => props.nodeSelected, () => {
     />
 
     <!-- Flow -->
-    <div
-      class="flex flex-col flex-1 overflow-y-auto transition"
-      :class="{ 'op-0': !isOpen }">
+    <div ref="container" class="flex flex-col overflow-y-auto transition" :class="{ 'op-0': !isOpen }">
       <FlowEditorPanelFlow
         v-if="selectedTab === 'flow'"
         v-model:isMethodsOpen="isFlowMethodsOpen"
