@@ -27,21 +27,11 @@ const emit = defineEmits<{
   handleRelease: [event: MouseEvent]
 }>()
 
-/**
- * The `isCollapsed` state is used to determine if the node should be
- * displayed in a collapsed state or not. This state is two-way binded
- * to the parent component.
- */
+// --- State
 const isCollapsed = ref(false)
-watch(isCollapsed, value => emit('setCollapsed', value))
-
-/**
- * A debounced `isRunning` state so when a node runs fast, it doesn't
- * flash the running state. This is used to determine if the node is
- * currently running or not.
- */
 const isRunning = computed(() => props.isRunning)
 const isRunningThrottled = refThrottled(isRunning, 200)
+watch(isCollapsed, value => emit('setCollapsed', value))
 
 /**
  * When the node is collapsed, we only want to display the ports that
@@ -68,13 +58,12 @@ const resultSchema = computed(() => {
   return props.resultSchema
 })
 
-const socketsData = ref<Record<string, ComponentPublicInstance>>({})
-const socketsResult = ref<Record<string, ComponentPublicInstance>>({})
-
 /**
  * Expose the ports components to the parent component so their
  * position can be accessed and used to create links between nodes.
  */
+const socketsData = ref<Record<string, ComponentPublicInstance>>({})
+const socketsResult = ref<Record<string, ComponentPublicInstance>>({})
 defineExpose({ socketsData, socketsResult })
 
 /**
@@ -107,11 +96,11 @@ const ringWidth = computed(() => (
       '--un-ring-width': ringWidth,
     }"
     class="
-      min-h-24 w-96 relative
+      min-h-24 w-100
       backdrop-blur-2xl rounded ring
       bg-editor-node border border-editor
     "
-    @mousedown.stop="(event) => emit('click', event)">
+    @mousedown="(event) => emit('click', event)">
 
     <!-- Error Overlay -->
     <div
@@ -126,8 +115,10 @@ const ringWidth = computed(() => (
     <!-- Header -->
     <FlowEditorNodeHeader
       :id="id"
+      :kind="kind"
       :name="name"
       :icon="icon"
+      :description="description"
       :color="isSelected ? color : `${color}D0`"
       :isRunning="isRunning"
       :isDragging="isDragging"

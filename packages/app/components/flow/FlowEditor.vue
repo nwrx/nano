@@ -109,7 +109,7 @@ const editor = useFlowEditor({
     tabindex="0"
     disabled
     :style="editor.viewContainerStyle"
-    class="w-full h-full bg-editor select-none relative overflow-hidden z-0 select-none"
+    class="w-full h-full bg-editor select-none relative overflow-hidden z-0 select-none transform-gpu"
     @drop="(event) => editor.onScreenDrop(event)"
     @mouseup="() => editor.onScreenMouseUp()"
     @mousemove="(event) => editor.onScreenMouseMove(event)"
