@@ -25,6 +25,7 @@
     "packages",
     "scripts",
     "examples",
+    "shims.d.ts",
     "rollup.config.mjs",
     "vitest.config.ts",
     "vitest.workspace.ts",
