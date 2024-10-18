@@ -21,7 +21,7 @@ services:
               count: 1
               capabilities: [gpu]
     ports:
-      - "3100:11434"
+      - "11434:11434"
     volumes:
       - ollama:/root/.ollama
 
@@ -29,7 +29,7 @@ services:
     image: ghcr.io/open-webui/open-webui:main
     container_name: ollama-ui
     ports:
-      - "3200:8080"
+      - "8080:8080"
     volumes:
       - ollama:/root/.ollama
       - ollama-ui:/app/backend/data
@@ -45,6 +45,7 @@ services:
     user: 1000:1000
     ports:
       - "3000:3000"
+      - "6006:6006"
     volumes:
       - .:/workspace
     environment:
@@ -54,19 +55,3 @@ services:
       - NWRX_EMAIL_PORT=1025
       - NWRX_USER_TRUST_PROXY=true
       - NWRX_USER_SECRET_KEY=SECRET_KEY
-
-  openhands:
-    image: ghcr.io/all-hands-ai/openhands:0.9
-    container_name: openhands
-    user: root
-    ports:
-      - "3300:3000"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - $PWD:/opt/workspace_base
-    environment:
-      - SANDBOX_RUNTIME_CONTAINER_IMAGE=ghcr.io/all-hands-ai/runtime:0.9-nikolaik
-      - SANDBOX_USER_ID=1000
-      - WORKSPACE_MOUNT_PATH=$PWD
