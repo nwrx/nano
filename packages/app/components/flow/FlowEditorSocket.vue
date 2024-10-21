@@ -158,6 +158,7 @@ function onRelease() {
       :min="sliderMin"
       :max="sliderMax"
       :step="sliderStep"
+      :defaultValue="defaultValue"
       @mousedown.stop
     />
   </div>
