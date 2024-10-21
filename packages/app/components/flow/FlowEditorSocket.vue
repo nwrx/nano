@@ -109,44 +109,50 @@ function onRelease() {
       }"
     />
 
-    <!-- Display the name -->
-    <span
-      v-if="!control || control === 'socket' || isLinked"
-      class="truncate text-start px-sm py-xs outline-none"
-      v-text="name"
+    <!-- Linkeable pin, used to connect to other nodes. -->
+    <FlowEditorSocketLink
+      v-if="isLinkeable"
+      :name="name"
+      :isLinked="isLinked"
+      :defaultValue="defaultValue"
     />
 
+    <!-- Variable & secret input -->
     <FlowEditorSocketVariable
       v-else-if="control === 'variable'"
       v-model="(model as string)"
       :name="name"
       :secrets="secrets"
       :variables="variables"
+      :defaultValue="defaultValue"
       @mousedown.stop
     />
 
-    <!-- Display an input field -->
+    <!-- Text input -->
     <FlowEditorSocketText
       v-else-if="control === 'text'"
       v-model="(model as string)"
       :name="name"
+      :defaultValue="defaultValue"
       @mousedown.stop
     />
 
-    <!-- Display a select field -->
+    <!-- Select input -->
     <FlowEditorSocketSelect
       v-else-if="control === 'select'"
       v-model="model"
       :name="name"
+      :defaultValue="defaultValue"
       :options="options"
       @mousedown.stop
     />
 
-    <!-- Display a textarea field -->
+    <!-- Textarea input -->
     <FlowEditorSocketTextarea
       v-else-if="control === 'textarea'"
       v-model="(model as string)"
       :name="name"
+      :defaultValue="defaultValue"
       @mousedown.stop
     />
 
