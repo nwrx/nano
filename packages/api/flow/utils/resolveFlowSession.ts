@@ -1,5 +1,5 @@
 import type { ModuleFlow, User } from '@nwrx/api'
-import type { FlowEvents, Flow as FlowInstance, FlowRunEvent, NodeRunEvent } from '@nwrx/core'
+import type { FlowEventMeta, FlowEvents, Flow as FlowInstance, NodeEventMeta, NodeInstance } from '@nwrx/core'
 import type { Peer } from 'crossws'
 import type { Repository } from 'typeorm'
 import type { Flow } from '../entities'
@@ -37,11 +37,13 @@ export interface FlowSessionEventMap extends Record<keyof FlowEvents, unknown> {
   // Flow
   'flow:refresh': FlowSessionJSON
   'flow:metaValue': { key: string; value: unknown }
-  'flow:input': { id: string; property: string; value: unknown }
-  'flow:output': { id: string; property: string; value: unknown }
-  'flow:start': FlowRunEvent
-  'flow:abort': FlowRunEvent
-  'flow:end': FlowRunEvent
+  'flow:input': { property: string; value: unknown } & FlowEventMeta
+  'flow:output': { property: string; value: unknown } & FlowEventMeta
+
+  // Flow lifecycle
+  'flow:start': { input: Record<string, unknown> } & FlowEventMeta
+  'flow:end': { output: Record<string, unknown> } & FlowEventMeta
+  'flow:abort': { output: Record<string, unknown> } & FlowEventMeta
 
   // Variables
   'variables:create': { name: string; value: string }
@@ -61,10 +63,12 @@ export interface FlowSessionEventMap extends Record<keyof FlowEvents, unknown> {
   'node:dataSchema': { id: string; schema: DataSocketJSON[] }
   'node:result': { id: string; result: Record<string, unknown> }
   'node:resultSchema': { id: string; schema: ResultSocketJSON[] }
-  'node:start': { id: string } & NodeRunEvent
-  'node:abort': { id: string } & NodeRunEvent
-  'node:end': { id: string } & NodeRunEvent
-  'node:error': { id: string; message: string }
+
+  // Node lifecycle
+  'node:start': { id: string; data: Record<string, unknown> } & NodeEventMeta
+  'node:end': { id: string; data: Record<string, unknown>; result: Record<string, unknown> } & NodeEventMeta
+  'node:abort': { id: string } & NodeEventMeta
+  'node:error': { id: string; message: string } & NodeEventMeta
 
   // User
   'user:join': { id: string; name: string; color: string }
@@ -99,24 +103,28 @@ export class FlowSessionInstance {
 
     // --- Flow events.
     this.flow.on('flow:metaValue', (key, value) => this.broadcast({ event: 'flow:metaValue', key, value }))
-    this.flow.on('flow:input', (id, property, value) => this.broadcast({ event: 'flow:input', id, property, value }))
-    this.flow.on('flow:output', (id, property, value) => this.broadcast({ event: 'flow:output', id, property, value }))
-    this.flow.on('flow:start', event => this.broadcast({ event: 'flow:start', ...event }))
-    this.flow.on('flow:abort', event => this.broadcast({ event: 'flow:abort', ...event }))
-    this.flow.on('flow:end', event => this.broadcast({ event: 'flow:end', ...event }))
+    this.flow.on('flow:input', (property, value, meta) => this.broadcast({ event: 'flow:input', property, value, ...meta }))
+    this.flow.on('flow:output', (property, value, meta) => this.broadcast({ event: 'flow:output', property, value, ...meta }))
+
+    // --- Flow lifecycle events.
+    this.flow.on('flow:start', (input, meta) => this.broadcast({ event: 'flow:start', input, ...meta }))
+    this.flow.on('flow:abort', (output, meta) => this.broadcast({ event: 'flow:abort', output, ...meta }))
+    this.flow.on('flow:end', (output, meta) => this.broadcast({ event: 'flow:end', output, ...meta }))
 
     // --- Node events.
-    this.flow.on('node:create', node => this.broadcast({ event: 'node:create', ...serializeNodeInstance(node) }))
-    this.flow.on('node:remove', id => this.broadcast({ event: 'node:remove', id }))
-    this.flow.on('node:metaValue', (id, key, value) => this.broadcast({ event: 'node:metaValue', id, key, value }))
-    this.flow.on('node:dataRaw', (id, data) => this.broadcast({ event: 'node:data', id, data }))
-    this.flow.on('node:dataSchema', (id, schema) => this.broadcast({ event: 'node:dataSchema', id, schema: serializeDataSchema(schema) }))
-    this.flow.on('node:result', (id, result) => this.broadcast({ event: 'node:result', id, result }))
-    this.flow.on('node:resultSchema', (id, schema) => this.broadcast({ event: 'node:resultSchema', id, schema: serializeResultSchema(schema) }))
-    this.flow.on('node:start', (id, event) => this.broadcast({ event: 'node:start', id, ...event }))
-    this.flow.on('node:abort', (id, event) => this.broadcast({ event: 'node:abort', id, ...event }))
-    this.flow.on('node:end', (id, event) => this.broadcast({ event: 'node:end', id, ...event }))
-    this.flow.on('node:error', (id, error) => this.broadcast({ event: 'node:error', id, message: error.message }))
+    this.flow.on('node:create', node => this.broadcast({ event: 'node:create', ...serializeNodeInstance(node as NodeInstance) }))
+    this.flow.on('node:remove', ({ id }) => this.broadcast({ event: 'node:remove', id }))
+    this.flow.on('node:metaValue', ({ id }, key, value) => this.broadcast({ event: 'node:metaValue', id, key, value }))
+    this.flow.on('node:dataRaw', ({ id }, data) => this.broadcast({ event: 'node:data', id, data }))
+    this.flow.on('node:dataSchema', ({ id }, schema) => this.broadcast({ event: 'node:dataSchema', id, schema: serializeDataSchema(schema) }))
+    this.flow.on('node:result', ({ id }, result) => this.broadcast({ event: 'node:result', id, result }))
+    this.flow.on('node:resultSchema', ({ id }, schema) => this.broadcast({ event: 'node:resultSchema', id, schema: serializeResultSchema(schema) }))
+
+    // --- Node lifecycle events.
+    this.flow.on('node:start', ({ id }, data, meta) => this.broadcast({ event: 'node:start', id, data, ...meta }))
+    this.flow.on('node:end', ({ id }, data, result, meta) => this.broadcast({ event: 'node:end', id, data, result, ...meta }))
+    this.flow.on('node:abort', ({ id }, meta) => this.broadcast({ event: 'node:abort', id, ...meta }))
+    this.flow.on('node:error', ({ id }, error, meta) => this.broadcast({ event: 'node:error', id, message: error.message, ...meta }))
   }
 
   /** The peers that are subscribed to the flow session. */
@@ -198,7 +206,7 @@ export class FlowSessionInstance {
       const payloadSecrets = Object.values(this.flow.variables)
       let payloadJson = JSON.stringify(payload)
       for (const secret of payloadSecrets)
-        payloadJson = payloadJson.replaceAll(secret, 'HIDDEN')
+        payloadJson = payloadJson.replaceAll(secret, '********')
       const payloadSafe = JSON.parse(payloadJson) as FlowSessionEventPayload<T>
 
       participant.peer.send(payloadSafe)

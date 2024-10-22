@@ -1,5 +1,5 @@
 import type { MaybeLiteral } from '@unshared/types'
-import type { NodeInstanceMeta, NodeInstanceOptions, NodeRunEvent } from './createNodeInstance'
+import type { NodeEventMeta, NodeInstanceMeta, NodeInstanceOptions } from './createNodeInstance'
 import type { DataSchema, DataSocket } from './defineDataSchema'
 import type { Module } from './defineModule'
 import type { Node } from './defineNode'
@@ -9,9 +9,9 @@ import { randomUUID } from 'node:crypto'
 import { nextTick } from 'node:process'
 import { createFlowNodeInstance as createNodeInstance, NodeInstance } from './createNodeInstance'
 
-export interface FlowRunEvent {
-  run: string
-  duration: number
+export interface FlowEventMeta {
+  threadId: string
+  delta: number
   timestamp: number
 }
 
@@ -22,29 +22,33 @@ export interface FlowRunEvent {
 export interface FlowEvents {
 
   // Node
-  'node:create': [instance: NodeInstance]
-  'node:meta': [id: string, NodeInstanceMeta]
-  'node:metaValue': [id: string, key: string, value: unknown]
-  'node:data': [id: string, data: Record<string, unknown>]
-  'node:dataRaw': [id: string, data: Record<string, unknown>]
-  'node:dataSchema': [id: string, schema: DataSchema]
-  'node:result': [id: string, result: Record<string, unknown>]
-  'node:resultSchema': [id: string, schema: ResultSchema]
-  'node:position': [id: string, x: number, y: number]
-  'node:remove': [id: string]
-  'node:start': [id: string, NodeRunEvent]
-  'node:end': [id: string, NodeRunEvent]
-  'node:abort': [id: string, NodeRunEvent]
-  'node:error': [id: string, error: Error]
+  'node:create': [node: NodeInstance<any, any>]
+  'node:meta': [node: NodeInstance<any, any>, NodeInstanceMeta]
+  'node:metaValue': [node: NodeInstance<any, any>, key: string, value: unknown]
+  'node:data': [node: NodeInstance<any, any>, data: Record<string, unknown>]
+  'node:dataRaw': [node: NodeInstance<any, any>, data: Record<string, unknown>]
+  'node:dataSchema': [node: NodeInstance<any, any>, schema: DataSchema]
+  'node:result': [node: NodeInstance<any, any>, result: Record<string, unknown>]
+  'node:resultSchema': [node: NodeInstance<any, any>, schema: ResultSchema]
+  'node:position': [node: NodeInstance<any, any>, x: number, y: number]
+  'node:remove': [node: NodeInstance<any, any>]
+
+  // Node Lifecycle
+  'node:start': [node: NodeInstance<any, any>, data: Record<string, unknown>, meta: NodeEventMeta]
+  'node:end': [node: NodeInstance<any, any>, data: Record<string, unknown>, result: Record<string, unknown>, meta: NodeEventMeta]
+  'node:abort': [node: NodeInstance<any, any>, meta: NodeEventMeta]
+  'node:error': [node: NodeInstance<any, any>, error: Error, meta: NodeEventMeta]
 
   // Flow
   'flow:meta': [FlowMeta]
   'flow:metaValue': [key: string, value: unknown]
-  'flow:input': [run: string, property: string, value: unknown]
-  'flow:output': [run: string, property: string, value: unknown]
-  'flow:start': [{ input: Record<string, unknown> } & FlowRunEvent]
-  'flow:abort': [{ output: Record<string, unknown> } & FlowRunEvent]
-  'flow:end': [{ output: Record<string, unknown> } & FlowRunEvent]
+  'flow:input': [property: string, value: unknown, meta: FlowEventMeta]
+  'flow:output': [property: string, value: unknown, meta: FlowEventMeta]
+
+  // Flow Lifecycle
+  'flow:start': [input: Record<string, unknown>, meta: FlowEventMeta]
+  'flow:abort': [output: Record<string, unknown>, meta: FlowEventMeta]
+  'flow:end': [output: Record<string, unknown>, meta: FlowEventMeta]
 }
 
 /**
@@ -136,11 +140,12 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
   public variables = {} as Record<string, string>
 
   public isRunning = false
+  public threadId = randomUUID() as string
+  public threadStart = Date.now()
+
   public eventTarget = new EventTarget()
   public eventHandlers = new Map<string, EventListener>()
 
-  public run = ''
-  public runStart = 0
   public input = {} as Record<string, unknown>
   public output = {} as Record<string, unknown>
 
@@ -254,17 +259,17 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
     const instance = createNodeInstance({ ...options, flow: this, node })
     this.nodes.push(instance as NodeInstance)
     this.dispatch('node:create', instance as NodeInstance)
-    instance.on('data', data => this.dispatch('node:data', instance.id, data))
-    instance.on('dataRaw', data => this.dispatch('node:dataRaw', instance.id, data))
-    instance.on('dataSchema', schema => this.dispatch('node:dataSchema', instance.id, schema))
-    instance.on('result', result => this.dispatch('node:result', instance.id, result))
-    instance.on('resultSchema', schema => this.dispatch('node:resultSchema', instance.id, schema))
-    instance.on('meta', meta => this.dispatch('node:meta', instance.id, meta))
-    instance.on('metaValue', (key, value) => this.dispatch('node:metaValue', instance.id, key, value))
-    instance.on('start', event => this.dispatch('node:start', instance.id, event))
-    instance.on('abort', event => this.dispatch('node:abort', instance.id, event))
-    instance.on('end', event => this.dispatch('node:end', instance.id, event))
-    instance.on('error', error => this.dispatch('node:error', instance.id, error))
+    instance.on('data', data => this.dispatch('node:data', instance, data))
+    instance.on('dataRaw', data => this.dispatch('node:dataRaw', instance, data))
+    instance.on('dataSchema', schema => this.dispatch('node:dataSchema', instance, schema))
+    instance.on('result', result => this.dispatch('node:result', instance, result))
+    instance.on('resultSchema', schema => this.dispatch('node:resultSchema', instance, schema))
+    instance.on('meta', meta => this.dispatch('node:meta', instance, meta))
+    instance.on('metaValue', (key, value) => this.dispatch('node:metaValue', instance, key, value))
+    instance.on('start', (data, meta) => this.dispatch('node:start', instance, data, meta))
+    instance.on('abort', meta => this.dispatch('node:abort', instance, meta))
+    instance.on('end', (data, result, meta) => this.dispatch('node:end', instance, data, result, meta))
+    instance.on('error', (error, meta) => this.dispatch('node:error', instance, error, meta))
     return instance
   }
 
@@ -279,8 +284,10 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
   public removeNode(...ids: string[]) {
     for (const id of ids) {
       this.getNodeInstance(id)
+      const node = this.nodes.find(node => node.id === id)
+      if (!node) throw new Error(`Node instance with ID "${id}" does not exist`)
       this.nodes = this.nodes.filter(node => node.id !== id)
-      this.dispatch('node:remove', id)
+      this.dispatch('node:remove', node)
     }
   }
 
@@ -408,18 +415,29 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
   }
 
   /**
+   * Compute the `FlowEventMeta` for the flow. The meta is used to provide
+   * additional information about the flow when an event is dispatched.
+   * The meta includes the thread ID, the delta time, the duration and the
+   * timestamp of the flow.
+   *
+   * @returns The `FlowEventMeta` for the flow.
+   */
+  private get eventMeta(): FlowEventMeta {
+    return {
+      threadId: this.threadId,
+      delta: Date.now() - this.threadStart,
+      timestamp: Date.now(),
+    }
+  }
+
+  /**
    * Abort the flow. The flow is aborted by stopping the execution of all nodes
    * in the flow. This is useful when the flow is stuck in an infinite loop or
    * when the flow is no longer needed.
    */
   public abort(): void {
     for (const node of this.nodes) node.abort()
-    this.dispatch('flow:abort', {
-      run: this.run,
-      output: this.output,
-      duration: Date.now() - this.runStart,
-      timestamp: Date.now(),
-    })
+    this.dispatch('flow:abort', this.output, this.eventMeta)
     this.isRunning = false
   }
 
@@ -435,8 +453,8 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
 
     // --- Reset the flow and set the input.
     this.context = {}
-    this.run = randomUUID() as string
-    this.runStart = Date.now()
+    this.threadId = randomUUID() as string
+    this.threadStart = Date.now()
     this.input = input
     this.output = {}
     for (const node of this.nodes) {
@@ -445,8 +463,8 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
     }
 
     // --- Start listening for node result events.
-    const stop = this.on('node:result', (id, result) => {
-      const links = this.links.filter(link => link.source.startsWith(id))
+    const stop = this.on('node:result', (node, result) => {
+      const links = this.links.filter(link => link.source.startsWith(node.id))
       for (const { source, target } of links) {
         const [node] = target.split(':')
         const [, key] = source.split(':')
@@ -457,11 +475,11 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
     })
 
     // --- When the `input` nodes are started, dispatch the `flow:input` event.
-    const stopInput = this.on('node:start', (id, event) => {
-      if (event.kind !== 'nwrx/core:input') return
-      const property = event.data.property as string
+    const stopInput = this.on('node:start', (node, data) => {
+      if (node.kind !== 'nwrx/core:input') return
+      const property = data.property as string
       const value = input[property]
-      nextTick(() => this.dispatch('flow:input', this.run, property, value))
+      nextTick(() => this.dispatch('flow:input', property, value, this.eventMeta))
     })
 
     // --- Check from time to time if at least one node is still running.
@@ -472,21 +490,11 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
       clearInterval(interval)
       stop()
       stopInput()
-      this.dispatch('flow:end', {
-        run: this.run,
-        output: this.output,
-        duration: Date.now() - this.runStart,
-        timestamp: Date.now(),
-      })
+      this.dispatch('flow:end', this.output, this.eventMeta)
     }, 100)
 
     // --- Dispatch the flow:start event to notify listeners that the flow has started.
-    this.dispatch('flow:start', {
-      run: this.run,
-      input,
-      duration: 0,
-      timestamp: this.runStart,
-    })
+    this.dispatch('flow:start', input, this.eventMeta)
 
     // --- Start nodes that don't have any incoming links.
     this.nodes
