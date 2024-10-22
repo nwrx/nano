@@ -1,8 +1,8 @@
 <template>
   <div
     class="
-      flex items-center justify-start space-x-sm rd w-full text-start
-      bg-transparent hover:bg-emphasized
+      flex items-center justify-start rd grow
+      hover:bg-emphasized min-h-8 text-sm
     ">
 
     <!-- Field -->

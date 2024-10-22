@@ -50,10 +50,10 @@ onMounted(() => {
       spellcheck="false"
       rows="1"
       class="
-        w-full text-start outline-none py-1
+        w-full text-start outline-none p-sm
         bg-transparent appearance-none rd max-h-64 resize-none
         transition text-sm whitespace-pre-wrap
-        text-editor-node
+        text-editor-node font-mono
       "
       @input="(event) => onTextAreaInput(event)"
       @wheel.stop

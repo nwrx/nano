@@ -1,23 +1,9 @@
 <script setup lang="ts">
-defineProps<{
-  label: string
-  icon?: string
-}>()
+defineProps<{ label?: string }>()
 </script>
 
 <template>
-  <div class="flex items-center space-x-sm h-full pl-sm text-sm text-subtle">
-
-    <!-- Icon -->
-    <BaseIcon
-      v-if="icon"
-      :icon="icon"
-      class="size-4"
-    />
-
-    <!-- Label -->
-    <p class="whitespace-nowrap truncate">
-      {{ label }}:
-    </p>
-  </div>
+  <p class="whitespace-nowrap truncate pl-sm text-subtle shrink-0 mr-sm">
+    {{ label }}:
+  </p>
 </template>
