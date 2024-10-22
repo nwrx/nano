@@ -10,7 +10,6 @@ function handleClick(event: MouseEvent) {
 
 <template>
   <BaseMenu
-    as="div"
     x="left"
     y="above"
     class-menu="cursor-auto select-text"
