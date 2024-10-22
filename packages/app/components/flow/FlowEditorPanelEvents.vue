@@ -65,7 +65,7 @@ const eventsFiltered = computed(() => {
     </FlowEditorPanelSection>
 
     <!-- Events -->
-    <FlowEditorPanelSectionEvent
+    <FlowEditorPanelEventsEvent
       v-for="(event, index) in eventsFiltered"
       :key="index"
       :event="event"
