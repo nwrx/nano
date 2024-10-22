@@ -87,6 +87,8 @@ export default defineConfig<Theme>({
       // Editor
       'editor': COLORS.primary[50],
       'editor-select': `${COLORS.primary[500]}20`,
+      'editor-active': COLORS.primary[500],
+
       'editor-node': `${COLORS.primary[70]}80`,
       'editor-panel': `${COLORS.primary[70]}80`,
       'editor-panel-data': `${COLORS.primary[900]}10`,
@@ -111,6 +113,7 @@ export default defineConfig<Theme>({
 
       // Editor
       'editor-node': COLORS.primary[900],
+      'editor-active': COLORS.primary[50],
     },
 
     borderColor: {
@@ -397,6 +400,8 @@ export default defineConfig<Theme>({
             // Editor
             'editor': COLORS.primary[930],
             'editor-select': `${COLORS.primary[500]}40`,
+            'editor-active': COLORS.primary[50],
+
             'editor-node': `${COLORS.primary[850]}80`,
             'editor-panel': `${COLORS.primary[850]}80`,
             'editor-panel-data': `${COLORS.primary[400]}15`,
@@ -415,7 +420,7 @@ export default defineConfig<Theme>({
 
             // Editor
             'editor-node': COLORS.primary[50],
-            'editor-node-label': COLORS.primary[50],
+            'editor-active': COLORS.primary[900],
           },
           borderColor: {
             'app': `${COLORS.primary[100]}20`,
@@ -424,7 +429,7 @@ export default defineConfig<Theme>({
             'prominent': COLORS.primary[500],
 
             // Editor
-            'editor': `${COLORS.primary[100]}10`,
+            'editor': `${COLORS.primary[100]}20`,
             'editor-active': COLORS.primary[50],
           },
 
