@@ -49,12 +49,10 @@ const isOpen = useVModel(props, 'modelValue', emit, {
       vertical
       :isOpen="isOpen"
       class="overflow-y-clip transition-all"
-      :class="{
-        'px-md': !fullWidth,
-      }">
+      :class="{ 'px-md': !fullWidth, 'op-0': !isOpen }">
       <div
         ref="content"
-        :class="[classContent, isOpen ? 'opacity-100' : 'opacity-0']"
+        :class="classContent"
         class="py-md pt-0 transition">
         <slot />
       </div>
