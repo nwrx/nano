@@ -133,6 +133,7 @@ export default defineConfig<Theme>({
       // Editor
       'editor': `${COLORS.primary[900]}20`,
       'editor-select': COLORS.primary[500],
+      'editor-active': COLORS.primary[500],
     },
 
     lineWidth: {
@@ -417,13 +418,14 @@ export default defineConfig<Theme>({
             'editor-node-label': COLORS.primary[50],
           },
           borderColor: {
-            app: `${COLORS.primary[100]}20`,
-            subtle: `${COLORS.primary[400]}80`,
-            emphasized: `${COLORS.primary[300]}80`,
-            prominent: COLORS.primary[500],
+            'app': `${COLORS.primary[100]}20`,
+            'subtle': `${COLORS.primary[400]}80`,
+            'emphasized': `${COLORS.primary[300]}80`,
+            'prominent': COLORS.primary[500],
 
             // Editor
-            editor: `${COLORS.primary[100]}10`,
+            'editor': `${COLORS.primary[100]}10`,
+            'editor-active': COLORS.primary[50],
           },
 
           // Input
