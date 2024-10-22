@@ -7,29 +7,30 @@ const props = defineProps<{
   nodes?: NodeInstanceJSON[]
   socket?: DataSocketJSON
   modelValue?: unknown
+  isOpen?: boolean
   isEditable?: boolean
   isClearable?: boolean
+  isNameEditable?: boolean
 }>()
 
 const emit = defineEmits<{
   clear: []
+  'update:isOpen': [value: boolean]
   'update:modelValue': [value: unknown]
 }>()
 
+// --- Model & state
 const model = useVModel(props, 'modelValue', emit, { passive: true })
-
-// --- Resolve the name of the data value.
+const isOpen = useVModel(props, 'isOpen', emit, { passive: true })
 const name = computed(() => props.socket?.name ?? props.name)
 
 // --- Conditionally show the detail view for complex values.
 const hasDetail = computed(() => {
-  if (props.socket?.control === undefined) return true
   if (props.socket?.control === 'socket') return true
   if (typeof model.value === 'object' && model.value !== null) return true
-  if (typeof model.value === 'string' && model.value.length > 20) return true
+  if (typeof model.value === 'string' && model.value.length > 24) return true
 })
 
-const isOpen = ref(false)
 function toggle() {
   if (!hasDetail.value) return
   isOpen.value = !isOpen.value
@@ -42,55 +43,62 @@ function toggle() {
       flex flex-wrap items-stretch
       not-first:b-t b-editor first:rd-t last:rd-b
       ring-1 ring-transparent relative
-      hover:ring-editor-active
+      hover:ring-editor-active group
     ">
 
     <!-- Header -->
     <div
-      class="flex items-center w-full space-x-xs px-sm h-8"
+      class="flex items-center w-full h-8"
       :class="{ 'cursor-pointer': hasDetail }"
       @mousedown="() => toggle()">
+
+      <!-- Editable Name -->
+      <input
+        v-if="isNameEditable"
+        v-model="name"
+        class="w-144.5px shrink-0 px-sm bg-transparent outline-none"
+      />
+
+      <!-- Name -->
       <div
-        class="text-start w-145px shrink-0"
+        v-else
+        class="text-start w-144.5px shrink-0 px-sm"
         v-text="name"
       />
 
       <!-- Divider -->
-      <div
-        class="w-px h-full b-r b-editor transition"
-        :class="{ 'b-transparent': isOpen }"
-      />
+      <div class="w-px h-full b-r b-editor transition"/>
 
       <!-- Value -->
-      <div class="flex items-center grow transition">
-        <FlowEditorPanelDataValue
-          v-model="model"
-          :name="name"
-          :node="node"
-          :nodes="nodes"
-          :socket="socket"
-          :isOpen="isOpen"
-          :isEditable="isEditable"
-          :isClearable="isClearable"
-          :class="{ 'op-50': isOpen && hasDetail, 'select-none': hasDetail }"
-        />
-      </div>
+      <FlowEditorPanelDataValue
+        v-model="model"
+        :name="name"
+        :node="node"
+        :nodes="nodes"
+        :socket="socket"
+        :isOpen="isOpen"
+        :isEditable="isEditable"
+        :isClearable="isClearable"
+        :class="{ 'pointer-events-none': hasDetail }"
+      />
 
       <!-- Collapse -->
-      <BaseIcon
-        v-if="hasDetail"
-        icon="i-carbon:chevron-down"
-        class="size-4 shrink-0 cursor-pointer transition"
-        :class="{ 'rotate-180': isOpen }"
-      />
+      <div class="flex items-center space-x-sm op-0 group-hover:op-100 px-sm">
+        <BaseIcon
+          v-if="hasDetail"
+          icon="i-carbon:chevron-down"
+          class="size-4 shrink-0 cursor-pointer transition"
+          :class="{ 'rotate-180': isOpen }"
+        />
 
-      <!-- Clear -->
-      <BaseIcon
-        v-if="isClearable"
-        icon="i-carbon:close"
-        class="size-4 shrink-0 cursor-pointer transition"
-        @mousedown="() => emit('clear')"
-      />
+        <!-- Clear -->
+        <BaseIcon
+          v-if="isClearable"
+          icon="i-carbon:close"
+          class="size-4 shrink-0 cursor-pointer"
+          @mousedown="() => emit('clear')"
+        />
+      </div>
     </div>
 
     <!-- Detail -->
