@@ -47,7 +47,7 @@ export const modelOpenai = defineNode({
   kind: 'openai-api',
   name: 'OpenAI API',
   icon: 'https://api.iconify.design/simple-icons:openai.svg',
-  description: 'Generates a completion based on the OpenAI language model.',
+  description: 'The **OpenAI API** node is designed to retreive a **Language Model Instance** that can be used to generate completions using the OpenAI API. The node requires an API key and a model name as input, and returns the model information required for generating completions.',
   category: languageModel,
 
   // --- Define the inputs of the node.
@@ -131,9 +131,15 @@ export const modelOpenai = defineNode({
           model: data.model,
           messages: [{ role: 'user', content: prompt }],
         }),
-        getCompletion: ({ choices }: OpenaiChatResponse) => {
-          const choice = choices.find(x => x.finish_reason === 'stop')
-          return choice?.message.content ?? ''
+        getCompletion: (response: OpenaiChatResponse) => {
+          const { choices, system_fingerprint, usage } = response
+          return {
+            completion: choices.find(x => x.finish_reason === 'stop')?.message.content ?? '',
+            fingerprint: system_fingerprint,
+            tokensTotal: usage.total_tokens,
+            tokensPrompt: usage.prompt_tokens,
+            tokensCompletion: usage.completion_tokens,
+          }
         },
       },
     }

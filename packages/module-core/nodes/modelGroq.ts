@@ -3,7 +3,6 @@ import { defineNode } from '@nwrx/core'
 import { defineDataSchema } from '@nwrx/core'
 import { languageModel } from '../categories'
 import { languageModelInstance, string } from '../types'
-import modelGroqDescription from './modelGroq.md?raw'
 
 const GROQ_BASE_URL = 'https://api.groq.com'
 const GROQ_MODEL_OWNER_ICON: Record<string, string> = {
@@ -58,7 +57,7 @@ export const modelGroq = defineNode({
   kind: 'groq-api',
   name: 'Groq API',
   icon: 'https://api.iconify.design/simple-icons:openai.svg',
-  description: modelGroqDescription,
+  description: 'The **Groq API** node is designed to retreive a **Language Model Instance** that can be used to generate completions using the Groq API. The node requires an API key and a model name as input, and returns the model information required for generating completions.',
   category: languageModel,
 
   // --- Define the inputs of the node.
@@ -68,7 +67,7 @@ export const modelGroq = defineNode({
         name: 'API Key',
         type: string,
         control: 'variable',
-        description: 'The API key for the OpenAI API.',
+        description: 'The API Key for the Groq Console API.',
       },
       model: {
         name: 'Model Name',
@@ -111,10 +110,6 @@ export const modelGroq = defineNode({
   // --- are valid and return the model information.
   process: async({ data, abortSignal }) => {
     const { token, model } = data
-    if (!token) throw new Error('Please provide your OpenAI API key to access the API.')
-    if (!model) throw new Error('Please select the model name to use for generating completions.')
-
-    // --- Check the API is accessible and the model name is valid.
     const url = new URL('/openai/v1/models', GROQ_BASE_URL)
     const response = await fetch(url.href, {
       headers: { Authorization: `Bearer ${token}` },
@@ -124,7 +119,7 @@ export const modelGroq = defineNode({
     // --- Check if the API key is authorized.
     if (!response.ok) {
       const errorObject = await response.json().catch(() => {}) as { error: { message: string } } | undefined
-      throw new Error(errorObject?.error?.message ?? `Could not access the OpenAI APIy: ${response.statusText}`)
+      throw new Error(errorObject?.error?.message ?? `Could not access the Groq API: ${response.statusText}`)
     }
 
     // --- Check if the model name is valid.
@@ -138,13 +133,21 @@ export const modelGroq = defineNode({
         url: new URL('/openai/v1/chat/completions', GROQ_BASE_URL).href,
         model,
         token,
-        getBody: ({ prompt }) => ({
+        getBody: ({ prompt, maxCompletionTokens, temperature }) => ({
           model: data.model,
           messages: [{ role: 'user', content: prompt }],
+          max_tokens: maxCompletionTokens,
+          temperature,
         }),
-        getCompletion: ({ choices }: GroqChatResponse) => {
-          const choice = choices.find(x => x.finish_reason === 'stop')
-          return choice?.message.content ?? ''
+        getCompletion: (response: GroqChatResponse) => {
+          const { choices, usage, system_fingerprint } = response
+          return {
+            completion: choices.find(x => x.finish_reason === 'stop')?.message.content ?? '',
+            fingerprint: system_fingerprint,
+            tokensTotal: usage.total_tokens,
+            tokensPrompt: usage.prompt_tokens,
+            tokensCompletion: usage.completion_tokens,
+          }
         },
       },
     }
