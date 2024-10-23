@@ -11,6 +11,9 @@ patchedDependencies:
   '@unshared/validation':
     hash: pmshflt4f2uidb5agkit6h423y
     path: patches/@unshared__validation.patch
+  '@unshared/vue':
+    hash: bjnwiufv7bh7l5zmonz56xvujq
+    path: patches/@unshared__vue.patch
 
 importers:
 
@@ -241,7 +244,7 @@ importers:
         version: 0.0.20(@types/node@22.7.5)(@unocss/core@0.63.4)(@unocss/preset-mini@0.63.4)
       '@unshared/vue':
         specifier: 0.0.20
-        version: 0.0.20(@lezer/common@1.2.3)(@nuxt/kit@3.13.2(magicast@0.3.5)(rollup@4.24.0)(webpack-sources@3.2.3))(@nuxt/schema@3.13.2(rollup@4.24.0)(webpack-sources@3.2.3))(@types/node@22.7.5)(vue-router@4.4.5(vue@3.5.11(typescript@5.6.3)))(vue@3.5.11(typescript@5.6.3))
+        version: 0.0.20(patch_hash=bjnwiufv7bh7l5zmonz56xvujq)(@lezer/common@1.2.3)(@nuxt/kit@3.13.2(magicast@0.3.5)(rollup@4.24.0)(webpack-sources@3.2.3))(@nuxt/schema@3.13.2(rollup@4.24.0)(webpack-sources@3.2.3))(@types/node@22.7.5)(vue-router@4.4.5(vue@3.5.11(typescript@5.6.3)))(vue@3.5.11(typescript@5.6.3))
       '@vueuse/core':
         specifier: 11.1.0
         version: 11.1.0(vue@3.5.11(typescript@5.6.3))
@@ -11853,7 +11856,7 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
 
-  '@unshared/vue@0.0.20(@lezer/common@1.2.3)(@nuxt/kit@3.13.2(magicast@0.3.5)(rollup@4.24.0)(webpack-sources@3.2.3))(@nuxt/schema@3.13.2(rollup@4.24.0)(webpack-sources@3.2.3))(@types/node@22.7.5)(vue-router@4.4.5(vue@3.5.11(typescript@5.6.3)))(vue@3.5.11(typescript@5.6.3))':
+  '@unshared/vue@0.0.20(patch_hash=bjnwiufv7bh7l5zmonz56xvujq)(@lezer/common@1.2.3)(@nuxt/kit@3.13.2(magicast@0.3.5)(rollup@4.24.0)(webpack-sources@3.2.3))(@nuxt/schema@3.13.2(rollup@4.24.0)(webpack-sources@3.2.3))(@types/node@22.7.5)(vue-router@4.4.5(vue@3.5.11(typescript@5.6.3)))(vue@3.5.11(typescript@5.6.3))':
     dependencies:
       '@codemirror/state': 6.4.1
       '@codemirror/view': 6.33.0
