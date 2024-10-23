@@ -29,6 +29,7 @@ const emit = defineEmits<{
   setName: [name: string]
   setMethods: [methods: string[]]
   setDescription: [description: string]
+  setNodeDataValue: [nodeId: string, key: string, value: unknown]
   variableCreate: [name: string, value: string]
   variableUpdate: [name: string, value: string]
   variableRemove: [name: string]
@@ -148,8 +149,10 @@ watch(() => props.events, scrollToBottom, { deep: true })
         v-model:isDataOpen="isNodeDataOpen"
         v-model:isResultOpen="isNodeResultOpen"
         :node="node"
+        :nodes="nodes"
         :name="node.name"
         :description="node.description"
+        @setDataValue="(key, value) => emit('setNodeDataValue', node!.id, key, value)"
         @update:isDataOpen="(isOpen) => emit('update:isNodeDataOpen', isOpen)"
         @update:isResultOpen="(isOpen) => emit('update:isNodeResultOpen', isOpen)"
       />

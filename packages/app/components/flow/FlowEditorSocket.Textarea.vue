@@ -51,7 +51,7 @@ onMounted(() => {
       rows="1"
       class="
         w-full text-start outline-none p-sm
-        bg-transparent appearance-none rd max-h-64 resize-none
+        bg-transparent appearance-none rd max-h-32 resize-none
         transition text-sm whitespace-pre-wrap
         text-editor-node font-mono
       "

@@ -164,8 +164,9 @@ const editor = useFlowEditor({
         :zoom="editor.viewZoom"
         :isDragging="editor.nodeDragging"
         :isSelected="editor.isNodeSelected(node.id)"
+        :isHighlighted="false"
         v-bind="node"
-        @run="() => emit('nodeStart', node.id)"
+        @start="() => emit('nodeStart', node.id)"
         @abort="() => emit('nodeAbort', node.id)"
         @click="(event) => editor.onNodeClick(event, node.id)"
         @setDataValue="(key, value) => emit('nodeSetDataValue', node.id, key, value)"
@@ -189,7 +190,7 @@ const editor = useFlowEditor({
       <FlowEditorLink
         v-if="editor.linkDragProps"
         v-bind="editor.linkDragProps"
-        class="absolute z-0 pointer-events-none"
+        class="absolute z-1000 pointer-events-none"
         :zoom="editor.viewZoom"
       />
     </div>
@@ -229,6 +230,7 @@ const editor = useFlowEditor({
           @setName="(name) => emit('setName', name)"
           @setMethods="(methods) => emit('setMethods', methods)"
           @setDescription="(description) => emit('setDescription', description)"
+          @setNodeDataValue="(nodeId, key, value) => emit('nodeSetDataValue', nodeId, key, value)"
           @secretCreate="(name, value) => emit('secretCreate', name, value)"
           @secretRemove="(name) => emit('secretRemove', name)"
           @variableCreate="(name, value) => emit('variableCreate', name, value)"
