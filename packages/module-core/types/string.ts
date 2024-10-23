@@ -4,7 +4,7 @@ import { assertBoolean, assertNumber, assertObject, assertString, createParser }
 export const string = defineType({
   kind: 'string',
   name: 'String',
-  color: '#F3CA40',
+  color: '#927721',
   defaultValue: '',
   description: 'A sequence of characters.',
   parse: createParser(
