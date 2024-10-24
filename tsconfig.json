@@ -6,9 +6,6 @@
     "experimentalDecorators": true,
     "module": "ESNext",
     "moduleResolution": "Node",
-    "paths": {
-      "@nwrx/*": ["./packages/*"]
-    },
     "types": [
       "@types/node",
       "vitest/globals",
@@ -25,7 +22,6 @@
     "packages",
     "scripts",
     "examples",
-    "shims.d.ts",
     "rollup.config.mjs",
     "vitest.config.ts",
     "vitest.workspace.ts",
