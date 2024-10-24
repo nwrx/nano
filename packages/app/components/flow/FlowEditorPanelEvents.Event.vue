@@ -38,4 +38,10 @@ const isOpen = ref(false)
       </div>
     </BaseCollapse>
   </div>
+
+  <!-- Separator when flow:end -->
+  <div
+    v-if="event.event === 'flow:end'"
+    class="bg-diagonalstripes-white/10 h-8 w-full last:hidden b-y b-editor"
+  />
 </template>

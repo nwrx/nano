@@ -28,8 +28,7 @@ const isOpen = useVModel(props, 'isOpen', emit, { passive: true })
       :class="{
         'badge-danger': event.event === 'node:error',
         'badge-success': event.event === 'node:end',
-        'badge-warning': event.event === 'flow:end',
-        'badge-primary': event.event === 'flow:start',
+        'badge-primary': event.event === 'flow:start' || event.event === 'flow:end',
       }"
       :label="t(event.event)"
       icon="i-carbon:dot-mark"
