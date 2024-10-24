@@ -336,36 +336,51 @@ export class NodeInstance<
       const isOptional = socket.isOptional
       const defaultValue = socket.defaultValue as DataFromSchema<T>[K] | undefined
       const parse = socket.type.parse as (value: unknown) => DataFromSchema<T>[K]
+      let value: DataFromSchema<T>[K] | undefined
 
       // --- If the value is a variable, get the value of the variable.
       if (typeof raw === 'string' && raw.startsWith('$VARIABLE.')) {
         const name = raw.slice(10)
-        const value = this.flow.variables[name]
-        if (!value) throw new Error(`The variable "${name}" does not exist`)
-        return parse(value)
+        const variableValue = this.flow.variables[name]
+        if (variableValue === undefined) throw new Error(`The variable "${name}" does not exist`)
+        value = parse(variableValue)
       }
 
       // --- If the value is a secret, get the value of the secret.
       else if (typeof raw === 'string' && raw.startsWith('$SECRET.')) {
         const name = raw.slice(8)
-        const value = this.flow.secrets[name]
-        if (!value) throw new Error(`The secret "${name}" does not exist`)
-        return parse(value)
+        const secretValue = this.flow.secrets[name]
+        if (secretValue === undefined) throw new Error(`The secret "${name}" does not exist`)
+        value = parse(secretValue)
       }
 
       // --- If the value is a result of another node, resolve it's value.
-      if (typeof raw === 'string' && raw.startsWith('$NODE.')) {
+      else if (typeof raw === 'string' && raw.startsWith('$NODE.')) {
         const [id, key] = raw.slice(6).split(':')
         const node = this.flow.getNodeInstance(id)
         if (!node.isDone) return
-        const value = node.getResultValue(key)
-        return parse(value)
+        const resultValue = node.getResultValue(key)
+        value = parse(resultValue)
       }
 
       // --- Otherwise, parse and return the value as is.
-      if (raw !== undefined) return parse(raw)
-      if (defaultValue !== undefined) return defaultValue
-      if (!isOptional) throw new Error(`The data property "${key}" is required but missing`)
+      else if (raw !== undefined) {
+        value = parse(raw)
+      }
+
+      else if (defaultValue !== undefined) {
+        value = defaultValue
+      }
+
+      else if (!isOptional) {
+        throw new Error(`The data property "${key}" is required but missing`)
+      }
+
+      if (socket.isArray && value === undefined) return [] as DataFromSchema<T>[K]
+      if (socket.isArray && !Array.isArray(value)) return [value] as DataFromSchema<T>[K]
+      if (!socket.isArray && Array.isArray(value)) return value[0] as DataFromSchema<T>[K]
+      if (value === undefined) return
+      return value
     }
     catch (error) {
       (error as Error).message = `Failed to resolve the data value of the node "${this.id}" for the key "${key}": ${(error as Error).message}`
