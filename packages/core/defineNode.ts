@@ -37,64 +37,6 @@ export interface NodeInstanceContext<
   result: Pretty<ResultFromSchema<NoInfer<U>>>
 
   /**
-   * The resolved data schema that is used to validate the data that is passed
-   * to the node when it is executed. The data schema is resolved from the
-   * dataSchema function of the node.
-   *
-   * @example
-   * {
-   *   json: {
-   *     name: 'JSON',
-   *     type: typeString,
-   *     description: 'The JSON data to parse into a JavaScript object.',
-   *   },
-   * }
-   */
-  dataSchema: NoInfer<T>
-
-  /**
-   * The resolved result schema that is used to validate the result that is
-   * produced by the node when it is executed. The result schema is resolved
-   * from the defineResultSchema function of the node.
-   *
-   * @example
-   * {
-   *   object: {
-   *     name: 'Object',
-   *     type: typeObject,
-   *     description: 'The JavaScript object that was parsed from the JSON data.',
-   *   },
-   * }
-   */
-  resultSchema: NoInfer<U>
-
-  /**
-   * Secrets that are passed to the node when it is executed. The secrets
-   * are configured per-flow and can be used to provide sensitive information
-   * such as API keys or passwords to the flow node.
-   *
-   * @example
-   * {
-   *   API_KEY: '123',
-   *   PASSWORD: 'password',
-   * }
-   */
-  secrets: Record<string, string>
-
-  /**
-   * The variables that are passed to the node when it is executed. The variables
-   * are configured per-flow and can be used to provide environment-specific
-   * information such as the API URL or the environment name to the flow node.
-   *
-   * @example
-   * {
-   *   API_URL: 'https://api.example.com',
-   *   NODE_ENV: 'production',
-   * }
-   */
-  variables: Record<string, string>
-
-  /**
    * The abort signal that can be triggered to cancel the execution of the
    * flow node. When the abort signal is triggered, this node should stop
    * processing the data and abort it's execution.
