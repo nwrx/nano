@@ -7,11 +7,11 @@ import { string } from '../types'
 /** The regular expression for extracting variables from the template. */
 const EXP_VAR_REGEX = /{{\s*(\w+\??)\s*}}/g
 
-export const template = defineNode({
+export const nodeTemplate = defineNode({
   kind: 'template',
   name: 'Template',
-  icon: 'https://api.iconify.design/carbon:template.svg',
-  description: 'A template for generating a string based on the input.',
+  icon: 'https://api.iconify.design/carbon:text-indent.svg',
+  description: 'This node generates a templated string based on the provided input. Specifically, it replaces special `{{ Variable }}` placeholders in the template with corresponding values from the input data.',
   category: categoryText,
 
   // --- Create the data schema that infers the variables from the template.
