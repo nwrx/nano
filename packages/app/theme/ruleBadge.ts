@@ -1,19 +1,18 @@
 import type { DynamicRule } from 'unocss'
-import { parseCssColor } from '@unocss/rule-utils'
+import { h } from '@unocss/preset-mini/utils'
+import { colorToString } from '@unocss/rule-utils'
 
 export interface ThemeBadge {
-  badgeSize?: Record<string, {
+  badgeColor?: Record<string, string>
+  badgeBackground?: Record<string, string>
+  badgeBorderColor?: Record<string, string>
+  badgeVariant?: Record<string, {
     height: string
     spacing: string
     fontSize: string
     fontWeight?: string
     borderSize: string
     borderRadius: string
-  }>
-  badgeColor?: Record<string, {
-    foreground: string
-    background: string
-    inverse?: string
   }>
 }
 
@@ -26,54 +25,45 @@ export const ruleBadge: DynamicRule<ThemeBadge> = [
     const result: Record<string, string> = {}
 
     // --- Define badge size
-    const size = theme.badgeSize?.[b]
-    if (size) {
-      const { spacing, height, fontSize, fontWeight, borderRadius, borderSize } = size
+    const variant = theme.badgeVariant?.[b]
+    if (variant) {
       Object.assign(result, {
         'display': 'inline-flex',
-        'height': height,
-        'line-height': height,
-        'align-items': 'center',
-        'padding-left': spacing,
-        'padding-right': spacing,
-        'font-weight': fontWeight,
-        'font-size': fontSize,
-        'white-space': 'nowrap',
-        'border-radius': borderRadius,
-        'border-width': borderSize,
+        'height': variant.height ? h.rem(variant.height) : undefined,
+        'border-radius': variant.borderRadius ? h.px(variant.borderRadius) : undefined,
+        'border-width': variant.borderSize ? h.px(variant.borderSize) : undefined,
         'border-style': 'solid',
-        'color': 'rgb(var(--un-badge-foreground-color))',
-        'border-color': 'transparent',
-        'background-color': 'rgb(var(--un-badge-background-color) / var(--un-badge-opacity))',
+        'align-items': 'center',
+        'line-height': variant.height ? h.rem(variant.height) : undefined,
+        'padding-left': variant.spacing ? h.rem(variant.spacing) : undefined,
+        'padding-right': variant.spacing ? h.rem(variant.spacing) : undefined,
+        'font-weight': variant.fontWeight,
+        'font-size': variant.fontSize ? h.rem(variant.fontSize) : undefined,
+        'white-space': 'nowrap',
       })
     }
 
-    // --- Define badge color
     const color = theme.badgeColor?.[b]
     if (color) {
-      const { foreground, background, inverse = background } = color
       Object.assign(result, {
-        '--un-badge-opacity': 1,
-        '--un-badge-foreground-color': parseCssColor(foreground)?.components.join(' '),
-        '--un-badge-background-color': parseCssColor(background)?.components.join(' '),
-        '--un-badge-inverse-color': parseCssColor(inverse)?.components.join(' '),
+        '--un-badge-color': colorToString(color),
+        'color': 'var(--un-badge-color)',
       })
     }
 
-    // --- Define badge style
-    if (b === 'outlined') {
+    const background = theme.badgeBackground?.[b]
+    if (background) {
       Object.assign(result, {
-        'color': 'rgb(var(--un-badge-inverse-color))',
-        'border-color': 'rgb(var(--un-badge-inverse-color))',
-        'background-color': 'transparent',
+        '--un-badge-background': colorToString(background),
+        'background-color': 'var(--un-badge-background)',
       })
     }
 
-    if (b === 'soft') {
+    const border = theme.badgeBorderColor?.[b]
+    if (border) {
       Object.assign(result, {
-        '--un-badge-opacity': 0.2,
-        'color': 'rgb(var(--un-badge-inverse-color))',
-        'background-color': 'rgb(var(--un-badge-background-color) / var(--un-badge-opacity))',
+        '--un-badge-border-color': colorToString(border),
+        'border-color': 'var(--un-badge-border-color)',
       })
     }
 
@@ -84,10 +74,10 @@ export const ruleBadge: DynamicRule<ThemeBadge> = [
     layer: 'components',
     autocomplete: [
       'badge',
-      'badge-$badgeSize',
       'badge-$badgeColor',
-      'badge-outlined',
-      'badge-soft',
+      'badge-$badgeBackground',
+      'badge-$badgeBorder',
+      'badge-$badgeVariant',
     ],
   },
 ]
