@@ -70,15 +70,16 @@ function setInputValue(name: string, value: string) {
 
     <!-- User Input -->
     <form
-      class="flex p-md mt-auto b-t b-editor"
+      class="flex p-md mt-auto b-t b-editor space-x-sm"
       :class="{ 'op-50 pointer-events-none': isDisabled }"
       @submit.prevent="() => emit('start', inputData)">
 
       <!-- Value -->
-      <div v-for="(input, index) in inputNodes" :key="index" class="flex items-center space-x-sm w-full">
+      <div class="space-y-sm w-full">
         <BaseInputText
-          type="textarea"
-          class="grow px-sm py-xs mt-xs b b-transparent hover:b-editor rd bg-transparent outline-none"
+          v-for="(input, index) in inputNodes"
+          :key="input.data.name as string"
+          class="w-full px-sm py-xs mt-xs b b-transparent hover:b-editor rd bg-transparent outline-none"
           :placeholder="input.data.name as string"
           :modelValue="inputData[input.data.name as string]"
           @update:modelValue="(value: string) => setInputValue(input.data.name as string, value)"
