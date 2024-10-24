@@ -1,6 +1,6 @@
 import { defineCategory } from '@nwrx/core'
 
-export const basic = defineCategory({
+export const categoryBasic = defineCategory({
   kind: 'basic',
   name: 'Basic',
   color: '#F59E0B',
