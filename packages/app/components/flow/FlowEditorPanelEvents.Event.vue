@@ -26,7 +26,7 @@ const isOpen = ref(false)
     <BaseCollapse
       vertical
       :isOpen="isOpen"
-      class="w-full transition-all"
+      class="w-full transition-all overflow-clip"
       :class="{ 'op-0 pointer-events-none': !isOpen }">
 
       <!-- Content -->
