@@ -17,7 +17,7 @@ export class StorageFile extends BaseEntity {
    *
    * @example '/images'
    */
-  @Column('varchar', { length: 255 })
+  @Column('varchar')
   name: string
 
   /**
@@ -25,7 +25,7 @@ export class StorageFile extends BaseEntity {
    * used to set the `ETag` header in the HTTP response and compare it with the client's
    * `If-None-Match` header. It also helps avoid duplicate assets in the database.
    */
-  @Column('varchar', { length: 255, unique: true })
+  @Column('varchar')
   hash: string
 
   /**
@@ -36,7 +36,7 @@ export class StorageFile extends BaseEntity {
    * @example 'image/jpeg'
    * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types
    */
-  @Column('varchar', { length: 255 })
+  @Column('varchar')
   type: string
 
   /**
