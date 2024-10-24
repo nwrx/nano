@@ -33,7 +33,7 @@ importers:
         version: 6.4.16
       '@unshared/eslint-config':
         specifier: 0.0.20
-        version: 0.0.20(@types/node@22.7.5)(@vue/compiler-sfc@3.5.12)(eslint@9.12.0(jiti@2.3.3))(typescript@5.6.3)(vitest@2.1.2(@types/node@22.7.5)(@vitest/ui@2.1.2)(happy-dom@15.7.4)(terser@5.36.0))
+        version: 0.0.20(@types/node@22.7.5)(@typescript-eslint/parser@8.5.0(eslint@9.12.0(jiti@2.3.3))(typescript@5.6.3))(@vue/compiler-sfc@3.5.12)(eslint@9.12.0(jiti@2.3.3))(typescript@5.6.3)(vitest@2.1.2(@types/node@22.7.5)(@vitest/ui@2.1.2)(happy-dom@15.7.4)(terser@5.36.0))
       '@unshared/scripts':
         specifier: 0.0.20
         version: 0.0.20(@types/node@22.7.5)(encoding@0.1.13)(esbuild@0.24.0)(typescript@5.6.3)(zod@3.23.8)
@@ -322,6 +322,27 @@ importers:
       '@nwrx/core':
         specifier: workspace:*
         version: link:../core
+      '@types/json-schema':
+        specifier: 7.0.15
+        version: 7.0.15
+      '@unshared/string':
+        specifier: 0.0.20
+        version: 0.0.20(@types/node@22.7.5)
+      '@unshared/validation':
+        specifier: 0.0.20
+        version: 0.0.20(patch_hash=pmshflt4f2uidb5agkit6h423y)(@types/node@22.7.5)
+      yaml:
+        specifier: 2.5.1
+        version: 2.5.1
+
+  packages/module-openai:
+    dependencies:
+      '@nwrx/core':
+        specifier: workspace:*
+        version: link:../core
+      '@nwrx/module-core':
+        specifier: workspace:*
+        version: link:../module-core
       '@types/json-schema':
         specifier: 7.0.15
         version: 7.0.15
@@ -11702,49 +11723,6 @@ snapshots:
       - svelte-eslint-parser
       - vitest
 
-  '@unshared/eslint-config@0.0.20(@types/node@22.7.5)(@vue/compiler-sfc@3.5.12)(eslint@9.12.0(jiti@2.3.3))(typescript@5.6.3)(vitest@2.1.2(@types/node@22.7.5)(@vitest/ui@2.1.2)(happy-dom@15.7.4)(terser@5.36.0))':
-    dependencies:
-      '@eslint/eslintrc': 3.1.0
-      '@eslint/js': 9.10.0
-      '@stylistic/eslint-plugin': 2.7.2(eslint@9.12.0(jiti@2.3.3))(typescript@5.6.3)
-      '@unshared/collection': 0.0.20(@types/node@22.7.5)
-      '@unshared/types': 0.0.20(@types/node@22.7.5)
-      eslint: 9.12.0(jiti@2.3.3)
-      eslint-merge-processors: 0.1.0(eslint@9.12.0(jiti@2.3.3))
-      eslint-plugin-antfu: 2.5.0(eslint@9.12.0(jiti@2.3.3))
-      eslint-plugin-eslint-comments: 3.2.0(eslint@9.12.0(jiti@2.3.3))
-      eslint-plugin-html: 8.1.1
-      eslint-plugin-import: 2.30.0(eslint@9.12.0(jiti@2.3.3))
-      eslint-plugin-jsdoc: 50.2.2(eslint@9.12.0(jiti@2.3.3))
-      eslint-plugin-jsonc: 2.16.0(eslint@9.12.0(jiti@2.3.3))
-      eslint-plugin-markdown: 5.1.0(eslint@9.12.0(jiti@2.3.3))
-      eslint-plugin-n: 17.10.2(eslint@9.12.0(jiti@2.3.3))
-      eslint-plugin-perfectionist: 3.5.0(eslint@9.12.0(jiti@2.3.3))(typescript@5.6.3)(vue-eslint-parser@9.4.3(eslint@9.12.0(jiti@2.3.3)))
-      eslint-plugin-promise: 7.1.0(eslint@9.12.0(jiti@2.3.3))
-      eslint-plugin-sonarjs: 1.0.4(eslint@9.12.0(jiti@2.3.3))
-      eslint-plugin-unicorn: 55.0.0(eslint@9.12.0(jiti@2.3.3))
-      eslint-plugin-vitest: 0.5.4(eslint@9.12.0(jiti@2.3.3))(typescript@5.6.3)(vitest@2.1.2(@types/node@22.7.5)(@vitest/ui@2.1.2)(happy-dom@15.7.4)(terser@5.36.0))
-      eslint-plugin-vue: 9.28.0(eslint@9.12.0(jiti@2.3.3))
-      eslint-plugin-yml: 1.14.0(eslint@9.12.0(jiti@2.3.3))
-      eslint-processor-vue-blocks: 0.1.2(@vue/compiler-sfc@3.5.12)(eslint@9.12.0(jiti@2.3.3))
-      jsonc-eslint-parser: 2.4.0
-      typescript: 5.6.3
-      typescript-eslint: 8.5.0(eslint@9.12.0(jiti@2.3.3))(typescript@5.6.3)
-      vue-eslint-parser: 9.4.3(eslint@9.12.0(jiti@2.3.3))
-      yaml-eslint-parser: 1.2.3
-    transitivePeerDependencies:
-      - '@types/node'
-      - '@typescript-eslint/eslint-plugin'
-      - '@typescript-eslint/parser'
-      - '@vue/compiler-sfc'
-      - astro-eslint-parser
-      - eslint-import-resolver-typescript
-      - eslint-import-resolver-webpack
-      - supports-color
-      - svelte
-      - svelte-eslint-parser
-      - vitest
-
   '@unshared/fs@0.0.20(@types/node@22.7.5)':
     dependencies:
       '@unshared/collection': 0.0.20(@types/node@22.7.5)
@@ -13621,15 +13599,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.0(eslint-import-resolver-node@0.3.9)(eslint@9.12.0(jiti@2.3.3)):
-    dependencies:
-      debug: 3.2.7
-    optionalDependencies:
-      eslint: 9.12.0(jiti@2.3.3)
-      eslint-import-resolver-node: 0.3.9
-    transitivePeerDependencies:
-      - supports-color
-
   eslint-plugin-antfu@2.5.0(eslint@9.12.0(jiti@2.3.3)):
     dependencies:
       '@antfu/utils': 0.7.10
@@ -13720,32 +13689,6 @@ snapshots:
       tsconfig-paths: 3.15.0
     optionalDependencies:
       '@typescript-eslint/parser': 8.5.0(eslint@9.12.0(jiti@2.3.3))(typescript@5.6.3)
-    transitivePeerDependencies:
-      - eslint-import-resolver-typescript
-      - eslint-import-resolver-webpack
-      - supports-color
-
-  eslint-plugin-import@2.30.0(eslint@9.12.0(jiti@2.3.3)):
-    dependencies:
-      '@rtsao/scc': 1.1.0
-      array-includes: 3.1.8
-      array.prototype.findlastindex: 1.2.5
-      array.prototype.flat: 1.3.2
-      array.prototype.flatmap: 1.3.2
-      debug: 3.2.7
-      doctrine: 2.1.0
-      eslint: 9.12.0(jiti@2.3.3)
-      eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.0(eslint-import-resolver-node@0.3.9)(eslint@9.12.0(jiti@2.3.3))
-      hasown: 2.0.2
-      is-core-module: 2.15.1
-      is-glob: 4.0.3
-      minimatch: 3.1.2
-      object.fromentries: 2.0.8
-      object.groupby: 1.0.3
-      object.values: 1.2.0
-      semver: 6.3.1
-      tsconfig-paths: 3.15.0
     transitivePeerDependencies:
       - eslint-import-resolver-typescript
       - eslint-import-resolver-webpack
