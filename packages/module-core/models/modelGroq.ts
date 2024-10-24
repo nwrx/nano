@@ -2,7 +2,7 @@ import type { NodeInstanceContext, SocketListOption } from '@nwrx/core'
 import { defineNode } from '@nwrx/core'
 import { defineDataSchema } from '@nwrx/core'
 import { languageModel } from '../categories'
-import { languageModelInstance, string } from '../types'
+import { languageModel, string } from '../types'
 
 const GROQ_BASE_URL = 'https://api.groq.com'
 const GROQ_MODEL_OWNER_ICON: Record<string, string> = {
@@ -101,7 +101,7 @@ export const modelGroq = defineNode({
   resultSchema: {
     model: {
       name: 'Model',
-      type: languageModelInstance,
+      type: languageModel,
       description: 'The model information to use for generating completions.',
     },
   },
@@ -142,7 +142,7 @@ export const modelGroq = defineNode({
         getCompletion: (response: GroqChatResponse) => {
           const { choices, usage, system_fingerprint } = response
           return {
-            completion: choices.find(x => x.finish_reason === 'stop')?.message.content ?? '',
+            completion: choices.map(x => x.message.content).join(' '),
             fingerprint: system_fingerprint,
             tokensTotal: usage.total_tokens,
             tokensPrompt: usage.prompt_tokens,
