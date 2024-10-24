@@ -1,32 +1,19 @@
 import type { NodeInstanceContext, SocketListOption } from '@nwrx/core'
-import type { OpenaiChatRequest } from './modelOpenai.request'
-import type { OpenaiChatResponse } from './modelOpenai.response'
-import { defineNode } from '@nwrx/core'
-import { defineDataSchema } from '@nwrx/core'
-import { string } from '../types'
-import { createLanguageModel } from './createLanguageModel'
-import { languageModel } from './languageModel'
-import { languageModelCategory } from './languageModelCategory'
-import { languageModelTool } from './languageModelTool'
+import type { OpenaiChatRequest } from './OpenaiChatRequest'
+import type { OpenaiChatResponse } from './OpenaiChatResponse'
+import type { OpenaiModelResponse } from './OpenaiModelResponse'
+import { defineDataSchema, defineNode } from '@nwrx/core'
+import { categoryLanguageModel, createLanguageModel, languageModel, string } from '@nwrx/module-core'
 
+/** The base URL for the OpenAI API. */
 const OPENAI_BASE_URL = 'https://api.openai.com/v1'
-
-interface OpenaiModelResponse {
-  object: 'list'
-  data: Array<{
-    id: string
-    object: string
-    created: number
-    owned_by: string
-  }>
-}
 
 export const modelOpenai = defineNode({
   kind: 'openai-api',
   name: 'OpenAI API',
   icon: 'https://api.iconify.design/simple-icons:openai.svg',
   description: 'The **OpenAI API** node is designed to retreive a **Language Model Instance** that can be used to generate completions using the OpenAI API. The node requires an API key and a model name as input, and returns the model information required for generating completions.',
-  category: languageModelCategory,
+  category: categoryLanguageModel,
 
   // --- Define the inputs of the node.
   dataSchema: async({ data, abortSignal }: NodeInstanceContext) => {
@@ -88,15 +75,17 @@ export const modelOpenai = defineNode({
         seed: options.seed,
         temperature: options.temperature,
         max_completion_tokens: options.maxCompletionTokens,
-        tools: (options.tools && options.tools.length > 0) ? options.tools.map(tool => ({
-          type: 'function',
-          function: {
-            name: tool.name,
-            description: tool.description,
-            parameters: tool.schema,
-            strict: false,
-          }
-        })) : undefined,
+        tools: (options.tools && options.tools.length > 0)
+          ? options.tools.map(tool => ({
+            type: 'function',
+            function: {
+              name: tool.name,
+              description: tool.description,
+              parameters: tool.schema,
+              strict: false,
+            },
+          }))
+          : undefined,
       }),
 
       /**
@@ -164,54 +153,5 @@ export const modelOpenai = defineNode({
         }
       },
     }),
-  })
-})
-
-export const toolWeather = defineNode({
-  kind: 'weather-tool',
-  name: 'Weather',
-  description: 'The **Weather Tool** node is designed to fetch the current weather information for a given location. The node requires a location as input and returns the current weather information for that location.',
-  category: languageModelCategory,
-
-  // // --- Define the inputs of the node.
-  // dataSchema: defineDataSchema({
-  //   location: {
-  //     name: 'Location',
-  //     type: string,
-  //     description: 'The location for which to fetch the weather information.',
-  //   },
-  // }),
-
-  // --- Define the outputs of the node.
-  resultSchema: {
-    weather: {
-      name: 'Tool',
-      type: languageModelTool,
-      description: 'The current weather information for the given location.',
-    },
-  },
-
-  // --- On processing the node, fetch the weather information for the given location.
-  process: () => ({
-    weather: {
-      name: 'get_weather_forecast',
-      description: 'The current weather information for the given location.',
-      schema: {
-        type: 'object',
-        required: ['location'],
-        properties: {
-          location: {
-            type: 'string',
-            description: 'The location for which to fetch the weather information.',
-          },
-        },
-      },
-      call: async(data) => {
-        const { location } = data as { location: string }
-        const response = await fetch(`https://wttr.in/${location}?format=%C+%t+%w+%m+%l+%p`, { headers: { Accept: 'text/plain' } })
-        if (!response.ok) throw new Error('The weather information could not be fetched.')
-        return await response.text()
-      },
-    },
   }),
 })

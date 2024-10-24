@@ -1,18 +1,17 @@
 import type { ObjectLike } from '@nwrx/core'
-import type { LanguageModelResult } from './languageModel'
+import type { LanguageModelResult } from '../types/languageModel'
 import { defineNode, defineResultSchema } from '@nwrx/core'
 import { defineDataSchema } from '@nwrx/core'
-import { number, string } from '../types'
-import { languageModel } from './languageModel'
-import { languageModelCategory } from './languageModelCategory'
-import { languageModelTool } from './languageModelTool'
+import { categoryLanguageModel } from '../categories'
+import { languageModel, number, string } from '../types'
+import { languageModelTool } from '../types/languageModelTool'
 
 export const inference = defineNode({
   kind: 'inference',
   name: 'Inference',
   icon: 'https://api.iconify.design/carbon:ai.svg',
   description: 'Generates a completion based on a language model.',
-  category: languageModelCategory,
+  category: categoryLanguageModel,
 
   dataSchema: defineDataSchema({
     model: {
@@ -148,13 +147,6 @@ export const inference = defineNode({
       // --- in the `onData` function, break the loop and return the result.
       canResume = false
       const data = await response.json() as ObjectLike
-
-      console.log('-'.repeat(80))
-      console.log(`Iteration ${i + 1}`)
-      console.log(JSON.stringify(data, null, 2))
-      console.log('-'.repeat(80))
-      console.log(JSON.stringify(body, null, 2))
-
       const result = await onData({ body, data, call, resume })
       if (result) return result
       if (!canResume) break

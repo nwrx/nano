@@ -1,0 +1,34 @@
+{
+  "name": "@nwrx/module-openai",
+  "type": "module",
+  "version": "0.0.1",
+  "license": "MIT",
+  "sideEffects": false,
+  "author": "Stanley Horwood <stanley@hsjm.io>",
+  "bugs": "https://github.com/nwrx/nano-ce/issues",
+  "homepage": "https://github.com/nwrx/nano-ce#readme",
+  "repository": {
+    "directory": "packages/module-openai",
+    "type": "git",
+    "url": "git@github.com:nwrx/nano-ce.git"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE.md"
+  ],
+  "scripts": {
+    "dev": "rollup --config ../../rollup.config.mjs --watch",
+    "build": "rollup --config ../../rollup.config.mjs"
+  },
+  "dependencies": {
+    "@nwrx/core": "workspace:*",
+    "@nwrx/module-core": "workspace:*",
+    "@types/json-schema": "7.0.15",
+    "@unshared/string": "0.0.20",
+    "@unshared/validation": "0.0.20"
+  }
+}
