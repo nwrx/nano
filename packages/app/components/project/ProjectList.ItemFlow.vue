@@ -61,12 +61,12 @@ function getFlowRoute(workspace: string, project: string, flow: string) {
         />
         <Badge
           label="Draft"
-          class="badge-primary badge-soft"
+          class="badge-primary"
           icon="i-carbon:dot-mark"
         />
         <Badge
           label="Deployed"
-          class="badge-success badge-soft"
+          class="badge-success"
           icon="i-carbon:dot-mark"
         />
         <Badge
