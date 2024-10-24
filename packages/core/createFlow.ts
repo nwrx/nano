@@ -368,17 +368,18 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
     // --- Resolve the source and target socket.
     const [sourceNodeId, sourceSocketId] = source.split(':')
     const [targetNodeId, targetSocketId] = target.split(':')
-    const sourceNode = this.getResultSocket(source)
-    const targetNode = this.getDataSocket(target)
+    const sourceSocket = this.getResultSocket(source)
+    const targetSocket = this.getDataSocket(target)
 
     // --- Check if the nodes can be linked.
     if (sourceNodeId === targetNodeId)
       throw new Error('Cannot link the node to itself')
-    if (sourceNode.type.kind !== targetNode.type.kind)
-      throw new Error(`Cannot link ${sourceNode.type.name} to ${targetNode.type.name}`)
+    if (sourceSocket.type.kind !== targetSocket.type.kind)
+      throw new Error(`Cannot link ${sourceSocket.type.name} to ${targetSocket.type.name}`)
 
-    // --- If the target is already linked, remove the link.
-    this.removeLink(target)
+    // --- If the target is already linked and it's `isArray` flag is false, remove the link.
+    if (!targetSocket.isArray)
+      this.removeLink(target)
 
     // --- Create the link and dispatch the event.
     const nodeTarget = this.getNodeInstance(targetNodeId)
@@ -477,12 +478,8 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
 
       // --- If the node is `nwrx/core:output`, set the output of the flow.
       if (node.kind === 'nwrx/core:output') {
-        this.dispatch(
-          'flow:output',
-          data.name as string,
-          result.value,
-          this.eventMeta,
-        )
+        this.output[data.name as string] = result.value
+        this.dispatch('flow:output', data.name as string, result.value, this.eventMeta )
       }
     })
 
