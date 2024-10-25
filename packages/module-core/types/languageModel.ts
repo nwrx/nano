@@ -1,17 +1,8 @@
-import type { MaybePromise } from '@nwrx/core'
-import type { LanguageModelTool } from './languageModelTool'
+import type { DataFromSchema, MaybePromise, Node } from '@nwrx/core'
 import { defineType } from '@nwrx/core'
 import { assertFunction, assertStringNotEmpty, assertUndefined, createParser } from '@unshared/validation'
-
-/** The context that is passed in the model inference process. */
-export interface LanguageModelInferenceOptions {
-  prompt: string
-  seed?: number
-  stop?: string
-  temperature?: number
-  maxCompletionTokens?: number
-  tools?: LanguageModelTool[]
-}
+import { inference } from '../dist'
+import { NodeInferenceOptions } from '../nodes'
 
 /** The result of the model inference process. */
 export interface LanguageModelResult {
@@ -23,7 +14,7 @@ export interface LanguageModelResult {
 }
 
 /** The context that is passed in the model completion process. */
-export interface LanguageModelData<T, U> {
+export interface LanguageModelContext<T, U> {
   body: T
   data: U
   call: (name: string, data: unknown) => Promise<string>
@@ -65,7 +56,7 @@ export interface LanguageModel<T = any, U = any> {
    *
    * @example ({ prompt }) => ({ model: 'davinci', prompt })
    */
-  getBody: (options: LanguageModelInferenceOptions) => T
+  getBody: (options: NodeInferenceOptions) => T
 
   /**
    * The function that extracts the completion from the response of the model API.
@@ -74,7 +65,7 @@ export interface LanguageModel<T = any, U = any> {
    *
    * @example response => response.choices[0].text
    */
-  onData: (context: LanguageModelData<T, U>) => MaybePromise<LanguageModelResult | void>
+  onData: (context: LanguageModelContext<T, U>) => MaybePromise<LanguageModelResult | void>
 
   /**
    * The function that handles non OK responses from the model API. It is used to
@@ -97,9 +88,9 @@ export const languageModel = defineType<LanguageModel>({
   parse: createParser({
     url: assertStringNotEmpty,
     model: assertStringNotEmpty,
-    token: [[assertUndefined], [assertStringNotEmpty]],
+    token: assertStringNotEmpty,
     getBody: assertFunction,
     onData: assertFunction,
-    onError: [[assertUndefined], [assertFunction]],
+    onError: assertFunction,
   }),
 })
