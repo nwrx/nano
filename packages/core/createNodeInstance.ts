@@ -115,8 +115,8 @@ export class NodeInstance<
 
   public error: Error | undefined
   public dataRaw = {} as Record<string, unknown>
-  public result = {} as DataFromSchema<U>
   public dataSchema: T
+  public result = {} as DataFromSchema<U>
   public resultSchema: U
 
   public eventTarget = new EventTarget()
@@ -148,19 +148,6 @@ export class NodeInstance<
     this.eventTarget.addEventListener(event, handler)
     this.eventHandlers.set(event, handler)
     return () => this.eventTarget.removeEventListener(event, handler)
-  }
-
-  /**
-   * Set the settings of the flow. This includes the name, icon and description of
-   * the flow that are displayed in the UI. Once called, an event is dispatched
-   * to notify listeners that the settings have been updated.
-   *
-   * @param meta The settings to set for the flow.
-   * @example flow.flowSetMeta({ name: 'Flow', icon: 'flow', description: 'A flow' })
-   */
-  public setMeta(meta: Partial<NodeInstanceMeta>) {
-    this.meta = { ...this.meta, ...meta }
-    this.dispatch('meta', this.meta)
   }
 
   /**
@@ -231,18 +218,6 @@ export class NodeInstance<
   }
 
   /**
-   * Given a key, get the `ChainNodePort` that corresponds to the key of
-   * the data schema.
-   *
-   * @param key The key of the data schema to get the port for.
-   * @returns The port that corresponds to the key of the data schema.
-   */
-  public getDataSocket<K extends keyof T>(key: K): T[K] {
-    if (key in this.dataSchema) return this.dataSchema[key]
-    throw new Error(`The data schema of node "${this.id}" does not contain a port with the key "${key as string}" or has not been resolved yet`)
-  }
-
-  /**
    * Set the value of a data property of the node by key.
    *
    * @param key The key of the data property.
@@ -252,41 +227,6 @@ export class NodeInstance<
     this.dataRaw[key as string] = value
     this.dispatch('data', this.data)
     this.dispatch('dataRaw', this.dataRaw)
-  }
-
-  /**
-   * Set the data of the node.
-   *
-   * @param data The data to set.
-   */
-  public setData(data: DataFromSchema<T>): void {
-    this.dataRaw = data
-    this.dispatch('data', this.data)
-    this.dispatch('dataRaw', this.dataRaw)
-  }
-
-  /**
-   * Given a key, get the `ChainNodePort` that corresponds to the key of
-   * the result schema.
-   *
-   * @param key The key of the result schema to get the port for.
-   * @returns The port that corresponds to the key of the result schema.
-   */
-  public getResultSocket<K extends keyof U>(key: K): U[K] {
-    if (key in this.resultSchema) return this.resultSchema[key]
-    throw new Error(`The result schema of node "${this.id}" does not contain a port with the key "${key as string}" or has not been resolved yet`)
-  }
-
-  /**
-   * Given a key, get the value of the result of the node by key.
-   * If the key does not exist in the result, an error is thrown.
-   *
-   * @param key The key of the result property to get.
-   * @returns The value of the result property of the node by key.
-   */
-  public getResultValue<K extends keyof U>(key: K): ResultFromSchema<U>[K] {
-    this.getResultSocket(key)
-    return this.result[key]
   }
 
   /**
@@ -338,8 +278,12 @@ export class NodeInstance<
       const parse = socket.type.parse as (value: unknown) => DataFromSchema<T>[K]
       let value: DataFromSchema<T>[K] | undefined
 
+      if (typeof raw !== 'string') {
+        value = parse(raw)
+      }
+
       // --- If the value is a variable, get the value of the variable.
-      if (typeof raw === 'string' && raw.startsWith('$VARIABLE.')) {
+      else if (raw.startsWith('$VARIABLE.')) {
         const name = raw.slice(10)
         const variableValue = this.flow.variables[name]
         if (variableValue === undefined) throw new Error(`The variable "${name}" does not exist`)
@@ -347,7 +291,7 @@ export class NodeInstance<
       }
 
       // --- If the value is a secret, get the value of the secret.
-      else if (typeof raw === 'string' && raw.startsWith('$SECRET.')) {
+      else if (raw.startsWith('$SECRET.')) {
         const name = raw.slice(8)
         const secretValue = this.flow.secrets[name]
         if (secretValue === undefined) throw new Error(`The secret "${name}" does not exist`)
@@ -355,11 +299,11 @@ export class NodeInstance<
       }
 
       // --- If the value is a result of another node, resolve it's value.
-      else if (typeof raw === 'string' && raw.startsWith('$NODE.')) {
+      else if (raw.startsWith('$NODE.')) {
         const [id, key] = raw.slice(6).split(':')
         const node = this.flow.getNodeInstance(id)
         if (!node.isDone) return
-        const resultValue = node.getResultValue(key)
+        const resultValue = this.result[key]
         value = parse(resultValue)
       }
 
@@ -376,14 +320,10 @@ export class NodeInstance<
         throw new Error(`The data property "${key}" is required but missing`)
       }
 
-      if (socket.isArray && value === undefined) return [] as DataFromSchema<T>[K]
-      if (socket.isArray && !Array.isArray(value)) return [value] as DataFromSchema<T>[K]
-      if (!socket.isArray && Array.isArray(value)) return value[0] as DataFromSchema<T>[K]
-      if (value === undefined) return
       return value
     }
     catch (error) {
-      (error as Error).message = `Failed to resolve the data value of the node "${this.id}" for the key "${key}": ${(error as Error).message}`
+      (error as Error).message = `Failed to resolve "${key}": ${(error as Error).message}`
       this.dispatch('error', error as Error, this.eventMeta)
       console.warn(error)
       return
@@ -410,9 +350,8 @@ export class NodeInstance<
    */
   public get data(): DataFromSchema<T> {
     // eslint-disable-next-line unicorn/no-this-assignment, @typescript-eslint/no-this-alias
-    const that = this
     return new Proxy(this.dataRaw, {
-      get(_, key: keyof T & string) { return that.resolveDataValue(key) },
+      get: (_, key: keyof T & string) => this.resolveDataValue(key),
     }) as DataFromSchema<T>
   }
 
@@ -479,7 +418,6 @@ export class NodeInstance<
    * node.process()
    */
   public async process(): Promise<void> {
-    if (!this.node.process) return
     try {
       this.isRunning = true
       await this.resolveDataSchema()
@@ -495,8 +433,8 @@ export class NodeInstance<
 
       // --- Process the node by calling the process function of the node.
       this.dispatch('start', this.data, this.eventMeta)
-      const result = await this.node.process(this.context)
-      this.setResult(result)
+      const result = await this.node.process?.(this.context)
+      if (result) this.setResult(result)
       this.dispatch('end', this.data, this.result, this.eventMeta)
       this.isDone = true
     }
