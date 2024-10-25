@@ -1,7 +1,7 @@
 import type { NodeInstanceContext } from '@nwrx/core'
 import { defineNode } from '@nwrx/core'
 import { defineDataSchema } from '@nwrx/core'
-import { categoryText } from '../categories'
+import { categoryBasic } from '../categories'
 import { string } from '../types'
 
 /** The regular expression for extracting variables from the template. */
@@ -12,7 +12,7 @@ export const nodeTemplate = defineNode({
   name: 'Template',
   icon: 'https://api.iconify.design/carbon:text-indent.svg',
   description: 'This node generates a templated string based on the provided input. Specifically, it replaces special `{{ Variable }}` placeholders in the template with corresponding values from the input data.',
-  category: categoryText,
+  category: categoryBasic,
 
   // --- Create the data schema that infers the variables from the template.
   dataSchema: ({ data }: NodeInstanceContext) => {
