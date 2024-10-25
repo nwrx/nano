@@ -74,9 +74,4 @@ export const nodeOutput = defineNode({
       },
     })
   },
-
-  process: ({ data }) => ({
-    name: data.name,
-    value: data.value,
-  }),
 })
