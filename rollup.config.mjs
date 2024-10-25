@@ -21,6 +21,7 @@ export default defineConfig([
       {
         dir: './dist',
         format: 'esm',
+        exports: 'named',
         sourcemap: true,
         entryFileNames: '[name].js',
         assetFileNames: 'assets/[name].js',
@@ -29,6 +30,7 @@ export default defineConfig([
       {
         dir: './dist',
         format: 'commonjs',
+        exports: 'named',
         sourcemap: true,
         entryFileNames: '[name].cjs',
         assetFileNames: 'assets/[name].cjs',
