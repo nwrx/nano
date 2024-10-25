@@ -8,7 +8,8 @@ import type { FlowSessionJSON } from './serializeFlowSession'
 import type { NodeInstanceJSON } from './serializeNodeInstance'
 import type { ResultSocketJSON } from './serializeResultSchema'
 import { flowFromJsonV1, flowToJson } from '@nwrx/core'
-import { default as Core } from '@nwrx/module-core'
+import Core from '@nwrx/module-core'
+import Openai from '@nwrx/module-openai'
 import { serializeDataSchema } from './serializeDataSchema'
 import { serializeFlowSession } from './serializeFlowSession'
 import { serializeNodeInstance } from './serializeNodeInstance'
@@ -244,7 +245,11 @@ export async function resolveFlowSession(this: ModuleFlow, flow: Flow): Promise<
   if (!flow.project.variables) throw new Error('The variables of the project are not loaded.')
 
   // --- Create the flow instance.
-  const flowInstance = flowFromJsonV1(flow.data, [Core])
+  const flowInstance = flowFromJsonV1(flow.data, [
+    // @ts-expect-error: TODO: Migrate to module resolver pattern.
+    Core.default as typeof Core,
+    Openai
+  ])
   flowInstance.meta.name = flow.title
   flowInstance.meta.description = flow.description
   for (const secret of flow.project.secrets) flowInstance.secrets[secret.name] = secret.cipher
