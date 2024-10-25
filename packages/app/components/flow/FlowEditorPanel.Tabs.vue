@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const props = defineProps<{
   modelValue: string
-  tabs: Array<{ label: string; id: string }>
+  values: string[]
 }>()
 
 const emit = defineEmits<{
@@ -9,6 +9,7 @@ const emit = defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
+const { t } = useI18n()
 const model = useVModel(props, 'modelValue', emit, { passive: true })
 </script>
 
@@ -16,10 +17,10 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
   <div class="flex p-md w-full">
     <div class="flex border border-editor rounded">
       <BaseInputToggle
-        v-for="tab in tabs"
-        :key="tab.id"
+        v-for="value in values"
+        :key="value"
         v-model="model"
-        :value="tab.id"
+        :value="value"
         eager
         as="div"
         type="radio"
@@ -31,8 +32,36 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
         !selected:bg-editor-active
         hover:bg-editor-active/20
       ">
-        {{ tab.label }}
+        {{ t(value) }}
       </BaseInputToggle>
     </div>
   </div>
 </template>
+
+<i18n lang="yaml">
+  en:
+    flow: Flow
+    node: Node
+    events: Events
+    playground: Sandbox
+  fr:
+    flow: Flux
+    node: Noeud
+    events: Événements
+    playground: Bac à sable
+  de:
+    flow: Fluss
+    node: Knoten
+    events: Ereignisse
+    playground: Sandkasten
+  es:
+    flow: Flujo
+    node: Nodo
+    events: Eventos
+    playground: Caja de arena
+  zh:
+    flow: 流程
+    node: 节点
+    events: 事件
+    playground: 沙盒
+</i18n>
