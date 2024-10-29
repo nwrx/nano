@@ -4,17 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-patchedDependencies:
-  '@unserved/client':
-    hash: 2exfgyrdxjlned7dwnyht2twhm
-    path: patches/@unserved__client.patch
-  '@unshared/validation':
-    hash: pmshflt4f2uidb5agkit6h423y
-    path: patches/@unshared__validation.patch
-  '@unshared/vue':
-    hash: bjnwiufv7bh7l5zmonz56xvujq
-    path: patches/@unshared__vue.patch
-
 importers:
 
   .:
@@ -39,7 +28,7 @@ importers:
         version: 0.1.0(@types/node@22.8.2)(encoding@0.1.13)(esbuild@0.24.0)(typescript@5.6.3)(zod@3.23.8)
       '@unshared/validation':
         specifier: 0.1.0
-        version: 0.1.0(patch_hash=pmshflt4f2uidb5agkit6h423y)(@types/node@22.8.2)
+        version: 0.1.0(@types/node@22.8.2)
       '@vitest/coverage-v8':
         specifier: 2.1.4
         version: 2.1.4(vitest@2.1.4)
@@ -126,7 +115,7 @@ importers:
         version: 0.1.0(@types/node@22.8.2)
       '@unshared/validation':
         specifier: 0.1.0
-        version: 0.1.0(patch_hash=pmshflt4f2uidb5agkit6h423y)(@types/node@22.8.2)
+        version: 0.1.0(@types/node@22.8.2)
       crossws:
         specifier: 0.2.4
         version: 0.2.4
@@ -220,7 +209,7 @@ importers:
         version: 0.63.6
       '@unserved/client':
         specifier: 0.0.16
-        version: 0.0.16(patch_hash=2exfgyrdxjlned7dwnyht2twhm)(@types/node@22.8.2)(crossws@0.2.4)(h3@1.13.0)(typeorm@0.3.20(ioredis@5.4.1)(sqlite3@5.1.7))
+        version: 0.0.16(@types/node@22.8.2)(crossws@0.2.4)(h3@1.13.0)(typeorm@0.3.20(ioredis@5.4.1)(sqlite3@5.1.7))
       '@unserved/nuxt':
         specifier: 0.0.16
         version: 0.0.16(@types/node@22.8.2)(crossws@0.2.4)(h3@1.13.0)(magicast@0.3.5)(nuxt@3.13.2(@azure/storage-blob@12.25.0)(@parcel/watcher@2.4.1)(@types/node@22.8.2)(encoding@0.1.13)(eslint@9.13.0(jiti@2.3.3))(ioredis@5.4.1)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.24.2)(terser@5.36.0)(typescript@5.6.3)(vite@5.4.10(@types/node@22.8.2)(terser@5.36.0))(webpack-sources@3.2.3))(rollup@4.24.2)(typeorm@0.3.20(ioredis@5.4.1)(sqlite3@5.1.7))(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3)
@@ -244,7 +233,7 @@ importers:
         version: 0.1.0(@types/node@22.8.2)(@unocss/core@0.63.6)(@unocss/preset-mini@0.63.6)
       '@unshared/vue':
         specifier: 0.1.0
-        version: 0.1.0(patch_hash=bjnwiufv7bh7l5zmonz56xvujq)(@lezer/common@1.2.3)(@nuxt/kit@3.13.2(magicast@0.3.5)(rollup@4.24.2)(webpack-sources@3.2.3))(@nuxt/schema@3.13.2(rollup@4.24.2)(webpack-sources@3.2.3))(@types/node@22.8.2)(vue-router@4.4.5(vue@3.5.12(typescript@5.6.3)))(vue@3.5.12(typescript@5.6.3))
+        version: 0.1.0(@lezer/common@1.2.3)(@nuxt/kit@3.13.2(magicast@0.3.5)(rollup@4.24.2)(webpack-sources@3.2.3))(@nuxt/schema@3.13.2(rollup@4.24.2)(webpack-sources@3.2.3))(@types/node@22.8.2)(vue-router@4.4.5(vue@3.5.12(typescript@5.6.3)))(vue@3.5.12(typescript@5.6.3))
       '@vueuse/core':
         specifier: 11.1.0
         version: 11.1.0(vue@3.5.12(typescript@5.6.3))
@@ -315,7 +304,7 @@ importers:
         version: 0.1.0(@types/node@22.8.2)
       '@unshared/validation':
         specifier: 0.1.0
-        version: 0.1.0(patch_hash=pmshflt4f2uidb5agkit6h423y)(@types/node@22.8.2)
+        version: 0.1.0(@types/node@22.8.2)
 
   packages/module-core:
     dependencies:
@@ -330,7 +319,7 @@ importers:
         version: 0.1.0(@types/node@22.8.2)
       '@unshared/validation':
         specifier: 0.1.0
-        version: 0.1.0(patch_hash=pmshflt4f2uidb5agkit6h423y)(@types/node@22.8.2)
+        version: 0.1.0(@types/node@22.8.2)
       yaml:
         specifier: 2.6.0
         version: 2.6.0
@@ -351,7 +340,7 @@ importers:
         version: 0.1.0(@types/node@22.8.2)
       '@unshared/validation':
         specifier: 0.1.0
-        version: 0.1.0(patch_hash=pmshflt4f2uidb5agkit6h423y)(@types/node@22.8.2)
+        version: 0.1.0(@types/node@22.8.2)
 
   packages/sdk: {}
 
@@ -3319,9 +3308,6 @@ packages:
 
   '@types/node@18.19.60':
     resolution: {integrity: sha512-cYRj7igVqgxhlHFdBHHpU2SNw3+dN2x0VTZJtLYk6y/ieuGN4XiBgtDjYVktM/yk2y/8pKMileNc6IoEzEJnUw==}
-
-  '@types/node@22.7.9':
-    resolution: {integrity: sha512-jrTfRC7FM6nChvU7X2KqcrgquofrWLFDeYC1hKfwNWomVvrn7JIksqf344WN2X/y8xrgqBd2dJATZV4GbatBfg==}
 
   '@types/node@22.8.2':
     resolution: {integrity: sha512-NzaRNFV+FZkvK/KLCsNdTvID0SThyrs5SHB6tsD/lajr22FGC73N2QeDPM2wHtVde8mgcXuSsHQkH5cX1pbPLw==}
@@ -12949,10 +12935,6 @@ snapshots:
     dependencies:
       undici-types: 5.26.5
 
-  '@types/node@22.7.9':
-    dependencies:
-      undici-types: 6.19.8
-
   '@types/node@22.8.2':
     dependencies:
       undici-types: 6.19.8
@@ -13563,7 +13545,7 @@ snapshots:
       - rollup
       - supports-color
 
-  '@unserved/client@0.0.16(patch_hash=2exfgyrdxjlned7dwnyht2twhm)(@types/node@22.8.2)(crossws@0.2.4)(h3@1.13.0)(typeorm@0.3.20(ioredis@5.4.1)(sqlite3@5.1.7))':
+  '@unserved/client@0.0.16(@types/node@22.8.2)(crossws@0.2.4)(h3@1.13.0)(typeorm@0.3.20(ioredis@5.4.1)(sqlite3@5.1.7))':
     dependencies:
       '@unserved/server': 0.0.16(@types/node@22.8.2)(crossws@0.2.4)(h3@1.13.0)(typeorm@0.3.20(ioredis@5.4.1)(sqlite3@5.1.7))
       '@unshared/functions': 0.0.19(@types/node@22.8.2)
@@ -13578,7 +13560,7 @@ snapshots:
     dependencies:
       '@nuxt/kit': 3.13.1(magicast@0.3.5)(rollup@4.24.2)(webpack-sources@3.2.3)
       '@nuxt/schema': 3.13.1(rollup@4.24.2)(webpack-sources@3.2.3)
-      '@unserved/client': 0.0.16(patch_hash=2exfgyrdxjlned7dwnyht2twhm)(@types/node@22.8.2)(crossws@0.2.4)(h3@1.13.0)(typeorm@0.3.20(ioredis@5.4.1)(sqlite3@5.1.7))
+      '@unserved/client': 0.0.16(@types/node@22.8.2)(crossws@0.2.4)(h3@1.13.0)(typeorm@0.3.20(ioredis@5.4.1)(sqlite3@5.1.7))
       '@unserved/server': 0.0.16(@types/node@22.8.2)(crossws@0.2.4)(h3@1.13.0)(typeorm@0.3.20(ioredis@5.4.1)(sqlite3@5.1.7))
       '@vueuse/core': 11.0.3(vue@3.5.12(typescript@5.6.3))
       nuxt: 3.13.2(@azure/storage-blob@12.25.0)(@parcel/watcher@2.4.1)(@types/node@22.8.2)(encoding@0.1.13)(eslint@9.13.0(jiti@2.3.3))(ioredis@5.4.1)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.24.2)(terser@5.36.0)(typescript@5.6.3)(vite@5.4.10(@types/node@22.8.2)(terser@5.36.0))(webpack-sources@3.2.3)
@@ -13601,7 +13583,7 @@ snapshots:
       '@unshared/process': 0.0.19(@types/node@22.8.2)
       '@unshared/string': 0.0.19(@types/node@22.8.2)
       '@unshared/types': 0.0.19(@types/node@22.8.2)
-      '@unshared/validation': 0.0.19(patch_hash=pmshflt4f2uidb5agkit6h423y)(@types/node@22.8.2)
+      '@unshared/validation': 0.0.19(@types/node@22.8.2)
       crossws: 0.2.4
       h3: 1.12.0
       reflect-metadata: 0.2.2
@@ -13616,7 +13598,7 @@ snapshots:
       '@unshared/process': 0.0.19(@types/node@22.8.2)
       '@unshared/string': 0.0.19(@types/node@22.8.2)
       '@unshared/types': 0.0.19(@types/node@22.8.2)
-      '@unshared/validation': 0.0.19(patch_hash=pmshflt4f2uidb5agkit6h423y)(@types/node@22.8.2)
+      '@unshared/validation': 0.0.19(@types/node@22.8.2)
       crossws: 0.2.4
       h3: 1.13.0
       reflect-metadata: 0.2.2
@@ -13866,14 +13848,14 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
 
-  '@unshared/validation@0.0.19(patch_hash=pmshflt4f2uidb5agkit6h423y)(@types/node@22.8.2)':
+  '@unshared/validation@0.0.19(@types/node@22.8.2)':
     dependencies:
       '@unshared/functions': 0.0.19(@types/node@22.8.2)
       '@unshared/string': 0.0.19(@types/node@22.8.2)
     transitivePeerDependencies:
       - '@types/node'
 
-  '@unshared/validation@0.1.0(patch_hash=pmshflt4f2uidb5agkit6h423y)(@types/node@22.8.2)':
+  '@unshared/validation@0.1.0(@types/node@22.8.2)':
     dependencies:
       '@unshared/functions': 0.1.0(@types/node@22.8.2)
       '@unshared/string': 0.1.0(@types/node@22.8.2)
@@ -13881,7 +13863,7 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
 
-  '@unshared/vue@0.1.0(patch_hash=bjnwiufv7bh7l5zmonz56xvujq)(@lezer/common@1.2.3)(@nuxt/kit@3.13.2(magicast@0.3.5)(rollup@4.24.2)(webpack-sources@3.2.3))(@nuxt/schema@3.13.2(rollup@4.24.2)(webpack-sources@3.2.3))(@types/node@22.8.2)(vue-router@4.4.5(vue@3.5.12(typescript@5.6.3)))(vue@3.5.12(typescript@5.6.3))':
+  '@unshared/vue@0.1.0(@lezer/common@1.2.3)(@nuxt/kit@3.13.2(magicast@0.3.5)(rollup@4.24.2)(webpack-sources@3.2.3))(@nuxt/schema@3.13.2(rollup@4.24.2)(webpack-sources@3.2.3))(@types/node@22.8.2)(vue-router@4.4.5(vue@3.5.12(typescript@5.6.3)))(vue@3.5.12(typescript@5.6.3))':
     dependencies:
       '@codemirror/state': 6.4.1
       '@codemirror/view': 6.34.1
@@ -17202,7 +17184,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 22.7.9
+      '@types/node': 22.8.2
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
