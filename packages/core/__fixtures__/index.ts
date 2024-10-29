@@ -52,7 +52,6 @@ export const nodeInput = defineNode({
   icon: 'https://api.iconify.design/carbon:arrow-down.svg',
   category: categoryBasic,
   description: 'A value generated from an entrypoint in the flow.',
-
   dataSchema: {
     property: {
       name: 'Property',
@@ -61,15 +60,13 @@ export const nodeInput = defineNode({
       description: 'The name of the entrypoint.',
     },
   },
-
-  resultSchema: () => ({
+  resultSchema: {
     value: {
       name: 'Value',
       type: typeString,
       description: 'The value of the entrypoint.',
     },
-  }),
-
+  },
   process: async({ flow, data }) => await new Promise((resolve) => {
     flow.on('flow:input', (property, value) => {
       if (property !== data.property) return
@@ -105,26 +102,25 @@ export const nodeOutput = defineNode({
   },
 })
 
-export const nodeJsonParse = defineNode({
+export const nodeParse = defineNode({
   kind: 'parse-json',
   name: 'JSON Parse',
   icon: 'https://api.iconify.design/carbon:json.svg',
   description: 'Parses a JSON string into an object.',
-
   dataSchema: {
     json: {
       label: 'JSON',
       type: typeString,
+      control: 'socket',
     },
   },
-
   resultSchema: {
     object: {
       label: 'Object',
       type: typeObject,
+      control: 'object',
     },
   },
-
   process: ({ data }) => ({
     object: JSON.parse(data.json) as Record<string, unknown>,
   }),
@@ -134,7 +130,7 @@ export const moduleCore = defineModule({
   kind: 'nwrx/core',
   name: 'Core',
   nodes: [
-    nodeJsonParse,
+    nodeParse,
     nodeOutput,
     nodeInput,
   ],
