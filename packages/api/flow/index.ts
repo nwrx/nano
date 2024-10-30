@@ -50,8 +50,9 @@ export class ModuleFlow extends ModuleBase implements ModuleFlowOptions {
 
   flowSessions = new Map<string, FlowSessionInstance>()
   flowModuleDir = '../.data/modules'
-  resolveFlow = UTILS.resolveFlow.bind(this)
   resolveModule = UTILS.resolveModule.bind(this)
+  resolveFlowEntity = UTILS.resolveFlowEntity.bind(this)
+  resolveFlowInstance = UTILS.resolveFlowInstance.bind(this)
   resolveFlowSession = UTILS.resolveFlowSession.bind(this)
   resolveFlowSessionByPeer = UTILS.resolveFlowSessionByPeer.bind(this)
 }
