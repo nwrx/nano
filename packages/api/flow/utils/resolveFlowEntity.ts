@@ -3,7 +3,7 @@ import type { ModuleFlow } from '../index'
 import { assertStringNotEmpty, assertStringUuid, createSchema } from '@unshared/validation'
 
 /** The parser fuction for the {@linkcode resolveProject} function. */
-const RESOLVE_FLOW_OPTIONS = createSchema({
+const RESOLVE_FLOW_ENTITY_OPTIONS = createSchema({
 
   /** The `name` of the `WorkspaceProject` to find. */
   name: assertStringNotEmpty,
@@ -16,7 +16,7 @@ const RESOLVE_FLOW_OPTIONS = createSchema({
 })
 
 /** The options to resolve the project with. */
-export type ResolveFlowOptions = Loose<ReturnType<typeof RESOLVE_FLOW_OPTIONS>>
+export type ResolveFlowOptions = Loose<ReturnType<typeof RESOLVE_FLOW_ENTITY_OPTIONS>>
 
 /**
  * Resolves a flow by its name, project, and workspace.
@@ -24,8 +24,8 @@ export type ResolveFlowOptions = Loose<ReturnType<typeof RESOLVE_FLOW_OPTIONS>>
  * @param options The options to resolve the flow with.
  * @returns The resolved flow.
  */
-export async function resolveFlow(this: ModuleFlow, options: ResolveFlowOptions) {
-  const { name, project, workspace } = RESOLVE_FLOW_OPTIONS(options)
+export async function resolveFlowEntity(this: ModuleFlow, options: ResolveFlowOptions) {
+  const { name, project, workspace } = RESOLVE_FLOW_ENTITY_OPTIONS(options)
 
   // --- Find the flow in the workspace.
   const { Flow } = this.getRepositories()
