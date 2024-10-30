@@ -1,5 +1,3 @@
-/* eslint-disable sonarjs/no-duplicate-string */
-/* eslint-disable unicorn/no-null */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import type { Context } from '../../__fixtures__'
 import { createContext } from '../../__fixtures__'
