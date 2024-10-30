@@ -3,12 +3,10 @@ import type { FlowSessionSecretJSON, FlowSessionVariableJSON, NodeInstanceJSON }
 
 const props = defineProps<{
   id: string
-  color: string
   zoom: number
   isRunning: boolean
   isDragging: boolean
   isSelected: boolean
-  isCollapsed: boolean
   isHighlighted: boolean
   secrets: FlowSessionSecretJSON[]
   variables: FlowSessionVariableJSON[]
@@ -46,7 +44,7 @@ defineExpose({ socketsData, socketsResult })
  */
 const ringColor = computed(() => (
   isRunningThrottled.value || props.isSelected || props.isHighlighted
-    ? props.color
+    ? props.categoryColor
     : 'transparent'
 ))
 
@@ -103,7 +101,7 @@ function handleClick(event: MouseEvent) {
       :name="name"
       :icon="icon"
       :description="description"
-      :color="isSelected ? color : `${color}D0`"
+      :color="isSelected ? categoryColor : `${categoryColor}D0`"
       :is-running="isRunning"
       :is-dragging="isDragging"
       :is-selected="isSelected"
