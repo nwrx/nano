@@ -1,4 +1,3 @@
-import type { Link } from '@nwrx/core'
 import type { Peer } from 'crossws'
 import type { FlowSessionInstance } from './resolveFlowSession'
 import type { FlowCategoryNodesJSON } from './serializeCategories'
@@ -47,7 +46,6 @@ export interface FlowSessionJSON {
   icon: string
   description: string
   nodes: NodeInstanceJSON[]
-  links: Link[]
   categories: FlowCategoryNodesJSON[]
   secrets: FlowSessionSecretJSON[]
   variables: FlowSessionVariableJSON[]
@@ -68,12 +66,13 @@ export function serializeFlowSession(session: FlowSessionInstance, peer: Peer): 
     name: session.flow.meta.name ?? 'Untitled Flow',
     icon: session.flow.meta.icon ?? 'i-carbon:flow',
     description: session.flow.meta.description ?? '',
-    nodes: session.flow.nodes.map(serializeNodeInstance),
-    links: session.flow.links,
-    categories: serializeCategories(session.flow),
+    nodes: session.flow.nodes.map(node => serializeNodeInstance(node)),
+    categories: serializeCategories(),
     isRunning: session.flow.isRunning,
-    secrets: Object.keys(session.flow.secrets).map(name => ({ name, from: 'project' })),
-    variables: Object.entries(session.flow.variables).map(([name, value]) => ({ name, value, from: 'project' })),
+    secrets: [],
+    variables: [],
+    // secrets: Object.keys(session.flow.secrets).map(name => ({ name, from: 'project' })),
+    // variables: Object.entries(session.flow.variables).map(([name, value]) => ({ name, value, from: 'project' })),
     peerId: peer.id,
     peers: session.participants.map(peer => ({
       id: peer.peer.id,
