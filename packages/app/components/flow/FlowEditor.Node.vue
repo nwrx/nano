@@ -19,7 +19,6 @@ const emit = defineEmits<{
   abort: []
   click: [event: MouseEvent]
   setDataValue: [portId: string, value: unknown]
-  setCollapsed: [value: boolean]
   portGrab: [FlowDragState]
   portAssign: [FlowDragState | void]
   portRelease: []
@@ -29,35 +28,8 @@ const emit = defineEmits<{
 }>()
 
 // --- State
-const isCollapsed = ref(false)
 const isRunning = computed(() => props.isRunning)
 const isRunningThrottled = refThrottled(isRunning, 200)
-watch(isCollapsed, value => emit('setCollapsed', value))
-
-/**
- * When the node is collapsed, we only want to display the ports that
- * are connected to other nodes. Anything else should be hidden.
- */
-const dataSchema = computed(() => {
-  if (!props.id) return []
-  if (!props.dataSchema) return []
-  if (!isCollapsed.value) return props.dataSchema
-  return props.dataSchema.filter((port) => {
-    const value = props.data?.[port.key]
-    if (typeof value !== 'string') return false
-    return value.startsWith('$NODE.')
-  })
-})
-
-/**
- * Default the result schema to an empty array if the `dataSchema` is
- * not provided. This is to prevent the component from crashing.
- */
-const resultSchema = computed(() => {
-  if (!props.id) return []
-  if (!props.resultSchema) return []
-  return props.resultSchema
-})
 
 /**
  * Expose the ports components to the parent component so their
@@ -116,7 +88,7 @@ function handleClick(event: MouseEvent) {
 
     <!-- Error Overlay -->
     <div
-      v-if="error"
+      v-if="errors && errors.length > 0"
       class="
         absolute top-0 left-0 right-0 bottom-0
         bg-diagonalstripes-red/20
@@ -132,14 +104,14 @@ function handleClick(event: MouseEvent) {
       :icon="icon"
       :description="description"
       :color="isSelected ? color : `${color}D0`"
-      :isRunning="isRunning"
-      :isDragging="isDragging"
-      :isSelected="isSelected"
+      :is-running="isRunning"
+      :is-dragging="isDragging"
+      :is-selected="isSelected"
       @start="() => emit('start')"
       @abort="() => emit('abort')"
-      @handleGrab="(event) => emit('handleGrab', event)"
-      @handleMove="(event) => emit('handleMove', event)"
-      @handleRelease="(event) => emit('handleRelease', event)"
+      @handle-grab="(event) => emit('handleGrab', event)"
+      @handle-move="(event) => emit('handleMove', event)"
+      @handle-release="(event) => emit('handleRelease', event)"
     />
 
     <!-- Graphflow Node Body -->
@@ -147,14 +119,15 @@ function handleClick(event: MouseEvent) {
       <FlowEditorSocket
         v-for="port in dataSchema"
         v-bind="port"
+        :key="port.key"
         :ref="(component) => socketsData[port.key] = (component as ComponentPublicInstance)"
-        :portId="port.key"
-        :nodeId="id"
+        :port-id="port.key"
+        :node-id="id"
         :value="data?.[port.key]"
         :secrets="secrets"
         :variables="variables"
         kind="target"
-        @setValue="(value) => emit('setDataValue', port.key, value)"
+        @set-value="(value) => emit('setDataValue', port.key, value)"
         @grab="(state) => emit('portGrab', state)"
         @assign="(state) => emit('portAssign', state)"
         @release="() => emit('portRelease')"
@@ -163,36 +136,18 @@ function handleClick(event: MouseEvent) {
       <FlowEditorSocket
         v-for="port in resultSchema"
         v-bind="port"
+        :key="port.key"
         :ref="(component) => socketsResult[port.key] = (component as ComponentPublicInstance)"
-        :portId="port.key"
-        :nodeId="id"
+        :port-id="port.key"
+        :node-id="id"
         :value="result?.[port.key]"
         kind="source"
-        @setValue="(value) => emit('setDataValue', port.key, value)"
+        @set-value="(value) => emit('setDataValue', port.key, value)"
         @grab="(state) => emit('portGrab', state)"
         @assign="(state) => emit('portAssign', state)"
         @release="() => emit('portRelease')"
         @drop="() => emit('portRelease')"
       />
     </div>
-
-    <!-- Collapse bar -->
-    <!--
-      <div
-      class="
-      flex justify-center items-center
-      h-8 w-full cursor-pointer
-      opacity-0 hover:opacity-100
-      bg-primary-500/5
-      transition
-      rounded-b-md
-      "
-      @mousedown.stop="() => isCollapsed = !isCollapsed">
-      <BaseIcon
-      :icon="isCollapsed ? 'i-carbon:chevron-down' : 'i-carbon:chevron-up'"
-      class="size-4"
-      />
-      </div>
-    -->
   </div>
 </template>
