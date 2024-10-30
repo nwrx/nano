@@ -8,9 +8,9 @@ export const string = defineType({
   defaultValue: '',
   description: 'A sequence of characters.',
   parse: createParser(
-    [assertString],
-    [assertNumber, String],
-    [assertBoolean, String],
+    [assertNumber, (value: number) => value.toFixed(2)],
+    [assertBoolean, (value: boolean) => (value ? 'true' : 'false')],
     [assertObject, JSON.stringify],
+    [assertString],
   ),
 })

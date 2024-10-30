@@ -1,10 +1,10 @@
 import { defineType } from '@nwrx/core'
-import { createAssertInstance } from '@unshared/validation'
+import { assert } from '@unshared/validation'
 
 export const file = defineType({
   kind: 'file',
   name: 'File',
   color: '#EEDCFF',
   description: 'A file on the filesystem.',
-  parse: createAssertInstance(File),
+  parse: assert.instance(File),
 })
