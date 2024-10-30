@@ -1,13 +1,17 @@
-import type { MaybeLiteral } from '@unshared/types'
-import type { NodeEventMeta, NodeInstanceMeta, NodeInstanceOptions } from './createNodeInstance'
-import type { DataSchema, DataSocket } from './defineDataSchema'
-import type { Module } from './defineModule'
+/* eslint-disable sonarjs/prefer-single-boolean-return */
+import type { MaybePromise, ObjectLike } from '@unshared/types'
+import type { NodeEventMeta, NodeInstanceOptions } from './createNodeInstance'
+import type { DataSchema } from './defineDataSchema'
 import type { Node } from './defineNode'
-import type { ResultSchema, ResultSocket } from './defineResultSchema'
-import type { NodeByKind, NodeKind } from './types'
+import type { ResultSchema } from './defineResultSchema'
 import { randomUUID } from 'node:crypto'
-import { nextTick } from 'node:process'
-import { createFlowNodeInstance as createNodeInstance, NodeInstance } from './createNodeInstance'
+import { NodeInstance } from './createNodeInstance'
+
+/** The kind of the input node. */
+export const NODE_INPUT_KIND = 'core:input'
+
+/** The kind of the output node. */
+export const NODE_OUTPUT_KIND = 'core:output'
 
 export interface FlowEventMeta {
   threadId: string
@@ -15,33 +19,26 @@ export interface FlowEventMeta {
   timestamp: number
 }
 
-/**
- * A map of events that can be dispatched by a flow node and the parameters
- * that are passed to the event listeners.
- */
 export interface FlowEvents {
 
   // Node
-  'node:create': [node: NodeInstance<any, any>]
-  'node:meta': [node: NodeInstance<any, any>, NodeInstanceMeta]
-  'node:metaValue': [node: NodeInstance<any, any>, key: string, value: unknown]
-  'node:data': [node: NodeInstance<any, any>, data: Record<string, unknown>]
-  'node:dataRaw': [node: NodeInstance<any, any>, data: Record<string, unknown>]
-  'node:dataSchema': [node: NodeInstance<any, any>, schema: DataSchema]
-  'node:result': [node: NodeInstance<any, any>, result: Record<string, unknown>]
-  'node:resultSchema': [node: NodeInstance<any, any>, schema: ResultSchema]
-  'node:position': [node: NodeInstance<any, any>, x: number, y: number]
-  'node:remove': [node: NodeInstance<any, any>]
+  'node:create': [node: NodeInstance]
+  'node:meta': [node: NodeInstance, key: string, value: unknown]
+  'node:data': [node: NodeInstance, data: Record<string, unknown>]
+  'node:dataRaw': [node: NodeInstance, data: Record<string, unknown>]
+  'node:dataSchema': [node: NodeInstance, schema: DataSchema]
+  'node:result': [node: NodeInstance, result: Record<string, unknown>]
+  'node:resultSchema': [node: NodeInstance, schema: ResultSchema]
+  'node:remove': [node: NodeInstance]
 
   // Node Lifecycle
-  'node:start': [node: NodeInstance<any, any>, data: Record<string, unknown>, meta: NodeEventMeta]
-  'node:end': [node: NodeInstance<any, any>, data: Record<string, unknown>, result: Record<string, unknown>, meta: NodeEventMeta]
-  'node:abort': [node: NodeInstance<any, any>, meta: NodeEventMeta]
-  'node:error': [node: NodeInstance<any, any>, error: Error, meta: NodeEventMeta]
+  'node:start': [node: NodeInstance, data: Record<string, unknown>, meta: NodeEventMeta]
+  'node:end': [node: NodeInstance, data: Record<string, unknown>, result: Record<string, unknown>, meta: NodeEventMeta]
+  'node:abort': [node: NodeInstance, meta: NodeEventMeta]
+  'node:error': [node: NodeInstance, error: Error, meta: NodeEventMeta]
 
   // Flow
-  'flow:meta': [FlowMeta]
-  'flow:metaValue': [key: string, value: unknown]
+  'flow:meta': [key: string, value: unknown]
   'flow:input': [name: string, value: unknown, meta: FlowEventMeta]
   'flow:output': [name: string, value: unknown, meta: FlowEventMeta]
 
@@ -49,18 +46,11 @@ export interface FlowEvents {
   'flow:start': [input: Record<string, unknown>, meta: FlowEventMeta]
   'flow:abort': [output: Record<string, unknown>, meta: FlowEventMeta]
   'flow:end': [output: Record<string, unknown>, meta: FlowEventMeta]
+  'flow:error': [error: Error, meta: FlowEventMeta]
 }
 
-/**
- * A listener for a flow node event. The listener is called when the event is
- * dispatched by the flow node.
- */
 export type FlowListener<K extends keyof FlowEvents> = (...data: FlowEvents[K]) => void
 
-/**
- * Additional options that can be set for a flow. This includes the name, icon
- * and description or any other settings that are context-specific.
- */
 export interface FlowMeta {
   name?: string
   slug?: string
@@ -69,27 +59,18 @@ export interface FlowMeta {
   [key: string]: unknown
 }
 
-/**
- * The settings of a flow. This includes the name, icon and description of the
- * flow that are displayed in the UI. The settings can be updated by calling the
- * `setMeta` method on the flow.
- */
-export interface FlowOptions<T extends Module = Module> {
-  modules?: T[]
+export interface FlowOptions {
   meta?: FlowMeta
-  secrets?: Record<string, string>
-  variables?: Record<string, string>
-  context?: Record<string, unknown>
+  resolveNode?: (kind: string) => Node
+  resolveSecret?: (name: string) => MaybePromise<string | undefined>
+  resolveVariable?: (name: string) => MaybePromise<string | undefined>
 }
 
-/**
- * A `Link` represents a link between two nodes in a flow. The link is used
- * to connect the output of one node to the input of another node. This allows
- * the nodes to communicate with each other and pass data between them.
- */
 export interface Link {
-  source: string
-  target: string
+  sourceId: string
+  sourceKey: string
+  targetId: string
+  targetKey: string
 }
 
 /**
@@ -112,54 +93,100 @@ export interface FlowContext {
  * The flow also provides a way to dispatch and listen for events that are
  * triggered by changes in the flow.
  */
-export class Flow<T extends Module = Module> implements FlowOptions<T> {
-
-  /**
-   * Create a createFlow instance. The flow is a collection of nodes that are
-   * linked together. The flow is processed by executing the entrypoint and
-   * letting the nodes trigger each other.
-   *
-   * You can pass a list of modules to the flow. The modules are used to infer
-   * the available node kinds that can be added to the flow.
-   *
-   * @param options The options to create the flow with.
-   */
-  constructor(options: FlowOptions<T> = {}) {
+export class Flow implements Disposable, FlowOptions {
+  constructor(options: FlowOptions = {}) {
     if (options.meta) this.meta = options.meta
-    if (options.modules) this.modules = options.modules
-    if (options.secrets) this.secrets = options.secrets
-    if (options.variables) this.variables = options.variables
+    if (options.resolveNode) this.resolveNode = options.resolveNode
+    if (options.resolveSecret) this.resolveSecret = options.resolveSecret
+    if (options.resolveVariable) this.resolveVariable = options.resolveVariable
   }
 
-  public meta: FlowMeta = {}
-  public modules: T[] = []
-  public nodes: NodeInstance[] = []
+  public meta = {} as FlowMeta
+  public resolveNode
+  public resolveSecret
+  public resolveVariable
 
-  public secrets = {} as Record<string, string>
+  public nodes = [] as NodeInstance[]
   public context = {} as FlowContext
-  public variables = {} as Record<string, string>
-
   public isRunning = false
+  public isDestroyed = false
+
+  /***************************************************************************/
+  /* Private methods                                                         */
+  /***************************************************************************/
+
   public threadId = randomUUID() as string
   public threadStart = Date.now()
-
   public eventTarget = new EventTarget()
   public eventHandlers = new Map<string, EventListener>()
-
   public input = {} as Record<string, unknown>
   public output = {} as Record<string, unknown>
 
-  /**
-   * Dispatch an event to the flow. The event is dispatched to all nodes in
-   * the flow.
-   *
-   * @param event The event to dispatch.
-   * @param data The data to pass to the event listeners.
-   */
-  public dispatch<K extends keyof FlowEvents>(event: K, ...data: FlowEvents[K]) {
+  private dispatch<K extends keyof FlowEvents>(event: K, ...data: FlowEvents[K]) {
     const customEvent = new CustomEvent(event as string, { detail: data })
     this.eventTarget.dispatchEvent(customEvent)
   }
+
+  private get eventMeta(): FlowEventMeta {
+    return {
+      threadId: this.threadId,
+      delta: Date.now() - this.threadStart,
+      timestamp: Date.now(),
+    }
+  }
+
+  private get links(): Link[] {
+    const links: Link[] = []
+    for (const node of this.nodes) {
+      for (const key in node.data) {
+        const value = node.data[key]
+
+        // --- If the value is an array, iterate over each value and add the links.
+        if (Array.isArray(value)) {
+          for (const v of value) {
+            const link = this.fromLink(v)
+            if (!link) continue
+            links.push({
+              sourceId: link.sourceId,
+              sourceKey: link.sourceKey,
+              targetId: node.id,
+              targetKey: key,
+            })
+          }
+        }
+
+        // --- Otherwise, add the link if the value is a link.
+        else {
+          const link = this.fromLink(value)
+          if (!link) continue
+          links.push({
+            sourceId: link.sourceId,
+            sourceKey: link.sourceKey,
+            targetId: node.id,
+            targetKey: key,
+          })
+        }
+      }
+    }
+    return links
+  }
+
+  private toLink(sourceId: string, sourceKey: string): string {
+    return `$NODE.${sourceId}:${sourceKey}`
+  }
+
+  private fromLink(value: unknown): { sourceId: string; sourceKey: string } | undefined {
+    if (typeof value !== 'string') return
+    const LINK_EXP = /^\$NODE\.(?<sourceId>[^:]+):(?<sourceKey>\w+)$/
+    const match = LINK_EXP.exec(value)
+    if (!match) return
+    const { sourceId, sourceKey } = match.groups!
+    return { sourceId, sourceKey }
+  }
+
+  /***************************************************************************/
+  /* Public methods                                                          */
+  /***************************************************************************/
 
   /**
    * Add a listener for a flow event. The listener is called when the event is
@@ -184,41 +211,9 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
    * @param key The key of the value to set in the meta object.
    * @param value The value to set in the meta object.
    */
-  public setMetaValue(key: string, value: unknown) {
+  public setMeta(key: string, value: unknown) {
     this.meta = { ...this.meta, [key]: value }
-    this.dispatch('flow:metaValue', key, value)
-  }
-
-  /**
-   * Given a node kind, get the node definition that corresponds to the node kind.
-   * The node definition is used to instantiate the node with the given options.
-   *
-   * @param kind The kind of the node to get the node definition for.
-   * @returns The node definition that corresponds to the node kind.
-   */
-  public resolveNodeDefinition<K extends NodeKind<T>>(kind: MaybeLiteral<K>): NodeByKind<T, K> {
-    const [moduleKind, nodeKind] = kind.split(':')
-    const module = this.modules.find(module => module.kind === moduleKind)
-    if (!module) throw new Error(`Module "${moduleKind}" was not found`)
-    const nodeDefinition = module.nodes?.find(node => node.kind === nodeKind)
-    if (!nodeDefinition) throw new Error(`Node definition "${nodeKind}" was not found in module "${moduleKind}"`)
-    return nodeDefinition as NodeByKind<T, K>
-  }
-
-  /**
-   * Given a `Node` or `NodeInstance`, reslove the module from which the node
-   * originates.
-   *
-   * @param node The node definition or instance to get the module for.
-   * @returns The module that the node originates from.
-   */
-  public resolveNodeModule(node: Node | NodeInstance): T {
-    const nodeDefinition = node instanceof NodeInstance ? node.node : node
-    for (const module of this.modules) {
-      if (!module.nodes) continue
-      if (module.nodes.includes(nodeDefinition)) return module
-    }
-    throw new Error(`Module for node "${nodeDefinition.kind}" was not found`)
+    this.dispatch('flow:meta', key, value)
   }
 
   /**
@@ -234,25 +229,28 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
    * using flow = createFlow()
    * flow.createNode(Core.nodes.Entrypoint)
    */
-  public createNode<
-    T extends DataSchema,
-    U extends ResultSchema,
-  >(
-    node: Node<string, T, U>,
-    options?: Omit<NodeInstanceOptions<T, U>, 'flow' | 'node'>,
-  ): NodeInstance<T, U> {
+  public add<T extends DataSchema, U extends ResultSchema>(node: string, options?: Omit<NodeInstanceOptions<T, U>, 'node'> ): NodeInstance<T, U>
+  public add<T extends DataSchema, U extends ResultSchema>(node: Node<string, T, U>, options?: Omit<NodeInstanceOptions<T, U>, 'node'> ): NodeInstance<T, U>
+  public add(node: Node | string, options?: Omit<NodeInstanceOptions, 'node'> ): NodeInstance {
+
+    // --- If the node is a string, resolve the node using the local `resolveNode` function.
+    if (typeof node === 'string') {
+      const message = `Cannot resolve node "${node}" because the \`resolveNode\` function is not defined`
+      if (!this.resolveNode) throw new Error(message)
+      const kind = node
+      node = this.resolveNode(kind)
+      if (!node) throw new Error(`The node resolver could not resolve the node "${kind}"`)
+    }
 
     // --- Create the node instance and add it to the flow.
-    const instance = createNodeInstance({ ...options, flow: this, node })
-    this.nodes.push(instance as NodeInstance)
-    this.dispatch('node:create', instance as NodeInstance)
+    const instance = new NodeInstance(this, { ...options, node }) as NodeInstance
+    this.nodes.push(instance)
+    this.dispatch('node:create', instance)
     instance.on('data', data => this.dispatch('node:data', instance, data))
-    instance.on('dataRaw', data => this.dispatch('node:dataRaw', instance, data))
     instance.on('dataSchema', schema => this.dispatch('node:dataSchema', instance, schema))
     instance.on('result', result => this.dispatch('node:result', instance, result))
     instance.on('resultSchema', schema => this.dispatch('node:resultSchema', instance, schema))
-    instance.on('meta', meta => this.dispatch('node:meta', instance, meta))
-    instance.on('metaValue', (key, value) => this.dispatch('node:metaValue', instance, key, value))
+    instance.on('meta', (key, value) => this.dispatch('node:meta', instance, key, value))
     instance.on('start', (data, meta) => this.dispatch('node:start', instance, data, meta))
     instance.on('abort', meta => this.dispatch('node:abort', instance, meta))
     instance.on('end', (data, result, meta) => this.dispatch('node:end', instance, data, result, meta))
@@ -261,19 +259,21 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
   }
 
   /**
-   * Delete a node from the flow by its ID. The node is removed from the flow
-   * and all links to the node are removed. Once called, an event is dispatched
-   * to notify listeners that the node has been removed.
+   * Abort and remove one or more nodes from the flow.
    *
    * @param ids The IDs of the nodes to remove from the flow.
-   * @example flow.nodeRemove('01234567-89ab-cdef-0123-456789abcdef')
+   * @example flow.remove('node-1', 'node-2')
    */
-  public removeNode(...ids: string[]) {
+  public remove(...ids: string[]) {
+    const nodesToRemove: NodeInstance[] = []
     for (const id of ids) {
-      this.getNodeInstance(id)
       const node = this.nodes.find(node => node.id === id)
       if (!node) throw new Error(`Node instance with ID "${id}" does not exist`)
-      this.nodes = this.nodes.filter(node => node.id !== id)
+      nodesToRemove.push(node)
+    }
+    for (const node of nodesToRemove) {
+      node.abort()
+      this.nodes = this.nodes.filter(n => n.id !== node.id)
       this.dispatch('node:remove', node)
     }
   }
@@ -284,33 +284,10 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
    * @param id The node ID to get the socket and node for.
    * @returns The node that corresponds to the node ID.
    */
-  public getNodeInstance(id: string): NodeInstance {
-    const nodes = [...this.nodes]
-    const node = nodes.find(node => node.id === id)
-    if (!node) throw new Error(`Node instance with ID "${id}" does not exist`)
+  public get(id: string): NodeInstance {
+    const node = this.nodes.find(node => node.id === id)
+    if (!node) throw new Error(`The node with ID "${id}" does not exist`)
     return node
-  }
-
-  /**
-   * Traverse all nodes in the flow and return the links that connect the nodes
-   * together. The links are used to connect the output of one node to the input
-   * of another node.
-   *
-   * @returns An array of links that connect the nodes together.
-   */
-  get links(): Link[] {
-    const links: Link[] = []
-    for (const node of this.nodes) {
-      for (const edge in node.dataRaw) {
-        const value = node.dataRaw[edge]
-        if (typeof value !== 'string') continue
-        if (!value.startsWith('$NODE.')) continue
-        const target = `${node.id}:${edge}`
-        const source = value.replace('$NODE.', '')
-        links.push({ source, target })
-      }
-    }
-    return links
   }
 
   /**
@@ -318,65 +295,169 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
    * the flow, the output of the source node is passed as input to the target
    * node.
    *
-   * @param source The ID of the source node.
-   * @param target The ID of the target node.
-   * @example flow.createLink('nwrx/core:entrypoint', 'nwrx/core:log')
+   * @param sourceId The ID of the source node.
+   * @param sourceKey The key of the source data.
+   * @param targetId The ID of the target node.
+   * @param targetKey The key of the target data.
+   * @example flow.createLink('node-1:output', 'node-2:input')
    */
-  public createLink(source: string, target: string): void {
+  public link(sourceId: string, sourceKey: string, targetId: string, targetKey: string): void {
+    const targetNode = this.get(targetId)
+    const sourceNode = this.get(sourceId)
+    const targetSocket = targetNode.dataSchema[targetKey]
+    const sourceSocket = sourceNode.resultSchema[sourceKey]
 
-    // --- Resolve the source and target socket.
-    const [sourceNodeId, sourceSocketId] = source.split(':')
-    const [targetNodeId, targetSocketId] = target.split(':')
+    // --- Verify that the source and target can be linked.
+    if (!sourceSocket) throw new Error(`The result property "${sourceKey}" does not exist`)
+    if (!targetSocket) throw new Error(`The data property "${targetKey}" does not exist`)
+    if (targetSocket.control !== 'socket') throw new Error(`The data property "${targetKey}" cannot be linked to.`)
+    if (sourceId === targetId) throw new Error('Cannot link a node to itself')
 
-    // --- If the target is already linked and it's `isArray` flag is false, remove the link.
-    this.removeLink(target)
+    // --- If the target socket is not iterable, set the value directly.
+    if (!targetSocket.isIterable) {
+      const link = this.toLink(sourceId, sourceKey)
+      targetNode.setDataValue(targetKey, link)
+      return
+    }
 
-    // --- Create the link and dispatch the event.
-    const nodeTarget = this.getNodeInstance(targetNodeId)
-    nodeTarget.setDataValue(targetSocketId, `$NODE.${sourceNodeId}:${sourceSocketId}`)
+    // --- Otherwise, append the value to the target socket.
+    const newValue = this.toLink(sourceId, sourceKey)
+    const rawValue = targetNode.data[targetKey] ?? []
+    const rawValueArray = Array.isArray(rawValue) ? rawValue : [rawValue]
+    if (rawValueArray.includes(newValue)) return
+    rawValueArray.push(newValue)
+    targetNode.setDataValue(targetKey, rawValueArray)
   }
 
   /**
-   * Unlink a node socket from all other nodes.
+   * Unlink a node from another node. This removes the link between the source
+   * and target node.
    *
-   * @param socket The node ID and socket ID of which to remove the link.
+   * If the source node is not specified, all links that are connected to the
+   * target node are removed. If the target node is not specified, all links
+   * that are connected to the source node are removed. Otherwise, only the
+   * specific link between the source and target node is removed.
+   *
+   * @param sourceId The ID of the source node.
+   * @param sourceKey The key of the source data.
+   * @param targetId The ID of the target node.
+   * @param targetKey The key of the target data.
    * @example flow.linkRemove('01234567-89ab-cdef-0123-456789abcdef:socket')
    */
-  public removeLink(socket: string): void {
+  public unlink(sourceId?: string, sourceKey?: string, targetId?: string, targetKey?: string): void {
+    for (const node of this.nodes) {
+      if (targetId && node.id !== targetId) continue
+      for (const key in node.data) {
+        if (targetKey && key !== targetKey) continue
+        const value = node.data[key]
+        const socket = node.dataSchema[key]
 
-    // --- Find the node that contains the socket.
-    const [nodeId, socketId] = socket.split(':')
-    const node = this.getNodeInstance(nodeId)
-    const isDataSocket = socketId in node.dataSchema
+        // --- Filter out the link if the source and target are specified.
+        if (socket.isIterable && Array.isArray(value)) {
+          const newValue = value.filter((v: string) => {
+            const link = this.fromLink(v)
+            if (!link) return true
+            if (sourceId && link.sourceId !== sourceId) return true
+            if (sourceId && sourceKey && link.sourceKey !== sourceKey) return true
+            return false
+          })
+          node.setDataValue(key, newValue)
+        }
 
-    // --- If the socket is a data socket, reset the value.
-    if (isDataSocket) node.setDataValue(socketId, undefined)
-
-    // --- If the socket is a result socket, remove all links that are connected to the result socket.
-    else {
-      for (const targetNode of this.nodes) {
-        for (const targetSocket in targetNode.dataRaw) {
-          if (targetNode.dataRaw[targetSocket] === `$NODE.${nodeId}:${socketId}`)
-            targetNode.setDataValue(targetSocket, undefined)
+        // --- Set the value to `undefined` if the source and target are specified.
+        else {
+          const link = this.fromLink(value)
+          if (!link) continue
+          if (sourceId && link.sourceId !== sourceId) continue
+          if (sourceId && sourceKey && link.sourceKey !== sourceKey) continue
+          node.setDataValue(key, undefined)
         }
       }
     }
   }
 
   /**
-   * Compute the `FlowEventMeta` for the flow. The meta is used to provide
-   * additional information about the flow when an event is dispatched.
-   * The meta includes the thread ID, the delta time, the duration and the
-   * timestamp of the flow.
+   * Process the flow. The flow is processed by executing the entrypoint
+   * with the given input and letting the nodes trigger each other.
    *
-   * @returns The `FlowEventMeta` for the flow.
+   * @param input The input to start the flow with.
+   * @returns A promise that resolves when the flow has ended.
    */
-  private get eventMeta(): FlowEventMeta {
-    return {
-      threadId: this.threadId,
-      delta: Date.now() - this.threadStart,
-      timestamp: Date.now(),
-    }
+  public async start(input: Record<string, unknown> = {}): Promise<ObjectLike> {
+    return new Promise<ObjectLike>((resolve, reject) => {
+
+      // --- Avoid starting the flow if the flow is already running.
+      if (this.isRunning) {
+        const error = new Error('The flow is already running')
+        this.dispatch('flow:error', error, this.eventMeta)
+        reject(error)
+      }
+
+      // --- If the flow is destroyed, reject the promise.
+      if (this.isDestroyed) {
+        const error = new Error('The flow has been destroyed')
+        this.dispatch('flow:error', error, this.eventMeta)
+        reject(error)
+      }
+
+      // --- (re)Initialize the context and start the flow.
+      this.isRunning = true
+      this.context = {}
+      this.threadId = randomUUID() as string
+      this.threadStart = Date.now()
+      this.input = input
+      this.output = {}
+      for (const node of this.nodes) {
+        node.isDone = false
+        node.result = {}
+      }
+
+      // --- If the node that ended is connected to other nodes, start the connected nodes.
+      const stop = this.on('node:end', (node, data, result) => {
+        const links = this.links.filter(link => link.sourceId === node.id)
+        for (const { sourceKey, targetId } of links) {
+          if (result[sourceKey] === undefined) continue
+          void this.get(targetId).start()
+        }
+
+        // --- If the node is an output node, apply the result to the flow output.
+        if (node.node.kind === NODE_OUTPUT_KIND) {
+          this.output[data.name as string] = data.value
+          this.dispatch('flow:output', data.name as string, data.value, this.eventMeta)
+        }
+      })
+
+      // --- Check from time to time if at least one node is still running.
+      // --- If not, stop the flow and dispatch the flow:end event.
+      const interval = setInterval(() => {
+        for (const node of this.nodes) if (node.isRunning) return
+        this.isRunning = false
+        clearInterval(interval)
+        stop()
+        this.dispatch('flow:end', this.output, this.eventMeta)
+        resolve(this.output)
+      }, 10)
+
+      // --- Dispatch the flow:start event to notify listeners that the flow has started.
+      // --- Start nodes that don't have any incoming links.
+      this.dispatch('flow:start', input, this.eventMeta)
+      for (const node of this.nodes) {
+
+        // --- Skip the node if it has incoming links.
+        const hasIncomingLinks = this.links.some(link => link.targetId === node.id)
+        if (hasIncomingLinks) continue
+
+        // --- If the node is an input, apply the input value to the node.
+        if (node.node.kind === NODE_INPUT_KIND) {
+          const name = node.data.name as string
+          const value = input[name]
+          node.result = { value }
+        }
+
+        // --- Start the node.
+        void node.start()
+      }
+    })
   }
 
   /**
@@ -391,91 +472,19 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
   }
 
   /**
-   * Process the flow. The flow is processed by executing the entrypoint
-   * with the given input and letting the nodes trigger each other.
-   *
-   * @param input The input to start the flow with.
-   */
-  public start(input: Record<string, unknown> = {}): void {
-    if (this.isRunning) return
-    this.isRunning = true
-
-    // --- Reset the flow and set the input.
-    this.context = {}
-    this.threadId = randomUUID() as string
-    this.threadStart = Date.now()
-    this.input = input
-    this.output = {}
-    for (const node of this.nodes) {
-      node.isDone = false
-      node.result = {}
-    }
-
-    // --- Start listening for node result events.
-    const stop = this.on('node:end', (node, data, result) => {
-
-      // --- Handle links that are connected to the node.
-      const links = this.links.filter(link => link.source.startsWith(node.id))
-      for (const { source, target } of links) {
-        const [node] = target.split(':')
-        const [, key] = source.split(':')
-        if (result[key] === undefined) continue
-        const targetNode = this.getNodeInstance(node)
-        void targetNode.process()
-      }
-
-      // --- If the node is `nwrx/core:output`, set the output of the flow.
-      if (node.kind === 'nwrx/core:output') {
-        this.output[data.name as string] = data.value
-        this.dispatch('flow:output', data.name as string, data.value, this.eventMeta)
-      }
-    })
-
-    // --- When the `input` nodes are started, dispatch the `flow:input` event.
-    const stopInput = this.on('node:start', (node, data) => {
-      if (node.kind !== 'nwrx/core:input') return
-      const name = data.name as string
-      const value = input[name]
-      nextTick(() => this.dispatch('flow:input', name, value, this.eventMeta))
-    })
-
-    // --- Check from time to time if at least one node is still running.
-    // --- If not, stop the flow and dispatch the flow:end event.
-    const interval = setInterval(() => {
-      for (const node of this.nodes) if (node.isRunning) return
-      this.isRunning = false
-      clearInterval(interval)
-      stop()
-      stopInput()
-      this.dispatch('flow:end', this.output, this.eventMeta)
-    }, 100)
-
-    // --- Dispatch the flow:start event to notify listeners that the flow has started.
-    this.dispatch('flow:start', input, this.eventMeta)
-
-    // --- Start nodes that don't have any incoming links.
-    this.nodes
-      .filter(node => !this.links.some(link => link.target.startsWith(node.id)))
-      .forEach(node => void node.process())
-  }
-
-  /**
    * Destroy the flow. The flow is destroyed by stopping the execution of all
    * nodes in the flow and removing all event listeners. This is useful when the
    * flow is no longer needed and should be cleaned up.
    */
-  destroy(): void {
-    this.abort()
-    for (const node of this.nodes) node[Symbol.dispose]()
+  public destroy(): void {
+    this.isDestroyed = true
+    for (const node of this.nodes) node.destroy()
     for (const [event, listener] of this.eventHandlers) this.eventTarget.removeEventListener(event, listener)
-    // @ts-expect-error: Dereferencing the array.
-    this.nodes = undefined
-    // @ts-expect-error: Dereferencing the array.
-    this.modules = undefined
+    this.nodes = []
   }
 
-  [Symbol.dispose](): void {
-    this.destroy()
+  public [Symbol.dispose](): void {
+    void this.destroy()
   }
 }
 
@@ -495,9 +504,9 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
  * using flow = createFlow({ modules: [Core] })
  *
  * // Add nodes from the core module to the flow.
- * flow.nodeCreate(Core.nodes.Entrypoint)
- * flow.nodeCreate('nwrx/core:log')
+ * flow.add(Core.nodes.Entrypoint)
+ * flow.add('nwrx/core:log')
  */
-export function createFlow<T extends Module>(options?: FlowOptions<T>): Flow<T> {
-  return new Flow<T>(options)
+export function createFlow(options?: FlowOptions): Flow {
+  return new Flow(options)
 }
