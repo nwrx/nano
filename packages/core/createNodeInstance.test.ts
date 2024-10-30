@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { EXP_UUID } from '@unshared/validation'
-import { typeBoolean, typeString } from './__fixtures__'
+import { typeString } from './__fixtures__'
 import { createFlow } from './createFlow'
 import { createNodeInstance } from './createNodeInstance'
 import { defineNode } from './defineNode'
@@ -441,46 +441,6 @@ describe('createNodeInstance', () => {
     })
   })
 
-  describe('setResult', () => {
-    it('should set the result of the node', () => {
-      using flow = createFlow()
-      const node = defineNode({ kind: 'example', resultSchema: { boolean: { name: 'Value', type: typeBoolean } } })
-      using instance = createNodeInstance(flow, { node })
-      instance.setResult({ boolean: true })
-      expect(instance.result).toStrictEqual({ boolean: true })
-    })
-
-    it('should parse the input result based on the type parser of the port', () => {
-      using flow = createFlow()
-      const type = defineType({ kind: 'core:number', parse: Number })
-      const node = defineNode({ kind: 'example', resultSchema: { number: { name: 'Value', type } } })
-      using instance = createNodeInstance(flow, { node })
-      // @ts-expect-error: The value "42" can be parsed as a number.
-      instance.setResult({ number: '42' })
-      expect(instance.result).toStrictEqual({ number: 42 })
-    })
-
-    it('should emit the "result" event when the result is set', () => {
-      using flow = createFlow()
-      const node = defineNode({ kind: 'example', resultSchema: { boolean: { name: 'Value', type: typeBoolean } } })
-      using instance = createNodeInstance(flow, { node })
-      const listener = vi.fn()
-      instance.on('result', listener)
-      instance.setResult({ boolean: true })
-      expect(listener).toHaveBeenCalledWith({ boolean: true })
-    })
-
-    it('should not emit the "data" event when the result is set', () => {
-      using flow = createFlow()
-      const node = defineNode({ kind: 'example', resultSchema: { boolean: { name: 'Value', type: typeBoolean } } })
-      using instance = createNodeInstance(flow, { node })
-      const listener = vi.fn()
-      instance.on('data', listener)
-      instance.setResult({ boolean: true })
-      expect(listener).not.toHaveBeenCalled()
-    })
-  })
-
   describe('start', () => {
     const node = defineNode({
       kind: 'example',
@@ -710,6 +670,7 @@ describe('createNodeInstance', () => {
       const listener = vi.fn()
       instance.on('data', listener)
       instance[Symbol.dispose]()
+      // @ts-expect-error: Private method.
       instance.dispatch('data', { string: 'Hello, World!' })
       expect(listener).not.toHaveBeenCalled()
     })
