@@ -7,7 +7,7 @@ export * from './nodes'
 export * from './types'
 export * from './utils'
 
-export default defineModule({
+export const Core = defineModule({
   kind: 'nwrx/core',
   name: 'Core',
   icon: 'https://api.iconify.design/carbon:ibm-cloud-kubernetes-service.svg',
