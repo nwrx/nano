@@ -25,7 +25,7 @@ export function flowExport(this: ModuleFlow) {
       // --- Resolve the flow and check if the user has access to it.
       const workspace = await workspaceModule.resolveWorkspace({ user, name: workspaceName, permission: 'Read' })
       const project = await workspaceModule.resolveProject({ workspace, name: projectName, permission: 'Read' })
-      const flow = await this.resolveFlow({ name: flowName, project, workspace })
+      const flow = await this.resolveFlowEntity({ name: flowName, project, workspace })
 
       // --- Return the serialized flow.
       const data = YAML.stringify(flow.data)
