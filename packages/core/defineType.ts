@@ -1,86 +1,106 @@
-import type { MaybeFunction } from '@unshared/types'
-import { assertNotNil, assertStringNotEmpty } from '@unshared/validation'
+import type { Loose } from '@unshared/types'
+import { assert, createSchema, ValidationError } from '@unshared/validation'
+
+/** The parser schema for the type. */
+const PARSE_TYPE = createSchema({
+
+  /**
+   * The internal kind of the type for identification purposes.
+   * This should be unique across all types.
+   *
+   * @example 'number'
+   */
+  kind: [
+    assert.notNil.with('You must provide a kind for the type.'),
+    assert.string.with('The kind of the type must be a string.'),
+    assert.stringNotEmpty.with('The kind of the type must be a non-empty string.'),
+    assert.stringKebabCase.with('The kind of the type must be kebab-case.'),
+  ],
+
+  /**
+   * A function that parses a value of the type from an unknown
+   * value. The function should throw an error if the value is
+   * invalid for the type.
+   *
+   * @example (value) => {
+   *   if (typeof value !== 'number') throw new Error('The value must be a number.')
+   *   return value
+   * }
+   */
+  parse: [
+    assert.notNil.with('You must provide a parse function for the type.'),
+    assert.function.with('The parse function must be a function.'),
+  ],
+
+  /**
+   * The name of the type that is displayed to the user in the UI.
+   * It should be human-readable and concise.
+   *
+   * @example 'Number'
+   */
+  name: [[assert.undefined], [
+    assert.string.with('The name of the type must be a string.'),
+    assert.stringNotEmpty.with('The name of the type must be a non-empty string.'),
+  ]],
+
+  /**
+   * An URL to an icon that represents the type in the UI. The icon
+   * should be a square image with a transparent background.
+   *
+   * @example 'https://api.iconify.design/carbon:number.svg'
+   */
+  color: [[assert.undefined], [
+    assert.string.with('The color of the type must be a string.'),
+    assert.stringMatching(/^#[\dA-Fa-f]{6}$/).with('The color of the type must be a hexadecimal color code.'),
+  ]],
+
+  /**
+   * A paragraph of text that describes the type and its purpose
+   * to the user. It should be concise and informative.
+   *
+   * @example 'A numeric value.'
+   */
+  description: [[assert.undefined], [
+    assert.string.with('The description of the type must be a string.'),
+    assert.stringNotEmpty.with('The description of the type must be a non-empty string.'),
+  ]],
+
+  /**
+   * The default value of the type. The default value should be
+   * valid for the type and should be used when the value is not
+   * provided by the user.
+   *
+   * @example 0
+   */
+  defaultValue: [[assert.undefined], [
+    assert.notNull.with('The default value can be any type.'),
+  ]],
+})
+
+/** A type that represents a specific kind of value. */
+export type Type<T = unknown> = { parse: (value: unknown) => T } & Loose<ReturnType<typeof PARSE_TYPE>>
 
 /**
- * A flow type defines the type of a value in the flow. The type is used to
- * validate the value and provide information about the type in the flow editor.
+ * Defines a new `Type` that represents a specific kind of value.
  *
- * @template T The internal type of the flow type.
- * @example type TypePrimitiveString = Type<string> // { parse: (value: unknown) => string, ... }
+ * @param options The options to define the type.
+ * @returns The defined type.
  */
-export interface Type<T = unknown> {
-
-  /**
-   * A unique identifier of the type. The identifier is used to identify the
-   * type in the flow editor. It should be
-   */
-  kind: string
-
-  /**
-   * Validate the value of the type. If the value is invalid, then an error
-   * is thrown.
-   *
-   * @param value The value to validate.
-   * @example assertString('Hello, World!')
-   */
-  parse: (value: unknown) => T
-
-  /**
-   * The display name of the type. The name is used to identify the type in
-   * the flow editor and should be readable and descriptive.
-   *
-   * @example 'String'
-   */
-  name?: string
-
-  /**
-   * The color of the type. The color is used to visually identify the type
-   * in the flow editor.
-   *
-   * @example '#3bcf3b'
-   */
-  color?: string
-
-  /**
-   * Description of the type. The description is used to provide more
-   * information about the type in the flow editor.
-   */
-  description?: string
-
-  /**
-   * The default value of the type. The default value is used when the value
-   * of the type is not provided.
-   *
-   * @example 'Hello, World!'
-   */
-  defaultValue?: MaybeFunction<NoInfer<T>>
-}
-
-/**
- * Create a flow type with the given options. The options must contain a
- * unique identifier, a name, and a parser to validate and parse the value.
- *
- * @param options The options to create the flow type.
- * @returns The flow type created with the given options.
- * @example
- * const TypePrimitiveString = defineType({
- *   name: 'primitive:string',
- *   label: 'String',
- *   parse: (value: unknown) => {
- *     if (typeof value === 'string') return value
- *     throw new Error('Expected value to be a string.')
- *   },
- * })
- */
-export function defineType<T>(options: Type<T>): Type<T> {
-  assertNotNil(options)
-  assertStringNotEmpty(options.kind)
-  return {
-    kind: options.kind,
-    name: options.name ?? options.kind,
-    color: options.color,
-    description: options.description,
-    parse: options.parse,
-    defaultValue: options.defaultValue,
+export function defineType<T>(options: Readonly<Type<T>>): Type<T> {
+  try {
+    return PARSE_TYPE({ ...options, name: options.name ?? options.kind }) as Type<T>
+  }
+  catch (error) {
+    if (error instanceof ValidationError) {
+      const errors = error.context as Record<string, Error | ValidationError>
+      for (const key in errors) {
+        if (errors[key] instanceof ValidationError) {
+          if (errors[key].name === 'E_RULE_SET_MISMATCH')
+            throw errors[key].context[0]
+          throw errors[key]
+        }
+      }
+    }
+    throw error
   }
 }
