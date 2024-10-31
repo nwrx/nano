@@ -78,7 +78,7 @@ const PARSE_TYPE = createSchema({
 })
 
 /** A type that represents a specific kind of value. */
-export type Type<T = unknown> = { parse: (value: unknown) => T } & Loose<ReturnType<typeof PARSE_TYPE>>
+export type Type<T = unknown> = Loose<{ parse: (value: unknown) => T } & Omit<ReturnType<typeof PARSE_TYPE>, 'parse'>>
 
 /**
  * Defines a new `Type` that represents a specific kind of value.
