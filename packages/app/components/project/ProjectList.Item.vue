@@ -47,7 +47,7 @@ const { isOverDropZone } = useDropZone(dropzone, {
 
     <!-- Dropzone -->
     <Dropzone
-      :isOver="isOverDropZone"
+      :is-over="isOverDropZone"
       :text="t('dropZone', { title })"
       :vertical="model"
     />
@@ -72,12 +72,12 @@ const { isOverDropZone } = useDropZone(dropzone, {
 
       <!-- Header -->
       <div class="text-left grow">
-        <h3 class="text-lg font-medium" v-text="title"/>
-        <p class="text-sm text-subtle line-clamp-2" v-text="description"/>
+        <h3 class="text-lg font-medium" v-text="title" />
+        <p class="text-sm text-subtle line-clamp-2" v-text="description" />
       </div>
 
       <!-- Collaborators -->
-      <ProjectListItemAssigments :assignments="assignments"/>
+      <ProjectListItemAssigments :assignments="assignments" />
 
       <!-- CTA -->
       <ContextMenu x="right" y="top" @mousedown.stop>
@@ -110,10 +110,10 @@ const { isOverDropZone } = useDropZone(dropzone, {
     <!-- Flow list -->
     <BaseCollapse
       vertical
-      :isOpen="model"
+      :is-open="model"
       :duration="300"
-      :class="{ 'op-0': !model }"
-      class="b-l b-app ml-lg pl-lg transition-all duration-slow overflow-y-clip">
+      :class="{ 'op-0': model !== true }"
+      class="b-l b-app ml-lg pl-lg transition-all duration-slow">
       <div class="space-y-md py-md">
         <ProjectListItemFlow
           v-for="flow in flows"
@@ -122,8 +122,8 @@ const { isOverDropZone } = useDropZone(dropzone, {
           :workspace="workspace"
           v-bind="flow"
           icon="i-carbon:flow"
-          isRunning
-          isDeployed
+          is-running
+          is-deployed
           class="shrink-0"
           @delete="() => emit('flowDelete', flow.name)"
           @download="() => emit('flowDownload', flow.name)"
@@ -147,34 +147,34 @@ const { isOverDropZone } = useDropZone(dropzone, {
 </template>
 
 <i18n lang="yaml">
-  en:
-    menu.settings: Edit
-    menu.access: Access
-    menu.delete: Delete
-    createFlow: Create a new Flow in this Project
-    dropZone: Import a flow in the **{title}** project.
-  fr:
-    menu.settings: Modifier
-    menu.access: Accès
-    menu.delete: Supprimer
-    createFlow: Créer un nouveau Flow dans ce projet
-    dropZone: Importer un flux dans le projet **{title}**.
-  de:
-    menu.settings: Bearbeiten
-    menu.access: Zugriff
-    menu.delete: Löschen
-    createFlow: Erstellen Sie einen neuen Flow in diesem Projekt
-    dropZone: Importieren Sie einen Flow in das Projekt **{title}**.
-  es:
-    menu.settings: Editar
-    menu.access: Acceso
-    menu.delete: Borrar
-    createFlow: Crear un nuevo flujo en este proyecto
-    dropZone: Importar un flujo en el proyecto **{title}**.
-  zh:
-    menu.settings: 编辑
-    menu.access: 访问
-    menu.delete: 删除
-    createFlow: 在此项目中创建新流程
-    dropZone: 在 **{title}** 项目中导入流程。
+en:
+  menu.settings: Edit
+  menu.access: Access
+  menu.delete: Delete
+  createFlow: Create a new Flow in this Project
+  dropZone: Import a flow in the **{title}** project.
+fr:
+  menu.settings: Modifier
+  menu.access: Accès
+  menu.delete: Supprimer
+  createFlow: Créer un nouveau Flow dans ce projet
+  dropZone: Importer un flux dans le projet **{title}**.
+de:
+  menu.settings: Bearbeiten
+  menu.access: Zugriff
+  menu.delete: Löschen
+  createFlow: Erstellen Sie einen neuen Flow in diesem Projekt
+  dropZone: Importieren Sie einen Flow in das Projekt **{title}**.
+es:
+  menu.settings: Editar
+  menu.access: Acceso
+  menu.delete: Borrar
+  createFlow: Crear un nuevo flujo en este proyecto
+  dropZone: Importar un flujo en el proyecto **{title}**.
+zh:
+  menu.settings: 编辑
+  menu.access: 访问
+  menu.delete: 删除
+  createFlow: 在此项目中创建新流程
+  dropZone: 在 **{title}** 项目中导入流程。
 </i18n>
