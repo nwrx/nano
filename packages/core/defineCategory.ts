@@ -1,4 +1,3 @@
-import type { Loose } from '@unshared/types'
 import { assert, createSchema, ValidationError } from '@unshared/validation'
 
 const PARSE_CATEGORY = createSchema({
@@ -62,7 +61,13 @@ const PARSE_CATEGORY = createSchema({
 })
 
 /** A category that groups nodes with a similar purpose. */
-export type Category = Loose<ReturnType<typeof PARSE_CATEGORY>>
+export interface Category {
+  kind: string
+  name?: string
+  icon?: string
+  color?: string
+  description?: string
+}
 
 /**
  * Defines a new `Category` that groups nodes with a similar purpose.
@@ -82,7 +87,7 @@ export type Category = Loose<ReturnType<typeof PARSE_CATEGORY>>
  */
 export function defineCategory(category: Category): Category {
   try {
-    return PARSE_CATEGORY({ ...category, name: category?.name ?? category?.kind }) as Category
+    return PARSE_CATEGORY({ ...category, name: category?.name ?? category?.kind })
   }
   catch (error) {
     if (error instanceof ValidationError) {

@@ -1,4 +1,3 @@
-import type { Loose } from '@unshared/types'
 import { assert, createSchema, ValidationError } from '@unshared/validation'
 
 /** The parser schema for the type. */
@@ -78,7 +77,14 @@ const PARSE_TYPE = createSchema({
 })
 
 /** A type that represents a specific kind of value. */
-export type Type<T = unknown> = Loose<{ parse: (value: unknown) => T } & Omit<ReturnType<typeof PARSE_TYPE>, 'parse'>>
+export interface Type<T = unknown> {
+  kind: string
+  parse: (value: unknown) => T
+  name?: string
+  color?: string
+  description?: string
+  defaultValue?: T
+}
 
 /**
  * Defines a new `Type` that represents a specific kind of value.
