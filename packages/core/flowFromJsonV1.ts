@@ -1,7 +1,6 @@
-import type { Module } from './defineModule'
-import type { NodeKind } from './types'
+import type { MaybeLiteral } from '@unshared/types'
+import type { FlowOptions } from './createFlow'
 import { Flow } from './createFlow'
-import { FLOW_FILE_VERSION } from './flowToJson'
 
 export interface FlowNodeExportV1 {
   kind: string
@@ -9,7 +8,7 @@ export interface FlowNodeExportV1 {
 }
 
 export interface FlowExportV1 {
-  version?: string
+  version: MaybeLiteral<'1'>
   name?: string
   icon?: string
   description?: string
@@ -24,20 +23,19 @@ export interface FlowExportV1 {
  * serialized object and restore the flow to its previous state.
  *
  * @param json The flow export object to instantiate the flow with.
- * @param modules The modules that are available to the flow.
+ * @param options The options to create the flow with.
  * @returns The new flow instance.
  */
-export function flowFromJsonV1<T extends Module = Module>(json: FlowExportV1, modules: T[] = []): Flow<T> {
+export async function flowFromJsonV1(json: FlowExportV1, options: FlowOptions = {}): Promise<Flow> {
   const { version, nodes = {}, ...meta } = json
 
   // --- Assert that the version is supported.
   if (!version) throw new Error('Flow file version is missing')
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-  if (version !== FLOW_FILE_VERSION.V1) throw new Error(`Unsupported flow file version: ${version}`)
+  if (version !== '1') throw new Error(`Unsupported flow file version: ${version}`)
 
   // --- Create the flow instance with the settings and nodes.
   // --- Collect all the instances to add to the flow.
-  const flow = new Flow<T>({ meta, modules })
+  const flow = new Flow({ meta, ...options })
   for (const id in nodes) {
     const { kind, ...data } = nodes[id]
     const meta: Record<string, unknown> = {}
@@ -54,8 +52,7 @@ export function flowFromJsonV1<T extends Module = Module>(json: FlowExportV1, mo
 
     // --- Create the node instance.
     try {
-      const nodeDefinition = flow.resolveNodeDefinition(kind as NodeKind<T>)
-      flow.createNode(nodeDefinition, { id, meta, initialData })
+      await flow.add(kind, { id, meta, initialData })
     }
     catch (error) {
       const message = (error as Error).message
