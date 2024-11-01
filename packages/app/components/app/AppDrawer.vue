@@ -41,7 +41,7 @@ const isOpen = useVModel(props, 'modelValue', emit, {
     <AppDrawerSection
       v-if="itemsTop"
       :items="itemsTop"
-      :isOpen="isOpen"
+      :is-open="isOpen"
     />
 
     <!-- Bottom -->
@@ -49,7 +49,7 @@ const isOpen = useVModel(props, 'modelValue', emit, {
       v-if="itemsBottom"
       class="!mt-auto"
       :items="itemsBottom"
-      :isOpen="isOpen"
+      :is-open="isOpen"
     />
   </div>
 </template>

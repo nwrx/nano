@@ -19,7 +19,7 @@ const model = useVModel(props, 'modelValue', emit, {
 <template>
   <div class="font-mono">
 
-    <div v-for="(value, key) in model" class="flex">
+    <div v-for="(value, key) in model" :key="key" class="flex">
 
       <!-- Key -->
       <div class="w-140px shrink-0 py-xs px-sm truncate b-r b-editor">

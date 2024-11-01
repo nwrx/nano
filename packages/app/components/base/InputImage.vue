@@ -40,7 +40,9 @@ const model = useVModel(props, 'modelValue', undefined, { passive: true })
       <!-- Default content -->
       <slot>
         <BaseIcon icon="i-carbon:upload" class="text-black/50 text-5xl p-4" />
-        <div class="font-medium text-center">{{ label }}</div>
+        <div class="font-medium text-center">
+          {{ label }}
+        </div>
       </slot>
     </div>
 
@@ -55,8 +57,8 @@ const model = useVModel(props, 'modelValue', undefined, { passive: true })
         }"
         class="rounded bg-cover bg-center w-full h-full"
         :style="{ backgroundImage: `url(${thumbnail})` }"
-        @click="() => openDialog()">
-      </div>
+        @click="() => openDialog()"
+      />
     </div>
   </BaseInputFile>
 </template>

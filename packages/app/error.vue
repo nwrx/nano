@@ -21,10 +21,10 @@ const stack = computed(() => {
 <template>
   <NuxtLayout>
     <AppPageErrorBoundary
-      :statusCode="props.error.statusCode"
+      :status-code="props.error.statusCode"
       :message="props.error.message"
       :stack="showStack ? stack : undefined"
-      @clearError="() => router.push('/')"
+      @clear-error="() => router.push('/')"
     />
   </NuxtLayout>
 </template>

@@ -29,7 +29,7 @@ const model = useVModel(props, 'modelValue', emit, {
       <AppDialogActions
         label="I understand, let me out"
         variant="danger"
-        manualClose
+        manual-close
         @close="() => close()"
         @confirm="() => emit('submit')"
       />

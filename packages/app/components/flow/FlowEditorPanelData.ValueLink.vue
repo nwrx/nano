@@ -38,7 +38,7 @@ const socket = computed(() => node.value?.resultSchema?.find(s => s.key === sour
         :style="{ backgroundColor: node.categoryColor }"
         :label="node.name"
         :icon="node.icon"
-        iconLoad
+        icon-load
       />
       <BaseIcon
         class="text-subtle mx-sm"
@@ -58,14 +58,14 @@ const socket = computed(() => node.value?.resultSchema?.find(s => s.key === sour
 </template>
 
 <i18n lang="yaml">
-  en:
-    noLink: No input link
-  fr:
-    noLink: Pas de lien d'entrée
-  de:
-    noLink: Kein Eingangslink
-  es:
-    noLink: Sin enlace de entrada
-  zh:
-    noLink: 没有输入链接
+en:
+  noLink: No input link
+fr:
+  noLink: Pas de lien d'entrée
+de:
+  noLink: Kein Eingangslink
+es:
+  noLink: Sin enlace de entrada
+zh:
+  noLink: 没有输入链接
 </i18n>

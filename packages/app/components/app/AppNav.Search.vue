@@ -32,8 +32,7 @@ function handleGroupClick(event: MouseEvent) {
       :class="{ 'input-focus': isFocused }"
       class="w-full outline-none bg-transparent"
       @focus="() => isFocused = true"
-      @blur="() => isFocused = false"
-    />
+      @blur="() => isFocused = false">
 
     <!-- Keybind -->
     <Keybind

@@ -33,8 +33,12 @@ const isDialogImpersonateOpen = ref(false)
 
     <!-- Creation Date -->
     <div :key="locale" class="lt-md:hidden">
-      <p class="text-sm text-app">{{ t('lastSeen', { distance: formatDateFromNow(lastSeenAt) }) }}</p>
-      <p class="text-xs text-subtle">{{ t('createdAt', { date: formatDate(createdAt) }) }}</p>
+      <p class="text-sm text-app">
+        {{ t('lastSeen', { distance: formatDateFromNow(lastSeenAt) }) }}
+      </p>
+      <p class="text-xs text-subtle">
+        {{ t('createdAt', { date: formatDate(createdAt) }) }}
+      </p>
     </div>
 
     <!-- Spacer -->
@@ -76,8 +80,8 @@ const isDialogImpersonateOpen = ref(false)
     <AdminUserDeleteDialog
       v-model="isDialogDeleteOpen"
       :username="username"
-      :displayName="displayName"
-      :avatarUrl="avatarUrl"
+      :display-name="displayName"
+      :avatar-url="avatarUrl"
       @submit="() => emit('submitDelete')"
     />
 
@@ -85,8 +89,8 @@ const isDialogImpersonateOpen = ref(false)
     <AdminUserDisableDialog
       v-model="isDialogDisableOpen"
       :username="username"
-      :displayName="displayName"
-      :avatarUrl="avatarUrl"
+      :display-name="displayName"
+      :avatar-url="avatarUrl"
       @submit="() => emit('submitDisable')"
     />
 
@@ -94,8 +98,8 @@ const isDialogImpersonateOpen = ref(false)
     <AdminUserEnableDialog
       v-model="isDialogEnableOpen"
       :username="username"
-      :displayName="displayName"
-      :avatarUrl="avatarUrl"
+      :display-name="displayName"
+      :avatar-url="avatarUrl"
       @submit="() => emit('submitEnable')"
     />
 
@@ -103,8 +107,8 @@ const isDialogImpersonateOpen = ref(false)
     <AdminUserVerifyDialog
       v-model="isDialogVerifyOpen"
       :username="username"
-      :displayName="displayName"
-      :avatarUrl="avatarUrl"
+      :display-name="displayName"
+      :avatar-url="avatarUrl"
       @submit="() => emit('submitVerify')"
     />
 
@@ -118,44 +122,44 @@ const isDialogImpersonateOpen = ref(false)
 </template>
 
 <i18n lang="yaml">
-  en:
-    createdAt: Created at {date}
-    lastSeen: Last seen {distance}
-    menu.impersonate: Impersonate
-    menu.verify: Verify
-    menu.disable: Disable
-    menu.enable: Enable
-    menu.delete: Delete
-  fr:
-    createdAt: Créé le {date}
-    lastSeen: Dernière connexion {distance}
-    menu.impersonate: Usurper
-    menu.verify: Vérifier
-    menu.disable: Désactiver
-    menu.enable: Activer
-    menu.delete: Supprimer
-  de:
-    createdAt: Erstellt am {date}
-    lastSeen: Zuletzt gesehen {distance}
-    menu.impersonate: Nachahmen
-    menu.verify: Überprüfen
-    menu.disable: Deaktivieren
-    menu.enable: Aktivieren
-    menu.delete: Löschen
-  es:
-    createdAt: Creado en {date}
-    lastSeen: Última vez visto {distance}
-    menu.impersonate: Suplantar
-    menu.verify: Verificar
-    menu.disable: Deshabilitar
-    menu.enable: Habilitar
-    menu.delete: Borrar
-  zh:
-    createdAt: 创建于 {date}
-    lastSeen: 上次查看 {distance}
-    menu.impersonate: 模仿
-    menu.verify: 验证
-    menu.disable: 禁用
-    menu.enable: 启用
-    menu.delete: 删除
+en:
+  createdAt: Created at {date}
+  lastSeen: Last seen {distance}
+  menu.impersonate: Impersonate
+  menu.verify: Verify
+  menu.disable: Disable
+  menu.enable: Enable
+  menu.delete: Delete
+fr:
+  createdAt: Créé le {date}
+  lastSeen: Dernière connexion {distance}
+  menu.impersonate: Usurper
+  menu.verify: Vérifier
+  menu.disable: Désactiver
+  menu.enable: Activer
+  menu.delete: Supprimer
+de:
+  createdAt: Erstellt am {date}
+  lastSeen: Zuletzt gesehen {distance}
+  menu.impersonate: Nachahmen
+  menu.verify: Überprüfen
+  menu.disable: Deaktivieren
+  menu.enable: Aktivieren
+  menu.delete: Löschen
+es:
+  createdAt: Creado en {date}
+  lastSeen: Última vez visto {distance}
+  menu.impersonate: Suplantar
+  menu.verify: Verificar
+  menu.disable: Deshabilitar
+  menu.enable: Habilitar
+  menu.delete: Borrar
+zh:
+  createdAt: 创建于 {date}
+  lastSeen: 上次查看 {distance}
+  menu.impersonate: 模仿
+  menu.verify: 验证
+  menu.disable: 禁用
+  menu.enable: 启用
+  menu.delete: 删除
 </i18n>

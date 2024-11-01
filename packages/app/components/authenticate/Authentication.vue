@@ -5,6 +5,6 @@
       bg-gradient-to-b from-primary-900 to-primary-800
       dark space-y-8
     ">
-    <slot/>
+    <slot />
   </div>
 </template>

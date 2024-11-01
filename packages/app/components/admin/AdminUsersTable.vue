@@ -43,8 +43,12 @@ const { t } = useI18n({ useScope: 'local' })
             :style="{ backgroundImage: `url(${avatarUrl})` }"
           />
           <div class="text-start">
-            <p class="font-medium">{{ displayName }}</p>
-            <p class="text-sm">{{ username }}</p>
+            <p class="font-medium">
+              {{ displayName }}
+            </p>
+            <p class="text-sm">
+              {{ username }}
+            </p>
           </div>
         </div>
       </template>
@@ -79,16 +83,16 @@ const { t } = useI18n({ useScope: 'local' })
       <template #cell.status="{ username, displayName, avatarUrl, createdAt, lastSeenAt, disabledAt }">
         <AdminUsersTableCellStatus
           :username="username"
-          :displayName="displayName"
-          :avatarUrl="avatarUrl"
-          :createdAt="createdAt"
-          :lastSeenAt="lastSeenAt"
-          :disabledAt="disabledAt"
-          @submitImpersonate="() => emit('submitImpersonate', username)"
-          @submitVerify="() => emit('submitVerify', username)"
-          @submitDisable="() => emit('submitDisable', username)"
-          @submitEnable="() => emit('submitEnable', username)"
-          @submitDelete="() => emit('submitDelete', username)"
+          :display-name="displayName"
+          :avatar-url="avatarUrl"
+          :created-at="createdAt"
+          :last-seen-at="lastSeenAt"
+          :disabled-at="disabledAt"
+          @submit-impersonate="() => emit('submitImpersonate', username)"
+          @submit-verify="() => emit('submitVerify', username)"
+          @submit-disable="() => emit('submitDisable', username)"
+          @submit-enable="() => emit('submitEnable', username)"
+          @submit-delete="() => emit('submitDelete', username)"
         />
       </template>
     </BaseTable>
@@ -96,54 +100,54 @@ const { t } = useI18n({ useScope: 'local' })
 </template>
 
 <i18n lang="yaml">
-  en:
-    header.name: Name
-    header.email: Email
-    header.status: Status
-    disabled: Disabled
-    enabled: Enabled
-    verified: Verified
-    unverified: Unverified
-    createdAt: Created at {date}
-    lastSeen: Last seen {distance}
-  fr:
-    header.name: Nom
-    header.email: Email
-    header.status: Statut
-    disabled: Désactivé
-    enabled: Activé
-    verified: Vérifié
-    unverified: Non vérifié
-    createdAt: Créé le {date}
-    lastSeen: Dernière connexion {distance}
-  de:
-    header.name: Name
-    header.email: E-Mail
-    header.status: Status
-    disabled: Deaktiviert
-    enabled: Aktiviert
-    verified: Verifiziert
-    unverified: Nicht verifiziert
-    createdAt: Erstellt am {date}
-    lastSeen: Zuletzt gesehen {distance}
-  es:
-    header.name: Nombre
-    header.email: Correo electrónico
-    header.status: Estado
-    disabled: Desactivado
-    enabled: Activado
-    verified: Verificado
-    unverified: No verificado
-    createdAt: Creado en {date}
-    lastSeen: Última vez visto {distance}
-  zh:
-    header.name: 名称
-    header.email: 电子邮件
-    header.status: 状态
-    disabled: 已禁用
-    enabled: 已启用
-    verified: 已验证
-    unverified: 未验证
-    createdAt: 创建于 {date}
-    lastSeen: 上次查看 {distance}
+en:
+  header.name: Name
+  header.email: Email
+  header.status: Status
+  disabled: Disabled
+  enabled: Enabled
+  verified: Verified
+  unverified: Unverified
+  createdAt: Created at {date}
+  lastSeen: Last seen {distance}
+fr:
+  header.name: Nom
+  header.email: Email
+  header.status: Statut
+  disabled: Désactivé
+  enabled: Activé
+  verified: Vérifié
+  unverified: Non vérifié
+  createdAt: Créé le {date}
+  lastSeen: Dernière connexion {distance}
+de:
+  header.name: Name
+  header.email: E-Mail
+  header.status: Status
+  disabled: Deaktiviert
+  enabled: Aktiviert
+  verified: Verifiziert
+  unverified: Nicht verifiziert
+  createdAt: Erstellt am {date}
+  lastSeen: Zuletzt gesehen {distance}
+es:
+  header.name: Nombre
+  header.email: Correo electrónico
+  header.status: Estado
+  disabled: Desactivado
+  enabled: Activado
+  verified: Verificado
+  unverified: No verificado
+  createdAt: Creado en {date}
+  lastSeen: Última vez visto {distance}
+zh:
+  header.name: 名称
+  header.email: 电子邮件
+  header.status: 状态
+  disabled: 已禁用
+  enabled: 已启用
+  verified: 已验证
+  unverified: 未验证
+  createdAt: 创建于 {date}
+  lastSeen: 上次查看 {distance}
 </i18n>

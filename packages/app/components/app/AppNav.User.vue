@@ -25,8 +25,7 @@ const isOpen = ref(false)
         v-if="avatarUrl"
         :src="avatarUrl"
         alt="User Avatar"
-        class="size-6 rounded-full cursor-pointer"
-      />
+        class="size-6 rounded-full cursor-pointer">
     </AppNavFab>
 
     <!-- Menu -->
@@ -36,11 +35,14 @@ const isOpen = ref(false)
           v-if="avatarUrl"
           :src="avatarUrl"
           alt="User Avatar"
-          class="size-10 rounded-full"
-        />
+          class="size-10 rounded-full">
         <div class="truncate">
-          <p class="text-sm truncate text-app">{{ displayName }}</p>
-          <p class="text-sm truncate text-subtle">{{ email }}</p>
+          <p class="text-sm truncate text-app">
+            {{ displayName }}
+          </p>
+          <p class="text-sm truncate text-subtle">
+            {{ email }}
+          </p>
         </div>
       </div>
       <ContextMenuDivider />

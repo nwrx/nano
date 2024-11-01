@@ -39,29 +39,29 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
 </template>
 
 <i18n lang="yaml">
-  en:
-    flow: Flow
-    node: Node
-    events: Events
-    playground: Sandbox
-  fr:
-    flow: Flux
-    node: Noeud
-    events: Événements
-    playground: Bac à sable
-  de:
-    flow: Fluss
-    node: Knoten
-    events: Ereignisse
-    playground: Sandkasten
-  es:
-    flow: Flujo
-    node: Nodo
-    events: Eventos
-    playground: Caja de arena
-  zh:
-    flow: 流程
-    node: 节点
-    events: 事件
-    playground: 沙盒
+en:
+  flow: Flow
+  node: Node
+  events: Events
+  playground: Sandbox
+fr:
+  flow: Flux
+  node: Noeud
+  events: Événements
+  playground: Bac à sable
+de:
+  flow: Fluss
+  node: Knoten
+  events: Ereignisse
+  playground: Sandkasten
+es:
+  flow: Flujo
+  node: Nodo
+  events: Eventos
+  playground: Caja de arena
+zh:
+  flow: 流程
+  node: 节点
+  events: 事件
+  playground: 沙盒
 </i18n>

@@ -18,7 +18,9 @@ const newPasswordConfirm = ref('')
     <!-- Text -->
     <template #text>
       <I18nT keypath="text">
-        <template #newline><br><br></template>
+        <template #newline>
+          <br><br>
+        </template>
       </I18nT>
     </template>
 
@@ -54,13 +56,13 @@ const newPasswordConfirm = ref('')
 </template>
 
 <i18n lang="yaml">
-  en:
-    title: Password
-    text: Update your password to keep your account secure. Make sure to use a strong password that is unique to this account.
-    oldPassword.label: Enter your current password
-    oldPassword.hint: Your current password is required to update your password.
-    newPassword.label: Define your new password.
-    newPassword.confirm: Confirm your new password
-    newPassword.hint: Your new password must be at least 8 characters long.
-    button.submit: Save new password
+en:
+  title: Password
+  text: Update your password to keep your account secure. Make sure to use a strong password that is unique to this account.
+  oldPassword.label: Enter your current password
+  oldPassword.hint: Your current password is required to update your password.
+  newPassword.label: Define your new password.
+  newPassword.confirm: Confirm your new password
+  newPassword.hint: Your new password must be at least 8 characters long.
+  button.submit: Save new password
 </i18n>

@@ -7,7 +7,7 @@ definePageMeta({
 
 // --- Get the session and user data.
 const session = useSession()
-const user = useUser(session.data.username!)
+const user = useUser(session.data.username)
 
 onMounted(async() => {
   await session.refresh()
@@ -17,6 +17,6 @@ onMounted(async() => {
 
 <template>
   <UserSettings>
-    <UserSettingsPassword @submit="(data) => user.setPassword(data)"/>
+    <UserSettingsPassword @submit="(data) => user.setPassword(data)" />
   </UserSettings>
 </template>

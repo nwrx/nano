@@ -66,8 +66,8 @@ const model = useVModel(props, 'modelValue')
           'opacity-80': isActive === true,
           'opacity-60': isActive === false,
         }"
-        v-text="label">
-      </label>
+        v-text="label"
+      />
 
       <!-- Hint -->
       <div
@@ -77,8 +77,8 @@ const model = useVModel(props, 'modelValue')
           'opacity-60': isActive === true,
           'opacity-40': isActive === false,
         }"
-        v-text="hint">
-      </div>
+        v-text="hint"
+      />
     </div>
   </BaseInputToggle>
 </template>

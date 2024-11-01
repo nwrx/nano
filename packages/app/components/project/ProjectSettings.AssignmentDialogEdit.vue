@@ -83,7 +83,7 @@ watch(() => props.permissions, (permissions) => {
     <!-- Confirm -->
     <template #cta="{ close }">
       <AppDialogActions
-        labelConfirm="Confirm"
+        label-confirm="Confirm"
         @close="() => close()"
         @confirm="() => emit('submit', [role, ...access])"
       />

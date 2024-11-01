@@ -56,8 +56,7 @@ function toggle() {
       <input
         v-if="isNameEditable"
         v-model="name"
-        class="w-144.5px shrink-0 px-sm bg-transparent outline-none"
-      />
+        class="w-144.5px shrink-0 px-sm bg-transparent outline-none">
 
       <!-- Name -->
       <div
@@ -67,7 +66,7 @@ function toggle() {
       />
 
       <!-- Divider -->
-      <div class="w-px h-full b-r b-editor transition"/>
+      <div class="w-px h-full b-r b-editor transition" />
 
       <!-- Value -->
       <FlowEditorPanelDataValue
@@ -76,9 +75,9 @@ function toggle() {
         :node="node"
         :nodes="nodes"
         :socket="socket"
-        :isOpen="isOpen"
-        :isEditable="isEditable"
-        :isClearable="isClearable"
+        :is-open="isOpen"
+        :is-editable="isEditable"
+        :is-clearable="isClearable"
         :class="{ 'pointer-events-none': hasDetail }"
       />
 
@@ -96,7 +95,7 @@ function toggle() {
           v-if="isClearable"
           icon="i-carbon:close"
           class="size-4 shrink-0 cursor-pointer"
-          @mousedown="() => emit('clear')"
+          @mousedown.stop="() => emit('clear')"
         />
       </div>
     </div>
@@ -105,7 +104,7 @@ function toggle() {
     <BaseCollapse
       v-if="hasDetail"
       vertical
-      :isOpen="isOpen"
+      :is-open="isOpen"
       class="w-full b-t b-editor transition-all overflow-hidden"
       :class="{ 'op-0 pointer-events-none': !isOpen }">
 
@@ -118,8 +117,8 @@ function toggle() {
             :node="node"
             :nodes="nodes"
             :socket="socket"
-            :isEditable="isEditable"
-            :isClearable="isClearable"
+            :is-editable="isEditable"
+            :is-clearable="isClearable"
           />
         </slot>
       </div>

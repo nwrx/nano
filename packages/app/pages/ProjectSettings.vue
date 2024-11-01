@@ -50,17 +50,17 @@ onMounted(project.refresh)
       :project="name"
       :title="project.data.title"
       :assigments="project.data.assignments"
-      :searchUsers="searchUsers"
+      :search-users="searchUsers"
       @submit="(username, permissions) => project.setUserAssignments(username, permissions)"
     />
     <ProjectSettingsDangerZone
-      :searchUsers="searchUsers"
+      :search-users="searchUsers"
       :workspace="workspace"
       :project="name"
       :title="project.data.title"
-      @submitName="name => project.setName(name)"
-      @submitDelete="() => project.delete()"
-      @submitTransfer="username => project.setName(username)"
+      @submit-name="name => project.setName(name)"
+      @submit-delete="() => project.delete()"
+      @submit-transfer="username => project.setName(username)"
     />
   </ProjectSettings>
 </template>

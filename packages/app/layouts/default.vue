@@ -35,17 +35,17 @@ const { setLocale, locale } = useI18n()
       class="h-16 px"
       :theme="themeColor"
       :title="CONSTANTS.appTitle"
-      :imageUrl="ASSET_NWRX_LOGO"
-      :itemsStart="NAV_BAR_START"
-      :itemsEnd="NAV_BAR_END"
-      :userAvatarUrl="session.data.avatarUrl"
-      :userEmail="session.data.email"
-      :userDisplayName="session.data.displayName"
+      :image-url="ASSET_NWRX_LOGO"
+      :items-start="NAV_BAR_START"
+      :items-end="NAV_BAR_END"
+      :user-avatar-url="session.data.avatarUrl"
+      :user-email="session.data.email"
+      :user-display-name="session.data.displayName"
       :locale="locale"
       :locales="LOCALES"
       @signout="() => session.signout()"
-      @setLocale="(locale) => setLocale(locale)"
-      @setTheme="(theme) => themeColor = theme"
+      @set-locale="(locale) => setLocale(locale)"
+      @set-theme="(theme) => themeColor = theme"
     />
 
     <!-- Nav Drawer -->
@@ -53,9 +53,9 @@ const { setLocale, locale } = useI18n()
       <AppDrawer
         v-model="isDrawerOpen"
         class="h-full shrink-0 overflow-y-auto text-unset"
-        :itemsTop="NAV_DRAWER_START"
-        :itemsBottom="NAV_DRAWER_END"
-        :isHidden="isAuthenticationRoute"
+        :items-top="NAV_DRAWER_START"
+        :items-bottom="NAV_DRAWER_END"
+        :is-hidden="isAuthenticationRoute"
       />
 
       <!-- Main Content -->
@@ -69,12 +69,12 @@ const { setLocale, locale } = useI18n()
           <template #error="{ error, clearError }">
             <AppPageErrorBoundary
               :message="error"
-              @clearError="() => clearError()"
+              @clear-error="() => clearError()"
             />
           </template>
 
           <!-- Page -->
-          <NuxtPage/>
+          <NuxtPage />
         </NuxtErrorBoundary>
       </main>
     </div>

@@ -47,8 +47,8 @@ const isFocused = ref(false)
       <div
         v-if="textBefore"
         class="flex items-center justify-center input input-disabled rounded-r-0 border-r-0"
-        v-text="textBefore">
-      </div>
+        v-text="textBefore"
+      />
 
       <!-- Input -->
       <div
@@ -100,8 +100,8 @@ const isFocused = ref(false)
       <p
         v-if="textAfter"
         class="flex items-center justify-center input input-readonly rounded-l-0 border-l-0"
-        v-text="textAfter">
-      </p>
+        v-text="textAfter"
+      />
     </div>
 
     <!-- Error -->

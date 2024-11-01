@@ -34,5 +34,5 @@ const value = computed(() => {
 </script>
 
 <template>
-  <FlowEditorPanelDataDetail :modelValue="value"/>
+  <FlowEditorPanelDataDetail :model-value="value" />
 </template>

@@ -7,7 +7,7 @@ definePageMeta({
 
 // --- Get the session and user data.
 const session = useSession()
-const user = useUser(session.data.username!, {
+const user = useUser(session.data.username, {
   withSessions: true,
 })
 
@@ -24,8 +24,8 @@ onMounted(async() => {
       @submit="(profile) => user.setProfile(profile)"
     />
     <UserSettingsSessionsSignout
-      :sessionsLength="user.data.sessions?.length ?? 0"
-      @submitSignout="() => session.signout()"
+      :sessions-length="user.data.sessions?.length ?? 0"
+      @submit-signout="() => session.signout()"
     />
   </UserSettings>
 </template>

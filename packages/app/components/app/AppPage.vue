@@ -6,6 +6,6 @@
       overflow-x-hidden overflow-y-auto
       bg-app text-app
   ">
-    <slot/>
+    <slot />
   </div>
 </template>

@@ -45,7 +45,7 @@ const isDialogSignoutOpen = ref(false)
     <!-- Dialog -->
     <UserSettingsSessionsSignoutDialog
       v-model="isDialogSignoutOpen"
-      :sessionsLength="sessionsLength"
+      :sessions-length="sessionsLength"
       @submit="() => emit('submitSignout')"
     />
   </AppPageForm>

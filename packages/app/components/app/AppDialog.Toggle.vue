@@ -49,8 +49,12 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
 
       <!-- Title & Text -->
       <div class="text-left">
-        <h3 class="text-sm">{{ label }}</h3>
-        <p class="text-sm opacity-60">{{ text }}</p>
+        <h3 class="text-sm">
+          {{ label }}
+        </h3>
+        <p class="text-sm opacity-60">
+          {{ text }}
+        </p>
       </div>
     </template>
   </BaseInputToggle>

@@ -31,7 +31,7 @@ onMounted(() => {
 <template>
   <Authentication>
     <AuthenticationCard>
-      <AuthenticationFormSso/>
+      <AuthenticationFormSso />
       <AuthenticationDivider>or</AuthenticationDivider>
       <form
         class="flex flex-col space-y-2"

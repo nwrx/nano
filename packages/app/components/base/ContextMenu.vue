@@ -51,7 +51,7 @@ const model = useVModel(props, 'modelValue', emit, {
           v-if="slotProps.isOpen"
           :class="{ 'z-1000': slotProps.isOpen }"
           class="p-md space-y-sm w-full min-w-48 bg-app border border-app rounded cursor-auto overflow-hidden">
-          <slot name="menu" v-bind="slotProps"/>
+          <slot name="menu" v-bind="slotProps" />
         </div>
       </Transition>
     </template>

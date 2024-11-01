@@ -50,8 +50,7 @@ const locale = useVModel(props, 'locale', emit, {
         v-if="imageUrl"
         :src="imageUrl"
         alt="Logo"
-        class="size-8 rounded"
-      />
+        class="size-8 rounded">
     </div>
 
     <h1 class="text-sm font-medium font-mono lowercase">
@@ -101,9 +100,9 @@ const locale = useVModel(props, 'locale', emit, {
 
     <!-- User -->
     <AppNavUser
-      :avatarUrl="userAvatarUrl"
+      :avatar-url="userAvatarUrl"
       :email="userEmail"
-      :displayName="userDisplayName"
+      :display-name="userDisplayName"
       @signout="() => emit('signout')"
     />
   </header>

@@ -37,11 +37,15 @@ const permissions = useVModel(props, 'permissions', emit, { passive: true })
       />
 
       <!-- Image -->
-      <img :src="userAvatarUrl" class="w-12 h12 rounded-full" />
+      <img :src="userAvatarUrl" class="w-12 h12 rounded-full">
 
       <div class="text-sm grow">
-        <Button link variant="primary">{{ userDisplayName }}</Button>
-        <p class="text-sm">{{ username }}</p>
+        <Button link variant="primary">
+          {{ userDisplayName }}
+        </Button>
+        <p class="text-sm">
+          {{ username }}
+        </p>
       </div>
 
       <!-- Access -->
@@ -120,7 +124,7 @@ const permissions = useVModel(props, 'permissions', emit, { passive: true })
     <!-- Manage Dialog -->
     <ProjectSettingsAssignmentDialogEdit
       v-model="isDialogManageOpen"
-      :userDisplayName="userDisplayName"
+      :user-display-name="userDisplayName"
       :permissions="permissions"
       @submit="value => emit('submit', value)"
     />
@@ -132,46 +136,46 @@ const permissions = useVModel(props, 'permissions', emit, { passive: true })
       :project="project"
       :title="title"
       :username="username"
-      :userDisplayName="userDisplayName"
+      :user-display-name="userDisplayName"
       @submit="() => emit('submit', [])"
     />
   </div>
 </template>
 
 <i18n lang="yaml">
-  en:
-    menu.manage: Manage
-    menu.profile: Profile
-    menu.unassign: Unassign
-    permission.write: Write
-    permission.read: Read
-    permission.owner: Owner
-  fr:
-    menu.manage: Gérer
-    menu.profile: Profil
-    menu.unassign: Désassigner
-    permission.write: Écrire
-    permission.read: Lire
-    permission.owner: Propriétaire
-  de:
-    menu.manage: Verwalten
-    menu.profile: Profil
-    menu.unassign: Entfernen
-    permission.write: Schreiben
-    permission.read: Lesen
-    permission.owner: Besitzer
-  es:
-    menu.manage: Administrar
-    menu.profile: Perfil
-    menu.unassign: Desasignar
-    permission.write: Escribir
-    permission.read: Leer
-    permission.owner: Propietario
-  zh:
-    menu.manage: 管理
-    menu.profile: 档案
-    menu.unassign: 取消分配
-    permission.write: 写
-    permission.read: 读
-    permission.owner: 所有者
+en:
+  menu.manage: Manage
+  menu.profile: Profile
+  menu.unassign: Unassign
+  permission.write: Write
+  permission.read: Read
+  permission.owner: Owner
+fr:
+  menu.manage: Gérer
+  menu.profile: Profil
+  menu.unassign: Désassigner
+  permission.write: Écrire
+  permission.read: Lire
+  permission.owner: Propriétaire
+de:
+  menu.manage: Verwalten
+  menu.profile: Profil
+  menu.unassign: Entfernen
+  permission.write: Schreiben
+  permission.read: Lesen
+  permission.owner: Besitzer
+es:
+  menu.manage: Administrar
+  menu.profile: Perfil
+  menu.unassign: Desasignar
+  permission.write: Escribir
+  permission.read: Leer
+  permission.owner: Propietario
+zh:
+  menu.manage: 管理
+  menu.profile: 档案
+  menu.unassign: 取消分配
+  permission.write: 写
+  permission.read: 读
+  permission.owner: 所有者
 </i18n>

@@ -7,7 +7,7 @@ definePageMeta({
 
 // --- Get the session and user data.
 const session = useSession()
-const user = useUser(session.data.username!, {
+const user = useUser(session.data.username, {
   withProfile: true,
 })
 
@@ -21,14 +21,14 @@ onMounted(async() => {
   <UserSettings>
     <UserSettingsUsername
       :username="user.data.username"
-      :avatarUrl="user.data.avatarUrl"
-      :displayName="user.data.displayName"
-      @submitRename="(profile) => user.setProfile(profile)"
+      :avatar-url="user.data.avatarUrl"
+      :display-name="user.data.displayName"
+      @submit-rename="(profile) => user.setProfile(profile)"
     />
     <UserSettingsDangerZone
       :username="user.data.username"
-      :avatarUrl="user.data.avatarUrl"
-      :displayName="user.data.displayName"
+      :avatar-url="user.data.avatarUrl"
+      :display-name="user.data.displayName"
       @submit="(password) => user.setPassword(password)"
     />
   </UserSettings>

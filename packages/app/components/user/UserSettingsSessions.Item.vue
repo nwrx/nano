@@ -35,7 +35,7 @@ const lastUsedAt = computed(() => formatDateFromNow(props.lastUsedAt))
       <UserSettingsSessionsItemValue v-if="address" :name="t('value.address')" :value="address" />
       <UserSettingsSessionsItemValue v-if="lastUsedAt" :name="t('value.lastUsedAt')" :value="lastUsedAt" />
       <UserSettingsSessionsItemValue v-if="browser" :name="t('value.browser')" :value="browser" />
-      <UserSettingsSessionsItemValue v-if="os" :name="t('value.os')" :value="os"/>
+      <UserSettingsSessionsItemValue v-if="os" :name="t('value.os')" :value="os" />
       <UserSettingsSessionsItemValue v-if="device" :name="t('value.device')" :value="device" />
     </div>
 
@@ -53,39 +53,39 @@ const lastUsedAt = computed(() => formatDateFromNow(props.lastUsedAt))
 </template>
 
 <i18n lang="yaml">
-  en:
-    value.address: "IP Address"
-    value.lastUsedAt: "Last used"
-    value.browser: "Browser"
-    value.os: "System"
-    value.device: "Device"
-    button.remove: "Sign out"
-  fr:
-    value.address: "Adresse IP"
-    value.lastUsedAt: "Dernière utilisation"
-    value.browser: "Navigateur"
-    value.os: "Système"
-    value.device: "Appareil"
-    button.remove: "Déconnecter"
-  de:
-    value.address: "IP-Adresse"
-    value.lastUsedAt: "Zuletzt verwendet"
-    value.browser: "Browser"
-    value.os: "System"
-    value.device: "Gerät"
-    button.remove: "Abmelden"
-  es:
-    value.address: "Dirección IP"
-    value.lastUsedAt: "Último uso"
-    value.browser: "Navegador"
-    value.os: "Sistema"
-    value.device: "Dispositivo"
-    button.remove: "Cerrar sesión"
-  zh:
-    value.address: "IP 地址"
-    value.lastUsedAt: "上次使用"
-    value.browser: "浏览器"
-    value.os: "系统"
-    value.device: "设备"
-    button.remove: "登出"
+en:
+  value.address: IP Address
+  value.lastUsedAt: Last used
+  value.browser: Browser
+  value.os: System
+  value.device: Device
+  button.remove: Sign out
+fr:
+  value.address: Adresse IP
+  value.lastUsedAt: Dernière utilisation
+  value.browser: Navigateur
+  value.os: Système
+  value.device: Appareil
+  button.remove: Déconnecter
+de:
+  value.address: IP-Adresse
+  value.lastUsedAt: Zuletzt verwendet
+  value.browser: Browser
+  value.os: System
+  value.device: Gerät
+  button.remove: Abmelden
+es:
+  value.address: Dirección IP
+  value.lastUsedAt: Último uso
+  value.browser: Navegador
+  value.os: Sistema
+  value.device: Dispositivo
+  button.remove: Cerrar sesión
+zh:
+  value.address: IP 地址
+  value.lastUsedAt: 上次使用
+  value.browser: 浏览器
+  value.os: 系统
+  value.device: 设备
+  button.remove: 登出
 </i18n>

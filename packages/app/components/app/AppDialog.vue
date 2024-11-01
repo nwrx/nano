@@ -68,18 +68,18 @@ const { t, locale } = useI18n({ useScope: 'local' })
           <!-- Title -->
           <div class="flex items-center justify-between p-md">
             <slot name="title">
-              <h3 v-markdown="title"/>
+              <h3 v-markdown="title" />
             </slot>
             <BaseButton eager class="group p-sm absolute right-sm" @click="() => slots.close()">
-              <div class="bg-danger-600 opacity-60 group-hover:opacity-100 transition rounded-full size-4"/>
+              <div class="bg-danger-600 opacity-60 group-hover:opacity-100 transition rounded-full size-4" />
             </BaseButton>
           </div>
 
           <!-- Hint -->
           <div v-if="title || $slots.title" class="flex space-x-md p-md border-x-0 hint rd-0" :class="classHint">
-            <BaseIcon v-if="icon" :icon="icon" class="size-4 shrink-0 mt-xs"/>
+            <BaseIcon v-if="icon" :icon="icon" class="size-4 shrink-0 mt-xs" />
             <slot name="text">
-              <p v-markdown="text" class="text-sm"/>
+              <p v-markdown="text" class="text-sm" />
             </slot>
           </div>
 
@@ -121,19 +121,19 @@ const { t, locale } = useI18n({ useScope: 'local' })
 </template>
 
 <i18n lang="yaml">
-  en:
-    button.cancel: Cancel
-    button.confirm: Confirm
-  fr:
-    button.cancel: Annuler
-    button.confirm: Confirmer
-  de:
-    button.cancel: Abbrechen
-    button.confirm: Bestätigen
-  es:
-    button.cancel: Cancelar
-    button.confirm: Confirmar
-  zh:
-    button.cancel: 取消
-    button.confirm: 确认
+en:
+  button.cancel: Cancel
+  button.confirm: Confirm
+fr:
+  button.cancel: Annuler
+  button.confirm: Confirmer
+de:
+  button.cancel: Abbrechen
+  button.confirm: Bestätigen
+es:
+  button.cancel: Cancelar
+  button.confirm: Confirmar
+zh:
+  button.cancel: 取消
+  button.confirm: 确认
   </i18n>

@@ -32,20 +32,19 @@ const model = useVModel(props, 'modelValue', emit, {
       v-model="model"
       :class="{ 'text-editor-node': !model, 'italic': !model && !defaultValue }"
       class="w-full outline-none bg-transparent text-sm"
-      :placeholder="typeof defaultValue === 'string' ? defaultValue : t('empty')"
-    />
+      :placeholder="typeof defaultValue === 'string' ? defaultValue : t('empty')">
   </FlowEditorSocketGroup>
 </template>
 
 <i18n lang="yaml">
-  en:
-    empty: No default value
-  fr:
-    empty: Aucune valeur par défaut
-  de:
-    empty: Kein Standardwert
-  es:
-    empty: Sin valor predeterminado
-  zh:
-    empty: 无默认值
+en:
+  empty: No default value
+fr:
+  empty: Aucune valeur par défaut
+de:
+  empty: Kein Standardwert
+es:
+  empty: Sin valor predeterminado
+zh:
+  empty: 无默认值
 </i18n>
