@@ -19,7 +19,6 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
     icon: '',
     description: '',
     nodes: [],
-    links: [],
     categories: [],
     secrets: [],
     variables: [],
@@ -48,10 +47,9 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
         flow.categories.push(...payload.categories)
         flow.secrets.push(...payload.secrets)
         flow.variables.push(...payload.variables)
-        void nextTick(() => flow.links.push(...payload.links))
         break
       }
-      case 'flow:metaValue': {
+      case 'flow:meta': {
         const { key, value } = payload
         if (key === 'name') flow.name = value as string
         if (key === 'icon') flow.icon = value as string
@@ -172,22 +170,17 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
         flow.nodes = [...flow.nodes]
         break
       }
-      case 'node:metaValue': {
+      case 'node:meta': {
         const { id, key, value } = payload
         const node = flow.nodes.find(n => n.id === id)
         if (!node) return
         if (key === 'label') node.label = value as string
         if (key === 'position') node.position = value as { x: number; y: number }
         flow.nodes = [...flow.nodes]
-        flow.links = [...flow.links]
         break
       }
       case 'node:remove': {
         const { id } = payload
-        flow.links.forEach((link, index) => {
-          if (!link.source.startsWith(id) || !link.target.startsWith(id)) return
-          flow.links.splice(index, 1)
-        })
         const indexNode = flow.nodes.findIndex(x => x.id === id)
         flow.nodes.splice(indexNode, 1)
         break
