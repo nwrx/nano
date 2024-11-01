@@ -1,4 +1,5 @@
 import type { Type } from './defineType'
+import { assertString, createRule } from '@unshared/validation'
 import { defineType } from './defineType'
 
 describe('defineType', () => {
@@ -115,17 +116,16 @@ describe('defineType', () => {
       const shouldThrow = () => defineType({ kind: 'number', parse: vi.fn(), description: 123 })
       expect(shouldThrow).toThrow('The description of the type must be a string.')
     })
+
+    it('should throw an error if the description is an empty string', () => {
+      const shouldThrow = () => defineType({ kind: 'number', parse: vi.fn(), description: '' })
+      expect(shouldThrow).toThrow('The description of the type must be a non-empty string.')
+    })
   })
 
   describe('inference', () => {
     it('should return the type of a flow type', () => {
-      const type = defineType({
-        kind: 'number',
-        parse: (value) => {
-          if (typeof value !== 'string') throw new Error('The value must be a number.')
-          return value
-        },
-      })
+      const type = defineType({ kind: 'number', parse: createRule(assertString) })
       expectTypeOf(type).toEqualTypeOf<Type<string>>()
     })
   })
