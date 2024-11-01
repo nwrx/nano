@@ -14,7 +14,7 @@ type InputDataSchema = {
 }
 
 export const nodeInput = defineNode({
-  kind: 'input',
+  kind: 'core/input',
   name: 'Input',
   icon: 'https://api.iconify.design/carbon:arrow-down.svg',
   category: categoryBasic,
@@ -90,36 +90,13 @@ export const nodeInput = defineNode({
   resultSchema: ({ data }) => defineResultSchema({
     value: {
       name: 'Value',
-      type: { number, boolean, stream, text: string }[data.type ?? 'text'],
+      type: { number, boolean, stream, text: string }[data.type],
       description: 'The value of the entrypoint.',
       isOptional: data.isOptional,
     },
   }),
 
-  process: async({ flow, data, abortSignal }) =>
-    await new Promise<{ value: unknown }>((resolve, reject) => {
-
-      // --- If no data was provided within 1 second, reject.
-      const timeout = setTimeout(() => {
-        if (data.defaultValue) return resolve({ value: data.defaultValue })
-        // if (result.value) return resolve({ value: result.value })
-        const message = `The input node "${data.name}" did not receive any data within 1 millisecond.`
-        const error = new Error(message)
-        reject(error)
-      }, 1)
-
-      // --- On abort, resolve with undefined.
-      abortSignal.addEventListener('abort', () => {
-        resolve({ value: undefined })
-      })
-
-      // --- On flow:input, resolve with the value.
-      flow.on('flow:input', (name, value, meta) => {
-        if (abortSignal.aborted) return
-        if (meta.threadId !== flow.threadId) return
-        if (name !== data.name) return
-        clearTimeout(timeout)
-        resolve({ value })
-      })
-    }),
+  process: ({ data, result }) => ({
+    value: result.value ?? data.defaultValue,
+  }),
 })
