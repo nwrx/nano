@@ -176,7 +176,9 @@ export interface Node<
  *   }),
  * })
  */
-export function defineNode<N extends string, T extends DataSchema, U extends ResultSchema>(options: Node<N, T, U>): Node<N, T, U> {
+export function defineNode<N extends string, T extends DataSchema, U extends ResultSchema>(options: Node<N, T, U>): Node<N, T, U>
+export function defineNode<T extends Node>(options: Readonly<T>): T
+export function defineNode(options: Readonly<Node>): Node {
   assertNotNil(options)
   assertStringNotEmpty(options.kind)
   return {
@@ -185,8 +187,8 @@ export function defineNode<N extends string, T extends DataSchema, U extends Res
     icon: options.icon,
     category: options.category,
     description: options.description,
-    dataSchema: options.dataSchema ?? {} as T,
-    resultSchema: options.resultSchema ?? {} as U,
+    dataSchema: options.dataSchema as DataSchema ?? {},
+    resultSchema: options.resultSchema as ResultSchema ?? {},
     process: options.process,
   }
 }
