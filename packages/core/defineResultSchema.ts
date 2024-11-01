@@ -68,11 +68,11 @@ export type ResultSocket<
    * Indicates whether the socket is internal and should be hidden from the user
    * in the editor. Internal sockets are used for internal data flow and are not
    * intended to interacted with directly by the user.
-   * 
+   *
    * **Note:** Keep in mind that internal sockets are not protected not hidden from
    * the user as it can still be accessed by the user from the API. This is mainly
    * a visual cue for the user.
-   * 
+   *
    * @default false
    */
   isInternal?: boolean
@@ -81,7 +81,7 @@ export type ResultSocket<
    * Indicates whether the socket can accept multiple values. If true, the socket
    * will allow an array of values to be passed. Internally, the node will always
    * cast the values into an array before processing them.
-   * 
+   *
    * @default false
    */
   isIterable?: A
@@ -97,7 +97,7 @@ export type ResultSchema<T extends ObjectLike = never> =
   IsNever<T> extends true
     ? Record<string, ResultSocket>
     : { [P in keyof T as undefined extends T[P] ? never : P & string]-?: ResultSocket<T[P], false | undefined> } &
-    { [P in keyof T as undefined extends T[P] ? P & string : never]-?: ResultSocket<NotUndefined<T[P]>, true> }
+      { [P in keyof T as undefined extends T[P] ? P & string : never]-?: ResultSocket<NotUndefined<T[P]>, true> }
 
 /**
  * Extracts the raw type described by the given schema instance.
