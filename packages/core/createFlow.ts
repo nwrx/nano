@@ -1,11 +1,11 @@
 /* eslint-disable sonarjs/prefer-single-boolean-return */
 import type { MaybePromise, ObjectLike } from '@unshared/types'
-import type { NodeEventMeta, NodeInstanceOptions } from './createNodeInstance'
+import type { NodeEventMeta, NodeInstance, NodeInstanceOptions, NodeState } from './createNodeInstance'
 import type { DataSchema } from './defineDataSchema'
 import type { Node } from './defineNode'
 import type { ResultSchema } from './defineResultSchema'
 import { randomUUID } from 'node:crypto'
-import { NodeInstance } from './createNodeInstance'
+import { createNodeInstance } from './createNodeInstance'
 
 /** The kind of the input node. */
 export const NODE_INPUT_KIND = 'nwrx/core:input'
@@ -23,12 +23,17 @@ export interface FlowEvents {
 
   // Node
   'node:create': [node: NodeInstance]
-  'node:meta': [node: NodeInstance, key: string, value: unknown]
-  'node:data': [node: NodeInstance, data: Record<string, unknown>]
-  'node:dataSchema': [node: NodeInstance, schema: DataSchema]
-  'node:result': [node: NodeInstance, result: Record<string, unknown>]
-  'node:resultSchema': [node: NodeInstance, schema: ResultSchema]
   'node:remove': [node: NodeInstance]
+  'node:state': [node: NodeInstance, state: NodeState, meta: NodeEventMeta]
+  'node:meta': [node: NodeInstance, key: string, value: unknown, meta: NodeEventMeta]
+
+  // Node Data & Result
+  'node:data': [node: NodeInstance, data: Record<string, unknown>, meta: NodeEventMeta]
+  'node:dataSchema': [node: NodeInstance, schema: DataSchema, meta: NodeEventMeta]
+  'node:dataParseError': [node: NodeInstance, key: string, error: Error, meta: NodeEventMeta]
+  'node:result': [node: NodeInstance, result: Record<string, unknown>, meta: NodeEventMeta]
+  'node:resultSchema': [node: NodeInstance, schema: ResultSchema, meta: NodeEventMeta]
+  'node:resultParseError': [node: NodeInstance, key: string, error: Error, meta: NodeEventMeta]
 
   // Node Lifecycle
   'node:start': [node: NodeInstance, data: Record<string, unknown>, meta: NodeEventMeta]
@@ -60,9 +65,8 @@ export interface FlowMeta {
 
 export interface FlowOptions {
   meta?: FlowMeta
-  resolveNode?: (kind: string) => Node
-  resolveSecret?: (name: string) => MaybePromise<string | undefined>
-  resolveVariable?: (name: string) => MaybePromise<string | undefined>
+  resolveNode?: (kind: string) => MaybePromise<Node>
+  resolveReference?: (flow: Flow, type: string, name: string) => MaybePromise<unknown>
 }
 
 export interface Link {
@@ -94,16 +98,14 @@ export interface FlowContext {
  */
 export class Flow implements Disposable, FlowOptions {
   constructor(options: FlowOptions = {}) {
-    if (options.meta) this.meta = options.meta
-    if (options.resolveNode) this.resolveNode = options.resolveNode
-    if (options.resolveSecret) this.resolveSecret = options.resolveSecret
-    if (options.resolveVariable) this.resolveVariable = options.resolveVariable
+    this.meta = options.meta ?? {}
+    this.resolveNode = options.resolveNode ?? (() => { throw new Error('The `resolveNode` function is not defined') })
+    this.resolveReference = options.resolveReference ?? (() => { throw new Error('The `resolveReference` function is not defined') })
   }
 
-  public meta = {} as FlowMeta
+  public meta
   public resolveNode
-  public resolveSecret
-  public resolveVariable
+  public resolveReference
 
   public nodes = [] as NodeInstance[]
   public context = {} as FlowContext
@@ -143,7 +145,7 @@ export class Flow implements Disposable, FlowOptions {
         // --- If the value is an array, iterate over each value and add the links.
         if (Array.isArray(value)) {
           for (const v of value) {
-            const link = this.fromLink(v)
+            const link = this.linkParse(v)
             if (!link) continue
             links.push({
               sourceId: link.sourceId,
@@ -156,7 +158,7 @@ export class Flow implements Disposable, FlowOptions {
 
         // --- Otherwise, add the link if the value is a link.
         else {
-          const link = this.fromLink(value)
+          const link = this.linkParse(value)
           if (!link) continue
           links.push({
             sourceId: link.sourceId,
@@ -170,17 +172,39 @@ export class Flow implements Disposable, FlowOptions {
     return links
   }
 
-  private toLink(sourceId: string, sourceKey: string): string {
+  private linkStringify(sourceId: string, sourceKey: string): string {
     return `$NODE.${sourceId}:${sourceKey}`
   }
 
-  private fromLink(value: unknown): { sourceId: string; sourceKey: string } | undefined {
+  private linkParse(value: unknown): { sourceId: string; sourceKey: string } | undefined {
     if (typeof value !== 'string') return
     const LINK_EXP = /^\$NODE\.(?<sourceId>[^:]+):(?<sourceKey>\w+)$/
     const match = LINK_EXP.exec(value)
     if (!match) return
     const { sourceId, sourceKey } = match.groups!
     return { sourceId, sourceKey }
+  }
+
+  private bind(instance: NodeInstance): void {
+    const isAlreadyBound = this.nodes.includes(instance)
+    if (isAlreadyBound) throw new Error('The node instance is already bound to the flow')
+
+    // --- Bind the instance and flow together.
+    instance.flow = this
+    this.nodes.push(instance)
+
+    instance.on('data', (...payload) => this.dispatch('node:data', instance, ...payload))
+    instance.on('dataSchema', (...payload) => this.dispatch('node:dataSchema', instance, ...payload))
+    instance.on('dataParseError', (...payload) => this.dispatch('node:dataParseError', instance, ...payload))
+    instance.on('result', (...payload) => this.dispatch('node:result', instance, ...payload))
+    instance.on('resultSchema', (...payload) => this.dispatch('node:resultSchema', instance, ...payload))
+    instance.on('resultParseError', (...payload) => this.dispatch('node:resultParseError', instance, ...payload))
+    instance.on('state', (...payload) => this.dispatch('node:state', instance, ...payload))
+    instance.on('meta', (...payload) => this.dispatch('node:meta', instance, ...payload))
+    instance.on('start', (...payload) => this.dispatch('node:start', instance, ...payload))
+    instance.on('end', (...payload) => this.dispatch('node:end', instance, ...payload))
+    instance.on('abort', (...payload) => this.dispatch('node:abort', instance, ...payload))
+    instance.on('error', (...payload) => this.dispatch('node:error', instance, ...payload))
   }
 
   /***************************************************************************/
@@ -228,32 +252,26 @@ export class Flow implements Disposable, FlowOptions {
    * using flow = createFlow()
    * flow.createNode(Core.nodes.Entrypoint)
    */
-  public add<T extends DataSchema, U extends ResultSchema>(node: string, options?: Omit<NodeInstanceOptions<T, U>, 'node'> ): NodeInstance<T, U>
-  public add<T extends DataSchema, U extends ResultSchema>(node: Node<string, T, U>, options?: Omit<NodeInstanceOptions<T, U>, 'node'> ): NodeInstance<T, U>
-  public add(node: Node | string, options?: Omit<NodeInstanceOptions, 'node'> ): NodeInstance {
+  public async add<T extends DataSchema, U extends ResultSchema>(node: Node<string, T, U> | string, options?: NodeInstanceOptions<T, U> ): Promise<NodeInstance<T, U>> {
 
     // --- If the node is a string, resolve the node using the local `resolveNode` function.
     if (typeof node === 'string') {
-      const message = `Cannot resolve node "${node}" because the \`resolveNode\` function is not defined`
-      if (!this.resolveNode) throw new Error(message)
+      if (!this.resolveNode) throw new Error(`Cannot resolve node "${node}" because the \`resolveNode\` function is not defined`)
       const kind = node
-      node = this.resolveNode(kind)
+      node = await this.resolveNode(kind)
       if (!node) throw new Error(`The node resolver could not resolve the node "${kind}"`)
     }
 
     // --- Create the node instance and add it to the flow.
-    const instance = new NodeInstance(this, { ...options, node }) as NodeInstance
-    this.nodes.push(instance)
-    this.dispatch('node:create', instance)
-    instance.on('data', data => this.dispatch('node:data', instance, data))
-    instance.on('dataSchema', schema => this.dispatch('node:dataSchema', instance, schema))
-    instance.on('result', result => this.dispatch('node:result', instance, result))
-    instance.on('resultSchema', schema => this.dispatch('node:resultSchema', instance, schema))
-    instance.on('meta', (key, value) => this.dispatch('node:meta', instance, key, value))
-    instance.on('start', (data, meta) => this.dispatch('node:start', instance, data, meta))
-    instance.on('abort', meta => this.dispatch('node:abort', instance, meta))
-    instance.on('end', (data, result, meta) => this.dispatch('node:end', instance, data, result, meta))
-    instance.on('error', (error, meta) => this.dispatch('node:error', instance, error, meta))
+    const instance = createNodeInstance<T, U>(node, {
+      ...options,
+      flow: this,
+      resolveReference: (type, name) => this.resolveReference(this, type, name),
+    })
+
+    // --- Bind and return the node instance.
+    this.dispatch('node:create', instance as NodeInstance)
+    this.bind(instance as NodeInstance)
     return instance
   }
 
@@ -314,13 +332,13 @@ export class Flow implements Disposable, FlowOptions {
 
     // --- If the target socket is not iterable, set the value directly.
     if (!targetSocket.isIterable) {
-      const link = this.toLink(sourceId, sourceKey)
+      const link = this.linkStringify(sourceId, sourceKey)
       targetNode.setDataValue(targetKey, link)
       return
     }
 
     // --- Otherwise, append the value to the target socket.
-    const newValue = this.toLink(sourceId, sourceKey)
+    const newValue = this.linkStringify(sourceId, sourceKey)
     const rawValue = targetNode.data[targetKey] ?? []
     const rawValueArray = Array.isArray(rawValue) ? rawValue : [rawValue]
     if (rawValueArray.includes(newValue)) return
@@ -354,7 +372,7 @@ export class Flow implements Disposable, FlowOptions {
         // --- Filter out the link if the source and target are specified.
         if (socket?.isIterable && Array.isArray(value)) {
           const newValue = value.filter((v: string) => {
-            const link = this.fromLink(v)
+            const link = this.linkParse(v)
             if (!link) return true
             if (sourceId && link.sourceId !== sourceId) return true
             if (sourceId && sourceKey && link.sourceKey !== sourceKey) return true
@@ -365,7 +383,7 @@ export class Flow implements Disposable, FlowOptions {
 
         // --- Set the value to `undefined` if the source and target are specified.
         else {
-          const link = this.fromLink(value)
+          const link = this.linkParse(value)
           if (!link) continue
           if (sourceId && link.sourceId !== sourceId) continue
           if (sourceId && sourceKey && link.sourceKey !== sourceKey) continue
@@ -406,10 +424,6 @@ export class Flow implements Disposable, FlowOptions {
       this.threadStart = Date.now()
       this.input = input
       this.output = {}
-      for (const node of this.nodes) {
-        node.isDone = false
-        node.result = {}
-      }
 
       // --- If the node that ended is connected to other nodes, start the connected nodes.
       const stop = this.on('node:end', (node, data, result) => {
@@ -429,7 +443,10 @@ export class Flow implements Disposable, FlowOptions {
       // --- Check from time to time if at least one node is still running.
       // --- If not, stop the flow and dispatch the flow:end event.
       const interval = setInterval(() => {
-        for (const node of this.nodes) if (node.isRunning) return
+        for (const node of this.nodes) {
+          if (node.state === 'RUNNING') return
+          if (node.state === 'PROCESSING') return
+        }
         this.isRunning = false
         clearInterval(interval)
         stop()
