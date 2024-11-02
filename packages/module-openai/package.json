@@ -27,8 +27,6 @@
   "dependencies": {
     "@nwrx/core": "workspace:*",
     "@nwrx/module-core": "workspace:*",
-    "@types/json-schema": "7.0.15",
-    "@unshared/string": "0.1.0",
-    "@unshared/validation": "0.1.0"
+    "@types/json-schema": "7.0.15"
   }
 }
