@@ -12,9 +12,9 @@ function getAlertIcon(alert: Alert) {
 }
 
 function getAlertIconColor(alert: Alert) {
-  if (alert.type === 'error') return 'text-danger-500'
-  if (alert.type === 'success') return 'text-success-500'
-  if (alert.type === 'warning') return 'text-warning-500'
+  if (alert.type === 'error') return 'text-danger'
+  if (alert.type === 'success') return 'text-success'
+  if (alert.type === 'warning') return 'text-warning'
   return 'text-layout'
 }
 </script>
