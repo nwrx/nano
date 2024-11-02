@@ -42,11 +42,11 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
         flow.icon = payload.icon
         flow.description = payload.description
         flow.isRunning = payload.isRunning
-        flow.peers.push(...payload.peers.filter(p => p.id !== flow.peerId))
-        flow.nodes.push(...payload.nodes)
-        flow.categories.push(...payload.categories)
-        flow.secrets.push(...payload.secrets)
-        flow.variables.push(...payload.variables)
+        flow.peers = payload.peers.filter(p => p.id !== flow.peerId)
+        flow.nodes = payload.nodes
+        flow.categories = payload.categories
+        flow.secrets = payload.secrets
+        flow.variables = payload.variables
         break
       }
       case 'flow:meta': {
@@ -114,59 +114,8 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
       // --- Node events.
       case 'node:create': {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { event: _, ...node } = payload
+        const { event, ...node } = payload
         flow.nodes.push(node)
-        flow.nodes = [...flow.nodes]
-        break
-      }
-      case 'node:start': {
-        const { id } = payload
-        const node = flow.nodes.find(n => n.id === id)
-        if (!node) return
-        node.error = undefined
-        node.isRunning = true
-        flow.nodes = [...flow.nodes]
-        break
-      }
-      case 'node:end':
-      case 'node:abort': {
-        const { id } = payload
-        const node = flow.nodes.find(n => n.id === id)
-        if (!node) return
-        node.isRunning = false
-        flow.nodes = [...flow.nodes]
-        events.value.push(payload)
-        break
-      }
-      case 'node:data': {
-        const { id, data } = payload
-        const node = flow.nodes.find(n => n.id === id)
-        if (!node) return
-        node.data = data
-        flow.nodes = [...flow.nodes]
-        break
-      }
-      case 'node:dataSchema': {
-        const { id, schema } = payload
-        const node = flow.nodes.find(n => n.id === id)
-        if (!node) return
-        node.dataSchema = schema
-        flow.nodes = [...flow.nodes]
-        break
-      }
-      case 'node:result': {
-        const { id, result } = payload
-        const node = flow.nodes.find(n => n.id === id)
-        if (!node) return
-        node.result = result
-        flow.nodes = [...flow.nodes]
-        break
-      }
-      case 'node:resultSchema': {
-        const { id, schema } = payload
-        const node = flow.nodes.find(n => n.id === id)
-        if (!node) return
-        node.resultSchema = schema
         flow.nodes = [...flow.nodes]
         break
       }
@@ -185,6 +134,23 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
         flow.nodes.splice(indexNode, 1)
         break
       }
+      case 'node:start': {
+        const { id } = payload
+        const node = flow.nodes.find(n => n.id === id)
+        if (!node) return
+        node.error = undefined
+        flow.nodes = [...flow.nodes]
+        break
+      }
+      case 'node:end':
+      case 'node:abort': {
+        const { id } = payload
+        const node = flow.nodes.find(n => n.id === id)
+        if (!node) return
+        flow.nodes = [...flow.nodes]
+        events.value.push(payload)
+        break
+      }
       case 'node:error': {
         const { id, message } = payload
         const node = flow.nodes.find(n => n.id === id)
@@ -192,6 +158,66 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
         node.error = message
         flow.nodes = [...flow.nodes]
         events.value.push(payload)
+        break
+      }
+      case 'node:state': {
+        const { id, state } = payload
+        const node = flow.nodes.find(n => n.id === id)
+        if (!node) return
+        node.state = state
+        flow.nodes = [...flow.nodes]
+        break
+      }
+
+      // --- Node Data
+      case 'node:data': {
+        const { id, data } = payload
+        const node = flow.nodes.find(n => n.id === id)
+        if (!node) return
+        node.data = data
+        flow.nodes = [...flow.nodes]
+        break
+      }
+      case 'node:dataSchema': {
+        const { id, schema } = payload
+        const node = flow.nodes.find(n => n.id === id)
+        if (!node) return
+        node.dataSchema = schema
+        flow.nodes = [...flow.nodes]
+        break
+      }
+      case 'node:dataParseError': {
+        const { id, key, message } = payload
+        const node = flow.nodes.find(n => n.id === id)
+        if (!node) return
+        node.dataParseErrors[key] = message
+        flow.nodes = [...flow.nodes]
+        break
+      }
+
+      // --- Node Result
+      case 'node:result': {
+        const { id, result } = payload
+        const node = flow.nodes.find(n => n.id === id)
+        if (!node) return
+        node.result = result
+        flow.nodes = [...flow.nodes]
+        break
+      }
+      case 'node:resultSchema': {
+        const { id, schema } = payload
+        const node = flow.nodes.find(n => n.id === id)
+        if (!node) return
+        node.resultSchema = schema
+        flow.nodes = [...flow.nodes]
+        break
+      }
+      case 'node:resultParseError': {
+        const { id, key, message } = payload
+        const node = flow.nodes.find(n => n.id === id)
+        if (!node) return
+        node.resultParseErrors[key] = message
+        flow.nodes = [...flow.nodes]
         break
       }
 
