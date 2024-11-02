@@ -8,10 +8,10 @@ import { randomUUID } from 'node:crypto'
 import { createNodeInstance } from './createNodeInstance'
 
 /** The kind of the input node. */
-export const NODE_INPUT_KIND = 'nwrx/core:input'
+export const NODE_INPUT_KIND = 'core/input'
 
 /** The kind of the output node. */
-export const NODE_OUTPUT_KIND = 'nwrx/core:output'
+export const NODE_OUTPUT_KIND = 'core/output'
 
 export interface FlowEventMeta {
   threadId: string
@@ -258,7 +258,7 @@ export class Flow implements Disposable, FlowOptions {
     if (typeof node === 'string') {
       if (!this.resolveNode) throw new Error(`Cannot resolve node "${node}" because the \`resolveNode\` function is not defined`)
       const kind = node
-      node = await this.resolveNode(kind)
+      node = await this.resolveNode(kind) as Node<string, T, U>
       if (!node) throw new Error(`The node resolver could not resolve the node "${kind}"`)
     }
 
@@ -443,10 +443,7 @@ export class Flow implements Disposable, FlowOptions {
       // --- Check from time to time if at least one node is still running.
       // --- If not, stop the flow and dispatch the flow:end event.
       const interval = setInterval(() => {
-        for (const node of this.nodes) {
-          if (node.state === 'RUNNING') return
-          if (node.state === 'PROCESSING') return
-        }
+        for (const node of this.nodes) if (node.state.startsWith('RUNNING')) return
         this.isRunning = false
         clearInterval(interval)
         stop()
