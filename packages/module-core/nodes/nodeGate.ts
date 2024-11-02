@@ -5,7 +5,7 @@ import { categoryBasic } from '../categories'
 import { boolean, string } from '../types'
 
 export const nodeGate = defineNode({
-  kind: 'gate',
+  kind: 'core/gate',
   name: 'Gate',
   icon: 'https://api.iconify.design/tabler:logic-and.svg',
   description: 'Routes a value based on a condition.',

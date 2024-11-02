@@ -1,4 +1,4 @@
-import type { NodeInstanceContext, Type } from '@nwrx/core'
+import type { InstanceContext, Type } from '@nwrx/core'
 import { defineNode } from '@nwrx/core'
 import { defineDataSchema } from '@nwrx/core'
 import { categoryBasic } from '../categories'
@@ -12,15 +12,15 @@ type OutputDataSchema = {
 }
 
 export const nodeOutput = defineNode({
-  kind: 'output',
+  kind: 'core/output',
   name: 'Output',
   icon: 'https://api.iconify.design/carbon:arrow-up.svg',
   category: categoryBasic,
   description: ' A value that is sent to an exitpoint in the flow. The value can be any type of data, such as a string, number, or boolean and is provided as an output from the flow.',
 
-  dataSchema: ({ data }: NodeInstanceContext) => {
+  dataSchema: ({ data }: InstanceContext) => {
     const { type } = data as OutputDataSchema
-    return defineDataSchema<OutputDataSchema>({
+    return defineDataSchema({
       type: {
         type: string as Type<'boolean' | 'number' | 'object' | 'stream' | 'text'>,
         name: 'Type',

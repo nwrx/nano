@@ -1,4 +1,4 @@
-import type { NodeInstanceContext, Type } from '@nwrx/core'
+import type { InstanceContext, Type } from '@nwrx/core'
 import { defineNode } from '@nwrx/core'
 import { defineDataSchema } from '@nwrx/core'
 import { defineResultSchema } from '@nwrx/core'
@@ -20,9 +20,9 @@ export const nodeInput = defineNode({
   category: categoryBasic,
   description: 'A value generated from an entrypoint in the flow. The value can be any type of data, such as a string, number, or boolean and is provided as an input to the flow.',
 
-  dataSchema: ({ data }: NodeInstanceContext) => {
+  dataSchema: ({ data }: InstanceContext) => {
     const { type } = data as InputDataSchema
-    return defineDataSchema<InputDataSchema>({
+    return defineDataSchema({
       type: {
         name: 'Type',
         control: 'select',
