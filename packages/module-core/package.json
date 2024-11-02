@@ -28,6 +28,7 @@
     "@nwrx/core": "workspace:*",
     "@types/json-schema": "7.0.15",
     "@unshared/string": "0.1.0",
+    "@unshared/types": "0.1.0",
     "@unshared/validation": "0.1.0",
     "yaml": "2.6.0"
   }
