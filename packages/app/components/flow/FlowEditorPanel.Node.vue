@@ -33,6 +33,11 @@ const isResultOpen = useVModel(props, 'isResultOpen', emit, { passive: true })
       :placeholder-description="t('name.description.placeholder')"
     />
 
+    <!-- Message -->
+    <div v-if="node.error" class="hint hint-danger p-sm b-x-0 rd-0">
+      {{ node.error }}
+    </div>
+
     <!-- Data -->
     <FlowEditorPanelSection v-model="isDataOpen" :title="t('data.title')" :text="t('data.text')">
       <FlowEditorPanelDataContainer>
@@ -64,12 +69,50 @@ const isResultOpen = useVModel(props, 'isResultOpen', emit, { passive: true })
     </FlowEditorPanelSection>
 
     <!-- Errors -->
-    <FlowEditorPanelSection :title="t('errors.title')" :text="t('errors.text')">
+    <FlowEditorPanelSection :title="t('errors.title')" :text="t('errors.text')" class-content="space-y-4">
+
+      <!-- Data -->
       <FlowEditorPanelDataContainer>
-        <FlowEditorPanelData
-          :name="t('errors.title')"
-          :model-value="node.dataErrors"
-        />
+        <template v-if="Object.keys(node.dataParseErrors).length > 0">
+          <FlowEditorPanelData
+            v-for="(socket, key) in node.dataParseErrors"
+            :key="key"
+            :name="key"
+            :model-value="socket"
+          />
+        </template>
+        <template v-else-if="node.state === 'DONE'">
+          <div class="text-subtle p-sm">
+            {{ t('errors.data.done') }}
+          </div>
+        </template>
+        <template v-else>
+          <div class="text-subtle p-sm">
+            {{ t('errors.data.pending') }}
+          </div>
+        </template>
+      </FlowEditorPanelDataContainer>
+
+      <!-- Result -->
+      <FlowEditorPanelDataContainer>
+        <template v-if="Object.keys(node.resultParseErrors).length > 0">
+          <FlowEditorPanelData
+            v-for="(socket, key) in node.resultParseErrors"
+            :key="key"
+            :name="key"
+            :model-value="socket"
+          />
+        </template>
+        <template v-else-if="node.state === 'DONE'">
+          <div class="text-subtle p-sm">
+            {{ t('errors.result.done') }}
+          </div>
+        </template>
+        <template v-else>
+          <div class="text-subtle p-sm">
+            {{ t('errors.result.pending') }}
+          </div>
+        </template>
       </FlowEditorPanelDataContainer>
     </FlowEditorPanelSection>
 
@@ -104,7 +147,13 @@ en:
   results.title: Result
   results.text: The output data of this node.
   errors.title: Errors
-  errors.text: The errors that occurred during the execution of this node.
+  errors.text: The errors that occurred during the lifecycle of this node.
+  errors.data: Data Resolution
+  errors.data.done: Data resolution was successful.
+  errors.data.pending: Data resolution is pending.
+  errors.result: Result resolution
+  errors.result.done: Result resolution was successful.
+  errors.result.pending: Result resolution is pending.
 fr:
   name.name.placeholder: Étiquette personnalisée
   name.description.placeholder: Décrivez lobjectif de ce nœud dans le flux.
