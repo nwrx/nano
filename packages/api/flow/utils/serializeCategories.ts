@@ -42,8 +42,9 @@ export function serializeCategories() {
   // --- Collect all the categories from the module nodes.
   for (const module of MODULES) {
     if (!module.nodes) continue
-    for (const node of module.nodes) {
-      const nodeJson = serializeNode({ ...node, kind: `${module.kind}:${node.kind}` })
+    for (const key in module.nodes) {
+      const node = module.nodes[key]
+      const nodeJson = serializeNode(node as Node)
 
       // --- If the node has no category, add it to the uncategorized category.
       if (!nodeJson.categoryKind) {
@@ -54,7 +55,7 @@ export function serializeCategories() {
       // --- If the category already exists, add the node to the category.
       // --- Otherwise, create a new category and add the node to the category.
       const category = categories.find(c => c.kind === nodeJson.categoryKind)
-      if (category) { category.nodes.push(nodeJson as Node) }
+      if (category) { category.nodes.push(nodeJson) }
       else {
         categories.push({
           kind: nodeJson.categoryKind,

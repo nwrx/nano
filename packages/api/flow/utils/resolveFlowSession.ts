@@ -1,5 +1,5 @@
 import type { ModuleFlow, User } from '@nwrx/api'
-import type { FlowEventMeta, FlowEvents, Flow as FlowInstance, NodeEventMeta } from '@nwrx/core'
+import type { FlowEventMeta, FlowEvents, Flow as FlowInstance, NodeEventMeta, NodeState } from '@nwrx/core'
 import type { Peer } from 'crossws'
 import type { Repository } from 'typeorm'
 import type { Flow as FlowEntity } from '../entities'
@@ -59,10 +59,15 @@ export interface FlowSessionEventMap extends Record<keyof FlowEvents, unknown> {
   'node:create': NodeInstanceJSON
   'node:remove': { id: string }
   'node:meta': { id: string; key: string; value: unknown }
+  'node:state': { id: string; state: NodeState }
+
   'node:data': { id: string; data: Record<string, unknown> }
   'node:dataSchema': { id: string; schema: DataSocketJSON[] }
+  'node:dataParseError': { id: string; key: string; message: string }
+
   'node:result': { id: string; result: Record<string, unknown> }
   'node:resultSchema': { id: string; schema: ResultSocketJSON[] }
+  'node:resultParseError': { id: string; key: string; message: string }
 
   // Node lifecycle
   'node:start': { id: string; data: Record<string, unknown> } & NodeEventMeta
@@ -112,10 +117,12 @@ export class FlowSessionInstance {
     this.flow.on('flow:end', (output, meta) => this.broadcast({ event: 'flow:end', output, ...meta }))
 
     // --- Node events.
+    this.flow.on('node:state', ({ id }, state) => this.broadcast({ event: 'node:state', id, state }))
     this.flow.on('node:create', node => this.broadcast({ event: 'node:create', ...serializeNodeInstance(node) }))
     this.flow.on('node:remove', ({ id }) => this.broadcast({ event: 'node:remove', id }))
     this.flow.on('node:meta', ({ id }, key, value) => this.broadcast({ event: 'node:meta', id, key, value }))
     this.flow.on('node:data', ({ id }, data) => this.broadcast({ event: 'node:data', id, data }))
+    this.flow.on('node:dataParseError', ({ id }, key, error) => this.broadcast({ event: 'node:dataParseError', id, key, message: error.message }))
     this.flow.on('node:dataSchema', ({ id }, schema) => this.broadcast({ event: 'node:dataSchema', id, schema: serializeDataSchema(schema) }))
     this.flow.on('node:result', ({ id }, result) => this.broadcast({ event: 'node:result', id, result }))
     this.flow.on('node:resultSchema', ({ id }, schema) => this.broadcast({ event: 'node:resultSchema', id, schema: serializeResultSchema(schema) }))
@@ -213,6 +220,15 @@ export class FlowSessionInstance {
     }
   }
 
+  /**
+   * Handle a message from a peer. This function is called when a peer sends a
+   * message to the flow session WebSocket. The message is parsed and the event
+   * is dispatched to the corresponding event handler.
+   *
+   * @param peer The peer that sent the message.
+   * @param message The message that was sent by the peer.
+   * @returns The response to the message.
+   */
   async onMessage(peer: Peer, message: FlowSessionMessage) {
 
     // --- User events.
@@ -247,34 +263,34 @@ export class FlowSessionInstance {
       }
 
       // --- Flow variable events.
-      case 'flowVariableCreate': {
-        const { user } = await userModule.authenticate(peer)
-        const { workspace, project } = parameters
-        const { name, value } = message
-        const variable = await workspaceModule.createProjectVariable({ user, workspace, project, name, value })
-        const { WorkspaceProjectVariable } = workspaceModule.getRepositories()
-        await WorkspaceProjectVariable.save(variable)
-        this.flow.context.variables.push(name)
-        this.broadcast({ event: 'variables:create', name, value })
-        break
-      }
-      case 'flowVariableUpdate': {
-        const { user } = await userModule.authenticate(peer)
-        const { workspace, project } = parameters
-        const { name, value } = message
-        await workspaceModule.updateProjectVariable({ user, workspace, project, name, value })
-        this.broadcast({ event: 'variables:update', name, value })
-        break
-      }
-      case 'flowVariableRemove': {
-        const { user } = await userModule.authenticate(peer)
-        const { workspace: workspace, project: project } = parameters
-        const { name } = message
-        await workspaceModule.removeProjectVariable({ user, workspace, project, name })
-        delete this.flow.variables[name]
-        this.broadcast({ event: 'variables:remove', name })
-        break
-      }
+      // case 'flowVariableCreate': {
+      //   const { user } = await userModule.authenticate(peer)
+      //   const { workspace, project } = parameters
+      //   const { name, value } = message
+      //   const variable = await workspaceModule.createProjectVariable({ user, workspace, project, name, value })
+      //   const { WorkspaceProjectVariable } = workspaceModule.getRepositories()
+      //   await WorkspaceProjectVariable.save(variable)
+      //   this.flow.context.variables.push(name)
+      //   this.broadcast({ event: 'variables:create', name, value })
+      //   break
+      // }
+      // case 'flowVariableUpdate': {
+      //   const { user } = await userModule.authenticate(peer)
+      //   const { workspace, project } = parameters
+      //   const { name, value } = message
+      //   await workspaceModule.updateProjectVariable({ user, workspace, project, name, value })
+      //   this.broadcast({ event: 'variables:update', name, value })
+      //   break
+      // }
+      // case 'flowVariableRemove': {
+      //   const { user } = await userModule.authenticate(peer)
+      //   const { workspace: workspace, project: project } = parameters
+      //   const { name } = message
+      //   await workspaceModule.removeProjectVariable({ user, workspace, project, name })
+      //   delete this.flow.variables[name]
+      //   this.broadcast({ event: 'variables:remove', name })
+      //   break
+      // }
 
       // // --- Flow secret events.
       // case 'flowSecretCreate': {
@@ -309,18 +325,15 @@ export class FlowSessionInstance {
 
       // --- Node events.
       case 'nodeCreate': {
-        const instance = this.flow.add(message.kind, {
-          meta: { position: { x: message.x, y: message.y } },
-          initialData: {},
-          initialResult: {},
-        })
+        const position = { x: message.x, y: message.y }
+        const instance = await this.flow.add(message.kind, { meta: { position } })
         await instance.refresh()
         await this.save()
         break
       }
       case 'nodeDuplicate': {
         const instance = this.flow.get(message.nodeId)
-        const duplicate = this.flow.add(instance.node, {
+        const duplicate = await this.flow.add(instance.node, {
           meta: { position: { x: message.x, y: message.y } },
           initialData: instance.data,
         })
@@ -340,6 +353,7 @@ export class FlowSessionInstance {
         const { nodeId, portId, value } = message
         const node = this.flow.get(nodeId)
         node.setDataValue(portId, value)
+        await node.refresh()
         await node.refresh()
         await this.save()
         break

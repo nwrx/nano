@@ -9,6 +9,7 @@ export interface ResultSocketJSON {
   typeColor?: string
   typeDescription?: string
   description?: string
+  isInternal?: boolean
 }
 
 /**
@@ -32,5 +33,6 @@ export function serializeResultSchema(schema?: MaybeFunction<MaybePromise<DataSc
     typeColor: socket.type?.color,
     typeDescription: socket.type?.description,
     description: socket.description,
+    isInternal: socket.isInternal,
   }))
 }
