@@ -1,3 +1,6 @@
-export * from './defineNodeLanguageModel'
+export * from './defineLanguageModel'
+export * from './OpenaiChatMessage'
+export * from './OpenaiChatRequest'
+export * from './OpenaiChatResponse'
 export * from './openaiGetBody'
 export * from './openaiGetModels'

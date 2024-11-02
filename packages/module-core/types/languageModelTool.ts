@@ -53,10 +53,10 @@ export interface LanguageModelTool<T = ObjectLike> {
    *
    * @example ({ location, unit }) => `What is the temperature in ${location} in ${unit}?`
    */
-  call: (data: T) => MaybePromise<string>
+  call: (parameters: T) => MaybePromise<string>
 }
 
-export const languageModelTool = defineType<LanguageModelTool>({
+export const languageModelTool = defineType({
   kind: 'language-model-tool',
   name: 'Language Model Tool',
   color: '#5636D9',
@@ -64,7 +64,7 @@ export const languageModelTool = defineType<LanguageModelTool>({
   parse: createParser({
     name: [assertStringNotEmpty, toKebabCase],
     description: assertStringNotEmpty,
-    schema: assertObject<JSONSchema4>,
-    call: assertFunction<LanguageModelTool['call']>,
-  }),
+    schema: assertObject,
+    call: assertFunction,
+  }) as (value: unknown) => LanguageModelTool,
 })
