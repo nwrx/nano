@@ -32,6 +32,15 @@ const INFERENCE_DATA_SCHEMA = defineDataSchema({
     control: 'socket',
     description: 'The message to generate a completion for.',
   },
+  seed: {
+    type: number,
+    control: 'slider',
+    name: 'Seed',
+    defaultValue: 0,
+    sliderMin: 0,
+    sliderMax: 100,
+    description: 'The seed used to generate the completion.',
+  },
   frequencyPenalty: {
     type: number,
     control: 'slider',
@@ -119,7 +128,7 @@ export const inference = defineNode({
   process: async({ data }) => {
     const { model, tools } = data
     const { url, token, getBody, onData, onError } = model
-    const body = getBody(data) as ObjectLike
+    const body = getBody(data)
 
     let canResume = false
     function resume() {

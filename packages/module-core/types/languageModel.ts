@@ -4,7 +4,7 @@ import { defineType } from '@nwrx/core'
 import { assertFunction, assertStringNotEmpty, createParser } from '@unshared/validation'
 
 /** The context that is passed in the model completion process. */
-interface OnDataContext<T, U> {
+export interface LanguageModelOnDataContext<T = ObjectLike, U = ObjectLike> {
   body: T
   data: U
   call: (name: string, data: ObjectLike) => Promise<string>
@@ -12,7 +12,7 @@ interface OnDataContext<T, U> {
 }
 
 /** The interface that represents a language model. */
-export interface LanguageModel<T = any, U = any> {
+export interface LanguageModel<T = ObjectLike, U = ObjectLike> {
 
   /**
    * The URL of the model API. It is used to specify the endpoint to which the
@@ -55,7 +55,7 @@ export interface LanguageModel<T = any, U = any> {
    *
    * @example response => response.choices[0].text
    */
-  onData: (context: OnDataContext<T, U>) => MaybePromise<InferenceResult | void>
+  onData: (context: LanguageModelOnDataContext<T, U>) => MaybePromise<InferenceResult | void>
 
   /**
    * The function that handles non OK responses from the model API. It is used to

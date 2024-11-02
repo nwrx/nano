@@ -188,8 +188,8 @@ export class NodeInstance<T extends DataSchema = DataSchema, U extends ResultSch
 
     // --- Get the parser for the data property.
     for (const key of keys) {
-      let value = this.data[key]
       try {
+        let value = this.data[key]
         const socket = this.dataSchema[key]
 
         // --- Skip properties not present in schema.
@@ -218,11 +218,6 @@ export class NodeInstance<T extends DataSchema = DataSchema, U extends ResultSch
         dataErrors[key] = error as Error
         this.dispatch('dataParseError', key, error as Error, this.eventMeta)
         this.dispatch('error', error as Error, this.eventMeta)
-        console.warn(`Unexpected data on "${key}"`, {
-          raw: this.data[key],
-          value,
-          type: this.dataSchema[key].type.kind,
-        })
         isReady = false
       }
     }

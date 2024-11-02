@@ -2,7 +2,6 @@
 import type { Node } from '@nwrx/core'
 import type { NodeJSON } from './serializeNode'
 import { Core } from '@nwrx/module-core'
-import { Openai } from '@nwrx/module-openai'
 import { serializeNode } from './serializeNode'
 
 /** The serialized representation of a flow category. */
@@ -20,7 +19,6 @@ export interface FlowCategoryNodesJSON {
  * TODO: This should be dynamically loaded from module registry.
  */
 const MODULES = [
-  Openai,
   Core,
 ]
 
