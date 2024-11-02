@@ -2,10 +2,7 @@ import type { Node } from './defineNode'
 import { assertNotNil, assertStringNotEmpty } from '@unshared/validation'
 
 /** The options for defining a flow module. */
-export interface Module<
-  K extends string = string,
-  N extends Node = Node,
-> {
+export interface Module<K extends string = string> {
 
   /**
    * The internal name of the flow module. The name is used to identify the module
@@ -15,6 +12,14 @@ export interface Module<
    * @example 'microsoft-azure'
    */
   kind: K
+
+  /**
+   * The nodes that are defined in the flow module. The nodes are used to define
+   * the logic of the flow and can be connected to other nodes to create a flow
+   *
+   * @example { CheckCredentials, CreateResource, DeleteResource }
+   */
+  nodes: Record<string, Node<string, any, any>>
 
   /**
    * The display name of the flow module. The label is used to display the module
@@ -42,14 +47,6 @@ export interface Module<
    * @example 'A collection of nodes for working with Microsoft Azure services.'
    */
   description?: string
-
-  /**
-   * The nodes that are defined in the flow module. The nodes are used to define
-   * the logic of the flow and can be connected to other nodes to create a flow
-   *
-   * @example { CheckCredentials, CreateResource, DeleteResource }
-   */
-  nodes?: N[]
 }
 
 /**
@@ -61,21 +58,21 @@ export interface Module<
  */
 export function defineModule<
   K extends string,
-  N extends Node,
->(options: Module<K, N>): Module<K, N> {
+>(options: Module<K>): Module<K> {
   assertNotNil(options)
   assertStringNotEmpty(options.kind)
 
-  for (const node of options.nodes ?? []) {
-    if (!node.kind.startsWith(options.kind))
-      throw new Error(`The node kind must start with the module kind: ${options.kind}`)
+  for (const name in options.nodes) {
+    const node = options.nodes[name]
+    const startsWithKind = node.kind.startsWith(`${options.kind}/`)
+    if (!startsWithKind) throw new Error(`The node kind '${node.kind}' does not start with the module kind '${options.kind}/'.`)
   }
 
   return {
     kind: options.kind,
+    nodes: options.nodes,
     name: options.name ?? options.kind,
     icon: options.icon,
     description: options.description,
-    nodes: options.nodes ?? [] as N[],
   }
 }

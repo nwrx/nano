@@ -1,6 +1,4 @@
-import type { IsNever, Loose, NotUndefined } from '@unshared/types'
 import type { Type } from './defineType'
-import type { ObjectLike } from './types'
 
 /**
  * Represents a socket in a flow node that outputs data. This type allows the definition
@@ -8,13 +6,8 @@ import type { ObjectLike } from './types'
  * to the expected structure and type.
  *
  * @template T The type of data that the socket will output.
- * @template O A boolean indicating whether the socket is optional.
  */
-export type ResultSocket<
-  T = unknown,
-  O extends boolean | undefined = boolean | undefined,
-  A extends boolean | undefined = boolean | undefined,
-> = Loose<{
+export interface ResultSocket<T = unknown> {
 
   /**
    * The type of the socket. This is used to validate the data passed to the socket
@@ -57,14 +50,6 @@ export type ResultSocket<
   description?: string
 
   /**
-   * Indicates whether the socket is optional. If true, the node can execute without
-   * a value for this socket, provided all other required sockets have values.
-   *
-   * @default false
-   */
-  isOptional: O
-
-  /**
    * Indicates whether the socket is internal and should be hidden from the user
    * in the editor. Internal sockets are used for internal data flow and are not
    * intended to interacted with directly by the user.
@@ -78,14 +63,22 @@ export type ResultSocket<
   isInternal?: boolean
 
   /**
+   * Indicates whether the socket is optional. If true, the node can execute without
+   * a value for this socket, provided all other required sockets have values.
+   *
+   * @default false
+   */
+  isOptional?: boolean
+
+  /**
    * Indicates whether the socket can accept multiple values. If true, the socket
    * will allow an array of values to be passed. Internally, the node will always
    * cast the values into an array before processing them.
    *
    * @default false
    */
-  isIterable?: A
-}>
+  isIterable?: boolean
+}
 
 /**
  * Defines the schema for a node's result, mapping socket names to their configurations.
@@ -93,11 +86,7 @@ export type ResultSocket<
  *
  * @template T An object representing the expected structure of the result data.
  */
-export type ResultSchema<T extends ObjectLike = never> =
-  IsNever<T> extends true
-    ? Record<string, ResultSocket>
-    : { [P in keyof T as undefined extends T[P] ? never : P & string]-?: ResultSocket<T[P], false | undefined> } &
-      { [P in keyof T as undefined extends T[P] ? P & string : never]-?: ResultSocket<NotUndefined<T[P]>, true> }
+export type ResultSchema = Record<string, ResultSocket>
 
 /**
  * Extracts the raw type described by the given schema instance.
@@ -119,10 +108,10 @@ export type ResultSchema<T extends ObjectLike = never> =
  */
 export type ResultFromSchema<T extends ResultSchema> =
   { [P in keyof T]:
-    T[P] extends { type: Type<infer U>; isOptional: true; isArray: true } ? U[] | undefined :
-      T[P] extends { type: Type<infer U>; isOptional: true } ? U | undefined :
-        T[P] extends { type: Type<infer U>; isArray: true } ? U[] :
-          T[P] extends { type: Type<infer U> } ? U : never
+    T[P] extends { [x: string]: any; type: Type<infer U>; isOptional: true; isIterable: true } ? U[] | undefined :
+      T[P] extends { [x: string]: any; type: Type<infer U>; isOptional: true } ? U | undefined :
+        T[P] extends { [x: string]: any; type: Type<infer U>; isIterable: true } ? U[] :
+          T[P] extends { [x: string]: any; type: Type<infer U> } ? U : unknown
   }
 
 /**
@@ -130,7 +119,7 @@ export type ResultFromSchema<T extends ResultSchema> =
  * This schema informs the editor of the expected result structure and validates the
  * result data during execution.
  *
- * @param socket The schema defining the node's result structure.
+ * @param schema The schema defining the node's result structure.
  * @returns The validated schema for the node's result.
  * @example
  * import { string, number } from '@nwrx/module-core'
@@ -140,8 +129,6 @@ export type ResultFromSchema<T extends ResultSchema> =
  *   other: { type: number, label: 'Other', description: 'Another value to process.', isOptional: true },
  * })
  */
-export function defineResultSchema<T extends ResultSchema>(socket: T): T
-export function defineResultSchema<T extends ObjectLike>(socket: ResultSchema<T>): ResultSchema<T>
-export function defineResultSchema(socket: ResultSchema): ResultSchema {
-  return socket
+export function defineResultSchema<T extends ResultSchema>(schema: Readonly<T>): T {
+  return schema
 }
