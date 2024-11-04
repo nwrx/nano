@@ -17,9 +17,7 @@ const session = useFlowSession(workspace, project, flow)
 // --- Set the page title and description.
 useHead(() => ({
   title: session.flow.name,
-  meta: [
-    { title: 'description', content: session.flow.description },
-  ],
+  meta: [{ title: 'description', content: session.flow.description }],
 }))
 
 // --- Make sure to leave the flow session when the user navigates away.
@@ -54,7 +52,6 @@ const isPanelNodeResultOpen = useLocalStorage<boolean>('__FlowEditorPanel_NodeRe
         :icon="session.flow.icon"
         :description="session.flow.description"
         :nodes="session.flow.nodes"
-        :links="session.flow.links"
         :methods="[]"
         :categories="session.flow.categories"
         :secrets="session.flow.secrets"
@@ -81,7 +78,8 @@ const isPanelNodeResultOpen = useLocalStorage<boolean>('__FlowEditorPanel_NodeRe
         @node-create="(kind, x, y) => session.nodeCreate(kind, x, y)"
         @node-duplicate="(nodeId, x, y) => session.nodeDuplicate(nodeId, x, y)"
         @nodes-move="(nodes) => session.nodeSetPosition(...nodes)"
-        @node-set-data-value="(id, portId, value) => session.nodeSetDataValue(id, portId, value)"
+        @node-set-data-value="(id, key, value) => session.nodeSetDataValue(id, key, value)"
+        @node-search-data-options="(id, key, query) => session.nodeSearchDataOptions(id, key, query)"
         @nodes-remove="(ids) => session.nodeRemove(ids)"
         @link-remove="(id) => session.linkRemove(id)"
         @link-create="(source, target) => session.linkCreate(source, target)"

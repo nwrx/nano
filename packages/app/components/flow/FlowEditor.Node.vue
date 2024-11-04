@@ -15,7 +15,8 @@ const emit = defineEmits<{
   start: []
   abort: []
   click: [event: MouseEvent]
-  setDataValue: [portId: string, value: unknown]
+  setDataValue: [key: string, value: unknown]
+  searchDataOptions: [key: string, query: string]
   portGrab: [FlowDragState]
   portAssign: [FlowDragState | void]
   portRelease: []
@@ -128,6 +129,7 @@ function handleClick(event: MouseEvent) {
         :error="dataParseErrors[socket.key]"
         kind="target"
         @set-value="(value) => emit('setDataValue', socket.key, value)"
+        @search-options="(key, query) => emit('searchDataOptions', key, query)"
         @grab="(state) => emit('portGrab', state)"
         @assign="(state) => emit('portAssign', state)"
         @release="() => emit('portRelease')"

@@ -5,14 +5,15 @@ import type { SocketListOption } from '@nwrx/core'
 const props = defineProps<{
   name?: string
   badge?: boolean
+  search?: string
   modelValue: unknown
   defaultValue?: unknown
-  options?: Array<SocketListOption<unknown>>
-  getOptions?: (search: string) => Promise<Array<SocketListOption<unknown>>>
+  options?: SocketListOption[]
 }>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
+  'search': [query: string]
 }>()
 
 // --- Localize
@@ -20,7 +21,6 @@ const { t } = useI18n()
 
 // --- State
 const isOpen = ref(false)
-const search = ref<string>('')
 const input = ref<HTMLInputElement>()
 
 // --- Two-way binding for the model value.
@@ -29,19 +29,10 @@ const model = useVModel(props, 'modelValue', emit, {
   eventName: 'update:modelValue',
 })
 
-// --- Search the options based on the search query.
-const filteredOptions = computed(() => {
-  if (!props.options) return []
-  if (!search.value) return Object.values(props.options)
-  const searchLower = search.value.toLowerCase()
-  const result: Array<SocketListOption<unknown>> = []
-  for (const option of Object.values(props.options)) {
-    if (option.label.toLowerCase().includes(searchLower)) result.push(option)
-    else if (option.description?.toLowerCase().includes(searchLower)) result.push(option)
-    else if (typeof option.value !== 'string') continue
-    else if (option.value.toLowerCase().includes(searchLower)) result.push(option)
-  }
-  return result
+// --- Two-way binding for the search query.
+const search = useVModel(props, 'search', emit, {
+  passive: true,
+  eventName: 'search',
 })
 
 // --- Resolve the label of the current value if it is set.
@@ -115,7 +106,7 @@ function setOption(option: SocketListOption<unknown>) {
           "
         @wheel.stop>
 
-        <template v-if="filteredOptions.length === 0">
+        <template v-if="options.length === 0">
           <p class="text-xs text-subtle">
             {{ t('list.empty') }}
           </p>
@@ -123,7 +114,7 @@ function setOption(option: SocketListOption<unknown>) {
 
         <template v-else>
           <FlowEditorSocketSelectItem
-            v-for="(option, index) in filteredOptions"
+            v-for="(option, index) in options"
             :key="index"
             :icon="option.icon"
             :label="option.label"
@@ -140,17 +131,17 @@ function setOption(option: SocketListOption<unknown>) {
 <i18n lang="yaml">
 en:
   empty: No default value
-  list.empty: Select list is empty or search query does not match any results.
+  list.empty: No items available, check your search query or node data.
 fr:
   empty: Aucune valeur par défaut
-  list.empty: La liste de sélection est vide ou la requête de recherche ne correspond à aucun résultat.
+  list.empty: Aucun élément disponible, vérifiez votre requête de recherche ou les données du nœud.
 de:
   empty: Kein Standardwert
-  list.empty: Die Liste ist leer oder die Suchanfrage ergibt keine Treffer.
+  list.empty: Keine Elemente verfügbar, überprüfen Sie Ihre Suchanfrage oder Knotendaten.
 es:
   empty: Sin valor predeterminado
-  list.empty: La lista está vacía o la consulta de búsqueda no coincide con ningún resultado.
+  list.empty: No hay elementos disponibles, verifique su consulta de búsqueda o los datos del nodo.
 zh:
   empty: 无默认值
-  list.empty: 列表为空或搜索查询不匹配任何结果。
+  list.empty: 没有可用的项目，请检查您的搜索查询或节点数据。
 </i18n>

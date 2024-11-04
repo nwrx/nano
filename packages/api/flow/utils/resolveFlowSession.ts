@@ -1,5 +1,5 @@
 import type { ModuleFlow, User } from '@nwrx/api'
-import type { FlowEventMeta, FlowEvents, Flow as FlowInstance, NodeEventMeta, NodeState } from '@nwrx/core'
+import type { FlowEventMeta, FlowEvents, Flow as FlowInstance, NodeEventMeta, NodeState, SocketListOption } from '@nwrx/core'
 import type { Peer } from 'crossws'
 import type { Repository } from 'typeorm'
 import type { Flow as FlowEntity } from '../entities'
@@ -37,13 +37,13 @@ export interface FlowSessionEventMap extends Record<keyof FlowEvents, unknown> {
   // Flow
   'flow:refresh': FlowSessionJSON
   'flow:meta': { key: string; value: unknown }
-  'flow:input': { name: string; value: unknown } & FlowEventMeta
-  'flow:output': { name: string; value: unknown } & FlowEventMeta
+  'flow:input': { name: string; value: unknown; meta: FlowEventMeta }
+  'flow:output': { name: string; value: unknown; meta: FlowEventMeta }
 
   // Flow lifecycle
-  'flow:start': { input: Record<string, unknown> } & FlowEventMeta
-  'flow:end': { output: Record<string, unknown> } & FlowEventMeta
-  'flow:abort': { output: Record<string, unknown> } & FlowEventMeta
+  'flow:start': { input: Record<string, unknown>; meta: FlowEventMeta }
+  'flow:end': { output: Record<string, unknown>; meta: FlowEventMeta }
+  'flow:abort': { output: Record<string, unknown>; meta: FlowEventMeta }
 
   // Variables
   'variables:create': { name: string; value: string }
@@ -61,19 +61,20 @@ export interface FlowSessionEventMap extends Record<keyof FlowEvents, unknown> {
   'node:meta': { id: string; key: string; value: unknown }
   'node:state': { id: string; state: NodeState }
 
-  'node:data': { id: string; data: Record<string, unknown> }
-  'node:dataSchema': { id: string; schema: DataSocketJSON[] }
-  'node:dataParseError': { id: string; key: string; message: string }
+  'node:data': { id: string; data: Record<string, unknown>; meta: NodeEventMeta }
+  'node:dataOptions': { id: string; key: string; options: SocketListOption[] }
+  'node:dataSchema': { id: string; schema: DataSocketJSON[]; meta: NodeEventMeta }
+  'node:dataParseError': { id: string; key: string; message: string; meta: NodeEventMeta }
 
-  'node:result': { id: string; result: Record<string, unknown> }
-  'node:resultSchema': { id: string; schema: ResultSocketJSON[] }
-  'node:resultParseError': { id: string; key: string; message: string }
+  'node:result': { id: string; result: Record<string, unknown>; meta: NodeEventMeta }
+  'node:resultSchema': { id: string; schema: ResultSocketJSON[]; meta: NodeEventMeta }
+  'node:resultParseError': { id: string; key: string; message: string; meta: NodeEventMeta }
 
   // Node lifecycle
-  'node:start': { id: string; data: Record<string, unknown> } & NodeEventMeta
-  'node:end': { id: string; data: Record<string, unknown>; result: Record<string, unknown> } & NodeEventMeta
-  'node:abort': { id: string } & NodeEventMeta
-  'node:error': { id: string; message: string } & NodeEventMeta
+  'node:start': { id: string; data: Record<string, unknown>; meta: NodeEventMeta }
+  'node:end': { id: string; data: Record<string, unknown>; result: Record<string, unknown>; meta: NodeEventMeta }
+  'node:abort': { id: string; meta: NodeEventMeta }
+  'node:error': { id: string; message: string; meta: NodeEventMeta }
 
   // User
   'user:join': { id: string; name: string; color: string }
@@ -108,30 +109,39 @@ export class FlowSessionInstance {
 
     // --- Flow events.
     this.flow.on('flow:meta', (key, value) => this.broadcast({ event: 'flow:meta', key, value }))
-    this.flow.on('flow:input', (name, value, meta) => this.broadcast({ event: 'flow:input', name, value, ...meta }))
-    this.flow.on('flow:output', (name, value, meta) => this.broadcast({ event: 'flow:output', name, value, ...meta }))
+    this.flow.on('flow:input', (name, value, meta) => this.broadcast({ event: 'flow:input', name, value, meta }))
+    this.flow.on('flow:output', (name, value, meta) => this.broadcast({ event: 'flow:output', name, value, meta }))
 
     // --- Flow lifecycle events.
-    this.flow.on('flow:start', (input, meta) => this.broadcast({ event: 'flow:start', input, ...meta }))
-    this.flow.on('flow:abort', (output, meta) => this.broadcast({ event: 'flow:abort', output, ...meta }))
-    this.flow.on('flow:end', (output, meta) => this.broadcast({ event: 'flow:end', output, ...meta }))
+    this.flow.on('flow:start', (input, meta) => this.broadcast({ event: 'flow:start', input, meta }))
+    this.flow.on('flow:abort', (output, meta) => this.broadcast({ event: 'flow:abort', output, meta }))
+    this.flow.on('flow:end', (output, meta) => this.broadcast({ event: 'flow:end', output, meta }))
 
     // --- Node events.
     this.flow.on('node:state', ({ id }, state) => this.broadcast({ event: 'node:state', id, state }))
     this.flow.on('node:create', node => this.broadcast({ event: 'node:create', ...serializeNodeInstance(node) }))
     this.flow.on('node:remove', ({ id }) => this.broadcast({ event: 'node:remove', id }))
     this.flow.on('node:meta', ({ id }, key, value) => this.broadcast({ event: 'node:meta', id, key, value }))
-    this.flow.on('node:data', ({ id }, data) => this.broadcast({ event: 'node:data', id, data }))
-    this.flow.on('node:dataParseError', ({ id }, key, error) => this.broadcast({ event: 'node:dataParseError', id, key, message: error.message }))
-    this.flow.on('node:dataSchema', ({ id }, schema) => this.broadcast({ event: 'node:dataSchema', id, schema: serializeDataSchema(schema) }))
-    this.flow.on('node:result', ({ id }, result) => this.broadcast({ event: 'node:result', id, result }))
-    this.flow.on('node:resultSchema', ({ id }, schema) => this.broadcast({ event: 'node:resultSchema', id, schema: serializeResultSchema(schema) }))
+
+    this.flow.on('node:data', ({ id }, data, meta) => this.broadcast({ event: 'node:data', id, data, meta }))
+    this.flow.on('node:dataParseError', ({ id }, key, error, meta) => this.broadcast({ event: 'node:dataParseError', id, key, message: error.message, meta }))
+    this.flow.on('node:dataSchema', ({ id }, schema, meta) => this.broadcast({ event: 'node:dataSchema', id, schema: serializeDataSchema(schema), meta }))
+
+    this.flow.on('node:result', ({ id }, result, meta) => this.broadcast({ event: 'node:result', id, result, meta }))
+    this.flow.on('node:resultSchema', ({ id }, schema, meta) => this.broadcast({ event: 'node:resultSchema', id, schema: serializeResultSchema(schema), meta }))
+    this.flow.on('node:resultParseError', ({ id }, key, error, meta) => this.broadcast({ event: 'node:resultParseError', id, key, message: error.message, meta }))
 
     // --- Node lifecycle events.
-    this.flow.on('node:start', ({ id }, data, meta) => this.broadcast({ event: 'node:start', id, data, ...meta }))
-    this.flow.on('node:end', ({ id }, data, result, meta) => this.broadcast({ event: 'node:end', id, data, result, ...meta }))
-    this.flow.on('node:abort', ({ id }, meta) => this.broadcast({ event: 'node:abort', id, ...meta }))
-    this.flow.on('node:error', ({ id }, error, meta) => this.broadcast({ event: 'node:error', id, message: error.message, ...meta }))
+    this.flow.on('node:start', ({ id }, data, meta) => this.broadcast({ event: 'node:start', id, data, meta }))
+    this.flow.on('node:end', ({ id }, data, result, meta) => this.broadcast({ event: 'node:end', id, data, result, meta }))
+    this.flow.on('node:abort', ({ id }, meta) => this.broadcast({ event: 'node:abort', id, meta }))
+    this.flow.on('node:error', ({ id }, error, meta) => this.broadcast({ event: 'node:error', id, message: error.message, meta }))
+
+    // --- Debug errors.
+    this.flow.on('node:error', (_, error) => {
+      console.error(error)
+      this.broadcast({ event: 'error', message: error.message })
+    })
   }
 
   /** The peers that are subscribed to the flow this. */
@@ -327,7 +337,7 @@ export class FlowSessionInstance {
       case 'nodeCreate': {
         const position = { x: message.x, y: message.y }
         const instance = await this.flow.add(message.kind, { meta: { position } })
-        await instance.refresh()
+        await instance.resolveData()
         await this.save()
         break
       }
@@ -337,7 +347,7 @@ export class FlowSessionInstance {
           meta: { position: { x: message.x, y: message.y } },
           initialData: instance.data,
         })
-        await duplicate.refresh()
+        await duplicate.resolveData()
         await this.save()
         break
       }
@@ -353,9 +363,15 @@ export class FlowSessionInstance {
         const { nodeId, portId, value } = message
         const node = this.flow.get(nodeId)
         node.setDataValue(portId, value)
-        await node.refresh()
-        await node.refresh()
+        await node.resolveData()
         await this.save()
+        break
+      }
+      case 'nodeSearchDataOptions': {
+        const { id, key, query } = message
+        const node = this.flow.get(id)
+        const options = await node.getDataOptions(key, query)
+        peer.send({ event: 'node:dataOptions', id, key, options })
         break
       }
       case 'nodeSetMetaValue': {
