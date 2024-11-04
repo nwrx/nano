@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import type { DataSocketJSON, FlowSessionSecretJSON, FlowSessionVariableJSON } from '@nwrx/api'
+import type { SocketListOption } from '@nwrx/core'
 
 const props = defineProps<{
-  nodeId: string
-  portId: string
+  id: string
   kind: 'source' | 'target'
   value: unknown
   error?: string
   secrets?: FlowSessionSecretJSON[]
   variables?: FlowSessionVariableJSON[]
-} & Omit<DataSocketJSON, 'key'>>()
+  socket: DataSocketJSON
+}>()
 
 const emit = defineEmits<{
   setValue: [value: unknown]
@@ -32,7 +33,7 @@ const isLinked = computed(() => {
 })
 
 // --- Assert if the control is linkea to another node.
-const isLinkeable = computed(() => props.control === 'socket' || !props.control || isLinked.value)
+const isLinkeable = computed(() => props.socket.control === 'socket' || !props.socket.control || isLinked.value)
 
 // --- Reference to the color pin HTML element.
 const pin = ref<HTMLDivElement>()
@@ -47,8 +48,8 @@ function onGrab(event: MouseEvent) {
   if (event.target instanceof HTMLSelectElement) return
   const { x, y, width, height } = pin.value.getBoundingClientRect()
   emit('grab', {
-    id: `${props.nodeId}:${props.portId}`,
-    color: props.typeColor ?? 'black',
+    id: `${props.id}:${props.socket.key}`,
+    color: props.socket.typeColor ?? 'black',
     kind: props.kind,
     position: {
       x: x + width / 2,
@@ -63,8 +64,8 @@ function onAssign() {
   if (!isLinkeable.value) return
   const { x, y, width, height } = pin.value.getBoundingClientRect()
   emit('assign', {
-    id: `${props.nodeId}:${props.portId}`,
-    color: props.typeColor ?? 'black',
+    id: `${props.id}:${props.socket.key}`,
+    color: props.socket.typeColor ?? 'black',
     kind: props.kind,
     position: {
       x: x + width / 2,
@@ -102,7 +103,7 @@ function onRelease() {
     <div
       ref="pin"
       class="self-start mt-3 h-2 shrink-0"
-      :style="{ backgroundColor: typeColor }"
+      :style="{ backgroundColor: socket.typeColor }"
       :class="{
         'rounded-r-lg': kind === 'target',
         'rounded-l-lg': kind === 'source',
@@ -114,64 +115,65 @@ function onRelease() {
     <!-- Linkeable pin, used to connect to other nodes. -->
     <FlowEditorSocketLink
       v-if="isLinkeable"
-      :name="name"
+      :name="socket.name"
       :is-linked="isLinked"
-      :default-value="defaultValue"
+      :default-value="socket.defaultValue"
     />
 
     <!-- Variable & secret input -->
     <FlowEditorSocketVariable
-      v-else-if="control === 'variable'"
+      v-else-if="socket.control === 'variable'"
       v-model="(model as string)"
-      :name="name"
+      :name="socket.name"
       :secrets="secrets"
       :variables="variables"
-      :default-value="defaultValue"
+      :default-value="socket.defaultValue"
     />
 
     <!-- Text input -->
     <FlowEditorSocketText
-      v-else-if="control === 'text'"
+      v-else-if="socket.control === 'text'"
       v-model="(model as string)"
-      :name="name"
-      :default-value="defaultValue"
+      :name="socket.name"
+      :default-value="socket.defaultValue"
     />
 
     <!-- Select input -->
     <FlowEditorSocketSelect
-      v-else-if="control === 'select'"
+      v-else-if="socket.control === 'select'"
       v-model="model"
-      :name="name"
-      :default-value="defaultValue"
-      :options="options"
+      :name="socket.name"
+      :default-value="socket.defaultValue"
+      :options="socket.options"
+      :get-options="getOptions"
     />
 
     <!-- Radio -->
     <FlowEditorSocketRadio
-      v-else-if="control === 'radio'"
+      v-else-if="socket.control === 'radio'"
       v-model="model"
-      :name="name"
-      :default-value="defaultValue"
-      :options="options"
+      :name="socket.name"
+      :default-value="socket.defaultValue"
+      :options="socket.options"
     />
 
     <!-- Textarea input -->
     <FlowEditorSocketTextarea
-      v-else-if="control === 'textarea'"
+      v-else-if="socket.control === 'textarea'"
       v-model="(model as string)"
-      :name="name"
-      :default-value="defaultValue"
+      :name="socket.name"
+      :default-value="socket.defaultValue"
     />
 
     <!-- Slider -->
     <FlowEditorSocketSlider
-      v-else-if="control === 'slider'"
+      v-else-if="socket.control === 'slider'"
       v-model="(model as number)"
-      :name="name"
-      :min="sliderMin"
-      :max="sliderMax"
-      :step="sliderStep"
-      :default-value="defaultValue"
+      :name="socket.name"
+      :min="socket.sliderMin"
+      :max="socket.sliderMax"
+      :step="socket.sliderStep"
+      :default-value="socket.defaultValue"
     />
   </div>
 </template>
