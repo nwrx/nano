@@ -39,7 +39,7 @@ function handleGrab(event: MouseEvent) {
 <template>
   <div
     :style="{ backgroundColor: `${color}!important` }"
-    :class="{ 'cursor-grabbing': isDragging }"
+    :class="{ 'cursor-grabbing': isDragging, 'cursor-pointer': !isDragging }"
     class="flex justify-start items-center h-8 pr-sm rd-t"
     @mousedown="(event) => handleGrab(event)"
     @mousemove="(event) => emit('handleMove', event)"
@@ -71,7 +71,7 @@ function handleGrab(event: MouseEvent) {
     <div class="flex-1" />
 
     <!-- Debug ID -->
-    <p v-if="id" class="text-sm truncate shrink text-white" v-text="id.slice(0, 8)" />
+    <!-- <p v-if="id" class="text-sm truncate shrink text-white" v-text="id" /> -->
 
     <!-- Run button / play icon -->
     <BaseButton
@@ -80,7 +80,7 @@ function handleGrab(event: MouseEvent) {
       @mousedown.stop
       @click="() => isRunning ? emit('abort') : emit('start')">
       <BaseIcon
-        :icon="isRunningThrottled ? 'i-line-md:loading-loop' : 'i-carbon:play-filled'"
+        :icon="isRunningThrottled ? 'i-line-md:loading-loop' : 'i-carbon:circle-outline'"
         class="size-4 text-white"
       />
     </BaseButton>
