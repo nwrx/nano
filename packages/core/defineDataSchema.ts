@@ -1,4 +1,5 @@
-import type { MaybeLiteral } from '@unshared/types'
+import type { InstanceContext } from '@nwrx/core'
+import type { MaybeLiteral, MaybePromise } from '@unshared/types'
 import type { ResultSocket } from './defineResultSchema'
 import type { Type } from './defineType'
 
@@ -35,6 +36,8 @@ export interface SocketListOption<T = any> {
   description?: string
 }
 
+export type DataSocketOptions<T = any> = Array<SocketListOption<T>>
+
 /**
  * Interface representing a data socket, which can connect to another node in the flow.
  * It includes type validation and parsing logic for the data passed through the socket.
@@ -66,7 +69,7 @@ export interface DataSocket<T = any> extends ResultSocket<T> {
    *   { label: 'Blue', value: '#0000ff' },
    * ]
    */
-  options?: NoInfer<Array<SocketListOption<T> | string & T>>
+  options?: ((context: InstanceContext, query?: string) => MaybePromise<DataSocketOptions<T>>) | DataSocketOptions<T>
 
   /**
    * Maximum value for a 'slider' control. Ignored if control is not 'slider'.

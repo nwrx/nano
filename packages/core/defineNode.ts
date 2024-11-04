@@ -1,7 +1,6 @@
-import type { MaybePromise } from '@unshared/types'
+import type { MaybePromise, ObjectLike } from '@unshared/types'
 import type { Category } from './defineCategory'
-import type { DataFromSchema } from './defineDataSchema'
-import type { DataSchema } from './defineDataSchema'
+import type { DataFromSchema, DataSchema } from './defineDataSchema'
 import type { ResultFromSchema, ResultSchema } from './defineResultSchema'
 import { assertNotNil, assertStringNotEmpty } from '@unshared/validation'
 
@@ -11,22 +10,22 @@ import { assertNotNil, assertStringNotEmpty } from '@unshared/validation'
  * process the data.
  */
 export interface InstanceContext<
-  T extends DataSchema = DataSchema,
-  U extends ResultSchema = ResultSchema,
+  T extends ObjectLike = ObjectLike,
+  U extends ObjectLike = ObjectLike,
 > {
 
   /**
    * The data that is passed to the node when it is executed. The data comes
    * from the previous nodes or can be statically defined in the flow.
    */
-  data: DataFromSchema<T>
+  data: T
 
   /**
    * The current result that is produced by the node when it is executed. The
    * result is used to pass the output of the node to the next nodes in the flow.
    * The result can be modified by the node to produce the desired output.
    */
-  result: ResultFromSchema<U>
+  result: U
 
   /**
    * The abort signal that can be triggered to cancel the execution of the
@@ -107,7 +106,7 @@ export interface Node<
    *
    * @returns The schema of the data that the node expects.
    */
-  dataSchema?: ((context: InstanceContext<NoInfer<T>, NoInfer<U>>) => MaybePromise<T>) | T
+  dataSchema?: T
 
   /**
    * A function that defines the schema of the result that the node produces.
@@ -116,7 +115,7 @@ export interface Node<
    *
    * @returns The schema of the result that the node produces.
    */
-  resultSchema?: ((context: InstanceContext<NoInfer<T>, NoInfer<U>>) => MaybePromise<U>) | U
+  resultSchema?: U
 
   /**
    * A function that processes the data of the node and produces a result.
@@ -134,7 +133,10 @@ export interface Node<
    *   },
    * })
    */
-  process?: (context: InstanceContext<NoInfer<T>, NoInfer<U>>) => MaybePromise<ResultFromSchema<NoInfer<U>>>
+  process?: (context: InstanceContext<
+    DataFromSchema<NoInfer<T>>,
+    ResultFromSchema<NoInfer<U>>
+  >) => MaybePromise<ResultFromSchema<U>>
 }
 
 /**
