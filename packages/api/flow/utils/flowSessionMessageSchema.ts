@@ -101,7 +101,7 @@ export const FLOW_SESSION_MESSAGE_SCHEMA = createRuleSet(
     event: assert.stringEquals('nodeSearchDataOptions'),
     id: assert.stringNotEmpty,
     key: assert.stringNotEmpty,
-    query: assert.stringNotEmpty,
+    query: assert.string,
   })],
   [createSchema({
     event: assert.stringEquals('nodesRemove'),
