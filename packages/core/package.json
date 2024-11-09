@@ -29,5 +29,8 @@
     "@unshared/string": "0.1.0",
     "@unshared/types": "0.1.0",
     "@unshared/validation": "0.1.0"
+  },
+  "devDependencies": {
+    "@unshared/decorators": "0.1.0"
   }
 }
