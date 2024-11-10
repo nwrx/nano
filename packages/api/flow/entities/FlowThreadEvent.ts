@@ -2,7 +2,7 @@ import { BaseEntity, transformerJson } from '@unserved/server'
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
 import { User } from '../../user'
 import { FlowSessionEventName, FlowSessionEventPayload } from '../utils'
-import { FlowSession } from './FlowSession'
+import { FlowThread } from './FlowThread'
 
 /**
  * A `FlowSessionEvent` is used to log the events that occurred during the execution
@@ -10,13 +10,13 @@ import { FlowSession } from './FlowSession'
  * type, message, etc.
  */
 @Entity({ name: 'FlowSessionEvent' })
-export class FlowSessionEvent<T extends FlowSessionEventName = FlowSessionEventName> extends BaseEntity {
+export class FlowThreadEvent<T extends FlowSessionEventName = FlowSessionEventName> extends BaseEntity {
 
   /**
    * The type of the event. It is used to determine the action that was performed
    * during the flow run.
    *
-   * @example 'flow:start'
+   * @example 'start'
    */
   @Column('varchar', { length: 255 })
   event: T
@@ -36,8 +36,8 @@ export class FlowSessionEvent<T extends FlowSessionEventName = FlowSessionEventN
    * @example FlowSession { ... }
    */
   @JoinColumn()
-  @ManyToOne(() => FlowSession, run => run.events, { nullable: false, onDelete: 'CASCADE' })
-  session: FlowSession
+  @ManyToOne(() => FlowThread, run => run.events, { nullable: false, onDelete: 'CASCADE' })
+  thread: FlowThread
 
   /**
    * The user responsible for the event. It is used to determine the user that

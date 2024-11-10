@@ -3,14 +3,14 @@ import { Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm'
 import { UserObject } from '../../user'
 import { FlowSessionEventPayload } from '../utils'
 import { Flow, FlowObject } from './Flow'
-import { FlowSessionEvent } from './FlowSessionEvent'
+import { FlowThreadEvent } from './FlowThreadEvent'
 
 /**
- * A `FlowSession` is used to log the execution of a flow. It is used to store the
+ * A `FlowThread` is used to log the execution of a flow. It is used to store the
  * information about the flow run such as the start time, end time, status, etc.
  */
-@Entity({ name: 'FlowSession' })
-export class FlowSession extends BaseEntity {
+@Entity({ name: 'FlowThread' })
+export class FlowThread extends BaseEntity {
 
   /**
    * The flow that was executed.
@@ -24,15 +24,15 @@ export class FlowSession extends BaseEntity {
   /**
    * The events that occurred during the flow run.
    *
-   * @example [FlowSessionEvent, FlowSessionEvent, FlowSessionEvent]
+   * @example [FlowThreadEvent, FlowThreadEvent, FlowThreadEvent]
    */
-  @OneToMany(() => FlowSessionEvent, event => event.session, { cascade: true })
-  events?: FlowSessionEvent[]
+  @OneToMany(() => FlowThreadEvent, event => event.thread, { cascade: true })
+  events?: FlowThreadEvent[]
 
   /**
    * @returns The object representation of the flow run.
    */
-  serialize(): FlowSessionObject {
+  serialize(): FlowThreadObject {
     return {
       id: this.id,
       flow: this.flow.serialize(),
@@ -41,7 +41,7 @@ export class FlowSession extends BaseEntity {
   }
 }
 
-export interface FlowSessionObject {
+export interface FlowThreadObject {
   id: string
   flow: FlowObject
   user?: UserObject

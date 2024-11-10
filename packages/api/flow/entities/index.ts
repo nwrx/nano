@@ -1,4 +1,3 @@
 export * from './Flow'
-export * from './FlowModule'
-export * from './FlowSession'
-export * from './FlowSessionEvent'
+export * from './FlowThread'
+export * from './FlowThreadEvent'
