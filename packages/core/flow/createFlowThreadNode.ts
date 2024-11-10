@@ -51,6 +51,7 @@ export class FlowThreadNode extends Emitter<FlowThreadNodeEvents> {
     try {
       this.setState('RUNNING/RESOLVING_DEFINITION')
       const definition = await this.thread.flow.describe(this.node.kind)
+      let output: ObjectLike = {}
 
       // --- Resolve references and parse using the input schema.
       this.setState('RUNNING/RESOLVING_INPUT')
@@ -70,17 +71,15 @@ export class FlowThreadNode extends Emitter<FlowThreadNodeEvents> {
       if (definition.process) {
         this.setState('RUNNING/PROCESSING')
         this.dispatch('start', context, this.eventMetadata)
-        const output = await definition.process(context)
-
-        // --- Resolve the output and parse using the output schema.
-        this.setState('RUNNING/RESOLVING_OUTPUT')
-        this.output = await resolveSchema(
-          output,
-          definition.outputSchema ?? {},
-        )
+        output = await definition.process(context)
       }
 
+      // --- Resolve the output and parse using the output schema.
+      this.setState('RUNNING/RESOLVING_OUTPUT')
+      this.output = await resolveSchema(output, definition.outputSchema ?? {} )
+
       // --- Set the state of the node to done.
+      context.output = this.output
       this.setState('DONE')
       this.dispatch('end', context, this.eventMetadata)
       return this.output
