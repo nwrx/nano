@@ -113,7 +113,7 @@ export const FLOW_SESSION_MESSAGE_SCHEMA = createRuleSet(
   })],
 
   [createSchema({
-    event: assert.stringEquals('nodeSearchDataOptions'),
+    event: assert.stringEquals('getInputValueOptions'),
     id: assert.stringNotEmpty,
     key: assert.stringNotEmpty,
     query: assert.string,
