@@ -65,7 +65,7 @@ export interface FlowLink {
 export type FlowEvents = {
   'createNode': [node: FlowNode]
   'removeNodes': [nodes: FlowNode[]]
-  'setNodeDataValue': [node: FlowNode, key: string, value: unknown]
+  'setNodeInputValue': [node: FlowNode, key: string, value: unknown]
   'setNodeMetaValue': [node: FlowNode, key: string, value: unknown]
 }
 
@@ -86,9 +86,9 @@ export interface FlowThreadEventMeta {
 }
 
 export type FlowThreadEvents = {
-  'flowStart': [input: ObjectLike, meta: FlowThreadEventMeta]
+  'start': [input: ObjectLike, meta: FlowThreadEventMeta]
   'end': [output: ObjectLike, meta: FlowThreadEventMeta]
-  'flowAbort': [meta: FlowThreadEventMeta]
+  'abort': [meta: FlowThreadEventMeta]
   'input': [name: string, value: unknown, meta: FlowThreadEventMeta]
   'output': [name: string, value: unknown, meta: FlowThreadEventMeta]
   'nodeState': [node: FlowThreadNode, state: FlowThreadNodeState, meta: FlowThreadEventMeta]

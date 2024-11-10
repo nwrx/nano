@@ -23,27 +23,27 @@ export class Flow extends Emitter<FlowEvents> {
     return node
   }
 
-  create(node: FlowNode): FlowNode {
+  createNode(node: FlowNode): FlowNode {
     if (this.nodes.some(n => n.id === node.id)) throw new Error(`A node with ID "${node.id}" already exists`)
     this.nodes.push(node)
     this.dispatch('createNode', node)
     return node
   }
 
-  remove(...ids: string[]): void {
+  removeNodes(...ids: string[]): void {
     const nodes = ids.map(id => this.get(id))
     this.nodes = this.nodes.filter(node => !nodes.includes(node))
     this.dispatch('removeNodes', nodes)
   }
 
-  setDataValue(id: string, key: string, value: unknown) {
+  setNodeInputValue(id: string, key: string, value: unknown) {
     const node = this.get(id)
     node.input = node.input ?? {}
     node.input[key] = value
-    this.dispatch('setNodeDataValue', node, key, value)
+    this.dispatch('setNodeInputValue', node, key, value)
   }
 
-  setMetaValue(id: string, key: string, value: unknown) {
+  setNodeMetaValue(id: string, key: string, value: unknown) {
     const node = this.get(id)
     node.meta = node.meta ?? {}
     node.meta[key] = value
@@ -145,7 +145,7 @@ export class Flow extends Emitter<FlowEvents> {
 
     // --- If the target socket is not iterable, set the value directly.
     if (!targetSocket.isIterable) {
-      this.setDataValue(link.targetId, link.targetKey, newValue)
+      this.setNodeInputValue(link.targetId, link.targetKey, newValue)
       return
     }
 
@@ -153,7 +153,7 @@ export class Flow extends Emitter<FlowEvents> {
     target.input = target.input ?? {}
     const currentValue = target.input[link.targetKey] ?? []
     const nextValue = Array.isArray(currentValue) ? [...currentValue as unknown[], newValue] : [newValue]
-    this.setDataValue(link.targetId, link.targetKey, nextValue)
+    this.setNodeInputValue(link.targetId, link.targetKey, nextValue)
   }
 
   /**
@@ -186,7 +186,7 @@ export class Flow extends Emitter<FlowEvents> {
             if (linkToRemove.sourceKey && value.$fromNode.key !== linkToRemove.sourceKey) return true
             return false
           })
-          this.setDataValue(node.id, key, newValue)
+          this.setNodeInputValue(node.id, key, newValue)
         }
 
         // --- Set the value to `undefined` if the source and target are specified.
@@ -194,7 +194,7 @@ export class Flow extends Emitter<FlowEvents> {
           if (!isReferenceLink(value)) continue
           if (linkToRemove.sourceId && value.$fromNode.id !== linkToRemove.sourceId) continue
           if (linkToRemove.sourceKey && value.$fromNode.key !== linkToRemove.sourceKey) continue
-          this.setDataValue(node.id, key, undefined)
+          this.setNodeInputValue(node.id, key, undefined)
         }
       }
     }
@@ -251,7 +251,7 @@ export class Flow extends Emitter<FlowEvents> {
 
       // --- Create the node instance.
       try {
-        flow.create({ id, kind, input, meta })
+        flow.createNode({ id, kind, input, meta })
       }
       catch (error) {
         const message = (error as Error).message

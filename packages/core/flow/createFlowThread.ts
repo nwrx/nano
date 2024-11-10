@@ -61,7 +61,7 @@ export class FlowThread extends Emitter<FlowThreadEvents> {
   /** Aborts the flow thread. */
   abort() {
     this.abortController.abort()
-    this.dispatch('flowAbort', this.eventMetadata)
+    this.dispatch('abort', this.eventMetadata)
     this.abortController = new AbortController()
   }
 
