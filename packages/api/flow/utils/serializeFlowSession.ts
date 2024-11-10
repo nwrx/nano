@@ -190,13 +190,13 @@ export function serializeNodeDefinition(node: FlowNodeDefinition): FlowNodeDefin
   }
 }
 
-export async function serializeNode(flow: Flow, node: FlowNode): Promise<FlowThreadNodeJSON> {
-  const definition = await flow.describe(node.kind)
+export async function serializeNode(session: FlowSessionInstance, node: FlowNode): Promise<FlowThreadNodeJSON> {
+  const definition = await session.flow.describe(node.kind)
   return {
     ...serializeNodeDefinition(definition),
     id: node.id,
     state: 'IDLE',
-    error: undefined,
+    error: session.thread.nodes.get(node.id)?.error?.message,
     label: node.meta?.label,
     comment: node.meta?.comment,
     position: node.meta?.position ?? { x: 0, y: 0 },
@@ -210,7 +210,7 @@ export async function serializeNode(flow: Flow, node: FlowNode): Promise<FlowThr
 }
 
 export async function serializeFlowSession(session: FlowSessionInstance, peer: Peer): Promise<FlowJSON> {
-  const nodePromises = session.flow.nodes.values().map(node => serializeNode(session.flow, node))
+  const nodePromises = session.flow.nodes.values().map(node => serializeNode(session, node))
   const nodes = await Promise.all(nodePromises)
   return {
     name: session.entity.name ?? 'Untitled Flow',
