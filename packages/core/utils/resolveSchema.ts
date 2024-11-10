@@ -2,6 +2,7 @@ import type { ObjectLike } from '@unshared/types'
 import type { InputSchema, InputSocket, OutputSchema, OutputSocket } from '../module'
 import type { ResolveReference } from './types'
 import { isReference } from './createReference'
+import { ERRORS } from './errors'
 
 /**
  * Resolve the input value by checking if the value is a reference or a value.
@@ -34,7 +35,7 @@ async function resolveSchemaValue(value: unknown, socket: InputSocket | OutputSo
 
   // --- Otherwise, return the value as is. Making sure it matches the type of the socket.
   if (value === undefined && socket.isOptional) return
-  if (value === undefined && !socket.isOptional) throw new Error('The value is missing')
+  if (value === undefined && !socket.isOptional) throw ERRORS.NODE_SCHEMA_VALUE_MISSING(socket)
   return socket.type.parse(value)
 }
 
@@ -61,7 +62,7 @@ export async function resolveSchema(values: ObjectLike, schema: InputSchema | Ou
 
     // --- If the value is an array, resolve each value in the array.
     if (socket.isIterable) {
-      if (!Array.isArray(value)) throw new Error('The value is not an array')
+      if (!Array.isArray(value)) throw ERRORS.NODE_SCHEMA_NOT_ITERABLE(socket)
       const promises = value.map(x => resolveSchemaValue(x, socket, resolvers))
       resolved[key] = await Promise.all(promises)
     }

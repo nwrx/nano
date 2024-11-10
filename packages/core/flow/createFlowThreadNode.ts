@@ -1,6 +1,6 @@
 import type { ObjectLike } from '@unshared/types'
 import type { FlowNodeContext } from '../module'
-import type { FlowNode, FlowThreadFlowThreadEventMeta, FlowThreadNodeEvents, FlowThreadNodeState } from '../utils'
+import type { FlowError, FlowNode, FlowThreadNodeEventMeta, FlowThreadNodeEvents, FlowThreadNodeState } from '../utils'
 import type { FlowThread } from './createFlowThread'
 import { randomUUID } from 'node:crypto'
 import { Emitter, resolveSchema } from '../utils'
@@ -21,8 +21,9 @@ export class FlowThreadNode extends Emitter<FlowThreadNodeEvents> {
   /* Helpers                                                                 */
   /***************************************************************************/
 
-  private get eventMetadata(): FlowThreadFlowThreadEventMeta {
+  private get eventMetadata(): FlowThreadNodeEventMeta {
     return {
+      threadId: this.thread.id,
       state: this.state,
       timestamp: Date.now(),
       duration: Date.now() - this.startedAt,
@@ -40,8 +41,8 @@ export class FlowThreadNode extends Emitter<FlowThreadNodeEvents> {
   /***************************************************************************/
 
   reset() {
-    this.error = undefined
     this.state = 'IDLE'
+    this.error = undefined
     this.input = {}
     this.output = {}
   }
@@ -86,7 +87,7 @@ export class FlowThreadNode extends Emitter<FlowThreadNodeEvents> {
     catch (error) {
       this.error = error as Error
       this.setState('ERROR')
-      this.dispatch('error', error as Error, this.eventMetadata)
+      this.dispatch('error', error as FlowError, this.eventMetadata)
     }
   }
 }

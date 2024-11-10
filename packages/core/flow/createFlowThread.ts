@@ -68,13 +68,19 @@ export class FlowThread extends Emitter<FlowThreadEvents> {
   async start(threadInput: ObjectLike = {}) {
     const threadOutput: ObjectLike = {}
     const links = this.flow.getLinks()
+
     this.nodes.clear()
     this.startedAt = Date.now()
+    this.dispatch('start', threadInput, this.eventMetadata)
 
-    return new Promise<ObjectLike>((resolve) => {
+    return new Promise<ObjectLike>((resolve, rejects) => {
       for (const node of this.flow.nodes) {
         const threadNode = new FlowThreadNode(this, node)
         this.nodes.set(node.id, threadNode)
+        threadNode.on('state', meta => this.dispatch('nodeState', threadNode, meta))
+        threadNode.on('start', (input, meta) => this.dispatch('nodeStart', threadNode, input, meta))
+        threadNode.on('error', (error, meta) => this.dispatch('nodeError', threadNode, error, meta))
+        threadNode.on('end', (output, meta) => this.dispatch('nodeEnd', threadNode, output, meta))
 
         // --- If the node is an input, apply the input value to the thread input.
         threadNode.on('start', ({ input, output }) => {
@@ -82,6 +88,11 @@ export class FlowThread extends Emitter<FlowThreadEvents> {
             const name = input.name as string
             output.value = threadInput[name]
           }
+        })
+
+        threadNode.on('error', (error) => {
+          this.abort()
+          return rejects(error)
         })
 
         // --- If the node is an output, we collect this specific output value and it's corresponding name

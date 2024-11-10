@@ -92,10 +92,10 @@ export type FlowThreadEvents = {
   'input': [name: string, value: unknown, meta: FlowThreadEventMeta]
   'output': [name: string, value: unknown, meta: FlowThreadEventMeta]
   'end': [output: ObjectLike, meta: FlowThreadEventMeta]
-  'nodeState': [node: FlowThreadNode, meta: FlowThreadEventMeta]
-  'nodeStart': [node: FlowThreadNode, context: FlowNodeContext, meta: FlowThreadEventMeta]
-  'nodeError': [node: FlowThreadNode, error: FlowError, meta: FlowThreadEventMeta]
-  'nodeEnd': [node: FlowThreadNode, context: FlowNodeContext, meta: FlowThreadEventMeta]
+  'nodeState': [node: FlowThreadNode, meta: FlowThreadNodeEventMeta]
+  'nodeError': [node: FlowThreadNode, error: FlowError, meta: FlowThreadNodeEventMeta]
+  'nodeStart': [node: FlowThreadNode, context: FlowNodeContext, meta: FlowThreadNodeEventMeta]
+  'nodeEnd': [node: FlowThreadNode, context: FlowNodeContext, meta: FlowThreadNodeEventMeta]
 }
 
 /***************************************************************************/
@@ -118,7 +118,7 @@ export interface FlowThreadNodeEventMeta extends FlowThreadEventMeta {
 
 export type FlowThreadNodeEvents = {
   state: [meta: FlowThreadNodeEventMeta]
-  start: [context: FlowNodeContext, meta: FlowThreadNodeEventMeta]
   error: [error: FlowError, meta: FlowThreadNodeEventMeta]
+  start: [context: FlowNodeContext, meta: FlowThreadNodeEventMeta]
   end: [context: FlowNodeContext, meta: FlowThreadNodeEventMeta]
 }
