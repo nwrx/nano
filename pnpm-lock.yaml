@@ -92,9 +92,6 @@ importers:
       '@nwrx/module-core':
         specifier: workspace:*
         version: link:../module-core
-      '@nwrx/module-openai':
-        specifier: workspace:*
-        version: link:../module-openai
       '@unserved/server':
         specifier: 0.0.16
         version: 0.0.16(@types/node@22.8.2)(crossws@0.2.4)(h3@1.12.0)(typeorm@0.3.20(ioredis@5.4.1)(sqlite3@5.1.7))
@@ -308,6 +305,10 @@ importers:
       '@unshared/validation':
         specifier: 0.1.0
         version: 0.1.0(@types/node@22.8.2)
+    devDependencies:
+      '@unshared/decorators':
+        specifier: 0.1.0
+        version: 0.1.0(@types/node@22.8.2)
 
   packages/module-core:
     dependencies:
@@ -329,24 +330,6 @@ importers:
       yaml:
         specifier: 2.6.0
         version: 2.6.0
-
-  packages/module-openai:
-    dependencies:
-      '@nwrx/core':
-        specifier: workspace:*
-        version: link:../core
-      '@nwrx/module-core':
-        specifier: workspace:*
-        version: link:../module-core
-      '@types/json-schema':
-        specifier: 7.0.15
-        version: 7.0.15
-      '@unshared/string':
-        specifier: 0.1.0
-        version: 0.1.0(@types/node@22.8.2)
-      '@unshared/validation':
-        specifier: 0.1.0
-        version: 0.1.0(@types/node@22.8.2)
 
   packages/sdk: {}
 
