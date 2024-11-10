@@ -34,7 +34,7 @@ async function resolveSchemaValue(value: unknown, socket: InputSocket | OutputSo
   }
 
   // --- Otherwise, return the value as is. Making sure it matches the type of the socket.
-  if (value === undefined && socket.isOptional) return
+  if (value === undefined && socket.isOptional) return 'defaultValue' in socket ? socket.defaultValue : undefined
   if (value === undefined && !socket.isOptional) throw ERRORS.NODE_SCHEMA_VALUE_MISSING(socket)
   return socket.type.parse(value)
 }
