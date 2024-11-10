@@ -41,8 +41,8 @@ export function flowSession(this: ModuleFlow) {
           if (!flowEntity) throw this.errors.FLOW_NOT_FOUND(workspaceName, projectName, flowName)
 
           // --- Create or retrieve the flow session and subscribe the peer to it.
-          const session = await this.resolveFlowSession(flowEntity)
-          session.subscribe(peer, user)
+          const session = this.resolveFlowSession(flowEntity)
+          await session.subscribe(peer, user)
         }
 
         // --- When an error occurs, send an error message to the client
