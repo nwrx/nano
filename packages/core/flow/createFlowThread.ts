@@ -73,31 +73,37 @@ export class FlowThread extends Emitter<FlowThreadEvents> {
     this.startedAt = Date.now()
     this.dispatch('start', threadInput, this.eventMetadata)
 
-    return new Promise<ObjectLike>((resolve, rejects) => {
+    return new Promise<ObjectLike>((resolve) => {
       for (const node of this.flow.nodes) {
         const threadNode = new FlowThreadNode(this, node)
         this.nodes.set(node.id, threadNode)
         threadNode.on('state', meta => this.dispatch('nodeState', threadNode, meta))
-        threadNode.on('start', (input, meta) => this.dispatch('nodeStart', threadNode, input, meta))
-        threadNode.on('error', (error, meta) => this.dispatch('nodeError', threadNode, error, meta))
-        threadNode.on('end', (output, meta) => this.dispatch('nodeEnd', threadNode, output, meta))
 
         // --- If the node is an input, apply the input value to the thread input.
-        threadNode.on('start', ({ input, output }) => {
+        threadNode.on('start', (context, meta) => {
+          this.dispatch('nodeStart', threadNode, context, meta)
+          const { input, output } = context
           if (node.kind === NODE_INPUT_KIND) {
             const name = input.name as string
             output.value = threadInput[name]
           }
         })
 
-        threadNode.on('error', (error) => {
-          this.abort()
-          return rejects(error)
+        // --- Dispatch the node error event if the node emits an error.
+        threadNode.on('error', (error, meta) => {
+          this.dispatch('nodeError', threadNode, error, meta)
+          if (this.isRunning) return
+          this.dispatch('end', threadOutput, this.eventMetadata)
+          return resolve(threadOutput)
         })
 
         // --- If the node is an output, we collect this specific output value and it's corresponding name
         // --- and apply it to the thread output. We also dispatch the output event with the name and value.
-        threadNode.on('end', ({ input, output }) => {
+        threadNode.on('end', (context, meta) => {
+          this.dispatch('nodeEnd', threadNode, context, meta)
+
+          // --- If the node is an output, apply the output value to the thread output.
+          const { input, output } = context
           if (node.kind === NODE_OUTPUT_KIND) {
             const name = input.name as string
             const value = output.value
