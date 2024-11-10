@@ -1,7 +1,8 @@
 import type { FlowObject } from '@nwrx/api'
+import type { MaybeLiteral } from '@unshared/types'
 import type { RouteLocationRaw } from 'vue-router'
 import type { application } from '~/server'
-import type { COLORS } from './colors'
+import type { COLORS } from '../uno.config'
 
 declare module '@unserved/nuxt/types' {
   // @ts-expect-error: override the global application type.
@@ -9,7 +10,7 @@ declare module '@unserved/nuxt/types' {
 }
 
 export type Size = 'large' | 'medium' | 'small' | 'xlarge' | 'xsmall'
-export type Variant = ({} & string) & keyof typeof COLORS
+export type Variant = MaybeLiteral<keyof typeof COLORS>
 export type Alignment = 'center' | 'left' | 'right'
 
 export interface NavItem {
@@ -36,7 +37,7 @@ export interface FlowLinkProps {
 }
 
 export interface FlowNodePosition {
-  nodeId: string
+  id: string
   x: number
   y: number
 }
@@ -53,7 +54,7 @@ export interface CardProps {
 }
 
 export interface DropPayload {
-  type: 'nodeCreate'
+  type: 'createNode'
   kind: string
 }
 
