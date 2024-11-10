@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/consistent-type-definitions */
 import type { MaybeLiteral, MaybePromise, ObjectLike } from '@unshared/types'
-import type { Reference } from '.'
+import type { FlowError, Reference } from '.'
 import type { FlowThreadNode } from '../flow/createFlowThreadNode'
 import type { FlowNodeContext, FlowNodeDefinition } from '../module'
 
@@ -81,20 +81,21 @@ export type FlowThreadState =
 
 export interface FlowThreadEventMeta {
   threadId: string
-  timestamp: number
   delta: number
+  timestamp: number
 }
 
 export type FlowThreadEvents = {
   'start': [input: ObjectLike, meta: FlowThreadEventMeta]
-  'end': [output: ObjectLike, meta: FlowThreadEventMeta]
+  'error': [error: FlowError, meta: FlowThreadEventMeta]
   'abort': [meta: FlowThreadEventMeta]
   'input': [name: string, value: unknown, meta: FlowThreadEventMeta]
   'output': [name: string, value: unknown, meta: FlowThreadEventMeta]
-  'nodeState': [node: FlowThreadNode, state: FlowThreadNodeState, meta: FlowThreadEventMeta]
+  'end': [output: ObjectLike, meta: FlowThreadEventMeta]
+  'nodeState': [node: FlowThreadNode, meta: FlowThreadEventMeta]
   'nodeStart': [node: FlowThreadNode, context: FlowNodeContext, meta: FlowThreadEventMeta]
+  'nodeError': [node: FlowThreadNode, error: FlowError, meta: FlowThreadEventMeta]
   'nodeEnd': [node: FlowThreadNode, context: FlowNodeContext, meta: FlowThreadEventMeta]
-  'nodeError': [node: FlowThreadNode, error: Error, context: FlowNodeContext, meta: FlowThreadEventMeta]
 }
 
 /***************************************************************************/
@@ -110,17 +111,14 @@ export type FlowThreadNodeState =
   | 'RUNNING/RESOLVING_INPUT'
   | 'RUNNING/RESOLVING_OUTPUT'
 
-export interface FlowThreadFlowThreadEventMeta {
+export interface FlowThreadNodeEventMeta extends FlowThreadEventMeta {
   state: FlowThreadNodeState
-  delta: number
   duration: number
-  timestamp: number
 }
 
 export type FlowThreadNodeEvents = {
-  state: [meta: FlowThreadFlowThreadEventMeta]
-  start: [context: FlowNodeContext, meta: FlowThreadFlowThreadEventMeta]
-  end: [context: FlowNodeContext, meta: FlowThreadFlowThreadEventMeta]
-  error: [error: Error, meta: FlowThreadFlowThreadEventMeta]
-  abort: [meta: FlowThreadFlowThreadEventMeta]
+  state: [meta: FlowThreadNodeEventMeta]
+  start: [context: FlowNodeContext, meta: FlowThreadNodeEventMeta]
+  error: [error: FlowError, meta: FlowThreadNodeEventMeta]
+  end: [context: FlowNodeContext, meta: FlowThreadNodeEventMeta]
 }
