@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { FlowThreadNodeJSON } from '@nwrx/api'
+import type { SocketListOption } from '@nwrx/core'
 
 const props = defineProps<{
   zoom?: number
@@ -82,16 +83,6 @@ function handleClick(event: MouseEvent) {
     "
     @mousedown="(event) => handleClick(event)">
 
-    <!-- Error Overlay -->
-    <div
-      v-if="error"
-      class="
-        absolute top-0 left-0 right-0 bottom-0
-        bg-diagonalstripes-danger-500/30
-        mask-to-t pointer-events-none
-      "
-    />
-
     <!-- Header -->
     <EditorNodeHeader
       :text="state"
@@ -110,11 +101,21 @@ function handleClick(event: MouseEvent) {
     />
 
     <!-- Graphflow Node Body -->
-    <div class="flex flex-col py-sm space-y-xs z-10">
+    <div class="flex flex-col py-sm space-y-xs relative">
+
+      <!-- Error Overlay -->
+      <div
+        v-if="error"
+        class="
+          absolute top-0 left-0 right-0 bottom-0
+          bg-diagonalstripes-danger-500/60 rd-b
+          mask-to-t-0/120 pointer-events-none
+        "
+      />
 
       <EditorNodeSocket
         v-for="socket in inputSchema"
-        :id="id"
+        :id="id!"
         :key="socket.key"
         :ref="(component) => socketsData[socket.key] = (component as ComponentPublicInstance)"
         :socket="socket"
@@ -134,7 +135,7 @@ function handleClick(event: MouseEvent) {
 
       <EditorNodeSocket
         v-for="socket in outputSchema"
-        :id="id"
+        :id="id!"
         :key="socket.key"
         :ref="(component) => socketsResult[socket.key] = (component as ComponentPublicInstance)"
         :socket="socket"
