@@ -28,6 +28,10 @@ const options = computed(() => [
     icon: 'https://api.iconify.design/carbon:value-variable.svg',
   })),
 ])
+
+function getOptions(query: string) {
+  return Promise.resolve(options.value.filter(option => option.label.includes(query)))
+}
 </script>
 
 <template>
@@ -35,5 +39,6 @@ const options = computed(() => [
     v-model="model"
     :name="name"
     :options="options"
+    :get-options="getOptions"
   />
 </template>
