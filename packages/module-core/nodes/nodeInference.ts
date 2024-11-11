@@ -1,17 +1,16 @@
-import type { DataFromSchema, ResultFromSchema } from '@nwrx/core'
+import type { InferInput, InferOutput } from '@nwrx/core'
 import type { ObjectLike } from '@unshared/types'
-import { defineNode, defineResultSchema } from '@nwrx/core'
-import { defineDataSchema } from '@nwrx/core'
+import { defineInputSchema, defineNode, defineOutputSchema } from '@nwrx/core'
 import { categoryLanguageModel } from '../categories'
 import { languageModel, languageModelTool, number, string } from '../types'
 
 /** The data that is passed to the inference node. */
-export type InferenceData = DataFromSchema<typeof INFERENCE_DATA_SCHEMA>
+export type InferenceData = InferInput<typeof INFERENCE_INPUT_SCHEMA>
 
 /** The result of the inference process. */
-export type InferenceResult = ResultFromSchema<typeof INFERENCE_RESULT_SCHEMA>
+export type InferenceResult = InferOutput<typeof INFERENCE_OUTPUT_SCHEMA>
 
-const INFERENCE_DATA_SCHEMA = defineDataSchema({
+const INFERENCE_INPUT_SCHEMA = defineInputSchema({
   model: {
     type: languageModel,
     name: 'Model',
@@ -88,7 +87,7 @@ const INFERENCE_DATA_SCHEMA = defineDataSchema({
   },
 })
 
-const INFERENCE_RESULT_SCHEMA = defineResultSchema({
+const INFERENCE_OUTPUT_SCHEMA = defineOutputSchema({
   completion: {
     type: string,
     name: 'Completion',
@@ -116,20 +115,20 @@ const INFERENCE_RESULT_SCHEMA = defineResultSchema({
   },
 })
 
-export const inference = defineNode({
+export const nodeInference = defineNode({
   kind: 'core/inference',
   name: 'Inference',
   icon: 'https://api.iconify.design/carbon:ai.svg',
   description: 'Generates a completion based on a language model.',
 
   category: categoryLanguageModel,
-  dataSchema: INFERENCE_DATA_SCHEMA,
-  resultSchema: INFERENCE_RESULT_SCHEMA,
+  inputSchema: INFERENCE_INPUT_SCHEMA,
+  outputSchema: INFERENCE_OUTPUT_SCHEMA,
 
-  process: async({ data }) => {
-    const { model, tools } = data
+  process: async({ input }) => {
+    const { model, tools } = input
     const { url, token, getBody, onData, onError } = model
-    const body = getBody(data)
+    const body = getBody(input)
 
     let canResume = false
     function resume() {
@@ -140,7 +139,7 @@ export const inference = defineNode({
       if (!tools) throw new Error('The tools were not provided.')
       const tool = tools.find(tool => tool.name === name)
       if (!tool) throw new Error(`The tool "${name}" was not provided.`)
-      return await tool.call({ data, parameters })
+      return await tool.call({ data: input, parameters })
     }
 
     // --- Send the request to the model API. Retry up to 10 times to handle any tool calls

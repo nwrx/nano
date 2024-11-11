@@ -1,9 +1,7 @@
-import type { DataSchema, InstanceContext } from '@nwrx/core'
-import type { ObjectLike } from '@unshared/types'
+import type { Type } from '@nwrx/core'
 import { defineNode } from '@nwrx/core'
-import { defineDataSchema } from '@nwrx/core'
 import { categoryBasic } from '../categories'
-import { string } from '../types'
+import { object, string } from '../types'
 
 /** The regular expression for extracting variables from the template. */
 const EXP_VAR_REGEX = /{{\s*(\w+\??)\s*}}/g
@@ -16,38 +14,40 @@ export const nodeTemplate = defineNode({
   category: categoryBasic,
 
   // --- Create the data schema that infers the variables from the template.
-  dataSchema: ({ data }: InstanceContext) => {
-    const dataSchema: DataSchema = defineDataSchema({
-      template: {
-        type: string,
-        name: 'Template',
-        control: 'textarea',
-        description: 'The template for generating the string.',
-      },
-    })
-
-    // --- Extract the variables from the template.
-    const { template = '' } = data as ObjectLike<string>
-    const matches = template.match(EXP_VAR_REGEX) ?? []
-    for (const match of matches) {
-      const key = match.slice(2, -2).trim()
-      if (key === '') continue
-      if (key === 'template') continue
-      dataSchema[key] = {
-        name: key,
-        type: string,
-        control: 'socket',
-        isOptional: key.endsWith('?') as unknown as false,
-        description: `The value for the template variable '${key}'.`,
-      }
-    }
-
-    // --- Return the computed data schema.
-    return dataSchema
+  inputSchema: {
+    template: {
+      type: string,
+      name: 'Template',
+      control: 'textarea',
+      description: 'The template for generating the string.',
+    },
+    values: {
+      type: object as Type<Record<string, string>>,
+      name: 'Values',
+      control: 'socket',
+      description: 'The values for the template variables.',
+      // properties: ({ data }) => {
+      //   const properties: InputSchema = {}
+      //   const { template = '' } = data as ObjectLike<string>
+      //   const matches = template.match(EXP_VAR_REGEX) ?? []
+      //   for (const match of matches) {
+      //     const key = match.slice(2, -2).trim()
+      //     if (key === '') continue
+      //     if (key === 'template') continue
+      //     properties[key] = {
+      //       name: key,
+      //       type: string,
+      //       control: 'socket',
+      //       isOptional: key.endsWith('?') as unknown as false,
+      //       description: `The value for the template variable '${key}'.`,
+      //     }
+      //   }
+      // }
+    },
   },
 
   // --- Define the result schema that returns the compiled string.
-  resultSchema: {
+  outputSchema: {
     compiled: {
       type: string,
       name: 'Compiled',
@@ -56,14 +56,13 @@ export const nodeTemplate = defineNode({
   },
 
   // --- Process the template by replacing the variables with the values.
-  process: ({ data }: InstanceContext) => {
-    const { template } = data as ObjectLike<string>
+  process: ({ input }) => {
+    const { template, values } = input
 
     // --- Replace the variables in the template with the values.
     const compiled = template.replaceAll(EXP_VAR_REGEX, (_, key: string) => {
       if (key === 'template') return ''
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      return key in data ? data[key] : ''
+      return key in values ? values[key] : ''
     })
 
     // --- Return the compiled string.

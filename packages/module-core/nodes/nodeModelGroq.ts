@@ -11,6 +11,7 @@ export const nodeModelGroq = defineLanguageModel({
   // --- API-specific properties.
   defaultUrl: 'https://api.groq.com',
   defaultModel: 'llama3-8b-8192',
+  pathModels: '/openai/v1/models',
   pathCompletions: '/openai/v1/chat/completions',
 
   // --- Compute the body of the request.
@@ -20,5 +21,5 @@ export const nodeModelGroq = defineLanguageModel({
   },
 
   // --- Fetch the models available for the API.
-  getModels: openaiGetModels('/openai/v1/models'),
+  getModels: openaiGetModels,
 })

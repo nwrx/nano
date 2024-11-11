@@ -29,23 +29,31 @@ import type { OpenaiChatRequest } from './OpenaiChatRequest'
  * // }
  */
 export function openaiGetBody(data: InferenceData): OpenaiChatRequest {
+  const {
+    model,
+    prompt,
+    seed,
+    temperature,
+    maxCompletionTokens,
+    tools = [],
+  } = data
+
+  const toolsBody = tools.map(tool => ({
+    type: 'function',
+    function: {
+      name: tool.name,
+      description: tool.description,
+      parameters: tool.schema,
+      strict: false,
+    },
+  } as const))
+
   return {
-    model: data.model.model,
-    messages: [{ role: 'user', content: data.prompt }],
-    seed: data.seed,
-    temperature: data.temperature,
-    max_completion_tokens: data.maxCompletionTokens,
-    tools: (data.tools && data.tools.length > 0)
-      ? data.tools.map(tool => ({
-        type: 'function',
-        function: {
-          name: tool.name,
-          description: tool.description,
-          parameters: tool.schema,
-          strict: false,
-        },
-      }),
-      )
-      : undefined,
+    model: model.model,
+    messages: [{ role: 'user', content: prompt }],
+    seed,
+    temperature,
+    max_completion_tokens: maxCompletionTokens,
+    tools: toolsBody.length > 0 ? toolsBody : undefined,
   }
 }
