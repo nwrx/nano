@@ -16,10 +16,10 @@ function getModelIcon(model: string) {
   return ICONS.find(x => x.match.test(model))?.icon
 }
 
-export async function openaiGetModels({ path, baseUrl, token, abortSignal, query }: LanguageModelGetModelsOptions) {
+export async function openaiGetModels({ path, baseUrl, token, query }: LanguageModelGetModelsOptions) {
   if (!token) return []
   const url = new URL(path, baseUrl).toString()
-  const response = await fetch(url, { signal: abortSignal, headers: { Authorization: `Bearer ${token}` } })
+  const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
   const models = await response.json() as OpenaiModelResponse
   return models.data
     .filter((x) => {

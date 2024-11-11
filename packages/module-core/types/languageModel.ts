@@ -62,7 +62,7 @@ export interface LanguageModel<T = ObjectLike, U = ObjectLike> {
    * handle and extract the error message from the response in case of an error.
    * It is optional and can be omitted if not required.
    */
-  onError?: (response: Response) => MaybePromise<string>
+  onError?: (response: Response) => MaybePromise<Error>
 }
 
 /**
