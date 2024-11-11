@@ -2,7 +2,7 @@
 import type { FlowSessionEventPayload } from '@nwrx/api'
 
 defineProps<{
-  event: FlowSessionEventPayload<'flowStart'>
+  event: FlowSessionEventPayload<'thread:start'>
 }>()
 </script>
 

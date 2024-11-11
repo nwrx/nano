@@ -1,7 +1,7 @@
 <!-- eslint-disable sonarjs/no-nested-assignment -->
 <script setup lang="ts">
-import type { FlowSessionEventPayload, FlowThreadNodeJSON } from '@nwrx/api'
-import { vMarkdown } from '#imports'
+import type { FlowSessionEventName } from '@nwrx/api'
+import { type FlowSessionEventPayload, type FlowThreadNodeJSON } from '@nwrx/api'
 
 const props = defineProps<{
   events: FlowSessionEventPayload[]
@@ -9,14 +9,14 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  'flow:start': [Record<string, string>]
+  'start': [Record<string, string>]
 }>()
 
 // --- Localize
 const { t } = useI18n()
 
 // --- Messages
-const EVENT_WHITELIST = new Set(['flowStart', 'output'])
+const EVENT_WHITELIST = new Set<FlowSessionEventName>(['thread:start', 'thread:output'])
 const messages = computed(() => props.events.filter(event => EVENT_WHITELIST.has(event.event)))
 
 // --- Resolve the imputs of the flow.
@@ -55,21 +55,8 @@ function setInputValue(name: string, value: string) {
         v-for="(event, index) in messages"
         :key="index"
         class="p-md hover:bg-editor-panel-data">
-
-        <!-- Input -->
-        <EditorPanelPlaygroundMessageInput v-if="event.event === 'flowStart'" :event="event" />
-
-        <!-- Output -->
-        <template v-else-if="event.event === 'flow:output'">
-          <div class="text-xs text-emphasized">
-            {{ event.name }}
-          </div>
-          <div
-            v-markdown="String(event.value)"
-            class="markdown"
-          />
-        </template>
-
+        <EditorPanelPlaygroundInput v-if="event.event === 'thread:start'" :event="event" />
+        <EditorPanelPlaygroundOutput v-if="event.event === 'thread:output'" :event="event" />
       </div>
     </template>
 
