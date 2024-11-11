@@ -81,10 +81,11 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
         break
       }
       case 'thread:nodeError': {
-        const { id, message } = payload
+        const { id, code, message } = payload
         const node = data.nodes.find(n => n.id === id)
         if (!node) return console.warn('node not found', id, data.nodes.map(n => n.id))
         node.error = message
+        node.errorCode = code
         data.nodes = [...data.nodes]
         break
       }
