@@ -2,7 +2,6 @@ import type { ObjectLike } from '@unshared/types'
 import type { FlowNodeContext } from '../module'
 import type { FlowError, FlowNode, FlowThreadNodeEventMeta, FlowThreadNodeEvents, FlowThreadNodeState, ResolveReference } from '../utils'
 import type { FlowThread } from './createFlowThread'
-import { randomUUID } from 'node:crypto'
 import { Emitter, isReferenceLink, resolveSchema } from '../utils'
 
 export class FlowThreadNode extends Emitter<FlowThreadNodeEvents> {
@@ -10,7 +9,6 @@ export class FlowThreadNode extends Emitter<FlowThreadNodeEvents> {
     super()
   }
 
-  id = randomUUID() as string
   startedAt = 0
   state: FlowThreadNodeState = 'IDLE'
   error: FlowError | undefined
