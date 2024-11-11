@@ -13,7 +13,7 @@ export class FlowThreadNode extends Emitter<FlowThreadNodeEvents> {
   id = randomUUID() as string
   startedAt = 0
   state: FlowThreadNodeState = 'IDLE'
-  error: Error | undefined
+  error: FlowError | undefined
   input: ObjectLike = {}
   output: ObjectLike = {}
 
@@ -85,7 +85,7 @@ export class FlowThreadNode extends Emitter<FlowThreadNodeEvents> {
       return this.output
     }
     catch (error) {
-      this.error = error as Error
+      this.error = error as FlowError
       this.setState('ERROR')
       this.dispatch('error', error as FlowError, this.eventMetadata)
     }

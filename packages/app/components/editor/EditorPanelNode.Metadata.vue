@@ -25,6 +25,8 @@ const isMetadataOpen = useVModel(props, 'isOpen', emit, { passive: true })
         <EditorPanelData :name="t('kind')" :model-value="node.kind" />
         <EditorPanelData :name="t('category')" :model-value="node.categoryKind" />
         <EditorPanelData :name="t('id')" :model-value="node.id" />
+        <!-- Debug -->
+        <EditorPanelData v-for="(value, key) in node" :key="key" :name="key" :model-value="value" />
       </template>
       <EditorPanelDataText v-else>
         {{ t('empty') }}
