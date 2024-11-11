@@ -193,7 +193,7 @@ export async function serializeNode(session: FlowSessionInstance, node: FlowNode
     id: node.id,
     state: 'IDLE',
     error: session.thread.nodes.get(node.id)?.error?.message,
-    errorCode: session.thread.nodes.get(node.id)?.error?.code,
+    errorCode: session.thread.nodes.get(node.id)?.error?.name,
     label: node.meta?.label,
     comment: node.meta?.comment,
     position: node.meta?.position ?? { x: 0, y: 0 },
