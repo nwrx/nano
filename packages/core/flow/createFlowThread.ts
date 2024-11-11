@@ -103,10 +103,10 @@ export class FlowThread extends Emitter<FlowThreadEvents> {
           this.dispatch('nodeEnd', threadNode, context, meta)
 
           // --- If the node is an output, apply the output value to the thread output.
-          const { input, output } = context
+          const { input } = context
           if (node.kind === NODE_OUTPUT_KIND) {
             const name = input.name as string
-            const value = output.value
+            const value = input.value
             threadOutput[name] = value
             this.dispatch('output', name, value, this.eventMetadata)
           }
