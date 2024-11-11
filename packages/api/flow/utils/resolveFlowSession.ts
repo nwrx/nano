@@ -120,24 +120,22 @@ export class FlowSessionInstance {
   async subscribe(peer: Peer, user: User) {
     if (this.isSubscribed(peer)) return
 
-    // --- If the participant is not found, throw an error.
-    this.participants.push({
+    const newParticipant = {
       peer,
       user,
-      color: 'red',
+      color: this.getColor().next().value!,
       position: { x: 0, y: 0 },
       selectedNodes: [],
-    })
+    }
 
-    // --- If this is the first peer, assign as the owner.
-    if (this.participants.length === 1)
-      this.owner = this.participants[0]
+    this.participants.push(newParticipant)
+    if (this.participants.length === 1) this.owner = newParticipant
 
     // --- Bind the peer to the participant.
     this.broadcast({
       event: 'user:join',
       id: peer.id,
-      color: 'red',
+      color: newParticipant.color,
       name: user.profile?.displayName ?? user.username,
     })
 
@@ -215,7 +213,7 @@ export class FlowSessionInstance {
 
       if (message.event === 'setMetaValue') {
         const { key, value } = message
-        if (key === 'name') this.entity.name = value as string
+        if (key === 'name') this.entity.title = value as string
         if (key === 'description') this.entity.description = value as string
         this.broadcast({ event: 'meta', key, value })
         await this.save()
@@ -256,11 +254,27 @@ export class FlowSessionInstance {
         await this.save()
       }
 
-      if (message.event === 'setNodeMetaValues') {
-        for (const { id, key, value } of message.nodes) {
-          this.flow.setNodesMetaValue(id, key, value)
-          this.broadcast({ event: 'node:metaValueChanged', id, key, value }, peer)
+      if (message.event === 'setNodesPosition') {
+        for (const { id, x, y } of message.positions) {
+          this.flow.setNodesMetaValue(id, 'position', { x, y })
+          this.broadcast({ event: 'node:metaValueChanged', id, key: 'position', value: { x, y } })
         }
+        await this.save()
+      }
+
+      if (message.event === 'setNodeLabel') {
+        const { id, label } = message
+        const value = label.trim() === '' ? undefined : label
+        this.flow.setNodesMetaValue(id, 'label', value)
+        this.broadcast({ event: 'node:metaValueChanged', id, key: 'label', value })
+        await this.save()
+      }
+
+      if (message.event === 'setNodeComment') {
+        const { id, comment } = message
+        const value = comment.trim() === '' ? undefined : comment
+        this.flow.setNodesMetaValue(id, 'comment', value)
+        this.broadcast({ event: 'node:metaValueChanged', id, key: 'comment', value })
         await this.save()
       }
 
@@ -296,6 +310,10 @@ export class FlowSessionInstance {
       if (message.event === 'userLeave')
         this.unsubscribe(peer)
     }
+
+    /***************************************************************************/
+    /* Error handling                                                          */
+    /***************************************************************************/
     catch (error) {
       this.broadcast({ event: 'error', message: (error as Error).message })
       console.error(error)
@@ -309,6 +327,22 @@ export class FlowSessionInstance {
   async save() {
     this.entity.data = this.flow.toJSON()
     await this.repository.save(this.entity)
+  }
+
+  /**
+   * Returns an iterator of colors that can be used to assign to participants.
+   * The colors are selected from a predefined list of colors.
+   *
+   * @yields The next color in the list.
+   */
+  private * getColor() {
+    let index = 0
+    const colors = ['#5636D9', '#F59E0B', '#D53B23', '#ADEF1F', '#5DB65A']
+    while (true) {
+      yield colors[index]
+      if (index >= colors.length - 1) index = 0
+      else index++
+    }
   }
 }
 

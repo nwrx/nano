@@ -95,7 +95,7 @@ function handleClick(event: MouseEvent) {
     <EditorNodeHeader
       :text="state"
       :kind="kind"
-      :name="name"
+      :title="label ?? name"
       :icon="icon"
       :description="description"
       :color="isSelected ? categoryColor : `${categoryColor}D0`"

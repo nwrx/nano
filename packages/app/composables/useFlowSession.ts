@@ -85,7 +85,6 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
         const node = data.nodes.find(n => n.id === id)
         if (!node) return console.warn('node not found', id, data.nodes.map(n => n.id))
         node.error = message
-        console.log('node error', node.error)
         data.nodes = [...data.nodes]
         break
       }
@@ -119,7 +118,7 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
       case 'node:metaValueChanged': {
         const { id, key, value } = payload
         const node = data.nodes.find(n => n.id === id)
-        if (!node) return
+        if (!node) return console.warn('node not found', id)
         if (key === 'label') node.label = value as string
         if (key === 'comment') node.comment = value as string
         if (key === 'position') node.position = value as { x: number; y: number }
@@ -253,16 +252,22 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
     },
 
     setNodesPosition: (positions: FlowNodePosition[]) => {
-      const nodes = positions.map(({ id, x, y }) => ({ id, key: 'position', value: { x: Math.round(x), y: Math.round(y) } }))
-      session.send({ event: 'setNodeMetaValues', nodes })
+      session.send({
+        event: 'setNodesPosition',
+        positions: positions.map(({ id, x, y }) => ({
+          id,
+          x: Math.round(x),
+          y: Math.round(y),
+        })),
+      })
     },
 
     setNodeLabel: (id: string, label: string) => {
-      session.send({ event: 'setNodeMetaValues', nodes: [{ id, key: 'label', value: label }] })
+      session.send({ event: 'setNodeLabel', id, label })
     },
 
     setNodeComment: (id: string, comment: string) => {
-      session.send({ event: 'setNodeMetaValues', nodes: [{ id, key: 'comment', value: comment }] })
+      session.send({ event: 'setNodeComment', id, comment })
     },
 
     setNodeInputValue: (id: string, key: string, value: unknown) => {

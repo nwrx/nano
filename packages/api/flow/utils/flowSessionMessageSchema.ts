@@ -97,11 +97,23 @@ export const FLOW_SESSION_MESSAGE_SCHEMA = createRuleSet(
   })],
 
   [createSchema({
-    event: assert.stringEquals('setNodeMetaValues'),
-    nodes: createArrayParser({
+    event: assert.stringEquals('setNodeLabel'),
+    id: assert.stringNotEmpty,
+    label: assert.string,
+  })],
+
+  [createSchema({
+    event: assert.stringEquals('setNodeComment'),
+    id: assert.stringNotEmpty,
+    comment: assert.string,
+  })],
+
+  [createSchema({
+    event: assert.stringEquals('setNodesPosition'),
+    positions: createArrayParser({
       id: assert.stringNotEmpty,
-      key: assert.stringNotEmpty,
-      value: assert.notNull,
+      x: assert.number,
+      y: assert.number,
     }),
   })],
 

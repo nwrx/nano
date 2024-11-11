@@ -19,12 +19,12 @@
         name="Enabled"
         :model-value="false"
       />
-      <EditorPanelSectionInputSwitch
-        label="Override Variables"
+      <EditorPanelData
+        name="Override Variables"
         hint="Allow the user to override the variables via HTTP Headers."
       />
-      <EditorPanelSectionInputSwitch
-        label="Override Secrets"
+      <EditorPanelData
+        name="Override Secrets"
         hint="Allow the user to override the secrets via HTTP Headers."
       />
     </EditorPanelDataContainer>
