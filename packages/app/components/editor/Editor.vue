@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import type { FlowJSON } from '@nwrx/api'
+import type { SocketListOption } from '@nwrx/core'
 import { throttle } from '@unshared/functions/throttle'
 import PATTERN_EDITOR_URL from '~/assets/pattern-editor.svg'
 
-const props = defineProps<Partial<FlowJSON>>()
+const props = defineProps<{
+  getOptions?: (id: string, key: string, query: string) => Promise<SocketListOption[]>
+} & Partial<FlowJSON>>()
 
 const emit = defineEmits<{
   clearEvents: []
@@ -121,6 +124,7 @@ const editor = useFlowEditor({
         :is-dragging="editor.nodeDragging"
         :is-selected="editor.isNodeSelected(node.id)"
         :is-highlighted="false"
+        :get-options="getOptions ? (key, query) => getOptions!(node.id, key, query) : undefined"
         @start="() => emit('startNode', node.id)"
         @abort="() => emit('abortNode', node.id)"
         @click="(event) => editor.onNodeClick(event, node.id)"
@@ -210,12 +214,14 @@ const editor = useFlowEditor({
         />
 
         <!-- Console -->
-        <EditorConsole
+        <!--
+          <EditorConsole
           :events="events"
           class="pointer-events-auto select-auto col-span-2"
           @clear="() => emit('clearEvents')"
           @mousedown.stop
-        />
+          />
+        -->
       </div>
     </div>
   </div>

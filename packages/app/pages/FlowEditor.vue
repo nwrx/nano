@@ -26,6 +26,7 @@ onBeforeRouteLeave(() => {
     <AppPage class="relative w-full h-full flex flex-col rounded-3.5">
       <Editor
         v-bind="session.data"
+        :get-options="session.getNodeInputOptions"
         @clear-events="() => session.clearEvents()"
         @start="(input) => session.start(input)"
         @abort="() => session.abort()"

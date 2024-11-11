@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { InputSocketJSON } from '@nwrx/api'
+import type { SocketListOption } from '@nwrx/core'
 
 const props = defineProps<{
   id: string
@@ -9,6 +10,7 @@ const props = defineProps<{
   secrets?: string[]
   variables?: string[]
   socket: InputSocketJSON
+  getOptions?: (key: string, query: string) => Promise<SocketListOption[]>
 }>()
 
 const emit = defineEmits<{
@@ -145,7 +147,7 @@ function onRelease() {
       :name="socket.name"
       :default-value="socket.defaultValue"
       :options="socket.options"
-      @search="(query) => emit('searchOptions', socket.key, query)"
+      :get-options="getOptions ? (query) => getOptions!(socket.key, query) : undefined"
     />
 
     <!-- Radio -->

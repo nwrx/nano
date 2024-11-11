@@ -280,7 +280,7 @@ export class FlowSessionInstance {
 
       if (message.event === 'getInputValueOptions') {
         const { id, key, query } = message
-        const options = this.flow.getNodeInputValueOptions(id, key, query)
+        const options = await this.flow.getNodeInputValueOptions(id, key, query)
         peer.send({ event: 'node:inputOptionResult', id, key, options })
       }
 
