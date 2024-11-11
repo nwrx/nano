@@ -13,11 +13,6 @@ export type * from './utils/serializeFlowSession'
 export interface ModuleFlowOptions {
 
   /**
-   * A map of the active flows currently being edited in a socket session.
-   */
-  flowModuleDir?: string
-
-  /**
    * The base directory in which the flow modules are stored. The modules
    * are stored as .tgz files in this directory and are extracted when
    * imported.
@@ -35,17 +30,11 @@ export class ModuleFlow extends ModuleBase implements ModuleFlowOptions {
   routes = ROUTES
   entities = ENTITIES
   dependencies = [ModuleUser, ModuleWorkspace]
+  flowSessions = new Map<string, FlowSessionInstance>()
 
   constructor(options: ModuleFlowOptions = {}) {
     super()
     if (options.flowSessions) this.flowSessions = options.flowSessions
-    if (options.flowModuleDir) this.flowModuleDir = options.flowModuleDir
   }
 
-  flowSessions = new Map<string, FlowSessionInstance>()
-  flowModuleDir = '../.data/modules'
-  resolveFlowEntity = UTILS.resolveFlowEntity.bind(this)
-  resolveFlowInstance = UTILS.resolveFlowInstance.bind(this)
-  resolveFlowSession = UTILS.resolveFlowSession.bind(this)
-  resolveFlowSessionByPeer = UTILS.resolveFlowSessionByPeer.bind(this)
 }
