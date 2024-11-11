@@ -72,11 +72,11 @@ export class FlowThreadNode extends Emitter<FlowThreadNodeEvents> {
 
       // --- Resolve references and parse using the input schema.
       this.setState('RUNNING/RESOLVING_INPUT')
-      this.input = await resolveSchema(
-        this.node.input ?? {},
-        definition.inputSchema ?? {},
-        this.getResolvers(),
-      )
+      this.input = await resolveSchema({
+        values: this.node.input,
+        schema: definition.inputSchema,
+        resolvers: this.getResolvers(),
+      })
 
       const context: FlowNodeContext = {
         input: this.input,
@@ -93,7 +93,7 @@ export class FlowThreadNode extends Emitter<FlowThreadNodeEvents> {
 
       // --- Resolve the output and parse using the output schema.
       this.setState('RUNNING/RESOLVING_OUTPUT')
-      this.output = await resolveSchema(output, definition.outputSchema ?? {})
+      this.output = await resolveSchema({ values: output, schema: definition.outputSchema })
 
       // --- Set the state of the node to done.
       context.output = this.output
