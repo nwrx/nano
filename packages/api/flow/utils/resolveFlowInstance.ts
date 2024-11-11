@@ -1,12 +1,21 @@
 import type { Flow as FlowEntity } from '../entities'
 import type { ModuleFlow } from '../index'
 import { Flow } from '@nwrx/core'
+import { defineNode } from '@nwrx/core'
 import { Core } from '@nwrx/module-core'
 import { ModuleWorkspace } from '../../workspace'
 
 const MODULES = [
   Core,
 ]
+
+function FALLBACK_NODE(kind: string) {
+  return defineNode({
+    kind,
+    name: kind,
+    description: 'The node is not available.',
+  })
+}
 
 /**
  * Resolves the flow instance from the flow, project, and workspace.
@@ -20,16 +29,17 @@ export function resolveFlowInstance(this: ModuleFlow, entity: FlowEntity) {
   return Flow.fromJSON(entity.data, {
     resolveNode: [
       (kind) => {
+        if (kind.startsWith('nwrx/')) kind = kind.slice(5)
         const [module] = kind.split('/')
 
         // --- Find the module in the list.
         const moduleInstance = MODULES.find(m => m.kind === module)
-        if (!moduleInstance) throw new Error(`Module not found: ${module}`)
-        if (!moduleInstance.nodes) throw new Error(`Nodes not found: ${module}`)
+        if (!moduleInstance) return FALLBACK_NODE(kind)
+        if (!moduleInstance.nodes) return FALLBACK_NODE(kind)
 
         // --- Find the node in the module.
         const node = Object.values(moduleInstance.nodes).find(n => n.kind === kind)
-        if (!node) throw new Error(`Node not found: ${kind}`)
+        if (!node) return FALLBACK_NODE(kind)
         return node
       },
     ],
