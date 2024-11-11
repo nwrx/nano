@@ -59,6 +59,7 @@ export class FlowThreadNode extends Emitter<FlowThreadNodeEvents> {
 
   async process() {
     try {
+      this.startedAt = Date.now()
       this.setState('RUNNING/RESOLVING_DEFINITION')
       const definition = await this.thread.flow.describe(this.node.kind)
       let output: ObjectLike = {}
