@@ -1,9 +1,9 @@
 import type { ObjectLike } from '@unshared/types'
 import type { FlowNodeContext } from '../module'
-import type { FlowError, FlowNode, FlowThreadNodeEventMeta, FlowThreadNodeEvents, FlowThreadNodeState } from '../utils'
+import type { FlowError, FlowNode, FlowThreadNodeEventMeta, FlowThreadNodeEvents, FlowThreadNodeState, ResolveReference } from '../utils'
 import type { FlowThread } from './createFlowThread'
 import { randomUUID } from 'node:crypto'
-import { Emitter, resolveSchema } from '../utils'
+import { Emitter, isReferenceLink, resolveSchema } from '../utils'
 
 export class FlowThreadNode extends Emitter<FlowThreadNodeEvents> {
   constructor(public readonly thread: FlowThread, public readonly node: FlowNode) {
@@ -36,6 +36,23 @@ export class FlowThreadNode extends Emitter<FlowThreadNodeEvents> {
     this.dispatch('state', this.eventMetadata)
   }
 
+  private getResolvers(): ResolveReference[] {
+    return [
+
+      // --- Resolve links to other nodes.
+      (reference) => {
+        if (isReferenceLink(reference)) {
+          const node = this.thread.nodes.get(reference.$fromNode.id)
+          if (!node) throw new Error('Node not found.')
+          return node.output[reference.$fromNode.key]
+        }
+      },
+
+      // --- Provided by the parent flow.
+      ...this.thread.flow.options.resolveReference ?? [],
+    ]
+  }
+
   /***************************************************************************/
   /* Runtime                                                                 */
   /***************************************************************************/
@@ -58,7 +75,7 @@ export class FlowThreadNode extends Emitter<FlowThreadNodeEvents> {
       this.input = await resolveSchema(
         this.node.input ?? {},
         definition.inputSchema ?? {},
-        this.thread.flow.options.resolveReference ?? [],
+        this.getResolvers(),
       )
 
       const context: FlowNodeContext = {
@@ -76,7 +93,7 @@ export class FlowThreadNode extends Emitter<FlowThreadNodeEvents> {
 
       // --- Resolve the output and parse using the output schema.
       this.setState('RUNNING/RESOLVING_OUTPUT')
-      this.output = await resolveSchema(output, definition.outputSchema ?? {} )
+      this.output = await resolveSchema(output, definition.outputSchema ?? {})
 
       // --- Set the state of the node to done.
       context.output = this.output
