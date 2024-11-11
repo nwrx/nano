@@ -1,9 +1,9 @@
-import { defineNode } from '@nwrx/core'
+import { defineNode, NODE_INPUT_KIND } from '@nwrx/core'
 import { categoryBasic } from '../categories'
 import { boolean, string } from '../types'
 
 export const nodeInput = defineNode({
-  kind: 'core/input',
+  kind: NODE_INPUT_KIND,
   name: 'Input',
   icon: 'https://api.iconify.design/carbon:arrow-down.svg',
   category: categoryBasic,
@@ -16,6 +16,13 @@ export const nodeInput = defineNode({
       control: 'text',
       description: 'The name of the input property. This is the name that will be used to reference the input in the flow.',
     },
+    description: {
+      type: string,
+      name: 'Description',
+      control: 'text',
+      description: 'A description of the input property. This is used to provide more information about the input and its purpose in the flow.',
+      isOptional: true,
+    },
     isOptional: {
       name: 'Optional',
       type: boolean,
@@ -23,8 +30,8 @@ export const nodeInput = defineNode({
       description: 'If checked, the input is optional and the flow will continue even if no value is provided.',
       defaultValue: false,
       options: [
-        { value: true, label: 'Optional' },
         { value: false, label: 'Required' },
+        { value: true, label: 'Optional' },
       ],
     },
   },
