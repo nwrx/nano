@@ -26,6 +26,7 @@ export const nodeTemplate = defineNode({
       name: 'Values',
       control: 'socket',
       description: 'The values for the template variables.',
+      isOptional: true,
       // properties: ({ data }) => {
       //   const properties: InputSchema = {}
       //   const { template = '' } = data as ObjectLike<string>
@@ -57,7 +58,7 @@ export const nodeTemplate = defineNode({
 
   // --- Process the template by replacing the variables with the values.
   process: ({ input }) => {
-    const { template, values } = input
+    const { template, values = {} } = input
 
     // --- Replace the variables in the template with the values.
     const compiled = template.replaceAll(EXP_VAR_REGEX, (_, key: string) => {
