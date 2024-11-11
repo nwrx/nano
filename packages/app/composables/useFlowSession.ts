@@ -1,5 +1,5 @@
 /* eslint-disable sonarjs/cognitive-complexity */
-import type { FlowSessionEventPayload, FlowSessionJSON } from '@nwrx/api'
+import type { FlowJSON, FlowSessionEventPayload } from '@nwrx/api'
 import type { SocketListOption } from '@nwrx/core'
 import { useAlerts, useClient } from '#imports'
 
@@ -14,477 +14,266 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
     },
   })
 
-  /** The current flow state. */
-  const flow = reactive({
+  const data = reactive({
     name: '',
     icon: '',
     description: '',
     nodes: [],
     categories: [],
+    events: [],
     secrets: [],
     variables: [],
     isRunning: false,
     peers: [],
     peerId: '',
-  }) as FlowSessionJSON
+  }) as FlowJSON
 
-  /** The events that occur during the flow execution. */
-  const events = ref<FlowSessionEventPayload[]>([])
-
-  /**
-   * Handle the incoming messages from the server. This function is called
-   * whenever the server-side flow is manipulated by the client or another peer.
-   */
   session.on('message', (payload: FlowSessionEventPayload) => {
+    data.events = [...data.events, payload]
     switch (payload.event) {
-      case 'flow:refresh': {
-        flow.peerId = payload.peerId
-        flow.name = payload.name
-        flow.icon = payload.icon
-        flow.description = payload.description
-        flow.isRunning = payload.isRunning
-        flow.peers = payload.peers.filter(p => p.id !== flow.peerId)
-        flow.nodes = payload.nodes
-        flow.categories = payload.categories
-        flow.secrets = payload.secrets
-        flow.variables = payload.variables
+      case 'init': {
+        data.name = payload.name
+        data.icon = payload.icon
+        data.description = payload.description
+        data.nodes = payload.nodes
+        data.categories = payload.categories
+        data.secrets = payload.secrets
+        data.variables = payload.variables
+        data.isRunning = payload.isRunning
+        data.peers = payload.peers.filter(p => p.id !== data.peerId)
+        data.peerId = payload.peerId
         break
       }
-      case 'flow:meta': {
+
+      /***************************************************************************/
+      /* Thread                                                                  */
+      /***************************************************************************/
+
+      case 'thread:start': {
+        data.isRunning = true
+        break
+      }
+      case 'thread:end':
+      case 'thread:abort': {
+        data.isRunning = false
+        break
+      }
+      case 'error':
+      case 'thread:error': {
+        const { message } = payload
+        alerts.error(message)
+        break
+      }
+      case 'thread:nodeStart': {
+        const { id } = payload
+        const node = data.nodes.find(n => n.id === id)
+        if (!node) return
+        node.error = undefined
+        data.nodes = [...data.nodes]
+        break
+      }
+      case 'thread:nodeEnd': {
+        const { id, output } = payload
+        const node = data.nodes.find(n => n.id === id)
+        if (!node) return
+        node.output = output
+        data.nodes = [...data.nodes]
+        break
+      }
+      case 'thread:nodeError': {
+        const { id, message } = payload
+        const node = data.nodes.find(n => n.id === id)
+        if (!node) return console.warn('node not found', id, data.nodes.map(n => n.id))
+        node.error = message
+        console.log('node error', node.error)
+        data.nodes = [...data.nodes]
+        break
+      }
+      case 'thread:nodeState': {
+        const { id, state } = payload
+        const node = data.nodes.find(n => n.id === id)
+        if (!node) return
+        node.state = state
+        data.nodes = [...data.nodes]
+        break
+      }
+
+      /***************************************************************************/
+      /* Editor                                                                  */
+      /***************************************************************************/
+
+      case 'meta': {
         const { key, value } = payload
-        if (key === 'name') flow.name = value as string
-        if (key === 'icon') flow.icon = value as string
-        if (key === 'description') flow.description = value as string
+        if (key === 'name') data.name = value as string
+        if (key === 'icon') data.icon = value as string
+        if (key === 'description') data.description = value as string
         break
       }
-      case 'flow:start': {
-        flow.isRunning = true
-        events.value.push(payload)
-        break
-      }
-      case 'flow:end':
-      case 'flow:abort': {
-        flow.isRunning = false
-        events.value.push(payload)
-        break
-      }
-      case 'flow:input': {
-        events.value.push(payload)
-        break
-      }
-      case 'flow:output': {
-        events.value.push(payload)
-        break
-      }
-
-      // --- Variable events.
-      case 'variables:create': {
-        const { name, value } = payload
-        flow.variables.push({ name, value, from: 'project' })
-        alerts.success(`Variable "${name}" created.`)
-        break
-      }
-      case 'variables:update': {
-        const { name, value } = payload
-        const variable = flow.variables.find(v => v.name === name)
-        if (!variable) return
-        variable.value = value
-        alerts.success(`Variable "${name}" updated.`)
-        break
-      }
-      case 'variables:remove': {
-        const { name } = payload
-        flow.variables = flow.variables.filter(v => v.name !== name)
-        alerts.success(`Variable "${name}" removed.`)
-        break
-      }
-
-      // --- Secret events.
-      case 'secrets:create': {
-        const { name } = payload
-        flow.secrets.push({ name, from: 'project' })
-        break
-      }
-      case 'secrets:remove': {
-        const { name } = payload
-        const index = flow.secrets.findIndex(s => s.name === name)
-        flow.secrets.splice(index, 1)
-        break
-      }
-
-      // --- Node events.
-      case 'node:create': {
+      case 'node:created': {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { event, ...node } = payload
-        flow.nodes.push(node)
-        flow.nodes = [...flow.nodes]
+        data.nodes.push(node)
+        data.nodes = [...data.nodes]
         break
       }
-      case 'node:meta': {
+      case 'node:metaValueChanged': {
         const { id, key, value } = payload
-        const node = flow.nodes.find(n => n.id === id)
+        const node = data.nodes.find(n => n.id === id)
         if (!node) return
         if (key === 'label') node.label = value as string
         if (key === 'comment') node.comment = value as string
         if (key === 'position') node.position = value as { x: number; y: number }
-        flow.nodes = [...flow.nodes]
         break
       }
-      case 'node:remove': {
-        const { id } = payload
-        const indexNode = flow.nodes.findIndex(x => x.id === id)
-        flow.nodes.splice(indexNode, 1)
-        break
-      }
-      case 'node:start': {
-        const { id } = payload
-        const node = flow.nodes.find(n => n.id === id)
+      case 'node:inputValueChanged': {
+        const { id, key, value } = payload
+        const node = data.nodes.find(n => n.id === id)
         if (!node) return
-        node.error = undefined
-        flow.nodes = [...flow.nodes]
+        node.input[key] = value
         break
       }
-      case 'node:end':
-      case 'node:abort': {
-        const { id } = payload
-        const node = flow.nodes.find(n => n.id === id)
-        if (!node) return
-        flow.nodes = [...flow.nodes]
-        events.value.push(payload)
-        break
-      }
-      case 'node:error': {
-        const { id, message } = payload
-        const node = flow.nodes.find(n => n.id === id)
-        if (!node) return
-        node.error = message
-        flow.nodes = [...flow.nodes]
-        events.value.push(payload)
-        break
-      }
-      case 'node:state': {
-        const { id, state } = payload
-        const node = flow.nodes.find(n => n.id === id)
-        if (!node) return
-        node.state = state
-        flow.nodes = [...flow.nodes]
-        break
-      }
-
-      // --- Node Data
-      case 'node:data': {
-        const { id, data } = payload
-        const node = flow.nodes.find(n => n.id === id)
-        if (!node) return
-        node.data = data
-        flow.nodes = [...flow.nodes]
-        break
-      }
-      case 'node:dataOptions': {
+      case 'node:inputOptionResult': {
         const { id, key, options } = payload
-        const node = flow.nodes.find(n => n.id === id)
+        const node = data.nodes.find(n => n.id === id)
         if (!node) return
-        const socket = node.dataSchema?.find(s => s.key === key)
+        const socket = node.inputSchema?.find(s => s.key === key)
         if (!socket) return
         socket.options = options
-        flow.nodes = [...flow.nodes]
+        data.nodes = [...data.nodes]
         break
       }
-      case 'node:dataSchema': {
-        const { id, schema } = payload
-        const node = flow.nodes.find(n => n.id === id)
-        if (!node) return
-        node.dataSchema = schema
-        flow.nodes = [...flow.nodes]
-        break
-      }
-      case 'node:dataParseError': {
-        const { id, key, message } = payload
-        const node = flow.nodes.find(n => n.id === id)
-        if (!node) return
-        node.dataParseErrors[key] = message
-        flow.nodes = [...flow.nodes]
+      case 'node:removed': {
+        const { ids } = payload
+        data.nodes = data.nodes.filter(n => !ids.includes(n.id))
         break
       }
 
-      // --- Node Result
-      case 'node:result': {
-        const { id, result } = payload
-        const node = flow.nodes.find(n => n.id === id)
-        if (!node) return
-        node.result = result
-        flow.nodes = [...flow.nodes]
-        break
-      }
-      case 'node:resultSchema': {
-        const { id, schema } = payload
-        const node = flow.nodes.find(n => n.id === id)
-        if (!node) return
-        node.resultSchema = schema
-        flow.nodes = [...flow.nodes]
-        break
-      }
-      case 'node:resultParseError': {
-        const { id, key, message } = payload
-        const node = flow.nodes.find(n => n.id === id)
-        if (!node) return
-        node.resultParseErrors[key] = message
-        flow.nodes = [...flow.nodes]
-        break
-      }
-
-      // --- User events.
+      /***************************************************************************/
+      /* Users                                                                   */
+      /***************************************************************************/
       case 'user:join': {
         const peer = payload
-        if (peer.id === flow.peerId) return
-        flow.peers.push({ ...peer, position: { x: 0, y: 0 } })
+        if (peer.id === data.peerId) return
+        data.peers.push({ ...peer, position: { x: 0, y: 0 } })
         break
       }
       case 'user:position': {
         const { id, x, y } = payload
-        const peer = flow.peers.find(p => p.id === id)
+        const peer = data.peers.find(p => p.id === id)
         if (!peer) return
-        peer.position.x = x
-        peer.position.y = y
+        peer.position = { x, y }
         break
       }
       case 'user:leave': {
         const { id } = payload
-        flow.peers = flow.peers.filter(p => p.id !== id)
-        break
-      }
-
-      // --- Error handling.
-      case 'error': {
-        const { message } = payload
-        alerts.error(message)
-        events.value.push(payload)
+        data.peers = data.peers.filter(p => p.id !== id)
         break
       }
     }
   })
 
-  // --- Return the flow editor composable.
   return {
-    flow,
-    events,
+    data,
+    clearEvents: () => data.events = [],
 
-    /**
-     * Broadcast the current user's cursor position to all clients.
-     * This is used to show the cursor of other users in the flow editor.
-     * Note that the event is only sent if there are more than one user in the flow editor.
-     *
-     * @param x The x coordinate.
-     * @param y The y coordinate.
-     */
-    userSetPosition: (x: number, y: number) => {
-      if (flow.peers.length < 2) return
-      session.send({ event: 'userSetPosition', x, y })
+    /***************************************************************************/
+    /* Thread                                                                  */
+    /***************************************************************************/
+
+    start: (input: Record<string, unknown>) => {
+      session.send({ event: 'start', input })
     },
 
-    /**
-     * Broadcast that the current user has left the flow editor. This will
-     * remove the user from the list of peers in the flow editor.
-     */
-    userLeave: () => {
-      session.send({ event: 'userLeave' })
-      session.close()
+    abort: () => {
+      session.send({ event: 'abort' })
     },
 
-    /**
-     * Start the flow execution. This will trigger the server to start the flow
-     * execution and broadcast the start event to all clients including the current client.
-     * The server will then execute the nodes in the flow in sequence.
-     *
-     * @param input The input data to start the flow execution with
-     */
-    flowStart: (input: Record<string, unknown>) => {
-      session.send({ event: 'flowStart', input })
+    startNode: (id: string) => {
+      session.send({ event: 'startNode', id })
     },
 
-    /**
-     * Abort the flow execution. This will trigger the server to abort the flow
-     * execution and broadcast the abort event to all clients including the current client.
-     * The server will then stop the execution of the nodes in the flow.
-     */
-    flowAbort: () => {
-      session.send({ event: 'flowAbort' })
+    abortNode: (id: string) => {
+      session.send({ event: 'abortNode', id })
     },
 
-    /**
-     * Update the meta value of the flow and broadcast the update to all clients including
-     * the current client.
-     *
-     * @param key The key of the property to update.
-     * @param value The new value of the property.
-     */
-    flowSetMetaValue: (key: string, value: unknown) => {
-      session.send({ event: 'flowSetMetaValue', key, value })
+    /***************************************************************************/
+    /* Flow                                                                    */
+    /***************************************************************************/
+
+    setName: (name: string) => {
+      session.send({ event: 'setMetaValue', key: 'name', value: name })
     },
 
-    /**
-     * Create a new variable in the flow and broadcast the creation to all clients including
-     * the current client. The variable is used to store data that can be accessed by nodes
-     * in the flow.
-     *
-     * @param name The name of the variable.
-     * @param value The value of the variable.
-     */
-    flowVariableCreate: (name: string, value: string) => {
-      session.send({ event: 'flowVariableCreate', name, value })
+    setDescription: (description: string) => {
+      session.send({ event: 'setMetaValue', key: 'description', value: description })
     },
 
-    /**
-     * Trigger the server to update the value of the variable with the given name and broadcast
-     * the update to all clients including the current client.
-     *
-     * @param name The name of the variable.
-     * @param value The new value of the variable.
-     */
-    flowVariableUpdate: (name: string, value: string) => {
-      session.send({ event: 'flowVariableUpdate', name, value })
+    /***************************************************************************/
+    /* Secrets & Variables                                                     */
+    /***************************************************************************/
+
+    createVariable: (name: string, value: string) => {
+      session.send({ event: 'createVariable', name, value })
     },
 
-    /**
-     * Trigger the server to remove the variable with the given name and broadcast the removal
-     * to all clients including the current client.
-     *
-     * @param name The name of the variable.
-     */
-    flowVariableRemove: (name: string) => {
-      session.send({ event: 'flowVariableRemove', name })
+    updateVariable: (name: string, value: string) => {
+      session.send({ event: 'updateVariable', name, value })
     },
 
-    /**
-     * Trigger the server to create a secret with the given name and value and broadcast the creation
-     * to all clients including the current client. The secret is used to store sensitive data that
-     * should not be exposed to other clients.
-     *
-     * @param name The name of the secret.
-     * @param value The value of the secret.
-     */
-    flowSecretCreate: (name: string, value: string) => {
-      session.send({ event: 'flowSecretCreate', name, value })
+    removeVariable: (name: string) => {
+      session.send({ event: 'removeVariable', name })
     },
 
-    /**
-     * Trigger the server to update the value of the secret with the given name and broadcast
-     * the update to all clients including the current client.
-     *
-     * @param name The name of the secret.
-     * @param value The new value of the secret.
-     */
-    flowSecretUpdate: (name: string, value: string) => {
-      session.send({ event: 'flowSecretUpdate', name, value })
+    createSecret: (name: string, value: string) => {
+      session.send({ event: 'createSecret', name, value })
     },
 
-    /**
-     * Trigger the server to remove the secret with the given name and broadcast the removal
-     * to all clients including the current client.
-     *
-     * @param name The name of the secret.
-     */
-    flowSecretRemove: (name: string) => {
-      session.send({ event: 'flowSecretRemove', name })
+    updateSecret: (name: string, value: string) => {
+      session.send({ event: 'updateSecret', name, value })
     },
 
-    /**
-     * Trigger the server to create a new node with the given kind at the x and y coordinates
-     * and broadcast the creation of the node to all clients including the current client.
-     *
-     * @param kind The kind of the node.
-     * @param x The x coordinate of the node.
-     * @param y The y coordinate of the node.
-     */
-    nodeCreate: (kind: string, x: number, y: number) => {
-      session.send({ event: 'nodeCreate', kind, x, y })
+    removeSecret: (name: string) => {
+      session.send({ event: 'removeSecret', name })
     },
 
-    /**
-     * Trigger the server to duplicate the node with the given id and broadcast the duplication
-     * to all clients including the current client.
-     *
-     * @param nodeId The node id.
-     * @param x The x coordinate of the duplicated node.
-     * @param y The y coordinate of the duplicated node.
-     */
-    nodeDuplicate: (nodeId: string, x: number, y: number) => {
-      session.send({ event: 'nodeDuplicate', nodeId, x, y })
+    /***************************************************************************/
+    /* Nodes                                                                   */
+    /***************************************************************************/
+
+    createNode: (kind: string, x: number, y: number) => {
+      session.send({ event: 'createNode', kind, x, y })
     },
 
-    /**
-     * Trigger the run of the given node and broadcast the start event to all clients including
-     * the current client.
-     *
-     * @param nodeId The node id.
-     */
-    nodeStart: (nodeId: string) => {
-      session.send({ event: 'nodeStart', nodeId })
+    cloneNodes: (id: string, x: number, y: number) => {
+      session.send({ event: 'cloneNodes', id, x, y })
     },
 
-    /**
-     * Trigger the abort of the given node and broadcast the abort event to all clients including
-     * the current client.
-     *
-     * @param nodeId The node id.
-     */
-    nodeAbort: (nodeId: string) => {
-      session.send({ event: 'nodeAbort', nodeId })
+    removeNodes: (ids: string[]) => {
+      session.send({ event: 'removeNodes', ids })
     },
 
-    /**
-     * Trigger the server to move and broadcast the movement of multiple nodes to the new
-     * x and y coordinates to all clients including the current client.
-     *
-     * @param nodes The list of nodes to move.
-     */
-    nodeSetPosition: (...nodes: FlowNodePosition[]) => {
-      const payload = nodes.map(({ nodeId, x, y }) => ({
-        nodeId,
-        key: 'position',
-        value: { x: Math.round(x), y: Math.round(y) },
-      }))
-      session.send({ event: 'nodeSetMetaValue', nodes: payload })
+    setNodesPosition: (positions: FlowNodePosition[]) => {
+      const nodes = positions.map(({ id, x, y }) => ({ id, key: 'position', value: { x: Math.round(x), y: Math.round(y) } }))
+      session.send({ event: 'setNodeMetaValues', nodes })
     },
 
-    /**
-     * Update the label of a node and broadcast the update to all clients including the current client.
-     * The label is used to display the name of the node in the flow editor.
-     *
-     * @param nodeId The node id.
-     * @param label The new label of the node.
-     */
-    nodeSetLabel: (nodeId: string, label: string) => {
-      const payload = { nodeId, key: 'label', value: label }
-      session.send({ event: 'nodeSetMetaValue', nodes: [payload] })
+    setNodeLabel: (id: string, label: string) => {
+      session.send({ event: 'setNodeMetaValues', nodes: [{ id, key: 'label', value: label }] })
     },
 
-    /**
-     * Trigger the server to update a specific port value of the given node and broadcast
-     * the update to all clients including the current client.
-     *
-     * @param nodeId The node id.
-     * @param portId The port id.
-     * @param value The new value of the port.
-     */
-    nodeSetDataValue: (nodeId: string, portId: string, value: unknown) => {
-      session.send({ event: 'nodeSetDataValue', nodeId, portId, value })
+    setNodeComment: (id: string, comment: string) => {
+      session.send({ event: 'setNodeMetaValues', nodes: [{ id, key: 'comment', value: comment }] })
     },
 
-    /**
-     * Get the options list for the given node id and key. This will trigger the server to
-     * fetch the options list and return the list of options to the client asking for it.
-     *
-     * @param id The ID of the node where the data options are requested.
-     * @param key The key of the data options.
-     * @param query The query to filter the data options.
-     * @returns The list of options for the given node id and key.
-     */
-    nodeSearchDataOptions: (id: string, key: string, query: string): Promise<SocketListOption[]> => {
-      session.send({ event: 'nodeSearchDataOptions', id, key, query })
+    setNodeInputValue: (id: string, key: string, value: unknown) => {
+      session.send({ event: 'setNodeInputValue', id, key, value })
+    },
+
+    getNodeInputOptions: (id: string, key: string, query: string): Promise<SocketListOption[]> => {
+      session.send({ event: 'getInputValueOptions', id, key, query })
       return new Promise((resolve) => {
         const stop = session.on('message', (payload: FlowSessionEventPayload) => {
-          if (payload.event === 'node:dataOptions') {
+          if (payload.event === 'node:inputOptionResult') {
             stop()
             resolve(payload.options)
           }
@@ -492,41 +281,30 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
       })
     },
 
-    /**
-     * Delete the node with the given id. This will trigger the server to delete the
-     * node and broadcast the deletion to all clients.
-     *
-     * @param nodeIds The list of node ids to remove.
-     */
-    nodeRemove: (nodeIds: string[]) => {
-      session.send({ event: 'nodesRemove', nodeIds })
+    /***************************************************************************/
+    /* Links                                                                   */
+    /***************************************************************************/
+
+    createLink: (source: string, target: string) => {
+      session.send({ event: 'createLink', source, target })
     },
 
-    /**
-     * Broadcast the creation of a link between the source and target nodes.
-     *
-     * @param source The source node:port ID.
-     * @param target The target node:port ID.
-     */
-    linkCreate: (source: string, target: string) => {
-      session.send({ event: 'linkCreate', source, target })
+    removeLink: (source: string) => {
+      session.send({ event: 'removeLink', source })
     },
 
-    /**
-     * Broadcast the removal of a link between the source and target nodes.
-     *
-     * @param source The source node id.
-     */
-    linkRemove: (source: string) => {
-      session.send({ event: 'linkRemove', source })
+    /***************************************************************************/
+    /* User                                                                    */
+    /***************************************************************************/
+
+    setUserPosition: (x: number, y: number) => {
+      if (data.peers.length < 2) return
+      session.send({ event: 'setUserPosition', x, y })
     },
 
-    /**
-     * Clear all events from the event event list. This allows the user
-     * to better track the events that occur during the flow execution.
-     */
-    eventsClear: () => {
-      events.value = []
+    userLeave: () => {
+      session.send({ event: 'userLeave' })
+      session.close()
     },
   }
 }

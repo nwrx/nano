@@ -1,8 +1,9 @@
 /* eslint-disable unicorn/prevent-abbreviations */
-import type { FlowSessionParticipantJSON, NodeInstanceJSON } from '@nwrx/api'
+import type { FlowSessionParticipantJSON, FlowThreadNodeJSON } from '@nwrx/api'
 import type { Position } from '@vueuse/core'
-import type { FlowEditorNode } from '#build/components'
+import type { EditorNode } from '#build/components'
 import type { CSSProperties } from 'vue'
+import { isReferenceLink } from '@nwrx/core/utils'
 
 export interface UseFlowEditorOptions {
 
@@ -23,11 +24,10 @@ export interface UseFlowEditorOptions {
    *
    * @default []
    */
-  nodes: Ref<NodeInstanceJSON[]>
+  nodes: Ref<FlowThreadNodeJSON[]>
 
   /**
-   * The size of the viewplane. This is used to determine the size of internal
-   * elements that contains the nodes and links.
+   * The size of the viewplane that contains the nodes and links.
    *
    * @default 1000
    */
@@ -52,14 +52,14 @@ export interface UseFlowEditorOptions {
    *
    * @param nodes The list of selected nodes in the flow editor.
    */
-  onNodesSelect?: (nodes: NodeInstanceJSON[]) => void
+  onNodesSelect?: (nodes: FlowThreadNodeJSON[]) => void
 
   /**
    * The function to call when one or more nodes are moved in the flow editor.
    *
    * @param nodes The list of nodes that were moved and their new positions.
    */
-  onNodesMove?: (nodes: FlowNodePosition[]) => void
+  onNodesSetPosition?: (nodes: FlowNodePosition[]) => void
 
   /**
    * The function to call when a node is removed from the flow editor.
@@ -110,14 +110,14 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
     onNodeCreate = () => {},
     onNodeDuplicate = () => {},
     onNodesSelect = () => {},
-    onNodesMove = () => {},
+    onNodesSetPosition = () => {},
     onNodesRemove = () => {},
     onLinkCreate = () => {},
     onLinkRemove = () => {},
     onUserSetPosition = () => {},
   } = options
 
-  // --- Initialize the view state.
+  // --- View state.
   const view = ref<HTMLDivElement>()
   const viewContainer = ref<HTMLDivElement>()
   const viewContainerRectRefs = useElementBounding(viewContainer, { immediate: true })
@@ -131,12 +131,28 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
   const viewSelectFrom = ref({ x: 0, y: 0 })
   const viewSelectTo = ref({ x: 0, y: 0 })
 
-  // --- Initialize the cursor state.
+  // --- Cursor state.
   const cursorView = ref({ x: 0, y: 0 })
   const cursorWorld = ref({ x: 0, y: 0 })
   const cursorPeers = computed(() => peers.value.filter(peer => peer.id !== peerId.value))
 
-  // --- Initialize the node state.
+  // --- Panel state.
+  const panelWidth = useLocalStorage('__FlowEditorPanel_Width', 512)
+  const panelResizeOrigin = ref(0)
+  const panelResizeInitial = ref(0)
+  const isPanelResizing = ref(false)
+  const isPanelOpen = useLocalStorage('__FlowEditorPanel_FlowOpen', true)
+  const isPanelSecretsOpen = useLocalStorage('__FlowEditorPanel_SecretsOpen', true)
+  const isPanelVariablesOpen = useLocalStorage('__FlowEditorPanel_VariablesOpen', true)
+  const isPanelNodeInputOpen = useLocalStorage('__FlowEditorPanel_NodeDataOpen', true)
+  const isPanelNodeOutputOpen = useLocalStorage('__FlowEditorPanel_NodeResultOpen', true)
+  watch(isPanelResizing, (value) => {
+    if (!value) return
+    panelResizeOrigin.value = cursorView.value.x
+    panelResizeInitial.value = panelWidth.value
+  })
+
+  // --- Node(s) state.
   const nodeComponents = ref<Record<string, ComponentPublicInstance>>({})
   const nodeDragging = ref(false)
   const nodeDragOriginWorld = ref<Record<string, Position>>({})
@@ -161,8 +177,6 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
   const linkDragFrom = ref<FlowDragState>()
   const linkDragTo = ref<FlowDragState | void>()
   const linkDragProps = ref<FlowLinkProps>()
-
-  ////////////////////////////
 
   // --- Compute the position of the cursor in the world coordinates.
   function screenToWorld(position: Position) {
@@ -194,26 +208,24 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
 
       // --- Iterate over the links and compute the position of the source and target pins.
       for (const node of nodes.value) {
-        for (const key in node.data) {
-          const value = node.data[key]
+        for (const key in node.input) {
+          const value = node.input[key]
           if (value === undefined) continue
 
           // --- Cast as an array and iterate over the values.
           const values = Array.isArray(value) ? value : [value]
           for (const value of values) {
-
-            if (typeof value !== 'string') continue
-            if (!value.startsWith('$NODE.')) continue
+            if (!isReferenceLink(value)) continue
 
             // --- Get the source and target node IDs.
-            const [source, sourceProperty] = value.slice(6).split(':')
+            const { id: source, key: sourceProperty } = value.$fromNode
             const [target, targetProperty] = [node.id, key]
 
             // --- Get the source and target node elements.
             /* eslint-disable @typescript-eslint/no-unsafe-member-access */
             /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-            const sourceNodeComponent = nodeComponents.value[source] as unknown as typeof FlowEditorNode
-            const targetNodeComponent = nodeComponents.value[target] as unknown as typeof FlowEditorNode
+            const sourceNodeComponent = nodeComponents.value[source] as unknown as typeof EditorNode
+            const targetNodeComponent = nodeComponents.value[target] as unknown as typeof EditorNode
             if (!sourceNodeComponent || !targetNodeComponent) continue
 
             // --- Get the source and target pin elements.
@@ -258,8 +270,6 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
   // --- Watch the links and update the link properties when the links change.
   watch([nodes, viewZoom], setLinkProps, { immediate: true, deep: true })
 
-  ////////////////////////////
-
   return toReactive({
     view,
     viewContainer,
@@ -269,20 +279,29 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
     viewDragOriginScreen,
     viewDragOriginWorld,
     viewSelecting,
+
+    panelWidth,
+    isPanelOpen,
+    isPanelResizing,
+    isPanelSecretsOpen,
+    isPanelVariablesOpen,
+    isPanelNodeInputOpen,
+    isPanelNodeOutputOpen,
+
     cursorView,
     cursorWorld,
     cursorPeers,
+
     nodeSelectedIds,
     nodeSelected,
     nodeComponents,
     nodeDragging,
     nodeDragOriginScreen,
     nodeDragOriginWorld,
+
     linksProps,
     linkDragFrom,
     linkDragTo,
-
-    ////////////////////////////
 
     /**
      * The style of the editor element that contains the viewplane.
@@ -336,7 +355,7 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
      * @param node The node that should be styled.
      * @returns The style object that should be applied to the node.
      */
-    getNodeStyle: (node: NodeInstanceJSON): CSSProperties => {
+    getNodeStyle: (node: FlowThreadNodeJSON): CSSProperties => {
       const { x, y } = worldToView(node.position)
       const isSelected = nodeSelectedIds.value.has(node.id)
       return {
@@ -367,7 +386,9 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
       }
     },
 
-    ////////////////////////////
+    /***************************************************************************/
+    /* Screen                                                                  */
+    /***************************************************************************/
 
     /**
      * On mouse down on the editor, drag the viewplane accross the screen.
@@ -453,8 +474,8 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
         }
 
         // --- Update the position of the selected nodes.
-        onNodesMove(nodeSelected.value.map(node => ({
-          nodeId: node.id,
+        onNodesSetPosition(nodeSelected.value.map(node => ({
+          id: node.id,
           x: node.position.x,
           y: node.position.y,
         })))
@@ -473,6 +494,13 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
           targetColor: linkDragFrom.value.color ?? 'black',
         }
       }
+
+      // --- If resizing the panel, update the panel width based on the mouse movement.
+      else if (isPanelResizing.value) {
+        const offset = panelResizeOrigin.value - cursorView.value.x
+        const width = panelResizeInitial.value + offset
+        panelWidth.value = Math.max(256, Math.min(1024, width))
+      }
     },
 
     /**
@@ -487,6 +515,7 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
       viewMoving.value = false
       viewSelecting.value = false
       nodeDragging.value = false
+      isPanelResizing.value = false
 
       // --- If a drag link is active, emit a link remove event.
       if (linkDragFrom.value && !linkDragTo.value) {
@@ -520,7 +549,7 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
     },
 
     /**
-     * When dropping an `application/json` file, emit the `nodeCreate` event
+     * When dropping an `application/json` file, emit the `createNode` event
      * to trigger the parent component to create a new node based on the
      * dropped JSON data.
      *
@@ -533,7 +562,7 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
       const data = JSON.parse(json) as DropPayload
 
       // --- Handle the creation of a new node.
-      if (data.type === 'nodeCreate') {
+      if (data.type === 'createNode') {
         if (!view.value) return
         const { x, y } = screenToWorld({ x: event.clientX, y: event.clientY })
         onNodeCreate(data.kind, x, y)
@@ -581,18 +610,20 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
 
           // --- Update the position of the selected nodes.
           const payload = nodeSelected.value.map(node => ({
-            nodeId: node.id,
+            id: node.id,
             x: node.position.x + offset.x,
             y: node.position.y + offset.y,
           }))
 
           // --- Update the position of the selected nodes.
-          onNodesMove(payload)
+          onNodesSetPosition(payload)
         }
       }
     },
 
-    ////////////////////////////
+    /***************************************************************************/
+    /* Nodes                                                                   */
+    /***************************************************************************/
 
     /**
      * When clicking on the header of a node, select the node and start the
@@ -646,7 +677,9 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
      */
     isNodeSelected: (nodeId: string): boolean => nodeSelectedIds.value.has(nodeId),
 
-    ////////////////////////////
+    /***************************************************************************/
+    /* Links                                                                   */
+    /***************************************************************************/
 
     /**
      * When a port is being dragged, update the `dragLinkTo` state to the port
@@ -654,7 +687,7 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
      *
      * @param state The port that is being dragged to.
      */
-    onNodePortGrab: (state?: FlowDragState) => {
+    onLinkGrab: (state?: FlowDragState) => {
       if (!state) return
       linkDragFrom.value = state
     },
@@ -665,17 +698,17 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
      *
      * @param state The port that is being dragged to.
      */
-    onNodePortAssign: (state?: FlowDragState | void) => {
+    onLinkAssign: (state?: FlowDragState | void) => {
       if (state?.id === linkDragFrom.value?.id) return
       linkDragTo.value = state
     },
 
     /**
      * When a port is being dragged and the mouse button is released, determine
-     * if the port is being dropped on another port and if so, emit the `linkCreate`
+     * if the port is being dropped on another port and if so, emit the `createLink`
      * event to trigger the parent component to create a new link between the two ports.
      */
-    onNodePortRelease: () => {
+    onLinkRelease: () => {
       const from = linkDragFrom.value
       const to = linkDragTo.value
       linkDragFrom.value = undefined
