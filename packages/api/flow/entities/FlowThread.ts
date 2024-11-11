@@ -1,9 +1,9 @@
 import { BaseEntity } from '@unserved/server'
 import { Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm'
-import { UserObject } from '../../user'
-import { FlowSessionEventPayload } from '../utils'
+import { User, UserObject } from '../../user'
 import { Flow, FlowObject } from './Flow'
-import { FlowThreadEvent } from './FlowThreadEvent'
+import { FlowThreadEvent, FlowThreadEventObject } from './FlowThreadEvent'
+import { FlowThreadNodeEvent, FlowThreadNodeEventObject } from './FlowThreadNodeEvent'
 
 /**
  * A `FlowThread` is used to log the execution of a flow. It is used to store the
@@ -30,6 +30,23 @@ export class FlowThread extends BaseEntity {
   events?: FlowThreadEvent[]
 
   /**
+   * The node events that occurred during the flow run.
+   *
+   * @example [FlowThreadNodeEvent, FlowThreadNodeEvent, FlowThreadNodeEvent]
+   */
+  @OneToMany(() => FlowThreadNodeEvent, event => event.thread, { cascade: true })
+  nodeEvents?: FlowThreadNodeEvent[]
+
+  /**
+   * The user that triggered the execution of the thread.
+   *
+   * @example User { ... }
+   */
+  @JoinColumn()
+  @ManyToOne(() => User, { nullable: true, onDelete: 'CASCADE' })
+  createdBy?: User | null
+
+  /**
    * @returns The object representation of the flow run.
    */
   serialize(): FlowThreadObject {
@@ -37,6 +54,8 @@ export class FlowThread extends BaseEntity {
       id: this.id,
       flow: this.flow.serialize(),
       events: this.events?.map(event => event.serialize()),
+      nodeEvents: this.nodeEvents?.map(event => event.serialize()),
+      createdBy: this.createdBy?.serialize(),
     }
   }
 }
@@ -44,6 +63,7 @@ export class FlowThread extends BaseEntity {
 export interface FlowThreadObject {
   id: string
   flow: FlowObject
-  user?: UserObject
-  events?: FlowSessionEventPayload[]
+  createdBy?: UserObject
+  events?: FlowThreadEventObject[]
+  nodeEvents?: FlowThreadNodeEventObject[]
 }
