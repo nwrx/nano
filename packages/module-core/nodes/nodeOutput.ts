@@ -1,9 +1,9 @@
-import { defineNode } from '@nwrx/core'
+import { defineNode, NODE_OUTPUT_KIND } from '@nwrx/core'
 import { categoryBasic } from '../categories'
 import { string } from '../types'
 
 export const nodeOutput = defineNode({
-  kind: 'core/output',
+  kind: NODE_OUTPUT_KIND,
   name: 'Output',
   icon: 'https://api.iconify.design/carbon:arrow-up.svg',
   category: categoryBasic,
@@ -31,10 +31,4 @@ export const nodeOutput = defineNode({
       isOptional: true,
     },
   },
-
-  process: ({ input }) => ({
-    name: input.name,
-    description: input.description,
-    value: input.value,
-  }),
 })
