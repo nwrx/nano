@@ -12,7 +12,7 @@ export class FlowThread extends Emitter<FlowThreadEvents> {
   constructor(public flow: Flow) { super() }
 
   /** The unique identifier of the flow thread. */
-  readonly id = randomUUID() as string
+  readonly id = randomUUID()
 
   /** The time when the flow thread was started. */
   startedAt = 0
