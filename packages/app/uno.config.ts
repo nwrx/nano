@@ -62,6 +62,13 @@ export default defineConfig<Theme>({
     'v-leave-active': 'transition',
     'v-leave-from': 'transform opacity-100',
     'v-leave-to': 'transform opacity-0',
+
+    'slide-enter-active': 'transition',
+    'slide-enter-from': 'transform opacity-0 translate-y-2',
+    'slide-enter-to': 'transform opacity-100 translate-y-0',
+    'slide-leave-active': 'transition',
+    'slide-leave-from': 'transform opacity-100 translate-y-0',
+    'slide-leave-to': 'transform opacity-0 translate-y-2',
   },
 
   /**
