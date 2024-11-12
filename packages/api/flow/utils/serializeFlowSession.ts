@@ -207,7 +207,7 @@ export async function serializeNode(session: FlowSessionInstance, node: FlowNode
 }
 
 export async function serializeFlowSession(session: FlowSessionInstance, peer: Peer): Promise<FlowJSON> {
-  const nodePromises = session.flow.nodes.values().map(node => serializeNode(session, node))
+  const nodePromises = session.flow.nodes.map(node => serializeNode(session, node))
   const nodes = await Promise.all(nodePromises)
   return {
     name: session.entity.title ?? 'Untitled Flow',
