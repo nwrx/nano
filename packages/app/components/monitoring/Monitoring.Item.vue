@@ -17,13 +17,12 @@ const emit = defineEmits<{
   <BaseButton
     eager
     :class="{
-      '!b-editor-active bg-subtle': isSelected,
-      'hover:bg-subtle': !isSelected,
+      '!b-editor-active bg-prominent': isSelected,
+      'hover:bg-prominent': !isSelected,
     }"
     class="
       flex items-center px-md py-sm space-x-sm w-full
-      cursor-pointer bg-app  select-none transition-colors
-      b b-transparent b-b-app
+      cursor-pointer  select-none transition-colors
     "
     @click="() => emit('click')">
 
@@ -51,7 +50,7 @@ const emit = defineEmits<{
     <div class="flex-1" />
 
     <!-- Text -->
-    <p class="text-xs font-medium text-subtle truncate">
+    <p class="text-xs text-subtle truncate">
       {{ text }}
     </p>
   </BaseButton>
