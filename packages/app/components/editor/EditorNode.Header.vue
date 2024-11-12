@@ -20,16 +20,11 @@ const emit = defineEmits<{
   handleRelease: [event: MouseEvent]
 }>()
 
-// --- State
 const isRunning = computed(() => props.isRunning)
 const isRunningThrottled = refThrottled(isRunning, 200)
 
-// --- Click handlers
 function handleGrab(event: MouseEvent) {
-  // If click is on tooltip content, don't start dragging.
   if ((event.target as HTMLElement).closest('.cursor-auto')) return
-
-  // Only start dragging on left click.
   if (event.button !== 0) return
   emit('handleGrab', event)
 }
@@ -57,7 +52,7 @@ function handleGrab(event: MouseEvent) {
       <!-- Tooltip content -->
       <template #tooltip>
         <div class="w-99 divide-y divide-editor">
-          <p v-if="description" v-markdown="description" class="px-md py-0 text-app prose" />
+          <p v-if="description" v-markdown="description" class="px-md py-0 text-app markdown" />
           <p class="px-md py-sm font-medium text-app">
             (node): {{ kind }}
           </p>

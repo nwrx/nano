@@ -14,27 +14,25 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
 </script>
 
 <template>
-  <div class="flex p-md w-full">
-    <div class="flex border border-editor rounded">
-      <BaseInputToggle
-        v-for="value in values"
-        :key="value"
-        v-model="model"
-        :value="value"
-        eager
-        as="div"
-        type="radio"
-        class="
-          flex items-center justify-center
-          last:rd-r first:rd-l
-          cursor-pointer px-md h-10 font-medium transition
-          !selected:text-editor-active
-          !selected:bg-editor-active
-          hover:bg-editor-active/20
-        ">
-        {{ t(value) }}
-      </BaseInputToggle>
-    </div>
+  <div class="flex items-center w-full px-sm h-12 b-b b-editor space-x-sm">
+    <BaseInputToggle
+      v-for="value in values"
+      :key="value"
+      v-model="model"
+      :value="value"
+      eager
+      as="div"
+      type="radio"
+      class="
+        flex items-center justify-center
+        last:rd-r first:rd-l line-clamp-1 rd
+        cursor-pointer px-md h-8 font-medium transition
+        !selected:text-editor-active
+        !selected:bg-editor-active
+        hover:bg-editor-active/20
+      ">
+      {{ t(value) }}
+    </BaseInputToggle>
   </div>
 </template>
 
