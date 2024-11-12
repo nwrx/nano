@@ -1,8 +1,6 @@
 import { createError } from '@unserved/server'
 
 export const ERRORS = {
-
-  // Flow
   FLOW_NOT_FOUND: (workspace: string, project: string, name: string) => createError({
     name: 'E_FLOW_NOT_FOUND',
     statusCode: 404,
