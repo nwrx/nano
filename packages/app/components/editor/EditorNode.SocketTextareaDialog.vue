@@ -13,9 +13,9 @@ const emit = defineEmits<{
   'update:isOpen': [value: boolean]
 }>()
 
+const settings = useLocalSettings()
 const isOpen = useVModel(props, 'isOpen', emit, { passive: true })
 const model = useVModel(props, 'modelValue', emit, { passive: true })
-const showPreview = ref(false)
 
 function onTextAreaInput(event: Event) {
   const target = event.target as HTMLTextAreaElement
@@ -76,8 +76,8 @@ function onTextAreaInput(event: Event) {
             <EditorNodeSocketTextareaDialogButton
               icon="i-carbon:text-long-paragraph"
               label="Preview"
-              :is-active="showPreview"
-              @click="() => showPreview = !showPreview"
+              :is-active="settings.editorNodeTextareaShowPreview"
+              @click="() => settings.editorNodeTextareaShowPreview = !settings.editorNodeTextareaShowPreview"
             />
           </div>
 
@@ -94,8 +94,8 @@ function onTextAreaInput(event: Event) {
             <!-- Preview -->
             <div
               :class="{
-                'op-0 w-0': !showPreview,
-                'op-100 w-1/2': showPreview,
+                'op-0 w-0': !settings.editorNodeTextareaShowPreview,
+                'op-100 w-1/2': settings.editorNodeTextareaShowPreview,
               }"
               class="overflow-hidden transition-all duration-slow">
               <div

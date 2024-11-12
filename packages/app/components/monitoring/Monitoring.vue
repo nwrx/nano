@@ -11,11 +11,12 @@ const props = defineProps<{
   selectedFlow?: string
   selectedThread?: string
   selectedEvent?: string
-  projects: WorkspaceProjectObject[]
-  threads: MonitoringFlowThreadObject[]
-  events: MonitoringFlowThreadEventObject[]
-  nodeEvents: MonitoringFlowThreadNodeEventObject[]
-  filters: MonitoringSessionFilters
+  projects?: WorkspaceProjectObject[]
+  threads?: MonitoringFlowThreadObject[]
+  events?: MonitoringFlowThreadEventObject[]
+  nodeEvents?: MonitoringFlowThreadNodeEventObject[]
+  eventNames?: string[]
+  eventTypes?: string[]
 }>()
 
 const emit = defineEmits<{
@@ -25,13 +26,8 @@ const emit = defineEmits<{
   'update:filters': [value: MonitoringSessionFilters]
 }>()
 
-const filters = useVModel(props, 'filters', emit, {
-  passive: true,
-  defaultValue: {
-    eventNames: [],
-    eventTypes: [],
-  },
-})
+const eventNames = useVModel(props, 'eventNames', emit, { passive: true, defaultValue: [] })
+const eventTypes = useVModel(props, 'eventTypes', emit, { passive: true, defaultValue: [] })
 </script>
 
 <template>
@@ -57,8 +53,8 @@ const filters = useVModel(props, 'filters', emit, {
 
     <!-- Events -->
     <MonitoringEvents
-      v-model:filter-event-names="filters.eventNames"
-      v-model:filter-event-types="filters.eventTypes"
+      v-model:event-names="eventNames"
+      v-model:event-types="eventTypes"
       :selected-event="selectedEvent"
       :selected-thread="selectedThread"
       :events="events"

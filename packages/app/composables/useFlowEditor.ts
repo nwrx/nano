@@ -27,6 +27,13 @@ export interface UseFlowEditorOptions {
   nodes: Ref<FlowThreadNodeJSON[]>
 
   /**
+   * The width of the sidebar panel.
+   *
+   * @default 512
+   */
+  panelWidth: Ref<number>
+
+  /**
    * The size of the viewplane that contains the nodes and links.
    *
    * @default 1000
@@ -106,6 +113,7 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
     peerId,
     peers,
     nodes,
+    panelWidth = ref(512),
     viewSize = 1000,
     onNodeCreate = () => {},
     onNodeDuplicate = () => {},
@@ -138,15 +146,9 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
   const cursorPeers = computed(() => peers.value.filter(peer => peer.id !== peerId.value))
 
   // --- Panel state.
-  const panelWidth = useLocalStorage('__FlowEditorPanel_Width', 512)
   const panelResizeOrigin = ref(0)
   const panelResizeInitial = ref(0)
   const isPanelResizing = ref(false)
-  const isPanelOpen = useLocalStorage('__FlowEditorPanel_FlowOpen', true)
-  const isPanelSecretsOpen = useLocalStorage('__FlowEditorPanel_SecretsOpen', true)
-  const isPanelVariablesOpen = useLocalStorage('__FlowEditorPanel_VariablesOpen', true)
-  const isPanelNodeInputOpen = useLocalStorage('__FlowEditorPanel_NodeDataOpen', true)
-  const isPanelNodeOutputOpen = useLocalStorage('__FlowEditorPanel_NodeResultOpen', true)
   watch(isPanelResizing, (value) => {
     if (!value) return
     panelResizeOrigin.value = cursorClient.value.x
@@ -282,12 +284,7 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
     viewSelecting,
 
     panelWidth,
-    isPanelOpen,
     isPanelResizing,
-    isPanelSecretsOpen,
-    isPanelVariablesOpen,
-    isPanelNodeInputOpen,
-    isPanelNodeOutputOpen,
 
     cursorView,
     cursorWorld,

@@ -2,7 +2,7 @@
 import type { WorkspaceProjectObject } from '@nwrx/api'
 
 defineProps<{
-  projects: WorkspaceProjectObject[]
+  projects?: WorkspaceProjectObject[]
   selectedFlow?: string
   selectedProject?: string
 }>()
@@ -18,7 +18,7 @@ const { t } = useI18n()
   <div class="flex flex-col items-stretch h-full">
 
     <!-- Empty -->
-    <MonitoringEmpty v-if="projects.length === 0">
+    <MonitoringEmpty v-if="!projects || projects.length === 0">
       {{ t('noProjects') }}
     </MonitoringEmpty>
 

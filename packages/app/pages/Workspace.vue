@@ -8,12 +8,9 @@ definePageMeta({
 const { t } = useI18n({ useScope: 'local' })
 useHead(() => ({
   title: t('title'),
-  meta: [
-    { name: 'description', content: t('description') },
-  ],
+  meta: [{ name: 'description', content: t('description') }],
 }))
 
-// --- Remote data.
 const route = useRoute()
 const name = computed(() => route.params.workspace as string)
 const workspace = useWorkspace(name, {
@@ -23,9 +20,8 @@ const workspace = useWorkspace(name, {
   withAssignments: true,
 })
 
-// --- Dialog and list state.
 const isDialogCreateProjectOpen = ref(false)
-const isWorkspaceOpen = useLocalStorage<Record<string, boolean>>('__Workspace_Open', {})
+const localSettings = useLocalSettings()
 onMounted(workspace.refresh)
 </script>
 
@@ -40,7 +36,7 @@ onMounted(workspace.refresh)
     <!-- Project list -->
     <AppPageContainer class="space-y-lg">
       <ProjectList
-        v-model="isWorkspaceOpen"
+        v-model="localSettings.workspaceOpenProjects"
         :workspace="workspace.data.name"
         :projects="workspace.data.projects"
         :base-url="CONSTANTS.appHost"
