@@ -164,6 +164,7 @@ function onRelease() {
       v-else-if="socket.control === 'textarea'"
       v-model="(model as string)"
       :name="socket.name"
+      :description="socket.description"
       :default-value="socket.defaultValue"
     />
 

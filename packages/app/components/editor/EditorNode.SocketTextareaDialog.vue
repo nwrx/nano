@@ -1,0 +1,115 @@
+<script setup lang="ts">
+import { vMarkdown } from '#imports'
+
+const props = defineProps<{
+  name: string
+  description?: string
+  modelValue: string
+  isOpen: boolean
+}>()
+
+const emit = defineEmits<{
+  'update:modelValue': [value: string]
+  'update:isOpen': [value: boolean]
+}>()
+
+const isOpen = useVModel(props, 'isOpen', emit, { passive: true })
+const model = useVModel(props, 'modelValue', emit, { passive: true })
+const showPreview = ref(false)
+
+function onTextAreaInput(event: Event) {
+  const target = event.target as HTMLTextAreaElement
+  model.value = target.value
+}
+</script>
+
+<template>
+  <Teleport to="#editor" defer>
+
+    <!-- Dialog -->
+    <Transition name="slide">
+      <LazyBaseDialog
+        v-if="isOpen"
+        v-model="isOpen"
+        as="div"
+        class="
+          absolute inset-0 p-8xl transition duration-slow cursor-pointer
+          flex items-center justify-center backdrop-blur-2xl z-1000 rounded-app
+        "
+        @mousedown.stop.left="() => isOpen = false"
+        @wheel.stop>
+
+        <!-- Content -->
+        <div
+          class="
+            flex flex-col w-full h-full max-w-page max-h-4xl cursor-auto
+            pointer-events-auto b b-editor text-app bg-editor-node bg-op-80 overflow-hidden rd
+          "
+          @mousedown.stop>
+
+          <!-- Toolbar -->
+          <div class="flex items-center b-b b-editor p-sm space-x-sm">
+
+            <!-- Close -->
+            <EditorNodeSocketTextareaDialogButton
+              icon="i-carbon:close"
+              @click="() => isOpen = false"
+            />
+
+            <!-- Name and Description -->
+            <span class="text-base font-medium ml-md select-text">
+              {{ name }}
+            </span>
+
+            <!-- Divider -->
+            <BaseIcon icon="i-carbon:dot-mark" class="size-3" />
+
+            <!-- Description -->
+            <span class="text-subtle text-sm select-text">
+              {{ description }}
+            </span>
+
+            <!-- Spacer -->
+            <div class="flex-1" />
+
+            <!-- Preview -->
+            <EditorNodeSocketTextareaDialogButton
+              icon="i-carbon:text-long-paragraph"
+              label="Preview"
+              :is-active="showPreview"
+              @click="() => showPreview = !showPreview"
+            />
+          </div>
+
+          <!-- Text and Preview -->
+          <div class="flex overflow-hidden w-full h-full relative">
+            <textarea
+              v-model="model"
+              spellcheck="false"
+              class="flex-1 h-full p-lg resize-none bg-transparent outline-none font-mono text-sm"
+              rows="10"
+              @input="event => onTextAreaInput(event)"
+            />
+
+            <!-- Preview -->
+            <div
+              :class="{
+                'op-0 w-0': !showPreview,
+                'op-100 w-1/2': showPreview,
+              }"
+              class="overflow-hidden transition-all duration-slow">
+              <div
+                :key="model"
+                v-markdown="model"
+                class="
+                markdown w-1/2 h-full b-l b-editor p-lg text-app
+                overflow-y-auto transition absolute select-text
+              "
+              />
+            </div>
+          </div>
+        </div>
+      </LazyBaseDialog>
+    </Transition>
+  </Teleport>
+</template>

@@ -52,6 +52,7 @@ const editor = useFlowEditor({
 
 <template>
   <div
+    id="editor"
     :ref="(el) => editor.viewContainer = (el as HTMLDivElement)"
     tabindex="0"
     disabled
