@@ -33,6 +33,7 @@ export const NAV_DRAWER_START = computed<NavItem[]>(() => {
         {
           label: 'Monitoring',
           icon: 'i-carbon:cloud-monitoring',
+          to: { name: 'WorkspaceMonitoring', params: { workspace: session.data.username } },
         },
         {
           label: 'Usage',
