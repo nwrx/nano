@@ -1,11 +1,11 @@
 <script setup lang="ts">
 const props = defineProps<{
-  name: string
-  description: string
-  secrets: string[]
-  variables: string[]
-  isSecretsOpen: boolean
-  isVariablesOpen: boolean
+  name?: string
+  description?: string
+  secrets?: string[]
+  variables?: string[]
+  isSecretsOpen?: boolean
+  isVariablesOpen?: boolean
 }>()
 
 const emit = defineEmits<{
