@@ -19,14 +19,15 @@ const session = useMonitoringSession(workspace)
 <template>
   <AppPage>
     <Monitoring
+      v-model:filters="session.filters"
       :projects="session.data.projects"
       :threads="session.data.threads"
       :events="session.data.events"
       :node-events="session.data.nodeEvents"
-      :selected-project="session.data.selectedProject"
-      :selected-flow="session.data.selectedFlow"
-      :selected-thread="session.data.selectedThread"
-      :selected-event="session.data.selectedEvent"
+      :selected-project="session.selection.project"
+      :selected-flow="session.selection.flow"
+      :selected-thread="session.selection.thread"
+      :selected-event="session.selection.event"
       @select-flow="(project, flow) => session.selectFlow(project, flow)"
       @select-thread="thread => session.selectThread(thread)"
       @select-event="event => session.selectEvent(event)"

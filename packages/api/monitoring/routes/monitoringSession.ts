@@ -75,10 +75,6 @@ export function monitoringSession(this: ModuleMonitoring) {
           threads: [],
           events: [],
           nodeEvents: [],
-          selectedEvent: undefined,
-          selectedThread: undefined,
-          selectedFlow: undefined,
-          selectedProject: undefined,
         } as MonitoringSessionEventPayload<'init'>)
       },
 

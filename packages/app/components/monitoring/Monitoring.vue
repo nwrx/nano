@@ -6,7 +6,7 @@ import type {
   WorkspaceProjectObject,
 } from '@nwrx/api'
 
-defineProps<{
+const props = defineProps<{
   selectedProject?: string
   selectedFlow?: string
   selectedThread?: string
@@ -15,17 +15,21 @@ defineProps<{
   threads: MonitoringFlowThreadObject[]
   events: MonitoringFlowThreadEventObject[]
   nodeEvents: MonitoringFlowThreadNodeEventObject[]
+  filters: Record<string, unknown>
 }>()
 
 const emit = defineEmits<{
   selectFlow: [project: string, flow: string]
   selectThread: [thread: string]
   selectEvent: [event: string]
+  'update:filters': [value: Record<string, unknown>]
 }>()
+
+const filters = useVModel(props, 'filters', emit, { passive: true, defaultValue: {} })
 </script>
 
 <template>
-  <div class="flex items-stretch h-full bg-layout">
+  <div class="flex items-stretch h-full bg-layout space-x-xs">
 
     <!-- Flows -->
     <MonitoringProjects
@@ -36,9 +40,6 @@ const emit = defineEmits<{
       @select="(project, flow) => emit('selectFlow', project, flow)"
     />
 
-    <!-- Divider -->
-    <div class="w-1" />
-
     <!-- Threads -->
     <MonitoringThreads
       :selected-flow="selectedFlow"
@@ -48,17 +49,15 @@ const emit = defineEmits<{
       @select="thread => emit('selectThread', thread)"
     />
 
-    <!-- Divider -->
-    <div class="w-1" />
-
     <!-- Events -->
     <MonitoringEvents
+      v-model:filter-event-names="filters.eventNames"
+      v-model:filter-event-types="filters.eventTypes"
       :selected-event="selectedEvent"
       :selected-thread="selectedThread"
       :events="events"
       :node-events="nodeEvents"
       class="flex-1 bg-app rd overflow-y-auto"
-      @select="event => emit('selectEvent', event)"
     />
   </div>
 </template>
