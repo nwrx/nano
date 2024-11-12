@@ -49,7 +49,7 @@ const isOpen = ref(true)
       :is-open="isOpen"
       :duration="300"
       :class="{ 'op-0 pointer-events-none': isOpen !== true }"
-      class="transition-all">
+      class="transition-all overflow-hidden">
 
       <MonitoringItem
         v-for="flow in project.flows"
