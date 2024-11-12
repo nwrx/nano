@@ -16,8 +16,10 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <div class="flex items-center gap-md px-md h-16 rd bg-editor-panel border border-editor backdrop-blur-2xl">
-    <h1 class="text-xl">
+  <div class="flex items-center space-x-sm px-sm h-12 rd bg-editor-panel border border-editor backdrop-blur-2xl ">
+
+    <!-- Name -->
+    <h1 class="text-base line-clamp-1 ml-sm select-text">
       {{ name }}
     </h1>
 
@@ -27,7 +29,7 @@ const { t } = useI18n()
       @click="() => emit('bookmark')"
     />
 
-    <!-- Vertial divider -->
+    <!-- Divider -->
     <div class="h-full border-r border-editor" />
 
     <!-- Settings -->
