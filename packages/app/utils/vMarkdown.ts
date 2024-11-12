@@ -17,7 +17,8 @@ import { marked } from 'marked'
 export const vMarkdown: Directive<HTMLElement, string | undefined> = {
   mounted(element, binding) {
     if (!binding.value) return
-    const markdownSafe = escapeHtml(binding.value)
+    // eslint-disable-next-line sonarjs/slow-regex
+    const markdownSafe = escapeHtml(binding.value).replaceAll(/{{([^}]+)}}/g, '$1')
     const html = marked(markdownSafe, { gfm: true, breaks: true }) as string
     const htmlSafe = DOMPurify.sanitize(html)
     element.setHTMLUnsafe(htmlSafe)
