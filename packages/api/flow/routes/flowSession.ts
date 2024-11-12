@@ -1,9 +1,10 @@
 import type { ModuleFlow } from '..'
 import { createRoute } from '@unserved/server'
 import { assert, createSchema } from '@unshared/validation'
+import { ModuleMonitoring } from '../../monitoring'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
-import { captureFlowThreadEvents, FLOW_SESSION_MESSAGE_SCHEMA, resolveFlowEntity, resolveFlowSession, resolveFlowSessionByPeer } from '../utils'
+import { FLOW_SESSION_MESSAGE_SCHEMA, resolveFlowEntity, resolveFlowSession, resolveFlowSessionByPeer } from '../utils'
 
 export function flowSession(this: ModuleFlow) {
   return createRoute(
@@ -31,6 +32,7 @@ export function flowSession(this: ModuleFlow) {
         try {
           const userModule = this.getModule(ModuleUser)
           const workspaceModule = this.getModule(ModuleWorkspace)
+          const monitoringModule = this.getModule(ModuleMonitoring)
           const { user } = await userModule.authenticate(peer)
           const { workspace: workspaceName, project: projectName, flow: flowName } = parameters
 
@@ -43,7 +45,7 @@ export function flowSession(this: ModuleFlow) {
           // --- Create or retrieve the flow session and subscribe the peer to it.
           const session = resolveFlowSession.call(this, flowEntity)
           await session.subscribe(peer, user)
-          await captureFlowThreadEvents.call(this, session.thread, flowEntity)
+          monitoringModule.captureFlowThreadEvents(session.thread, flowEntity)
         }
 
         // --- When an error occurs, send an error message to the client

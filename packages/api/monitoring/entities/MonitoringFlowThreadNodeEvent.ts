@@ -1,16 +1,16 @@
 import { FlowThreadNodeEvents } from '@nwrx/core'
-import { BaseEntity, transformerDate, transformerJson } from '@unserved/server'
+import { BaseEntity, transformerJson } from '@unserved/server'
 import { ObjectLike } from '@unshared/types'
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
-import { FlowThread } from './FlowThread'
+import { MonitoringFlowThread } from './MonitoringFlowThread'
 
 /**
- * A `FlowThreadNodeEvent` is used to log the events that occurred during the
+ * A `MonitoringFlowThreadNodeEvent` is used to log the events that occurred during the
  * execution of a flow node. It is used to store the information about the event
  * such as the type, message, etc.
  */
-@Entity({ name: 'FlowThreadNodeEvent' })
-export class FlowThreadNodeEvent extends BaseEntity {
+@Entity({ name: 'MonitoringFlowThreadNodeEvent' })
+export class MonitoringFlowThreadNodeEvent extends BaseEntity {
 
   /**
    * The type of the event. It is used to determine the action that was performed
@@ -39,15 +39,15 @@ export class FlowThreadNodeEvent extends BaseEntity {
    * The duration of the event. It is used to determine the time taken to perform
    * a non-blocking action.
    */
-  @Column('int', { default: 0 })
+  @Column('int')
   duration: number
 
   /**
    * The timestamp when the event occurred. It is used to determine the time when
    * the event was triggered.
    */
-  @Column('varchar', { length: 255, nullable: true, transformer: transformerDate })
-  timestamp?: Date
+  @Column('int')
+  timestamp: number
 
   /**
    * The delta since the start of the thread. It is used to determine the time
@@ -71,29 +71,35 @@ export class FlowThreadNodeEvent extends BaseEntity {
    * @example FlowSession { ... }
    */
   @JoinColumn()
-  @ManyToOne(() => FlowThread, thread => thread.nodeEvents, { nullable: false, onDelete: 'CASCADE' })
-  thread: FlowThread
+  @ManyToOne(() => MonitoringFlowThread, thread => thread.nodeEvents, { nullable: false, onDelete: 'CASCADE' })
+  thread: MonitoringFlowThread
 
   /**
    * @returns The object representation of the event.
    */
-  serialize() {
+  serialize(): MonitoringFlowThreadNodeEventObject {
     return {
+      id: this.id,
       event: this.event,
+      node: this.node,
       kind: this.kind,
+      data: this.data,
+      delta: this.delta,
       duration: this.duration,
       timestamp: this.timestamp,
-      delta: this.delta,
-      data: this.data,
+      createdAt: this.createdAt.toISOString(),
     }
   }
 }
 
-export interface FlowThreadNodeEventObject {
+export interface MonitoringFlowThreadNodeEventObject {
+  id: string
   event: keyof FlowThreadNodeEvents
+  node: string
   kind: string
-  duration: number
-  timestamp?: Date
-  delta: number
   data: ObjectLike
+  delta: number
+  duration: number
+  timestamp: number
+  createdAt: string
 }

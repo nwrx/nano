@@ -1,4 +1,5 @@
 export * from './flow'
+export * from './monitoring'
 export * from './storage'
 export * from './user'
 export * from './workspace'

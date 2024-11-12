@@ -37,4 +37,5 @@ export class ModuleFlow extends ModuleBase implements ModuleFlowOptions {
     if (options.flowSessions) this.flowSessions = options.flowSessions
   }
 
+  resolveFlow = UTILS.resolveFlowEntity.bind(this)
 }
