@@ -4,6 +4,7 @@ export default [
   ...unshared(),
   {
     rules: {
+      'vue/valid-v-slot': 'off',
       'sonarjs/new-cap': 'off',
       'sonarjs/void-use': 'off',
       'sonarjs/sonar-no-unused-vars': 'off',

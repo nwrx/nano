@@ -1,3 +1,14 @@
-import unsharedConfig from '@unshared/eslint-config'
+import unshared from '@unshared/eslint-config'
 
-export default unsharedConfig()
+export default [
+  ...unshared(),
+  {
+    rules: {
+      'vue/valid-v-slot': 'off',
+      'sonarjs/new-cap': 'off',
+      'sonarjs/void-use': 'off',
+      'sonarjs/sonar-no-unused-vars': 'off',
+      'vitest/valid-describe-callback': 'off',
+    },
+  },
+]
