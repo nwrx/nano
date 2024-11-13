@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/prop-name-casing -->
 <script setup lang="ts">
-import type { BaseDialogProps } from '@unshared/vue'
+import type { BaseDialogProps, BaseDialogSlotProps } from '@unshared/vue'
 import { vMarkdown, type VNode } from '#imports'
 
 const props = defineProps<{
@@ -21,9 +21,10 @@ const emit = defineEmits<{
 }>()
 
 const slots = defineSlots<{
-  title: () => VNode
-  text: () => VNode
-  actions: () => VNode
+  default: (slot: BaseDialogSlotProps) => VNode
+  title: (slot: BaseDialogSlotProps) => VNode
+  text: (slot: BaseDialogSlotProps) => VNode
+  actions: (slot: BaseDialogSlotProps) => VNode
 }>()
 
 const { t, locale } = useI18n({ useScope: 'local' })
@@ -75,7 +76,7 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
 
         <!-- Title -->
         <div class="flex items-center justify-between p-md">
-          <slot name="title">
+          <slot name="title" v-bind="slot">
             <h3 v-markdown="title" />
           </slot>
           <BaseButton eager class="group p-sm absolute right-sm" @click="() => slot.close()">
@@ -84,9 +85,9 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
         </div>
 
         <!-- Hint -->
-        <div v-if="title || slots.title()" class="flex space-x-md p-md border-x-0 hint rd-0" :class="classHint">
+        <div v-if="title || Boolean(slots.title)" class="flex space-x-md p-md border-x-0 hint rd-0" :class="classHint">
           <BaseIcon v-if="icon" :icon="icon" class="size-4 shrink-0 mt-xs" />
-          <slot name="text">
+          <slot name="text" v-bind="slot">
             <p v-markdown="text" class="text-sm" />
           </slot>
         </div>
