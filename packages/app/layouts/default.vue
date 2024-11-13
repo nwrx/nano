@@ -167,14 +167,15 @@ const { setLocale, locale } = useI18n()
 }
 
 .markdown pre {
-  padding: 0.5rem;
+  padding: 1rem;
   margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
   border-radius: 0.25rem;
   border-width: 1px;
   border-style: solid;
-  border-color: var(--theme-borderColor-app);
-  background-color: rgb(var(--theme-colors-prominent));
+  border-color: var(--theme-borderColor-prominent);
+  background-color: rgb(var(--theme-colors-emphasized));
+  overflow-x: auto;
 }
 
 .markdown pre > code {

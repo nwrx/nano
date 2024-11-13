@@ -1,5 +1,5 @@
 import type { LanguageModelGetModelsOptions } from './defineLanguageModel'
-import type { OpenaiModelResponse } from './OpenaiModelResponse'
+import type { OpenaiModelResponse } from './openai'
 import { openaiOnError } from './openaiOnError'
 
 const ICONS = [
