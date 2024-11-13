@@ -28,6 +28,9 @@ export interface LanguageModelOptions<T = ObjectLike, U = ObjectLike>
   name?: string
   icon?: string
   description?: string
+  allowCustomUrl?: boolean
+  allowCustomModel?: boolean
+  allowCustomToken?: boolean
   defaultUrl?: string
   defaultModel?: string
   pathModels?: string
@@ -51,6 +54,9 @@ export function defineLanguageModel<T, U>(options: LanguageModelOptions<T, U>) {
     description,
     defaultUrl,
     defaultModel,
+    allowCustomUrl,
+    allowCustomModel,
+    allowCustomToken,
     pathModels = '/models',
     pathCompletions = '/chat/completions',
     onData = openaiOnData,
@@ -73,7 +79,7 @@ export function defineLanguageModel<T, U>(options: LanguageModelOptions<T, U>) {
         control: 'variable',
         description: 'The base URL for the inference provider.',
         defaultValue: defaultUrl,
-        isInternal: Boolean(defaultUrl),
+        isInternal: !allowCustomUrl && Boolean(defaultUrl),
         isOptional: Boolean(defaultUrl),
       },
       token: {
@@ -81,6 +87,8 @@ export function defineLanguageModel<T, U>(options: LanguageModelOptions<T, U>) {
         type: string,
         control: 'variable',
         description: 'The API Key used to authenticate with the inference provider.',
+        isInternal: !allowCustomToken,
+        isOptional: true,
       },
       model: {
         type: string,
@@ -88,6 +96,8 @@ export function defineLanguageModel<T, U>(options: LanguageModelOptions<T, U>) {
         name: 'Model',
         defaultValue: defaultModel,
         description: 'The name of the model to use for generating completions.',
+        isInternal: !allowCustomModel && Boolean(defaultModel),
+        isOptional: Boolean(defaultModel),
         options: ({ token, baseUrl }, query) => getModels({
           path: pathModels,
           token: token as string,
