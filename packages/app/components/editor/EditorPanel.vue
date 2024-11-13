@@ -130,7 +130,7 @@ watch(() => props.events, scrollToBottom, { deep: true })
 
     <!-- Toggle -->
     <EditorFab
-      class="absolute top-0 right-0 mt-2 mr-2"
+      class="absolute top-0 right-0 mt-2 mr-2 z-10"
       @click="() => isOpen = !isOpen">
       <BaseIcon
         icon="i-carbon:chevron-left"
