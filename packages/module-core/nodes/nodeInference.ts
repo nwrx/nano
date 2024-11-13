@@ -124,7 +124,7 @@ export const nodeInference = defineNode({
       if (!tools) throw new Error('The tools were not provided.')
       const tool = tools.find(tool => tool.name === name)
       if (!tool) throw new Error(`The tool "${name}" was not provided.`)
-      return await tool.call({ data: input, parameters })
+      return await tool.call(parameters)
     }
 
     // --- Send the request to the model API. Retry up to 10 times to handle any tool calls
