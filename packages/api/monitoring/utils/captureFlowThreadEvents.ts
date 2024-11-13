@@ -2,6 +2,7 @@ import type { FlowThread as FlowThreadInstance } from '@nwrx/core'
 import type { Flow } from '../../flow'
 import type { MonitoringFlowThread } from '../entities'
 import type { ModuleMonitoring } from '../index'
+import { createResolvable } from '@unshared/functions'
 
 /**
  * Collects all events from a flow thread. This will allow us to store the events
@@ -12,13 +13,14 @@ import type { ModuleMonitoring } from '../index'
  */
 export function captureFlowThreadEvents(this: ModuleMonitoring, thread: FlowThreadInstance, flow: Flow) {
   const { MonitoringFlowThread, MonitoringFlowThreadEvent, MonitoringFlowThreadNodeEvent } = this.getRepositories()
-  let entity: MonitoringFlowThread | undefined
+  const entity = createResolvable<MonitoringFlowThread>()
 
   thread.on('start', async(input, meta) => {
-    entity = await MonitoringFlowThread.save(MonitoringFlowThread.create({ flow, events: [], nodeEvents: [] }))
+    const entitySaved = await MonitoringFlowThread.save(MonitoringFlowThread.create({ flow, events: [], nodeEvents: [] }))
+    entity.resolve(entitySaved)
     await MonitoringFlowThreadEvent.save(MonitoringFlowThreadEvent.create({
       event: 'start',
-      thread: entity,
+      thread: entitySaved,
       data: input,
       delta: meta.delta,
       timestamp: meta.timestamp,
@@ -28,7 +30,7 @@ export function captureFlowThreadEvents(this: ModuleMonitoring, thread: FlowThre
   thread.on('end', async(output, meta) => {
     await MonitoringFlowThreadEvent.save(MonitoringFlowThreadEvent.create({
       event: 'end',
-      thread: entity,
+      thread: await entity,
       data: output,
       delta: meta.delta,
       timestamp: meta.timestamp,
@@ -38,7 +40,7 @@ export function captureFlowThreadEvents(this: ModuleMonitoring, thread: FlowThre
   thread.on('error', async(error, meta) => {
     await MonitoringFlowThreadEvent.save(MonitoringFlowThreadEvent.create({
       event: 'error',
-      thread: entity,
+      thread: await entity,
       data: { message: error.message, name: error.name },
       delta: meta.delta,
       timestamp: meta.timestamp,
@@ -48,7 +50,7 @@ export function captureFlowThreadEvents(this: ModuleMonitoring, thread: FlowThre
   thread.on('input', async(key, value, meta) => {
     await MonitoringFlowThreadEvent.save(MonitoringFlowThreadEvent.create({
       event: 'input',
-      thread: entity,
+      thread: await entity,
       data: { key, value },
       delta: meta.delta,
       timestamp: meta.timestamp,
@@ -58,7 +60,7 @@ export function captureFlowThreadEvents(this: ModuleMonitoring, thread: FlowThre
   thread.on('output', async(key, value, meta) => {
     await MonitoringFlowThreadEvent.save(MonitoringFlowThreadEvent.create({
       event: 'output',
-      thread: entity,
+      thread: await entity,
       data: { key, value },
       delta: meta.delta,
       timestamp: meta.timestamp,
@@ -68,7 +70,7 @@ export function captureFlowThreadEvents(this: ModuleMonitoring, thread: FlowThre
   thread.on('nodeStart', async({ node }, data, meta) => {
     await MonitoringFlowThreadNodeEvent.save(MonitoringFlowThreadNodeEvent.create({
       event: 'start',
-      thread: entity,
+      thread: await entity,
       node: node.id,
       kind: node.kind,
       data: data.input,
@@ -81,7 +83,7 @@ export function captureFlowThreadEvents(this: ModuleMonitoring, thread: FlowThre
   thread.on('nodeError', async({ node }, error, meta) => {
     await MonitoringFlowThreadNodeEvent.save(MonitoringFlowThreadNodeEvent.create({
       event: 'error',
-      thread: entity,
+      thread: await entity,
       node: node.id,
       kind: node.kind,
       data: { message: error.message, name: error.name, stack: error.stack },
@@ -94,7 +96,7 @@ export function captureFlowThreadEvents(this: ModuleMonitoring, thread: FlowThre
   thread.on('nodeEnd', async({ node }, data, meta) => {
     await MonitoringFlowThreadNodeEvent.save(MonitoringFlowThreadNodeEvent.create({
       event: 'end',
-      thread: entity,
+      thread: await entity,
       node: node.id,
       kind: node.kind,
       data: data.output,
