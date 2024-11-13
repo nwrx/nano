@@ -31,14 +31,15 @@ const INFERENCE_INPUT_SCHEMA = defineInputSchema({
     control: 'socket',
     description: 'The message to generate a completion for.',
   },
-  seed: {
+  temperature: {
     type: number,
-    name: 'Seed',
     control: 'slider',
-    description: 'The seed used to generate the completion.',
-    defaultValue: 0,
-    sliderMin: 0,
-    sliderMax: 100,
+    name: 'Temperature',
+    description: 'The sampling temperature for the completion.',
+    sliderMin: 0.1,
+    sliderMax: 2,
+    sliderStep: 0.1,
+    defaultValue: 1,
     isOptional: true,
   },
   frequencyPenalty: {
@@ -74,44 +75,28 @@ const INFERENCE_INPUT_SCHEMA = defineInputSchema({
     defaultValue: 1024,
     isOptional: true,
   },
-  temperature: {
+  seed: {
     type: number,
+    name: 'Seed',
     control: 'slider',
-    name: 'Temperature',
-    description: 'The sampling temperature for the completion.',
-    sliderMin: 0.1,
-    sliderMax: 2,
-    sliderStep: 0.1,
-    defaultValue: 1,
+    description: 'The seed used to generate the completion.',
+    defaultValue: 0,
+    sliderMin: 0,
+    sliderMax: 100,
     isOptional: true,
   },
 })
 
 const INFERENCE_OUTPUT_SCHEMA = defineOutputSchema({
-  completion: {
-    type: string,
-    name: 'Completion',
-    description: 'The generated completion based on the prompt.',
-  },
-  tokensTotal: {
-    type: number,
-    name: 'Total Tokens',
-    description: 'The total number of tokens used to generate the completion.',
-  },
-  tokensCompletion: {
-    type: number,
-    name: 'Completion Tokens',
-    description: 'The number of tokens used in the completion.',
-  },
-  tokensPrompt: {
-    type: number,
-    name: 'Prompt Tokens',
-    description: 'The number of tokens used in the prompt.',
-  },
   id: {
     type: string,
     name: 'Identifier',
     description: 'The unique identifier of the completion.',
+  },
+  completion: {
+    type: string,
+    name: 'Completion',
+    description: 'The generated completion based on the prompt.',
   },
 })
 
