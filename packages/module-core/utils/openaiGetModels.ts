@@ -1,5 +1,6 @@
 import type { LanguageModelGetModelsOptions } from './defineLanguageModel'
 import type { OpenaiModelResponse } from './OpenaiModelResponse'
+import { openaiOnError } from './openaiOnError'
 
 const ICONS = [
   { match: /openai|gpt/i, icon: 'https://api.iconify.design/simple-icons:openai.svg' },
@@ -18,8 +19,12 @@ function getModelIcon(model: string) {
 
 export async function openaiGetModels({ path, baseUrl, token, query }: LanguageModelGetModelsOptions) {
   if (!token) return []
+
+  // --- Fetch the models available for the API.
   const url = new URL(path, baseUrl).toString()
   const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+  if (!response.ok) throw await openaiOnError(response)
+
   const models = await response.json() as OpenaiModelResponse
   const queryLower = query?.toLowerCase()
   return models.data
