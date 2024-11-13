@@ -1,5 +1,5 @@
 import type { InferenceData } from '../nodes'
-import type { OpenaiChatRequest } from './OpenaiChatRequest'
+import type { OpenaiChatRequest } from './openai'
 
 /**
  * Given the input data of the `core/inference` node, this function returns the body of
