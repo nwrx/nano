@@ -95,8 +95,8 @@ export class FlowThreadNode extends Emitter<FlowThreadNodeEvents> {
     }
     catch (error) {
       this.error = error as FlowError
-      this.setState('ERROR')
       this.dispatch('error', error as FlowError, this.eventMetadata)
+      this.setState('ERROR')
     }
   }
 }
