@@ -18,14 +18,14 @@ const { t } = useI18n({ useScope: 'local' })
 </script>
 
 <template>
-  <div class="w-full border border-app rounded">
+  <div class="w-full b b-app rd">
 
     <!-- Table -->
     <BaseTable
       class="w-full"
       :columns="['name', 'email', 'status']"
       class-cell="px-8 py-2"
-      class-row="border-t border-app hover:bg-subtle"
+      class-row="b-t b-app hover:bg-subtle"
       :rows="users">
 
       <!-- Header -->
