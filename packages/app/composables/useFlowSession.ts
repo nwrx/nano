@@ -275,16 +275,17 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
       session.send({ event: 'setNodeInputValue', id, key, value })
     },
 
-    getNodeInputOptions: (id: string, key: string, query?: string): Promise<SocketListOption[]> => {
-      session.send({ event: 'getInputValueOptions', id, key, query })
-      return new Promise((resolve) => {
+    getNodeInputOptions: async(id: string, key: string, query?: string): Promise<SocketListOption[]> => {
+      const promise = new Promise<SocketListOption[]>((resolve, reject) => {
         const stop = session.on('message', (payload: FlowSessionEventPayload) => {
-          if (payload.event === 'node:inputOptionResult') {
-            stop()
-            resolve(payload.options)
-          }
+          if (payload.event === 'error') reject(new Error(payload.message))
+          if (payload.event !== 'node:inputOptionResult') return
+          resolve(payload.options)
+          stop()
         })
       })
+      session.send({ event: 'getInputValueOptions', id, key, query })
+      return await promise
     },
 
     /***************************************************************************/
