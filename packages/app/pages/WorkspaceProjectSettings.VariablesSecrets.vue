@@ -34,13 +34,17 @@ onMounted(project.refresh)
       :workspace="workspace"
       :project="name"
       :variables="project.data.variables"
-      @submit="variables => project.setVariables(variables)"
+      @submit-create="(name, value) => project.createVariable(name, value)"
+      @submit-update="(name, value) => project.updateVariable(name, value)"
+      @submit-delete="(name) => project.deleteVariable(name)"
     />
     <ProjectSettingsSecrets
       :workspace="workspace"
       :project="name"
       :secrets="project.data.secrets"
-      @submit="secrets => project.setSecrets(secrets)"
+      @submit-create="(name, value) => project.createSecret(name, value)"
+      @submit-update="(name, value) => project.updateSecret(name, value)"
+      @submit-delete="(name) => project.deleteSecret(name)"
     />
   </ProjectSettings>
 </template>
