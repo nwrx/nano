@@ -42,6 +42,8 @@ export class WorkspaceProjectVariable extends BaseEntity {
     return {
       name: this.name,
       value: this.value,
+      createdAt: this.createdAt.toISOString(),
+      updatedAt: this.updatedAt.toISOString(),
     }
   }
 }
@@ -49,4 +51,6 @@ export class WorkspaceProjectVariable extends BaseEntity {
 export interface WorkspaceProjectVariableObject {
   name: string
   value: string
+  createdAt: string
+  updatedAt: string
 }
