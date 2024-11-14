@@ -37,7 +37,7 @@ export const toolWeather = defineNode({
   },
 
   // --- On processing the node, fetch the weather information for the given location.
-  process: ({ input }) => ({
+  process: ({ input, trace }) => ({
     weather: {
       name: input.name,
       description: input.description,
@@ -53,9 +53,14 @@ export const toolWeather = defineNode({
       } as JSONSchema4,
       call: async(data) => {
         const { location } = data as { location: string }
+        trace({ type: 'request', data })
+
         const response = await fetch(`https://wttr.in/${location}?format=%C+%t+%w+%m+%l+%p`, { headers: { Accept: 'text/plain' } })
         if (!response.ok) throw new Error('The weather information could not be fetched.')
-        return await response.text()
+
+        const result = await response.text()
+        trace({ type: 'response', data: result })
+        return result
       },
     },
   }),

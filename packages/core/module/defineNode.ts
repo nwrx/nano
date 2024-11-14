@@ -28,6 +28,14 @@ export interface FlowNodeContext<
   output: U
 
   /**
+   * A function to dispatch a custom 'trace' event with the given data. The
+   * trace event is used to log custom data that can be used to debug the flow.
+   *
+   * @param data The data to log in the trace event.
+   */
+  trace: (data: ObjectLike) => void
+
+  /**
    * The abort signal that can be triggered to cancel the execution of the
    * flow node. When the abort signal is triggered, this node should stop
    * processing the data and abort it's execution.

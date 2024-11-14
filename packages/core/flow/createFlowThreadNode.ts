@@ -73,6 +73,7 @@ export class FlowThreadNode extends Emitter<FlowThreadNodeEvents> {
       const context: FlowNodeContext = {
         input: this.input,
         output: this.output,
+        trace: data => this.dispatch('trace', data, this.eventMetadata),
         abortSignal: this.thread.abortController.signal,
       }
 
