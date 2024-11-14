@@ -53,6 +53,8 @@ export class ModuleWorkspace extends ModuleBase implements ModuleWorkspaceOption
   createProjectSecret = UTILS.createProjectSecret.bind(this)
   createProjectVariable = UTILS.createProjectVariable.bind(this)
   createWorkspace = UTILS.createWorkspace.bind(this)
+  deleteProjectSecret = UTILS.deleteProjectSecret.bind(this)
+  deleteProjectVariable = UTILS.deleteProjectVariable.bind(this)
   removeProjectSecret = UTILS.removeProjectSecret.bind(this)
   removeProjectVariable = UTILS.removeProjectVariable.bind(this)
   resolveWorkspace = UTILS.resolveWorkspace.bind(this)
