@@ -43,7 +43,7 @@ export const toolArxiv = defineNode({
     },
   },
 
-  process: ({ input, trace }) => ({
+  process: ({ input }) => ({
     tool: {
       name: input.name ?? 'query_arxiv_papers',
       description: input.description ?? 'Given a search query, fetch research papers from arXiv matching the query.',
@@ -69,7 +69,6 @@ export const toolArxiv = defineNode({
       } as JSONSchema4,
       call: async(data) => {
         const { search_query, start = 0, max_results = 10 } = data as unknown as ArxivToolInput
-        trace({ type: 'request', data })
 
         // --- Fetch research papers from arXiv.
         const url = new URL('/api/query', 'https://export.arxiv.org')
@@ -81,7 +80,6 @@ export const toolArxiv = defineNode({
 
         // --- Return the fetched research papers as text.
         const text = await response.text()
-        trace({ type: 'response', data: text })
         return text
       },
     },

@@ -110,7 +110,7 @@ export const nodeInference = defineNode({
   inputSchema: INFERENCE_INPUT_SCHEMA,
   outputSchema: INFERENCE_OUTPUT_SCHEMA,
 
-  process: async({ input }) => {
+  process: async({ input, trace }) => {
     const { model, tools } = input
     const { url, token, getBody, onData, onError } = model
     const body = getBody(input)
@@ -124,7 +124,10 @@ export const nodeInference = defineNode({
       if (!tools) throw new Error('The tools were not provided.')
       const tool = tools.find(tool => tool.name === name)
       if (!tool) throw new Error(`The tool "${name}" was not provided.`)
-      return await tool.call(parameters)
+      trace({ type: 'tool_call_request', parameters })
+      const data = await tool.call(parameters)
+      trace({ type: 'tool_call_response', data })
+      return data
     }
 
     // --- Send the request to the model API. Retry up to 10 times to handle any tool calls
