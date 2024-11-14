@@ -14,6 +14,7 @@ const EVENTS_WHITELIST = new Set<FlowSessionEventName>([
   'thread:start',
   'thread:end',
   'thread:nodeError',
+  'thread:nodeTrace',
   'thread:nodeEnd',
 ])
 

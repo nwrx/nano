@@ -36,6 +36,7 @@ const isOpen = ref(false)
         <EditorPanelEventsThreadEnd v-if="event.event === 'thread:end'" :event="event" />
         <EditorPanelEventsThreadNodeEnd v-if="event.event === 'thread:nodeEnd'" :event="event" :node="node" />
         <EditorPanelEventsThreadNodeError v-if="event.event === 'thread:nodeError'" :event="event" />
+        <EditorPanelEventsThreadNodeTrace v-if="event.event === 'thread:nodeTrace'" :event="event" />
       </div>
     </BaseCollapse>
   </div>
