@@ -4,7 +4,7 @@ import type { WorkspaceProjectVariableObject } from '@nwrx/api'
 const props = defineProps<{
   workspace: string
   project: string
-  variables: WorkspaceProjectVariableObject[]
+  variables?: WorkspaceProjectVariableObject[]
 }>()
 
 const emit = defineEmits<{
@@ -63,10 +63,10 @@ const isDialogCreateOpen = ref(false)
         <!-- Cell / Stats -->
         <template #cell.stats="{ createdAt }">
           <div class="text-xs text-subtle">
-            {{ t('createdAt') }}
+            {{ t('createdAt') }} {{ formatDate(createdAt) }}
           </div>
           <div class="text-sm">
-            {{ formatDateTime(createdAt) }}
+            {{ formatDateFromNow(createdAt) }}
           </div>
         </template>
 
