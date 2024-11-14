@@ -12,17 +12,41 @@
     "type": "git",
     "url": "git@github.com:nwrx/nano-ce.git"
   },
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./categories": {
+      "types": "./dist/categories/index.d.ts",
+      "import": "./dist/categories/index.js",
+      "require": "./dist/categories/index.cjs"
+    },
+    "./nodes": {
+      "types": "./dist/nodes/index.d.ts",
+      "import": "./dist/nodes/index.js",
+      "require": "./dist/nodes/index.cjs"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/types/index.js",
+      "require": "./dist/types/index.cjs"
+    },
+    "./utils": {
+      "types": "./dist/utils/index.d.ts",
+      "import": "./dist/utils/index.js",
+      "require": "./dist/utils/index.cjs"
+    }
+  },
   "files": [
     "dist",
     "README.md",
     "LICENSE.md"
   ],
   "scripts": {
-    "dev": "rollup --config ../../rollup.config.mjs --watch",
-    "build": "rollup --config ../../rollup.config.mjs"
+    "dev": "tsup --watch",
+    "build": "tsup"
   },
   "dependencies": {
     "@nwrx/core": "workspace:*",
