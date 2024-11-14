@@ -150,6 +150,11 @@ const { setLocale, locale } = useI18n()
   margin-bottom: 0.75rem;
 }
 
+.markdown a {
+  color: rgb(var(--theme-textColor-prominent));
+  text-decoration: underline;
+}
+
 .markdown b,
 .markdown strong {
   font-weight: 600;
@@ -201,10 +206,20 @@ const { setLocale, locale } = useI18n()
   list-style-position: outside;
 }
 
+.markdown ol {
+  white-space: normal;
+  margin-left: 1.5rem;
+  margin-bottom: 0.5rem;
+  list-style-type: decimal;
+  list-style-position: outside;
+}
+
+.markdown ol > li > p,
 .markdown ul > li > p {
   display: inline;
 }
 
+.markdown ol ol,
 .markdown ul ul {
   list-style-type: circle;
   margin-left: 1.5rem;
