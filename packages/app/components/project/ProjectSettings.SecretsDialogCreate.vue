@@ -44,7 +44,7 @@ function submit() {
     <InputText
       v-model="newValue"
       type="textarea"
-      class="mt-2"
+      class="mt-2 font-mono"
       :placeholder="t('value')"
       :label="t('valueLabel')"
     />
