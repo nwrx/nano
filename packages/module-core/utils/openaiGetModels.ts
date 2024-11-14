@@ -34,6 +34,7 @@ export async function openaiGetModels({ path, baseUrl, token, query }: LanguageM
       return x.id.toLowerCase().includes(queryLower)
         || x.owned_by.toLowerCase().includes(queryLower)
     })
+    .sort((a, b) => a.id.localeCompare(b.id))
     .map(x => ({
       value: x.id,
       label: x.id,
