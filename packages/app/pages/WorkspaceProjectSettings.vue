@@ -2,7 +2,7 @@
 import { useClient } from '#imports'
 
 definePageMeta({
-  name: 'ProjectSettings',
+  name: 'WorkspaceProjectSettings',
   path: '/:workspace/:project/settings',
   middleware: 'redirect-when-guest',
 })

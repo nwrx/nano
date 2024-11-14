@@ -69,8 +69,8 @@ export function useProject(workspace: MaybeRef<string>, project: MaybeRef<string
         onError: error => alerts.error(error),
         onSuccess: () => {
           alerts.success('Project name updated successfully')
-          if (router.currentRoute.value.name === 'ProjectSettings')
-            void router.replace({ name: 'ProjectSettings', params: { workspace: unref(workspace), project: name } })
+          if (router.currentRoute.value.name === 'WorkspaceProjectSettings')
+            void router.replace({ name: 'WorkspaceProjectSettings', params: { workspace: unref(workspace), project: name } })
         },
         data: {
           workspace: unref(workspace),
@@ -112,7 +112,7 @@ export function useProject(workspace: MaybeRef<string>, project: MaybeRef<string
         onError: error => alerts.error(error),
         onSuccess: () => {
           alerts.success('Project deleted successfully')
-          if (router.currentRoute.value.name === 'ProjectSettings')
+          if (router.currentRoute.value.name === 'WorkspaceProjectSettings')
             void router.replace({ name: 'Workspace', params: { name: unref(workspace) } })
         },
         data: {
