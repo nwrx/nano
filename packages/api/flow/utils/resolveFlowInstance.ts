@@ -2,12 +2,9 @@ import type { Flow as FlowEntity } from '../entities'
 import type { ModuleFlow } from '../index'
 import { Flow } from '@nwrx/core'
 import { defineNode } from '@nwrx/core'
-import { Core } from '@nwrx/module-core'
+import { memoize } from '@unshared/functions'
 import { ModuleWorkspace } from '../../workspace'
-
-const MODULES = [
-  Core,
-]
+import { MODULES } from './constants'
 
 function FALLBACK_NODE(kind: string) {
   return defineNode({
@@ -28,7 +25,7 @@ export function resolveFlowInstance(this: ModuleFlow, entity: FlowEntity) {
 
   return Flow.fromJSON(entity.data, {
     resolveNode: [
-      (kind) => {
+      memoize((kind) => {
         if (kind.startsWith('nwrx/')) kind = kind.slice(5)
         const [module] = kind.split('/')
 
@@ -41,7 +38,7 @@ export function resolveFlowInstance(this: ModuleFlow, entity: FlowEntity) {
         const node = Object.values(moduleInstance.nodes).find(n => n.kind === kind)
         if (!node) return FALLBACK_NODE(kind)
         return node
-      },
+      }),
     ],
     resolveReference: [
       async(reference) => {
