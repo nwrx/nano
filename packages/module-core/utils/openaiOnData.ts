@@ -12,7 +12,7 @@ export async function openaiOnData(
   if (choice.finish_reason === 'tool_calls') {
     if (choice.message.role !== 'assistant') throw new Error('The assistant message was not provided.')
     if (!choice.message.tool_calls) throw new Error('The tool calls were not provided.')
-    const toolResultPromises = choice.message.tool_calls.map(async(toolCall) => {
+    for (const toolCall of choice.message.tool_calls) {
       const name = toolCall.function.name
       const parameters = JSON.parse(toolCall.function.arguments) as Record<string, unknown>
       const result = await call(name, parameters)
@@ -21,8 +21,7 @@ export async function openaiOnData(
         content: JSON.stringify(result),
         tool_call_id: toolCall.id,
       })
-    })
-    await Promise.all(toolResultPromises)
+    }
     return resume()
   }
 
