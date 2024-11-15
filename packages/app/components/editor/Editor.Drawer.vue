@@ -16,15 +16,15 @@ const activeCategory = ref<FlowCategoryNodesJSON>()
       <div
         v-for="category in categories"
         :key="category.kind"
-        :class="activeCategory === category ? 'text-app' : 'text-subtle'"
-        class="w-16 my-md flex items-center justify-center"
+        :class="activeCategory === category ? 'op-100' : 'op-50'"
+        class="w-16 py-3 last:pb-4 first:pt-4 flex items-center justify-center transition  cursor-pointer"
         @mouseenter="() => activeCategory = category">
 
         <!-- Trigger -->
         <BaseIcon
           load
           :icon="category.icon"
-          class="size-8 transition cursor-pointer group-hover:text-app"
+          class="size-8"
         />
       </div>
     </div>
