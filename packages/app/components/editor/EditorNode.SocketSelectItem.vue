@@ -24,10 +24,10 @@ defineProps<{
 
     <!-- Name -->
     <div class="grow">
-      <p class="text-sm">
+      <p class="text-sm break-all line-clamp-1">
         {{ label }}
       </p>
-      <p class="text-xs text-subtle">
+      <p class="text-xs text-subtle break-all line-clamp-2">
         {{ description }}
       </p>
     </div>
