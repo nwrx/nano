@@ -1,7 +1,7 @@
 import type { MaybePromise, ObjectLike } from '@unshared/types'
 import type { InferenceData, InferenceResult } from '../nodes'
 import { defineType } from '@nwrx/core'
-import { assertFunction, assertStringNotEmpty, createParser } from '@unshared/validation'
+import { assertFunction, assertStringNotEmpty, assertUndefined, createParser } from '@unshared/validation'
 
 /** The context that is passed in the model completion process. */
 export interface LanguageModelOnDataContext<T = ObjectLike, U = ObjectLike> {
@@ -9,6 +9,7 @@ export interface LanguageModelOnDataContext<T = ObjectLike, U = ObjectLike> {
   data: U
   call: (name: string, data: ObjectLike) => Promise<string>
   resume: () => void
+  trace: (message: ObjectLike) => void
 }
 
 /** The interface that represents a language model. */
@@ -78,7 +79,7 @@ export const languageModel = defineType({
   parse: createParser({
     url: assertStringNotEmpty,
     model: assertStringNotEmpty,
-    token: assertStringNotEmpty,
+    token: [[assertUndefined], [assertStringNotEmpty]],
     getBody: assertFunction,
     onData: assertFunction,
     onError: assertFunction,

@@ -124,9 +124,9 @@ export const nodeInference = defineNode({
       if (!tools) throw new Error('The tools were not provided.')
       const tool = tools.find(tool => tool.name === name)
       if (!tool) throw new Error(`The tool "${name}" was not provided.`)
-      trace({ type: 'tool_call_request', parameters })
+      trace({ type: 'tool_call_request', name, parameters })
       const data = await tool.call(parameters)
-      trace({ type: 'tool_call_response', data })
+      trace({ type: 'tool_call_response', name, data })
       return data
     }
 
@@ -157,7 +157,7 @@ export const nodeInference = defineNode({
       // --- in the `onData` function, break the loop and return the result.
       canResume = false
       const data = await response.json() as ObjectLike
-      const result = await onData({ body, data, call, resume })
+      const result = await onData({ body, data, call, resume, trace })
       if (result) return result
       if (!canResume) break
     }
