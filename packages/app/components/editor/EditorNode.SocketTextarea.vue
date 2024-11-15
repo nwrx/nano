@@ -23,7 +23,6 @@ function openDialog() {
 <template>
   <EditorNodeSocketGroup
     class="cursor-pointer pt-0.5 !items-start"
-    @wheel.stop
     @mousedown.stop="() => openDialog()">
 
     <!-- Preview -->
