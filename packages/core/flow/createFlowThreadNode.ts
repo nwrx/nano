@@ -42,7 +42,7 @@ export class FlowThreadNode extends Emitter<FlowThreadNodeEvents> {
         if (isReferenceLink(reference)) {
           const node = this.thread.nodes.get(reference.$fromNode.id)
           if (!node) throw new Error('Node not found.')
-          return node.output[reference.$fromNode.key]
+          return node.output[reference.$fromNode.name]
         }
       },
 

@@ -107,10 +107,10 @@ export class Flow extends Emitter<FlowEvents> {
             if (!isReferenceLink(x)) continue
             links.push({
               sourceId: x.$fromNode.id,
-              sourceKey: x.$fromNode.key,
+              sourceName: x.$fromNode.name,
               sourcePath: x.$fromNode.path,
               targetId: node.id,
-              targetKey: key,
+              targetName: key,
             })
           }
         }
@@ -120,10 +120,10 @@ export class Flow extends Emitter<FlowEvents> {
           if (!isReferenceLink(value)) continue
           links.push({
             sourceId: value.$fromNode.id,
-            sourceKey: value.$fromNode.key,
+            sourceName: value.$fromNode.name,
             sourcePath: value.$fromNode.path,
             targetId: node.id,
-            targetKey: key,
+            targetName: key,
           })
         }
       }
@@ -144,34 +144,34 @@ export class Flow extends Emitter<FlowEvents> {
   async createlink(link: FlowLink): Promise<void> {
     const source = this.get(link.sourceId)
     const sourceKind = await this.describe(source.kind)
-    const sourceSocket = sourceKind.outputSchema?.[link.sourceKey]
+    const sourceSocket = sourceKind.outputSchema?.[link.sourceName]
 
     const target = this.get(link.targetId)
     const targetKind = await this.describe(target.kind)
-    const targetSocket = targetKind.inputSchema?.[link.targetKey]
+    const targetSocket = targetKind.inputSchema?.[link.targetName]
 
     // --- Verify that the source and target can be linked.
     if (!target) throw new Error(`The target node "${link.targetId}" does not exist`)
     if (!source) throw new Error(`The source node "${link.sourceId}" does not exist`)
-    if (!sourceSocket) throw new Error(`The source socket "${link.sourceKey}" does not exist on node "${link.sourceId}"`)
-    if (!targetSocket) throw new Error(`The target socket "${link.targetKey}" does not exist on node "${link.targetId}"`)
+    if (!sourceSocket) throw new Error(`The source socket "${link.sourceName}" does not exist on node "${link.sourceId}"`)
+    if (!targetSocket) throw new Error(`The target socket "${link.targetName}" does not exist on node "${link.targetId}"`)
     // if (sourceSocket.type !== targetSocket.type) throw new Error('Cannot link sockets of different types')
     if (link.sourceId === link.targetId) throw new Error('Cannot link a node to itself')
 
     // --- Compute the new value for the target socket.
-    const newValue = createReference('fromNode', { id: link.sourceId, key: link.sourceKey })
+    const newValue = createReference('fromNode', { id: link.sourceId, name: link.sourceName })
 
     // --- If the target socket is not iterable, set the value directly.
     if (!targetSocket.isIterable) {
-      this.setNodeInputValue(link.targetId, link.targetKey, newValue)
+      this.setNodeInputValue(link.targetId, link.targetName, newValue)
       return
     }
 
     // --- Otherwise, append the value to the target socket.
     target.input = target.input ?? {}
-    const currentValue = target.input[link.targetKey] ?? []
+    const currentValue = target.input[link.targetName] ?? []
     const nextValue = Array.isArray(currentValue) ? [...currentValue as unknown[], newValue] : [newValue]
-    this.setNodeInputValue(link.targetId, link.targetKey, nextValue)
+    this.setNodeInputValue(link.targetId, link.targetName, nextValue)
   }
 
   /**
@@ -191,7 +191,7 @@ export class Flow extends Emitter<FlowEvents> {
       if (linkToRemove.targetId && node.id !== linkToRemove.targetId) continue
 
       for (const key in node.input) {
-        if (linkToRemove.targetKey && key !== linkToRemove.targetKey) continue
+        if (linkToRemove.targetName && key !== linkToRemove.targetName) continue
         const definition = await this.describe(node.kind)
         const value = node.input[key]
         const socket = definition.inputSchema?.[key]
@@ -201,7 +201,7 @@ export class Flow extends Emitter<FlowEvents> {
           const newValue = value.filter((value) => {
             if (!isReferenceLink(value)) return true
             if (linkToRemove.sourceId && value.$fromNode.id !== linkToRemove.sourceId) return true
-            if (linkToRemove.sourceKey && value.$fromNode.key !== linkToRemove.sourceKey) return true
+            if (linkToRemove.sourceName && value.$fromNode.name !== linkToRemove.sourceName) return true
             return false
           })
           this.setNodeInputValue(node.id, key, newValue)
@@ -211,7 +211,7 @@ export class Flow extends Emitter<FlowEvents> {
         else {
           if (!isReferenceLink(value)) continue
           if (linkToRemove.sourceId && value.$fromNode.id !== linkToRemove.sourceId) continue
-          if (linkToRemove.sourceKey && value.$fromNode.key !== linkToRemove.sourceKey) continue
+          if (linkToRemove.sourceName && value.$fromNode.name !== linkToRemove.sourceName) continue
           this.setNodeInputValue(node.id, key, undefined)
         }
       }

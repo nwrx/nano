@@ -17,7 +17,7 @@ export interface ReferenceVariable {
 export interface ReferenceNode {
   $fromNode: {
     id: string
-    key: string
+    name: string
     path?: string
   }
 }
