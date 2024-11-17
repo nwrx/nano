@@ -1,7 +1,6 @@
-import type { Type } from '@nwrx/core'
 import { defineNode } from '@nwrx/core'
 import { categoryBasic } from '../categories'
-import { object, string } from '../types'
+import { string } from '../types'
 
 /** The regular expression for extracting variables from the template. */
 const EXP_VAR_REGEX = /{{\s*(\w+\??)\s*}}/g
@@ -22,28 +21,12 @@ export const nodeTemplate = defineNode({
       description: 'The template for generating the string.',
     },
     values: {
-      type: object as Type<Record<string, string>>,
+      type: string,
       name: 'Values',
-      control: 'socket',
+      control: 'map',
       description: 'The values for the template variables.',
+      isMap: true,
       isOptional: true,
-      // properties: ({ data }) => {
-      //   const properties: InputSchema = {}
-      //   const { template = '' } = data as ObjectLike<string>
-      //   const matches = template.match(EXP_VAR_REGEX) ?? []
-      //   for (const match of matches) {
-      //     const key = match.slice(2, -2).trim()
-      //     if (key === '') continue
-      //     if (key === 'template') continue
-      //     properties[key] = {
-      //       name: key,
-      //       type: string,
-      //       control: 'socket',
-      //       isOptional: key.endsWith('?') as unknown as false,
-      //       description: `The value for the template variable '${key}'.`,
-      //     }
-      //   }
-      // }
     },
   },
 
