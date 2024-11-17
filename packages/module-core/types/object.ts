@@ -9,6 +9,6 @@ export const object = defineType({
   parse: createRuleSet(
     [assertObject<Record<string, unknown>>],
     [assertString, value => JSON.parse(value as string) as Record<string, unknown>],
-    [(value: unknown) => ({ value })],
+    [(value: unknown) => ({ value } as Record<string, unknown>)],
   ),
 })
