@@ -1,40 +1,50 @@
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
   stack?: string
   message?: string
   statusCode?: number
+  onClearError?: () => void
 }>()
 
 const emit = defineEmits<{
   clearError: []
 }>()
+
+const { t } = useI18n()
 </script>
 
 <template>
   <div
     class="
-      absolute top-0 left-0 w-full h-full space-y-md
+      absolute inset-0 space-y-md
       flex flex-col items-center justify-center
-      rounded-app
-      bg-banknote-primary-800/50
-      border border-primary-800/50
+      rd-app b b-app bg-app p-md
+      bg-banknote-primary-850
+      dark
   ">
 
     <!-- Status Code -->
-    <p
-      class="text-8xl text-layout font-light font-mono"
-      v-text="statusCode"
-    />
 
     <!-- Error Message -->
-    <p class="text-center text-xl font-mono bg-layout p-sm rounded border border-primary-800/50">
-      {{ message }}
-    </p>
+    <div>
+      <p
+        class="inline-flex text-5xl text-layout font-mono bg-app text-app px-md py-sm rd-t b b-b-0 b-app"
+        v-text="statusCode || '500'"
+      />
+      <p class="text-xl text-center font-mono bg-app text-app p-md rd rd-tl-0 b b-app max-w-page">
+        {{ message }}
+      </p>
+    </div>
+
+    <!-- Stack -->
+    <pre v-if="stack" class="stack text-xs text-left p-sm bg-app text-app rd b b-app">
+      {{ stack }}
+    </pre>
 
     <!-- Clear Error Button -->
     <Button
       link
-      label="Go Back"
+      :label="t('goBack')"
       icon-append="i-carbon:arrow-right"
       icon-expand
       @click="() => emit('clearError')"
@@ -47,3 +57,16 @@ const emit = defineEmits<{
   opacity: 0.5;
 }
 </style>
+
+<i18n lang="yaml">
+en:
+  goBack: Go back to the home page
+fr:
+  goBack: Retourner à la page d'accueil
+de:
+  goBack: Zurück zur Startseite
+es:
+  goBack: Volver a la página de inicio
+zh:
+  goBack: 返回主页
+</i18n>

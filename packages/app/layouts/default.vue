@@ -65,7 +65,8 @@ const { setLocale, locale } = useI18n()
         <NuxtErrorBoundary>
           <template #error="{ error, clearError }">
             <AppPageErrorBoundary
-              :message="error"
+              :message="error instanceof Error ? error.message : error"
+              :stack="error instanceof Error ? error.stack : undefined"
               @clear-error="() => clearError()"
             />
           </template>
