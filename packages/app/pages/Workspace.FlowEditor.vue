@@ -47,8 +47,8 @@ onBeforeRouteLeave(() => {
         @set-node-comment="(id, comment) => session.setNodeComment(id, comment)"
         @set-node-input-value="(id, key, value) => session.setNodeInputValue(id, key, value)"
         @get-node-input-options="(id, key, query) => session.getNodeInputOptions(id, key, query)"
-        @create-link="(from, to) => session.createLink(from, to)"
-        @remove-link="(id) => session.removeLink(id)"
+        @create-link="(source, target) => session.createLink(source, target)"
+        @remove-link="(link) => session.removeLink(link)"
       />
     </AppPage>
   </div>
