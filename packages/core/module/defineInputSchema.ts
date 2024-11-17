@@ -43,9 +43,11 @@ export type InputSchema = Record<string, InputSocket>
 export type InferInput<T extends InputSchema> =
   { [P in keyof T]:
     T[P] extends { [x: string]: any; type: Type<infer U>; isOptional: true; isIterable: true } ? U[] | undefined :
-      T[P] extends { [x: string]: any; type: Type<infer U>; isOptional: true } ? U | undefined :
-        T[P] extends { [x: string]: any; type: Type<infer U>; isIterable: true } ? U[] :
-          T[P] extends { [x: string]: any; type: Type<infer U> } ? U : unknown
+      T[P] extends { [x: string]: any; type: Type<infer U>; isOptional: true; isMap: true } ? Record<string, U> | undefined :
+        T[P] extends { [x: string]: any; type: Type<infer U>; isOptional: true } ? U | undefined :
+          T[P] extends { [x: string]: any; type: Type<infer U>; isIterable: true } ? U[] :
+            T[P] extends { [x: string]: any; type: Type<infer U>; isMap: true } ? Record<string, U> :
+              T[P] extends { [x: string]: any; type: Type<infer U> } ? U : unknown
   }
 
 export function defineInputSchema<T extends InputSchema>(schema: Readonly<T>): T {

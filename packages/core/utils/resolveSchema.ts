@@ -2,7 +2,7 @@
 import type { ObjectLike } from '@unshared/types'
 import type { InputSchema, InputSocket, OutputSchema, OutputSocket } from '../module'
 import type { ResolveReference } from './types'
-import { assertArray, ValidationError } from '@unshared/validation'
+import { assertArray, assertObjectStrict, ValidationError } from '@unshared/validation'
 import { FlowError } from './createError'
 import { isReference } from './createReference'
 import { ERRORS } from './errors'
@@ -75,13 +75,17 @@ export async function resolveSchema(options: ResolveSchemaOptions): Promise<Obje
     // --- Otherwise, parse the value as-is and return the resolved value.
     try {
       if (socket.isIterable) {
-        if (socket.isOptional && value === undefined) {
-          resolved[key] = []
-          continue
-        }
+        if (socket.isOptional && value === undefined) { resolved[key] = []; continue }
         assertArray(value)
         const promises = value.map(x => resolveSchemaValue(x, socket, resolvers))
         resolved[key] = await Promise.all(promises)
+      }
+      if (socket.isMap) {
+        if (socket.isOptional && value === undefined) { resolved[key] = {}; continue }
+        assertObjectStrict(value)
+        const promises = Object.entries(value).map(async([path, value]) => [path, await resolveSchemaValue(value, socket, resolvers)])
+        const entries = await Promise.all(promises)
+        resolved[key] = Object.fromEntries(entries)
       }
       else {
         resolved[key] = await resolveSchemaValue(value, socket, resolvers)

@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/cognitive-complexity */
 /* eslint-disable sonarjs/prefer-single-boolean-return */
 import type { FlowNodeDefinition, SocketListOption } from '../module'
 import type { FlowEvents, FlowJSONv1, FlowJSONv1Node, FlowLink, FlowNode, FlowOptions } from '../utils'
@@ -115,9 +116,24 @@ export class Flow extends Emitter<FlowEvents> {
           }
         }
 
+        // --- If the value is a map, iterate over each value and add the links.
+        else if (typeof value === 'object' && value !== null && !isReferenceLink(value)) {
+          for (const path in value) {
+            const x = (value as Record<string, unknown>)[path]
+            if (!isReferenceLink(x)) continue
+            links.push({
+              sourceId: x.$fromNode.id,
+              sourceName: x.$fromNode.name,
+              sourcePath: x.$fromNode.path,
+              targetId: node.id,
+              targetName: key,
+              targetPath: path,
+            })
+          }
+        }
+
         // --- Otherwise, add the link if the value is a link.
-        else {
-          if (!isReferenceLink(value)) continue
+        else if (isReferenceLink(value)) {
           links.push({
             sourceId: value.$fromNode.id,
             sourceName: value.$fromNode.name,
@@ -161,17 +177,29 @@ export class Flow extends Emitter<FlowEvents> {
     // --- Compute the new value for the target socket.
     const newValue = createReference('fromNode', { id: link.sourceId, name: link.sourceName })
 
-    // --- If the target socket is not iterable, set the value directly.
-    if (!targetSocket.isIterable) {
-      this.setNodeInputValue(link.targetId, link.targetName, newValue)
-      return
+    // --- If iterable, append the value to the target socket.
+    if (targetSocket.isIterable) {
+      const input = target.input ?? {}
+      const value = input[link.targetName] ?? []
+      const valueArray: unknown[] = Array.isArray(value) ? value : [value]
+      const valueIsAlreadyLinked = valueArray.some(value =>
+        isReferenceLink(value)
+        && value.$fromNode.id === link.sourceId
+        && value.$fromNode.name === link.sourceName)
+      const nextValue = valueIsAlreadyLinked ? [...valueArray, newValue] : [newValue]
+      this.setNodeInputValue(link.targetId, link.targetName, nextValue)
+    }
+
+    // --- If map, set the value to the target at the given path.
+    else if (link.targetPath) {
+      const input = target.input ?? {}
+      const value = input[link.targetName] ?? {}
+      const nextValue = { ...value, [link.targetPath]: newValue }
+      this.setNodeInputValue(link.targetId, link.targetName, nextValue)
     }
 
     // --- Otherwise, append the value to the target socket.
-    target.input = target.input ?? {}
-    const currentValue = target.input[link.targetName] ?? []
-    const nextValue = Array.isArray(currentValue) ? [...currentValue as unknown[], newValue] : [newValue]
-    this.setNodeInputValue(link.targetId, link.targetName, nextValue)
+    else { this.setNodeInputValue(link.targetId, link.targetName, newValue) }
   }
 
   /**
@@ -196,7 +224,7 @@ export class Flow extends Emitter<FlowEvents> {
         const value = node.input[key]
         const socket = definition.inputSchema?.[key]
 
-        // --- Filter out the link if the source and target are specified.
+        // --- Handle the case where the value is an array of links.
         if (socket?.isIterable && Array.isArray(value)) {
           const newValue = value.filter((value) => {
             if (!isReferenceLink(value)) return true
@@ -204,6 +232,19 @@ export class Flow extends Emitter<FlowEvents> {
             if (linkToRemove.sourceName && value.$fromNode.name !== linkToRemove.sourceName) return true
             return false
           })
+          this.setNodeInputValue(node.id, key, newValue)
+        }
+
+        // --- Handle the case where the value is a map.
+        else if (socket?.isMap && typeof value === 'object' && value !== null && !isReferenceLink(value)) {
+          const valueEntries = Object.entries(value)
+          const newValue = Object.fromEntries(valueEntries.map(([path, value]) => {
+            if (!isReferenceLink(value)) return [path, undefined]
+            if (linkToRemove.sourceId && value.$fromNode.id !== linkToRemove.sourceId) return [path, undefined]
+            if (linkToRemove.sourceName && value.$fromNode.name !== linkToRemove.sourceName) return [path, undefined]
+            if (linkToRemove.sourcePath && value.$fromNode.path !== linkToRemove.sourcePath) return [path, undefined]
+            return [path, undefined]
+          }))
           this.setNodeInputValue(node.id, key, newValue)
         }
 
