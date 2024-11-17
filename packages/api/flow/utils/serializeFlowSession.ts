@@ -26,6 +26,12 @@ export interface FlowJSON {
   peers: FlowSessionParticipantJSON[]
 }
 
+export interface FlowLinkSocketJSON {
+  id: string
+  name: string
+  path?: string
+}
+
 /** The serialized representation of a flow category. */
 export interface FlowCategoryNodesJSON {
   kind: string

@@ -137,13 +137,19 @@ export const FLOW_SESSION_MESSAGE_SCHEMA = createRuleSet(
 
   [createSchema({
     event: assert.stringEquals('createLink'),
-    source: assert.stringNotEmpty,
-    target: assert.stringNotEmpty,
+    sourceId: assert.stringNotEmpty,
+    sourceName: assert.stringNotEmpty,
+    sourcePath: [[assert.undefined], [assert.stringNotEmpty]],
+    targetId: assert.stringNotEmpty,
+    targetName: assert.stringNotEmpty,
+    targetPath: [[assert.undefined], [assert.stringNotEmpty]],
   })],
 
   [createSchema({
     event: assert.stringEquals('removeLink'),
-    source: assert.stringNotEmpty,
+    id: assert.stringNotEmpty,
+    name: assert.stringNotEmpty,
+    path: [[assert.undefined], [assert.stringNotEmpty]],
   })],
 
   /***************************************************************************/

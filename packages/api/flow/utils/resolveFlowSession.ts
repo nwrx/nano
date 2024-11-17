@@ -276,18 +276,14 @@ export class FlowSessionInstance {
       /***************************************************************************/
 
       if (message.event === 'createLink') {
-        const { source, target } = message
-        const [sourceId, sourceKey] = source.split(':')
-        const [targetId, targetKey] = target.split(':')
-        await this.flow.createlink({ sourceId, sourceKey, targetId, targetKey })
+        await this.flow.createlink(message)
         await this.save()
       }
 
       if (message.event === 'removeLink') {
-        const { source } = message
-        const [id, key] = source.split(':')
-        await this.flow.removeLink({ sourceId: id, sourceKey: key })
-        await this.flow.removeLink({ targetId: id, targetKey: key })
+        const { id, name, path } = message
+        await this.flow.removeLink({ sourceId: id, sourceName: name, sourcePath: path })
+        await this.flow.removeLink({ targetId: id, targetName: name, targetPath: path })
         await this.save()
       }
 
