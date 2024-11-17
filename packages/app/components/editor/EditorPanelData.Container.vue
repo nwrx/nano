@@ -15,7 +15,7 @@ defineProps<{
     />
 
     <!-- Data -->
-    <div class="b b-editor rd select-text text-sm bg-editor-panel-data">
+    <div class="b b-editor rd select-text text-sm bg-editor-panel-data first:children:rd-t last:children:rd-b">
       <slot />
     </div>
   </div>

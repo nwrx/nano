@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { InputSocketJSON, FlowThreadNodeJSON } from '@nwrx/api'
+import type { FlowThreadNodeJSON, InputSocketJSON } from '@nwrx/api'
+import { isReferenceLink } from '@nwrx/core/utils'
 
 const props = defineProps<{
   name?: string
@@ -24,34 +25,21 @@ const defaultValue = computed(() => {
   if (props.socket?.defaultValue === undefined) return
   return String(props.socket.defaultValue)
 })
-
-function isLink(value: unknown): boolean {
-  if (typeof value !== 'string') return false
-  return value.startsWith('$NODE.')
-}
 </script>
 
 <template>
   <EditorPanelDataValueLink
-    v-if="isLink(model)"
-    :model-value="model"
+    v-if="isReferenceLink(model)"
+    :id="model.$fromNode.id"
+    :name="model.$fromNode.name"
+    :path="model.$fromNode.path"
     :nodes="nodes"
   />
-
-  <!-- Array -->
-  <div v-else-if="Array.isArray(model)" class="flex flex-col">
-    <!-- Count badge -->
-    <Badge
-      class="badge-sm"
-      :style="{ backgroundColor: socket?.typeColor }"
-      :label="model.length"
-    />
-  </div>
 
   <!-- Object -->
   <Badge
     v-else-if="typeof model === 'object' && model !== null"
-    class="badge-sm text-white"
+    class="badge-sm text-white mx-sm"
     :style="{ backgroundColor: socket?.typeColor }"
     :label="socket?.typeName ?? t('object')"
   />
