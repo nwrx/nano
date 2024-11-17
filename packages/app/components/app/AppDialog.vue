@@ -55,7 +55,7 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
         'pointer-events-none': !model,
       }"
       class="
-        fixed left-0 top-0 w-screen h-screen bg-transparent z-1000
+        fixed inset-0 bg-transparent z-1000
         inline-flex items-center justify-center backdrop:bg-transparent
         transition duration-fast dark
       "
@@ -65,10 +65,10 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
       <!-- Content -->
       <div
         class="
-            rd max-w-xl pointer-events-auto
-            border border-app bg-app text-app
-            transition backdrop-blur-lg
-          "
+          rd w-xl pointer-events-auto
+          border border-app bg-app text-app
+          transition backdrop-blur-lg
+        "
         :class="{
           'scale-100 opacity-100 pointer-events-auto': slot.isOpen,
           'scale-95 opacity-0 pointer-events-none': !slot.isOpen,
