@@ -267,8 +267,8 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
             collectLink(node, value, key)
           }
           else if (Array.isArray(value)) {
-            for (const [index, item] of value.entries())
-              collectLink(node, item, key, index.toString())
+            for (const item of value)
+              collectLink(node, item, key)
           }
           else if (typeof value === 'object' && value !== null) {
             const values = Object.entries(value)
