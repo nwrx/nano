@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const props = defineProps<{
+defineProps<{
   stack?: string
   message?: string
   statusCode?: number
