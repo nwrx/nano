@@ -10,9 +10,9 @@ const emit = defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
-// const model = useVModel(props, 'modelValue', emit, {
-//   passive: true,
-// })
+const model = useVModel(props, 'modelValue', emit, {
+  passive: true,
+})
 </script>
 
 <template>
