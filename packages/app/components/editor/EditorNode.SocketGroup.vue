@@ -1,8 +1,8 @@
 <template>
   <div
     class="
-      flex items-center justify-start rd grow
-      hover:bg-emphasized min-h-8 text-sm
+      rd grow min-h-8 text-sm px-sm py-xs
+      hover:bg-emphasized
       b b-transparent hover:b-editor-active
     ">
     <slot />

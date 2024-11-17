@@ -38,9 +38,9 @@ function handleSliderChange(event: MouseEvent) {
 }
 
 const value = computed(() => {
-  const { min = 0, max = 100 } = props
+  const { min = 0, max = 100, defaultValue } = props
   let value = model.value
-  if (!value) value = typeof props.defaultValue === 'number' ? props.defaultValue : min
+  if (!value) value = typeof defaultValue === 'number' ? defaultValue : min
   if (typeof value === 'string') value = Number.parseFloat(value)
   if (value < min) value = min
   if (value > max) value = max

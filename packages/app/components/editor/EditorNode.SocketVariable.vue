@@ -2,7 +2,7 @@
 import { createReference } from '@nwrx/core/utils'
 
 const props = defineProps<{
-  modelValue?: string
+  modelValue?: unknown
   name?: string
   secrets?: string[]
   variables?: string[]
