@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/slow-regex */
 import type { Directive } from 'vue'
 import { escapeHtml } from '@unshared/string/escapeHtml'
 import DOMPurify from 'dompurify'
@@ -14,12 +15,11 @@ import { marked } from 'marked'
  *   <div v-markdown="markdownContent" />
  * </template>
  */
-export const vMarkdown: Directive<HTMLElement, string | undefined> = {
+export const vMarkdown: Directive<HTMLElement, string | undefined, 'html'> = {
   mounted(element, binding) {
     if (!binding.value) return
-    // eslint-disable-next-line sonarjs/slow-regex
-    const markdownSafe = escapeHtml(binding.value).replaceAll(/{{([^}]+)}}/g, '`$1`')
-    const html = marked(markdownSafe, { gfm: true, breaks: true }) as string
+    const markdown = binding.modifiers.html ? binding.value : escapeHtml(binding.value).replaceAll(/{{([^}]+)}}/g, '`$1`')
+    const html = marked(markdown, { gfm: true, breaks: true }) as string
     const htmlSafe = DOMPurify.sanitize(html)
     element.setHTMLUnsafe(htmlSafe)
   },

@@ -35,7 +35,7 @@ const asRaw = ref(false)
     <!-- Markdown -->
     <div
       v-else
-      v-markdown="model"
+      v-markdown.html="model"
       class="markdown p-sm"
     />
 
