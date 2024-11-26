@@ -1,17 +1,17 @@
 import type { ModuleWorkspace } from '../index'
 import { ModuleUser } from '@nwrx/api'
-import { createRoute } from '@unserved/server'
+import { createHttpRoute } from '@unserved/server'
 import { assert, createSchema } from '@unshared/validation'
 
 export function projectVariableCreate(this: ModuleWorkspace) {
-  return createRoute(
+  return createHttpRoute(
     {
       name: 'POST /api/workspaces/:workspace/:project/variables',
-      parameters: createSchema({
+      parseParameters: createSchema({
         workspace: assert.stringNotEmpty,
         project: assert.stringNotEmpty,
       }),
-      body: createSchema({
+      parseBody: createSchema({
         name: assert.stringConstantCase.with('The name of the variable must be in constant case.'),
         value: assert.stringNotEmpty.with('The value of the variable must not be a non-empty string.'),
       }),

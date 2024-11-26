@@ -1,15 +1,15 @@
 import type { FlowObject } from '../entities'
 import type { ModuleFlow } from '../index'
 import { ModuleUser } from '@nwrx/api'
-import { createRoute } from '@unserved/server'
+import { createHttpRoute } from '@unserved/server'
 import { assertString, assertStringNotEmpty, assertStringNumber, assertUndefined, createParser } from '@unshared/validation'
 import { ILike } from 'typeorm'
 
 export function flowSearch(this: ModuleFlow) {
-  return createRoute(
+  return createHttpRoute(
     {
       name: 'GET /api/flows',
-      query: createParser({
+      parseQuery: createParser({
         search: [[assertUndefined], [assertString]],
         page: [[assertUndefined], [assertStringNumber, Number.parseInt]],
         limit: [[assertUndefined], [assertStringNumber, Number.parseInt]],

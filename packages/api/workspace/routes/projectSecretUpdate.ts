@@ -1,18 +1,18 @@
 import type { ModuleWorkspace } from '../index'
 import { ModuleUser } from '@nwrx/api'
-import { createRoute } from '@unserved/server'
+import { createHttpRoute } from '@unserved/server'
 import { assert, createSchema } from '@unshared/validation'
 
 export function projectSecretUpdate(this: ModuleWorkspace) {
-  return createRoute(
+  return createHttpRoute(
     {
       name: 'PUT /api/workspaces/:workspace/:project/secrets/:name',
-      parameters: createSchema({
+      parseParameters: createSchema({
         workspace: assert.stringNotEmpty,
         project: assert.stringNotEmpty,
         name: assert.stringConstantCase.with('The name of the secret must be in constant case.'),
       }),
-      body: createSchema({
+      parseBody: createSchema({
         value: assert.stringNotEmpty.with('The value of the secret must not be a non-empty string.'),
       }),
     },

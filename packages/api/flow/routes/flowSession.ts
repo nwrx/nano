@@ -1,5 +1,5 @@
 import type { ModuleFlow } from '..'
-import { createRoute } from '@unserved/server'
+import { createHttpRoute } from '@unserved/server'
 import { assert, createSchema } from '@unshared/validation'
 import { ModuleMonitoring } from '../../monitoring'
 import { ModuleUser } from '../../user'
@@ -7,10 +7,10 @@ import { ModuleWorkspace } from '../../workspace'
 import { FLOW_SESSION_MESSAGE_SCHEMA, resolveFlowEntity, resolveFlowSession, resolveFlowSessionByPeer } from '../utils'
 
 export function flowSession(this: ModuleFlow) {
-  return createRoute(
+  return createHttpRoute(
     {
       name: 'WS /ws/workspaces/:workspace/:project/:flow',
-      parameters: createSchema({
+      parseParameters: createSchema({
         workspace: assert.stringNotEmpty.with('Workspace name is required.'),
         project: assert.stringNotEmpty.with('Project name is required.'),
         flow: assert.stringNotEmpty.with('Flow name is required.'),

@@ -1,5 +1,5 @@
 import type { ModuleFlow } from '..'
-import { createRoute } from '@unserved/server'
+import { createHttpRoute } from '@unserved/server'
 import { parseBoolean } from '@unshared/string'
 import { assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
 import { ModuleUser } from '../../user'
@@ -7,15 +7,15 @@ import { ModuleWorkspace } from '../../workspace'
 import { resolveFlowEntity } from '../utils'
 
 export function flowGet(this: ModuleFlow) {
-  return createRoute(
+  return createHttpRoute(
     {
       name: 'GET /api/workspaces/:workspace/:project/:flow',
-      parameters: createSchema({
+      parseParameters: createSchema({
         workspace: assertStringNotEmpty,
         project: assertStringNotEmpty,
         flow: assertStringNotEmpty,
       }),
-      query: createSchema({
+      parseQuery: createSchema({
         withData: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
       }),
     },

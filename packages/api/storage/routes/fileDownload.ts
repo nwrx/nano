@@ -1,14 +1,14 @@
 import type { ModuleStorage } from '../index'
-import { createRoute } from '@unserved/server'
+import { createHttpRoute } from '@unserved/server'
 import { assertStringUuid, createSchema } from '@unshared/validation'
 import { getHeader } from 'h3'
 import { ModuleUser } from '../../user'
 
 export function fileDownload(this: ModuleStorage) {
-  return createRoute(
+  return createHttpRoute(
     {
       name: 'GET /api/storage/:id',
-      parameters: createSchema({
+      parseParameters: createSchema({
         id: assertStringUuid,
       }),
     },

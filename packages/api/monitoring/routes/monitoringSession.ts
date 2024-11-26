@@ -1,15 +1,15 @@
 import type { UUID } from 'node:crypto'
 import type { ModuleMonitoring, MonitoringSessionEventPayload } from '../index'
-import { createRoute } from '@unserved/server'
+import { createHttpRoute } from '@unserved/server'
 import { assert, createRuleSet, createSchema } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
 
 export function monitoringSession(this: ModuleMonitoring) {
-  return createRoute(
+  return createHttpRoute(
     {
       name: 'WS /ws/workspaces/:workspace/monitoring',
-      parameters: createSchema({ workspace: assert.stringNotEmpty }),
+      parseParameters: createSchema({ workspace: assert.stringNotEmpty }),
       message: createRuleSet(
 
         /***************************************************************************/

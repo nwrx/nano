@@ -1,16 +1,16 @@
 import type { ModuleFlow } from '..'
 import { ModuleUser } from '@nwrx/api/user'
 import { ModuleWorkspace } from '@nwrx/api/workspace'
-import { createRoute } from '@unserved/server'
+import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, createSchema } from '@unshared/validation'
 import { setResponseHeader } from 'h3'
 import * as YAML from 'yaml'
 
 export function flowExport(this: ModuleFlow) {
-  return createRoute(
+  return createHttpRoute(
     {
       name: 'GET /api/workspaces/:workspace/:project/:flow/export',
-      parameters: createSchema({
+      parseParameters: createSchema({
         workspace: assertStringNotEmpty,
         project: assertStringNotEmpty,
         flow: assertStringNotEmpty,

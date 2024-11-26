@@ -1,8 +1,8 @@
 import type { ModuleUser, UserObject } from '..'
-import { createRoute } from '@unserved/server'
+import { createHttpRoute } from '@unserved/server'
 
 export function userSessionGet(this: ModuleUser) {
-  return createRoute(
+  return createHttpRoute(
     {
       name: 'GET /api/session',
     },

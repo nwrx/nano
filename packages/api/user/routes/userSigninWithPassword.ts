@@ -1,12 +1,12 @@
 import type { ModuleUser } from '../index'
-import { createRoute } from '@unserved/server'
+import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, createSchema } from '@unshared/validation'
 
 export function userSigninWithPassword(this: ModuleUser) {
-  return createRoute(
+  return createHttpRoute(
     {
       name: 'POST /api/session',
-      body: createSchema({
+      parseBody: createSchema({
         username: assertStringNotEmpty,
         password: assertStringNotEmpty,
       }),
