@@ -1,5 +1,5 @@
 {
-  "name": "@nwrx/module-google",
+  "name": "@nwrx/module-piste-gouv-fr",
   "type": "module",
   "version": "0.0.1",
   "license": "MIT",
@@ -8,7 +8,7 @@
   "bugs": "https://github.com/nwrx/nano-ce/issues",
   "homepage": "https://github.com/nwrx/nano-ce#readme",
   "repository": {
-    "directory": "packages/module-google",
+    "directory": "packages/module-piste-gouv-fr",
     "type": "git",
     "url": "git@github.com:nwrx/nano-ce.git"
   },
@@ -18,20 +18,10 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
-    "./categories": {
-      "types": "./dist/categories.d.ts",
-      "import": "./dist/categories.js",
-      "require": "./dist/categories.cjs"
-    },
-    "./drive": {
-      "types": "./dist/drive.d.ts",
-      "import": "./dist/drive.js",
-      "require": "./dist/drive.cjs"
-    },
-    "./sheets": {
-      "types": "./dist/sheets.d.ts",
-      "import": "./dist/sheets.js",
-      "require": "./dist/sheets.cjs"
+    "./legifrance": {
+      "types": "./dist/legifrance.d.ts",
+      "import": "./dist/legifrance.js",
+      "require": "./dist/legifrance.cjs"
     }
   },
   "files": [
@@ -47,7 +37,8 @@
     "@nwrx/core": "workspace:*",
     "@nwrx/module-core": "workspace:*",
     "@types/json-schema": "7.0.15",
+    "@unshared/client": "0.2.2",
     "@unshared/string": "0.3.1",
-    "googleapis": "144.0.0"
+    "@unshared/types": "0.3.1"
   }
 }
