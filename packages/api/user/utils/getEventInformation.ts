@@ -1,6 +1,6 @@
-import type { H3Event, NodeEventContext } from 'h3'
+import type { Peer } from 'crossws'
+import type { H3Event } from 'h3'
 import type { ModuleUser } from '../index'
-import { Peer } from 'crossws'
 import { getCookie, getHeader, getRequestIP, isEvent } from 'h3'
 
 export interface EventInformation {
@@ -28,16 +28,20 @@ export function getEventInformation(this: ModuleUser, event: H3Event | Peer) {
   }
 
   // --- If the event is a peer, extract the address and user agent from the peer.
-  else if (event instanceof Peer) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    const node = event.ctx.node as NodeEventContext
-    const headers = event.headers as Record<string, string>
-    const cookiesValue = headers.cookie ?? ''
-    const cookiesEntries = cookiesValue.split(';').map(x => x.trim().split('='))
+  else if (
+    typeof event === 'object'
+    && 'request' in event
+    && typeof event.request === 'object'
+    && 'headers' in event.request
+    && typeof event.request.headers === 'object'
+  ) {
+    const headers = event.request.headers
+    const cookiesValue = headers.get('cookie') ?? ''
+    const cookiesEntries = cookiesValue.split(';').map(x => x.trim().split('=').map(x => x.trim()))
     const cookies = Object.fromEntries(cookiesEntries) as Record<string, string>
     result.token = cookies[this.userSessionCookieName]
-    result.userAgent = headers['user-agent'] ?? undefined
-    result.address = this.userTrustProxy ? headers['x-forwarded-for'] : node.req.socket.remoteAddress
+    result.userAgent = headers.get('User-Agent') ?? undefined
+    result.address = this.userTrustProxy ? headers.get('X-Forwarded-For')! : event.remoteAddress
   }
 
   // --- Return the event information.
