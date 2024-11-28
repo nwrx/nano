@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/no-clear-text-protocols */
 import { defineNuxtConfig } from 'nuxt/config'
 import { LOCALES } from './utils/locales'
 
@@ -40,7 +41,6 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     '@unocss/nuxt',
     '@unshared/vue',
-    '@unserved/nuxt',
     // '@nuxtjs/storybook',
   ],
 
@@ -142,9 +142,9 @@ export default defineNuxtConfig({
     }],
   },
 
-  storybook: {
-    enabled: true,
-  },
+  // storybook: {
+  //   enabled: true,
+  // },
 
   /**
    * Enables the experimental <NuxtClientFallback> component for rendering content on
@@ -214,13 +214,21 @@ export default defineNuxtConfig({
       exclude: [
         '@unserved/nuxt/useClient',
         '@unserved/nuxt/useRequest',
+        '@unshared/client/createClient',
+        '@unshared/functions/throttle',
+        '@unshared/string/toSlug',
+        '@unshared/vue',
       ],
       include: [
+        'date-fns/format',
+        'date-fns/formatDistanceToNow',
         'date-fns/locale/de',
         'date-fns/locale/en-US',
         'date-fns/locale/fr',
         'date-fns/locale/zh-CN',
         'date-fns/locale/es',
+        'dompurify',
+        'marked',
 
         /**
          * Fixes the `index.js does not provide an export named 'parse'` error introduced
