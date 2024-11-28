@@ -5,7 +5,7 @@ defineProps<{
 </script>
 
 <template>
-  <div>
+  <div class="w-full">
 
     <!-- Label -->
     <p

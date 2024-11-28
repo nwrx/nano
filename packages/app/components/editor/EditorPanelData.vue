@@ -38,7 +38,7 @@ function toggle() {
 }
 
 const cellStyle = computed(() => ({
-  width: `${155 - (props.depth ?? 0) * 5}px`,
+  width: `${200 - (props.depth ?? 0) * 5}px`,
 }))
 </script>
 
@@ -50,7 +50,7 @@ const cellStyle = computed(() => ({
     class="
       flex flex-wrap items-stretch
       not-first:b-t b-editor
-      ring-1 ring-transparent relative
+      ring-1 ring-transparent
     ">
 
     <!-- Header -->
@@ -64,13 +64,13 @@ const cellStyle = computed(() => ({
         v-if="isNameEditable"
         v-model="name"
         :style="cellStyle"
-        class="shrink-0 px-sm bg-transparent outline-none">
+        class="shrink-0 px-sm bg-transparent outline-none grow max-w-80">
 
       <!-- Name -->
       <div
         v-else
         :style="cellStyle"
-        class="text-start shrink-0 px-sm"
+        class="text-start shrink-0 px-sm line-clamp-1 grow max-w-80"
         v-text="name"
       />
 
@@ -78,37 +78,39 @@ const cellStyle = computed(() => ({
       <div class="w-px h-full b-r b-editor transition" />
 
       <!-- Value -->
-      <EditorPanelDataValue
-        v-model="model"
-        :name="name"
-        :node="node"
-        :nodes="nodes"
-        :socket="socket"
-        :is-open="isOpen"
-        :is-editable="isEditable"
-        :is-clearable="isClearable"
-        :class="{ 'pointer-events-none': hasDetail }"
-      />
-
-      <!-- Spacer -->
-      <div class="grow" />
-
-      <!-- Collapse -->
-      <div class="flex items-center space-x-sm op-0 group-hover:op-100 px-sm">
-        <BaseIcon
-          v-if="hasDetail"
-          icon="i-carbon:chevron-down"
-          class="size-4 shrink-0 cursor-pointer transition"
-          :class="{ 'rotate-180': isOpen }"
+      <div class="flex items-center w-3/5 shrink-0">
+        <EditorPanelDataValue
+          v-model="model"
+          :name="name"
+          :node="node"
+          :nodes="nodes"
+          :socket="socket"
+          :is-open="isOpen"
+          :is-editable="isEditable"
+          :is-clearable="isClearable"
+          :class="{ 'pointer-events-none': hasDetail }"
         />
 
-        <!-- Clear -->
-        <BaseIcon
-          v-if="isClearable"
-          icon="i-carbon:close"
-          class="size-4 shrink-0 cursor-pointer"
-          @mousedown.stop="() => emit('clear')"
-        />
+        <!-- Spacer -->
+        <div class="grow" />
+
+        <!-- Collapse -->
+        <div class="flex items-center space-x-sm op-0 group-hover:op-100 px-sm">
+          <BaseIcon
+            v-if="hasDetail"
+            icon="i-carbon:chevron-down"
+            class="size-4 shrink-0 cursor-pointer transition"
+            :class="{ 'rotate-180': isOpen }"
+          />
+
+          <!-- Clear -->
+          <BaseIcon
+            v-if="isClearable"
+            icon="i-carbon:close"
+            class="size-4 shrink-0 cursor-pointer"
+            @mousedown.stop="() => emit('clear')"
+          />
+        </div>
       </div>
     </div>
 
@@ -121,20 +123,21 @@ const cellStyle = computed(() => ({
       :class="{ 'op-0 pointer-events-none': !isOpen }">
 
       <!-- Content -->
-      <div class="b-l-6px b-editor">
-        <slot name="detail">
-          <EditorPanelDataDetail
-            :key="String(model)"
-            v-model="model"
-            :node="node"
-            :nodes="nodes"
-            :socket="socket"
-            :is-editable="isEditable"
-            :is-clearable="isClearable"
-            :depth="depth ? depth + 1 : 1"
-          />
-        </slot>
-      </div>
+      <Transition>
+        <div v-if="isOpen" class="b-l-6px b-editor">
+          <slot name="detail">
+            <EditorPanelDataDetail
+              v-model="model"
+              :node="node"
+              :nodes="nodes"
+              :socket="socket"
+              :is-editable="isEditable"
+              :is-clearable="isClearable"
+              :depth="depth ? depth + 1 : 1"
+            />
+          </slot>
+        </div>
+      </Transition>
     </BaseCollapse>
   </div>
-</template>
+</template>]
