@@ -7,7 +7,6 @@ const props = defineProps<{
   id: string
   isOutput?: boolean
   value: unknown
-  error?: string
   secrets?: string[]
   variables?: string[]
   socket: InputSocketJSON
@@ -49,7 +48,6 @@ const isLinkeable = computed(() =>
       'pr-5 flex-row': !isOutput,
       'pl-5 flex-row-reverse': isOutput,
       'hover:bg-emphasized cursor-pointer': isLinkeable,
-      'bg-diagonallines-danger-500/80': error,
     }"
     @mousedown.left="() => { if (isLinkeable) emit('linkGrab') }"
     @mouseenter="() => emit('linkAssign')"
