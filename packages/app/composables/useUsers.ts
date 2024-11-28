@@ -1,5 +1,5 @@
 import type { UserObject } from '@nwrx/api'
-import type { InferInput } from '@unserved/client'
+import type { RouteRequestData } from '@unserved/client'
 import type { application } from '~/server'
 import { useAlerts, useClient } from '#imports'
 
@@ -42,8 +42,8 @@ const LOCALES = {
 }
 
 /** The options to fetch the users with. */
-type UseUserOptions = InferInput<typeof application, 'GET /api/users'>
-export type UserCreateOptions = InferInput<typeof application, 'POST /api/users'>
+type UseUserOptions = RouteRequestData<typeof application, 'GET /api/users'>
+export type UserCreateOptions = RouteRequestData<typeof application, 'POST /api/users'>
 
 /**
  * Fetch a list of users from the server. This composable is used to fetch the list of users
@@ -101,7 +101,7 @@ export function useUsers(options: UseUserOptions = {}) {
         onError: error => alerts.error(error),
         onSuccess: () => alerts.success(t('user.disabled')),
         onEnd: () => refresh(),
-        data: { username },
+        parameters: { username },
       })
     },
 

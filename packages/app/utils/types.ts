@@ -1,13 +1,7 @@
 import type { FlowObject } from '@nwrx/api'
 import type { MaybeLiteral } from '@unshared/types'
 import type { RouteLocationRaw } from 'vue-router'
-import type { application } from '~/server'
 import type { COLORS } from '../uno.config'
-
-declare module '@unserved/nuxt/types' {
-  // @ts-expect-error: override the global application type.
-  export type GlobalApplication = typeof application
-}
 
 export type Size = 'large' | 'medium' | 'small' | 'xlarge' | 'xsmall'
 export type Variant = MaybeLiteral<keyof typeof COLORS>

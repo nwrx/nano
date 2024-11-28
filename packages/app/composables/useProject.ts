@@ -1,12 +1,11 @@
 import type { WorkspaceProjectObject, WorkspaceProjectPermission } from '@nwrx/api'
-import type { InferInput } from '@unserved/client'
+import type { RouteRequestData } from '@unserved/client'
 import type { application } from '~/server'
 import { useAlerts, useClient, useRouter } from '#imports'
 
 /** The options to pass to the {@linkcode useProject} composable. */
-export type UseProjectOptions = Omit<InferInput<typeof application, 'GET /api/workspaces/:workspace/:project'>, 'project' | 'workspace'>
-export type ProjectSetSettingsOptions = Omit<InferInput<typeof application, 'PUT /api/workspaces/:workspace/:project'>, 'project' | 'workspace'>
-export type ProjectSetNameOptions = Omit<InferInput<typeof application, 'PUT /api/workspaces/:workspace/:project/name'>, 'project' | 'workspace'>
+export type UseProjectOptions = Omit<RouteRequestData<typeof application, 'GET /api/workspaces/:workspace/:project'>, 'project' | 'workspace'>
+export type SetSettingsOptions = Omit<RouteRequestData<typeof application, 'PUT /api/workspaces/:workspace/:project'>, 'project' | 'workspace'>
 
 /**
  * Fetch the project data from the API and provide methods to interact with it.
@@ -44,7 +43,7 @@ export function useProject(workspace: MaybeRef<string>, project: MaybeRef<string
      * @param data The project settings to update.
      * @returns A promise that resolves when the project is updated.
      */
-    setSettings: async(data: ProjectSetSettingsOptions) =>
+    setSettings: async(data: SetSettingsOptions) =>
       await client.requestAttempt('PUT /api/workspaces/:workspace/:project', {
         onError: error => alerts.error(error),
         onSuccess: () => {

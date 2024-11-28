@@ -16,6 +16,10 @@ useHead(() => ({
   meta: [{ title: 'description', content: session.data.description }],
 }))
 
+onMounted(async() => {
+  await session.channel
+})
+
 onBeforeRouteLeave(() => {
   session.userLeave()
 })

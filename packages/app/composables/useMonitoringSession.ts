@@ -9,11 +9,6 @@ export interface MonitoringSessionFilters {
 export function useMonitoringSession(workspace: MaybeRef<string>) {
   const client = useClient()
   const alerts = useAlerts()
-  const session = client.connect('WS /ws/workspaces/:workspace/monitoring', {
-    data: {
-      workspace: unref(workspace),
-    },
-  })
 
   const data = reactive<MonitoringSessionState>({
     projects: [],
@@ -29,78 +24,87 @@ export function useMonitoringSession(workspace: MaybeRef<string>) {
     event: undefined as string | undefined,
   })
 
-  session.on('message', (payload: MonitoringSessionEventPayload) => {
-    switch (payload.event) {
-      case 'init': {
-        data.projects = payload.projects
-        data.threads = payload.threads
-        data.events = payload.events
-        data.nodeEvents = payload.nodeEvents
-        break
+  const channel = client.connect('WS /ws/workspaces/:workspace/monitoring', {
+    parameters: { workspace: unref(workspace) },
+    autoOpen: true,
+    autoReconnect: true,
+    reconnectDelay: 1000,
+    reconnectLimit: 3,
+
+    onMessage: (payload: MonitoringSessionEventPayload) => {
+      switch (payload.event) {
+        case 'init': {
+          data.projects = payload.projects
+          data.threads = payload.threads
+          data.events = payload.events
+          data.nodeEvents = payload.nodeEvents
+          break
+        }
+        case 'threads:update': {
+          data.threads = payload.threads
+          data.events = []
+          data.nodeEvents = []
+          selection.event = undefined
+          selection.thread = undefined
+          break
+        }
+        // case 'threads:push': {
+        //   data.threads.push(payload.thread)
+        //   break
+        // }
+        case 'events:update': {
+          data.events = payload.events
+          data.nodeEvents = payload.nodeEvents
+          break
+        }
+        // case 'events:push': {
+        //   data.events.push(payload.events)
+        //   data.nodeEvents.push(payload.nodeEvents)
+        //   break
+        // }
+        case 'error': {
+          const { message } = payload
+          alerts.error(message)
+          break
+        }
       }
-      case 'threads:update': {
-        data.threads = payload.threads
-        data.events = []
-        data.nodeEvents = []
-        selection.event = undefined
-        selection.thread = undefined
-        break
-      }
-      // case 'threads:push': {
-      //   data.threads.push(payload.thread)
-      //   break
-      // }
-      case 'events:update': {
-        data.events = payload.events
-        data.nodeEvents = payload.nodeEvents
-        break
-      }
-      // case 'events:push': {
-      //   data.events.push(payload.events)
-      //   data.nodeEvents.push(payload.nodeEvents)
-      //   break
-      // }
-      case 'error': {
-        const { message } = payload
-        alerts.error(message)
-        break
-      }
-    }
+    },
   })
 
   return reactive({
     data,
     selection,
+    channel,
 
     selectFlow: (project: string, name: string) => {
       if (selection.flow === name && selection.project === project) return
-      session.send({ event: 'selectFlow', project, name })
+      channel.send({ event: 'selectFlow', project, name })
       selection.flow = name
       selection.project = project
     },
 
     selectThread: (thread: string) => {
       if (selection.thread === thread) return
-      session.send({ event: 'selectThread', thread })
+      channel.send({ event: 'selectThread', thread })
       selection.thread = thread
     },
 
     selectEvent: (id: string) => {
       if (selection.event === id) return
-      session.send({ event: 'selectEvent', id })
+      channel.send({ event: 'selectEvent', id })
       selection.event = id
     },
 
     setProjectFilter: (project: string) => {
-      session.send({ event: 'setProjectFilter', project })
+      channel.send({ event: 'setProjectFilter', project })
     },
 
     setFlowFilter: (flow: string) => {
-      session.send({ event: 'setFlowFilter', flow })
+      channel.send({ event: 'setFlowFilter', flow })
     },
 
     setEventFilter: () => {
-      session.send({ event: 'setEventFilter' })
+      channel.send({ event: 'setEventFilter' })
     },
   })
 }
