@@ -35,7 +35,7 @@ export interface FlowSessionEventMap {
   'thread:nodeState': { id: string } & FlowThreadNodeEventMeta
   'thread:nodeStart': { id: string; input: Record<string, unknown> } & FlowThreadNodeEventMeta
   'thread:nodeTrace': { id: string; data: ObjectLike } & FlowThreadNodeEventMeta
-  'thread:nodeError': { id: string; code?: string; message: string } & FlowThreadNodeEventMeta
+  'thread:nodeError': { id: string; code?: string; message: string; context: Record<string, unknown> } & FlowThreadNodeEventMeta
   'thread:nodeEnd': { id: string; input: Record<string, unknown>; output: Record<string, unknown> } & FlowThreadNodeEventMeta
   'variables:create': { name: string; value: string }
   'variables:update': { name: string; value: string }
@@ -70,7 +70,7 @@ export class FlowSessionInstance {
     this.thread.on('error', error => this.broadcast({ event: 'thread:error', code: error.name, message: error.message }))
     this.thread.on('end', (output, meta) => this.broadcast({ event: 'thread:end', output, ...meta }))
     this.thread.on('nodeState', ({ node: { id } }, meta) => this.broadcast({ event: 'thread:nodeState', id, ...meta }))
-    this.thread.on('nodeError', ({ node: { id } }, error, meta) => this.broadcast({ event: 'thread:nodeError', id, code: error.name, message: error.message, ...meta }))
+    this.thread.on('nodeError', ({ node: { id } }, error, meta) => this.broadcast({ event: 'thread:nodeError', id, code: error.name, message: error.message, context: error.context, ...meta }))
     this.thread.on('nodeTrace', ({ node: { id } }, data, meta) => this.broadcast({ event: 'thread:nodeTrace', id, data, ...meta }))
     this.thread.on('nodeStart', ({ node: { id } }, { input }, meta) => this.broadcast({ event: 'thread:nodeStart', id, input, ...meta }))
     this.thread.on('nodeEnd', ({ node: { id } }, { input, output }, meta) => this.broadcast({ event: 'thread:nodeEnd', id, input, output, ...meta }))

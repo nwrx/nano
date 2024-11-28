@@ -1,7 +1,7 @@
 export interface FlowErrorOptions {
   name: string
   message: string
-  data?: Record<string, unknown>
+  context?: Record<string, unknown>
 }
 
 /**
@@ -13,11 +13,11 @@ export interface FlowErrorOptions {
  */
 export class FlowError extends Error {
   name: string
-  data: Record<string, unknown>
+  context: Record<string, unknown>
 
-  constructor({ name, message, data }: FlowErrorOptions) {
+  constructor({ name, message, context }: FlowErrorOptions) {
     super(message)
     this.name = name
-    this.data = data ?? {}
+    this.context = context ?? {}
   }
 }

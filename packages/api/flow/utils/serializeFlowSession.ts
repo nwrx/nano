@@ -79,7 +79,7 @@ export interface FlowThreadNodeJSON extends FlowNodeDefinitionJSON {
   id: string
   state: FlowThreadNodeState
   error?: string
-  errorCode?: string
+  errorName?: string
   errorContext?: Record<string, unknown>
   label?: string
   comment?: string
@@ -194,7 +194,7 @@ export async function serializeNode(session: FlowSessionInstance, node: FlowNode
     id: node.id,
     state: 'IDLE',
     error: session.thread.nodes.get(node.id)?.error?.message,
-    errorCode: session.thread.nodes.get(node.id)?.error?.name,
+    errorName: session.thread.nodes.get(node.id)?.error?.name,
     errorContext: session.thread.nodes.get(node.id)?.error?.context,
     label: node.meta?.label,
     comment: node.meta?.comment,
