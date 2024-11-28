@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ProjectSetSettingsOptions } from '~/composables/useProject'
+import type { SetSettingsOptions } from '~/composables/useProject'
 
 const props = defineProps<{
   project: string
@@ -9,7 +9,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  submit: [settings: ProjectSetSettingsOptions]
+  submit: [settings: SetSettingsOptions]
 }>()
 
 const { t } = useI18n({ useScope: 'local' })
