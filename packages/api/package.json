@@ -10,7 +10,7 @@
     "@nwrx/core": "workspace:*",
     "@nwrx/module-core": "workspace:*",
     "@nwrx/module-google": "workspace:*",
-    "@unserved/server": "0.1.0",
+    "@unserved/server": "0.2.0",
     "@unshared/binary": "0.3.1",
     "@unshared/collection": "0.3.1",
     "@unshared/eslint-config": "0.3.1",
