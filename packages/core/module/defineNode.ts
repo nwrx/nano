@@ -1,6 +1,6 @@
 import type { MaybePromise, ObjectLike } from '@unshared/types'
 import type { Category } from './defineCategory'
-import type { InferInput as InferInput, InputSchema as InputSchema } from './defineInputSchema'
+import type { InferInput, InputSchema } from './defineInputSchema'
 import type { InferOutput, OutputSchema } from './defineOutputSchema'
 import { assertNotNil, assertStringNotEmpty } from '@unshared/validation'
 
