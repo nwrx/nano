@@ -1,7 +1,7 @@
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
   stack?: string
-  message?: string
+  message?: unknown
   statusCode?: number
   onClearError?: () => void
 }>()
@@ -11,6 +11,11 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const errorMessage = computed(() => (
+  typeof props.message === 'object' && props.message !== null && 'message' in props.message
+    ? props.message.message
+    : props.message
+))
 </script>
 
 <template>
@@ -23,16 +28,14 @@ const { t } = useI18n()
       dark
   ">
 
-    <!-- Status Code -->
-
     <!-- Error Message -->
     <div>
       <p
         class="inline-flex text-5xl text-layout font-mono bg-app text-app px-md py-sm rd-t b b-b-0 b-app"
-        v-text="statusCode || '500'"
+        v-text="statusCode || 'Uh Oh!'"
       />
       <p class="text-xl text-center font-mono bg-app text-app p-md rd rd-tl-0 b b-app max-w-page">
-        {{ message }}
+        {{ errorMessage }}
       </p>
     </div>
 
