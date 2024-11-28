@@ -1,3 +1,6 @@
+/* eslint-disable sonarjs/no-hardcoded-ip */
+/* eslint-disable sonarjs/default-param-last */
+/* eslint-disable sonarjs/no-hardcoded-credentials */
 import type { Server } from 'node:http'
 import type { User } from '../user'
 import type { Workspace, WorkspaceProject } from '../workspace'
