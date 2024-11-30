@@ -3,6 +3,7 @@ import type { FlowNode, FlowNodeDefinition, FlowThreadNodeState, InputSchema, So
 import type { MaybeLiteral } from '@unshared/types'
 import type { Peer } from 'crossws'
 import type { FlowSessionEventPayload, FlowSessionInstance } from './resolveFlowSession'
+import { getModuleNodes } from '@nwrx/core'
 import { MODULES } from './constants'
 
 export interface FlowSessionParticipantJSON {
@@ -88,7 +89,7 @@ export interface FlowThreadNodeJSON extends FlowNodeDefinitionJSON {
   output: Record<string, unknown>
 }
 
-export function serializeCategories() {
+export async function serializeCategories() {
   const categories: FlowCategoryNodesJSON[] = [{
     kind: 'uncategorized',
     name: 'Uncategorized',
@@ -100,9 +101,9 @@ export function serializeCategories() {
   // --- Collect all the categories from the module nodes.
   for (const module of MODULES) {
     if (!module.nodes) continue
-    for (const key in module.nodes) {
-      const node = module.nodes[key]
-      const nodeJson = serializeNodeDefinition(node as FlowNodeDefinition)
+    const nodes = await getModuleNodes(module, '')
+    for (const node of nodes) {
+      const nodeJson = serializeNodeDefinition(node)
 
       // --- If the node has no category, add it to the uncategorized category.
       if (!nodeJson.categoryKind) {
@@ -212,7 +213,7 @@ export async function serializeFlowSession(session: FlowSessionInstance, peer: P
     icon: 'i-carbon:flow',
     description: session.entity.description ?? '',
     nodes,
-    categories: serializeCategories(),
+    categories: await serializeCategories(),
     isRunning: session.thread.isRunning,
     events: [],
     secrets: session.entity.project?.secrets?.map(secret => secret.name) ?? [],
