@@ -40,15 +40,6 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
       v-model="model"
     />
 
-    <!-- Object -->
-    <!--
-      <EditorPanelDataDetailObject
-      v-else-if="typeof model === 'object' && model !== null"
-      v-model="model"
-      :socket="socket"
-      />
-    -->
-
     <!-- Object / Recrusive -->
     <template v-else-if="typeof model === 'object' && model !== null">
       <EditorPanelData

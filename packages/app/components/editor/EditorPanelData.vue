@@ -36,10 +36,6 @@ function toggle() {
   if (!hasDetail.value) return
   isOpen.value = !isOpen.value
 }
-
-const cellStyle = computed(() => ({
-  width: `${200 - (props.depth ?? 0) * 5}px`,
-}))
 </script>
 
 <template>
@@ -59,18 +55,22 @@ const cellStyle = computed(() => ({
       :class="{ 'cursor-pointer': hasDetail }"
       @mousedown="() => toggle()">
 
+      <!-- Depth -->
+      <div
+        class="b-solid b-editor h-full transition"
+        :style="{ borderWidth: `${(depth ?? 0) * 4}px` }"
+      />
+
       <!-- Editable Name -->
       <input
         v-if="isNameEditable"
         v-model="name"
-        :style="cellStyle"
-        class="shrink-0 px-sm bg-transparent outline-none grow max-w-80">
+        class="shrink-0 px-sm bg-transparent outline-none w-2/5 max-w-80">
 
       <!-- Name -->
       <div
         v-else
-        :style="cellStyle"
-        class="text-start shrink-0 px-sm line-clamp-1 grow max-w-80"
+        class="text-start shrink-0 px-sm line-clamp-1 w-2/5 max-w-80"
         v-text="name"
       />
 
@@ -116,28 +116,24 @@ const cellStyle = computed(() => ({
 
     <!-- Detail -->
     <BaseCollapse
-      v-if="hasDetail"
+      v-if="isOpen && hasDetail"
       vertical
       :is-open="isOpen"
       class="w-full b-t b-editor transition-all overflow-hidden"
       :class="{ 'op-0 pointer-events-none': !isOpen }">
 
       <!-- Content -->
-      <Transition>
-        <div v-if="isOpen" class="b-l-6px b-editor">
-          <slot name="detail">
-            <EditorPanelDataDetail
-              v-model="model"
-              :node="node"
-              :nodes="nodes"
-              :socket="socket"
-              :is-editable="isEditable"
-              :is-clearable="isClearable"
-              :depth="depth ? depth + 1 : 1"
-            />
-          </slot>
-        </div>
-      </Transition>
+      <slot name="detail">
+        <LazyEditorPanelDataDetail
+          v-model="model"
+          :node="node"
+          :nodes="nodes"
+          :socket="socket"
+          :is-editable="isEditable"
+          :is-clearable="isClearable"
+          :depth="depth ? depth + 1 : 1"
+        />
+      </slot>
     </BaseCollapse>
   </div>
 </template>]
