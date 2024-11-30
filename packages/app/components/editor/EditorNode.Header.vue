@@ -44,8 +44,8 @@ function handleGrab(event: MouseEvent) {
       <!-- Circle/icon -->
       <div class="w-8 h-8 flex items-center justify-center">
         <template v-if="icon">
-          <img v-if="!icon.endsWith('.svg')" :src="icon" class="w-6 h-6">
-          <BaseIcon v-else :icon="icon" class="size-4 text-white" load />
+          <img v-if="!icon.endsWith('.svg')" :src="icon" class="w-6 h-6 rd">
+          <BaseIcon v-else :icon="icon" class="size-4 text-white rd" load />
         </template>
       </div>
 
@@ -55,7 +55,12 @@ function handleGrab(event: MouseEvent) {
       <!-- Tooltip content -->
       <template #tooltip>
         <div class="w-99 divide-y divide-editor">
-          <p v-if="description" v-markdown="description" class="px-md pt-md text-app markdown" />
+          <p
+            v-if="description"
+            v-markdown.html="description"
+            class="p-md text-app max-h-80 overflow-y-auto markdown"
+            @wheel.stop
+          />
           <p class="px-md py-sm font-medium text-app">
             (node): {{ kind }}
           </p>

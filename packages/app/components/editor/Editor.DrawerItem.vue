@@ -40,9 +40,9 @@ const colors = computed(() => {
     @dragstart="(event) => onDragStart(event)">
 
     <!-- Icon -->
-    <div class="flex items-center space-x-sm">
+    <div class="flex items-start space-x-sm">
       <template v-if="icon">
-        <img v-if="!icon.endsWith('.svg')" :src="icon" class="w-6 h-6">
+        <img v-if="!icon.endsWith('.svg')" :src="icon" class="size-6 rd">
         <BaseIcon v-else :icon="icon" class="size-6" load />
       </template>
 
