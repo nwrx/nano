@@ -51,7 +51,7 @@ export function openaiGetBody(data: InferenceData): OpenaiChatRequest {
   return {
     model: model.model,
     messages: [{ role: 'user', content: prompt }],
-    seed,
+    seed: seed === 0 ? undefined : seed,
     temperature,
     max_completion_tokens: maxCompletionTokens,
     tools: toolsBody.length > 0 ? toolsBody : undefined,
