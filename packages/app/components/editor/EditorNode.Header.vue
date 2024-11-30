@@ -43,7 +43,10 @@ function handleGrab(event: MouseEvent) {
 
       <!-- Circle/icon -->
       <div class="w-8 h-8 flex items-center justify-center">
-        <BaseIcon v-if="icon" :icon="icon" class="size-4 text-white" load />
+        <template v-if="icon">
+          <img v-if="!icon.endsWith('.svg')" :src="icon" class="w-6 h-6">
+          <BaseIcon v-else :icon="icon" class="size-4 text-white" load />
+        </template>
       </div>
 
       <!-- Title -->
