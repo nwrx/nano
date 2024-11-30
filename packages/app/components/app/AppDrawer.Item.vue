@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { NavItem } from '~/utils/types'
-
-defineProps<{ isOpen?: boolean } & NavItem>()
+defineProps<NavItem & { isOpen?: boolean }>()
 </script>
 
 <template>
