@@ -16,6 +16,7 @@ export const nodeModelMistralai = defineLanguageModel({
   allowCustomModel: true,
 
   getBody: (data: InferenceData) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { max_completion_tokens, seed, ...body } = openaiGetBody(data)
     return { max_tokens: max_completion_tokens, ...body } as OpenaiChatRequest
   },
