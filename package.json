@@ -17,6 +17,9 @@
         "meow",
         "@typescript-eslint/parser"
       ]
+    },
+    "patchedDependencies": {
+      "@unshared/client": "patches/@unshared__client.patch"
     }
   },
   "scripts": {
@@ -70,7 +73,6 @@
     ],
     "dts": true,
     "clean": true,
-    "silent": true,
     "splitting": false,
     "sourcemap": true,
     "treeshaking": true,
