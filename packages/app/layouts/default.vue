@@ -124,6 +124,10 @@ const { setLocale, locale } = useI18n()
   margin-top: 0;
 }
 
+.markdown > *:last-child {
+  margin-bottom: 0;
+}
+
 .markdown h1 {
   font-size: 1.5rem;
   font-weight: 600;
