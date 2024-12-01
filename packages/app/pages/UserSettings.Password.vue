@@ -17,6 +17,12 @@ onMounted(async() => {
 
 <template>
   <UserSettings>
-    <UserSettingsPassword @submit="(data) => user.setPassword(data)" />
+    <UserSettingsPassword
+      @submit="(oldPassword, newPassword, newPasswordConfirm) => user.setPassword({
+        oldPassword,
+        newPassword,
+        newPasswordConfirm,
+      })"
+    />
   </UserSettings>
 </template>
