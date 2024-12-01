@@ -7,7 +7,7 @@ defineProps<{
 </script>
 
 <template>
-  <div class="flex items-center p-sm space-x-md">
+  <div class="flex items-center p-sm space-x-md text-start font-normal">
     <img :src="avatarUrl" class="size-12 rounded-full">
     <div>
       <p class="font-medium">
