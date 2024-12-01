@@ -1,4 +1,4 @@
-import type { ModuleUser } from '../index'
+import type { ModuleUser, UserObject } from '../index'
 import { createHttpRoute } from '@unserved/server'
 import { parseBoolean } from '@unshared/string'
 import { assertNumberPositiveStrict, assertString, assertStringNotEmpty, assertStringNumber, assertUndefined, createSchema } from '@unshared/validation'
@@ -17,7 +17,7 @@ export function userSearch(this: ModuleUser) {
       }),
     },
 
-    async({ event, query }) => {
+    async({ event, query }): Promise<UserObject[]> => {
       const { user } = await this.authenticate(event)
       const { search, page = 1, limit = 10, withProfile = false, withSessions = false } = query
 
