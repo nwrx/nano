@@ -1,11 +1,11 @@
 <script setup lang="ts">
 const props = defineProps<{
-  modelValue: boolean
-  workspace: string
-  project: string
-  title: string
-  username: string
-  userDisplayName: string
+  modelValue?: boolean
+  workspace?: string
+  project?: string
+  title?: string
+  username?: string
+  userDisplayName?: string
 }>()
 
 const emit = defineEmits<{

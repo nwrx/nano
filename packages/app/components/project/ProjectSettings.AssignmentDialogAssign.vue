@@ -2,11 +2,11 @@
 import type { UserObject } from '@nwrx/api'
 
 const props = defineProps<{
-  workspace: string
-  project: string
-  title: string
-  modelValue: boolean
-  searchUsers: (search: string) => Promise<UserObject[]>
+  workspace?: string
+  project?: string
+  title?: string
+  modelValue?: boolean
+  searchUsers?: (search: string) => Promise<UserObject[]>
 }>()
 
 const emit = defineEmits<{
@@ -22,6 +22,7 @@ const username = ref<string>()
 
 watch(search, async() => {
   if (!search.value) return
+  if (!props.searchUsers) return
   users.value = await props.searchUsers(search.value)
 }, { immediate: true })
 </script>
