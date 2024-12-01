@@ -1,5 +1,5 @@
 import type { Peer } from 'crossws'
-import type { ModuleFlow } from '..'
+import type { ModuleFlow } from '../..'
 import type { FlowSessionInstance } from './resolveFlowSession'
 
 /**

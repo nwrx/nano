@@ -4,11 +4,11 @@ import type { FlowThread } from '@nwrx/core'
 import type { ObjectLike } from '@unshared/types'
 import type { Peer } from 'crossws'
 import type { Repository } from 'typeorm'
-import type { Flow as FlowEntity } from '../entities'
+import type { Flow as FlowEntity } from '../../entities'
 import type { FlowSessionMessage } from './flowSessionMessageSchema'
 import type { FlowJSON, FlowThreadNodeJSON } from './serializeFlowSession'
 import { randomUUID } from 'node:crypto'
-import { resolveFlowInstance } from './resolveFlowInstance'
+import { resolveFlowInstance } from '../resolveFlowInstance'
 import { serializeFlowSession, serializeNode } from './serializeFlowSession'
 
 export interface FlowSessionParticipant {
