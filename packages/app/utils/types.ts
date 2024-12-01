@@ -7,6 +7,14 @@ export type Size = 'large' | 'medium' | 'small' | 'xlarge' | 'xsmall'
 export type Variant = MaybeLiteral<keyof typeof COLORS>
 export type Alignment = 'center' | 'left' | 'right'
 
+export interface Stringtable {
+  fr?: string
+  en?: string
+  de?: string
+  es?: string
+  zh?: string
+}
+
 export interface NavItem {
   icon?: string
   label?: string
