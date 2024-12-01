@@ -2,11 +2,11 @@
 <script setup lang="ts">
 import type { BaseButtonProps } from '@unshared/vue'
 
-const props = defineProps<{
+const props = defineProps<BaseButtonProps & {
   icon?: string
   label?: string
   isActive?: boolean
-} & BaseButtonProps>()
+}>()
 </script>
 
 <template>
