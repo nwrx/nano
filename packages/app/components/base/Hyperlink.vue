@@ -14,7 +14,7 @@ const props = defineProps<BaseButtonProps & {
 </script>
 
 <template>
-  <BaseButton v-bind="props" class="button hover:button-hover space-x-xs group">
+  <BaseButton v-bind="props" class="hyperlink space-x-xs relative group">
 
     <!-- Prepend -->
     <BaseIcon
@@ -25,9 +25,9 @@ const props = defineProps<BaseButtonProps & {
 
     <!-- Content -->
     <slot v-if="label || $slots.default">
-      <span>
-        {{ label }}
-      </span>
+      <div>
+        <span>{{ label }}</span>
+      </div>
     </slot>
 
     <!-- Append -->
@@ -40,6 +40,15 @@ const props = defineProps<BaseButtonProps & {
         'translate-x-0 group-hover:translate-x-1': iconExpand,
         'rotate-0 group-hover:rotate-180': iconFlip,
       }"
+    />
+
+    <!-- Underline -->
+    <span
+      class="
+        absolute h-px w-full bg-current bottom-0 left-0
+        transform scale-x-0 group-hover:scale-x-100
+        transition-transform duration-fast !m-0
+      "
     />
   </BaseButton>
 </template>

@@ -16,7 +16,6 @@ defineProps<{
       v-if="iconPrepend || icon"
       :icon="iconPrepend || icon"
       :load="iconLoad"
-      class="size-4"
     />
 
     <!-- Content -->
@@ -31,7 +30,6 @@ defineProps<{
       v-if="iconAppend"
       :icon="iconAppend"
       :load="iconLoad"
-      class="size-4"
     />
   </BaseBadge>
 </template>

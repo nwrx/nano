@@ -16,7 +16,14 @@ export const COLORS = {
   success: createColorPalette('#5DB65A', { stepUp: 11, stepDown: 10, hueShift: 10 }),
 }
 
-type Theme = THEME.ThemeBadge & THEME.ThemeHint & THEME.ThemeInput & ThemeUno
+type Theme =
+  & THEME.ThemeBadge
+  & THEME.ThemeButton
+  & THEME.ThemeHint
+  & THEME.ThemeHyperlink
+  & THEME.ThemeInput
+  & ThemeUno
+
 export default defineConfig<Theme>({
 
   /**
@@ -48,6 +55,8 @@ export default defineConfig<Theme>({
     THEME.ruleBadge,
     THEME.ruleHint,
     THEME.ruleInput,
+    THEME.ruleButton,
+    THEME.ruleLink,
   ],
 
   /**
@@ -259,62 +268,29 @@ export default defineConfig<Theme>({
       },
     },
 
-    // Badge
-    // badgeColor: {
-    //   DEFAULT: {
-    //     background: COLORS.primary[100],
-    //     foreground: COLORS.primary[800],
-    //     inverse: COLORS.primary[900],
-    //   },
-    //   primary: {
-    //     background: COLORS.primary[600],
-    //     foreground: COLORS.primary[50],
-    //   },
-    //   secondary: {
-    //     foreground: COLORS.secondary[50],
-    //     background: COLORS.secondary[500],
-    //   },
-    //   success: {
-    //     foreground: COLORS.success[50],
-    //     background: COLORS.success[500],
-    //     inverse: COLORS.success[700],
-    //   },
-    //   danger: {
-    //     foreground: COLORS.danger[50],
-    //     background: COLORS.danger[500],
-    //     inverse: COLORS.danger[700],
-    //   },
-    //   warning: {
-    //     foreground: COLORS.warning[50],
-    //     background: COLORS.warning[500],
-    //     inverse: COLORS.warning[700],
-    //   },
-    // },
-
     badgeVariant: {
       DEFAULT: {
         height: '1.5rem',
-        spacing: '0.5rem',
         fontSize: '0.875rem',
+        paddingLeft: '0.5rem',
+        paddingRight: '0.5rem',
         fontWeight: '500',
+        borderWidth: '1px',
         borderRadius: '0.25rem',
-        borderSize: '1px',
       },
       sm: {
         height: '1.25rem',
-        spacing: '0.25rem',
         fontSize: '0.75rem',
         fontWeight: '600',
+        borderWidth: '1px',
         borderRadius: '0.25rem',
-        borderSize: '1px',
       },
       lg: {
         height: '2.5rem',
-        spacing: '1rem',
         fontWeight: '600',
         fontSize: '1.25rem',
+        borderWidth: '2px',
         borderRadius: '0.25rem',
-        borderSize: '2px',
       },
     },
     badgeBackground: {
@@ -374,6 +350,67 @@ export default defineConfig<Theme>({
         borderRadius: '0.25rem',
         borderSize: '1px',
         padding: '1.5rem',
+      },
+    },
+
+    // Button
+    buttonColor: {
+      DEFAULT: COLORS.primary[900],
+      primary: COLORS.primary[600],
+      secondary: COLORS.secondary[500],
+      success: COLORS.success[800],
+      danger: COLORS.danger[50],
+      warning: COLORS.warning[500],
+      light: COLORS.primary[50], // Added light variant
+    },
+    buttonBackground: {
+      DEFAULT: COLORS.primary[100],
+      primary: COLORS.primary[100],
+      secondary: COLORS.secondary[200],
+      success: COLORS.success[300],
+      danger: COLORS.danger[400],
+      warning: COLORS.warning[200],
+      light: COLORS.primary[200], // Added light variant
+    },
+    buttonBorderColor: {
+      DEFAULT: COLORS.primary[100],
+      primary: COLORS.primary[200],
+      secondary: COLORS.secondary[200],
+      success: COLORS.success[300],
+      danger: COLORS.danger[400],
+      warning: COLORS.warning[500],
+      light: COLORS.primary[300], // Added light variant
+    },
+    buttonVariant: {
+      DEFAULT: {
+        fontSize: '0.875rem',
+        borderRadius: '0.25rem',
+        borderWidth: '1px',
+        paddingLeft: '0.50rem',
+        paddingRight: '0.50rem',
+        paddingTop: '0.375rem',
+        paddingBottom: '0.375rem',
+        opacity: '0.8',
+      },
+      hover: {
+        opacity: '1',
+      },
+    },
+
+    // Link
+    hyperlinkColor: {
+      DEFAULT: COLORS.primary[800],
+      primary: COLORS.primary[600],
+    },
+    hyperlinkVariant: {
+      DEFAULT: {
+        textDecoration: 'none',
+        opacity: '0.8',
+        cursor: 'pointer',
+      },
+      hover: {
+        textDecoration: 'underline',
+        opacity: '1',
       },
     },
   },
@@ -533,6 +570,38 @@ export default defineConfig<Theme>({
             success: `${COLORS.success[800]}10`,
             danger: `${COLORS.danger[600]}10`,
             warning: `${COLORS.warning[600]}10`,
+          },
+
+          // Button
+          buttonColor: {
+            DEFAULT: COLORS.primary[50],
+            primary: COLORS.primary[50],
+            secondary: COLORS.secondary[50],
+            success: COLORS.success[500],
+            danger: COLORS.danger[500],
+            warning: COLORS.warning[50],
+          },
+          buttonBackground: {
+            DEFAULT: COLORS.primary[700],
+            primary: COLORS.primary[500],
+            secondary: COLORS.secondary[500],
+            success: 'transparent',
+            danger: `${COLORS.danger[500]}10`,
+            warning: COLORS.warning[500],
+          },
+          buttonBorderColor: {
+            DEFAULT: COLORS.primary[800],
+            primary: COLORS.primary[600],
+            secondary: COLORS.secondary[500],
+            success: COLORS.success[500],
+            danger: COLORS.danger[500],
+            warning: COLORS.warning[500],
+          },
+
+          // Link
+          hyperlinkColor: {
+            DEFAULT: COLORS.primary[50],
+            primary: COLORS.primary[400],
           },
         },
       },
