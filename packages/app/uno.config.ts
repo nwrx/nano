@@ -361,7 +361,6 @@ export default defineConfig<Theme>({
       success: COLORS.success[800],
       danger: COLORS.danger[50],
       warning: COLORS.warning[500],
-      light: COLORS.primary[50], // Added light variant
     },
     buttonBackground: {
       DEFAULT: COLORS.primary[100],
@@ -370,7 +369,6 @@ export default defineConfig<Theme>({
       success: COLORS.success[300],
       danger: COLORS.danger[400],
       warning: COLORS.warning[200],
-      light: COLORS.primary[200], // Added light variant
     },
     buttonBorderColor: {
       DEFAULT: COLORS.primary[100],
@@ -379,7 +377,6 @@ export default defineConfig<Theme>({
       success: COLORS.success[300],
       danger: COLORS.danger[400],
       warning: COLORS.warning[500],
-      light: COLORS.primary[300], // Added light variant
     },
     buttonVariant: {
       DEFAULT: {
@@ -577,17 +574,17 @@ export default defineConfig<Theme>({
             DEFAULT: COLORS.primary[50],
             primary: COLORS.primary[50],
             secondary: COLORS.secondary[50],
-            success: COLORS.success[500],
-            danger: COLORS.danger[500],
-            warning: COLORS.warning[50],
+            success: COLORS.success[400],
+            danger: COLORS.danger[400],
+            warning: COLORS.warning[400],
           },
           buttonBackground: {
             DEFAULT: COLORS.primary[700],
             primary: COLORS.primary[500],
             secondary: COLORS.secondary[500],
-            success: 'transparent',
-            danger: `${COLORS.danger[500]}10`,
-            warning: COLORS.warning[500],
+            success: `${COLORS.success[500]}40`,
+            danger: `${COLORS.danger[500]}20`,
+            warning: `${COLORS.warning[500]}40`,
           },
           buttonBorderColor: {
             DEFAULT: COLORS.primary[800],
