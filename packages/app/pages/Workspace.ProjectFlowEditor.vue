@@ -1,6 +1,6 @@
 <script setup lang="ts">
 definePageMeta({
-  name: 'FlowEditor',
+  name: 'WorkspaceProjectFlowEditor',
   path: '/:workspace/:project/:flow',
   middleware: ['redirect-when-guest', 'abort-reserved'],
 })
