@@ -35,7 +35,7 @@ export class FlowThread extends Emitter<FlowThreadEvents> {
     }
   }
 
-  private areIncomingNodesDone(id: string) {
+  private isReady(id: string) {
     const links = this.flow.getLinks()
     const incomingLinks = links.filter(link => link.targetId === id)
     for (const link of incomingLinks) {
@@ -118,7 +118,7 @@ export class FlowThread extends Emitter<FlowThreadEvents> {
           for (const link of outgoingLinks) {
             const targetNode = this.nodes.get(link.targetId)
             if (!targetNode) continue
-            if (!this.areIncomingNodesDone(link.targetId)) continue
+            if (!this.isReady(link.targetId)) continue
             void targetNode.process()
           }
 
