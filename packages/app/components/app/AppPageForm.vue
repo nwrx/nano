@@ -46,13 +46,11 @@ const emit = defineEmits<{
       <Button
         v-if="label"
         size="md"
-        filled
-        variant="success"
         :label="label"
         icon-prepend="i-carbon:save"
         icon-append="i-carbon:chevron-right"
         icon-expand
-        class="self-end mt-2"
+        class="button-success self-end mt-2"
         type="submit"
       />
     </form>

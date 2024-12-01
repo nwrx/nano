@@ -3,17 +3,17 @@
 import type { BaseDialogProps, BaseDialogSlotProps } from '@unshared/vue'
 import { vMarkdown, type VNode } from '#imports'
 
-const props = defineProps<{
+const props = defineProps<BaseDialogProps & {
   title?: string
   text?: string
   icon?: string
   classHint?: string
   classContent?: string
-  variant?: Variant
+  classButton?: string
   disabled?: boolean
   labelConfirm?: string
   labelCancel?: string
-} & BaseDialogProps>()
+}>()
 
 const emit = defineEmits<{
   close: []
@@ -27,7 +27,7 @@ const slots = defineSlots<{
   actions: (slot: BaseDialogSlotProps) => VNode
 }>()
 
-const { t, locale } = useI18n({ useScope: 'local' })
+const { t, locale } = useI18n()
 const model = useVModel(props, 'modelValue', emit, { passive: true })
 </script>
 
@@ -101,22 +101,17 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
         <div class="p-md w-full bg-emphasized">
           <slot name="actions" v-bind="slot">
             <div class="flex items-center justify-between w-full">
-              <Button
+              <Hyperlink
                 :label="labelCancel ?? t('cancel')"
                 icon="i-carbon:close"
-                size="sm"
-                class="mr-xl"
-                link
+                class="text-sm mr-xl"
                 @click="() => slot.close()"
               />
               <Button
-                light
-                outlined
-                :variant="variant ?? 'success'"
+                :class="classButton ?? 'button-success'"
                 :label="labelConfirm ?? t('confirm')"
                 icon-append="i-carbon:chevron-right"
                 icon-expand
-                size="sm"
                 :disabled="disabled"
                 @click="() => slot.returnValue(true)"
               />
