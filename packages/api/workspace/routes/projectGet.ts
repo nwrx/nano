@@ -40,8 +40,6 @@ export function projectGet(this: ModuleWorkspace) {
         },
         order: {
           name: 'ASC',
-          secrets: { name: 'ASC' },
-          variables: { name: 'ASC' },
         },
       })
 
