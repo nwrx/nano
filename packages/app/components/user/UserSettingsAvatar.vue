@@ -7,7 +7,7 @@ const emit = defineEmits<{
   submit: [avatarUrl: File]
 }>()
 
-const { t } = useI18n({ useScope: 'local' })
+const { t } = useI18n()
 </script>
 
 <template>

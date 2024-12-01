@@ -11,7 +11,7 @@ const emit = defineEmits<{
 }>()
 
 // --- Localization
-const { t } = useI18n({ useScope: 'local' })
+const { t } = useI18n()
 
 // --- Two-way binding
 const displayName = useVModel(props, 'displayName', emit, { passive: true })
