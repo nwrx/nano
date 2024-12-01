@@ -12,7 +12,7 @@ const emit = defineEmits<{
   submit: [settings: SetSettingsOptions]
 }>()
 
-const { t } = useI18n({ useScope: 'local' })
+const { t } = useI18n()
 const url = computed(() => `${CONSTANTS.appHost}/${props.workspace}/`)
 const title = useVModel(props, 'title', emit, { passive: true })
 const description = useVModel(props, 'description', emit, { passive: true })
@@ -30,8 +30,12 @@ const description = useVModel(props, 'description', emit, { passive: true })
         <template #newline>
           <br><br>
         </template>
-        <template #documentation="text">
-          <Button link variant="primary" :label="t('text.documentation')" :href="CONSTANTS.appCanonicalUrl" />
+        <template #documentation>
+          <Hyperlink
+            variant="primary"
+            :label="t('text.documentation')"
+            :to="CONSTANTS.appCanonicalUrl"
+          />
         </template>
       </I18nT>
     </template>

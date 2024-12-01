@@ -10,7 +10,7 @@ const emit = defineEmits<{
   'submit': []
 }>()
 
-const { t } = useI18n({ useScope: 'local' })
+const { t } = useI18n()
 const model = useVModel(props, 'modelValue', emit, { passive: true })
 </script>
 
@@ -18,6 +18,7 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
   <AppDialog
     v-model="model"
     class-hint="hint-warning"
+    class-button="button-warning"
     icon="i-carbon:warning"
     :title="t('title', { username: props.username })"
     :text="t('hint')"

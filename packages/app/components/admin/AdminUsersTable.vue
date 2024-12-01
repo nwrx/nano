@@ -14,7 +14,7 @@ const emit = defineEmits<{
 }>()
 
 // --- Load i18n instance.
-const { t } = useI18n({ useScope: 'local' })
+const { t } = useI18n()
 </script>
 
 <template>

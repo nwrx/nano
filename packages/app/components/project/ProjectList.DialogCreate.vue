@@ -12,7 +12,7 @@ const emit = defineEmits<{
   'submit': [options: CreateProjectOptions]
 }>()
 
-const { t } = useI18n({ useScope: 'local' })
+const { t } = useI18n()
 const model = useVModel(props, 'modelValue', emit, { passive: true })
 const options = ref<CreateProjectOptions>({
   name: '',

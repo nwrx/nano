@@ -13,7 +13,7 @@ const emit = defineEmits<{
   'submitDelete': [name: string]
 }>()
 
-const { t } = useI18n({ useScope: 'local' })
+const { t } = useI18n()
 const variables = useVModel(props, 'variables', emit, { passive: true })
 const isDialogCreateOpen = ref(false)
 </script>
@@ -23,13 +23,6 @@ const isDialogCreateOpen = ref(false)
     vertical
     :title="t('title')"
     :text="t('text')">
-
-    <!-- Create Button -->
-    <Button
-      class="mb-4"
-      @click="() => isDialogCreateOpen = true">
-      {{ t('create') }}
-    </Button>
 
     <!-- Variables List -->
     <div class="w-full b b-app rd">
@@ -83,6 +76,16 @@ const isDialogCreateOpen = ref(false)
         </template>
       </BaseTable>
     </div>
+
+    <!-- Create Button -->
+    <Hyperlink
+      eager
+      class="text-sm ml-auto mb-4"
+      icon="i-carbon:add"
+      icon-append="i-carbon:chevron-right"
+      :label="t('create')"
+      @click="() => isDialogCreateOpen = true"
+    />
 
     <!-- Create Dialog -->
     <ProjectSettingsVariablesDialogCreate

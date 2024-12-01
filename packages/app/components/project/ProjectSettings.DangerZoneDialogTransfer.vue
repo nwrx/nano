@@ -13,7 +13,7 @@ const emit = defineEmits<{
   'submit': [value: string]
 }>()
 
-const { t } = useI18n({ useScope: 'local' })
+const { t } = useI18n()
 const search = ref('')
 const model = useVModel(props, 'modelValue', emit, { passive: true })
 const items = ref<UserObject[]>([])
@@ -31,6 +31,7 @@ watch(search, async() => {
     v-model="model"
     icon="i-carbon:warning"
     class-hint="hint-danger"
+    class-button="button-danger"
     :title="t('title', { title })"
     :text="t('text', { workspace, project })"
     :label-cancel="t('button.cancel')"

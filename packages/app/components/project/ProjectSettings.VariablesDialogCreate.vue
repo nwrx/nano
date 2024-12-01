@@ -9,7 +9,7 @@ const emit = defineEmits<{
   'submit': [name: string, value: string]
 }>()
 
-const { t } = useI18n({ useScope: 'local' })
+const { t } = useI18n()
 const isOpen = useVModel(props, 'modelValue', emit, { passive: true })
 const newName = ref('')
 const newValue = ref('')
@@ -26,6 +26,7 @@ function submit() {
     v-model="isOpen"
     icon="i-carbon:add"
     class-hint="hint-success"
+    class-button="button-success"
     :title="t('title')"
     :text="t('text', { workspace, project })"
     :label-cancel="t('cancel')"

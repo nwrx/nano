@@ -14,7 +14,7 @@ const emit = defineEmits<{
   submitTransfer: [value: string]
 }>()
 
-const { t } = useI18n({ useScope: 'local' })
+const { t } = useI18n()
 const isDialogDeleteOpen = ref(false)
 const isDialogRenameOpen = ref(false)
 const isDialogTransferOpen = ref(false)
@@ -30,9 +30,7 @@ const isDialogTransferOpen = ref(false)
           <br><br>
         </template>
         <template #guide>
-          <Button
-            link
-            variant="primary"
+          <Hyperlink
             :to="CONSTANTS.appCanonicalUrl"
             :label="t('text.guide')"
           />
@@ -44,6 +42,7 @@ const isDialogTransferOpen = ref(false)
     <AppPageFormActions class="border-danger">
       <AppPageFormAction
         class="border-danger"
+        class-button="button-danger"
         icon="i-carbon:edit"
         :title="t('action.rename.title')"
         :text="t('action.rename.text')"
@@ -52,6 +51,7 @@ const isDialogTransferOpen = ref(false)
       />
       <AppPageFormAction
         class="border-danger"
+        class-button="button-danger"
         icon="i-carbon:status-change"
         :title="t('action.transfer.title')"
         :text="t('action.transfer.text')"
@@ -60,6 +60,7 @@ const isDialogTransferOpen = ref(false)
       />
       <AppPageFormAction
         class="border-danger"
+        class-button="button-danger"
         icon="i-carbon:trash-can"
         :title="t('action.delete.title')"
         :text="t('action.delete.text')"

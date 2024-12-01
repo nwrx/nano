@@ -20,7 +20,7 @@ const emit = defineEmits<{
 const isDialogManageOpen = ref(false)
 const isDialogUnassignOpen = ref(false)
 
-const { t } = useI18n({ useScope: 'local' })
+const { t } = useI18n()
 const model = useVModel(props, 'modelValue', emit, { passive: true })
 const permissions = useVModel(props, 'permissions', emit, { passive: true })
 </script>
