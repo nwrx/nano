@@ -12,11 +12,11 @@ export function serializeThread(thread: Thread): FlowV1 {
     for (const key in meta) {
       const metaKey = `_${key}`
       const metaValue = meta[key]
-      meta[metaKey] = metaValue
+      metaProperties[metaKey] = metaValue
     }
 
     // --- Add the component instance to the components object.
-    components[id] = { kind, ...metaProperties, ...input }
+    components[id] = { kind, ...input, ...metaProperties }
   }
 
   return {
