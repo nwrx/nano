@@ -1,19 +1,20 @@
-import type { FlowNodeDefinition } from '../module'
-import { Core } from '@nwrx/module-core'
-import { Flow } from '../flow'
-import { createReference } from '../flow/createReference'
+import type { Component } from '../module'
+import { Core } from '../../module-core'
+import { Thread } from '../thread'
+import { createReference } from '../utils'
+import { addComponentInstance } from '../utils/addComponentInstance'
 
-const flow = new Flow([], {
-  resolveNode: [
+const thread = new Thread({
+  componentResolvers: [
     (kind) => {
       const moduleInstance = Object.values(Core.nodes).find(n => n.kind === kind)
       if (!moduleInstance) throw new Error(`Module not found: ${kind}`)
-      return moduleInstance as unknown as FlowNodeDefinition
+      return moduleInstance as unknown as Component
     },
   ],
 })
 
-flow.createNode({
+addComponentInstance(thread, {
   id: 'input-message',
   kind: 'core/input',
   input: {
@@ -26,19 +27,19 @@ flow.createNode({
   },
 })
 
-flow.createNode({
+addComponentInstance(thread, {
   id: 'transform-uppercase',
   kind: 'core/transform',
   input: {
     transform: 'uppercase',
     value: createReference('fromNode', {
       id: 'input-message',
-      key: 'result',
+      key: 'value',
     }),
   },
 })
 
-flow.createNode({
+addComponentInstance(thread, {
   id: 'message',
   kind: 'core/output',
   input: {

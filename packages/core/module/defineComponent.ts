@@ -9,7 +9,7 @@ import { assertNotNil, assertStringNotEmpty } from '@unshared/validation'
  * contain the input values and additional parameters that can be used to
  * process the data.
  */
-export interface FlowNodeContext<
+export interface NodeContext<
   T extends ObjectLike = ObjectLike,
   U extends ObjectLike = ObjectLike,
 > {
@@ -18,14 +18,14 @@ export interface FlowNodeContext<
    * The data that is passed to the node when it is executed. The data comes
    * from the previous nodes or can be statically defined in the flow.
    */
-  input: T
+  data: T
 
   /**
    * The current result that is produced by the node when it is executed. The
    * result is used to pass the output of the node to the next nodes in the flow.
    * The result can be modified by the node to produce the desired output.
    */
-  output: U
+  result: U
 
   /**
    * A function to dispatch a custom 'trace' event with the given data. The
@@ -42,7 +42,7 @@ export interface FlowNodeContext<
    *
    * @example
    *
-   * const node = defineNode({
+   * const node = defineComponent({
    *   ...
    *   process: ({ abortSignal }) => {
    *     fetch('https://api.example.com/data', { signal: abortSignal })
@@ -61,7 +61,7 @@ export interface FlowNodeContext<
  * @template T The schema of the data that the node expects.
  * @template U The schema of the result that the node produces.
  */
-export interface FlowNodeDefinition<
+export interface Component<
   K extends string = string,
   T extends InputSchema = InputSchema,
   U extends OutputSchema = OutputSchema,
@@ -141,7 +141,7 @@ export interface FlowNodeDefinition<
    *   },
    * })
    */
-  process?: (context: FlowNodeContext<
+  process?: (context: NodeContext<
     InferInput<NoInfer<T>>,
     InferOutput<NoInfer<U>>
   >) => MaybePromise<InferOutput<U>>
@@ -155,7 +155,7 @@ export interface FlowNodeDefinition<
  * @example
  *
  * // Define a flow node that parses JSON data.
- * const jsonParse = defineNode({
+ * const jsonParse = defineComponent({
  *   name: 'parse-json',
  *   label: 'JSON Parse',
  *   icon: 'https://api.iconify.design/carbon:json.svg',
@@ -185,11 +185,11 @@ export interface FlowNodeDefinition<
  *   }),
  * })
  */
-export function defineNode<
+export function defineComponent<
   K extends string,
   T extends InputSchema,
   U extends OutputSchema,
->(options: FlowNodeDefinition<K, T, U>): FlowNodeDefinition<K, T, U> {
+>(options: Component<K, T, U>): Component<K, T, U> {
   assertNotNil(options)
   assertStringNotEmpty(options.kind)
   return {
@@ -201,5 +201,5 @@ export function defineNode<
     inputSchema: options.inputSchema,
     outputSchema: options.outputSchema,
     process: options.process,
-  } as FlowNodeDefinition<K, T, U>
+  } as Component<K, T, U>
 }

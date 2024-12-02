@@ -1,15 +1,15 @@
 import type { ObjectLike } from '@unshared/types'
 import type { InputSchema, InputSocket, OutputSchema, OutputSocket } from '../module'
-import type { ResolveReference } from './types'
+import type { ReferenceResolver } from '../thread'
 import { assertArray, assertObjectStrict } from '@unshared/validation'
-import { FlowError } from './createError'
+import { ThreadError } from './createError'
 import { isReference } from './createReference'
 import { ERRORS } from './errors'
 
 export interface ResolveSchemaOptions {
-  values?: ObjectLike
+  data?: ObjectLike
   schema?: InputSchema | OutputSchema
-  resolvers?: ResolveReference[]
+  resolvers?: ReferenceResolver[]
   skipErrors?: boolean
 }
 
@@ -31,7 +31,7 @@ export interface ResolveSchemaOptions {
  * // Resolve a reference value with a resolver.
  * const value = resolveSchemaValue({ $fromNode: { id: 'node-id', key: 'output' }, ...), { resolveReference }) // 'Hello, World!'
  */
-async function resolveSchemaValue(value: unknown, socket: InputSocket | OutputSocket, resolvers: ResolveReference[] = []): Promise<unknown> {
+async function resolveSchemaValue(value: unknown, socket: InputSocket | OutputSocket, resolvers: ReferenceResolver[] = []): Promise<unknown> {
 
   // --- If the value is a reference to a value, resolve the reference by calling the
   // --- resolveReference function that is passed in the options.
@@ -62,13 +62,13 @@ async function resolveSchemaValue(value: unknown, socket: InputSocket | OutputSo
  * const input = resolveSchema({ name: 'John Doe' }, { name: { type: string } }, []) // { name: 'John Doe' }
  */
 export async function resolveSchema(options: ResolveSchemaOptions): Promise<ObjectLike> {
-  const { values = {}, schema = {}, resolvers = [], skipErrors = false } = options
+  const { data = {}, schema = {}, resolvers = [], skipErrors = false } = options
   const resolved: ObjectLike = {}
   const errors: Record<string, Error> = {}
 
   // --- Iterate over the input schema and resolve the input values.
   for (const key in schema) {
-    const value = values[key]
+    const value = data[key]
     const socket = schema[key]
 
     // --- If the value is an array, resolve each value in the array.
@@ -99,7 +99,7 @@ export async function resolveSchema(options: ResolveSchemaOptions): Promise<Obje
 
   // --- If there are any errors, throw an error with the list of errors.
   if (!skipErrors && Object.keys(errors).length > 0) {
-    throw new FlowError({
+    throw new ThreadError({
       name: 'SCHEMA_RESOLVE_ERROR',
       message: 'Failed to resolve the schema.',
       context: errors,

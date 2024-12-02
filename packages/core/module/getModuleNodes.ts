@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
+import type { Component } from './defineComponent'
 import type { Module } from './defineModule'
-import type { FlowNodeDefinition } from './defineNode'
 
 /**
  * Given a `Module` object, list all the nodes matching the given search string.
@@ -11,10 +11,10 @@ import type { FlowNodeDefinition } from './defineNode'
  * @example
  *
  * // Search using the `Giphy` query.
- * const nodes = await getModuleNodes(module, 'Giphy') // [FlowNodeDefinition, ...]
+ * const nodes = await getModuleNodes(module, 'Giphy') // [Component, ...]
  */
 
-export async function getModuleNodes(module: Module, search: string): Promise<FlowNodeDefinition[]> {
+export async function getModuleNodes(module: Module, search: string): Promise<Component[]> {
   if (!module.nodes) return []
 
   // --- Resolve if async function.

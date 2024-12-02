@@ -80,7 +80,7 @@ export interface Category {
  * const CategoryMath = defineCategory({ kind: 'math', ... })
  *
  * // Assign a node to the math category.
- * const NodeAdd = defineNode({ kind: 'add', category: 'math', ... })
+ * const NodeAdd = defineComponent({ kind: 'add', category: 'math', ... })
  *
  * // Register the category and node in the module.
  * const module = defineModule({ nodes: [NodeAdd], categories: [CategoryMath] })

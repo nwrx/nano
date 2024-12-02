@@ -1,11 +1,11 @@
 import type { MaybePromise } from '@unshared/types'
-import type { FlowNodeDefinition } from './defineNode'
+import type { Component } from './defineComponent'
 import { assertNotNil, assertStringNotEmpty } from '@unshared/validation'
 
 /** The resolver for a flow node. */
 export type ModuleNodes =
-  | (() => MaybePromise<Record<string, FlowNodeDefinition<string, any, any>>>)
-  | Record<string, FlowNodeDefinition<string, any, any>>
+  | (() => MaybePromise<Record<string, Component<string, any, any>>>)
+  | Record<string, Component<string, any, any>>
 
 /** The options for defining a flow module. */
 export interface Module<K extends string = string> {
