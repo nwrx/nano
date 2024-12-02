@@ -1,11 +1,12 @@
+<!-- eslint-disable vue/prop-name-casing -->
 <script setup lang="ts" generic="U extends ToggleType">
 import type { WorkspaceProjectPermission } from '@nwrx/api'
 import type { BaseInputToggleProps, ToggleType } from '@unshared/vue'
 
-const props = defineProps<{
+const props = defineProps<BaseInputToggleProps<WorkspaceProjectPermission, U> & {
   label: string
   text: string
-} & BaseInputToggleProps<WorkspaceProjectPermission, U>>()
+}>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: WorkspaceProjectPermission]
