@@ -7,7 +7,7 @@ import { EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA, resolveSession, resolveSessionByP
 export function flowEditor(this: ModuleFlow) {
   return createWebSocketRoute(
     {
-      name: 'WS /ws/workspaces/:workspace/:project/:name',
+      name: 'WS /ws/workspaces/:workspace/:project/:name/editor',
       parseParameters: createSchema({
         workspace: assert.stringNotEmpty.with('Workspace name is required.'),
         project: assert.stringNotEmpty.with('Project name is required.'),
