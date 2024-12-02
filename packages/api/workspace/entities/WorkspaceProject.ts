@@ -98,8 +98,8 @@ export class WorkspaceProject extends BaseEntity {
    *
    * @returns The assignments grouped by users.
    */
-  get assignmentsByUser(): WorkspaceProjectUserPermissions[] | undefined {
-    if (!this.assignments) return
+  get assignmentsByUser(): WorkspaceProjectUserPermissions[] {
+    if (!this.assignments) return []
 
     // --- Group the assignments by user.
     const result: WorkspaceProjectUserPermissions[] = []
