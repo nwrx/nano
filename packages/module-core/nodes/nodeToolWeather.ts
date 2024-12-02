@@ -1,9 +1,9 @@
 import type { JSONSchema4 } from 'json-schema'
-import { defineNode } from '@nwrx/core'
+import { defineComponent } from '@nwrx/core'
 import { categoryLanguageModelTool } from '../categories'
 import { languageModelTool, string } from '../types'
 
-export const toolWeather = defineNode({
+export const toolWeather = defineComponent({
   kind: 'core/weather-tool',
   name: 'Weather',
   icon: 'https://api.iconify.design/carbon:sun.svg',
@@ -37,10 +37,10 @@ export const toolWeather = defineNode({
   },
 
   // --- On processing the node, fetch the weather information for the given location.
-  process: ({ input }) => ({
+  process: ({ data }) => ({
     weather: {
-      name: input.name,
-      description: input.description,
+      name: data.name,
+      description: data.description,
       schema: {
         type: 'object',
         required: ['location'],

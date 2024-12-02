@@ -1,5 +1,5 @@
 import type { JSONSchema4 } from 'json-schema'
-import { defineNode, FlowError } from '@nwrx/core'
+import { defineComponent, ThreadError } from '@nwrx/core'
 import { languageModelTool, string } from '@nwrx/module-core/types'
 import { google } from 'googleapis'
 import { categoryGoogleDrive } from '../categories'
@@ -8,7 +8,7 @@ export interface GoogleDriveDownloadToolInput {
   fileId: string
 }
 
-export const nodeGoogleDriveDownloadTool = defineNode({
+export const nodeGoogleDriveDownloadTool = defineComponent({
   kind: 'google/drive-read-tool',
   name: 'Google Drive - Read Tool',
   icon: 'https://api.iconify.design/logos:google-drive.svg',
@@ -49,7 +49,7 @@ export const nodeGoogleDriveDownloadTool = defineNode({
     },
   },
 
-  process: ({ input }) => ({
+  process: ({ data }) => ({
     tool: {
       name: input.name!,
       description: input.description!,
@@ -84,7 +84,7 @@ export const nodeGoogleDriveDownloadTool = defineNode({
         }
         catch (error) {
           const message = (error as Error).message
-          throw new FlowError({
+          throw new ThreadError({
             name: 'GOOGLE_DRIVE_DOWNLOAD_ERROR',
             message: `An error occurred while downloading the file from Google Drive: ${message}`,
             data,

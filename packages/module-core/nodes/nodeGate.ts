@@ -1,9 +1,9 @@
 import type { Type } from '@nwrx/core'
-import { defineNode } from '@nwrx/core'
+import { defineComponent } from '@nwrx/core'
 import { categoryBasic } from '../categories'
 import { boolean, string } from '../types'
 
-export const nodeGate = defineNode({
+export const nodeGate = defineComponent({
   kind: 'core/gate',
   name: 'Gate',
   icon: 'https://api.iconify.design/tabler:logic-and.svg',
@@ -89,8 +89,8 @@ export const nodeGate = defineNode({
     },
   },
 
-  process: ({ input }) => {
-    const { condition, value } = input
+  process: ({ data }) => {
+    const { condition, value } = data
     return {
       success: condition ? value : undefined,
       failure: condition ? undefined : value,

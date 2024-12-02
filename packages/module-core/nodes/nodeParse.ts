@@ -1,10 +1,10 @@
 import type { Type } from '@nwrx/core'
-import { defineNode } from '@nwrx/core'
+import { defineComponent } from '@nwrx/core'
 import * as YAML from 'yaml'
 import { categoryBasic } from '../categories'
 import { object, string } from '../types'
 
-export const nodeParse = defineNode({
+export const nodeParse = defineComponent({
   kind: 'core/parse',
   name: 'Parse',
   icon: 'https://api.iconify.design/carbon:data-format.svg',
@@ -49,8 +49,8 @@ export const nodeParse = defineNode({
     },
   },
 
-  process: ({ input }) => {
-    const { format, value } = input
+  process: ({ data }) => {
+    const { format, value } = data
     if (format === 'yaml') return { object: YAML.parse(value) as Record<string, unknown> }
     return { object: JSON.parse(value) as Record<string, unknown> }
   },

@@ -1,5 +1,5 @@
 import type { JSONSchema4 } from 'json-schema'
-import { defineNode } from '@nwrx/core'
+import { defineComponent } from '@nwrx/core'
 import { categoryLanguageModelTool } from '../categories'
 import { languageModelTool, string } from '../types'
 
@@ -9,7 +9,7 @@ export interface ArxivToolInput {
   max_results?: number
 }
 
-export const toolArxiv = defineNode({
+export const toolArxiv = defineComponent({
   kind: 'core/arxiv-tool',
   name: 'Arxiv',
   icon: 'https://api.iconify.design/mdi:book-open-page-variant.svg',
@@ -43,10 +43,10 @@ export const toolArxiv = defineNode({
     },
   },
 
-  process: ({ input }) => ({
+  process: ({ data }) => ({
     tool: {
-      name: input.name ?? 'query_arxiv_papers',
-      description: input.description ?? 'Given a search query, fetch research papers from arXiv matching the query.',
+      name: data.name ?? 'query_arxiv_papers',
+      description: data.description ?? 'Given a search query, fetch research papers from arXiv matching the query.',
       schema: {
         type: 'object',
         required: ['query'],

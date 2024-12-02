@@ -1,9 +1,9 @@
 import type { Type } from '@nwrx/core'
-import { defineNode } from '@nwrx/core'
+import { defineComponent } from '@nwrx/core'
 import { categoryBasic } from '../categories'
 import { string } from '../types'
 
-export const nodeFetch = defineNode({
+export const nodeFetch = defineComponent({
   kind: 'core/fetch',
   name: 'Fetch',
   icon: 'https://api.iconify.design/carbon:connect.svg',
@@ -81,8 +81,8 @@ export const nodeFetch = defineNode({
     },
   },
 
-  process: async({ input }) => {
-    const { baseApiURL, verb, query = {}, body = {}, headers = {} } = input
+  process: async({ data }) => {
+    const { baseApiURL, verb, query = {}, body = {}, headers = {} } = data
     const url = new URL(baseApiURL)
 
     // --- Add the query parameters to the URL.

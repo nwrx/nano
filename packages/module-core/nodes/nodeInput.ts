@@ -1,8 +1,8 @@
-import { defineNode, NODE_INPUT_KIND } from '@nwrx/core'
+import { defineComponent, NODE_INPUT_KIND } from '@nwrx/core'
 import { categoryBasic } from '../categories'
 import { boolean, string } from '../types'
 
-export const nodeInput = defineNode({
+export const nodeInput = defineComponent({
   kind: NODE_INPUT_KIND,
   name: 'Input',
   icon: 'https://api.iconify.design/carbon:arrow-down.svg',
@@ -45,12 +45,12 @@ export const nodeInput = defineNode({
     },
   },
 
-  process: ({ input, output }) => {
-    const { name, isOptional } = input
+  process: ({ data, result }) => {
+    const { name, isOptional } = data
 
     // --- The result of this node is set by the `Flow` instance on startup. This is why there is
     // --- almost no processing here. The value is simply passed through.
-    const { value } = output
+    const { value } = result
 
     // --- If the input is required but no value was provided, throw an error.
     if (!isOptional && !value)

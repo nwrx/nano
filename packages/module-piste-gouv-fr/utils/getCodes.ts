@@ -1,5 +1,5 @@
 /* eslint-disable sonarjs/prefer-single-boolean-return */
-import { FlowError } from '@nwrx/core'
+import { ThreadError } from '@nwrx/core'
 import { client } from './client'
 
 export interface GetCodesOptions {
@@ -26,7 +26,7 @@ export async function getCodes({ accessToken, query }: GetCodesOptions): Promise
 
     // --- Handle errors
     if (response.status !== 200) {
-      throw new FlowError({
+      throw new ThreadError({
         name: 'PISTE_SEARCH_ERROR',
         message: await response.text(),
       })

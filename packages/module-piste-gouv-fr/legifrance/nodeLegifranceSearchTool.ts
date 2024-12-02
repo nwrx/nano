@@ -1,11 +1,11 @@
 import type { JSONSchema4 } from 'json-schema'
-import { defineNode, FlowError } from '@nwrx/core'
+import { defineComponent, ThreadError } from '@nwrx/core'
 import { languageModelTool, string } from '@nwrx/module-core/types'
 import { categoryLegifrance } from '../categories'
 import { getAccessToken } from '../utils/getAccessToken'
 import { search } from '../utils/search'
 
-export const nodeLegifranceSearchTool = defineNode({
+export const nodeLegifranceSearchTool = defineComponent({
   kind: 'legifrance/search-tool',
   name: 'Legifrance - Search Tool',
   icon: 'https://api.iconify.design/flags:fr.svg',
@@ -49,10 +49,10 @@ export const nodeLegifranceSearchTool = defineNode({
     },
   },
 
-  process: ({ input }) => ({
+  process: ({ data }) => ({
     tool: {
-      name: input.name!,
-      description: input.description!,
+      name: data.name!,
+      description: data.description!,
       schema: {
         type: 'object',
         required: ['query'],
@@ -69,7 +69,7 @@ export const nodeLegifranceSearchTool = defineNode({
       } as JSONSchema4,
       call: async(data) => {
         try {
-          const { clientId, clientSecret } = input
+          const { clientId, clientSecret } = data as { clientId: string; clientSecret: string }
           const { query, code } = data as { query: string; code: string }
           const accessToken = await getAccessToken({ clientId, clientSecret })
           const documents = await search({ query, code, accessToken })
@@ -77,10 +77,10 @@ export const nodeLegifranceSearchTool = defineNode({
         }
         catch (error) {
           const message = (error as Error).message
-          throw new FlowError({
+          throw new ThreadError({
             name: 'LEGIFRANCE_SEARCH_ERROR',
             message: `An error occurred while searching for legal documents on Legifrance: ${message}`,
-            context: { input, data, error },
+            context: { data, error },
           })
         }
       },
