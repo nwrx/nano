@@ -11,11 +11,11 @@ import { getLinks } from './getLinks'
  */
 export function isNodeReadyToStart(thread: Thread, id: string): boolean {
   const links = getLinks(thread)
-  const incomingLinks = links.filter(link => link.targetId === id)
-  for (const link of incomingLinks) {
+  for (const link of links) {
+    if (link.targetId !== id) continue
     const sourceNode = thread.nodes.get(link.sourceId)
     if (!sourceNode) return false
-    if (sourceNode.internalState !== 'DONE') return false
+    if (sourceNode.state !== 'DONE') return false
   }
   return true
 }
