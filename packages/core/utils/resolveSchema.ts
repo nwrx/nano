@@ -5,6 +5,7 @@ import { assertArray, assertObjectStrict } from '@unshared/validation'
 import { ThreadError } from './createError'
 import { isReference } from './createReference'
 import { ERRORS } from './errors'
+import { resolveReference } from './resolveReference'
 
 export interface ResolveSchemaOptions {
   data?: ObjectLike
@@ -35,14 +36,8 @@ async function resolveSchemaValue(value: unknown, socket: InputSocket | OutputSo
 
   // --- If the value is a reference to a value, resolve the reference by calling the
   // --- resolveReference function that is passed in the options.
-  if (isReference(value)) {
-    for (const resolve of resolvers) {
-      const resolved = await resolve(value)
-      if (resolved === undefined) continue
-      value = resolved
-      break
-    }
-  }
+  if (isReference(value))
+    value = await resolveReference(value, resolvers)
 
   // --- Otherwise, return the value as is. Making sure it matches the type of the socket.
   if (value === undefined && socket.isOptional) return 'defaultValue' in socket ? socket.defaultValue : undefined
