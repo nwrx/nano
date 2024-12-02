@@ -69,11 +69,12 @@
       "*/index.ts"
     ],
     "format": [
-      "esm"
+      "esm",
+      "cjs"
     ],
     "dts": true,
     "clean": true,
-    "splitting": false,
+    "splitting": true,
     "sourcemap": true,
     "treeshaking": true,
     "experimental-dts": true
