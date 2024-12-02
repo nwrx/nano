@@ -1,6 +1,6 @@
 import type { FlowObject } from '../entities'
 import type { ModuleFlow } from '../index'
-import { ModuleUser } from '@nwrx/api'
+import { ModuleUser } from '../..'
 import { createHttpRoute } from '@unserved/server'
 import { assertString, assertStringNotEmpty, assertStringNumber, assertUndefined, createParser } from '@unshared/validation'
 import { ILike } from 'typeorm'

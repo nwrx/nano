@@ -1,43 +1,62 @@
+/* eslint-disable sonarjs/todo-tag */
 import type { ModuleFlow, User } from '@nwrx/api'
-import type { Flow as FlowInstance } from '@nwrx/core'
-import type { FlowThread } from '@nwrx/core'
+import type { Thread } from '@nwrx/core'
 import type { Peer } from 'crossws'
 import type { Repository } from 'typeorm'
-import type { Flow as FlowEntity } from '../../entities'
-import type { FlowSessionEventMap, FlowSessionEventPayload } from './flowSessionEvents'
-import type { FlowSessionMessage } from './flowSessionMessageSchema'
+import type { Flow } from '../entities'
+import type { EditorSessionClientMessage } from './editorSessionClientMessage'
+import type { EditorSessionServerMessage } from './editorSessionServerMessage'
+import { getComponentInstanceValueOptions, serializeThread } from '@nwrx/core'
+import { removeLink } from '@nwrx/core'
+import { addComponentInstance, removeComponentInstances } from '@nwrx/core'
+import { getComponentInstance } from '@nwrx/core'
+import { setComponentInstanceInputValue } from '@nwrx/core'
+import { setComponentInstanceMetaValue } from '@nwrx/core'
+import { createLink } from '@nwrx/core'
 import { randomUUID } from 'node:crypto'
-import { resolveFlowInstance } from '../resolveFlowInstance'
-import { serializeFlowSession, serializeNode } from './serializeFlowSession'
+import { serializeComponentInstance } from './serializeComponentInstance'
+import { serializeSession } from './serializeSession'
 
-export interface FlowSessionParticipant {
+export interface EditorSessionParticipant {
   peer: Peer
   user: User
   color: string
   position: { x: number; y: number }
-  selectedNodes: string[]
 }
 
-export class FlowSessionInstance {
+export interface EditorSessionOptions {
+  thread: Thread
+  flow: Flow
+}
+
+export class EditorSession {
   constructor(
-    public flow: FlowInstance,
-    public thread: FlowThread,
-    public entity: FlowEntity,
-    public repository: Repository<FlowEntity>,
+    public moduleFlow: ModuleFlow,
+    public thread: Thread,
+    public flow: Flow,
+    public repository: Repository<Flow>,
   ) {
-    this.flow.on('createNode', async node => this.broadcast({ event: 'node:created', ...await serializeNode(this, node) }))
-    this.flow.on('setNodeInputValue', ({ id }, key, value) => this.broadcast({ event: 'node:inputValueChanged', id, key, value }))
+
     this.thread.on('input', (name, value, meta) => this.broadcast({ event: 'thread:input', name, value, ...meta }))
     this.thread.on('output', (name, value, meta) => this.broadcast({ event: 'thread:output', name, value, ...meta }))
     this.thread.on('start', (input, meta) => this.broadcast({ event: 'thread:start', input, ...meta }))
     this.thread.on('abort', meta => this.broadcast({ event: 'thread:abort', ...meta }))
     this.thread.on('error', error => this.broadcast({ event: 'thread:error', code: error.name, message: error.message }))
     this.thread.on('end', (output, meta) => this.broadcast({ event: 'thread:end', output, ...meta }))
-    this.thread.on('nodeState', ({ node: { id } }, meta) => this.broadcast({ event: 'thread:nodeState', id, ...meta }))
-    this.thread.on('nodeError', ({ node: { id } }, error, meta) => this.broadcast({ event: 'thread:nodeError', id, code: error.name, message: error.message, context: error.context, ...meta }))
-    this.thread.on('nodeTrace', ({ node: { id } }, data, meta) => this.broadcast({ event: 'thread:nodeTrace', id, data, ...meta }))
-    this.thread.on('nodeStart', ({ node: { id } }, { input }, meta) => this.broadcast({ event: 'thread:nodeStart', id, input, ...meta }))
-    this.thread.on('nodeEnd', ({ node: { id } }, { input, output }, meta) => this.broadcast({ event: 'thread:nodeEnd', id, input, output, ...meta }))
+
+    // --- Node events
+    this.thread.on('nodeState', (id, { nodeState }) => this.broadcast({ event: 'thread:nodeState', id, state: nodeState }))
+    this.thread.on('nodeTrace', (id, data, meta) => this.broadcast({ event: 'thread:nodeTrace', id, result: data, ...meta }))
+    this.thread.on('nodeStart', (id, { data }, meta) => this.broadcast({ event: 'thread:nodeStart', id, data, ...meta }))
+    this.thread.on('nodeEnd', (id, { data, result }, meta) => this.broadcast({ event: 'thread:nodeEnd', id, data, result, ...meta }))
+    this.thread.on('nodeError', (id, error, meta) => this.broadcast({
+      event: 'thread:nodeError',
+      id,
+      name: error.name,
+      message: error.message,
+      context: error.context,
+      ...meta,
+    }))
 
     // debug
     this.thread.on('nodeError', (_, error) => {
@@ -46,28 +65,13 @@ export class FlowSessionInstance {
     })
   }
 
-  /** The peers that are subscribed to the session. */
-  participants: FlowSessionParticipant[] = []
+  owner: EditorSessionParticipant
+  participants: EditorSessionParticipant[] = []
 
-  /** The peer that is the owner of the session. */
-  owner: FlowSessionParticipant
-
-  /**
-   * Check if the peer is already subscribed to the flow this.
-   *
-   * @param peer The peer to check.
-   * @returns `true` if the peer is subscribed, `false` otherwise.
-   */
   isSubscribed(peer: Peer) {
     return this.participants.some(p => p.peer?.id === peer.id)
   }
 
-  /**
-   * Subscribe a peer to the flow session with the given access token.
-   *
-   * @param peer The peer to subscribe.
-   * @param user The user that the peer represents.
-   */
   async subscribe(peer: Peer, user: User) {
     if (this.isSubscribed(peer)) return
 
@@ -93,15 +97,10 @@ export class FlowSessionInstance {
     // --- Send the flow session data to the peer.
     peer.send({
       event: 'init',
-      ...await serializeFlowSession(this, peer),
+      data: await serializeSession(this, peer),
     })
   }
 
-  /**
-   * Unsubscribe a peer from the flow this.
-   *
-   * @param peer The peer to unsubscribe.
-   */
   unsubscribe(peer: Peer) {
     const peerToRemove = this.participants.find(p => p.peer?.id === peer.id)
     if (!peerToRemove) return
@@ -114,13 +113,7 @@ export class FlowSessionInstance {
     if (this.participants.length === 0) this.thread.abort()
   }
 
-  /**
-   * Broadcast a message to all subscribed peers.
-   *
-   * @param payload The payload to send to the peers.
-   * @param except The peer to exclude from the broadcast.
-   */
-  broadcast<T extends keyof FlowSessionEventMap>(payload: FlowSessionEventPayload<T>, except?: Peer) {
+  broadcast(payload: EditorSessionServerMessage, except?: Peer) {
     for (const participant of this.participants) {
       if (!participant.peer) continue
       if (participant.peer.id === except?.id) continue
@@ -131,22 +124,12 @@ export class FlowSessionInstance {
       const payloadJson = JSON.stringify(payload)
       // for (const secret of payloadSecrets)
       //   payloadJson = payloadJson.replaceAll(secret, '********')
-      const payloadSafe = JSON.parse(payloadJson) as FlowSessionEventPayload<T>
-
+      const payloadSafe = JSON.parse(payloadJson) as EditorSessionServerMessage
       participant.peer.send(payloadSafe)
     }
   }
 
-  /**
-   * Handle a message from a peer. This function is called when a peer sends a
-   * message to the flow session WebSocket. The message is parsed and the event
-   * is dispatched to the corresponding event handler.
-   *
-   * @param peer The peer that sent the message.
-   * @param message The message that was sent by the peer.
-   * @returns The response to the message.
-   */
-  async onMessage(peer: Peer, message: FlowSessionMessage) {
+  async onMessage(peer: Peer, message: EditorSessionClientMessage) {
     try {
 
       /***************************************************************************/
@@ -163,9 +146,9 @@ export class FlowSessionInstance {
       /***************************************************************************/
 
       if (message.event === 'setMetaValue') {
-        const { key, value } = message
-        if (key === 'name') this.entity.title = value as string
-        if (key === 'description') this.entity.description = value as string
+        const { name: key, value } = message
+        if (key === 'name') this.flow.title = value as string
+        if (key === 'description') this.flow.description = value as string
         this.broadcast({ event: 'meta', key, value })
         await this.save()
       }
@@ -174,41 +157,47 @@ export class FlowSessionInstance {
       /* Secrets & Variables                                                     */
       /***************************************************************************/
 
+      // TODO: Implement secrets and variables
+
       /***************************************************************************/
       /* Nodes                                                                   */
       /***************************************************************************/
 
       if (message.event === 'createNode') {
         const { kind, x, y } = message
-        this.flow.createNode({ kind, id: randomUUID(), meta: { position: { x, y } } })
+        const id = addComponentInstance(this.thread, { kind, meta: { position: { x, y } } })
+        const component = await serializeComponentInstance(this.thread, id)
         await this.save()
+        this.broadcast({ event: 'node:created', id, component, x, y })
       }
 
       if (message.event === 'cloneNodes') {
         const { id, x, y } = message
-        const node = this.flow.get(id)
-        this.flow.createNode({ ...node, id: randomUUID(), meta: { position: { x, y } } })
+        const componentInstance = getComponentInstance(this.thread, id)
+        const newId = addComponentInstance(this.thread, { ...componentInstance, id: randomUUID(), meta: { position: { x, y } } })
+        const component = await serializeComponentInstance(this.thread, id)
         await this.save()
+        this.broadcast({ event: 'node:created', id: newId, component, x, y })
       }
 
       if (message.event === 'removeNodes') {
         const { ids } = message
-        this.flow.removeNodes(...ids)
+        removeComponentInstances(this.thread, ...ids)
         this.broadcast({ event: 'node:removed', ids })
         await this.save()
       }
 
       if (message.event === 'setNodeInputValue') {
-        const { id, key, value } = message
-        this.flow.setNodeInputValue(id, key, value)
-        this.broadcast({ event: 'node:inputValueChanged', id, key, value }, peer)
+        const { id, name, value } = message
+        setComponentInstanceInputValue(this.thread, id, name, value)
+        this.broadcast({ event: 'node:inputValueChanged', id, name, value }, peer)
         await this.save()
       }
 
       if (message.event === 'setNodesPosition') {
         for (const { id, x, y } of message.positions) {
-          this.flow.setNodesMetaValue(id, 'position', { x, y })
-          this.broadcast({ event: 'node:metaValueChanged', id, key: 'position', value: { x, y } })
+          setComponentInstanceMetaValue(this.thread, id, 'position', { x, y })
+          this.broadcast({ event: 'node:metaValueChanged', id, name: 'position', value: { x, y } })
         }
         await this.save()
       }
@@ -216,22 +205,22 @@ export class FlowSessionInstance {
       if (message.event === 'setNodeLabel') {
         const { id, label } = message
         const value = label.trim() === '' ? undefined : label
-        this.flow.setNodesMetaValue(id, 'label', value)
-        this.broadcast({ event: 'node:metaValueChanged', id, key: 'label', value })
+        setComponentInstanceMetaValue(this.thread, id, 'label', value)
+        this.broadcast({ event: 'node:metaValueChanged', id, name: 'label', value })
         await this.save()
       }
 
       if (message.event === 'setNodeComment') {
         const { id, comment } = message
         const value = comment.trim() === '' ? undefined : comment
-        this.flow.setNodesMetaValue(id, 'comment', value)
-        this.broadcast({ event: 'node:metaValueChanged', id, key: 'comment', value })
+        setComponentInstanceMetaValue(this.thread, id, 'comment', value)
+        this.broadcast({ event: 'node:metaValueChanged', id, name: 'comment', value })
         await this.save()
       }
 
       if (message.event === 'getInputValueOptions') {
-        const { id, key, query } = message
-        const options = await this.flow.getNodeInputValueOptions(id, key, query)
+        const { id, name: key, query } = message
+        const options = await getComponentInstanceValueOptions(this.thread, id, key, query)
         peer.send({ event: 'node:inputOptionResult', id, key, options })
       }
 
@@ -240,14 +229,15 @@ export class FlowSessionInstance {
       /***************************************************************************/
 
       if (message.event === 'createLink') {
-        await this.flow.createlink(message)
+        const { id, name, value } = await createLink(this.thread, message)
+        this.broadcast({ event: 'node:inputValueChanged', id, name, value })
         await this.save()
       }
 
       if (message.event === 'removeLink') {
         const { id, name, path } = message
-        await this.flow.removeLink({ sourceId: id, sourceName: name, sourcePath: path })
-        await this.flow.removeLink({ targetId: id, targetName: name, targetPath: path })
+        const results = await removeLink(this.thread, { sourceId: id, sourceName: name, sourcePath: path })
+        for (const { id, name, value } of results) this.broadcast({ event: 'node:inputValueChanged', id, name, value })
         await this.save()
       }
 
@@ -273,21 +263,11 @@ export class FlowSessionInstance {
     }
   }
 
-  /**
-   * Save the current state of the flow to the database. This will update the
-   * flow entity with the latest data and meta information.
-   */
   async save() {
-    this.entity.data = this.flow.toJSON()
-    await this.repository.save(this.entity)
+    this.flow.data = serializeThread(this.thread)
+    await this.repository.save(this.flow)
   }
 
-  /**
-   * Returns an iterator of colors that can be used to assign to participants.
-   * The colors are selected from a predefined list of colors.
-   *
-   * @yields The next color in the list.
-   */
   private * getColor() {
     let index = 0
     const colors = ['#5636D9', '#F59E0B', '#D53B23', '#ADEF1F', '#5DB65A']
@@ -297,26 +277,4 @@ export class FlowSessionInstance {
       else index++
     }
   }
-}
-
-/**
- * Given an ID, create or get the `FlowSession` that corresponds to the ID of the flow.
- *
- * @param entity The flow to resolve the session for.
- * @returns The `FlowSession` that corresponds to the given ID.
- */
-export function resolveFlowSession(this: ModuleFlow, entity: FlowEntity): FlowSessionInstance {
-
-  // --- Check if the chain session is already in memory.
-  // --- If so, return the chain session from memory.
-  const exists = this.flowSessions.get(entity.id)
-  if (exists) return exists
-
-  // --- Create the flow session and store it in memory.
-  const { Flow } = this.getRepositories()
-  const flow = resolveFlowInstance.call(this, entity)
-  const thread = flow.createThread()
-  const session = new FlowSessionInstance(flow, thread, entity, Flow)
-  this.flowSessions.set(entity.id, session)
-  return session
 }

@@ -1,17 +1,16 @@
 import type { ModuleFlow } from '../index'
 import { createHttpRoute } from '@unserved/server'
-import { assertStringNotEmpty, createParser } from '@unshared/validation'
+import { assertStringUuid, createParser } from '@unshared/validation'
+import { setResponseStatus } from 'h3'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
 
 export function flowDelete(this: ModuleFlow) {
   return createHttpRoute(
     {
-      name: 'DELETE /api/workspaces/:workspace/:project/:flow',
+      name: 'DELETE /api/flows/:id',
       parseParameters: createParser({
-        workspace: assertStringNotEmpty,
-        project: assertStringNotEmpty,
-        flow: assertStringNotEmpty,
+        id: assertStringUuid,
       }),
     },
     async({ event, parameters }) => {
@@ -19,16 +18,26 @@ export function flowDelete(this: ModuleFlow) {
       const workspaceModule = this.getModule(ModuleWorkspace)
       const { Flow } = this.getRepositories()
       const { user } = await userModule.authenticate(event)
-      const { workspace: workspaceName, project: projectName, flow: flowName } = parameters
+      const { id } = parameters
+
+      // --- Find the flow and get it's project and workspace.
+      const flow = await Flow.findOne({
+        where: { id },
+        relations: {
+          project: {
+            workspace: true,
+          },
+        },
+      })
 
       // --- Resolve the workspace and project and assert the user has access to them.
-      const workspace = await workspaceModule.resolveWorkspace({ user, name: workspaceName, permission: 'Read' })
-      const project = await workspaceModule.resolveProject({ user, workspace, name: projectName, permission: 'Write' })
+      if (!flow) throw this.errors.FLOW_NOT_FOUND_BY_ID(id)
+      const workspace = await workspaceModule.resolveWorkspace({ user, name: flow.project!.workspace!.name, permission: 'Read' })
+      await workspaceModule.resolveProject({ user, workspace, name: flow.project!.name, permission: 'Write' })
 
-      // --- Find the flow and soft remove it.
-      const flow = await Flow.findOneBy({ project, name: flowName })
-      if (!flow) throw this.errors.FLOW_NOT_FOUND(workspace.name, project.name, flowName)
+      // --- Soft remove the flow.
       await Flow.softRemove(flow)
+      setResponseStatus(event, 204)
     },
   )
 }

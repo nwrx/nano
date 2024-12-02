@@ -1,4 +1,4 @@
-import { FlowJSONv1 } from '@nwrx/core'
+import { FlowV1 } from '@nwrx/core'
 import { BaseEntity, transformerJson } from '@unserved/server'
 import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm'
 import { WorkspaceProject } from '../../workspace'
@@ -43,7 +43,7 @@ export class Flow extends BaseEntity {
    * @example [Node, Node, Node]
    */
   @Column('json', { default: '{"version":"1"}', transformer: transformerJson })
-  data: FlowJSONv1 = { version: '1' }
+  data: FlowV1 = { version: '1' }
 
   /**
    * The project that the flow is part of.
@@ -60,6 +60,7 @@ export class Flow extends BaseEntity {
    */
   serialize(options: SerializeOptions = {}): FlowObject {
     return {
+      id: this.id,
       name: this.name,
       title: this.title,
       description: this.description,
@@ -75,10 +76,11 @@ interface SerializeOptions {
 }
 
 export interface FlowObject {
+  id: string
   name: string
   title: string
   description?: string
   workspace?: string
   project?: string
-  data?: FlowJSONv1
+  data?: FlowV1
 }

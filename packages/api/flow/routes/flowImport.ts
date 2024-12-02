@@ -1,11 +1,11 @@
 import type { ModuleFlow } from '../index'
-import { ModuleUser } from '@nwrx/api/user'
-import { randomName } from '@nwrx/api/utils'
-import { ModuleWorkspace } from '@nwrx/api/workspace'
 import { createHttpRoute } from '@unserved/server'
 import { toSlug } from '@unshared/string'
 import { assert, assertString, assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
 import * as YAML from 'yaml'
+import { ModuleUser } from '../../user'
+import { randomName } from '../../utils'
+import { ModuleWorkspace } from '../../workspace'
 
 export function flowImport(this: ModuleFlow) {
   return createHttpRoute(
