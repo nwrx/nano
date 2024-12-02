@@ -12,6 +12,8 @@ const emit = defineEmits<{
   download: []
 }>()
 
+const router = useRouter()
+const route = useRoute()
 const { t } = useI18n()
 </script>
 
@@ -53,6 +55,12 @@ const { t } = useI18n()
         @click="() => isRunning ? emit('abort') : emit('start')"
       />
     </Tooltip>
+
+    <!-- Chat -->
+    <EditorFab
+      icon="i-carbon:chat-bot"
+      @click="() => router.push(`${route.fullPath}/chat`)"
+    />
   </div>
 </template>
 

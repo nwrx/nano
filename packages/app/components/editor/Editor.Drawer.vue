@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import type { FlowCategoryNodesJSON } from '@nwrx/api'
+import type { CategoryJSON } from '@nwrx/api'
 
 defineProps<{
-  categories?: FlowCategoryNodesJSON[]
+  categories?: CategoryJSON[]
 }>()
 
-const activeCategory = ref<FlowCategoryNodesJSON>()
+const activeCategory = ref<CategoryJSON>()
 </script>
 
 <template>
@@ -46,7 +46,7 @@ const activeCategory = ref<FlowCategoryNodesJSON>()
       <!-- Nodes -->
       <div class="flex flex-col space-y-1 mt-4">
         <EditorDrawerItem
-          v-for="node in activeCategory.nodes"
+          v-for="node in activeCategory.components"
           :key="node.kind"
           v-bind="node"
         />

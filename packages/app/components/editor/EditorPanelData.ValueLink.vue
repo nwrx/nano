@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { type FlowThreadNodeJSON } from '@nwrx/api'
+import { type ComponentInstanceJSON } from '@nwrx/api'
 
 const props = defineProps<{
   id?: unknown
   name?: string
   path?: string
-  nodes?: FlowThreadNodeJSON[]
+  nodes?: ComponentInstanceJSON[]
 }>()
 
 const { t } = useI18n()

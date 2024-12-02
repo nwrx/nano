@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { type FlowThreadNodeJSON } from '@nwrx/api'
+import { type ComponentInstanceJSON } from '@nwrx/api'
 
 const props = defineProps<{
   modelValue?: unknown
-  nodes?: FlowThreadNodeJSON[]
+  nodes?: ComponentInstanceJSON[]
 }>()
 
 const emit = defineEmits<{

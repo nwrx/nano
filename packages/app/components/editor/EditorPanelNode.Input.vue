@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import type { FlowThreadNodeJSON } from '@nwrx/api'
+import type { ComponentInstanceJSON } from '@nwrx/api'
 import type { SocketListOption } from '@nwrx/core'
 
 const props = defineProps<{
   isOpen?: boolean
-  node?: FlowThreadNodeJSON
-  nodes?: FlowThreadNodeJSON[]
+  node?: ComponentInstanceJSON
+  nodes?: ComponentInstanceJSON[]
   getOptions?: (search: string) => Promise<Array<SocketListOption<unknown>>>
 }>()
 

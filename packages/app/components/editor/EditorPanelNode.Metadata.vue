@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { FlowThreadNodeJSON } from '@nwrx/api'
+import type { ComponentInstanceJSON } from '@nwrx/api'
 
 const props = defineProps<{
   isOpen?: boolean
-  node?: FlowThreadNodeJSON
+  node?: ComponentInstanceJSON
 }>()
 
 const emit = defineEmits<{

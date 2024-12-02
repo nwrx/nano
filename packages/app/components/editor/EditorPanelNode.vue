@@ -1,11 +1,11 @@
 <!-- eslint-disable vue/no-setup-props-reactivity-loss -->
 <script setup lang="ts">
-import type { FlowThreadNodeJSON } from '@nwrx/api'
+import type { ComponentInstanceJSON } from '@nwrx/api'
 import type { SocketListOption } from '@nwrx/core'
 
 const props = defineProps<{
-  node?: FlowThreadNodeJSON
-  nodes?: FlowThreadNodeJSON[]
+  node?: ComponentInstanceJSON
+  nodes?: ComponentInstanceJSON[]
   isInputOpen?: boolean
   isOutputOpen?: boolean
   isMetadataOpen?: boolean

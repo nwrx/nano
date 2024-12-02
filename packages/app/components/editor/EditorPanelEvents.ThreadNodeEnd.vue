@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { FlowSessionEventPayload, FlowThreadNodeJSON } from '@nwrx/api'
+import type { FlowSessionEventPayload, ComponentInstanceJSON } from '@nwrx/api'
 
 defineProps<{
   event?: FlowSessionEventPayload<'thread:nodeEnd'>
-  node?: FlowThreadNodeJSON
+  node?: ComponentInstanceJSON
 }>()
 
 const { t } = useI18n()

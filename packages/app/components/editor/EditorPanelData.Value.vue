@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { FlowThreadNodeJSON, InputSocketJSON } from '@nwrx/api'
-import { isReferenceLink } from '@nwrx/core/utils'
+import type { ComponentInstanceJSON, InputJSON } from '@nwrx/api'
+import { isReferenceLink } from '#imports'
 
 const props = defineProps<{
   name?: string
-  node?: FlowThreadNodeJSON
-  nodes?: FlowThreadNodeJSON[]
-  socket?: InputSocketJSON
+  node?: ComponentInstanceJSON
+  nodes?: ComponentInstanceJSON[]
+  socket?: InputJSON
   modelValue?: unknown
   isOpen?: boolean
   isEditable?: boolean
