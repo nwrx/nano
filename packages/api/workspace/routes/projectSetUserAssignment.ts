@@ -1,7 +1,7 @@
 import type { ModuleWorkspace } from '../index'
-import { ModuleUser } from '@nwrx/api'
 import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, createArrayParser, createSchema } from '@unshared/validation'
+import { ModuleUser } from '../../user'
 import { assertProjectPermission } from '../utils'
 
 export function projectUpdateUserAssignments(this: ModuleWorkspace) {
