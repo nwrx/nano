@@ -49,7 +49,7 @@ export async function removeLink(thread: Thread, linkToRemove: Partial<Link>): P
       // --- Remove values without sockets.
       if (!socket) {
         setComponentInstanceInputValue(thread, id, name, undefined)
-        results.push({ id, name, value })
+        results.push({ id, name, value: undefined })
       }
 
       // --- Handle the case where the value is an array of links.
@@ -73,7 +73,7 @@ export async function removeLink(thread: Thread, linkToRemove: Partial<Link>): P
       else {
         if (!shouldRemove(value, linkToRemove)) continue
         setComponentInstanceInputValue(thread, id, name, undefined)
-        results.push({ id, name, value })
+        results.push({ id, name, value: undefined })
       }
     }
   }
