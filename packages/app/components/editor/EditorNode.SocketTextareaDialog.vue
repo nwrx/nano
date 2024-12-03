@@ -4,7 +4,7 @@ import { vMarkdown } from '#imports'
 const props = defineProps<{
   name: string
   description?: string
-  modelValue: string
+  modelValue?: string
   isOpen: boolean
 }>()
 
