@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { FlowSessionEventPayload, ComponentInstanceJSON } from '@nwrx/api'
+import type { ComponentInstanceJSON, EditorSessionServerMessage } from '@nwrx/api'
 
 defineProps<{
-  event?: FlowSessionEventPayload<'thread:nodeEnd'>
+  event?: EditorSessionServerMessage & { event: 'thread:nodeEnd' }
   node?: ComponentInstanceJSON
 }>()
 
@@ -11,11 +11,11 @@ const { t } = useI18n()
 
 <template>
   <EditorPanelDataContainer :title="t('input.title')">
-    <template v-if="event && Object.keys(event.input).length > 0">
+    <template v-if="event && Object.keys(event.data).length > 0">
       <EditorPanelData
         v-for="socket in node?.inputSchema"
         :key="socket.key"
-        :model-value="event.input[socket.key]"
+        :model-value="event.data[socket.key]"
         :socket="socket"
         :node="node"
       />
@@ -29,11 +29,11 @@ const { t } = useI18n()
 
   <!-- Result -->
   <EditorPanelDataContainer :title="t('output.title')">
-    <template v-if="event && Object.keys(event.output).length > 0">
+    <template v-if="event && Object.keys(event.result).length > 0">
       <EditorPanelData
         v-for="socket in node?.outputSchema"
         :key="socket.key"
-        :model-value="event.output[socket.key]"
+        :model-value="event.result[socket.key]"
         :socket="socket"
         :node="node"
       />

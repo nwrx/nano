@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { FlowSessionEventPayload } from '@nwrx/api'
+import type { EditorSessionServerMessage } from '@nwrx/api'
 import { vMarkdown } from '#imports'
 
 defineProps<{
-  event: FlowSessionEventPayload<'thread:output'>
+  event: EditorSessionServerMessage<'thread:output'>
 }>()
 </script>
 

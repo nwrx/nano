@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FlowSessionEventPayload, ComponentInstanceJSON } from '@nwrx/api'
+import type { ComponentInstanceJSON, EditorSessionServerMessage } from '@nwrx/api'
 
 const props = defineProps<{
   width?: number
@@ -16,7 +16,7 @@ const props = defineProps<{
   secrets?: string[]
   variables?: string[]
   nodeSelected?: ComponentInstanceJSON[]
-  events?: FlowSessionEventPayload[]
+  events?: EditorSessionServerMessage[]
   nodes?: ComponentInstanceJSON[]
 }>()
 

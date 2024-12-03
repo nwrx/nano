@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { FlowSessionEventPayload, ComponentInstanceJSON } from '@nwrx/api'
+import type { ComponentInstanceJSON, EditorSessionServerMessage } from '@nwrx/api'
 
 const props = defineProps<{
-  event: FlowSessionEventPayload
+  event: EditorSessionServerMessage
   node?: ComponentInstanceJSON
   isOpen: boolean
 }>()
@@ -14,7 +14,7 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const isOpen = useVModel(props, 'isOpen', emit, { passive: true })
 
-function getBadgeClass(event: FlowSessionEventPayload): string {
+function getBadgeClass(event: EditorSessionServerMessage): string {
   if (event.event === 'thread:nodeTrace') return 'badge-secondary'
   if (event.event === 'thread:nodeError') return 'badge-danger'
   if (event.event === 'thread:nodeEnd') return 'badge-success'

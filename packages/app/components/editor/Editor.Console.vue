@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { FlowSessionEventName } from '@nwrx/api'
-import type { FlowSessionEventPayload } from '@nwrx/api'
+import type { EditorSessionServerMessage } from '@nwrx/api'
 
 const props = defineProps<{
-  events?: FlowSessionEventPayload[]
+  events?: EditorSessionServerMessage[]
 }>()
 
 const emit = defineEmits<{
@@ -29,7 +29,7 @@ watch(() => props.events, () => {
   })
 })
 
-function getEventScope(event: FlowSessionEventPayload) {
+function getEventScope(event: EditorSessionServerMessage) {
   const [scope] = event.event.split(':')
   return scope
 }
