@@ -50,7 +50,7 @@ export function useWorkspace(workspace: MaybeRef<string>, options: UseProjectOpt
      * @returns The created flow object.
      */
     createFlow: async(project: string) =>
-      await client.requestAttempt('POST /api/workspaces/:workspace/:project', {
+      await client.requestAttempt('POST /api/flows', {
         onError: error => alerts.error(error),
         onSuccess: () => alerts.success('Flow created successfully'),
         onEnd: () => void refresh(),

@@ -17,6 +17,7 @@ export const application = await Application.initialize([
   Nwrx.ModuleWorkspace,
   Nwrx.ModuleStorage,
   Nwrx.ModuleMonitoring,
+  Nwrx.ModuleChat,
 ], {
   prefix: 'NWRX',
   logger: Consola,
