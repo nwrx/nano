@@ -46,7 +46,7 @@ export class EditorSession {
 
     // --- Node events
     this.thread.on('nodeState', (id, { nodeState }) => this.broadcast({ event: 'thread:nodeState', id, state: nodeState }))
-    this.thread.on('nodeTrace', (id, data, meta) => this.broadcast({ event: 'thread:nodeTrace', id, result: data, ...meta }))
+    this.thread.on('nodeTrace', (id, data, meta) => this.broadcast({ event: 'thread:nodeTrace', id, data, ...meta }))
     this.thread.on('nodeStart', (id, { data }, meta) => this.broadcast({ event: 'thread:nodeStart', id, data, ...meta }))
     this.thread.on('nodeEnd', (id, { data, result }, meta) => this.broadcast({ event: 'thread:nodeEnd', id, data, result, ...meta }))
     this.thread.on('nodeError', (id, error, meta) => this.broadcast({

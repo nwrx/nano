@@ -95,7 +95,7 @@ export const EDITOR_SESSION_SERVER_MESSAGE_SCHEMA = createRuleSet(
   [createSchema({
     event: assert.stringEquals('thread:nodeTrace'),
     id: assert.stringNotEmpty,
-    result: assert.object,
+    data: assert.object,
   })],
 
   [createSchema({
