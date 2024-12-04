@@ -54,8 +54,8 @@ const isOpen = ref(true)
       <MonitoringItem
         v-for="flow in project.flows"
         :key="flow.name"
-        :title="`${project.name}/${flow.name}`"
-        :text="flow.title"
+        :title="flow.title"
+        :text="`${project.name}/${flow.name}`"
         :is-selected="flow.name === selectedFlow"
         @click="() => emit('select', flow.name)"
       />

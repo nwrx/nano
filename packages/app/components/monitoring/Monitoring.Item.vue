@@ -42,7 +42,7 @@ const emit = defineEmits<{
     </template>
 
     <!-- Title -->
-    <p class="text-sm font-mono shrink-0">
+    <p class="text-base shrink-0">
       {{ title }}
     </p>
 
