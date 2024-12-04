@@ -9,8 +9,7 @@ definePageMeta({
 
 // --- Extract route parameters.
 const route = useRoute()
-const client = useClient()
-const alerts = useAlerts()
+const users = useUsers()
 const name = computed(() => route.params.project as string)
 const workspace = computed(() => route.params.workspace as string)
 
@@ -26,28 +25,20 @@ useHead(() => ({
   description: project.data.description,
 }))
 
-async function searchUsers(search: string) {
-  return await client.request('GET /api/users', {
-    data: { search, limit: 5, withProfile: true },
-    onError: error => alerts.error(error),
-  })
-}
-
 onMounted(project.refresh)
 </script>
 
 <template>
   <ProjectSettings :workspace="workspace" :project="name">
-
-    <pre class="whitespace-pre-wrap break-words">{{ project.data }}</pre>
-
     <ProjectSettingsAssignments
       :workspace="workspace"
       :project="name"
       :title="project.data.title"
       :assignments="project.data.assignments"
-      :search-users="searchUsers"
-      @submit="(username, permissions) => project.setUserAssignments(username, permissions)"
+      :search-users="users.search"
+      @submit-assign="(username) => project.setUserAssignments(username, ['Read'])"
+      @submit-unassign="(username) => project.setUserAssignments(username, [])"
+      @submit-set-permissions="(username, permissions) => project.setUserAssignments(username, permissions)"
     />
   </ProjectSettings>
 </template>
