@@ -157,10 +157,6 @@ importers:
         version: 5.1.7
 
   packages/app:
-    dependencies:
-      '@unshared/client':
-        specifier: 0.3.2
-        version: 0.3.2(patch_hash=yj7sxgeoyrqncf4oe4eamhrkve)(@types/node@22.10.1)
     devDependencies:
       '@nuxt/eslint':
         specifier: 0.7.2
@@ -234,6 +230,9 @@ importers:
       '@unserved/server':
         specifier: 0.2.0
         version: 0.2.0(@types/node@22.10.1)(crossws@0.3.1)(h3@1.13.0)(typeorm@0.3.20(ioredis@5.4.1)(sqlite3@5.1.7))
+      '@unshared/client':
+        specifier: 0.3.2
+        version: 0.3.2(patch_hash=yj7sxgeoyrqncf4oe4eamhrkve)(@types/node@22.10.1)
       '@unshared/color':
         specifier: 0.3.2
         version: 0.3.2(@types/node@22.10.1)
@@ -264,6 +263,9 @@ importers:
       '@vueuse/nuxt':
         specifier: 12.0.0
         version: 12.0.0(magicast@0.3.5)(nuxt@3.14.1592(@azure/storage-blob@12.26.0)(@parcel/watcher@2.5.0)(@types/node@22.10.1)(encoding@0.1.13)(eslint@9.14.0(jiti@2.4.1))(ioredis@5.4.1)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.27.4)(terser@5.36.0)(typescript@5.7.2)(vite@5.4.11(@types/node@22.10.1)(terser@5.36.0)))(rollup@4.27.4)(typescript@5.7.2)
+      chart.js:
+        specifier: 4.4.7
+        version: 4.4.7
       consola:
         specifier: 3.2.3
         version: 3.2.3
@@ -2075,6 +2077,9 @@ packages:
     engines: {node: '>=10.0'}
     peerDependencies:
       tslib: '2'
+
+  '@kurkle/color@0.3.4':
+    resolution: {integrity: sha512-M5UknZPHRu3DEDWoipU6sE8PdkZ6Z/S+v4dD+Ke8IaNlpdSQah50lz1KtcFBa2vsdOnwbbnxJwVM4wty6udA5w==}
 
   '@kwsites/file-exists@1.1.1':
     resolution: {integrity: sha512-m9/5YGR18lIwxSFDwfE3oA7bWuq9kdau6ugN4H2rJeyhFQZcG9AgSHkQtSD15a8WvTgfz9aikZMrKPHvbpqFiw==}
@@ -4231,6 +4236,10 @@ packages:
 
   character-reference-invalid@1.1.4:
     resolution: {integrity: sha512-mKKUkUbhPpQlCOfIuZkvSEgktjPFIsZKRRbC6KWVEMvlzblj3i3asQv5ODsrwt0N3pHAEvjP8KTQPHkp0+6jOg==}
+
+  chart.js@4.4.7:
+    resolution: {integrity: sha512-pwkcKfdzTMAU/+jNosKhNL2bHtJc/sSmYgVbuGTEDhzkrhmyihmP7vUc/5ZK9WopidMDHNe3Wm7jOd/WhuHWuw==}
+    engines: {pnpm: '>=8'}
 
   check-error@2.1.1:
     resolution: {integrity: sha512-OAlb+T7V4Op9OwdkjmguYRqncdlx5JiofwOAUkmTF+jNdHwzTaTs4sRAGpzLF3oOz5xAyDGrPgeIDFQmDOTiJw==}
@@ -10901,6 +10910,8 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
+  '@kurkle/color@0.3.4': {}
+
   '@kwsites/file-exists@1.1.1':
     dependencies:
       debug: 4.3.7(supports-color@9.4.0)
@@ -14336,6 +14347,10 @@ snapshots:
       is-regex: 1.2.0
 
   character-reference-invalid@1.1.4: {}
+
+  chart.js@4.4.7:
+    dependencies:
+      '@kurkle/color': 0.3.4
 
   check-error@2.1.1: {}
 
