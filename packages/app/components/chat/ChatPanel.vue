@@ -11,8 +11,9 @@ const props = defineProps<{
 const emit = defineEmits<{
   createThread: [project: string, flow: string]
   openThread: [id: UUID]
-  archiveThread: [id: string]
-  renameThread: [id: string, title: string]
+  archiveThread: [id: UUID]
+  renameThread: [id: UUID, title: string]
+  deleteThread: [id: UUID]
   'update:search': [value: string]
 }>()
 
@@ -51,6 +52,7 @@ const search = useVModel(props, 'search', emit, { passive: true })
       :name="thread.title"
       @click="() => emit('openThread', thread.id)"
       @archive="() => emit('archiveThread', thread.id)"
+      @delete="() => emit('deleteThread', thread.id)"
     />
   </div>
 </template>
