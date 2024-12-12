@@ -118,12 +118,10 @@ const { isOverDropZone } = useDropZone(dropzone, {
         <ProjectListItemFlow
           v-for="flow in flows"
           :key="flow.name"
-          :project="name"
-          :workspace="workspace"
           v-bind="flow"
+          :workspace="workspace"
+          :project="name"
           icon="i-carbon:flow"
-          is-running
-          is-deployed
           class="shrink-0"
           @delete="() => emit('flowDelete', flow.name)"
           @download="() => emit('flowDownload', flow.name)"

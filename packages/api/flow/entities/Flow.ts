@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/pseudo-random */
 import { FlowV1 } from '@nwrx/core'
 import { BaseEntity, transformerJson } from '@unserved/server'
 import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm'
@@ -67,6 +68,19 @@ export class Flow extends BaseEntity {
       workspace: this.project?.workspace?.name,
       project: this.project?.name,
       data: options.withData ? this.data : undefined,
+
+      // Status
+      isCron: Math.random() > 0.9,
+      isRunning: Math.random() > 0.9,
+      isDeployed: Math.random() > 0.2,
+      isDisabled: Math.random() > 0.5,
+      isErrored: Math.random() > 0.1,
+
+      // Statistics
+      statistics: {
+        executions: { value: Math.floor(Math.random() * 5000), trend: 'up' },
+        cost: { value: Math.floor(Math.random() * 100 + 10), trend: Math.random() > 0.7 ? 'up' : 'down' },
+      },
     }
   }
 }
@@ -83,4 +97,17 @@ export interface FlowObject {
   workspace?: string
   project?: string
   data?: FlowV1
+
+  // Status
+  isCron: boolean
+  isRunning: boolean
+  isDeployed: boolean
+  isDisabled: boolean
+  isErrored?: boolean
+
+  // Statistics
+  statistics?: Record<string, {
+    value: number
+    trend: 'down' | 'up'
+  }>
 }
