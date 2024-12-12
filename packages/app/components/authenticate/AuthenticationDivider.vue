@@ -1,9 +1,9 @@
 <template>
-  <div class="flex items-center space-x-4">
-    <div class="flex-1 border-t border-primary-800" />
-    <div class="text-white/50">
+  <div class="flex items-center space-x-md">
+    <div class="grow b-t b-app" />
+    <div class="text-subtle">
       <slot />
     </div>
-    <div class="flex-1 border-t border-primary-800" />
+    <div class="grow b-t b-app" />
   </div>
 </template>

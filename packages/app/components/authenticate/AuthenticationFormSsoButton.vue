@@ -1,7 +1,8 @@
+<!-- eslint-disable vue/prop-name-casing -->
 <script setup lang="ts">
 import type { BaseButtonProps } from '@unshared/vue'
 
-const props = defineProps<{ type: 'github' | 'google' | 'linkedin' | 'microsoft' } & BaseButtonProps>()
+const props = defineProps<BaseButtonProps & { type: 'github' | 'google' | 'linkedin' | 'microsoft' }>()
 const emit = defineEmits<{ click: [] }>()
 
 const icon = computed(() => {
@@ -28,17 +29,10 @@ const label = computed(() => {
     eager
     class="
       flex items-center justify-center w-full
-      px-4 py-2 rounded
-      transition-all duration-100
-      text-white
-      opacity-60
-      hover:opacity-100
-      bg-primary-900
-      hover:bg-primary-800/50
-      ring-1
-      ring-primary-900
-      ring-opacity-50
-      hover:ring-opacity-100
+      px-4 py-2 rd transition
+      opacity-80 hover:opacity-100
+      bg-emphasized hover:bg-prominent
+      b b-app
     "
     @click="() => emit('click')">
 
@@ -50,7 +44,7 @@ const label = computed(() => {
 
     <!-- Label -->
     <span
-      class="text-sm"
+      class="text-sm font-medium"
       v-text="label"
     />
   </BaseButton>
