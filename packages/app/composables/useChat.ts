@@ -27,10 +27,10 @@ export function useChat(workspace: MaybeRef<string>) {
         }
 
         case 'threadOpened': {
-          const { id, title, summary, messages } = payload
+          const { id, title, description, messages } = payload
           thread.id = id
           thread.title = title
-          thread.description = summary
+          thread.description = description
           thread.messages = messages
           break
         }

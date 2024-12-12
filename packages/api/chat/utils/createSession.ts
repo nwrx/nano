@@ -87,7 +87,7 @@ export class ChatSession {
           event: 'threadOpened',
           id: thread.id,
           title: thread.title,
-          summary: thread.description,
+          description: thread.description,
           messages: thread.messages!.map(message => message.serialize()),
         })
       }
@@ -99,7 +99,7 @@ export class ChatSession {
           event: 'threadOpened',
           id: thread.id,
           title: thread.title,
-          summary: thread.description,
+          description: thread.description,
           messages: thread.messages!.map(message => message.serialize()),
         })
       }
@@ -123,11 +123,17 @@ export class ChatSession {
         this.thread.on('output', (name, content) => this.addMessage({ role: 'assistant', name, content: String(content) }))
         this.thread.on('error', error => this.addMessage({ role: 'assistant', name: 'Error', content: error.message }))
 
-        this.thread.on('nodeTrace', (_, trace) => this.addMessage({
-          role: 'assistant',
-          name: 'Node Trace',
-          content: JSON.stringify(trace, null, 2),
-        }))
+        // --- Advertise the tool call requests and responses.
+        this.thread.on('nodeTrace', async(_, trace) => {
+          if (trace.type === 'tool_call_request') {
+            const { id, name, parameters } = trace as { id: UUID; name: string; parameters: Record<string, any> }
+            await this.addMessage({ role: 'toolCallRequest', id, name, content: parameters })
+          }
+          if (trace.type === 'tool_call_response') {
+            const { id, name, data } = trace as { id: UUID; name: string; data: Record<string, any> }
+            await this.addMessage({ role: 'toolCallResponse', id, name, content: data })
+          }
+        })
 
         await this.thread.start({ Message: message })
       }

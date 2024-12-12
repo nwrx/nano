@@ -23,7 +23,7 @@ const search = useVModel(props, 'search', emit, { passive: true })
 </script>
 
 <template>
-  <div class="flex h-full relative">
+  <div class="flex h-full overflow-hidden relative">
 
     <!-- Threads & Flow selection -->
     <ChatPanel
