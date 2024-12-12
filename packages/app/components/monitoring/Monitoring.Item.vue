@@ -31,7 +31,7 @@ const emit = defineEmits<{
       v-if="icon"
       :icon="icon"
       :class="iconClass"
-      class="size-5 text-prominent"
+      class="size-3 shrink-0"
     />
 
     <!-- Badge -->
