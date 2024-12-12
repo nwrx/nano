@@ -12,7 +12,7 @@ import { createResolvable } from '@unshared/functions'
  * @param flow The flow entity to associate the events with.
  */
 export function captureThreadEvents(this: ModuleMonitoring, thread: Thread, flow: Flow) {
-  const { MonitoringFlowThread, MonitoringFlowThreadEvent /* , MonitoringFlowThreadNodeEvent */ } = this.getRepositories()
+  const { MonitoringFlowThread, MonitoringFlowThreadEvent, MonitoringFlowThreadNodeEvent } = this.getRepositories()
   const entityPromise = createResolvable<MonitoringFlowThread>()
 
   thread.on('start', async(input, meta) => {
@@ -68,42 +68,42 @@ export function captureThreadEvents(this: ModuleMonitoring, thread: Thread, flow
     }))
   })
 
-  // thread.on('nodeStart', async({ node }, data, meta) => {
-  //   await MonitoringFlowThreadNodeEvent.save(MonitoringFlowThreadNodeEvent.create({
-  //     event: 'start',
-  //     thread: await entityPromise,
-  //     node: node.id,
-  //     kind: node.kind,
-  //     data: data.input,
-  //     delta: meta.delta,
-  //     duration: meta.duration,
-  //     timestamp: meta.timestamp,
-  //   }))
-  // })
+  thread.on('nodeStart', async(id, data, meta) => {
+    await MonitoringFlowThreadNodeEvent.save(MonitoringFlowThreadNodeEvent.create({
+      event: 'start',
+      thread: await entityPromise,
+      node: id,
+      kind: 'node.kind',
+      data: data.data,
+      delta: meta.threadDelta,
+      duration: meta.nodeDuration,
+      timestamp: meta.timestamp,
+    }))
+  })
 
-  // thread.on('nodeError', async({ node }, error, meta) => {
-  //   await MonitoringFlowThreadNodeEvent.save(MonitoringFlowThreadNodeEvent.create({
-  //     event: 'error',
-  //     thread: await entityPromise,
-  //     node: node.id,
-  //     kind: node.kind,
-  //     data: { message: error.message, name: error.name, stack: error.stack },
-  //     delta: meta.delta,
-  //     duration: meta.duration,
-  //     timestamp: meta.timestamp,
-  //   }))
-  // })
+  thread.on('nodeError', async(id, error, meta) => {
+    await MonitoringFlowThreadNodeEvent.save(MonitoringFlowThreadNodeEvent.create({
+      event: 'error',
+      thread: await entityPromise,
+      node: id,
+      kind: 'node.kind',
+      data: { message: error.message, name: error.name, stack: error.stack },
+      delta: meta.threadDelta,
+      duration: meta.nodeDuration,
+      timestamp: meta.timestamp,
+    }))
+  })
 
-  // thread.on('nodeEnd', async({ node }, data, meta) => {
-  //   await MonitoringFlowThreadNodeEvent.save(MonitoringFlowThreadNodeEvent.create({
-  //     event: 'end',
-  //     thread: await entityPromise,
-  //     node: node.id,
-  //     kind: node.kind,
-  //     data: data.output,
-  //     delta: meta.delta,
-  //     duration: meta.duration,
-  //     timestamp: meta.timestamp,
-  //   }))
-  // })
+  thread.on('nodeEnd', async(id, data, meta) => {
+    await MonitoringFlowThreadNodeEvent.save(MonitoringFlowThreadNodeEvent.create({
+      event: 'end',
+      thread: await entityPromise,
+      node: id,
+      kind: 'node.kind',
+      data: data.data,
+      delta: meta.threadDelta,
+      duration: meta.nodeDuration,
+      timestamp: meta.timestamp,
+    }))
+  })
 }
