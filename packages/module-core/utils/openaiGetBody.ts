@@ -1,5 +1,6 @@
 import type { InferenceData } from '../nodes'
 import type { OpenaiChatRequest } from './openai'
+import { dedent } from '@unshared/string'
 
 /**
  * Given the input data of the `core/inference` node, this function returns the body of
@@ -43,7 +44,23 @@ export function openaiGetBody(data: InferenceData): OpenaiChatRequest {
     function: {
       name: tool.name,
       description: tool.description,
-      parameters: tool.schema,
+      parameters: {
+        ...tool.schema,
+        properties: {
+          ...tool.schema.properties,
+          __toolName: {
+            type: 'string',
+            description: 'The display name of the tool. This is used to identify the tool in the UI.',
+          },
+          __toolMessage: {
+            type: 'string',
+            description: dedent(`
+              A short description of what the tool is currently doing. This is used to provide context to the user.
+              It should be concise and informative, e.g., "Getting the weather forecast for San Francisco, CA from the OpenWeather API."
+            `),
+          },
+        },
+      },
       strict: false,
     },
   } as const))
@@ -55,5 +72,6 @@ export function openaiGetBody(data: InferenceData): OpenaiChatRequest {
     temperature,
     max_completion_tokens: maxCompletionTokens,
     tools: toolsBody.length > 0 ? toolsBody : undefined,
+    tool_choice: toolsBody.length > 0 ? 'auto' : undefined,
   }
 }
