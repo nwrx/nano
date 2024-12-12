@@ -143,8 +143,6 @@ export class Thread extends Emitter<ThreadEvents> implements ThreadOptions {
         node.on('error', (error, meta) => {
           this.dispatch('nodeError', id, error, { ...meta, ...this.eventMetadata })
           if (this.isRunning) return
-          this.dispatch('end', threadOutput, this.eventMetadata)
-          this.abort()
           return resolve(threadOutput)
         })
 
