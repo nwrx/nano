@@ -23,6 +23,13 @@ onMounted(async() => {
 
 <template>
   <AppPage>
+    <ProjectHeader
+      icon="i-carbon:cloud-monitoring"
+      :title="t('title')"
+      :workspace="workspace"
+      :description="t('description')"
+    />
+
     <Monitoring
       v-model:event-names="settings.monitoringEventNames"
       v-model:event-types="settings.monitoringEventTypes"
@@ -46,7 +53,7 @@ en:
   title: Monitoring
   description: Monitor activities and traces across your projects.
 fr:
-  title: Surveillance
+  title: Métriques
   description: Surveillez les activités et les traces de vos projets.
 de:
   title: Überwachung

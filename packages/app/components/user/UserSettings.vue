@@ -3,62 +3,49 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <AppPage>
+  <div class="flex w-full h-full gap-lg">
+    <AppPageNav class="shrink h-full">
+      <AppPageNavGroup>
+        <AppPageNavItem :label="t('nav.settings.profile')" icon="i-carbon:user" :to="{ name: 'UserSettingsProfile' }" />
+        <AppPageNavItem :label="t('nav.settings.account')" icon="i-carbon:settings" :to="{ name: 'UserSettingsAccount' }" />
+        <AppPageNavItem :label="t('nav.settings.notifications')" icon="i-carbon:notification" to="/settings/notifications" />
+        <AppPageNavItem :label="t('nav.settings.customizations')" icon="i-carbon:paint-brush" to="/settings/customizations" />
+      </AppPageNavGroup>
 
-    <!-- Header -->
-    <AppPageHeader
-      icon="i-carbon:user"
-      :title="t('title')"
-      :description="t('description')"
-    />
+      <!-- Security -->
+      <AppPageNavGroup :label="t('nav.security')">
+        <AppPageNavItem :label="t('nav.security.password')" icon="i-carbon:security" :to="{ name: 'UserSettingsPassword' }" />
+        <AppPageNavItem :label="t('nav.security.sso')" icon="i-carbon:credentials" to="/settings/security/api-keys" />
+        <AppPageNavItem :label="t('nav.security.apiKeys')" icon="i-carbon:api-key" to="/settings/security/api-keys" />
+        <AppPageNavItem :label="t('nav.security.sessions')" icon="i-carbon:mobile-session" :to="{ name: 'UserSettingsSessions' }" />
+      </AppPageNavGroup>
 
-    <!-- Side menu -->
-    <div class="flex w-full gap-lg py-lg">
-      <AppPageNav class="shrink">
-        <AppPageNavGroup>
-          <AppPageNavItem :label="t('nav.settings.profile')" icon="i-carbon:user" :to="{ name: 'UserSettingsProfile' }" />
-          <AppPageNavItem :label="t('nav.settings.account')" icon="i-carbon:settings" :to="{ name: 'UserSettingsAccount' }" />
-          <AppPageNavItem :label="t('nav.settings.notifications')" icon="i-carbon:notification" to="/settings/notifications" />
-          <AppPageNavItem :label="t('nav.settings.customizations')" icon="i-carbon:paint-brush" to="/settings/customizations" />
-        </AppPageNavGroup>
+      <!-- Billing -->
+      <AppPageNavGroup :label="t('nav.billing')">
+        <AppPageNavItem :label="t('nav.billing.upgrade')" to="/settings/billing/upgrade" icon="i-carbon:upgrade" />
+        <AppPageNavItem :label="t('nav.billing.subscription')" to="/settings/billing/subscription" icon="i-carbon:document" />
+        <AppPageNavItem :label="t('nav.billing.invoices')" to="/settings/billing/invoices" icon="i-carbon:document-multiple-01" />
+        <AppPageNavItem :label="t('nav.billing.usage')" to="/settings/billing/usage" icon="i-carbon:analytics" />
+        <AppPageNavItem :label="t('nav.billing.paymentMethods')" to="/settings/billing/payment-methods" icon="i-carbon:money" />
+      </AppPageNavGroup>
 
-        <!-- Security -->
-        <AppPageNavGroup :label="t('nav.security')">
-          <AppPageNavItem :label="t('nav.security.password')" icon="i-carbon:security" :to="{ name: 'UserSettingsPassword' }" />
-          <AppPageNavItem :label="t('nav.security.sso')" icon="i-carbon:credentials" to="/settings/security/api-keys" />
-          <AppPageNavItem :label="t('nav.security.apiKeys')" icon="i-carbon:api-key" to="/settings/security/api-keys" />
-          <AppPageNavItem :label="t('nav.security.sessions')" icon="i-carbon:mobile-session" :to="{ name: 'UserSettingsSessions' }" />
-        </AppPageNavGroup>
+      <!-- Support -->
+      <AppPageNavGroup :label="t('nav.support')">
+        <AppPageNavItem :label="t('nav.support.helpCenter')" to="/settings/support/help-center" icon="i-carbon:help" />
+        <AppPageNavItem :label="t('nav.support.contact')" to="/settings/support/contact" icon="i-carbon:chat" />
+        <AppPageNavItem :label="t('nav.support.chat')" to="/settings/support/chat" icon="i-carbon:chat-bot" />
+      </AppPageNavGroup>
+    </AppPageNav>
 
-        <!-- Billing -->
-        <AppPageNavGroup :label="t('nav.billing')">
-          <AppPageNavItem :label="t('nav.billing.upgrade')" to="/settings/billing/upgrade" icon="i-carbon:upgrade" />
-          <AppPageNavItem :label="t('nav.billing.subscription')" to="/settings/billing/subscription" icon="i-carbon:document" />
-          <AppPageNavItem :label="t('nav.billing.invoices')" to="/settings/billing/invoices" icon="i-carbon:document-multiple-01" />
-          <AppPageNavItem :label="t('nav.billing.usage')" to="/settings/billing/usage" icon="i-carbon:analytics" />
-          <AppPageNavItem :label="t('nav.billing.paymentMethods')" to="/settings/billing/payment-methods" icon="i-carbon:money" />
-        </AppPageNavGroup>
-
-        <!-- Support -->
-        <AppPageNavGroup :label="t('nav.support')">
-          <AppPageNavItem :label="t('nav.support.helpCenter')" to="/settings/support/help-center" icon="i-carbon:help" />
-          <AppPageNavItem :label="t('nav.support.contact')" to="/settings/support/contact" icon="i-carbon:chat" />
-          <AppPageNavItem :label="t('nav.support.chat')" to="/settings/support/chat" icon="i-carbon:chat-bot" />
-        </AppPageNavGroup>
-      </AppPageNav>
-
-      <!-- Content -->
-      <AppPageContainer contained>
-        <slot />
-      </AppPageContainer>
-    </div>
-  </AppPage>
+    <!-- Content -->
+    <AppPageContainer contained>
+      <slot />
+    </AppPageContainer>
+  </div>
 </template>
 
 <i18n lang="yaml">
 en:
-  title: User Settings
-  description: Manage and review your account settings and security configurations.
   nav.settings: Settings
   nav.settings.profile: Profile
   nav.settings.account: Account
@@ -80,8 +67,6 @@ en:
   nav.support.contact: Contact support
   nav.support.chat: Direct chat
 fr:
-  title: Paramètres utilisateur
-  description: Gérez et consultez vos paramètres de compte et configurations de sécurité.
   nav.settings: Paramètres
   nav.settings.profile: Profil
   nav.settings.account: Compte
@@ -103,8 +88,6 @@ fr:
   nav.support.contact: Contacter le support
   nav.support.chat: Chat direct
 de:
-  title: Benutzereinstellungen
-  description: Verwalten und überprüfen Sie Ihre Kontoeinstellungen und Sicherheitskonfigurationen.
   nav.settings: Einstellungen
   nav.settings.profile: Profil
   nav.settings.account: Konto
@@ -126,8 +109,6 @@ de:
   nav.support.contact: Support kontaktieren
   nav.support.chat: Direkter Chat
 es:
-  title: Configuración de usuario
-  description: Administre y revise la configuración de su cuenta y las configuraciones de seguridad.
   nav.settings: Configuraciones
   nav.settings.profile: Perfil
   nav.settings.account: Cuenta
@@ -149,8 +130,6 @@ es:
   nav.support.contact: Contactar soporte
   nav.support.chat: Chat directo
 zh:
-  title: 用户设置
-  description: 管理和查看您的帐户设置和安全配置。
   nav.settings: 设置
   nav.settings.profile: 档案
   nav.settings.account: 帐户

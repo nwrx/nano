@@ -11,6 +11,7 @@ const props = defineProps<{
 const { t } = useI18n()
 const node = computed(() => props.nodes?.find(n => n.id === props.id))
 const socket = computed(() => node.value?.outputSchema?.find(s => s.key === props.name))
+const label = computed(() => `${node.value?.label ?? node.value?.name} (${socket.value?.name})`)
 </script>
 
 <template>
@@ -18,21 +19,11 @@ const socket = computed(() => node.value?.outputSchema?.find(s => s.key === prop
     <template v-if="node && socket">
       <Badge
         v-if="node.id"
-        class="text-white badge-sm font-mono"
-        :style="{ backgroundColor: node.categoryColor }"
-        :label="node.label ?? node.name"
+        class="text-white badge-sm font-mono px-xs"
+        :style="{ backgroundColor: socket.typeColor }"
+        :label="label"
         :icon="node.icon"
         icon-load
-      />
-      <BaseIcon
-        class="text-subtle mx-sm"
-        icon="i-carbon:chevron-right"
-      />
-      <Badge
-        v-if="socket.key"
-        class="text-white badge-sm font-mono"
-        :style="{ backgroundColor: socket.typeColor }"
-        :label="socket.name"
       />
     </template>
     <template v-else>

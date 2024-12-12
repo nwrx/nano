@@ -93,6 +93,7 @@ export default defineConfig<Theme>({
       'subtle': COLORS.primary[60],
       'emphasized': COLORS.primary[80],
       'prominent': COLORS.primary[100],
+      'active': COLORS.primary[900],
 
       // Layout
       'layout': COLORS.primary[900],
@@ -114,12 +115,14 @@ export default defineConfig<Theme>({
       'danger': COLORS.danger[500],
       'warning': COLORS.warning[500],
       'success': COLORS.success[500],
+      'primary': COLORS.primary[900],
 
       // App
       'app': COLORS.primary[900],
       'subtle': `${COLORS.primary[900]}80`,
       'emphasized': `${COLORS.primary[900]}C0`,
       'prominent': COLORS.primary[600],
+      'active': COLORS.primary[50],
 
       // Layout
       'layout': COLORS.primary[50],
@@ -294,21 +297,13 @@ export default defineConfig<Theme>({
         borderRadius: '0.25rem',
       },
     },
-    badgeBackground: {
-      DEFAULT: COLORS.primary[100],
-      primary: COLORS.primary[100],
-      secondary: COLORS.secondary[200],
-      success: COLORS.success[200],
-      danger: COLORS.danger[200],
-      warning: COLORS.warning[200],
-    },
     badgeColor: {
       DEFAULT: COLORS.primary[900],
       primary: COLORS.primary[600],
       secondary: COLORS.secondary[500],
       success: COLORS.success[600],
       danger: COLORS.danger[600],
-      warning: COLORS.warning[600],
+      warning: COLORS.warning[900],
     },
     badgeBorderColor: {
       DEFAULT: COLORS.primary[100],
@@ -317,6 +312,14 @@ export default defineConfig<Theme>({
       success: COLORS.success[200],
       danger: COLORS.danger[200],
       warning: COLORS.warning[500],
+    },
+    badgeBackgroundColor: {
+      DEFAULT: COLORS.primary[100],
+      primary: COLORS.primary[100],
+      secondary: COLORS.secondary[200],
+      success: COLORS.success[200],
+      danger: COLORS.danger[200],
+      warning: COLORS.warning[200],
     },
 
     // Hint
@@ -393,6 +396,16 @@ export default defineConfig<Theme>({
       hover: {
         opacity: '1',
       },
+      lg: {
+        fontSize: '1rem',
+        fontWeight: '600',
+        borderRadius: '0.25rem',
+        borderWidth: '1px',
+        paddingLeft: '1rem',
+        paddingRight: '1rem',
+        paddingTop: '0.5rem',
+        paddingBottom: '0.5rem',
+      },
     },
 
     // Link
@@ -457,6 +470,7 @@ export default defineConfig<Theme>({
             'subtle': COLORS.primary[900],
             'emphasized': COLORS.primary[850],
             'prominent': COLORS.primary[800],
+            'active': COLORS.primary[50],
 
             // Layout
             'layout': COLORS.primary[950],
@@ -478,6 +492,7 @@ export default defineConfig<Theme>({
             'subtle': `${COLORS.primary[50]}80`,
             'emphasized': `${COLORS.primary[50]}A0`,
             'prominent': COLORS.primary[100],
+            'active': COLORS.primary[900],
 
             // Layout
             'layout': COLORS.primary[50],
@@ -533,14 +548,6 @@ export default defineConfig<Theme>({
             secondary: COLORS.secondary[50],
             success: COLORS.success[500],
             danger: COLORS.danger[50],
-            warning: COLORS.warning[50],
-          },
-          badgeBackground: {
-            DEFAULT: COLORS.primary[700],
-            primary: COLORS.primary[500],
-            secondary: COLORS.secondary[500],
-            success: 'transparent',
-            danger: COLORS.danger[500],
             warning: COLORS.warning[500],
           },
           badgeBorderColor: {
@@ -550,6 +557,14 @@ export default defineConfig<Theme>({
             success: COLORS.success[500],
             danger: COLORS.danger[500],
             warning: COLORS.warning[500],
+          },
+          badgeBackgroundColor: {
+            DEFAULT: COLORS.primary[700],
+            primary: COLORS.primary[500],
+            secondary: COLORS.secondary[500],
+            success: 'transparent',
+            danger: COLORS.danger[500],
+            warning: 'transparent',
           },
 
           // Hint
