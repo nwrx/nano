@@ -12,33 +12,44 @@ useHead(() => ({
 }))
 
 const route = useRoute()
-const name = computed(() => route.params.workspace as string)
-const workspace = useWorkspace(name, {
-  withProjects: true,
-  withProjectFlows: true,
-  withProjectAssignments: true,
+const workspaceName = computed(() => route.params.workspace as string)
+const workspace = useWorkspace(workspaceName, {
+  withFlows: true,
   withAssignments: true,
 })
 
 const isDialogCreateProjectOpen = ref(false)
 const localSettings = useLocalSettings()
 onMounted(workspace.refresh)
+
+const bookmarkFlows = computed(() => workspace.data.value
+  ?.flatMap(project => (project.flows ?? []).map(flow => ({
+    ...flow,
+    workspace: workspaceName.value,
+    project: project.name,
+  })))
+  ?.slice(0, 3) ?? [])
 </script>
 
 <template>
   <AppPage>
-    <AppPageHeader
+    <ProjectHeader
       icon="i-carbon:flow"
       :title="t('title')"
+      :workspace="workspaceName"
       :description="t('description')"
     />
 
     <!-- Project list -->
     <AppPageContainer class="space-y-lg">
+
+      <!-- Bookmarks -->
+      <!-- <ProjectBookmarks :flows="bookmarkFlows" /> -->
+
       <ProjectList
         v-model="localSettings.workspaceOpenProjects"
-        :workspace="workspace.data.name"
-        :projects="workspace.data.projects"
+        :workspace="workspaceName"
+        :projects="workspace.data.value"
         :base-url="CONSTANTS.appHost"
         @flow-create="(project) => workspace.createFlow(project)"
         @flow-import="(project, file) => workspace.importFlow(project, file)"
@@ -60,7 +71,7 @@ onMounted(workspace.refresh)
     <!-- Create project dialog -->
     <ProjectListDialogCreate
       v-model="isDialogCreateProjectOpen"
-      :workspace="name"
+      :workspace="workspaceName"
       :base-url="CONSTANTS.appHost"
       @submit="options => workspace.createProject(options)"
     />

@@ -1,9 +1,9 @@
-import type { WorkspaceObject } from '@nwrx/api'
+import type { WorkspaceProjectObject } from '@nwrx/api'
 import type { RouteRequestData } from '@unserved/client'
 import type { application } from '~/server'
 import { useAlerts, useClient } from '#imports'
 
-type UseProjectOptions = Omit<RouteRequestData<typeof application, 'GET /api/workspaces/:workspace'>, 'workspace'>
+type UseProjectOptions = Omit<RouteRequestData<typeof application, 'GET /api/projects'>, 'workspace'>
 export type CreateProjectOptions = Omit<RouteRequestData<typeof application, 'POST /api/workspaces/:workspace'>, 'workspace'>
 
 /**
@@ -16,17 +16,17 @@ export type CreateProjectOptions = Omit<RouteRequestData<typeof application, 'PO
 export function useWorkspace(workspace: MaybeRef<string>, options: UseProjectOptions = {}) {
   const client = useClient()
   const alerts = useAlerts()
-  const data = ref<WorkspaceObject>({} as WorkspaceObject)
+  const data = ref<WorkspaceProjectObject[]>([])
 
   const refresh = async() => {
-    await client.request('GET /api/workspaces/:workspace', {
+    await client.request('GET /api/projects', {
       onData: project => data.value = project,
       data: { workspace: unref(workspace), ...options },
     })
   }
 
   return {
-    data: toReactive(data) as WorkspaceObject,
+    data,
     refresh,
 
     /**
@@ -82,13 +82,13 @@ export function useWorkspace(workspace: MaybeRef<string>, options: UseProjectOpt
      * @param flow The name of the flow to delete.
      * @returns A promise that resolves when the flow is deleted.
      */
-    deleteFlow: async(project: string, flow: string) =>
-      await client.requestAttempt('DELETE /api/workspaces/:workspace/:project/:flow', {
-        onError: error => alerts.error(error),
-        onSuccess: () => alerts.success('Flow deleted successfully'),
-        onEnd: () => void refresh(),
-        data: { workspace: unref(workspace), project, flow },
-      }),
+    // deleteFlow: async(project: string, flow: string) =>
+    //   await client.requestAttempt('DELETE /api/workspaces/:workspace/:project/:flow', {
+    //     onError: error => alerts.error(error),
+    //     onSuccess: () => alerts.success('Flow deleted successfully'),
+    //     onEnd: () => void refresh(),
+    //     data: { workspace: unref(workspace), project, flow },
+    //   }),
 
     /**
      * Delete a project from the workspace.
