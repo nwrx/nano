@@ -9,6 +9,7 @@ import '../../core/index'
 import '../../module-core/index'
 import '../../module-google/index'
 import '../../module-piste-gouv-fr/index'
+import '../../module-serpapi/index'
 
 // --- Expose the application for type inference.
 export const application = await Application.initialize([

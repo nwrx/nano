@@ -10,6 +10,7 @@
     "@nwrx/core": "workspace:*",
     "@nwrx/module-core": "workspace:*",
     "@nwrx/module-google": "workspace:*",
+    "@nwrx/module-serpapi": "workspace:*",
     "@unserved/server": "0.2.0",
     "@unshared/binary": "0.3.2",
     "@unshared/collection": "0.3.2",
