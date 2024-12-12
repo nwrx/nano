@@ -63,7 +63,7 @@ function handleClick(event: MouseEvent) {
       backdrop-blur-2xl rd ring
       bg-editor-node
     "
-    @mousedown="(event) => handleClick(event)">
+    @mousedown.stop="(event) => handleClick(event)">
 
     <!-- Header -->
     <EditorNodeHeader
