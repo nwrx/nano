@@ -1,4 +1,4 @@
-import type { Thread } from '../thread'
+import type { Thread } from '../createThread'
 import { getComponentInstance } from './getComponentInstance'
 
 /**
@@ -10,7 +10,6 @@ import { getComponentInstance } from './getComponentInstance'
  * @param value The value to set on the input key.
  */
 export function setComponentInstanceInputValue(thread: Thread, id: string, name: string, value: unknown) {
-  if (thread.isRunning) throw new Error('Cannot set input values on component instances while the thread is running.')
   const componentInstance = getComponentInstance(thread, id)
   componentInstance.input = componentInstance.input ?? {}
   componentInstance.input[name] = value
