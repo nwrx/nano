@@ -14,7 +14,7 @@ export function isComponent(value: unknown): value is Component {
   return (
     typeof value === 'object'
     && value !== null
-    && SYMBOL_COMPONENT in value
-    && value[SYMBOL_COMPONENT] === true
+    && '@instanceOf' in value
+    && value['@instanceOf'] === SYMBOL_COMPONENT
   )
 }
