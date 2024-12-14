@@ -2,8 +2,8 @@ import { createReference } from './createReference'
 
 describe('createReference', () => {
   it('should create a reference with no values', () => {
-    const result = createReference('Memory')
-    expect(result).toStrictEqual({ $ref: '#Memory' })
+    const result = createReference('Empty')
+    expect(result).toStrictEqual({ $ref: '#Empty' })
   })
 
   it('should create a reference with a single value', () => {
