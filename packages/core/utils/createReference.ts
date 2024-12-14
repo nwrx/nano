@@ -1,6 +1,14 @@
+import type { MaybeLiteral } from '@unshared/types'
+
 export interface Reference {
   $ref: string
 }
+
+export type ReferenceType =
+  | 'Flow'
+  | 'Modules'
+  | 'Node'
+  | 'Secrets'
 
 /**
  * Create a reference of a given type. The reference can be used to reference
@@ -18,7 +26,7 @@ export interface Reference {
  * // Create a reference to a node value.
  * const nodeRef = createReference('Node', 'NODE_ID') // { $ref: '#Node/NODE_ID' }
  */
-export function createReference(kind: string, ...values: string[]): Reference {
+export function createReference(kind: MaybeLiteral<ReferenceType>, ...values: string[]): Reference {
   const value = [kind, ...values].join('/')
   return { $ref: `#${value}` }
 }
