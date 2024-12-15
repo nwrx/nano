@@ -2,12 +2,12 @@ import { isReference } from './isReference'
 
 describe('isReference', () => {
   it('should return true for a valid Reference object', () => {
-    const result = isReference({ $ref: '#Node/NODE_ID/foo' })
+    const result = isReference({ $ref: '#/Reference/Foo/Bar' })
     expect(result).toBe(true)
   })
 
   it('should return false for an object without $ref property', () => {
-    const result = isReference({ notRef: '#Node/NODE_ID/foo' })
+    const result = isReference({ notRef: '#/Reference/Foo/Bar' })
     expect(result).toBe(false)
   })
 
