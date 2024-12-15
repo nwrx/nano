@@ -8,6 +8,7 @@ describe('defineComponent', () => {
       description: 'This is an example component.',
       inputs: { input1: { type: 'string' } },
       outputs: { output1: { type: 'string' } },
+      // @ts-expect-error: Make sure the `proces` property is not used.
       process: vi.fn(),
     })
 
@@ -24,6 +25,7 @@ describe('defineComponent', () => {
 
   it('should define a component with a process function', () => {
     const process = vi.fn()
+    // @ts-expect-error: ignore infinite type inference.
     const component = defineComponent({}, process)
     expect(component).toStrictEqual({
       ['@instanceOf']: SYMBOL_COMPONENT,

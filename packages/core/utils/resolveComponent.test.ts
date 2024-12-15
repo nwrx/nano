@@ -44,6 +44,7 @@ describe('resolveComponent', () => {
 
   it('should throw an error if the component is not valid', async() => {
     const resolver = () => ({ title: 'Invalid' })
+    // @ts-expect-error: The component is invalid.
     const shouldReject = resolveComponent('module/invalidComponent', [resolver])
     await expect(shouldReject).rejects.toThrow('The component with specifier "module/invalidComponent" could was resolved but is not a valid component.')
   })

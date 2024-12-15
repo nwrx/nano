@@ -1,0 +1,25 @@
+import type { OpenAPIV3 } from 'openapi-types'
+import { ERRORS as E } from './errors'
+
+export function resolveSchemaString(value: unknown, schema: OpenAPIV3.SchemaObject): string {
+  if (typeof value !== 'string')
+    throw E.INPUT_NOT_STRING()
+
+  // --- Assert enums.
+  if (schema.enum && !schema.enum.includes(value))
+    throw E.INPUT_NOT_IN_ENUM(schema.enum as string[])
+
+  // --- Assert pattern.
+  if (schema.pattern && !new RegExp(schema.pattern).test(value))
+    throw E.INPUT_PATTERN_MISMATCH(schema.pattern)
+
+  // --- Assert minLength.
+  if (schema.minLength && (value).length < schema.minLength)
+    throw E.INPUT_TOO_SHORT(schema.minLength)
+
+  // --- Assert maxLength.
+  if (schema.maxLength && (value).length > schema.maxLength)
+    throw E.INPUT_TOO_LONG(schema.maxLength)
+
+  return value
+}

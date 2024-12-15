@@ -1,5 +1,6 @@
-import type { FlowV1 } from '../utils'
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
 import type { Thread, ThreadOptions } from './createThread'
+import type { FlowV1 } from './serialize'
 import { createThread } from './createThread'
 
 /**
@@ -10,7 +11,7 @@ import { createThread } from './createThread'
  * @returns The thread instance.
  */
 export function createThreadFromJson(json: FlowV1, options: ThreadOptions = {}): Thread {
-  const { version, nodes = {}, components = nodes } = json
+  const { version, components = {} } = json
 
   // --- Assert that the version is supported.
   if (!version) throw new Error('Flow file version is missing')
@@ -20,21 +21,21 @@ export function createThreadFromJson(json: FlowV1, options: ThreadOptions = {}):
   // --- Collect all the instances to add to the thread.
   const thread = createThread(options)
   for (const id in components) {
-    const { kind, ...data } = components[id]
-    const meta: Record<string, unknown> = {}
+    const { specifier, ...data } = components[id]
+    const metadata: Record<string, unknown> = {}
     const input: Record<string, unknown> = {}
 
     // --- Collect the static data and the links.
-    // --- If the key starts with an underscore, store it as meta data.
+    // --- If the key starts with an underscore, store it as metadata data.
     // --- Otherwise, store the value as initial data.
     for (const key in data) {
       const value = data[key]
-      if (key.startsWith('_')) meta[key.slice(1)] = value
+      if (key.startsWith('_')) metadata[key.slice(1)] = value
       else input[key] = value
     }
 
     // --- Append the component instance to the thread.
-    thread.componentInstances.set(id, { kind, input, meta })
+    thread.componentInstances.set(id, { specifier, input, metadata })
   }
 
   // --- Return the thread instance.

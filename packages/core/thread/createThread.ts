@@ -1,26 +1,13 @@
-import type { MaybePromise, ObjectLike } from '@unshared/types'
-import type { Component } from '../module'
-import type { ComponentInstance, Reference, ThreadEventMeta, ThreadEvents } from '../utils'
+import type { ObjectLike } from '@unshared/types'
+import type { Component, ComponentResolver, ReferenceResolver, ThreadEventMeta, ThreadEvents } from '../utils'
+import type { ComponentInstance } from './add'
 import { randomUUID } from 'node:crypto'
-import { Emitter, getComponentInstance, getLinks, isNodeReadyToStart, isReferenceLink, resolveComponent, resolveSchema } from '../utils'
-import { Node } from './createNode'
-
-export const NODE_INPUT_KIND = 'core/input'
-export const NODE_OUTPUT_KIND = 'core/output'
-
-/**
- * The function that is used to resolve a reference to a value. The resolve
- * function is used to resolve the reference to a value that can be used in
- * the flow.
- */
-export type ReferenceResolver = (reference: Reference) => MaybePromise<unknown>
-
-/**
- * A function that is used to resolve a node definition. The resolve function
- * is used to resolve the node definition to a value that can be used in the
- * flow.
- */
-export type ComponentResolver = (kind: string) => MaybePromise<Component | void>
+import { Emitter, isNodeReadyToStart, Node, resolveSchema } from '../utils'
+import { DEFAULT_COMPONENT_RESOLVER } from './defaultComponentResolver'
+import { DEFAULT_REFERENCE_RESOLVER } from './defaultReferenceResolver'
+import { getComponent } from './getComponent'
+import { getInstance } from './getInstance'
+import { getLinks } from './getLinks'
 
 /**
  * The options that are used to create a new flow instance. The options can be
@@ -61,18 +48,10 @@ export class Thread extends Emitter<ThreadEvents> implements ThreadOptions {
   abortController = new AbortController()
 
   /** The resolvers that are used to resolve the component kind. */
-  componentResolvers = [] as ComponentResolver[]
+  componentResolvers = [DEFAULT_COMPONENT_RESOLVER.bind(this)] as ComponentResolver[]
 
-  referenceResolvers = [
-    (reference) => {
-      if (isReferenceLink(reference)) {
-        const { id, name } = reference.$fromNode
-        const node = this.nodes.get(id)
-        if (!node) return
-        return node.result[name]
-      }
-    },
-  ] as ReferenceResolver[]
+  /** The resolvers that are used to resolve the references. */
+  referenceResolvers = [DEFAULT_REFERENCE_RESOLVER.bind(this)] as ReferenceResolver[]
 
   /***************************************************************************/
   /* Helpers                                                                 */
@@ -82,7 +61,7 @@ export class Thread extends Emitter<ThreadEvents> implements ThreadOptions {
     return {
       threadId: this.id,
       threadDelta: Date.now() - this.startedAt,
-      timestamp: Date.now(),
+      timestamp: new Date().toISOString(),
     }
   }
 
@@ -94,18 +73,6 @@ export class Thread extends Emitter<ThreadEvents> implements ThreadOptions {
     return false
   }
 
-  /***************************************************************************/
-  /* Runtime                                                                 */
-  /***************************************************************************/
-
-  /** Aborts the flow thread. */
-  abort() {
-    this.abortController.abort()
-    this.dispatch('abort', this.eventMetadata)
-    this.abortController = new AbortController()
-    for (const [, node] of this.nodes) node.abort()
-  }
-
   async start(threadInput: ObjectLike = {}) {
     const threadOutput: ObjectLike = {}
     const links = getLinks(this)
@@ -114,10 +81,10 @@ export class Thread extends Emitter<ThreadEvents> implements ThreadOptions {
     this.startedAt = Date.now()
     this.dispatch('start', threadInput, this.eventMetadata)
 
-    // --- Resolve all components.
+    // --- Resolve all components before starting the nodes.
     const components = new Map<string, Component>()
-    for (const [id, componentInstance] of this.componentInstances) {
-      const component = await resolveComponent(componentInstance.kind, this.componentResolvers)
+    for (const [id] of this.componentInstances) {
+      const component = await getComponent(this, id)
       components.set(id, component)
     }
 
@@ -133,7 +100,7 @@ export class Thread extends Emitter<ThreadEvents> implements ThreadOptions {
         node.on('start', (context, meta) => {
           this.dispatch('nodeStart', id, context, { ...meta, ...this.eventMetadata })
           const { data, result } = context
-          if (componentInstance.kind === NODE_INPUT_KIND) {
+          if (componentInstance.specifier === 'input') {
             const name = data.name as string
             result.value = threadInput[name]
           }
@@ -152,7 +119,7 @@ export class Thread extends Emitter<ThreadEvents> implements ThreadOptions {
           this.dispatch('nodeEnd', id, context, { ...meta, ...this.eventMetadata })
 
           // --- If the node is an output, apply the output value to the thread output.
-          if (componentInstance.kind === NODE_OUTPUT_KIND) {
+          if (componentInstance.specifier === 'output') {
             const name = context.data.name as string
             const value = context.data.value
             threadOutput[name] = value
@@ -163,7 +130,7 @@ export class Thread extends Emitter<ThreadEvents> implements ThreadOptions {
           // --- if all their incoming nodes are done.
           const outgoingLinks = links.filter(link => link.sourceId === id)
           for (const link of outgoingLinks) {
-            const target = getComponentInstance(this, link.targetId)
+            const target = getInstance(this, link.targetId)
             const targetNode = this.nodes.get(link.targetId)!
             const targetComponent = components.get(link.targetId)!
             if (!target) continue
@@ -171,7 +138,7 @@ export class Thread extends Emitter<ThreadEvents> implements ThreadOptions {
             const data = await resolveSchema({
               data: target.input,
               resolvers: this.referenceResolvers,
-              schema: targetComponent.inputSchema,
+              schema: targetComponent.inputs,
             })
             void targetNode.process(data)
           }
@@ -190,7 +157,7 @@ export class Thread extends Emitter<ThreadEvents> implements ThreadOptions {
         const dataPromise = resolveSchema({
           data: componentInstance.input,
           resolvers: this.referenceResolvers,
-          schema: component.inputSchema,
+          schema: component.inputs,
         })
         void dataPromise.then(data => node.process(data))
       }

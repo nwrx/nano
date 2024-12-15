@@ -1,5 +1,5 @@
-import type { Thread } from '../thread'
-import { getLinks } from './getLinks'
+import type { Thread } from '../thread/createThread'
+import { getLinks } from '../thread/getLinks'
 
 /**
  * Check if all incoming links to a node are DONE. If so, the node is ready to start
