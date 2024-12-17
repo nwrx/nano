@@ -16,17 +16,13 @@ export async function implementFetch(isolate: ivm.Isolate, context: ivm.Context)
       status: response.status,
       statusText: response.statusText,
       redirected: response.redirected,
-      body: response.body,
       bodyUsed: new ivm.Reference(() => response.bodyUsed),
-      headers: Object.fromEntries(response.headers),
       text: new ivm.Reference(() => response.text()),
       json: new ivm.Reference(() => response.json()),
       bytes: new ivm.Reference(() => response.arrayBuffer()),
       arrayBuffer: new ivm.Reference(() => response.arrayBuffer()),
-      blob: () => { throw new Error('Not implemented') },
-      clone: () => { throw new Error('Not implemented') },
-      formData: () => { throw new Error('Not implemented') },
-    } satisfies Record<keyof Response, unknown>
+      headers: Object.fromEntries(response.headers),
+    }
   })
   await context.global.set('fetchImpl', reference)
 
@@ -50,9 +46,15 @@ export async function implementFetch(isolate: ivm.Isolate, context: ivm.Context)
         get status() { return responseRef.getSync('status') },
         get statusText() { return responseRef.getSync('statusText') },
         get redirected() { return responseRef.getSync('redirected') },
+        get body() { throw new Error('Not implemented') },
         get bodyUsed() { return responseRef.getSync('bodyUsed').applySync(undefined, []) },
         text: () => responseRef.getSync('text').apply(undefined, [], { result: { promise: true } }),
         json: () => responseRef.getSync('json').apply(undefined, [], { result: { promise: true } }),
+        bytes: () => responseRef.getSync('bytes').apply(undefined, [], { result: { promise: true } }),
+        arrayBuffer: () => responseRef.getSync('arrayBuffer').apply(undefined, [], { result: { promise: true } }),
+        blob: () => { throw new Error('Not implemented') },
+        clone: () => { throw new Error('Not implemented') },
+        formData: () => { throw new Error('Not implemented') },
         get headers() {
           const headersObject = responseRef.getSync('headers').copySync()
           return new Headers(headersObject)

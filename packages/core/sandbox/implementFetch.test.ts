@@ -91,8 +91,8 @@ describe('implementFetch', () => {
     })
   })
 
-  describe('response.body', () => {
-    it('should return the response body as a text', async() => {
+  describe('body', () => {
+    it('should return the response body as a text when calling "text"', async() => {
       const wrapped = await wrapInSandbox((url: string) => fetch(url).then(response => response.text()))
       await implementHeaders(wrapped.isolate, wrapped.context)
       await implementFetch(wrapped.isolate, wrapped.context)
@@ -100,12 +100,30 @@ describe('implementFetch', () => {
       expect(result).toStrictEqual('{"userId":1,"id":1,"title":"delectus aut autem","completed":false}')
     })
 
-    it('should return the response body as a JSON object', async() => {
+    it('should return the response body as a JSON object when calling "json"', async() => {
       const wrapped = await wrapInSandbox((url: string) => fetch(url).then(response => response.json()))
       await implementHeaders(wrapped.isolate, wrapped.context)
       await implementFetch(wrapped.isolate, wrapped.context)
       const result = await wrapped('https://jsonplaceholder.typicode.com/todos/1') as Record<string, unknown>
       expect(result).toStrictEqual({ userId: 1, id: 1, title: 'delectus aut autem', completed: false })
+    })
+
+    it('should return the response body as an ArrayBuffer when calling "bytes"', async() => {
+      const wrapped = await wrapInSandbox((url: string) => fetch(url).then(response => response.bytes()))
+      await implementHeaders(wrapped.isolate, wrapped.context)
+      await implementFetch(wrapped.isolate, wrapped.context)
+      const result = await wrapped('https://jsonplaceholder.typicode.com/todos/1')
+      const expected = new TextEncoder().encode('{"userId":1,"id":1,"title":"delectus aut autem","completed":false}')
+      expect(result).toStrictEqual(expected.buffer)
+    })
+
+    it('should return the response body as an ArrayBuffer when calling "arrayBuffer"', async() => {
+      const wrapped = await wrapInSandbox((url: string) => fetch(url).then(response => response.arrayBuffer()))
+      await implementHeaders(wrapped.isolate, wrapped.context)
+      await implementFetch(wrapped.isolate, wrapped.context)
+      const result = await wrapped('https://jsonplaceholder.typicode.com/todos/1')
+      const expected = new TextEncoder().encode('{"userId":1,"id":1,"title":"delectus aut autem","completed":false}')
+      expect(result).toStrictEqual(expected.buffer)
     })
 
     it('should return a response with the "bodyUsed" property set to false', async() => {
