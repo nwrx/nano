@@ -15,16 +15,18 @@ npm install @nwrx/sdk
 To use the Nano SDK, you can import the library and create a new instance of the SDK with the URL of the Nano instance you want to interact with:
 
 ```typescript
-import { Nano } from '@nwrx/sdk';
+import NwrxSDK from '@nwrx/sdk';
 
 // Instantiate the SDK with the URL of the Nano instance.
-const Nano = new Nano('https://app.nanoworks.io', {
+const nwrx = new NwrxSDK({
   apiKey: 'YOUR_API_KEY',
+  instanceUrl: 'https://nwrx.io',
 });
 
 // List all workflows available on the Nano instance.
-const workflows = await Nano.getFlows(); // Returns a list of flow objects.
+const flows = await nwrx.getFlows(); // Returns a list of flow objects.
+const flow = await nwrx.getFlow('summarize-email'); // Returns a flow object.
 
 // Call a chain with a specific input.
-const result = await Nano.callFlow('summarize-email', { data: 'value' }); // Returns the result of the flow call.
+const thread = await flow.start('summarize-email', { body: '...' }); // Returns the result of the flow call.
 ```
