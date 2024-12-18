@@ -1,4 +1,4 @@
-import { defineComponent } from '../utils'
+import { defineComponent } from '../utils/defineComponent'
 
 export const passthrough = defineComponent(
   {
@@ -8,13 +8,13 @@ export const passthrough = defineComponent(
     inputs: {
       value: {
         title: 'Value',
-        description: 'The value to pass through the flow.',
+        description: 'The value to pass through the node.',
       },
     },
     outputs: {
       value: {
         title: 'Value',
-        description: 'The value that was passed through the flow.',
+        description: 'The value that was passed through the node.',
       },
     },
   },
