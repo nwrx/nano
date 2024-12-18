@@ -42,18 +42,13 @@ export type InferSchema<T> =
 {
   [P in keyof T]:
   T[P] extends { default: any } ? OpenAPIV2.InferSchema<T[P]>
-    : T[P] extends { 'x-stream': true } ? AsyncIterable<OpenAPIV2.InferSchema<T[P]>>
+    : T[P] extends { 'x-stream': true } ? ReadableStream
       : OpenAPIV2.InferSchema<T[P]> | undefined
 }
 
-export interface ProcessContext<
-  T extends ObjectLike = ObjectLike,
-  U extends ObjectLike = ObjectLike,
-> {
+export interface ProcessContext<T extends ObjectLike = ObjectLike> {
   data: T
-  result: U
   trace: (data: T) => void
-  abortSignal: AbortSignal
 }
 
 export type ProcessFunction<
@@ -61,8 +56,8 @@ export type ProcessFunction<
   U extends Record<string, OutputSocket> = Record<string, OutputSocket>,
 > =
   [InferSchema<T>, InferSchema<U>] extends [infer Data extends ObjectLike, infer Result extends ObjectLike]
-    ? (context: ProcessContext<Data, Result>) => MaybePromise<Result>
-    : never
+    ? (context: ProcessContext<Data>) => MaybePromise<Result>
+    : (context: ProcessContext) => MaybePromise<ObjectLike>
 
 export interface ComponentOptions<
   T extends Record<string, InputSocket> = Record<string, InputSocket>,
@@ -80,13 +75,13 @@ export interface Component<
   U extends Record<string, OutputSocket> = Record<string, OutputSocket>,
 > extends ComponentOptions<T, U> {
   ['@instanceOf']: typeof SYMBOL_COMPONENT
-  process?: ProcessFunction<T, U>
+  process?: ProcessFunction<any, any>
 }
 
 export function defineComponent<
   T extends Record<string, InputSocket>,
   U extends Record<string, OutputSocket>,
->(options: ComponentOptions<T, U>, process?: ProcessFunction<T, U>): Component<T, U> {
+>(options: ComponentOptions<T, U>, process?: ProcessFunction<T, U>): Component<any, any> {
   return {
     ['@instanceOf']: SYMBOL_COMPONENT,
     icon: options.icon,

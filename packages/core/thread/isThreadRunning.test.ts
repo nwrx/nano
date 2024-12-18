@@ -1,0 +1,31 @@
+import { addNode } from './addNode'
+import { createThread } from './createThread'
+import { isThreadRunning } from './isThreadRunning'
+
+describe('isThreadRunning', () => {
+  it('should return true if at least one node is processing', () => {
+    const thread = createThread()
+    const id1 = addNode(thread, 'example')
+    const id2 = addNode(thread, 'example')
+    thread.nodes.get(id1)!.state = 'processing'
+    thread.nodes.get(id2)!.state = 'done'
+    const result = isThreadRunning(thread)
+    expect(result).toBe(true)
+  })
+
+  it('should return false if all nodes are done', () => {
+    const thread = createThread()
+    const id1 = addNode(thread, 'example')
+    const id2 = addNode(thread, 'example')
+    thread.nodes.get(id1)!.state = 'done'
+    thread.nodes.get(id2)!.state = 'done'
+    const result = isThreadRunning(thread)
+    expect(result).toBe(false)
+  })
+
+  it('should return false if there are no nodes', () => {
+    const thread = createThread()
+    const result = isThreadRunning(thread)
+    expect(result).toBe(false)
+  })
+})

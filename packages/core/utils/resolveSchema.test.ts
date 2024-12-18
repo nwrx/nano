@@ -1,91 +1,40 @@
-import { typeBoolean, typeNumber, typeObject, typeString } from '../__fixtures__'
+import { ERRORS as E } from './errors'
 import { resolveSchema } from './resolveSchema'
 
 describe('resolveSchema', () => {
-  describe('simple types', () => {
-    it('should resolve a simple schema with string type', async() => {
-      const schema = { name: { type: 'string' } }
-      const data = { name: 'John Doe' }
-      const result = await resolveSchema({ schema, data })
-      expect(result).toEqual({ name: 'John Doe' })
-    })
-
-    it('should resolve a schema with multiple types', async() => {
-      const schema = {
-        name: { type: typeString },
-        age: { type: typeNumber },
-        isActive: { type: typeBoolean },
-      }
-      const data = { name: 'John Doe', age: 30, isActive: true }
-      const result = await resolveSchema({ schema, data })
-      expect(result).toEqual({ name: 'John Doe', age: 30, isActive: true })
-    })
-
-    it('should resolve a schema with an object type', async() => {
-      const schema = { data: { type: typeObject } }
-      const data = { data: { key: 'value' } }
-      const result = await resolveSchema({ schema, data })
-      expect(result).toEqual({ data: { key: 'value' } })
-    })
-
-    it('should throw an error for missing required value', async() => {
-      const schema = { name: { type: typeString } }
-      const data = {}
-      const shouldThrow = () => resolveSchema({ schema, data })
-      await expect(shouldThrow).rejects.toThrow('Failed to resolve the schema.')
-    })
-
-    it('should skip errors when skipErrors is true', async() => {
-      const schema = { name: { type: typeString }, age: { type: typeNumber } }
-      const data = { name: 'John Doe' }
-      const result = await resolveSchema({ schema, data, skipErrors: true })
-      expect(result).toEqual({ name: 'John Doe' })
-    })
+  it('should resolve a valid string', async() => {
+    const result = await resolveSchema('value', 'Hello, World!', { type: 'string' })
+    expect(result).toBe('Hello, World!')
   })
 
-  describe('isIterable', () => {
-    it('should resolve a schema with an array of data', async() => {
-      const schema = { tags: { type: typeString, isIterable: true } }
-      const data = { tags: ['tag1', 'tag2'] }
-      const result = await resolveSchema({ schema, data })
-      expect(result).toEqual({ tags: ['tag1', 'tag2'] })
-    })
-
-    it('should throw an error when passing an object into an isIterable schema', async() => {
-      const schema = { tags: { type: typeString, isIterable: true } }
-      const data = { tags: { key: 'value' } }
-      const shouldThrow = () => resolveSchema({ schema, data })
-      await expect(shouldThrow).rejects.toThrow('Failed to resolve the schema.')
-    })
-
-    it('should resolve an empty array when value is undefined and isOptional is true', async() => {
-      const schema = { tags: { type: typeString, isIterable: true, isOptional: true } }
-      const data = {}
-      const result = await resolveSchema({ schema, data })
-      expect(result).toEqual({ tags: [] })
-    })
+  it('should resolve a valid number', async() => {
+    const result = await resolveSchema('value', 42, { type: 'number' })
+    expect(result).toBe(42)
   })
 
-  describe('isMap', () => {
-    it('should resolve a schema with a map of data', async() => {
-      const schema = { metadata: { type: typeString, isMap: true } }
-      const data = { metadata: { key1: 'value1', key2: 'value2' } }
-      const result = await resolveSchema({ schema, data })
-      expect(result).toEqual({ metadata: { key1: 'value1', key2: 'value2' } })
-    })
+  it('should resolve a valid boolean', async() => {
+    const result = await resolveSchema('value', true, { type: 'boolean' })
+    expect(result).toBe(true)
+  })
 
-    it('should throw an error when passing an array into an isMap schema', async() => {
-      const schema = { metadata: { type: typeString, isMap: true } }
-      const data = { metadata: ['value1', 'value2'] }
-      const shouldThrow = () => resolveSchema({ schema, data })
-      await expect(shouldThrow).rejects.toThrow('Failed to resolve the schema.')
-    })
+  it('should resolve a valid array', async() => {
+    const result = await resolveSchema('value', [1, 2, 3], { type: 'array', items: { type: 'number' } })
+    expect(result).toEqual([1, 2, 3])
+  })
 
-    it('should resolve an empty object when value is undefined and isOptional is true', async() => {
-      const schema = { metadata: { type: typeString, isMap: true, isOptional: true } }
-      const data = {}
-      const result = await resolveSchema({ schema, data })
-      expect(result).toEqual({ metadata: {} })
-    })
+  it('should resolve a valid object', async() => {
+    const result = await resolveSchema('value', { foo: 'bar' }, { type: 'object', properties: { foo: { type: 'string' } } })
+    expect(result).toEqual({ foo: 'bar' })
+  })
+
+  it('should throw an error if the value is undefined and not optional', async() => {
+    const shouldThrow = resolveSchema('value', undefined, { type: 'string' })
+    const error = E.INPUT_REQUIRED('value')
+    await expect(shouldThrow).rejects.toThrow(error)
+  })
+
+  it('should return default value if the value is undefined and optional', async() => {
+    const result = await resolveSchema('value', undefined, { 'type': 'string', 'x-optional': true, 'default': 'default' })
+    expect(result).toBe('default')
   })
 })

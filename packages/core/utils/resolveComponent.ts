@@ -1,15 +1,15 @@
 import type { MaybePromise } from '@unshared/types'
 import type { Component } from './defineComponent'
-import type { ComponentSpecifier } from './parseSpecifier'
+import type { SpecifierObject } from './parseSpecifier'
+import { ERRORS as E } from './errors'
 import { isComponent } from './isComponent'
-import { parseSpecifier } from './parseSpecifier'
 
 /**
  * A function that is used to resolve a component. The resolve function
  * is used to resolve the component to a value that can be used in the
  * flow.
  */
-export type ComponentResolver = (specifier: ComponentSpecifier) => MaybePromise<Component<any, any> | undefined>
+export type ComponentResolver = (specifier: SpecifierObject) => MaybePromise<Component<any, any> | undefined>
 
 /**
  * The function that is used to resolve a component. The resolve function
@@ -20,13 +20,12 @@ export type ComponentResolver = (specifier: ComponentSpecifier) => MaybePromise<
  * @param resolvers The resolvers that are used to resolve the component.
  * @returns The resolved component.
  */
-export async function resolveComponent(specifier: string, resolvers: ComponentResolver[]): Promise<Component> {
-  const specifierObject = parseSpecifier(specifier)
+export async function resolveComponent(specifier: SpecifierObject, resolvers: ComponentResolver[]): Promise<Component> {
   for (const resolve of resolvers) {
-    const component = await resolve(specifierObject)
+    const component = await resolve(specifier)
     if (component === undefined) continue
-    if (!isComponent(component)) throw new Error(`The component with specifier "${specifier}" could was resolved but is not a valid component.`)
+    if (!isComponent(component)) throw E.COMPONENT_RESOLVED_BUT_NOT_COMPONENT(specifier)
     return component
   }
-  throw new Error(`The component with specifier "${specifier}" could not be resolved.`)
+  throw E.COMPONENT_NOT_RESOLVED(specifier)
 }

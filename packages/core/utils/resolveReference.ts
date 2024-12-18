@@ -1,6 +1,5 @@
 import type { MaybePromise } from '@unshared/types'
 import type { Reference, ReferenceType } from './createReference'
-import { ERRORS as E } from './errors'
 import { parseReference } from './parseReference'
 
 /**
@@ -25,5 +24,4 @@ export async function resolveReference(reference: Reference, resolvers: Referenc
     const value = await resolve(type, ...values)
     if (value !== undefined) return value
   }
-  throw E.REFERENCE_UNRESOLVED(reference.$ref)
 }

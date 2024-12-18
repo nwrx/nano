@@ -11,8 +11,15 @@ import { removeLink } from './removeLink'
  * @param thread The thread where the component instances are located.
  * @param ids The IDs of the component instances to remove.
  * @returns A promise that resolves with the results of the removed links.
+ * @example
+ *
+ * // Remove a component instance from the thread.
+ * const linksToRemove = await removeNode(thread, 'node-id')
+ *
+ * // Log the links that were removed as a side effect.
+ * console.log(linksToRemove) // [{ sourceId: 'node-id', targetId: 'node-id' }]
  */
-export async function remove(thread: Thread, ...ids: string[]): Promise<RemoveLinkResult[]> {
+export async function removeNode(thread: Thread, ...ids: string[]): Promise<RemoveLinkResult[]> {
   const links = getLinks(thread)
   const promises: Array<Promise<RemoveLinkResult[]>> = []
   for (const id of ids) {
@@ -25,7 +32,7 @@ export async function remove(thread: Thread, ...ids: string[]): Promise<RemoveLi
     }
 
     // --- Remove the component instance from the thread.
-    thread.componentInstances.delete(id)
+    thread.nodes.delete(id)
   }
 
   // --- Wait for all the links to be removed.

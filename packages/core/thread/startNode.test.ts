@@ -1,0 +1,272 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import { createReference, defineComponent } from '../utils'
+import { addNode } from './addNode'
+import { createThread } from './createThread'
+import { getNode } from './getNode'
+import { startNode } from './startNode'
+
+function createComponent() {
+  return defineComponent(
+    {
+      inputs: { name: { type: 'string' } },
+      outputs: { result: { type: 'string' } },
+    },
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    vi.fn(({ data }) => ({ result: `Hello, ${data.name}!` })),
+  )
+}
+
+describe('startNode', () => {
+  beforeAll(() => {
+    vi.useFakeTimers({ now: new Date('2020-01-01T00:00:00.000Z') })
+  })
+
+  afterAll(() => {
+    vi.useRealTimers()
+  })
+
+  describe('data', () => {
+    it('should resolve the references', async() => {
+      const thread = createThread({ referenceResolvers: [() => 'Universe'] })
+      const id = addNode(thread, 'core/example', {
+        input: { name: createReference('Variables', 'Something') },
+        component: createComponent(),
+        dangereouslyRunInUnsandboxedEnvironment: true,
+      })
+      const result = await startNode(thread, id)
+      expect(result).toStrictEqual({ result: 'Hello, Universe!' })
+    })
+
+    it('should call the process function with the resolved data', async() => {
+      const component = createComponent()
+      const thread = createThread()
+      const id = addNode(thread, 'core/example', {
+        input: { name: 'World' },
+        component,
+        dangereouslyRunInUnsandboxedEnvironment: true,
+      })
+      await startNode(thread, id)
+      expect(component.process).toHaveBeenCalledWith({
+        data: { name: 'World' },
+        trace: expect.any(Function),
+      })
+    })
+  })
+
+  describe('process', () => {
+    it('should call the process function in the main thread', async() => {
+      const component = createComponent()
+      component.process = vi.fn()
+      const thread = createThread()
+      const id = addNode(thread, 'example', {
+        input: { name: 'World' },
+        component,
+        dangereouslyRunInUnsandboxedEnvironment: true,
+      })
+      await startNode(thread, id)
+      expect(component.process).toHaveBeenCalled()
+    })
+
+    it('should call the process function in the sandbox', async() => {
+      const component = createComponent()
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      component.process = ({ data }) => ({ result: `Hello, ${data.name}!` })
+      const thread = createThread()
+      const id = addNode(thread, 'example', { input: { name: 'World' }, component })
+      const result = await startNode(thread, id)
+      expect(result).toStrictEqual({ result: 'Hello, World!' })
+    })
+
+    it('should throw when trying to break out of the sandbox', async() => {
+      const component = createComponent()
+      const value = 'Hello, World!'
+      component.process = () => ({ value })
+      const thread = createThread()
+      const id = addNode(thread, 'example', { input: { name: 'World' }, component })
+      const shouldReject = startNode(thread, id)
+      await expect(shouldReject).rejects.toThrow('value is not defined')
+    })
+  })
+
+  describe('result', () => {
+    it('should start a node and return the result', async() => {
+      const thread = createThread()
+      const id = addNode(thread, 'core/example', {
+        input: { name: 'World' },
+        component: createComponent(),
+        dangereouslyRunInUnsandboxedEnvironment: true,
+      })
+      const result = await startNode(thread, id)
+      expect(result).toStrictEqual({ result: 'Hello, World!' })
+    })
+
+    it('should resolve the component before starting the node', async() => {
+      const thread = createThread({ componentResolvers: [() => createComponent()] })
+      const id = addNode(thread, 'core/example', {
+        input: { name: 'World' },
+        dangereouslyRunInUnsandboxedEnvironment: true,
+      })
+      const result = await startNode(thread, id)
+      expect(result).toStrictEqual({ result: 'Hello, World!' })
+    })
+
+    it('should store the date and timestamp when the node starts', async() => {
+      const thread = createThread()
+      const id = addNode(thread, 'core/example', {
+        input: { name: 'World' },
+        component: createComponent(),
+        dangereouslyRunInUnsandboxedEnvironment: true,
+      })
+      await startNode(thread, id)
+      const node = getNode(thread, id)
+      expect(node.startedAt).toBe(1577836800000)
+    })
+  })
+
+  describe('events', () => {
+    it('should dispatch the "nodeState" event when the node starts', async() => {
+      const thread = createThread()
+      const id = addNode(thread, 'core/example', {
+        input: { name: 'World' },
+        component: createComponent(),
+        dangereouslyRunInUnsandboxedEnvironment: true,
+      })
+      const callback = vi.fn()
+      thread.on('nodeState', callback)
+      await startNode(thread, id)
+      expect(callback).toHaveBeenCalledWith(
+        id,
+        getNode(thread, id),
+        {
+          delta: 0,
+          duration: 0,
+          state: 'processing',
+          timestamp: '2020-01-01T00:00:00.000Z',
+        },
+      )
+    })
+
+    it('should dispatch the "nodeState" event when the node ends', async() => {
+      const thread = createThread()
+      const id = addNode(thread, 'core/example', {
+        input: { name: 'World' },
+        component: createComponent(),
+        dangereouslyRunInUnsandboxedEnvironment: true,
+      })
+      const callback = vi.fn()
+      thread.on('nodeState', callback)
+      await startNode(thread, id)
+      expect(callback).toHaveBeenCalledWith(
+        id,
+        getNode(thread, id),
+        {
+          delta: 0,
+          duration: 0,
+          state: 'processing',
+          timestamp: '2020-01-01T00:00:00.000Z',
+        },
+      )
+    })
+
+    it('should dispatch the "nodeStart" event when the node starts', async() => {
+      const thread = createThread()
+      const id = addNode(thread, 'core/example', {
+        input: { name: 'World' },
+        component: createComponent(),
+        dangereouslyRunInUnsandboxedEnvironment: true,
+      })
+      const callback = vi.fn()
+      thread.on('nodeStart', callback)
+      await startNode(thread, id)
+      expect(callback).toHaveBeenCalledWith(
+        id,
+        getNode(thread, id),
+        { name: 'World' },
+        {
+          delta: 0,
+          duration: 0,
+          state: 'processing',
+          timestamp: '2020-01-01T00:00:00.000Z',
+        },
+      )
+    })
+
+    it('should dispatch the "nodeDone" event when the node ends', async() => {
+      const thread = createThread()
+      const id = addNode(thread, 'core/example', {
+        input: { name: 'World' },
+        component: createComponent(),
+        dangereouslyRunInUnsandboxedEnvironment: true,
+      })
+      const callback = vi.fn()
+      thread.on('nodeDone', callback)
+      await startNode(thread, id)
+      expect(callback).toHaveBeenCalledWith(
+        id,
+        getNode(thread, id),
+        { result: 'Hello, World!' },
+        {
+          delta: 0,
+          duration: 0,
+          state: 'done',
+          timestamp: '2020-01-01T00:00:00.000Z',
+        },
+      )
+    })
+  })
+
+  describe('errors', () => {
+    it('should handle component process errors', async() => {
+      const component = createComponent()
+      component.process = vi.fn(() => { throw new Error('Process error') })
+      const thread = createThread()
+      const id = addNode(thread, 'core/example', {
+        input: { name: 'World' },
+        component,
+        dangereouslyRunInUnsandboxedEnvironment: true,
+      })
+      const shouldReject = startNode(thread, id)
+      await expect(shouldReject).rejects.toThrow('Process error')
+    })
+
+    it('should dispatch the "nodeError" event when the node errors', async() => {
+      const component = createComponent()
+      component.process = vi.fn(() => { throw new Error('Process error') })
+      const thread = createThread()
+      const id = addNode(thread, 'core/example', {
+        input: { name: 'World' },
+        component,
+        dangereouslyRunInUnsandboxedEnvironment: true,
+      })
+      const callback = vi.fn()
+      thread.on('nodeError', callback)
+      await startNode(thread, id).catch(() => {})
+      expect(callback).toHaveBeenCalledWith(
+        id,
+        getNode(thread, id),
+        new Error('Process error'),
+        {
+          delta: 0,
+          duration: 0,
+          state: 'error',
+          timestamp: '2020-01-01T00:00:00.000Z',
+        },
+      )
+    })
+
+    it('should not dispatch the "nodeDone" event when the node errors', async() => {
+      const component = createComponent()
+      component.process = vi.fn(() => { throw new Error('Process error') })
+      const thread = createThread()
+      const id = addNode(thread, 'core/example', {
+        input: { name: 'World' },
+        component,
+        dangereouslyRunInUnsandboxedEnvironment: true,
+      })
+      const callback = vi.fn()
+      thread.on('nodeDone', callback)
+      await startNode(thread, id).catch(() => {})
+      expect(callback).not.toHaveBeenCalled()
+    })
+  })
+})

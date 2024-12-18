@@ -1,22 +1,22 @@
 import { defineComponent } from '../utils'
-import { add } from './add'
+import { addNode } from './addNode'
 import { createThread } from './createThread'
-import { getInputValue } from './getInputValue'
+import { getNodeInputValue } from './getNodeInputValue'
 
-describe('getInputValue', () => {
+describe('getNodeInputValue', () => {
   const component = defineComponent({})
 
   it('should return the input value if it exists', () => {
     const thread = createThread()
-    const id = add(thread, 'example', { input: { value: 'value' } })
-    const result = getInputValue(thread, id, 'value')
+    const id = addNode(thread, 'example', { input: { value: 'value' } })
+    const result = getNodeInputValue(thread, id, 'value')
     expect(result).toBe('value')
   })
 
   it('should return undefined if the input value is not set', () => {
     const thread = createThread()
-    const id = add(thread, 'example', { component })
-    const result = getInputValue(thread, id, 'value')
+    const id = addNode(thread, 'example', { component })
+    const result = getNodeInputValue(thread, id, 'value')
     expect(result).toBeUndefined()
   })
 })

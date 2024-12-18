@@ -1,4 +1,4 @@
-import { add } from './add'
+import { addNode } from './addNode'
 import { createThread } from './createThread'
 import { serialize } from './serialize'
 
@@ -8,8 +8,8 @@ describe('serializeThread', () => {
     const result = serialize(thread)
     expect(result).toStrictEqual({
       version: '1',
-      components: {},
       metadata: {},
+      nodes: {},
     })
   })
 
@@ -18,52 +18,52 @@ describe('serializeThread', () => {
     const result = serialize(thread, { name: 'Hello, World!' })
     expect(result).toEqual({
       version: '1',
-      components: {},
       metadata: { name: 'Hello, World!' },
+      nodes: {},
     })
   })
 
   it('should serialize a thread with components', () => {
     const thread = createThread()
-    const id1 = add(thread, 'component-1')
-    const id2 = add(thread, 'component-2')
+    const id1 = addNode(thread, 'custom/component-one')
+    const id2 = addNode(thread, 'custom/component-two')
     const result = serialize(thread)
     expect(result).toEqual({
       version: '1',
       metadata: {},
-      components: {
-        [id1]: { specifier: 'component-1' },
-        [id2]: { specifier: 'component-2' },
+      nodes: {
+        [id1]: { specifier: 'custom/component-one' },
+        [id2]: { specifier: 'custom/component-two' },
       },
     })
   })
 
   it('should serialize a thread where components have inputs', () => {
     const thread = createThread()
-    const id1 = add(thread, 'component-1', { input: { foo: 'bar' } })
-    const id2 = add(thread, 'component-2', { input: { baz: 'qux' } })
+    const id1 = addNode(thread, 'custom/component-one', { input: { foo: 'bar' } })
+    const id2 = addNode(thread, 'custom/component-two', { input: { baz: 'qux' } })
     const result = serialize(thread)
     expect(result).toEqual({
       version: '1',
       metadata: {},
-      components: {
-        [id1]: { specifier: 'component-1', foo: 'bar' },
-        [id2]: { specifier: 'component-2', baz: 'qux' },
+      nodes: {
+        [id1]: { specifier: 'custom/component-one', foo: 'bar' },
+        [id2]: { specifier: 'custom/component-two', baz: 'qux' },
       },
     })
   })
 
   it('should serialize a thread where components have metadata', () => {
     const thread = createThread()
-    const id1 = add(thread, 'component-1', { metadata: { foo: 'bar' } })
-    const id2 = add(thread, 'component-2', { metadata: { baz: 'qux' } })
+    const id1 = addNode(thread, 'custom/component-one', { metadata: { foo: 'bar' } })
+    const id2 = addNode(thread, 'custom/component-two', { metadata: { baz: 'qux' } })
     const result = serialize(thread)
     expect(result).toEqual({
       version: '1',
       metadata: {},
-      components: {
-        [id1]: { specifier: 'component-1', _foo: 'bar' },
-        [id2]: { specifier: 'component-2', _baz: 'qux' },
+      nodes: {
+        [id1]: { specifier: 'custom/component-one', _foo: 'bar' },
+        [id2]: { specifier: 'custom/component-two', _baz: 'qux' },
       },
     })
   })

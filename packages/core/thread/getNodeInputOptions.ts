@@ -1,25 +1,16 @@
 import type { OpenAPIV3 } from 'openapi-types'
 import type { InputOption } from '../utils'
 import type { Thread } from './createThread'
-import { resolveSchema } from '../utils'
-import { getComponent } from './getComponent'
-import { getInputSocket } from './getInputSocket'
-import { getInstance } from './getInstance'
+import { getNodeData } from './getNodeData'
+import { getNodeInputSocket } from './getNodeInputSocket'
 
-export async function getInputOptions(thread: Thread, id: string, name: string, query?: string): Promise<InputOption[]> {
-  const instance = getInstance(thread, id)
-  const component = await getComponent(thread, id)
-  const socket = await getInputSocket(thread, id, name)
+export async function getNodeInputOptions(thread: Thread, id: string, name: string, query?: string): Promise<InputOption[]> {
+  const socket = await getNodeInputSocket(thread, id, name)
 
-  // --- If `x-options` is provided as an array, use it as the options.
+  // --- If `x-options` is provided, use it as the options.
   if (typeof socket['x-options'] === 'function') {
-    const input = await resolveSchema({
-      data: instance.input,
-      schema: component.inputs,
-      resolvers: thread.referenceResolvers,
-      skipErrors: true,
-    })
-    return socket['x-options'](input, query)
+    const data = await getNodeData(thread, id, { skipErrors: true })
+    return socket['x-options'](data, query)
   }
 
   // --- Fallback to the values in `oneOf` if it exists.
