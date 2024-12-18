@@ -9,7 +9,6 @@ export type InputControl =
   | 'radio'
   | 'select'
   | 'slider'
-  | 'stream'
   | 'table'
   | 'text'
   | 'textarea'
@@ -22,28 +21,30 @@ export interface InputOption {
   description?: string
 }
 
-export type InputSocket = OpenAPIV3.SchemaObject & {
+export type SocketSchema = Omit<OpenAPIV3.SchemaObject, 'additionalProperties' | 'anyOf' | 'items' | 'oneOf' | 'properties'> & {
+  anyOf?: SocketSchema[]
+  oneOf?: SocketSchema[]
+  properties?: Record<string, SocketSchema>
+  additionalProperties?: boolean | SocketSchema
+  items?: SocketSchema
+  'x-type'?: 'function' | 'stream'
+  'x-returns'?: OpenAPIV3.SchemaObject
+  'x-resolves'?: OpenAPIV3.SchemaObject
   'x-control'?: InputControl
   'x-placeholder'?: string
   'x-internal'?: boolean
   'x-optional'?: boolean
-  'x-stream'?: boolean
   'x-options'?: (data: any, query?: string) => MaybePromise<InputOption[]>
-  [key: string]: any
-}
-
-export type OutputSocket = OpenAPIV3.SchemaObject & {
-  'x-internal'?: boolean
-  'x-stream'?: boolean
-  [key: string]: any
 }
 
 export type InferSchema<T> =
 {
   [P in keyof T]:
   T[P] extends { default: any } ? OpenAPIV2.InferSchema<T[P]>
-    : T[P] extends { 'x-stream': true } ? ReadableStream
-      : OpenAPIV2.InferSchema<T[P]> | undefined
+    : T[P] extends { 'x-type': 'stream' } ? ReadableStream
+      : T[P] extends { 'x-type': 'function'; 'x-returns': infer U } ? (...args: any[]) => OpenAPIV2.InferSchema<U>
+        : T[P] extends { 'x-type': 'function'; 'x-resolves': infer U } ? (...args: any[]) => Promise<OpenAPIV2.InferSchema<U>>
+          : OpenAPIV2.InferSchema<T[P]> | undefined
 }
 
 export interface ProcessContext<T extends ObjectLike = ObjectLike> {
@@ -52,16 +53,16 @@ export interface ProcessContext<T extends ObjectLike = ObjectLike> {
 }
 
 export type ProcessFunction<
-  T extends Record<string, InputSocket> = Record<string, InputSocket>,
-  U extends Record<string, OutputSocket> = Record<string, OutputSocket>,
+  T extends Record<string, SocketSchema> = Record<string, SocketSchema>,
+  U extends Record<string, SocketSchema> = Record<string, SocketSchema>,
 > =
   [InferSchema<T>, InferSchema<U>] extends [infer Data extends ObjectLike, infer Result extends ObjectLike]
     ? (context: ProcessContext<Data>) => MaybePromise<Result>
     : (context: ProcessContext) => MaybePromise<ObjectLike>
 
 export interface ComponentOptions<
-  T extends Record<string, InputSocket> = Record<string, InputSocket>,
-  U extends Record<string, OutputSocket> = Record<string, OutputSocket>,
+  T extends Record<string, SocketSchema> = Record<string, SocketSchema>,
+  U extends Record<string, SocketSchema> = Record<string, SocketSchema>,
 > {
   icon?: string
   title?: string
@@ -71,16 +72,16 @@ export interface ComponentOptions<
 }
 
 export interface Component<
-  T extends Record<string, InputSocket> = Record<string, InputSocket>,
-  U extends Record<string, OutputSocket> = Record<string, OutputSocket>,
+  T extends Record<string, SocketSchema> = Record<string, SocketSchema>,
+  U extends Record<string, SocketSchema> = Record<string, SocketSchema>,
 > extends ComponentOptions<T, U> {
   ['@instanceOf']: typeof SYMBOL_COMPONENT
   process?: ProcessFunction<any, any>
 }
 
 export function defineComponent<
-  T extends Record<string, InputSocket>,
-  U extends Record<string, OutputSocket>,
+  T extends Record<string, SocketSchema>,
+  U extends Record<string, SocketSchema>,
 >(options: ComponentOptions<T, U>, process?: ProcessFunction<T, U>): Component<any, any> {
   return {
     ['@instanceOf']: SYMBOL_COMPONENT,

@@ -1,7 +1,7 @@
-import type { OpenAPIV3 } from 'openapi-types'
+import type { SocketSchema } from './defineComponent'
 import { ERRORS as E } from './errors'
 
-export function resolveSchemaNumber(path: string, value: unknown, schema: OpenAPIV3.SchemaObject): number {
+export function resolveSchemaNumber(path: string, value: unknown, schema: SocketSchema): number {
 
   // --- Attempt to parse the value as a number.
   if (typeof value !== 'number') {
