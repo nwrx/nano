@@ -1,7 +1,4 @@
-import { defineComponent } from '../utils'
-
-/** The regular expression for extracting variables from the template. */
-const EXP_VAR_REGEX = /{{\s*(\w+\??)\s*}}/g
+import { defineComponent } from '../utils/defineComponent'
 
 export const template = defineComponent(
   {
@@ -34,9 +31,9 @@ export const template = defineComponent(
   },
   ({ data }) => {
     const { template, values = {} } = data
+    const EXP_VAR_REGEX = /{{\s*(\w+\??)\s*}}/g
     return {
       compiled: template.replaceAll(EXP_VAR_REGEX, (_, key: string) => {
-        if (key === 'template') return ''
         if (key in values === false) return ''
         if (typeof values[key] !== 'string') return ''
         return values[key]
