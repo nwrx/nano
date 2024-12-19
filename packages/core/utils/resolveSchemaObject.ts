@@ -15,9 +15,9 @@ export async function resolveSchemaObject(
 
   // --- Resolve each property in the object.
   for (const key in schema.properties) {
-    const propertySchema = schema.properties[key]
     const propertyValue = (value as Record<string, unknown>)[key]
     const propertyPath = `${path}.${key}`
+    const propertySchema = { ...schema.properties[key], 'x-optional': schema.required?.includes(key) ? undefined : true }
     resolved[key] = await resolveSchema(propertyPath, propertyValue, propertySchema, resolvers)
   }
 
@@ -50,9 +50,7 @@ export async function resolveSchemaObject(
   if (schema.additionalProperties === true) {
     for (const key in value) {
       if (schema.properties && key in schema.properties) continue
-      const propertyValue = (value as Record<string, unknown>)[key]
-      const propertyPath = `${path}.${key}`
-      resolved[key] = await resolveSchema(propertyPath, propertyValue, {}, resolvers)
+      resolved[key] = value[key as keyof typeof value]
     }
   }
 
