@@ -16,18 +16,6 @@ export interface NodeOptions {
   input?: Record<string, unknown>
   metadata?: NodeMetadata
   component?: Component
-
-  /**
-   * Since components can be user-provided, they may contain malicious code. Therefore,
-   * components are usually ran in a sandboxed environment powered by `isolated-vm`.
-   *
-   * However, this may not be desired for certain components. Setting this to `true`
-   * will allow the `process` function of the component to run in an unsandboxed environment.
-   * Make sure to trust the component before enabling this option.
-   *
-   * @default false
-   */
-  dangereouslyRunInUnsandboxedEnvironment?: boolean
 }
 
 export type NodeState =
@@ -36,6 +24,7 @@ export type NodeState =
   | 'idle'
   | 'paused'
   | 'processing'
+  | 'starting'
 
 export interface Node extends SpecifierObject {
   input: Record<string, unknown>
@@ -45,7 +34,6 @@ export interface Node extends SpecifierObject {
   error?: Error
   startedAt: number
   component?: Component
-  isSandboxed: boolean
 }
 
 /**
@@ -62,7 +50,6 @@ export function addNode(thread: Thread, specifier: string, options: NodeOptions 
     component,
     input = {},
     metadata= {},
-    dangereouslyRunInUnsandboxedEnvironment = false,
   } = options
 
   // --- Check if the component instance already exists in the thread.
@@ -80,7 +67,6 @@ export function addNode(thread: Thread, specifier: string, options: NodeOptions 
     result: {},
     startedAt: 0,
     state: 'idle',
-    isSandboxed: !dangereouslyRunInUnsandboxedEnvironment,
   })
 
   // --- Return the ID of the added component instance.
