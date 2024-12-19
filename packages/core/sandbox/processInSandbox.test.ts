@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/no-unused-vars */
 /* eslint-disable sonarjs/no-dead-store */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable unicorn/no-process-exit */
@@ -6,7 +7,7 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 /* eslint-disable unicorn/prefer-module */
 import type { Function } from '@unshared/types'
-import { defineComponent, ERRORS as E } from '../utils'
+import { ERRORS as E } from '../utils'
 import { processInSandbox } from './processInSandbox'
 
 describe('processInSandbox', () => {
@@ -45,12 +46,28 @@ describe('processInSandbox', () => {
       expect(result).toStrictEqual({ value: 'Hello, World!' })
     })
 
-    it('should call the trace function passed to the process function', async() => {
-      const fn = ({ trace }: { trace: Function }) => { trace({ message: 'Hello, World !' }); return {} }
-      const trace = vi.fn()
+    it('should call the "askConfirmation" function passed to the process function', async() => {
+      const fn = ({ askConfirmation }: { askConfirmation: Function }) => { askConfirmation({ message: 'Hello, World !' }); return {} }
+      const askConfirmation = vi.fn()
       // @ts-expect-error: ignore missing context properties.
-      await processInSandbox(fn, { trace })
-      expect(trace).toHaveBeenCalledWith({ message: 'Hello, World !' })
+      await processInSandbox(fn, { askConfirmation })
+      expect(askConfirmation).toHaveBeenCalledWith({ message: 'Hello, World !' })
+    })
+
+    it('should call the "askQuestion" function passed to the process function', async() => {
+      const fn = ({ askQuestion }: { askQuestion: Function }) => { askQuestion({ message: 'Hello, World !' }); return {} }
+      const askQuestion = vi.fn()
+      // @ts-expect-error: ignore missing context properties.
+      await processInSandbox(fn, { askQuestion })
+      expect(askQuestion).toHaveBeenCalledWith({ message: 'Hello, World !' })
+    })
+
+    it('should call the "askConfirmation" function passed to the process function with the correct options', async() => {
+      const fn = ({ askConfirmation }: { askConfirmation: Function }) => { askConfirmation({ message: 'Hello, World !' }); return {} }
+      const askConfirmation = vi.fn()
+      // @ts-expect-error: ignore missing context properties.
+      await processInSandbox(fn, { askConfirmation })
+      expect(askConfirmation).toHaveBeenCalledWith({ message: 'Hello, World !' })
     })
   })
 
@@ -81,77 +98,6 @@ describe('processInSandbox', () => {
     })
   })
 
-  describe.todo('stream', () => {
-    it('should accept stream in the properties of the data object', async() => {
-      const component = defineComponent(
-        {
-          inputs: { stream: { 'x-stream': true } },
-          outputs: { text: { type: 'string' } },
-        },
-        async({ data }) => {
-          const chunks = []
-          const reader = data.stream.getReader()
-          const decoder = new TextDecoder('utf8')
-          while (true) {
-            const { done, value } = await reader.read() as { done: boolean; value: Uint8Array }
-            if (done) break
-            chunks.push(decoder.decode(value))
-          }
-          return {
-            text: chunks.join(''),
-          }
-        },
-      )
-
-      // --- Create a `ReadableStream` that will output 'Hello, Universe!' in chunks of 4 bytes.
-      const encoder = new TextEncoder()
-      const text = 'Hello, Universe!'
-      const stream = new ReadableStream({
-        async start(controller) {
-          const chunkSize = 4
-          for (let i = 0; i < text.length; i += chunkSize) {
-            const chunk = text.slice(i, i + chunkSize)
-            controller.enqueue(encoder.encode(chunk))
-            await new Promise(resolve => setTimeout(resolve, 10))
-          }
-          controller.close()
-        },
-      })
-
-      // @ts-expect-error: ignore missing context properties.
-      const result = await processInSandbox(component, { data: { stream } })
-      expect(result).toStrictEqual({ text: 'Hello, Universe!' })
-    })
-
-    it('should accept stream in the properties of the result object', async() => {
-      const component = defineComponent(
-        {
-          inputs: {},
-          outputs: { stream: { 'x-stream': true } },
-        },
-        () => {
-          const encoder = new TextEncoder()
-          const text = 'Hello, Universe!'
-          const stream = new ReadableStream({
-            start(controller) {
-              const chunkSize = 4
-              for (let i = 0; i < text.length; i += chunkSize) {
-                const chunk = text.slice(i, i + chunkSize)
-                controller.enqueue(encoder.encode(chunk))
-              }
-              controller.close()
-            },
-          })
-          return { stream }
-        },
-      )
-
-      // @ts-expect-error: ignore missing context properties.
-      const result = await processInSandbox(component, {})
-      expect(result).toStrictEqual({ text: 'Hello, Universe!' })
-    })
-  })
-
   describe('exposed apis', () => {
     it('should have access to fetch', async() => {
       const fn = () => fetch('https://jsonplaceholder.typicode.com/todos/1').then(response => response.ok)
@@ -159,7 +105,7 @@ describe('processInSandbox', () => {
       const result = await processInSandbox(fn, {})
       expect(result).toStrictEqual(true)
     })
-  })
+  }, 1000)
 
   describe('isolation', () => {
     it('should only expose the provided global properties', async() => {
@@ -271,7 +217,6 @@ describe('processInSandbox', () => {
             const cc = arguments.callee.caller
             if (cc != null)
               (cc.constructor.constructor('console.log(sauce)'))()
-
             return me[key]
           },
         } )

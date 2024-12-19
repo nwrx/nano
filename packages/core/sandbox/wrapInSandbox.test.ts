@@ -2,6 +2,23 @@ import ivm from 'isolated-vm'
 import { wrapInSandbox } from './wrapInSandbox'
 
 describe('wrapInSandbox', () => {
+  describe('function', () => {
+    it('should call the function in a sandboxed environment', async() => {
+      const callback = vi.fn(() => 'Hello, World!')
+      callback.toString = () => 'function () { return "Hello, World!" }'
+      const wrapped = await wrapInSandbox(callback)
+      const result = await wrapped()
+      expect(callback).not.toHaveBeenCalled()
+      expect(result).toStrictEqual('Hello, World!')
+    })
+
+    it('should call a string script in a sandboxed environment', async() => {
+      const wrapped = await wrapInSandbox<() => string>('() => "Hello, World!"')
+      const result = await wrapped()
+      expect(result).toStrictEqual('Hello, World!')
+    })
+  })
+
   describe('properties', () => {
     it('should pass string parameters to the function', async() => {
       const wrapped = await wrapInSandbox((name: string) => `Hello, ${name}!`)
