@@ -23,6 +23,36 @@ describe('isThreadRunning', () => {
     expect(result).toBe(false)
   })
 
+  it('should return true if at least one node is idle', () => {
+    const thread = createThread()
+    const id1 = addNode(thread, 'example')
+    const id2 = addNode(thread, 'example')
+    thread.nodes.get(id1)!.state = 'done'
+    thread.nodes.get(id2)!.state = 'idle'
+    const result = isThreadRunning(thread)
+    expect(result).toBe(true)
+  })
+
+  it('should return true if at least one node is starting', () => {
+    const thread = createThread()
+    const id1 = addNode(thread, 'example')
+    const id2 = addNode(thread, 'example')
+    thread.nodes.get(id1)!.state = 'starting'
+    thread.nodes.get(id2)!.state = 'done'
+    const result = isThreadRunning(thread)
+    expect(result).toBe(true)
+  })
+
+  it('should return false if one node is done and the other is error', () => {
+    const thread = createThread()
+    const id1 = addNode(thread, 'example')
+    const id2 = addNode(thread, 'example')
+    thread.nodes.get(id1)!.state = 'done'
+    thread.nodes.get(id2)!.state = 'error'
+    const result = isThreadRunning(thread)
+    expect(result).toBe(false)
+  })
+
   it('should return false if there are no nodes', () => {
     const thread = createThread()
     const result = isThreadRunning(thread)

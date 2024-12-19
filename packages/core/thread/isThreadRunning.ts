@@ -9,7 +9,10 @@ import type { Thread } from './createThread'
  * @returns Returns `true` if the thread is still running, otherwise `false`.
  */
 export function isThreadRunning(thread: Thread): boolean {
-  for (const [,instance] of thread.nodes)
+  for (const [,instance] of thread.nodes) {
+    if (instance.state === 'starting') return true
     if (instance.state === 'processing') return true
+    if (instance.state === 'idle') return true
+  }
   return false
 }
