@@ -32,8 +32,8 @@ describe('serializeThread', () => {
       version: '1',
       metadata: {},
       nodes: {
-        [id1]: { specifier: 'custom/component-one' },
-        [id2]: { specifier: 'custom/component-two' },
+        [id1]: { component: 'custom/component-one' },
+        [id2]: { component: 'custom/component-two' },
       },
     })
   })
@@ -47,8 +47,8 @@ describe('serializeThread', () => {
       version: '1',
       metadata: {},
       nodes: {
-        [id1]: { specifier: 'custom/component-one', foo: 'bar' },
-        [id2]: { specifier: 'custom/component-two', baz: 'qux' },
+        [id1]: { component: 'custom/component-one', foo: 'bar' },
+        [id2]: { component: 'custom/component-two', baz: 'qux' },
       },
     })
   })
@@ -62,8 +62,8 @@ describe('serializeThread', () => {
       version: '1',
       metadata: {},
       nodes: {
-        [id1]: { specifier: 'custom/component-one', _foo: 'bar' },
-        [id2]: { specifier: 'custom/component-two', _baz: 'qux' },
+        [id1]: { component: 'custom/component-one', _foo: 'bar' },
+        [id2]: { component: 'custom/component-two', _baz: 'qux' },
       },
     })
   })

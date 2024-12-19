@@ -2,7 +2,7 @@ import type { Thread } from './createThread'
 import { serializeSpecifier } from '../utils'
 
 export interface FlowV1Node {
-  specifier: string
+  component: string
   [key: string]: unknown
 }
 
@@ -46,7 +46,7 @@ export function serialize(thread: Thread, metadata: FlowV1Metadata = {}): FlowV1
 
     // --- Add the component instance to the components object.
     nodes[id] = {
-      specifier: serializeSpecifier(node),
+      component: serializeSpecifier(node),
       ...node.input,
       ...metaProperties,
     }

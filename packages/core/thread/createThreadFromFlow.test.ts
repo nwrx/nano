@@ -7,8 +7,8 @@ describe('createThreadFromFlow', () => {
       const thread = createThreadFromFlow({
         version: '1',
         nodes: {
-          node1: { specifier: 'passthrough', _meta: 'metadata', message: 'Hello' },
-          node2: { specifier: 'passthrough', _meta: 'metadata', message: 'World' },
+          node1: { component: 'passthrough', _meta: 'metadata', message: 'Hello' },
+          node2: { component: 'passthrough', _meta: 'metadata', message: 'World' },
         },
       })
       expect([...thread.nodes]).toStrictEqual([
@@ -16,7 +16,6 @@ describe('createThreadFromFlow', () => {
           collection: 'core',
           component: undefined,
           input: { message: 'Hello' },
-          isSandboxed: true,
           metadata: { meta: 'metadata' },
           name: 'passthrough',
           registry: 'default',
@@ -29,7 +28,6 @@ describe('createThreadFromFlow', () => {
           collection: 'core',
           component: undefined,
           input: { message: 'World' },
-          isSandboxed: true,
           metadata: { meta: 'metadata' },
           name: 'passthrough',
           registry: 'default',
@@ -66,7 +64,7 @@ describe('createThreadFromFlow', () => {
 
     it('should throw an error if a node specifier is not a string', () => {
       // @ts-expect-error: Testing invalid input.
-      const shouldThrow = () => createThreadFromFlow({ version: '1', nodes: { node1: { specifier: 1 } } })
+      const shouldThrow = () => createThreadFromFlow({ version: '1', nodes: { node1: { component: 1 } } })
       const error = E.FLOW_NODE_SPECIFIER_NOT_STRING('node1')
       expect(shouldThrow).toThrow(error)
     })
