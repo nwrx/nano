@@ -10,7 +10,7 @@ export type IsolateFunctionCall<T> =
     ? R extends (...parameters: infer Q) => MaybePromise<infer S>
       ? (...parameters: P) => Promise<(...parameters: Q) => Promise<DereferencedDeep<S>>>
       : (...parameters: P) => Promise<DereferencedDeep<R>>
-    : never
+    : (...parameters: unknown[]) => Promise<unknown>
 
 export type IsolateFunction<T> = IsolateFunctionCall<T> & {
   isolate: ivm.Isolate
