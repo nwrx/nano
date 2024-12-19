@@ -6,7 +6,7 @@ import { serializeSpecifier } from './serializeSpecifier'
 export const ERRORS = {
 
   /***************************************************************************/
-  /* Errors.                                                                 */
+  /* Node errors.                                                            */
   /***************************************************************************/
 
   NODE_NOT_FOUND: (id: string) => createError({
@@ -19,11 +19,22 @@ export const ERRORS = {
     name: 'E_NODE_DUPLICATE_ID',
     context: { id },
   }),
-  NODE_SOCKET_NOT_FOUND: (id: string, name: string) => createError({
+  NODE_INPUT_SOCKET_NOT_FOUND: (id: string, name: string) => createError({
     message: `The input socket "${name}" does not exist on node "${id}"`,
     name: 'E_NODE_SOCKET_NOT_FOUND',
     context: { id, name },
   }),
+  NODE_OUTPUT_SOCKET_NOT_FOUND: (id: string, name: string) => createError({
+    message: `The output socket "${name}" does not exist on node "${id}"`,
+    name: 'E_NODE_SOCKET_NOT_FOUND',
+    context: { id, name },
+  }),
+  NODE_LINK_SOURCE_NOT_FOUND: (targetId: string, targetName: string, sourceId: string) => createError({
+    message: `The node input of node "${targetId}" with the name "${targetName}" references a source node "${sourceId}" that does not exist`,
+    name: 'E_NODE_LINK_SOURCE_NOT_FOUND',
+    context: { targetId, targetName, sourceId },
+  }),
+
   COMPONENT_INVALID_SPECIFIER_FORMAT: (specifier: string) => createError({
     message: `The component specifier "${specifier}" is invalid`,
     name: 'E_COMPONENT_INVALID_SPECIFIER_FORMAT',
@@ -180,34 +191,34 @@ export const ERRORS = {
     name: 'E_INPUT_NOT_NUMBER',
     context: { path },
   }),
-  INPUT_NOT_EXCEED_MINIMUM: (path: string, minimum: number) => createError({
+  INPUT_NUMBER_NOT_EXCEED_MINIMUM: (path: string, minimum: number) => createError({
     message: `The input number at "${path}" does not exceed the minimum value, expected at least ${minimum}`,
-    name: 'E_INPUT_NOT_EXCEED_MINIMUM',
+    name: 'E_INPUT_NUMBER_NOT_EXCEED_MINIMUM',
     context: { path, minimum },
   }),
-  INPUT_NOT_BELOW_MAXIMUM: (path: string, maximum: number) => createError({
+  INPUT_NUNBER_NOT_BELOW_MAXIMUM: (path: string, maximum: number) => createError({
     message: `The input number at "${path}" does not fall below the maximum value, expected at most ${maximum}`,
-    name: 'E_INPUT_NOT_BELOW_MAXIMUM',
+    name: 'E_INPUT_NUMBER_NOT_BELOW_MAXIMUM',
     context: { path, maximum },
   }),
-  INPUT_TOO_SMALL: (path: string, minimum: number) => createError({
+  INPUT_NUMBER_TOO_SMALL: (path: string, minimum: number) => createError({
     message: `The input number at "${path}" is too small, expected at least ${minimum}`,
-    name: 'E_INPUT_TOO_SMALL',
+    name: 'E_INPUT_NUMBER_TOO_SMALL',
     context: { path, minimum },
   }),
-  INPUT_TOO_LARGE: (path: string, maximum: number) => createError({
+  INPUT_NUMBER_TOO_LARGE: (path: string, maximum: number) => createError({
     message: `The input number at "${path}" is too large, expected at most ${maximum}`,
-    name: 'E_INPUT_TOO_LARGE',
+    name: 'E_INPUT_NUMBER_TOO_LARGE',
     context: { path, maximum },
   }),
-  INPUT_NOT_MULTIPLE_OF: (path: string, multipleOf: number) => createError({
+  INPUT_NUMBER_NOT_MULTIPLE_OF: (path: string, multipleOf: number) => createError({
     message: `The input number at "${path}" is not a multiple of ${multipleOf}`,
-    name: 'E_INPUT_NOT_MULTIPLE_OF',
+    name: 'E_INPUT_NUMBER_NOT_MULTIPLE_OF',
     context: { path, multipleOf },
   }),
-  INPUT_NOT_INTEGER: (path: string) => createError({
+  INPUT_NUMBER_NOT_INTEGER: (path: string) => createError({
     message: `The input at "${path}" is expected to be an integer value`,
-    name: 'E_INPUT_NOT_INTEGER',
+    name: 'E_INPUT_NUMBER_NOT_INTEGER',
     context: { path },
   }),
 
