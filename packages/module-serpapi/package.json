@@ -32,7 +32,7 @@
     "@nwrx/core": "workspace:*",
     "@nwrx/module-core": "workspace:*",
     "@types/json-schema": "7.0.15",
-    "@unshared/client": "0.3.2",
-    "@unshared/string": "0.3.2"
+    "@unshared/client": "0.3.3",
+    "@unshared/string": "0.3.3"
   }
 }
