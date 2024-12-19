@@ -52,5 +52,5 @@ export async function getNodeData(thread: Thread, id: string, options: GetNodeDa
     throw ERRORS.NODE_INPUT_SCHEMA_MISMATCH(id, errors)
 
   // --- Return the resolved input so far.
-  return resolved
+  return structuredClone(resolved)
 }
