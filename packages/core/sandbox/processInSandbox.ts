@@ -1,4 +1,5 @@
 import type { Function, ObjectLike } from '@unshared/types'
+import type { ConfirmOption } from '../utils'
 import type { ProcessContext } from '../utils/defineComponent'
 import ivm from 'isolated-vm'
 import { ERRORS as E } from '../utils'
@@ -8,10 +9,6 @@ import { implementTextDecoder } from './implementTextDecoder'
 import { implementTextEncoder } from './implementTextEncoder'
 import { wrapInSandbox } from './wrapInSandbox'
 
-export interface ProcessInSandboxOptions extends ProcessContext {
-  abortSignal?: AbortSignal
-}
-
 /**
  * Process the given function in a sandbox.
  *
@@ -19,7 +16,7 @@ export interface ProcessInSandboxOptions extends ProcessContext {
  * @param context The data and trace to pass to the function.
  * @returns The result of the function call.
  */
-export async function processInSandbox(fn: Function | string, context: ProcessInSandboxOptions): Promise<ObjectLike> {
+export async function processInSandbox(fn: Function | string, context: ProcessContext): Promise<ObjectLike> {
   const fnWrapped = await wrapInSandbox(fn, { timeout: 10000 })
 
   // --- Implement some WebAPI functions.
@@ -40,7 +37,8 @@ export async function processInSandbox(fn: Function | string, context: ProcessIn
     // --- Call the function in the sandbox.
     void fnWrapped({
       data: context.data,
-      trace: new ivm.Callback((data: ObjectLike) => context.trace(data)),
+      askQuestion: new ivm.Callback((options: ConfirmOption) => context.askQuestion(options)),
+      askConfirmation: new ivm.Callback((options: ConfirmOption) => context.askConfirmation(options)),
     })
       .then(resolve)
       .catch(reject)
