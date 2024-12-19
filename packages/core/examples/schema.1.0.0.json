@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Nanoflow Schema v1.0.0",
+  "description": "A workflow that can be executed by the Nanoworks runtime.",
+  "type": "object",
+  "required": ["version", "metadata", "nodes"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "The version number of the workflow."
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["name", "description", "author"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the workflow."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description of what the workflow does."
+        },
+        "author": {
+          "type": "string",
+          "description": "The author of the workflow."
+        },
+        "variables": {
+          "type": "object",
+          "description": "A collection of variables that can be used in the workflow.",
+          "patternProperties": {
+            "^[A-Za-z0-9-_]+$": {
+              "type": "object",
+              "required": ["value"],
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "description": "The value of the variable."
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "nodes": {
+      "type": "object",
+      "description": "A collection of nodes that define the workflow.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["component"],
+        "additionalItems": true,
+        "properties": {
+          "component": {
+            "type": "string",
+            "description": "The name of the component that the node uses."
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

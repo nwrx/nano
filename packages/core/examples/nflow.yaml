@@ -1,0 +1,53 @@
+# yaml-language-server: $schema=./schema.1.0.0.json
+version: '1'
+
+metadata:
+  name: Summarize E-mails
+  description: Summarize an email and extract the most important information.
+  author: Nanoworks
+
+nodes:
+
+  # --- Input nodes.
+  email-from:
+    component: input
+    name: From
+    description: The sender of the email.
+  email-content:
+    component: input
+    name: Content
+    description: The content of the email.
+
+  # --- Load model from Ollama instance.
+  ollama:
+    component: 'https://github.com/ollama/nwrx/components/ollama.ts'
+    model: {$ref: '#/Secrets/OLLAMA_MODEL'}
+    token: {$ref: '#/Secrets/OLLAMA_TOKEN'}
+    endpoint: {$ref: '#/Secrets/OLLAMA_ENDPOINT'}
+
+  # --- Prompt for the inference step.
+  prompt:
+    component: template
+    values: 
+      emailContent: {$ref: '#/Nodes/email-content/value'}
+      emailFrom: {$ref: '#/Nodes/email-from/value'}
+    template: |
+      Summarize the email content.
+      - Extract the most important information.
+      - Keep the summary short and concise.
+      - Avoid repeating the same information.
+      Email From: {{ emailFrom }}
+      Email Content: {{ emailContent }}
+
+  # --- Inference step.
+  summarize:
+    component: inference
+    model: {$ref: '#/Nodes/ollama/model'}
+    prompt: $NODE.PROMPT.value
+    maxTokens: 100
+    temperature: 0.5
+
+  # --- Output node.
+  output:
+    component: output
+    value: {$ref: '#/Nodes/summarize/completion'}
