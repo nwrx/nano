@@ -1,6 +1,6 @@
-import type { Node } from './addNode'
+import type { Node } from '../thread'
+import { createThread } from '../thread'
 import { createEventMetadata } from './createEventMetadata'
-import { createThread } from './createThread'
 
 describe('createEventMetadata', () => {
   beforeAll(() => {
