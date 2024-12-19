@@ -17,7 +17,8 @@ describe('getNodeInputSocket', () => {
     const thread = createThread()
     const id = addNode(thread, 'example', { component })
     const shouldReject = getNodeInputSocket(thread, id, 'invalid')
-    await expect(shouldReject).rejects.toThrow(`The input socket "invalid" does not exist on node "${id}"`)
+    const error = ERRORS.NODE_INPUT_SOCKET_NOT_FOUND(id, 'invalid')
+    await expect(shouldReject).rejects.toThrow(error)
   })
 
   it('should throw an error if the component cannot be resolved', async() => {
