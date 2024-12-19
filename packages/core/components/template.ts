@@ -1,10 +1,24 @@
+import { dedent } from '@unshared/string'
 import { defineComponent } from '../utils/defineComponent'
 
 export const template = defineComponent(
   {
+    isTrusted: true,
     title: 'Template',
     icon: 'https://api.iconify.design/carbon:text-indent.svg',
-    description: 'This node generates a templated string based on the provided input. Specifically, it replaces special `{{ Variable }}` placeholders in the template with corresponding values from the input data.',
+    description: dedent(`
+      This node generates a templated string based on the provided input. Specifically, it replaces special "{{ Variable }}" placeholders in the template with corresponding values from the input data.
+
+      \`\`\`
+      Hello, {{ name }}! You are {{ age }} years old.
+      \`\`\`
+
+      You can mark a variable as optional by appending a "?" to the variable name, like so: "{{ name? }}". If the variable is not provided, the placeholder will be removed from the output string. Additionally, you can provide default values for variables by using the "??", like so: "{{ name ?? 'John' }}". If the variable is not provided, the default value will be used instead.
+
+      \`\`\`
+      Hello, {{ name ?? 'John' }}! You are {{ age ?? "some" }} years old.
+      \`\`\`
+    `),
     inputs: {
       template: {
         'type': 'string',
@@ -16,7 +30,13 @@ export const template = defineComponent(
       values: {
         'type': 'object',
         'title': 'Values',
-        'additionalProperties': { type: 'string' },
+        'additionalProperties': {
+          oneOf: [
+            { type: 'string' },
+            { type: 'number' },
+            { type: 'boolean' },
+          ],
+        },
         'description': 'The values for the template variables.',
         'x-control': 'table',
       },
@@ -30,14 +50,66 @@ export const template = defineComponent(
     },
   },
   ({ data }) => {
-    const { template, values = {} } = data
-    const EXP_VAR_REGEX = /{{\s*(\w+\??)\s*}}/g
-    return {
-      compiled: template.replaceAll(EXP_VAR_REGEX, (_, key: string) => {
-        if (key in values === false) return ''
-        if (typeof values[key] !== 'string') return ''
-        return values[key]
-      }),
+    const { template, values } = data
+    let compiled = ''
+    let remaining = template
+
+    // --- Iterate over the template string and replace placeholders.
+    while (true) {
+      const start = remaining.indexOf('{{')
+      if (start === -1) {
+        compiled += remaining
+        break
+      }
+
+      // Append everything before the placeholder
+      compiled += remaining.slice(0, start)
+
+      // Move past the opening {{
+      remaining = remaining.slice(start + 2)
+
+      const end = remaining.indexOf('}}')
+      if (end === -1) throw new Error('Unbalanced placeholder: missing "}}"')
+
+      // Extract the inside of the placeholder
+      const variableContent = remaining.slice(0, end).trim()
+      // Move past the closing }}
+      remaining = remaining.slice(end + 2)
+
+      // Parse variableContent
+      let variableName = variableContent
+      let defaultValue: string | undefined
+      let isOptional = false
+
+      // --- If '??' is present, extract the default value and variable name.
+      const defaultIndex = variableContent.indexOf('??')
+      if (defaultIndex !== -1) {
+        variableName = variableContent.slice(0, defaultIndex).trim()
+        const defaultPart = variableContent.slice(defaultIndex + 2).trim()
+        // Attempt to parse a quoted default value
+        defaultValue = (defaultPart.startsWith('"') && defaultPart.endsWith('"'))
+        || (defaultPart.startsWith('\'') && defaultPart.endsWith('\''))
+          ? defaultPart.slice(1, -1)
+          : defaultPart
+      }
+
+      // --- Check if optional (ending with "?"), if so, remove the "?" and mark as optional.
+      if (variableName.endsWith('?')) {
+        isOptional = true
+        variableName = variableName.slice(0, -1).trim()
+      }
+
+      // --- Attempt to replace from values
+      const value = values[variableName]
+      if (value !== undefined && value !== null)
+        compiled += value
+      else if (defaultValue !== undefined)
+        compiled += defaultValue
+      else if (!isOptional)
+        throw new Error(`Input "${variableName}" is required but was not provided.`)
     }
+
+    // --- Return the compiled string.
+    return { compiled }
   },
 )
