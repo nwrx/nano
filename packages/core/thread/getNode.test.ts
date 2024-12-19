@@ -19,7 +19,6 @@ describe('getComponentInstance', () => {
       startedAt: 0,
       state: 'idle',
       tag: 'latest',
-      isSandboxed: true,
     })
   })
 
