@@ -38,7 +38,7 @@ export async function askQuestion(thread: Thread, nodeId: string, options: Quest
         stopOnResponse()
         const error = new Error('Timeout.')
         reject(error)
-      })
+      }, timeout)
     }
     const stopOnCancel = thread.on('nodeQuestionCancel', (id, eventId) => {
       if (id === nodeId && eventId === eventQuestion.id) {
