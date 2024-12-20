@@ -1,7 +1,7 @@
-import type { SocketSchema } from './defineComponent'
+import type { Schema } from './defineComponent'
 import { ERRORS as E } from './errors'
 
-export function resolveSchemaUndefinedOrNull(path: string, schema: SocketSchema): unknown {
+export function resolveSchemaUndefinedOrNull(path: string, schema: Schema): unknown {
 
   // --- Returns the default value if the value is undefined or null and optional,
   // --- Note that this is only available in trusted components since it can be used

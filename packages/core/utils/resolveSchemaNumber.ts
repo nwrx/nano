@@ -1,7 +1,7 @@
-import type { SocketSchema } from './defineComponent'
+import type { Schema } from './defineComponent'
 import { ERRORS as E } from './errors'
 
-export function resolveSchemaNumber(path: string, value: unknown, schema: SocketSchema): number {
+export function resolveSchemaNumber(path: string, value: unknown, schema: Schema): number {
 
   // --- Attempt to parse the value as a number.
   if (typeof value !== 'number') {

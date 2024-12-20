@@ -1,5 +1,5 @@
 /* eslint-disable sonarjs/cognitive-complexity */
-import type { SocketSchema } from './defineComponent'
+import type { Schema } from './defineComponent'
 import type { ReferenceResolver } from './resolveReference'
 import { ERRORS as E } from './errors'
 import { resolveSchema } from './resolveSchema'
@@ -7,7 +7,7 @@ import { resolveSchema } from './resolveSchema'
 export async function resolveSchemaObject(
   path: string,
   value: unknown,
-  schema: SocketSchema,
+  schema: Schema,
   resolvers: ReferenceResolver[] = [],
 ): Promise<Record<string, unknown>> {
   if (typeof value !== 'object' || value === null) throw E.INPUT_NOT_OBJECT(path)
