@@ -1,10 +1,8 @@
 /* eslint-disable perfectionist/sort-intersection-types */
 /* eslint-disable perfectionist/sort-union-types */
 import type { MaybePromise, ObjectLike, UnionMerge } from '@unshared/types'
-import type { OpenAPIV3 } from 'openapi-types'
-import type { ConfirmOption } from './askConfirmation'
-import type { QuestionOptions } from './askQuestion'
-import type { NotifyActionOptions } from './notifyAction'
+import type { OpenAPIV3_1 } from 'openapi-types'
+import type { Thread } from '../thread'
 
 export const SYMBOL_COMPONENT = Symbol.for('component')
 
@@ -29,7 +27,7 @@ export interface SchemaOption {
   description?: string
 }
 
-export type Schema = Omit<OpenAPIV3.SchemaObject, 'additionalProperties' | 'anyOf' | 'items' | 'oneOf' | 'properties'> & {
+export type Schema = Omit<OpenAPIV3_1.SchemaObject, 'additionalProperties' | 'anyOf' | 'items' | 'oneOf' | 'properties'> & {
   anyOf?: Schema[]
   oneOf?: Schema[]
   properties?: Record<string, Schema>
@@ -42,13 +40,15 @@ export type Schema = Omit<OpenAPIV3.SchemaObject, 'additionalProperties' | 'anyO
   'x-returns'?: Schema
   'x-resolves'?: Schema
   'x-control'?: SchemaControl
-  'x-placeholder'?: string
   'x-internal'?: boolean
   'x-optional'?: boolean
   'x-slider-min'?: number
   'x-slider-max'?: number
   'x-slider-step'?: number
   'x-options'?: (data: any, query?: string) => MaybePromise<SchemaOption[]>
+  'x-enum-labels'?: string[]
+  'x-enum-icons'?: string[]
+  'x-enum-descriptions'?: string[]
 }
 
 /*************************************************************************/
@@ -97,14 +97,15 @@ export type InferSchema<T> =
     : T extends { oneOf: Array<infer U> } ? InferSchema<U>
       : T extends { allOf: Array<infer U> } ? UnionMerge<InferSchema<U>>
         : T extends { enum: Array<infer U> } ? U
-          : T extends { type: 'array' } ? InferSchemaArray<T>
-            : T extends { type: 'object' } ? InferSchemaObject<T>
-              : T extends { type: 'string' } ? string
-                : T extends { type: 'integer' | 'number' } ? number
-                  : T extends { type: 'boolean' } ? boolean
-                    : T extends { 'x-type': 'stream' } ? ReadableStream
-                      : T extends { 'x-type': 'function' } ? (...parameters: InferSocketFunctionParameters<T>) => InferSocketFunctionResult<T>
-                        : unknown)
+          : T extends { const: infer U } ? U
+            : T extends { type: 'array' } ? InferSchemaArray<T>
+              : T extends { type: 'object' } ? InferSchemaObject<T>
+                : T extends { type: 'string' } ? string
+                  : T extends { type: 'integer' | 'number' } ? number
+                    : T extends { type: 'boolean' } ? boolean
+                      : T extends { 'x-type': 'stream' } ? ReadableStream
+                        : T extends { 'x-type': 'function' } ? (...parameters: InferSocketFunctionParameters<T>) => InferSocketFunctionResult<T>
+                          : unknown)
 
 export type InferSchemaRecord<T> = {
   [P in keyof T]: InferSchema<T[P]>
@@ -114,20 +115,20 @@ export type InferSchemaRecord<T> = {
 /* Process                                                               */
 /*************************************************************************/
 
-export interface ProcessContext<T extends ObjectLike = ObjectLike> {
-  data: T
-  notifyAction: (options: NotifyActionOptions) => void
-  askQuestion: (options: QuestionOptions) => Promise<boolean | number | ObjectLike | string | unknown[]>
-  askConfirmation: (options: ConfirmOption) => Promise<boolean>
-  abortSignal: AbortSignal
-}
+export type ProcessContext<
+  Data extends ObjectLike = ObjectLike,
+  IsTrusted extends boolean = boolean,
+> = IsTrusted extends true
+  ? { data: Data; nodeId: string; thread: Thread }
+  : { data: Data }
 
 export type ProcessFunction<
-  T extends Record<string, Schema> = Record<string, Schema>,
-  U extends Record<string, Schema> = Record<string, Schema>,
+  Inputs extends Record<string, Schema> = Record<string, Schema>,
+  Outputs extends Record<string, Schema> = Record<string, Schema>,
+  IsTrusted extends boolean = boolean,
 > =
-  [InferSchemaRecord<T>, InferSchemaRecord<U>] extends [infer Data extends ObjectLike, infer Result extends ObjectLike]
-    ? (context: ProcessContext<Data>) => MaybePromise<Result>
+  [InferSchemaRecord<Inputs>, InferSchemaRecord<Outputs>] extends [infer Data extends ObjectLike, infer Result extends ObjectLike]
+    ? (context: ProcessContext<Data, IsTrusted>) => MaybePromise<Result>
     : (context: ProcessContext) => MaybePromise<ObjectLike>
 
 /*************************************************************************/
@@ -135,14 +136,15 @@ export type ProcessFunction<
 /*************************************************************************/
 
 export interface ComponentOptions<
-  T extends Record<string, Schema> = Record<string, Schema>,
-  U extends Record<string, Schema> = Record<string, Schema>,
+  Inputs extends Record<string, Schema> = Record<string, Schema>,
+  Outputs extends Record<string, Schema> = Record<string, Schema>,
+  IsTrusted extends boolean = boolean,
 > {
   icon?: string
   title?: string
   description?: string
-  inputs?: T
-  outputs?: U
+  inputs?: Inputs
+  outputs?: Outputs
 
   /**
    * If `true`, the component will be considered as trusted and will be allowed to
@@ -150,21 +152,26 @@ export interface ComponentOptions<
    * library and are considered safe to run. By default, all components are considered untrusted
    * and will run in an isolated and sandboxed environment powered by `isolated-vm`.
    */
-  isTrusted?: boolean
+  isTrusted?: IsTrusted
 }
 
 export interface Component<
-  T extends Record<string, Schema> = Record<string, Schema>,
-  U extends Record<string, Schema> = Record<string, Schema>,
-> extends ComponentOptions<T, U> {
+  Inputs extends Record<string, Schema> = Record<string, Schema>,
+  Outputs extends Record<string, Schema> = Record<string, Schema>,
+  IsTrusted extends boolean = boolean,
+> extends ComponentOptions<Inputs, Outputs> {
   ['@instanceOf']: typeof SYMBOL_COMPONENT
-  process?: ProcessFunction<any, any>
+  process?: ProcessFunction<Inputs, Outputs, IsTrusted>
 }
 
 export function defineComponent<
   T extends Record<string, Schema>,
   U extends Record<string, Schema>,
->(options: ComponentOptions<T, U>, process?: ProcessFunction<T, U>): Component<T, U> {
+  IsTrusted extends boolean = false,
+>(
+  options: ComponentOptions<T, U, IsTrusted>,
+  process?: ProcessFunction<T, U, IsTrusted>,
+): Component<T, U> {
   return {
     ['@instanceOf']: SYMBOL_COMPONENT,
     icon: options.icon,
