@@ -1,7 +1,7 @@
 import type { ObjectLike } from '@unshared/types'
-import { addNode, createThread, getNodeComponent } from '../thread'
-import { start } from '../thread'
-import { createReference } from '../utils'
+import { addNode, createThread, getNodeComponent } from '../../thread'
+import { start } from '../../thread'
+import { createReference } from '../../utils'
 import { template } from './template'
 
 async function fixture(input: ObjectLike) {

@@ -1,4 +1,5 @@
-import { defineComponent } from '../utils/defineComponent'
+import { defineComponent } from '../../utils/defineComponent'
+import { askConfirmation } from './utils/askConfirmation'
 
 export const confirm = defineComponent(
   {
@@ -8,10 +9,10 @@ export const confirm = defineComponent(
     description: 'Ask for user confirmation and await the response. This will interrupt the flow until the user provides a response.',
     inputs: {
       question: {
-        'type': 'string',
-        'title': 'Question',
-        'description': 'The question to ask the user.',
-        'x-placeholder': 'Are you sure?',
+        type: 'string',
+        title: 'Question',
+        description: 'The question to ask the user.',
+        example: 'Are you sure?',
       },
       text: {
         'type': 'string',
@@ -36,8 +37,8 @@ export const confirm = defineComponent(
       },
     },
   },
-  async({ data, askConfirmation }) => ({
-    response: await askConfirmation({
+  async({ data, thread, nodeId }) => ({
+    response: await askConfirmation(thread, nodeId, {
       question: data.question,
       text: data.text,
       timeout: data.timeout,

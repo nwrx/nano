@@ -1,7 +1,8 @@
-import { defineComponent } from '../utils/defineComponent'
+import { defineComponent } from '../../utils/defineComponent'
 
 export const input = defineComponent(
   {
+    isTrusted: true,
     title: 'Input',
     icon: 'https://api.iconify.design/carbon:arrow-down.svg',
     description: 'A value generated from an entrypoint in the flow. The value can be any type of data, such as a string, number, or boolean and is provided as an input to the flow.',
@@ -11,20 +12,21 @@ export const input = defineComponent(
         'title': 'Name',
         'description': 'The name of the input property. This is the name that will be used to reference the input in the flow.',
         'x-control': 'text',
+        'example': 'Give your input a name',
       },
       description: {
         'type': 'string',
         'title': 'Description',
         'description': 'A description of the input property. This is used to provide more information about the input and its purpose in the flow.',
         'x-optional': true,
-        'x-control': 'text',
+        'x-control': 'textarea',
+        'example': 'Describe the input property',
       },
       required: {
         'type': 'boolean',
         'title': 'Optional',
         'description': 'Whether the input is required to be provided in the flow. If set to true, the input will be required to be provided in the flow. If set to false, the input will be optional.',
-        'defaultValue': false,
-        'x-optional': true,
+        'default': false,
         'x-control': 'select',
         'oneOf': [
           {
@@ -47,7 +49,22 @@ export const input = defineComponent(
         name: 'Value',
         type: 'string',
         description: 'The value of the entrypoint.',
+        oneOf: [
+          { type: 'array' },
+          { type: 'object' },
+          { type: 'string' },
+          { type: 'number' },
+          { type: 'boolean' },
+          { 'x-type': 'stream' },
+        ],
       },
     },
+  },
+  ({ data, thread }) => {
+    const name = data.name
+    const required = data.required
+    const value = thread.input[name]
+    if (required && value === undefined) throw new Error(`Input "${name}" is required but not provided.`)
+    return { value: value as string }
   },
 )
