@@ -35,8 +35,6 @@ export const ask = defineComponent(
               title: 'Value',
               description: 'The value of the choice.',
               oneOf: [
-                { type: 'array' },
-                { type: 'object' },
                 { type: 'string' },
                 { type: 'number' },
                 { type: 'boolean' },
@@ -70,8 +68,6 @@ export const ask = defineComponent(
         'description': 'The default value for the response.',
         'x-optional': true,
         'oneOf': [
-          { type: 'array' },
-          { type: 'object' },
           { type: 'string' },
           { type: 'number' },
           { type: 'boolean' },
@@ -90,8 +86,6 @@ export const ask = defineComponent(
         title: 'Response',
         description: 'The response from the user.',
         oneOf: [
-          { type: 'array' },
-          { type: 'object' },
           { type: 'string' },
           { type: 'number' },
           { type: 'boolean' },
