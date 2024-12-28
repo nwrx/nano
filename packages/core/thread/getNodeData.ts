@@ -27,19 +27,21 @@ export interface GetNodeDataOptions {
  */
 export async function getNodeData(thread: Thread, id: string, options: GetNodeDataOptions = {}) {
   const { skipErrors = false } = options
-  const resolved: ObjectLike = {}
+  const data: ObjectLike = {}
   const errors: Record<string, Error> = {}
-
-  // --- Get the node from the thread.
   const node = getNode(thread, id)
   const component = await getNodeComponent(thread, id)
-  const schema = component.inputs
 
-  // --- Iterate over the input schema and resolve the input values.
-  for (const name in schema) {
-    const value = node.input[name]
+  // --- Iterate over the input schema and resolve the input values
+  // --- one by one by calling the resolveSchema function for each input.
+  for (const name in component.inputs) {
     try {
-      resolved[name] = await resolveSchema(name, value, schema[name], thread.referenceResolvers)
+      data[name] = await resolveSchema(
+        name,
+        node.input[name],
+        component.inputs[name],
+        thread.referenceResolvers,
+      )
     }
     catch (error) {
       errors[name] = error as Error
@@ -47,10 +49,12 @@ export async function getNodeData(thread: Thread, id: string, options: GetNodeDa
     }
   }
 
-  // --- If there are any errors, throw an error with the list of errors.
+  // --- If `skipErrors` is false and there are errors, throws an error
+  // --- that will list all the errors that occurred during the input resolution
+  // --- and their respective names / paths.
   if (!skipErrors && Object.keys(errors).length > 0)
     throw ERRORS.NODE_INPUT_SCHEMA_MISMATCH(id, errors)
 
   // --- Return the resolved input so far.
-  return resolved
+  return data
 }

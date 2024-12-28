@@ -1,8 +1,10 @@
+import type { ObjectLike } from '@unshared/types'
 import type { ComponentResolver, ReferenceResolver } from '../utils'
 import type { Node } from './addNode'
 import type { ThreadEventMap } from './events'
-import { DEFAULT_COMPONENT_RESOLVER, DEFAULT_REFERENCE_RESOLVER } from '../utils'
 import { Emitter } from '../utils/createEmitter'
+import { DEFAULT_COMPONENT_RESOLVER } from '../utils/defaultComponentResolver'
+import { DEFAULT_REFERENCE_RESOLVER } from '../utils/defaultReferenceResolver'
 
 /**
  * The options that are used to create a new flow instance. The options can be
@@ -42,6 +44,12 @@ export class Thread extends Emitter<ThreadEventMap> implements ThreadOptions {
 
   /** The component instance that is used to run the flow thread. */
   nodes = new Map<string, Node>()
+
+  /** The output of the flow thread. */
+  output: ObjectLike = {}
+
+  /** The input of the flow thread. */
+  input: ObjectLike = {}
 
   /** The abort controller that is used to abort the flow thread. */
   abortController = new AbortController()

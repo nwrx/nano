@@ -5,10 +5,13 @@ import type { OpenAPIV3_1 } from 'openapi-types'
 import type { Thread } from '../thread'
 
 export const SYMBOL_COMPONENT = Symbol.for('component')
+export const SYMBOL_TYPE = Symbol.for('type')
 
 /*************************************************************************/
 /* Socket                                                                */
 /*************************************************************************/
+
+export interface SchemaType<T = any> { [SYMBOL_TYPE]: T }
 
 export type SchemaControl =
   | 'autocomplete'
@@ -18,6 +21,7 @@ export type SchemaControl =
   | 'table'
   | 'text'
   | 'textarea'
+  | 'tags'
   | 'variable'
 
 export interface SchemaOption {
@@ -34,8 +38,9 @@ export type Schema = Omit<OpenAPIV3_1.SchemaObject, 'additionalProperties' | 'an
   additionalProperties?: boolean | Schema
   items?: Schema
   'x-icon'?: string
-  'x-type'?: 'function' | 'stream'
+  'x-type'?: 'stream' | 'function' | 'file' | SchemaType
   'x-default'?: () => any
+  'x-yields'?: Schema
   'x-takes'?: readonly Schema[]
   'x-returns'?: Schema
   'x-resolves'?: Schema
@@ -49,6 +54,7 @@ export type Schema = Omit<OpenAPIV3_1.SchemaObject, 'additionalProperties' | 'an
   'x-enum-labels'?: string[]
   'x-enum-icons'?: string[]
   'x-enum-descriptions'?: string[]
+  [SYMBOL_TYPE]?: any
 }
 
 /*************************************************************************/
@@ -69,11 +75,11 @@ type InferSocketFunctionParameters<T> =
 type InferSchemaObject<T> =
   & (T extends { properties: infer P extends object; required: Array<infer R extends string> }
     ? (
-      & { [K in keyof P as K extends R ? K : never]: InferSchema<P[K]> }
-      & { [K in keyof P as K extends R ? never : K]?: InferSchema<P[K]> }
+      & { -readonly [K in keyof P as K extends R ? K : never]: InferSchema<P[K]> }
+      & { -readonly [K in keyof P as K extends R ? never : K]?: InferSchema<P[K]> }
     )
     : T extends { properties: infer P extends object }
-      ? { [K in keyof P]?: InferSchema<P[K]> }
+      ? { -readonly [K in keyof P]?: InferSchema<P[K]> }
       : object)
 
   // --- Handle additional properties.
@@ -90,6 +96,10 @@ type InferSchemaArray<T> =
   T extends { items?: infer U extends object } ? Array<InferSchema<U>>
     : unknown[]
 
+type InferSchemaStream<T> =
+  T extends { 'x-yields': infer U extends object } ? ReadableStream<InferSchema<U>>
+    : ReadableStream
+
 export type InferSchema<T> =
   | (T extends { nullable: true } ? null : never)
   | (T extends { 'x-optional': true } ? undefined : never)
@@ -103,9 +113,11 @@ export type InferSchema<T> =
                 : T extends { type: 'string' } ? string
                   : T extends { type: 'integer' | 'number' } ? number
                     : T extends { type: 'boolean' } ? boolean
-                      : T extends { 'x-type': 'stream' } ? ReadableStream
-                        : T extends { 'x-type': 'function' } ? (...parameters: InferSocketFunctionParameters<T>) => InferSocketFunctionResult<T>
-                          : unknown)
+                      : T extends { 'x-type': 'file' } ? File
+                        : T extends { 'x-type': 'stream' } ? InferSchemaStream<T>
+                          : T extends { 'x-type': 'function' } ? (...parameters: InferSocketFunctionParameters<T>) => InferSocketFunctionResult<T>
+                            : T extends SchemaType<infer U> ? U
+                              : unknown)
 
 export type InferSchemaRecord<T> = {
   [P in keyof T]: InferSchema<T[P]>
@@ -153,6 +165,11 @@ export interface ComponentOptions<
    * and will run in an isolated and sandboxed environment powered by `isolated-vm`.
    */
   isTrusted?: IsTrusted
+
+  /**
+   * If `true`, the component is expected to only return a tool or a collection of tools.
+   */
+  isToolSet?: boolean
 }
 
 export interface Component<
@@ -165,13 +182,13 @@ export interface Component<
 }
 
 export function defineComponent<
-  T extends Record<string, Schema>,
-  U extends Record<string, Schema>,
+  Inputs extends Record<string, Schema>,
+  Outputs extends Record<string, Schema>,
   IsTrusted extends boolean = false,
 >(
-  options: ComponentOptions<T, U, IsTrusted>,
-  process?: ProcessFunction<T, U, IsTrusted>,
-): Component<T, U> {
+  options: ComponentOptions<Inputs, Outputs, IsTrusted>,
+  process?: ProcessFunction<Inputs, Outputs, IsTrusted>,
+): Component<Inputs, Outputs, IsTrusted> {
   return {
     ['@instanceOf']: SYMBOL_COMPONENT,
     icon: options.icon,
@@ -180,6 +197,7 @@ export function defineComponent<
     inputs: options.inputs,
     outputs: options.outputs,
     isTrusted: options.isTrusted,
+    isToolSet: options.isToolSet,
     process,
-  } as Component<T, U>
+  } as Component<Inputs, Outputs>
 }

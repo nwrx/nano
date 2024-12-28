@@ -9,6 +9,7 @@ describe('defineComponent', () => {
       inputs: { input1: { type: 'string' } },
       outputs: { output1: { type: 'string' } },
       isTrusted: true,
+      isToolSet: false,
       // @ts-expect-error: Make sure the `proces` property is not used.
       process: vi.fn(),
     })
@@ -21,6 +22,7 @@ describe('defineComponent', () => {
       inputs: { input1: { type: 'string' } },
       outputs: { output1: { type: 'string' } },
       isTrusted: true,
+      isToolSet: false,
       process: undefined,
     })
   })
@@ -36,6 +38,7 @@ describe('defineComponent', () => {
       inputs: undefined,
       outputs: undefined,
       isTrusted: undefined,
+      isToolSet: undefined,
       title: undefined,
     })
   })
