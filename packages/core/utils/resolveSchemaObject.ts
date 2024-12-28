@@ -10,7 +10,10 @@ export async function resolveSchemaObject(
   schema: Schema,
   resolvers: ReferenceResolver[] = [],
 ): Promise<Record<string, unknown>> {
-  if (typeof value !== 'object' || value === null) throw E.INPUT_NOT_OBJECT(path)
+
+  // --- Ensure that we do not match arrays and streams.
+  if (typeof value !== 'object' || value === null || value.constructor !== Object)
+    throw E.INPUT_NOT_OBJECT(path)
   const resolved: Record<string, unknown> = {}
 
   // --- Resolve each property in the object.
