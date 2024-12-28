@@ -20,6 +20,15 @@ describe('parseLink', () => {
     })
   })
 
+  it('should parse a valid Node reference without a source name', () => {
+    const result = parseLink({ $ref: '#/Nodes/Foo' })
+    expect(result).toStrictEqual({
+      sourceId: 'Foo',
+      sourceName: undefined,
+      sourcePath: undefined,
+    })
+  })
+
   it('should throw an error for an invalid reference type', () => {
     const shouldThrow = () => parseLink({ $ref: '#/NotNodes/Foo/Bar' })
     const error = E.REFERENCE_WRONG_TYPE('NotNodes', 'Nodes')
@@ -29,12 +38,6 @@ describe('parseLink', () => {
   it('should throw an error for a missing source id', () => {
     const shouldThrow = () => parseLink({ $ref: '#/Nodes' })
     const error = E.REFERENCE_INVALID_FORMAT()
-    expect(shouldThrow).toThrow(error)
-  })
-
-  it('should throw an error for a missing source name', () => {
-    const shouldThrow = () => parseLink({ $ref: '#/Nodes/Foo' })
-    const error = E.REFERENCE_MISSING_NAME('#/Nodes/Foo')
     expect(shouldThrow).toThrow(error)
   })
 })

@@ -7,7 +7,7 @@ import { setNodeInputValue } from './setNodeInputValue'
 /** The object representation of a link between two nodes in the flow. */
 export interface Link {
   sourceId: string
-  sourceName: string
+  sourceName?: string
   sourcePath?: string
   targetId: string
   targetName: string

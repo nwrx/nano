@@ -18,6 +18,5 @@ export interface LinkSourceObject {
 export function parseLink(value: Reference): LinkSourceObject {
   const [type, sourceId, sourceName, sourcePath] = parseReference(value)
   if (type !== 'Nodes') throw E.REFERENCE_WRONG_TYPE(type, 'Nodes')
-  if (!sourceName) throw E.REFERENCE_MISSING_NAME(value.$ref)
   return { sourceId, sourceName, sourcePath }
 }
