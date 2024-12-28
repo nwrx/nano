@@ -1,5 +1,11 @@
 export type EmitterEvents = Record<string, any[]>
 
+export class EmitterEventPayload<T extends any[] = any[]> extends Event {
+  constructor(type: string, public payload: T) {
+    super(type)
+  }
+}
+
 /**
  * An event emitter that can be used to dispatch events and listen for them. The
  * emitter is used to create a custom event system that can be used to communicate
@@ -18,7 +24,7 @@ export class Emitter<T extends EmitterEvents> {
    * the event is dispatched. The listener receives the data that is passed to the
    * `dispatch` method as arguments.
    *
-   * @param event The event to listen for.
+   * @param eventName The event to listen for.
    * @param listener The listener that is called when the event is dispatched.
    * @returns A function that can be called to remove the listener.
    * @example
@@ -32,11 +38,11 @@ export class Emitter<T extends EmitterEvents> {
    * // Dispatch the 'click' event with a MouseEvent.
    * emitter.dispatch('click', new MouseEvent('click'))
    */
-  on<K extends keyof T & string>(event: K, listener: (...data: T[K]) => any) {
-    const handler = (event: Event) => listener(...(event as CustomEvent).detail as T[K]) as unknown
-    this.eventTarget.addEventListener(event, handler)
-    this.eventHandlers.push([event, handler])
-    return () => this.eventTarget.removeEventListener(event, handler)
+  on<K extends keyof T & string>(eventName: K, listener: (...payload: T[K]) => any) {
+    const handler = ((event: EmitterEventPayload) => { listener(...event.payload as T[K]) }) as EventListener
+    this.eventTarget.addEventListener(eventName, handler)
+    this.eventHandlers.push([eventName, handler])
+    return () => this.eventTarget.removeEventListener(eventName, handler)
   }
 
   /**
@@ -44,8 +50,8 @@ export class Emitter<T extends EmitterEvents> {
    * that are currently active for the event. The data is passed to the listener
    * as arguments.
    *
-   * @param event The event to dispatch.
-   * @param data The data to pass to the listener.
+   * @param eventName The event to dispatch.
+   * @param payload The payload that is passed to the listener.
    * @example
    *
    * // Create a new emitter instance.
@@ -57,9 +63,9 @@ export class Emitter<T extends EmitterEvents> {
    * // Dispatch the 'click' event with a MouseEvent.
    * emitter.dispatch('click', new MouseEvent('click'))
    */
-  dispatch<K extends keyof T>(event: K, ...data: T[K]) {
-    const customEvent = new CustomEvent(event as string, { detail: data })
-    this.eventTarget.dispatchEvent(customEvent)
+  dispatch<K extends keyof T & string>(eventName: K, ...payload: T[K]) {
+    const event = new EmitterEventPayload(eventName, payload)
+    this.eventTarget.dispatchEvent(event)
   }
 
   /**
