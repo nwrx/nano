@@ -1,7 +1,6 @@
 import { createEventMetadata } from '../utils'
 import { addNode } from './addNode'
 import { createThread } from './createThread'
-import { getNode } from './getNode'
 import { sendResponse } from './sendResponse'
 
 describe('sendResponse', () => {
@@ -24,7 +23,7 @@ describe('sendResponse', () => {
     expect(callback).toHaveBeenCalledWith(
       nodeId,
       { id: eventId, response },
-      createEventMetadata(thread, getNode(thread, nodeId)),
+      createEventMetadata(thread, nodeId),
     )
   })
 
