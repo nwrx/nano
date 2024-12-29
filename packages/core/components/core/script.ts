@@ -1,9 +1,11 @@
 import { transform } from 'esbuild'
+import { implementFetch, implementHeaders, implementTextDecoder, implementTextEncoder } from '../../sandbox'
 import { wrapInSandbox } from '../../sandbox/wrapInSandbox'
 import { defineComponent } from '../../utils/defineComponent'
 
 export const script = defineComponent(
   {
+    isTrusted: true,
     title: 'Script',
     icon: 'https://api.iconify.design/mdi:script-text-outline.svg',
     description: 'Execute a JavaScript or TypeScript script and return the result.',
@@ -31,6 +33,18 @@ export const script = defineComponent(
         description: 'The code to execute.',
         example: '({ data }) => { return data.value * 2 }',
       },
+      input: {
+        'title': 'Input',
+        'description': 'The input data for the script.',
+        'x-optional': true,
+        'oneOf': [
+          { type: 'array' },
+          { type: 'object' },
+          { type: 'string' },
+          { type: 'number' },
+          { type: 'boolean' },
+        ],
+      },
     },
     outputs: {
       result: {
@@ -47,21 +61,21 @@ export const script = defineComponent(
     },
   },
   async({ data }) => {
-    const { language, code } = data
+    const { language, code, input } = data
 
-    if (language === 'typescript') {
-      const transformed = await transform(code, { loader: 'ts' })
-      const sandboxed = await wrapInSandbox(transformed.code)
-      const result = await sandboxed({ data }) as any[]
-      return { result }
-    }
+    // --- Transpile the code if it's TypeScript.
+    const transpiled = language === 'typescript'
+      ? await transform(code, { loader: 'ts' }).then(result => result.code)
+      : code
 
-    if (language === 'javascript') {
-      const sandboxed = await wrapInSandbox(code)
-      const result = await sandboxed({ data }) as any[]
-      return { result }
-    }
+    // --- Wrap the code in an isolate vm.
+    const sandbox = await wrapInSandbox(transpiled)
+    await implementFetch(sandbox.isolate, sandbox.context)
+    await implementHeaders(sandbox.isolate, sandbox.context)
+    await implementTextDecoder(sandbox.isolate, sandbox.context)
+    await implementTextEncoder(sandbox.isolate, sandbox.context)
 
-    throw new Error('Unsupported language')
+    // --- Execute the script with the input data.
+    return { result: await sandbox(input) as string }
   },
 )
