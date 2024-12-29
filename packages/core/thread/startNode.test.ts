@@ -18,18 +18,10 @@ function createComponent() {
 }
 
 describe('startNode', () => {
-  beforeAll(() => {
-    vi.useFakeTimers({ now: new Date('2020-01-01T00:00:00.000Z') })
-  })
-
-  afterAll(() => {
-    vi.useRealTimers()
-  })
-
   describe('data', () => {
     it('should resolve the input references and put them in the resolved data', async() => {
       const thread = createThread({ referenceResolvers: [() => 'Universe'] })
-      const id = addNode(thread, 'core/example', {
+      const id = addNode(thread, 'example', {
         input: { name: createReference('Variables', 'Something') },
         component: createComponent(),
       })
@@ -40,7 +32,7 @@ describe('startNode', () => {
     it('should call the process function with the resolved data', async() => {
       const component = createComponent()
       const thread = createThread()
-      const nodeId = addNode(thread, 'core/example', {
+      const nodeId = addNode(thread, 'example', {
         input: { name: 'World' },
         component,
       })
@@ -56,7 +48,7 @@ describe('startNode', () => {
     it('should override the data with the data argument', async() => {
       const component = createComponent()
       const thread = createThread()
-      const nodeId = addNode(thread, 'core/example', {
+      const nodeId = addNode(thread, 'example', {
         input: { name: 'World' },
         component,
       })
@@ -77,7 +69,7 @@ describe('startNode', () => {
         result: `Hello, ${data.name}!`,
       })
       const thread = createThread()
-      const nodeId = addNode(thread, 'core/example', {
+      const nodeId = addNode(thread, 'example', {
         input: { name: 'World' },
         component,
       })
@@ -130,7 +122,7 @@ describe('startNode', () => {
   describe('result', () => {
     it('should start a node and return the result', async() => {
       const thread = createThread()
-      const id = addNode(thread, 'core/example', {
+      const id = addNode(thread, 'example', {
         input: { name: 'World' },
         component: createComponent(),
       })
@@ -140,7 +132,7 @@ describe('startNode', () => {
 
     it('should resolve the component before starting the node', async() => {
       const thread = createThread({ componentResolvers: [() => createComponent()] })
-      const id = addNode(thread, 'core/example', {
+      const id = addNode(thread, 'example', {
         input: { name: 'World' },
       })
       const result = await startNode(thread, id)
@@ -149,13 +141,13 @@ describe('startNode', () => {
 
     it('should store the date and timestamp when the node starts', async() => {
       const thread = createThread()
-      const id = addNode(thread, 'core/example', {
+      const id = addNode(thread, 'example', {
         input: { name: 'World' },
         component: createComponent(),
       })
       await startNode(thread, id)
       const node = getNode(thread, id)
-      expect(node.startedAt).toBe(1577836800000)
+      expect(node.startedAt).toBeGreaterThan(Date.now() - 1000)
     })
   })
 
@@ -163,58 +155,33 @@ describe('startNode', () => {
     it('should dispatch the "nodeState" event for each state change', async() => {
       const thread = createThread()
       const component = createComponent()
-      const id = addNode(thread, 'core/example', { input: { name: 'World' }, component })
+      const id = addNode(thread, 'example', { input: { name: 'World' }, component })
       const callback = vi.fn()
       thread.on('nodeState', callback)
       await startNode(thread, id)
-      expect(callback).toHaveBeenNthCalledWith(1, id, {
-        delta: 0,
-        duration: 0,
-        state: 'starting',
-        timestamp: '2020-01-01T00:00:00.000Z',
-      })
-      expect(callback).toHaveBeenNthCalledWith(2, id, {
-        delta: 0,
-        duration: 0,
-        state: 'processing',
-        timestamp: '2020-01-01T00:00:00.000Z',
-      })
-      expect(callback).toHaveBeenNthCalledWith(3, id, {
-        delta: 0,
-        duration: 0,
-        state: 'done',
-        timestamp: '2020-01-01T00:00:00.000Z',
-      })
+      expect(callback).toHaveBeenNthCalledWith(1, id, 'starting')
+      expect(callback).toHaveBeenNthCalledWith(2, id, 'processing')
+      expect(callback).toHaveBeenNthCalledWith(3, id, 'done')
     })
 
     it('should dispatch the "nodeStart" event when the node starts', async() => {
       const thread = createThread()
       const component = createComponent()
-      const id = addNode(thread, 'core/example', { input: { name: 'World' }, component })
+      const id = addNode(thread, 'example', { input: { name: 'World' }, component })
       const callback = vi.fn()
       thread.on('nodeStart', callback)
       await startNode(thread, id)
-      expect(callback).toHaveBeenCalledWith(id, { name: 'World' }, {
-        delta: 0,
-        duration: 0,
-        state: 'processing',
-        timestamp: '2020-01-01T00:00:00.000Z',
-      } )
+      expect(callback).toHaveBeenCalledWith(id, { name: 'World' })
     })
 
     it('should dispatch the "nodeDone" event when the node ends', async() => {
       const thread = createThread()
       const component = createComponent()
-      const id = addNode(thread, 'core/example', { input: { name: 'World' }, component })
+      const id = addNode(thread, 'example', { input: { name: 'World' }, component })
       const callback = vi.fn()
       thread.on('nodeDone', callback)
       await startNode(thread, id)
-      expect(callback).toHaveBeenCalledWith(id, { result: 'Hello, World!' }, {
-        delta: 0,
-        duration: 0,
-        state: 'done',
-        timestamp: '2020-01-01T00:00:00.000Z',
-      } )
+      expect(callback).toHaveBeenCalledWith(id, { result: 'Hello, World!' })
     })
   })
 
@@ -223,7 +190,7 @@ describe('startNode', () => {
       const component = createComponent()
       component.process = vi.fn(() => { throw new Error('Process error') })
       const thread = createThread()
-      const id = addNode(thread, 'core/example', { input: { name: 'World' }, component })
+      const id = addNode(thread, 'example', { input: { name: 'World' }, component })
       const shouldReject = startNode(thread, id)
       await expect(shouldReject).rejects.toThrow('Process error')
     })
@@ -232,23 +199,40 @@ describe('startNode', () => {
       const component = createComponent()
       component.process = vi.fn(() => { throw new Error('Process error') })
       const thread = createThread()
-      const id = addNode(thread, 'core/example', { input: { name: 'World' }, component })
+      const id = addNode(thread, 'example', { input: { name: 'World' }, component })
       const callback = vi.fn()
       thread.on('nodeError', callback)
       await startNode(thread, id).catch(() => {})
-      expect(callback).toHaveBeenCalledWith(id, new Error('Process error'), {
-        delta: 0,
-        duration: 0,
-        state: 'error',
-        timestamp: '2020-01-01T00:00:00.000Z',
-      } )
+      expect(callback).toHaveBeenCalledOnce()
+      expect(callback).toHaveBeenCalledWith(id, new Error('Process error'))
+    })
+
+    it('should dispatch the "nodeError" event before changing the node state', async() => {
+      const component = createComponent()
+      component.process = vi.fn(() => { throw new Error('Process error') })
+      const thread = createThread()
+      const id = addNode(thread, 'example', { input: { name: 'World' }, component })
+      let state = 'unknown'
+      thread.on('nodeError', () => { state = getNode(thread, id).state })
+      await startNode(thread, id).catch(() => {})
+      expect(state).toBe('processing')
+    })
+
+    it('should change the node state to "error" when the node errors', async() => {
+      const component = createComponent()
+      component.process = vi.fn(() => { throw new Error('Process error') })
+      const thread = createThread()
+      const id = addNode(thread, 'example', { input: { name: 'World' }, component })
+      await startNode(thread, id).catch(() => {})
+      const node = getNode(thread, id)
+      expect(node.state).toBe('error')
     })
 
     it('should not dispatch the "nodeDone" event when the node errors', async() => {
       const component = createComponent()
       component.process = vi.fn(() => { throw new Error('Process error') })
       const thread = createThread()
-      const id = addNode(thread, 'core/example', { input: { name: 'World' }, component })
+      const id = addNode(thread, 'example', { input: { name: 'World' }, component })
       const callback = vi.fn()
       thread.on('nodeDone', callback)
       await startNode(thread, id).catch(() => {})
