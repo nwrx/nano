@@ -1,7 +1,5 @@
+import { addLink, addNode, createThread } from '../thread'
 import { defineComponent } from '../utils'
-import { addLink } from './addLink'
-import { addNode } from './addNode'
-import { createThread } from './createThread'
 import { isNodeReadyToStart } from './isNodeReadyToStart'
 
 describe('isNodeReadyToStart', () => {
