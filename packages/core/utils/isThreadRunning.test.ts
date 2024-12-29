@@ -1,5 +1,5 @@
-import { addNode } from './addNode'
-import { createThread } from './createThread'
+import { addNode, createThread } from '../thread'
+import { defineComponent } from '../utils'
 import { isThreadRunning } from './isThreadRunning'
 
 describe('isThreadRunning', () => {
@@ -49,6 +49,19 @@ describe('isThreadRunning', () => {
     const id2 = addNode(thread, 'example')
     thread.nodes.get(id1)!.state = 'done'
     thread.nodes.get(id2)!.state = 'error'
+    const result = isThreadRunning(thread)
+    expect(result).toBe(false)
+  })
+
+  it('should return false if an idle node is used as a tool', () => {
+    const thread = createThread()
+    const sourceId = addNode(thread, 'example')
+    const targetId = addNode(thread, 'example', {
+      component: defineComponent({ inputs: { value: { type: 'string' } } }),
+      input: { value: { $ref: `#/Nodes/${sourceId}` } },
+    })
+    thread.nodes.get(sourceId)!.state = 'idle'
+    thread.nodes.get(targetId)!.state = 'done'
     const result = isThreadRunning(thread)
     expect(result).toBe(false)
   })
