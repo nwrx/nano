@@ -1,6 +1,6 @@
 import type { QuestionChoiceValue } from '../components'
 import type { Thread } from './createThread'
-import { createEventMetadata } from '../utils'
+import { getNode } from './getNode'
 
 export interface EventResponse {
   id: string
@@ -8,10 +8,6 @@ export interface EventResponse {
 }
 
 export function sendResponse(thread: Thread, nodeId: string, eventId: string, response: QuestionChoiceValue): void {
-  thread.dispatch(
-    'nodeResponse',
-    nodeId,
-    { id: eventId, response },
-    createEventMetadata(thread, nodeId),
-  )
+  getNode(thread, nodeId)
+  thread.dispatch('nodeResponse', nodeId, { id: eventId, response } )
 }

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { addNode, createThread } from '../../../thread'
-import { createEventMetadata, ERRORS } from '../../../utils'
+import { ERRORS } from '../../../utils'
 import { askQuestion } from './askQuestion'
 
 describe('askQuestion', () => {
@@ -29,7 +29,6 @@ describe('askQuestion', () => {
           choices: undefined,
           timeout: 60000,
         },
-        createEventMetadata(thread, nodeId),
       )
     })
 
@@ -40,7 +39,7 @@ describe('askQuestion', () => {
       thread.on('nodeResponse', callback)
       const eventId = new Promise<string>(resolve => thread.on('nodeQuestionRequest', (_, { id }) => resolve(id)))
       const promise = askQuestion(thread, nodeId, { question: 'ignored', text: 'ignored' })
-      thread.dispatch('nodeResponse', nodeId, { id: await eventId, response: 'Hello, World!' }, createEventMetadata(thread, nodeId))
+      thread.dispatch('nodeResponse', nodeId, { id: await eventId, response: 'Hello, World!' })
       await expect(promise).resolves.toBe('Hello, World!')
     })
   })
@@ -50,7 +49,7 @@ describe('askQuestion', () => {
       const thread = createThread()
       const nodeId = addNode(thread, 'example')
       const shouldReject = askQuestion(thread, nodeId, { question: 'ignored', text: 'ignored', timeout: 1 })
-      thread.dispatch('nodeResponse', nodeId, { id: 'differentId', response: 'response' }, createEventMetadata(thread, nodeId))
+      thread.dispatch('nodeResponse', nodeId, { id: 'differentId', response: 'response' })
       vi.advanceTimersByTime(1)
       await expect(shouldReject).rejects.toThrow()
     })
@@ -60,7 +59,7 @@ describe('askQuestion', () => {
       const nodeId1 = addNode(thread, 'example')
       const nodeId2 = addNode(thread, 'example')
       const shouldReject = askQuestion(thread, nodeId1, { question: 'ignored', text: 'ignored', timeout: 1 })
-      thread.dispatch('nodeResponse', nodeId2, { id: 'differentId', response: 'response' }, createEventMetadata(thread, nodeId2))
+      thread.dispatch('nodeResponse', nodeId2, { id: 'differentId', response: 'response' })
       vi.advanceTimersByTime(1)
       await expect(shouldReject).rejects.toThrow()
     })

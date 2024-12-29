@@ -50,7 +50,7 @@ describe('ask component', () => {
         text: 'Please enter your name.',
         choices: [{ value: 'John Doe', label: 'John Doe' }],
         timeout: 1,
-      }, createEventMetadata(thread, nodeId))
+      })
     })
 
     it('should throw if timeout is reached', async() => {

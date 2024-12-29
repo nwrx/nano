@@ -47,7 +47,7 @@ describe('confirm component', () => {
         question: 'Are you sure?',
         text: 'Please confirm your action.',
         timeout: 1,
-      }, createEventMetadata(thread, nodeId))
+      })
     })
 
     it('should throw if timeout is reached', async() => {

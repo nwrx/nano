@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import type { Thread } from '../../../thread'
 import { randomUUID } from 'node:crypto'
-import { createEventMetadata } from '../../../utils/createEventMetadata'
 
 export interface ConfirmOption {
   question: string
@@ -46,7 +45,6 @@ export async function askConfirmation(thread: Thread, nodeId: string, options: C
       'nodeConfirmRequest',
       nodeId,
       eventConfirmRequest,
-      createEventMetadata(thread, nodeId),
     )
   })
 }

@@ -1,11 +1,7 @@
 import type { Thread } from './createThread'
-import { createEventMetadata } from '../utils/createEventMetadata'
+import { getNode } from './getNode'
 
 export function cancelQuestion(thread: Thread, nodeId: string, eventId: string): void {
-  thread.dispatch(
-    'nodeQuestionCancel',
-    nodeId,
-    eventId,
-    createEventMetadata(thread, nodeId),
-  )
+  getNode(thread, nodeId)
+  thread.dispatch('nodeQuestionCancel', nodeId, eventId)
 }
