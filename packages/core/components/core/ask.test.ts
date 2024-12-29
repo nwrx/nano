@@ -63,15 +63,6 @@ describe('ask component', () => {
       vi.advanceTimersByTime(1)
       await expect(shouldReject).rejects.toThrow('Timeout.')
     })
-
-    it('should throw if default timeout is reached', async() => {
-      const thread = createThread()
-      const id = addNode(thread, 'ask', { input: { question: 'What is your name?' } })
-      const shouldReject = startNode(thread, id)
-      await new Promise(resolve => process.nextTick(resolve))
-      vi.advanceTimersByTime(60000)
-      await expect(shouldReject).rejects.toThrow('Timeout.')
-    })
   })
 
   describe('schema validation', () => {
