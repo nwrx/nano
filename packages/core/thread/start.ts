@@ -1,11 +1,11 @@
 import type { ObjectLike } from '@unshared/types'
-import type { Thread } from './createThread'
+import type { Thread, ThreadInputValue } from './createThread'
 import { createResolvable } from '@unshared/functions'
 import { ERRORS as E, isNodeReadyToStart, isNodeUsedAsTool, isThreadRunning } from '../utils'
 import { getLinks } from './getLinks'
 import { startNode } from './startNode'
 
-export async function start(thread: Thread, input: ObjectLike = {}): Promise<ObjectLike> {
+export async function start(thread: Thread, input: Record<string, ThreadInputValue> = {}): Promise<ObjectLike> {
   const links = getLinks(thread)
   const resolvable = createResolvable<ObjectLike>()
   thread.input = input
