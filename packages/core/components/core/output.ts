@@ -10,7 +10,6 @@ export const output = defineComponent(
       name: {
         'type': 'string',
         'name': 'Name',
-        'default': 'Output',
         'description': 'The name of the output value.',
         'x-control': 'text',
       },
@@ -27,6 +26,7 @@ export const output = defineComponent(
         description: 'The value to send to the ouput.',
         oneOf: [
           { 'x-type': 'stream' },
+          { 'x-type': 'file' },
           { type: 'array' },
           { type: 'object' },
           { type: 'string' },
@@ -36,9 +36,9 @@ export const output = defineComponent(
       },
     },
   },
-  ({ data, thread }) => {
+  ({ data, thread, nodeId }) => {
     thread.output[data.name] = data.value
-    thread.dispatch('output', data.name, data.value)
+    thread.dispatch('nodeOutput', nodeId, data.name, data.value)
     return {}
   },
 )
