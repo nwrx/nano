@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
-import type { Thread } from '../../../thread'
 import { randomUUID } from 'node:crypto'
+import { getNode, type Thread } from '../../../thread'
 
 export interface ConfirmOption {
   question: string
@@ -13,6 +13,7 @@ export interface EventConfirmRequest extends ConfirmOption {
 }
 
 export async function askConfirmation(thread: Thread, nodeId: string, options: ConfirmOption): Promise<boolean> {
+  getNode(thread, nodeId)
   const { question, text, timeout = 60000 } = options
   const eventConfirmRequest: EventConfirmRequest = { id: randomUUID(), question, text, timeout }
   let timeoutInstance: NodeJS.Timeout

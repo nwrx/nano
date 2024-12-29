@@ -1,18 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { EXP_UUID } from '@unshared/validation'
-import { addNode, createThread, getNode, getNodeComponent, sendResponse, startNode } from '../../thread'
-import { createEventMetadata, ERRORS } from '../../utils'
+import { addNode, createThread, getNodeComponent, sendResponse, startNode } from '../../thread'
+import { ERRORS } from '../../utils'
 import { confirm } from './confirm'
 
 describe('confirm component', () => {
-  beforeEach(() => {
-    vi.useFakeTimers({ now: new Date('2020-01-01T00:00:00.000Z') })
-  })
-
-  afterEach(() => {
-    vi.useRealTimers()
-  })
-
   describe('confirm', () => {
     it('should ask for confirmation and return the response', async() => {
       const thread = createThread()
@@ -52,10 +44,9 @@ describe('confirm component', () => {
 
     it('should throw if timeout is reached', async() => {
       const thread = createThread()
-      const id = addNode(thread, 'confirm', { input: { question: 'Are you sure?', timeout: 1 } })
-      const shouldReject = startNode(thread, id)
+      const id = addNode(thread, 'confirm')
+      const shouldReject = startNode(thread, id, { question: 'Are you sure?', timeout: 1 })
       await new Promise(resolve => process.nextTick(resolve))
-      vi.advanceTimersByTime(1)
       await expect(shouldReject).rejects.toThrow('Timeout.')
     })
   })
@@ -65,9 +56,7 @@ describe('confirm component', () => {
       const thread = createThread()
       const id = addNode(thread, 'confirm', { input: { timeout: 1 } })
       const shouldReject = startNode(thread, id)
-      const error = ERRORS.NODE_INPUT_SCHEMA_MISMATCH(id, {
-        question: ERRORS.INPUT_REQUIRED('question'),
-      })
+      const error = ERRORS.NODE_INPUT_SCHEMA_MISMATCH(id, { question: ERRORS.INPUT_REQUIRED('question') })
       await expect(shouldReject).rejects.toThrow(error)
     })
 
@@ -75,9 +64,7 @@ describe('confirm component', () => {
       const thread = createThread()
       const id = addNode(thread, 'confirm', { input: { question: 123, timeout: 1 } })
       const shouldReject = startNode(thread, id)
-      const error = ERRORS.NODE_INPUT_SCHEMA_MISMATCH(id, {
-        question: ERRORS.INPUT_NOT_STRING('question'),
-      })
+      const error = ERRORS.NODE_INPUT_SCHEMA_MISMATCH(id, { question: ERRORS.INPUT_NOT_STRING('question') })
       await expect(shouldReject).rejects.toThrow(error)
     })
 
@@ -85,9 +72,7 @@ describe('confirm component', () => {
       const thread = createThread()
       const id = addNode(thread, 'confirm', { input: { question: 'Are you sure?', timeout: true } })
       const shouldReject = startNode(thread, id)
-      const error = ERRORS.NODE_INPUT_SCHEMA_MISMATCH(id, {
-        timeout: ERRORS.INPUT_NOT_NUMBER('timeout'),
-      })
+      const error = ERRORS.NODE_INPUT_SCHEMA_MISMATCH(id, { timeout: ERRORS.INPUT_NOT_NUMBER('timeout') })
       await expect(shouldReject).rejects.toThrow(error)
     })
 
@@ -95,9 +80,7 @@ describe('confirm component', () => {
       const thread = createThread()
       const id = addNode(thread, 'confirm', { input: { question: 'Are you sure?', timeout: -1 } })
       const shouldReject = startNode(thread, id)
-      const error = ERRORS.NODE_INPUT_SCHEMA_MISMATCH(id, {
-        timeout: ERRORS.INPUT_NUMBER_TOO_SMALL('timeout', 0),
-      })
+      const error = ERRORS.NODE_INPUT_SCHEMA_MISMATCH(id, { timeout: ERRORS.INPUT_NUMBER_TOO_SMALL('timeout', 0) })
       await expect(shouldReject).rejects.toThrow(error)
     })
 
@@ -105,9 +88,7 @@ describe('confirm component', () => {
       const thread = createThread()
       const id = addNode(thread, 'confirm', { input: { question: 'Are you sure?', timeout: 0.5 } })
       const shouldReject = startNode(thread, id)
-      const error = ERRORS.NODE_INPUT_SCHEMA_MISMATCH(id, {
-        timeout: ERRORS.INPUT_NUMBER_NOT_INTEGER('timeout'),
-      })
+      const error = ERRORS.NODE_INPUT_SCHEMA_MISMATCH(id, { timeout: ERRORS.INPUT_NUMBER_NOT_INTEGER('timeout') })
       await expect(shouldReject).rejects.toThrow(error)
     })
   })
