@@ -1,26 +1,26 @@
 import type { ObjectLike } from '@unshared/types'
 import type { Thread } from './createThread'
 import { createResolvable } from '@unshared/functions'
-import { createEventMetadata } from '../utils'
+import { ERRORS as E, isNodeReadyToStart, isNodeUsedAsTool, isThreadRunning } from '../utils'
 import { getLinks } from './getLinks'
-import { isNodeReadyToStart } from './isNodeReadyToStart'
-import { isNodeUsedAsTool } from './isNodeUsedAsTool'
-import { isThreadRunning } from './isThreadRunning'
 import { startNode } from './startNode'
 
 export async function start(thread: Thread, input: ObjectLike = {}): Promise<ObjectLike> {
   const links = getLinks(thread)
   const resolvable = createResolvable<ObjectLike>()
+  thread.input = input
   thread.startedAt = Date.now()
-  thread.dispatch('start', input, createEventMetadata(thread))
+  thread.dispatch('start', input)
 
-  // --- If an error occurs in any of the nodes, dispatch the error event and reject the promise.
-  const clearOnNodeError = thread.on('nodeError', async(_, error) => {
-    await new Promise(setImmediate)
-    if (isThreadRunning(thread)) return
-    thread.dispatch('error', error, createEventMetadata(thread))
-    resolvable.reject(error)
-  })
+  // --- To avoid concurrency issues, prevent the thread from starting if it is already running.
+  if (isThreadRunning(thread, links)) throw E.THREAD_IS_ALREADY_RUNNING()
+
+  // --- If no nodes are present, resolve the promise immediately.
+  if (thread.nodes.size === 0) {
+    thread.dispatch('done', thread.output)
+    resolvable.resolve(thread.output)
+    return resolvable.promise
+  }
 
   // --- If the node has outgoing links, start them when the node is done.
   const clearOnNodeDone = thread.on('nodeDone', async(id) => {
@@ -33,9 +33,16 @@ export async function start(thread: Thread, input: ObjectLike = {}): Promise<Obj
 
     // --- If all the nodes are done, it means the thread is done.
     await new Promise(setImmediate)
-    if (isThreadRunning(thread)) return
-    thread.dispatch('done', thread.output, createEventMetadata(thread))
+    if (isThreadRunning(thread, links)) return
+    thread.dispatch('done', thread.output)
     resolvable.resolve(thread.output)
+  })
+
+  // --- If an error occurs in any of the nodes, dispatch the error event and reject the promise.
+  const clearOnNodeError = thread.on('nodeError', async(_, error) => {
+    await new Promise(setImmediate)
+    if (isThreadRunning(thread, links)) return
+    resolvable.reject(error)
   })
 
   // --- Start nodes with no incoming links.

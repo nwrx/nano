@@ -1,167 +1,281 @@
-import { defineComponent } from '../utils'
-import { addNode, createThread } from './'
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+import { defineComponent, ERRORS as E, toolSchema } from '../utils'
+import { addLink } from './addLink'
+import { addNode } from './addNode'
+import { createThread } from './createThread'
 import { start } from './start'
 
+const greet = defineComponent(
+  {
+    isTrusted: true,
+    inputs: {
+      greet: {
+        type: 'string',
+        default: 'Hello',
+      },
+      name: {
+        type: 'string',
+        default: 'World',
+      },
+    },
+    outputs: {
+      result: {
+        type: 'string',
+      },
+    },
+  },
+  ({ data }) => ({
+    result: `${data.greet}, ${data.name}!`,
+  }),
+)
+
+const passthrough = defineComponent(
+  {
+    isTrusted: true,
+    inputs: {
+      value: {
+        oneOf: [
+          { type: 'object' },
+          { type: 'string' },
+          { type: 'number' },
+          { type: 'boolean' },
+        ],
+      },
+      delay: {
+        type: 'number',
+        default: 0,
+      },
+    },
+    outputs: {
+      value: {},
+    },
+  },
+  ({ data }) => new Promise((resolve) => {
+    setTimeout(() => resolve({ value: data.value }), data.delay)
+  }),
+)
+
+const throws = defineComponent(
+  {
+    isTrusted: true,
+  },
+  () => {
+    throw new Error('error during node processing')
+  },
+)
+
+const callingTool = defineComponent(
+  {
+    isTrusted: true,
+    inputs: {
+      tool: {
+        ...toolSchema,
+      },
+      parameters: {
+        type: 'object',
+        default: {},
+      },
+    },
+    outputs: {
+      result: {},
+    },
+  },
+  async({ data }) => ({
+    result: await data.tool.call(data.parameters),
+  }),
+)
+
 describe('start', () => {
-  beforeEach(() => {
-    vi.useFakeTimers({ now: new Date('2020-01-01T00:00:00.000Z') })
-  })
-
-  afterEach(() => {
-    vi.useRealTimers()
-  })
-
-  describe('input', () => {
-    it('should pass the input values to the core/input nodes', async() => {
+  describe('start', () => {
+    it('should record the start time of the thread', async() => {
       const thread = createThread()
-      const id = addNode(thread, 'input', { input: { name: 'Message' } })
-      const callback = vi.fn()
-      thread.on('nodeDone', callback)
-      await start(thread, { Message: 'Hello, world!' })
-      expect(callback).toHaveBeenCalledTimes(1)
-      expect(callback).toHaveBeenCalledWith(id, { value: 'Hello, world!' }, {
-        delta: 0,
-        duration: 0,
-        state: 'done',
-        timestamp: '2020-01-01T00:00:00.000Z',
-      })
+      await start(thread)
+      expect(thread.startedAt).toBeGreaterThan(Date.now() - 1000)
     })
 
-    it('should pass undefined if the input is not provided and not required', async() => {
+    it('should set the input object from the parameter', async() => {
       const thread = createThread()
-      const id = addNode(thread, 'input', { input: { name: 'Message', required: false } })
+      await start(thread, { name: 'Alice' })
+      expect(thread.input).toEqual({ name: 'Alice' })
+    })
+
+    it('should dispatch the "start" event', async() => {
+      const thread = createThread()
+      const callback = vi.fn()
+      thread.on('start', callback)
+      await start(thread)
+      expect(callback).toHaveBeenCalledOnce()
+      expect(callback).toHaveBeenCalledWith({})
+    })
+
+    it('should dispatch the "start" event with the input object', async() => {
+      const thread = createThread()
+      const callback = vi.fn()
+      thread.on('start', callback)
+      await start(thread, { name: 'Alice' })
+      expect(callback).toHaveBeenCalledOnce()
+      expect(callback).toHaveBeenCalledWith({ name: 'Alice' })
+    })
+
+    it('should resolve the promise immediately if no nodes are present', async() => {
+      const thread = createThread()
+      const callback = vi.fn()
+      thread.on('done', callback)
+      await start(thread)
+      expect(callback).toHaveBeenCalledOnce()
+      expect(callback).toHaveBeenCalledWith({})
+    })
+  })
+
+  describe('done', () => {
+    it('should resolve the promise with the output object', async() => {
+      const thread = createThread()
+      thread.output = { result: 'Hello, World!' }
+      const output = await start(thread)
+      expect(output).toEqual({ result: 'Hello, World!' })
+    })
+
+    it('should dispatch the "done" event when all nodes are done', async() => {
+      const thread = createThread()
+      thread.output = { result: 'Hello, World!' }
+      const callback = vi.fn()
+      thread.on('done', callback)
+      await start(thread)
+      expect(callback).toHaveBeenCalledOnce()
+      expect(callback).toHaveBeenCalledWith({ result: 'Hello, World!' })
+    })
+
+    it('should clean up the event listeners after the thread is done', async() => {
+      const thread = createThread()
+      await start(thread)
+      expect(thread.eventListeners).toHaveLength(0)
+    })
+  })
+
+  describe('flow', () => {
+    it('should start nodes with no incoming links', async() => {
+      const thread = createThread()
+      const nodeId = addNode(thread, 'example', { component: greet })
       const callback = vi.fn()
       thread.on('nodeDone', callback)
       await start(thread)
-      expect(callback).toHaveBeenCalledTimes(1)
-      expect(callback).toHaveBeenCalledWith(id, { value: undefined }, {
-        delta: 0,
-        duration: 0,
-        state: 'done',
-        timestamp: '2020-01-01T00:00:00.000Z',
-      })
+      expect(callback).toHaveBeenCalledOnce()
+      expect(callback).toHaveBeenCalledWith(nodeId, { result: 'Hello, World!' })
     })
 
-    it('should throw an error if the input is not provided and required', async() => {
+    it('should start multiple nodes with no incoming links', async() => {
+      vi.useRealTimers()
       const thread = createThread()
-      addNode(thread, 'input', { input: { name: 'Message', required: true } })
+      const nodeId1 = addNode(thread, 'example', { component: greet, input: { name: 'Alice' } })
+      const nodeId2 = addNode(thread, 'example', { component: greet, input: { name: 'Bob' } })
+      const callback = vi.fn()
+      thread.on('nodeStart', (...args) => callback('nodeStart', ...args))
+      thread.on('nodeDone', (...args) => callback('nodeDone', ...args))
+      await start(thread)
+      expect(callback).toHaveBeenCalledTimes(4)
+      expect(callback).toHaveBeenNthCalledWith(1, 'nodeStart', nodeId1, { greet: 'Hello', name: 'Alice' })
+      expect(callback).toHaveBeenNthCalledWith(2, 'nodeStart', nodeId2, { greet: 'Hello', name: 'Bob' })
+      expect(callback).toHaveBeenNthCalledWith(3, 'nodeDone', nodeId1, { result: 'Hello, Alice!' })
+      expect(callback).toHaveBeenNthCalledWith(4, 'nodeDone', nodeId2, { result: 'Hello, Bob!' })
+    })
+
+    it('should start nodes with incoming links when the source node is done', async() => {
+      vi.useRealTimers()
+      const thread = createThread()
+      const sourceId = addNode(thread, 'example', { component: passthrough, input: { value: 'World' } })
+      const targetId = addNode(thread, 'example', { component: greet })
+      await addLink(thread, { sourceId, sourceName: 'value', targetName: 'name', targetId })
+      const callback = vi.fn()
+      thread.on('nodeStart', (...args) => callback('nodeStart', ...args))
+      thread.on('nodeDone', (...args) => callback('nodeDone', ...args))
+      await start(thread)
+      expect(callback).toHaveBeenCalledTimes(4)
+      expect(callback).toHaveBeenNthCalledWith(1, 'nodeStart', sourceId, { delay: 0, value: 'World' })
+      expect(callback).toHaveBeenNthCalledWith(2, 'nodeDone', sourceId, { value: 'World' })
+      expect(callback).toHaveBeenNthCalledWith(3, 'nodeStart', targetId, { greet: 'Hello', name: 'World' })
+      expect(callback).toHaveBeenNthCalledWith(4, 'nodeDone', targetId, { result: 'Hello, World!' })
+    })
+
+    it('should wait for all incoming links to be ready before starting the node', async() => {
+      vi.useRealTimers()
+      const thread = createThread()
+      const sourceId1 = addNode(thread, 'example', { component: passthrough, input: { value: 'Hello' } })
+      const sourceId2 = addNode(thread, 'example', { component: passthrough, input: { value: 'World' } })
+      const targetId = addNode(thread, 'example', { component: greet })
+      await addLink(thread, { sourceId: sourceId1, sourceName: 'value', targetName: 'greet', targetId })
+      await addLink(thread, { sourceId: sourceId2, sourceName: 'value', targetName: 'name', targetId })
+      const callback = vi.fn()
+      thread.on('nodeStart', (...args) => callback('nodeStart', ...args))
+      thread.on('nodeDone', (...args) => callback('nodeDone', ...args))
+      await start(thread)
+      expect(callback).toHaveBeenCalledTimes(6)
+      expect(callback).toHaveBeenNthCalledWith(1, 'nodeStart', sourceId1, { delay: 0, value: 'Hello' })
+      expect(callback).toHaveBeenNthCalledWith(2, 'nodeStart', sourceId2, { delay: 0, value: 'World' })
+      expect(callback).toHaveBeenNthCalledWith(3, 'nodeDone', sourceId1, { value: 'Hello' })
+      expect(callback).toHaveBeenNthCalledWith(4, 'nodeDone', sourceId2, { value: 'World' })
+      expect(callback).toHaveBeenNthCalledWith(5, 'nodeStart', targetId, { greet: 'Hello', name: 'World' })
+      expect(callback).toHaveBeenNthCalledWith(6, 'nodeDone', targetId, { result: 'Hello, World!' })
+    })
+
+    it('should handle nodes used as tools in the thread', async() => {
+      const thread = createThread()
+      const sourceId = addNode(thread, 'example', { component: passthrough })
+      const targetId = addNode(thread, 'example', { component: callingTool })
+      await addLink(thread, { sourceId, targetId, targetName: 'tool' })
+      const callback = vi.fn()
+      thread.on('nodeStart', (...args) => callback('nodeStart', ...args))
+      thread.on('nodeDone', (...args) => callback('nodeDone', ...args))
+      await start(thread)
+      expect(callback).toHaveBeenCalledTimes(4)
+      expect(callback).toHaveBeenNthCalledWith(1, 'nodeStart', targetId, { parameters: {}, tool: expect.any(Object) })
+      expect(callback).toHaveBeenNthCalledWith(2, 'nodeStart', sourceId, {})
+      expect(callback).toHaveBeenNthCalledWith(3, 'nodeDone', sourceId, { value: undefined })
+      expect(callback).toHaveBeenNthCalledWith(4, 'nodeDone', targetId, { result: {} })
+    })
+  })
+
+  describe('error', () => {
+    it('should reject the promise if the thread is already running', async() => {
+      const thread = createThread()
+      const nodeId = addNode(thread, 'example', { component: greet })
+      const node = thread.nodes.get(nodeId)!
+      node.state = 'processing'
       const shouldReject = start(thread)
-      const error = new Error('Input "Message" is required but not provided.')
-      await expect(shouldReject).rejects.toThrow(error)
-    })
-  })
-
-  describe('output', () => {
-    it('should collect output values from core/output nodes', async() => {
-      const thread = createThread()
-      addNode(thread, 'output', { input: { name: 'Response', value: 'Hello, world!' } })
-      const result = await start(thread, { Message: 'Hello, world!' })
-      expect(result).toStrictEqual({ Response: 'Hello, world!' })
+      const error = E.THREAD_IS_ALREADY_RUNNING()
+      await expect(shouldReject).rejects.toThrowError(error)
     })
 
-    it('should resolve the value of the input if it is a reference', async() => {
-      const thread = createThread({ referenceResolvers: [() => 'Hello, world!'] })
-      addNode(thread, 'output', { input: { name: 'Response', value: { $ref: '#/Variable/Greet' } } })
-      const result = await start(thread, { Message: 'Hello, world!' })
-      expect(result).toStrictEqual({ Response: 'Hello, world!' })
-    })
-
-    it('should dispatch the "output" event for each core/output node', async() => {
-      const thread = createThread()
-      addNode(thread, 'output', { input: { name: 'Response1', value: 'Hello, world!' } })
-      addNode(thread, 'output', { input: { name: 'Response2', value: 'Hello, world!' } })
-      const output = vi.fn()
-      thread.on('output', output)
-      await start(thread, { Message: 'Hello, world!' })
-      expect(output).toHaveBeenCalledTimes(2)
-      expect(output).toHaveBeenNthCalledWith(1, 'Response1', 'Hello, world!', {
-        delta: 0,
-        duration: undefined,
-        state: undefined,
-        timestamp: '2020-01-01T00:00:00.000Z',
-      })
-      expect(output).toHaveBeenNthCalledWith(2, 'Response2', 'Hello, world!', {
-        delta: 0,
-        duration: undefined,
-        state: undefined,
-        timestamp: '2020-01-01T00:00:00.000Z',
-      })
-    })
-
-    it('should dispatch the "done" event when all nodes are done with the output', async() => {
-      const thread = createThread()
-      addNode(thread, 'output', { input: { name: 'Response', value: 'Hello, world!' } })
-      const end = vi.fn()
-      thread.on('done', end)
-      await start(thread, { Message: 'Hello, world!' })
-      expect(end).toHaveBeenCalledTimes(1)
-      expect(end).toHaveBeenCalledWith({ Response: 'Hello, world!' }, {
-        delta: 0,
-        duration: undefined,
-        state: undefined,
-        timestamp: '2020-01-01T00:00:00.000Z',
-      })
-    })
-  })
-
-  describe('error handling', () => {
     it('should reject the promise if a node errors', async() => {
       const thread = createThread()
-      addNode(thread, 'core/example', {
-        input: { name: 'World' },
-        component: defineComponent({ isTrusted: true }, () => { throw new Error('node error') }),
-      })
+      addNode(thread, 'example', { component: throws })
       const shouldReject = start(thread)
-      await expect(shouldReject).rejects.toThrow('node error')
+      await expect(shouldReject).rejects.toThrow('error during node processing')
     })
 
-    it('should dispatch the "error" event when a node errors', async() => {
+    it('should reject the promise if the last node errors', async() => {
       const thread = createThread()
-      addNode(thread, 'core/example', {
-        input: { name: 'World' },
-        component: defineComponent({ isTrusted: true }, () => { throw new Error('Process error') }),
-      })
-      const error = vi.fn()
-      thread.on('error', error)
-      await start(thread).catch(() => {})
-      expect(error).toHaveBeenCalledTimes(1)
-      expect(error).toHaveBeenCalledWith(new Error('Process error'), {
-        delta: 0,
-        duration: undefined,
-        state: undefined,
-        timestamp: '2020-01-01T00:00:00.000Z',
-      })
+      addNode(thread, 'example', { component: greet })
+      addNode(thread, 'example', { component: throws })
+      const shouldReject = start(thread)
+      await expect(shouldReject).rejects.toThrow('error during node processing')
     })
 
-    it('should abort the thread if a node errors', async() => {
+    it('should not reject the promise if a node errors and the thread is still running', async() => {
       const thread = createThread()
-      addNode(thread, 'core/example', {
-        input: { name: 'World' },
-        component: defineComponent({ isTrusted: true }, () => { throw new Error('Process error') }),
-      })
-      const abort = vi.fn()
-      thread.on('abort', abort)
-      await start(thread).catch(() => {})
-      expect(abort).toHaveBeenCalledTimes(1)
-      expect(abort).toHaveBeenCalledWith({
-        delta: 0,
-        duration: undefined,
-        state: undefined,
-        timestamp: '2020-01-01T00:00:00.000Z',
-      })
+      addNode(thread, 'example', { component: throws })
+      addNode(thread, 'example', { component: passthrough, input: { value: 'Hello', delay: 1 } })
+      const result = start(thread)
+      await expect(result).resolves.toEqual({})
     })
 
-    it('should abort the abort controller if a node errors', async() => {
+    it('should not dispatch the "done" event when a node errors', async() => {
       const thread = createThread()
-      addNode(thread, 'core/example', {
-        input: { name: 'World' },
-        component: defineComponent({ isTrusted: true }, () => { throw new Error('Process error') }),
-      })
-      const callback = vi.fn()
-      thread.abortController.signal.addEventListener('abort', callback)
+      addNode(thread, 'example', { component: throws })
+      const done = vi.fn()
+      thread.on('done', done)
       await start(thread).catch(() => {})
-      expect(callback).toHaveBeenCalledTimes(1)
-      expect(callback).toHaveBeenCalledWith(expect.any(Event))
+      expect(done).not.toHaveBeenCalled()
     })
   })
 })
