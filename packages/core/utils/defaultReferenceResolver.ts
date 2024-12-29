@@ -2,8 +2,8 @@ import type { ObjectLike } from '@unshared/types'
 import type { Thread } from '../thread'
 import type { ReferenceType } from './createReference'
 import { toKebabCase } from '@unshared/string'
-import { defineLanguageModelTool } from '../components'
 import { getNode, getNodeComponent, getNodeOutputSocket, startNode } from '../thread'
+import { defineTool } from './defineTool'
 import { ERRORS as E } from './errors'
 
 export async function DEFAULT_REFERENCE_RESOLVER(this: Thread, type: ReferenceType, ...values: string[]) {
@@ -23,8 +23,7 @@ export async function DEFAULT_REFERENCE_RESOLVER(this: Thread, type: ReferenceTy
     const component = await getNodeComponent(this, sourceId)
     if (typeof component.process !== 'function')
       throw E.REFERENCE_TO_TOOL_BUT_NO_PROCESS_FUNCTION(sourceId)
-    return defineLanguageModelTool({
-      nodeId: sourceId,
+    return defineTool(sourceId, {
       name: component.title ? toKebabCase(component.title) : sourceId,
       description: component.description ?? '',
       properties: component.inputs ?? {},
