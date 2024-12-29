@@ -1,7 +1,29 @@
+import type { ObjectLike } from '@unshared/types'
 import { createClient } from '@unshared/client'
 import { randomUUID } from 'node:crypto'
 import { defineComponent } from '../../utils/defineComponent'
-import { notifyRequest, notifyRequestError, notifyRequestResponse } from './utils'
+
+export interface EventRequest {
+  id: string
+  url: string
+  body: ObjectLike
+  query: ObjectLike
+  method: string
+  headers: ObjectLike
+  parameters: ObjectLike
+}
+
+export interface EventRequestResponse {
+  id: string
+  status: number
+  statusText: string
+}
+
+export interface EventRequestError {
+  id: string
+  status: number
+  statusText: string
+}
 
 export const client = defineComponent(
   {
@@ -20,8 +42,8 @@ export const client = defineComponent(
       method: {
         'title': 'Method',
         'description': 'The HTTP method to use for the API call.',
-        'default': 'GET',
-        'example': 'GET',
+        'default': 'get',
+        'example': 'get',
         'x-control': 'select',
         'enum': [
           'get',
@@ -116,6 +138,8 @@ export const client = defineComponent(
       },
     },
   },
+
+  // @ts-expect-error: The return type is respected.
   async({ data, thread, nodeId }) => {
     const { url, method, query, body, headers = {}, parameters = {} } = data
 
@@ -123,22 +147,23 @@ export const client = defineComponent(
 
     // --- Fetch the data from the API endpoint.
     const id = randomUUID()
-    notifyRequest(thread, nodeId, { id, url, method, query, body, headers, parameters })
+    thread.dispatch('nodeRequest', nodeId, { id, url, method, query, body, headers, parameters })
     const response = await client.fetch(url, { method, query, body, headers })
     const { ok, status, statusText } = response
 
     // --- Handle errors and return the response body.
     if (!ok) {
-      notifyRequestError(thread, nodeId, { id, status, statusText })
+      thread.dispatch('nodeRequestError', nodeId, { id, status, statusText })
       throw new Error(`Failed to fetch: ${statusText}`)
     }
 
-    notifyRequestResponse(thread, nodeId, { id, status, statusText })
-    return new Proxy(response, {
+    thread.dispatch('nodeRequestResponse', nodeId, { id, status, statusText })
+    return new Proxy({}, {
       get(target, key) {
         if (key === 'text') return response.text()
         if (key === 'json') return response.json()
-        if (key === 'headers') return Object.fromEntries(target.headers.entries())
+        if (key === 'headers') return Object.fromEntries(response.headers.entries())
+        if (key === 'stream') return response.body
       },
     })
   },
