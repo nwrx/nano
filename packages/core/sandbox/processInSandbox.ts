@@ -20,7 +20,7 @@ export async function processInSandbox(thread: Thread, nodeId: string, data: Obj
   if (!component.process) throw new Error('The component does not have a process function.')
   const fnWrapped = await wrapInSandbox(component.process, { timeout: 10000 })
 
-  // --- Implement some WebAPI functions.
+  // --- Implement some WebAPI functionalities in the sandbox.
   await implementFetch(fnWrapped.isolate, fnWrapped.context)
   await implementHeaders(fnWrapped.isolate, fnWrapped.context)
   await implementTextDecoder(fnWrapped.isolate, fnWrapped.context)
