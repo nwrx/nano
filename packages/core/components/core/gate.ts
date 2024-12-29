@@ -2,6 +2,7 @@ import { defineComponent } from '../../utils/defineComponent'
 
 export const gate = defineComponent(
   {
+    isTrusted: true,
     title: 'Gate',
     icon: 'https://api.iconify.design/tabler:logic-and.svg',
     description: 'Routes a value based on a condition.',
@@ -50,9 +51,22 @@ export const gate = defineComponent(
       },
     },
     outputs: {
-      result: {
-        'name': 'Gate',
+      pass: {
+        'name': 'Pass',
         'description': 'The value when the condition is true.',
+        'x-optional': true,
+        'oneOf': [
+          { type: 'array' },
+          { type: 'object' },
+          { type: 'string' },
+          { type: 'number' },
+          { type: 'boolean' },
+          { 'x-type': 'stream' },
+        ],
+      },
+      fail: {
+        'name': 'Fail',
+        'description': 'The value when the condition is false.',
         'x-optional': true,
         'oneOf': [
           { type: 'array' },
@@ -67,13 +81,47 @@ export const gate = defineComponent(
   },
   ({ data }) => {
     const { condition, values, passthrough } = data
-    let ok = false
-    if (condition === 'and' && values.every(Boolean)) ok = true
-    if (condition === 'or' && values.some(Boolean)) ok = true
-    if (condition === 'xor' && values.filter(Boolean).length === 1) ok = true
-    if (condition === 'nand' && !values.every(Boolean)) ok = true
-    if (condition === 'nor' && !values.some(Boolean)) ok = true
-    if (condition === 'xnor' && values.every(Boolean) || !values.some(Boolean)) ok = true
-    return { result: ok ? passthrough : undefined }
+
+    if (condition === 'and') {
+      return values.every(Boolean)
+        ? { pass: passthrough, fail: undefined }
+        : { pass: undefined, fail: passthrough }
+    }
+
+    if (condition === 'or') {
+      return values.some(Boolean)
+        ? { pass: passthrough, fail: undefined }
+        : { pass: undefined, fail: passthrough }
+    }
+
+    if (condition === 'xor') {
+      return values.filter(Boolean).length === 1
+        ? { pass: passthrough, fail: undefined }
+        : { pass: undefined, fail: passthrough }
+    }
+
+    if (condition === 'nand') {
+      return values.every(Boolean)
+        ? { pass: undefined, fail: passthrough }
+        : { pass: passthrough, fail: undefined }
+    }
+
+    if (condition === 'nor') {
+      return values.some(Boolean)
+        ? { pass: undefined, fail: passthrough }
+        : { pass: passthrough, fail: undefined }
+    }
+
+    if (condition === 'xnor') {
+      // all are true or all are false
+      const all = values.every(Boolean)
+      const any = values.some(Boolean)
+      return (all || !any)
+        ? { pass: passthrough, fail: undefined }
+        : { pass: undefined, fail: passthrough }
+    }
+
+    // --- Unrecognized condition, should (hopefully) never occur.
+    throw new Error(`Unrecognized condition: ${condition as string}`)
   },
 )
