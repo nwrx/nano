@@ -78,6 +78,28 @@ describe('resolveSchemaObject', () => {
       expect(result).toEqual({ foo: 'bar', extra: 'baz' })
     })
 
+    it('should resolve references in additional properties', async() => {
+      const resolver = () => Promise.resolve('Hello, World!')
+      const result = await resolveSchemaObject(
+        'value',
+        { foo: 'bar', extra: { $ref: '#/Variables/EXAMPLE' } },
+        { type: 'object', additionalProperties: { type: 'string' }, properties: { foo: { type: 'string' } } },
+        [resolver],
+      )
+      expect(result).toEqual({ foo: 'bar', extra: 'Hello, World!' })
+    })
+
+    it('should not resolve references when no properties or additionalProperties are defined', async() => {
+      const resolver = () => Promise.resolve('Hello, World!')
+      const result = await resolveSchemaObject(
+        'value',
+        { foo: 'bar', extra: { $ref: '#/Variables/EXAMPLE' } },
+        { type: 'object' },
+        [resolver],
+      )
+      expect(result).toEqual({ foo: 'bar', extra: { $ref: '#/Variables/EXAMPLE' } })
+    })
+
     it('should throw an error if there are extra properties and additionalProperties is false', async() => {
       const shouldThrow = resolveSchemaObject('value', { foo: 'bar', extra: 'baz' }, {
         type: 'object',

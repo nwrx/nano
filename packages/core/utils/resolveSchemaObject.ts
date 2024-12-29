@@ -67,5 +67,5 @@ export async function resolveSchemaObject(
 
   // --- Return the resolved object. If a `properties` option was given, only return
   // --- the passed properties. Otherwise, return a shallow copy of the object.
-  return schema.properties ? resolved : { ...value } as Record<string, unknown>
+  return schema.properties || schema.additionalProperties ? resolved : { ...value } as Record<string, unknown>
 }
