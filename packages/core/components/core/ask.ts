@@ -102,7 +102,7 @@ export const ask = defineComponent(
         'type': 'integer',
         'title': 'Timeout',
         'minimum': 0,
-        'description': 'The timeout in milliseconds before the response is considered invalid.',
+        'description': 'The timeout in milliseconds before the response is considered invalid. Note that since it is in milliseconds, a value of 10000 is equivalent to 10 seconds.',
         'x-optional': true,
       },
     },
@@ -119,7 +119,7 @@ export const ask = defineComponent(
     },
   },
   async({ data, thread, nodeId }) => {
-    const { question, text, defaultValue, timeout = 60000, choices } = data
+    const { question, text, defaultValue, timeout, choices } = data
     const eventQuestion: EventQuestion = { id: randomUUID(), question, text, timeout, choices, defaultValue }
 
     // --- If timeout is reached, reject the promise with an error.
