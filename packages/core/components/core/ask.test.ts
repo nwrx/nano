@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { EXP_UUID } from '@unshared/validation'
-import { addNode, createThread, getNode, getNodeComponent, sendResponse, startNode } from '../../thread'
-import { createEventMetadata, ERRORS } from '../../utils'
+import { addNode, createThread, getNodeComponent, startNode } from '../../thread'
+import { ERRORS } from '../../utils'
 import { ask } from './ask'
 
 describe('ask component', () => {
@@ -24,7 +24,9 @@ describe('ask component', () => {
           timeout: 1,
         },
       })
-      thread.on('nodeQuestionRequest', (_, { id: eventId }) => sendResponse(thread, nodeId, eventId, 'John Doe'))
+      thread.on('nodeQuestionRequest', (_, { id: eventId }) => {
+        thread.dispatch('nodeResponse', nodeId, { id: eventId, response: 'John Doe' })
+      })
       const result = await startNode(thread, nodeId)
       expect(result).toStrictEqual({ response: 'John Doe' })
     })
@@ -77,9 +79,7 @@ describe('ask component', () => {
       const thread = createThread()
       const id = addNode(thread, 'ask', { input: { timeout: 1 } })
       const shouldReject = startNode(thread, id)
-      const error = ERRORS.NODE_INPUT_SCHEMA_MISMATCH(id, {
-        question: ERRORS.INPUT_REQUIRED('question'),
-      })
+      const error = ERRORS.NODE_INPUT_SCHEMA_MISMATCH(id, { question: ERRORS.INPUT_REQUIRED('question') })
       await expect(shouldReject).rejects.toThrow(error)
     })
 
@@ -87,9 +87,7 @@ describe('ask component', () => {
       const thread = createThread()
       const id = addNode(thread, 'ask', { input: { question: 123, timeout: 1 } })
       const shouldReject = startNode(thread, id)
-      const error = ERRORS.NODE_INPUT_SCHEMA_MISMATCH(id, {
-        question: ERRORS.INPUT_NOT_STRING('question'),
-      })
+      const error = ERRORS.NODE_INPUT_SCHEMA_MISMATCH(id, { question: ERRORS.INPUT_NOT_STRING('question') })
       await expect(shouldReject).rejects.toThrow(error)
     })
 
@@ -97,9 +95,7 @@ describe('ask component', () => {
       const thread = createThread()
       const id = addNode(thread, 'ask', { input: { question: 'What is your name?', choices: 'John Doe', timeout: 1 } })
       const shouldReject = startNode(thread, id)
-      const error = ERRORS.NODE_INPUT_SCHEMA_MISMATCH(id, {
-        choices: ERRORS.INPUT_NOT_ARRAY('choices'),
-      })
+      const error = ERRORS.NODE_INPUT_SCHEMA_MISMATCH(id, { choices: ERRORS.INPUT_NOT_ARRAY('choices') })
       await expect(shouldReject).rejects.toThrow(error)
     })
 
@@ -107,9 +103,7 @@ describe('ask component', () => {
       const thread = createThread()
       const id = addNode(thread, 'ask', { input: { question: 'What is your name?', timeout: true } })
       const shouldReject = startNode(thread, id)
-      const error = ERRORS.NODE_INPUT_SCHEMA_MISMATCH(id, {
-        timeout: ERRORS.INPUT_NOT_NUMBER('timeout'),
-      })
+      const error = ERRORS.NODE_INPUT_SCHEMA_MISMATCH(id, { timeout: ERRORS.INPUT_NOT_NUMBER('timeout') })
       await expect(shouldReject).rejects.toThrow(error)
     })
 
@@ -117,9 +111,7 @@ describe('ask component', () => {
       const thread = createThread()
       const id = addNode(thread, 'ask', { input: { question: 'What is your name?', timeout: -1 } })
       const shouldReject = startNode(thread, id)
-      const error = ERRORS.NODE_INPUT_SCHEMA_MISMATCH(id, {
-        timeout: ERRORS.INPUT_NUMBER_TOO_SMALL('timeout', 0),
-      })
+      const error = ERRORS.NODE_INPUT_SCHEMA_MISMATCH(id, { timeout: ERRORS.INPUT_NUMBER_TOO_SMALL('timeout', 0) })
       await expect(shouldReject).rejects.toThrow(error)
     })
 
@@ -127,9 +119,7 @@ describe('ask component', () => {
       const thread = createThread()
       const id = addNode(thread, 'ask', { input: { question: 'What is your name?', timeout: 0.5 } })
       const shouldReject = startNode(thread, id)
-      const error = ERRORS.NODE_INPUT_SCHEMA_MISMATCH(id, {
-        timeout: ERRORS.INPUT_NUMBER_NOT_INTEGER('timeout'),
-      })
+      const error = ERRORS.NODE_INPUT_SCHEMA_MISMATCH(id, { timeout: ERRORS.INPUT_NUMBER_NOT_INTEGER('timeout') })
       await expect(shouldReject).rejects.toThrow(error)
     })
   })

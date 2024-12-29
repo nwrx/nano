@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { EXP_UUID } from '@unshared/validation'
-import { addNode, createThread, getNodeComponent, sendResponse, startNode } from '../../thread'
+import { addNode, createThread, getNodeComponent, startNode } from '../../thread'
 import { ERRORS } from '../../utils'
 import { confirm } from './confirm'
 
 describe('confirm component', () => {
   describe('confirm', () => {
-    it('should ask for confirmation and return the response', async() => {
+    it('should ask for confirmation and return "true" when confirmed', async() => {
       const thread = createThread()
       const nodeId = addNode(thread, 'confirm', {
         input: {
@@ -15,9 +15,27 @@ describe('confirm component', () => {
           timeout: 1,
         },
       })
-      thread.on('nodeConfirmRequest', (_, { id: eventId }) => sendResponse(thread, nodeId, eventId, true))
+      thread.on('nodeConfirmRequest', (_, { id: eventId }) => {
+        thread.dispatch('nodeResponse', nodeId, { id: eventId, response: true })
+      })
       const result = await startNode(thread, nodeId)
       expect(result).toStrictEqual({ response: true })
+    })
+
+    it('should ask for confirmation and return "false" when not confirmed', async() => {
+      const thread = createThread()
+      const nodeId = addNode(thread, 'confirm', {
+        input: {
+          question: 'Are you sure?',
+          text: 'Please confirm your action.',
+          timeout: 1,
+        },
+      })
+      thread.on('nodeConfirmRequest', (_, { id: eventId }) => {
+        thread.dispatch('nodeResponse', nodeId, { id: eventId, response: false })
+      })
+      const result = await startNode(thread, nodeId)
+      expect(result).toStrictEqual({ response: false })
     })
 
     it('should dispatch the "nodeConfirmRequest" event', async() => {
@@ -48,6 +66,41 @@ describe('confirm component', () => {
       const shouldReject = startNode(thread, id, { question: 'Are you sure?', timeout: 1 })
       await new Promise(resolve => process.nextTick(resolve))
       await expect(shouldReject).rejects.toThrow('Timeout.')
+    })
+
+    it('should not resolve when a response is sent for a different event', async() => {
+      const thread = createThread()
+      const nodeId = addNode(thread, 'confirm', {
+        input: {
+          question: 'Are you sure?',
+          text: 'Please confirm your action.',
+          timeout: 1,
+        },
+      })
+      const shouldReject = startNode(thread, nodeId)
+      thread.dispatch('nodeResponse', nodeId, { id: 'differentId', response: true })
+      await expect(shouldReject).rejects.toThrow()
+    })
+
+    it('should not resolve when a response is sent for a different node', async() => {
+      const thread = createThread()
+      const nodeId1 = addNode(thread, 'confirm', {
+        input: {
+          question: 'Are you sure?',
+          text: 'Please confirm your action.',
+          timeout: 1,
+        },
+      })
+      const nodeId2 = addNode(thread, 'confirm', {
+        input: {
+          question: 'Are you sure?',
+          text: 'Please confirm your action.',
+          timeout: 1,
+        },
+      })
+      const shouldReject = startNode(thread, nodeId1)
+      thread.dispatch('nodeResponse', nodeId2, { id: 'differentId', response: true })
+      await expect(shouldReject).rejects.toThrow()
     })
   })
 
