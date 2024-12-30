@@ -13,6 +13,8 @@ export type ThreadInputValue =
   | ReadableStream
   | string
 
+export type ThreadInputObject = Record<string, ThreadInputValue>
+
 /**
  * The options that are used to create a new flow instance. The options can be
  * used to configure the flow instance with custom settings and resolvers.
@@ -56,7 +58,7 @@ export class Thread extends Emitter<ThreadEventMap> implements ThreadOptions {
   output: ObjectLike = {}
 
   /** The input of the flow thread. */
-  input: Record<string, ThreadInputValue> = {}
+  input: ThreadInputObject = {}
 
   /** The abort controller that is used to abort the flow thread. */
   abortController = new AbortController()
