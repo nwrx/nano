@@ -1,8 +1,8 @@
 import type { ModuleRunner } from '..'
-import type { ThreadWorkerMessage } from '../utils'
+import type { ThreadWorkerMessage } from '../worker'
 import { createWebSocketRoute } from '@unserved/server'
 import { assertObjectStrict } from '@unshared/validation'
-import { createThreadWorkerSession, THREAD_CLIENT_MESSAGE_SCHEMA } from '../utils'
+import { createThreadWorkerSession, THREAD_CLIENT_MESSAGE_SCHEMA } from '../worker'
 
 export function threadSession(this: ModuleRunner) {
   return createWebSocketRoute(

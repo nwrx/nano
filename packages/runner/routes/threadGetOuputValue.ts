@@ -2,7 +2,7 @@ import type { ModuleRunner } from '..'
 import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, assertStringUuid, createSchema } from '@unshared/validation'
 import { sendStream, setResponseHeader } from 'h3'
-import { deserialize } from '../utils'
+import { deserialize } from '../worker'
 
 export function threadGetOuputValue(this: ModuleRunner) {
   return createHttpRoute(
