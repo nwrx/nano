@@ -19,19 +19,19 @@
       "import": "./dist/index.js"
     },
     "./components": {
-      "types": "./dist/components/index.d.ts",
-      "require": "./dist/components/index.cjs",
-      "import": "./dist/components/index.js"
+      "types": "./dist/components.d.ts",
+      "require": "./dist/components.cjs",
+      "import": "./dist/components.js"
     },
     "./sandbox": {
-      "types": "./dist/sandbox/index.d.ts",
-      "require": "./dist/sandbox/index.cjs",
-      "import": "./dist/sandbox/index.js"
+      "types": "./dist/sandbox.d.ts",
+      "require": "./dist/sandbox.cjs",
+      "import": "./dist/sandbox.js"
     },
     "./utils": {
-      "types": "./dist/utils/index.d.ts",
-      "require": "./dist/utils/index.cjs",
-      "import": "./dist/utils/index.js"
+      "types": "./dist/utils.d.ts",
+      "require": "./dist/utils.cjs",
+      "import": "./dist/utils.js"
     }
   },
   "files": [
