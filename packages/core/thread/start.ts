@@ -1,6 +1,6 @@
 import type { ObjectLike } from '@unshared/types'
 import type { Thread, ThreadInputValue } from './createThread'
-import { createResolvable } from '@unshared/functions'
+import { createResolvable, noop } from '@unshared/functions'
 import { ERRORS as E, isNodeReadyToStart, isNodeUsedAsTool, isThreadRunning } from '../utils'
 import { getLinks } from './getLinks'
 import { startNode } from './startNode'
@@ -28,13 +28,12 @@ export async function start(thread: Thread, input: Record<string, ThreadInputVal
     const outgoingLinks = links.filter(link => link.sourceId === id)
     for (const link of outgoingLinks) {
       if (!isNodeReadyToStart(thread, link.targetId, links)) continue
-      void startNode(thread, link.targetId).catch(() => {})
+      void startNode(thread, link.targetId).catch(noop)
     }
 
     // --- If all the nodes are done, it means the thread is done.
     await new Promise(setImmediate)
     if (isThreadRunning(thread, links)) return
-    thread.dispatch('done', thread.output)
     resolvable.resolve(thread.output)
   })
 
@@ -49,12 +48,17 @@ export async function start(thread: Thread, input: Record<string, ThreadInputVal
   for (const [nodeId] of thread.nodes) {
     if (!isNodeReadyToStart(thread, nodeId, links)) continue
     if (isNodeUsedAsTool(thread, nodeId, links)) continue
-    void startNode(thread, nodeId).catch(() => {})
+    void startNode(thread, nodeId).catch(noop)
   }
 
   // --- Return the output object and clean up the event listeners.
-  return resolvable.promise.finally(() => {
-    clearOnNodeDone()
-    clearOnNodeError()
-  })
+  return resolvable.promise
+    .then((output) => {
+      thread.dispatch('done', output)
+      return output
+    })
+    .finally(() => {
+      clearOnNodeDone()
+      clearOnNodeError()
+    })
 }
