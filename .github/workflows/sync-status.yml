@@ -1,0 +1,106 @@
+name: Sync Epic and User Story Status
+
+on:
+  issues:
+    types:
+      - labeled
+      - unlabeled
+      - closed
+
+jobs:
+  sync_status:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Sync User Story Status from Tasks
+        if: ${{ github.event.issue.labels }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const issueNumber = context.payload.issue.number;
+
+            // Get the parent issue
+            const { data: comments } = await github.issues.listComments({
+              ...context.repo,
+              issue_number: issueNumber
+            });
+
+            const parentIssue = comments
+              .filter(comment => comment.body.includes('#')) // Assumes links are in the format #<issue_number>
+              .map(comment => comment.body.match(/#(\d+)/)[1])[0];
+
+            if (!parentIssue) return;
+
+            // Check all child issues (tasks)
+            const { data: issues } = await github.issues.listForRepo({
+              ...context.repo,
+              state: 'all',
+              labels: `#${issueNumber}` // Assumes tasks are linked via labels
+            });
+
+            const statuses = issues.map(issue => issue.state);
+
+            const allDone = statuses.every(status => status === 'closed');
+            const inProgress = statuses.some(status => status === 'open');
+
+            let newStatus = 'status:Terminé';
+            if (inProgress) {
+              newStatus = 'status:En cours';
+            } else if (!allDone) {
+              newStatus = 'status:À faire';
+            }
+
+            // Update the User Story's status
+            await github.issues.addLabels({
+              ...context.repo,
+              issue_number: parentIssue,
+              labels: [newStatus]
+            });
+
+      - name: Sync Epic Status from User Stories
+        if: ${{ github.event.issue.labels }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const issueNumber = context.payload.issue.number;
+
+            // Get the parent Epic
+            const { data: comments } = await github.issues.listComments({
+              ...context.repo,
+              issue_number: issueNumber
+            });
+
+            const parentEpic = comments
+              .filter(comment => comment.body.includes('#')) // Assumes links are in the format #<issue_number>
+              .map(comment => comment.body.match(/#(\d+)/)[1])[0];
+
+            if (!parentEpic) return;
+
+            // Check all child User Stories
+            const { data: issues } = await github.issues.listForRepo({
+              ...context.repo,
+              state: 'all',
+              labels: `#${issueNumber}` // Assumes User Stories are linked via labels
+            });
+
+            const statuses = issues.map(issue => issue.state);
+
+            const allDone = statuses.every(status => status === 'closed');
+            const inProgress = statuses.some(status => status === 'open');
+
+            let newStatus = 'status:Terminé';
+            if (inProgress) {
+              newStatus = 'status:En cours';
+            } else if (!allDone) {
+              newStatus = 'status:À faire';
+            }
+
+            // Update the Epic's status
+            await github.issues.addLabels({
+              ...context.repo,
+              issue_number: parentEpic,
+              labels: [newStatus]
+            });
