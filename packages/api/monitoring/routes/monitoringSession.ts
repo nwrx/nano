@@ -1,16 +1,16 @@
 import type { UUID } from 'node:crypto'
 import type { ModuleMonitoring, MonitoringSessionEventPayload } from '../index'
-import { createHttpRoute } from '@unserved/server'
+import { createWebSocketRoute } from '@unserved/server'
 import { assert, createRuleSet, createSchema } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
 
 export function monitoringSession(this: ModuleMonitoring) {
-  return createHttpRoute(
+  return createWebSocketRoute(
     {
       name: 'WS /ws/workspaces/:workspace/monitoring',
       parseParameters: createSchema({ workspace: assert.stringNotEmpty }),
-      message: createRuleSet(
+      parseMessage: createRuleSet(
 
         /***************************************************************************/
         /* Select                                                                  */
