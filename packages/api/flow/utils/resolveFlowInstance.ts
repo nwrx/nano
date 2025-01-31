@@ -2,7 +2,7 @@ import type { Flow as FlowEntity } from '../entities'
 import type { ModuleFlow } from '../index'
 import { Flow } from '@nwrx/core'
 import { Core } from '@nwrx/module-core'
-// import { ModuleWorkspace } from '../../workspace'
+import { ModuleWorkspace } from '../../workspace'
 
 const MODULES = [
   Core,
@@ -15,7 +15,7 @@ const MODULES = [
  * @returns The resolved flow instance.
  */
 export function resolveFlowInstance(this: ModuleFlow, entity: FlowEntity) {
-  // const workspaceModule = this.getModule(ModuleWorkspace)
+  const workspaceModule = this.getModule(ModuleWorkspace)
 
   return Flow.fromJSON(entity.data, {
     resolveNode: [
@@ -34,12 +34,16 @@ export function resolveFlowInstance(this: ModuleFlow, entity: FlowEntity) {
       },
     ],
     resolveReference: [
-      // (reference) => {
-      //   if ('$fromSecret' in reference) {
-      //     const { WorkspaceProjectSecret } = workspaceModule.getRepositories()
-      //     const secret = workspaceModule.resolveSecret()
-      //   }
-      // },
+      async(reference) => {
+        if ('$fromVariable' in reference) {
+          const { name } = reference.$fromVariable
+          const { project } = entity
+          const { WorkspaceProjectVariable } = workspaceModule.getRepositories()
+          const variable = await WorkspaceProjectVariable.findOne({ where: { project, name } })
+          if (!variable) throw new Error(`Variable not found: ${name}`)
+          return variable.value
+        }
+      },
     ],
   })
 }
