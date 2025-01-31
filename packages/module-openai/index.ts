@@ -1,10 +1,10 @@
 import { defineModule } from '@nwrx/core'
-import { modelOpenai } from './modelOpenai'
+import { nodeModelOpenai } from './nodeModelOpenai'
 
 export default defineModule({
   kind: 'nwrx/openai',
   name: 'OpenAI',
-  icon: 'https://api.iconify.design/carbon:ibm-cloud-kubernetes-service.svg',
+  icon: 'https://api.iconify.design/logos:openai-icon.svg',
   description: 'Basic nodes and types for building automation flows.',
-  nodes: [modelOpenai],
+  nodes: [nodeModelOpenai],
 })
