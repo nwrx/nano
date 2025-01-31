@@ -1,0 +1,39 @@
+import type { ModuleStorage } from '../index'
+import { createRoute } from '@unserved/server'
+import { assertStringUuid, createSchema } from '@unshared/validation'
+import { getHeader } from 'h3'
+import { ModuleUser } from '../../user'
+
+export function fileDownload(this: ModuleStorage) {
+  return createRoute(
+    {
+      name: 'GET /api/storage/:id',
+      parameters: createSchema({
+        id: assertStringUuid,
+      }),
+    },
+    async({ event, parameters }) => {
+      const userModule = this.getModule(ModuleUser)
+      const { user } = await userModule.authenticate(event)
+      const { id } = parameters
+
+      // --- Only the super-admin can download files by ID.
+      if (!user.isSuperAdministrator) throw userModule.errors.USER_NOT_ALLOWED()
+
+      // --- Abort the download if the request is aborted.
+      const abortController = new AbortController()
+      const abortSignal = abortController.signal
+      event.node.req.on('aborted', () => abortController.abort())
+
+      // --- Parse the range header.
+      const range = getHeader(event, 'Range') ?? ''
+      const { start, end } = /bytes=(?<start>\d+)-(?<end>\d+)?/.exec(range)?.groups ?? {}
+      const offset = start ? Number.parseInt(start) : 0
+      const size = end ? offset + Number.parseInt(end) : undefined
+
+      // --- Respond with the file.
+      const file = await this.resolveFile(id)
+      return this.respondWith(event, file, { offset, size, abortSignal })
+    },
+  )
+}
