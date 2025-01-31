@@ -26,10 +26,10 @@ export default defineNuxtConfig({
     },
   },
 
-  serverHandlers: [{
-    route: '/api/**',
-    handler: '~/server/index.ts',
-  }],
+  serverHandlers: [
+    { route: '/api/**', handler: '~/server/index.ts' },
+    { route: '/ws/**', handler: '~/server/index.ts' },
+  ],
 
   modules: [
     'nuxt-security',
