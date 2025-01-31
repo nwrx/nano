@@ -1,7 +1,7 @@
 import type { Theme as ThemeUno } from 'unocss/preset-uno'
 import { createColorPalette } from '@unshared/color/createColorPalette'
 import { presetUnshared } from '@unshared/unocss-preset'
-import { defineConfig, presetIcons, presetUno } from 'unocss'
+import { defineConfig, presetIcons, presetTypography, presetUno } from 'unocss'
 import { presetTheme } from 'unocss-preset-theme'
 import * as THEME from './theme'
 
@@ -59,9 +59,6 @@ export default defineConfig<Theme>({
   theme: {
     colors: {
       ...COLORS,
-    },
-
-    backgroundColor: {
       'app': COLORS.primary[50],
       'subtle': COLORS.primary[60],
       'emphasized': COLORS.primary[80],
@@ -75,9 +72,9 @@ export default defineConfig<Theme>({
 
       // Editor
       'editor': COLORS.primary[50],
-      'editor-select': `${COLORS.primary[500]}40`,
-      'editor-node': `${COLORS.primary[50]}80`,
-      'editor-panel': `${COLORS.primary[100]}40`,
+      'editor-select': `${COLORS.primary[500]}20`,
+      'editor-node': `${COLORS.primary[70]}80`,
+      'editor-panel': `${COLORS.primary[70]}80`,
       'editor-panel-data': `${COLORS.primary[900]}10`,
     },
 
@@ -198,7 +195,7 @@ export default defineConfig<Theme>({
       layout: 'transparent',
     },
     inputBorder: {
-      'DEFAULT': `${COLORS.primary[900]}20`,
+      'DEFAULT': `${COLORS.primary[900]}40`,
       'hover': COLORS.primary[600],
       'focus': COLORS.primary[600],
       'error': COLORS.danger[600],
@@ -227,6 +224,13 @@ export default defineConfig<Theme>({
         borderSize: '1px',
         paddingX: '1.5rem',
         paddingY: '1rem',
+      },
+      sm: {
+        fontSize: '0.875rem',
+        borderRadius: '0.25rem',
+        borderSize: '1px',
+        paddingX: '0.75rem',
+        paddingY: '0.25rem',
       },
     },
 
@@ -292,10 +296,10 @@ export default defineConfig<Theme>({
     hintBackground: {
       DEFAULT: COLORS.primary[50],
       primary: COLORS.primary[100],
-      secondary: COLORS.secondary[50],
-      success: COLORS.success[50],
-      danger: COLORS.danger[50],
-      warning: COLORS.warning[50],
+      secondary: COLORS.secondary[100],
+      success: COLORS.success[100],
+      danger: COLORS.danger[100],
+      warning: COLORS.warning[100],
     },
     hintOpacity: {
       DEFAULT: '0.2',
@@ -336,6 +340,17 @@ export default defineConfig<Theme>({
     }),
 
     /**
+     * The UnoCSS Typography preset is used to provide the utilities for
+     * styling the typography of the application. Usually the output of
+     * a markdown renderer is styled using these utilities.
+     */
+    presetTypography({
+      compatibility: {
+        noColonIs: true,
+      },
+    }),
+
+    /**
      * The UnoCSS Theme preset is used to provide the utilities for
      * theming the application based on the theme object.
      */
@@ -344,9 +359,9 @@ export default defineConfig<Theme>({
       prefix: '--theme',
       theme: {
         dark: {
-          backgroundColor: {
-            'app': COLORS.primary[900],
-            'subtle': COLORS.primary[920],
+          colors: {
+            'app': COLORS.primary[920],
+            'subtle': COLORS.primary[900],
             'emphasized': COLORS.primary[850],
             'prominent': COLORS.primary[800],
 
@@ -357,11 +372,11 @@ export default defineConfig<Theme>({
             'layout-prominent': COLORS.primary[850],
 
             // Editor
-            'editor': COLORS.primary[900],
+            'editor': COLORS.primary[930],
             'editor-select': `${COLORS.primary[500]}40`,
             'editor-node': `${COLORS.primary[850]}80`,
-            'editor-panel': `${COLORS.primary[850]}C8`,
-            'editor-panel-data': `${COLORS.primary[500]}20`,
+            'editor-panel': `${COLORS.primary[850]}80`,
+            'editor-panel-data': `${COLORS.primary[400]}20`,
           },
           textColor: {
             'app': COLORS.primary[50],
@@ -369,18 +384,24 @@ export default defineConfig<Theme>({
             'emphasized': `${COLORS.primary[50]}A0`,
             'prominent': COLORS.primary[100],
 
+            // Layout
+            'layout': COLORS.primary[50],
+            'layout-subtle': `${COLORS.primary[50]}80`,
+            'layout-emphasized': `${COLORS.primary[50]}C0`,
+            'layout-prominent': COLORS.primary[100],
+
             // Editor
             'editor-node': COLORS.primary[50],
             'editor-node-label': COLORS.primary[50],
           },
           borderColor: {
-            app: `${COLORS.primary[400]}20`,
-            subtle: COLORS.primary[850],
-            emphasized: COLORS.primary[300],
+            app: `${COLORS.primary[100]}20`,
+            subtle: `${COLORS.primary[400]}80`,
+            emphasized: `${COLORS.primary[300]}80`,
             prominent: COLORS.primary[500],
 
             // Editor
-            editor: `${COLORS.primary[400]}20`,
+            editor: `${COLORS.primary[100]}10`,
           },
 
           // Input
