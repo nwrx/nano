@@ -65,26 +65,27 @@ const editor = useFlowEditor({
     disabled
     :style="editor.viewContainerStyle"
     class="w-full h-full bg-editor select-none relative overflow-hidden z-0 select-none transform-gpu"
-    @drop="(event) => editor.onScreenDrop(event)"
-    @mouseup="() => editor.onScreenMouseUp()"
     @mousemove="(event) => editor.onScreenMouseMove(event)"
-    @mousedown="(event) => editor.onScreenMouseDown(event)"
-    @keydown="(event) => editor.onScreenKeyDown(event)"
-    @wheel="(event) => editor.onScreenWheel(event)">
+    @mouseup="() => editor.onScreenMouseUp()"
+    @keydown="(event) => editor.onScreenKeyDown(event)">
 
     <!-- Selector box -->
     <div
       v-if="editor.viewSelecting"
       :style="editor.viewSelectorStyle"
-      class="absolute border-2 border-editor-select border-dashed rounded bg-editor-select z-9999"
+      class="absolute border-2 border-editor-select border-dashed rounded bg-editor-select z-800"
     />
+
     <!-- View -->
     <div
       :ref="(el) => editor.view = (el as HTMLDivElement)"
       :style="editor.viewStyle"
       @dragover.prevent
       @dragenter.prevent
-      @contextmenu.prevent>
+      @contextmenu.prevent
+      @drop="(event) => editor.onScreenDrop(event)"
+      @mousedown="(event) => editor.onScreenMouseDown(event)"
+      @wheel="(event) => editor.onScreenWheel(event)">
 
       <!-- Pattern -->
       <div
@@ -152,7 +153,7 @@ const editor = useFlowEditor({
 
     <!-- Overlay -->
     <div class="absolute top-0 left-0 h-full w-full z-1000 pointer-events-none p-md">
-      <div class="grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-md w-full h-full" @wheel.stop>
+      <div class="grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-md w-full h-full">
 
         <!-- Toolbar -->
         <EditorToolbar
@@ -161,7 +162,6 @@ const editor = useFlowEditor({
           :is-running="isRunning"
           @start="() => emit('start', {})"
           @abort="() => emit('abort')"
-          @mousedown.stop
         />
 
         <!-- Panel -->
@@ -193,24 +193,24 @@ const editor = useFlowEditor({
           @variable-update="(name, value) => emit('updateVariable', name, value)"
           @variable-remove="(name) => emit('removeVariable', name)"
           @clear-events="() => emit('clearEvents')"
-          @mousedown.stop
         />
 
         <!-- Drawer -->
         <EditorDrawer
           :categories="categories"
           class="pointer-events-auto self-start justify-self-start"
-          @mousedown.stop
         />
 
         <!-- Console -->
-        <EditorConsole
+        <!--
+          <EditorConsole
           class="pointer-events-auto select-auto col-span-2"
           @clear="() => emit('clearEvents')"
           @mousedown.stop>
           {{ editor.linkDragFrom }}
           {{ editor.linkDragTo }}
-        </EditorConsole>
+          </EditorConsole>
+        -->
       </div>
     </div>
   </div>

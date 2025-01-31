@@ -421,6 +421,9 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
         viewDragOriginScreen.value = { x: event.clientX, y: event.clientY }
         viewDragOriginWorld.value = { x: viewPosition.value.x, y: viewPosition.value.y }
       }
+
+      // --- Reset text selection.
+      if (globalThis.getSelection) globalThis.getSelection()?.removeAllRanges()
     },
 
     /**
