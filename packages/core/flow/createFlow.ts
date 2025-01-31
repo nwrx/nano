@@ -43,7 +43,7 @@ export class Flow extends Emitter<FlowEvents> {
     this.dispatch('setNodeInputValue', node, key, value)
   }
 
-  setNodeMetaValue(id: string, key: string, value: unknown) {
+  setNodesMetaValue(id: string, key: string, value: unknown) {
     const node = this.get(id)
     node.meta = node.meta ?? {}
     node.meta[key] = value
