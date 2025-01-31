@@ -1,12 +1,10 @@
 import type { Node } from './defineNode'
-import type { Type } from './defineType'
 import { assertNotNil, assertStringNotEmpty } from '@unshared/validation'
 
 /** The options for defining a flow module. */
 export interface Module<
   K extends string = string,
   N extends Node = Node,
-  T extends Type = Type,
 > {
 
   /**
@@ -52,15 +50,6 @@ export interface Module<
    * @example { CheckCredentials, CreateResource, DeleteResource }
    */
   nodes?: N[]
-
-  /**
-   * The types that are defined in the flow module. The types are used to define
-   * the data types that are used in the flow and can be used to validate the
-   * data that is passed between nodes in the flow.
-   *
-   * @example { AzureCredentials, AzureResource }
-   */
-  types?: T[]
 }
 
 /**
@@ -73,16 +62,20 @@ export interface Module<
 export function defineModule<
   K extends string,
   N extends Node,
-  T extends Type,
->(options: Module<K, N, T>): Module<K, N, T> {
+>(options: Module<K, N>): Module<K, N> {
   assertNotNil(options)
   assertStringNotEmpty(options.kind)
+
+  for (const node of options.nodes ?? []) {
+    if (!node.kind.startsWith(options.kind))
+      throw new Error(`The node kind must start with the module kind: ${options.kind}`)
+  }
+
   return {
     kind: options.kind,
     name: options.name ?? options.kind,
     icon: options.icon,
     description: options.description,
     nodes: options.nodes ?? [] as N[],
-    types: options.types ?? [] as T[],
   }
 }
