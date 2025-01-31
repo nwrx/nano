@@ -103,4 +103,5 @@ export class ModuleUser extends ModuleBase implements ModuleUserOptions {
   resolveUser = UTILS.resolveUser.bind(this)
   checkPassword = UTILS.checkPassword.bind(this)
   setSessionCookie = UTILS.setSessionCookie.bind(this)
+  getEventInformation = UTILS.getEventInformation.bind(this)
 }
