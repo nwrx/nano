@@ -35,21 +35,11 @@ export function flowFromJsonV1<T extends Module = Module>(json: FlowExportV1, mo
   // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
   if (version !== FLOW_FILE_VERSION.V1) throw new Error(`Unsupported flow file version: ${version}`)
 
-  // --- Collect the modules that are used in the flow.
-  const nodesEntries = Object.entries(nodes)
-  for (const [, node] of nodesEntries) {
-    if (!node.kind) throw new Error('Node kind is missing')
-    const [moduleName] = node.kind.split(':')
-    const module = modules.find(module => module.kind === moduleName)
-    if (!module) throw new Error(`Module "${moduleName}" was not found in the globally registered modules`)
-  }
-
   // --- Create the flow instance with the settings and nodes.
-  const flow = new Flow<T>({ meta, modules })
-
   // --- Collect all the instances to add to the flow.
-  for (const [id, node] of nodesEntries) {
-    const { kind, ...data } = node
+  const flow = new Flow<T>({ meta, modules })
+  for (const id in nodes) {
+    const { kind, ...data } = nodes[id]
     const meta: Record<string, unknown> = {}
     const initialData: Record<string, unknown> = {}
 
@@ -63,8 +53,14 @@ export function flowFromJsonV1<T extends Module = Module>(json: FlowExportV1, mo
     }
 
     // --- Create the node instance.
-    const nodeDefinition = flow.resolveNodeDefinition(kind as NodeKind<T>)
-    flow.createNode(nodeDefinition, { id, meta, initialData })
+    try {
+      const nodeDefinition = flow.resolveNodeDefinition(kind as NodeKind<T>)
+      flow.createNode(nodeDefinition, { id, meta, initialData })
+    }
+    catch (error) {
+      const message = (error as Error).message
+      console.error(`Failed to create node instance ${id} of kind ${kind}: ${message}`)
+    }
   }
 
   // --- Return the flow instance.
