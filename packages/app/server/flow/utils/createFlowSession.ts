@@ -1,5 +1,6 @@
-import type { Flow } from '@nanoworks/core'
+import type { Flow as FlowInstance } from '@nanoworks/core'
 import type { Peer } from 'crossws'
+import type { Flow } from '../entities'
 
 export interface FlowSessionPeer {
   peer: Peer
@@ -14,8 +15,12 @@ export class FlowSession {
    * Instantiate a new `FlowSession` with the given flow.
    *
    * @param flow The flow to create the session for.
+   * @param entity The flow entity as stored in the database.
    */
-  constructor(public flow: Flow) {}
+  constructor(
+    public flow: FlowInstance,
+    public entity: Flow,
+  ) {}
 
   /** The peers that are subscribed to the flow session. */
   peers: FlowSessionPeer[] = []
@@ -66,8 +71,9 @@ export class FlowSession {
  * Create a new `FlowSession` with the given flow.
  *
  * @param flow The flow to create the session for.
+ * @param entity The flow entity as stored in the database.
  * @returns The new `FlowSession` instance.
  */
-export function createFlowSession(flow: Flow) {
-  return new FlowSession(flow)
+export function createFlowSession(flow: FlowInstance, entity: Flow): FlowSession {
+  return new FlowSession(flow, entity)
 }

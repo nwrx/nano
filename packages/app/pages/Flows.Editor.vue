@@ -14,7 +14,7 @@ const {
   removeLink,
   removeNode,
   moveNode,
-  updateSettings,
+  setSettings,
   setNodeDataValue,
 } = useFlowEditor(id)
 
@@ -32,7 +32,7 @@ useHead({
 </script>
 
 <template>
-  <div class="relative overflow-hidden w-screen h-screen fixed flex flex-col">
+  <div class="relative overflow-hidden w-full h-full flex flex-col">
 
     <!-- Visual editor layer. -->
     <FlowEditor
@@ -50,7 +50,7 @@ useHead({
     <div
       class="
       flex flex-col pointer-events-none
-      absolute top-0 left-0 w-screen h-screen
+      absolute top-0 left-0 w-full h-full
       space-y-16 p-16">
 
       <!-- Edit panel -->
@@ -63,7 +63,7 @@ useHead({
           border border-gray-300 rounded-md
           backdrop-blur-md
           "
-        @update:flow="(flow) => updateSettings(flow)"
+        @update:flow="(flow) => setSettings(flow)"
       />
 
       <!-- Node drawer -->

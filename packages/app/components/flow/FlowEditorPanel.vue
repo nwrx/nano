@@ -4,7 +4,7 @@ import type { FlowModuleObject } from '~/server/flow'
 
 defineProps<{
   flow: FlowJSON
-  node: FlowNodeInstanceJSON
+  node?: FlowNodeInstanceJSON
   modules: FlowModuleObject[]
 }>()
 

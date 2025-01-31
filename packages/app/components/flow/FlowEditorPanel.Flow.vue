@@ -12,7 +12,9 @@ const emit = defineEmits<{
 }>()
 
 const flow = useVModel(props, 'flow', emit, {
+  deep: true,
   passive: true,
+  eventName: 'update:flow',
   defaultValue: {
     name: '',
     icon: 'i-carbon:flow',
@@ -22,13 +24,11 @@ const flow = useVModel(props, 'flow', emit, {
   } as unknown as FlowJSON,
 })
 
-// function addInput() {
-//   inputs.value.push({
-//     key: Math.random().toString(36).slice(7),
-//     name: '',
-//     type: 'primitive:string',
-//   })
-// }
+function onTextareaInput(event: Event) {
+  const target = event.target as HTMLTextAreaElement
+  target.style.height = 'auto'
+  target.style.height = `${target.scrollHeight + 2}px`
+}
 </script>
 
 <template>
@@ -41,10 +41,11 @@ const flow = useVModel(props, 'flow', emit, {
         placeholder="Give your flow a name..."
         class="text-2xl font-bold outline-none bg-transparent w-full"
       />
-      <input
+      <textarea
         v-model="flow.description"
         placeholder="Describe your flow..."
-        class="text-sm outline-none bg-transparent w-full"
+        class="text-sm outline-none bg-transparent w-full resize-none opacity-70"
+        @input="(event) => onTextareaInput(event)"
       />
     </div>
 
@@ -81,24 +82,6 @@ const flow = useVModel(props, 'flow', emit, {
 
     <!-- Divider -->
     <div class="border border-gray-200 rounded-full" />
-
-    <!-- Registered modules -->
-    <div class="space-y-4">
-
-      <div v-for="module in modules" :key="module.id">
-        <div class="text-lg font-bold">{{ module.name }}</div>
-        <div class="text-sm text-gray-500">{{ module.description }}</div>
-        <div class="space-y-2 mt-2">
-          <FlowEditorDrawerModuleNode
-            v-for="node in module.nodes"
-            :key="node.name"
-            :module="module"
-            :node="node"
-            class="max-w-xs"
-          />
-        </div>
-      </div>
-    </div>
 
   </div>
 </template>
