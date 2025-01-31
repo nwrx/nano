@@ -1,4 +1,4 @@
-import type { FlowSchema } from '@nanoworks/core'
+import type { FlowNodePort, FlowSchema } from '@nanoworks/core'
 import { defineFlowNode } from '@nanoworks/core'
 import { typeString } from './typeString'
 
@@ -29,13 +29,14 @@ export const nodeTemplate = defineFlowNode({
       const key = match.slice(2, -2).trim()
       if (key === '') continue
       if (key === 'template') continue
-      // @ts-expect-error: Allow dynamic keys.
+      // @ts-expect-error: key is dynamic.
       dataSchema[key] = {
         name: key,
         type: typeString,
         display: 'text',
+        disallowStatic: true,
         description: `The value for the variable '{{${key}}}'.`,
-      }
+      } as FlowNodePort
     }
 
     // --- Return the computed data schema.
