@@ -20,6 +20,7 @@ export interface FlowNodeInstanceJSON {
   isProcessing: boolean
   categoryName: string
   categoryColor: string
+  error?: string
 }
 
 /**
@@ -35,11 +36,11 @@ export function serializeFlowNodeInstance(instance: FlowNodeInstance): FlowNodeI
     id: instance.id,
     kind: `${nodeModule.kind}:${instance.node.kind}`,
     icon: instance.node.icon ?? '',
-    name: instance.node.name ?? 'Untitled Node',
+    name: instance.node.name ?? `${nodeModule.kind}:${instance.node.kind}`,
     label: instance.meta.label ?? '',
     description: instance.node.description ?? '',
     position: instance.meta.position ?? { x: 0, y: 0 },
-    data: instance.data,
+    data: instance.dataRaw,
     result: instance.result,
     dataSchema: serializeFlowSchema(instance.dataSchema),
     resultSchema: serializeFlowSchema(instance.resultSchema),
@@ -48,5 +49,6 @@ export function serializeFlowNodeInstance(instance: FlowNodeInstance): FlowNodeI
     isProcessing: false, // instance.isProcessing,
     categoryName: instance.node.category?.name ?? 'Uncategorized',
     categoryColor: instance.node.category?.color ?? '#000000',
+    error: instance.error?.message,
   }
 }
