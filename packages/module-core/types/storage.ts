@@ -13,9 +13,9 @@ export type StorageWrite = (key: string, value: string) => Promise<void>
 /** A function that deletes data from the storage. */
 export type StorageDelete = (key: string) => Promise<void>
 
-export const storageInstance = defineType({
-  kind: 'storage-instance',
-  name: 'Storage Instance',
+export const storage = defineType({
+  kind: 'storage',
+  name: 'Storage',
   color: '#FF5733',
   description: 'An instance of a storage node with various operations.',
   parse: createParser({
