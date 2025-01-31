@@ -4,8 +4,8 @@ import type { FlowSessionEventName } from '@nwrx/api'
 import { type FlowSessionEventPayload, type FlowThreadNodeJSON } from '@nwrx/api'
 
 const props = defineProps<{
-  events: FlowSessionEventPayload[]
-  nodes: FlowThreadNodeJSON[]
+  events?: FlowSessionEventPayload[]
+  nodes?: FlowThreadNodeJSON[]
 }>()
 
 const emit = defineEmits<{
@@ -17,12 +17,12 @@ const { t } = useI18n()
 
 // --- Messages
 const EVENT_WHITELIST = new Set<FlowSessionEventName>(['thread:start', 'thread:output'])
-const messages = computed(() => props.events.filter(event => EVENT_WHITELIST.has(event.event)))
+const messages = computed(() => (props.events ?? []).filter(event => EVENT_WHITELIST.has(event.event)))
 
 // --- Resolve the imputs of the flow.
 const inputData = ref<Record<string, string>>({})
-const inputNodes = computed(() => props.nodes.filter(node => node.kind === 'core/input'))
-const outputNodes = computed(() => props.nodes.filter(node => node.kind === 'core/output'))
+const inputNodes = computed(() => (props.nodes ?? []).filter(node => node.kind === 'core/input'))
+const outputNodes = computed(() => (props.nodes ?? []).filter(node => node.kind === 'core/output'))
 const isDisabled = computed(() => inputNodes.value.length === 0 || outputNodes.value.length === 0)
 
 function setInputValue(name: string, value: string) {
