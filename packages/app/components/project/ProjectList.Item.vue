@@ -111,8 +111,9 @@ const { isOverDropZone } = useDropZone(dropzone, {
     <BaseCollapse
       vertical
       :isOpen="model"
-      :class="{ 'opacity-0': !model }"
-      class="relative border-l border-app ml-lg pl-lg transition-all duration-slow">
+      :duration="300"
+      :class="{ 'op-0': !model }"
+      class="b-l b-app ml-lg pl-lg transition-all duration-slow overflow-y-clip">
       <div class="space-y-md py-md">
         <ProjectListItemFlow
           v-for="flow in flows"
