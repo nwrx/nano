@@ -15,18 +15,20 @@ const emit = defineEmits<{
 const { t } = useI18n()
 
 // --- Messages
-const message = ref<string>('')
-const messages = computed(() => props.events.filter(event => (
-  event.event === 'flow:input'
-  || event.event === 'flow:output'
-)))
+const EVENT_WHITELIST = new Set(['flow:start', 'flow:output'])
+const messages = computed(() => props.events.filter(event => EVENT_WHITELIST.has(event.event)))
 
-// --- Check if there is at least one input and output node in the flow.
-const isDisabled = computed(() => {
-  const nodes = props.nodes ?? []
-  return !nodes.some(node => node.kind === 'nwrx/core:input')
-    || !nodes.some(node => node.kind === 'nwrx/core:output')
-})
+// --- Resolve the imputs of the flow.
+const inputData = ref<Record<string, string>>({})
+const inputNodes = computed(() => props.nodes.filter(node => node.kind === 'nwrx/core:input'))
+const outputNodes = computed(() => props.nodes.filter(node => node.kind === 'nwrx/core:output'))
+const isDisabled = computed(() => inputNodes.value.length === 0 || outputNodes.value.length === 0)
+
+function setInputValue(name: string, value: string) {
+  if (value.length > 0) return inputData.value = { ...inputData.value, [name]: value }
+  delete inputData.value[name]
+  inputData.value = { ...inputData.value }
+}
 </script>
 
 <template>
@@ -47,33 +49,45 @@ const isDisabled = computed(() => {
       <div
         v-for="(event, index) in messages"
         :key="index"
-        :class="{
-          'mb-md': event.event === 'flow:output',
-        }"
         class="p-md hover:bg-editor-panel-data">
-        <div>
-          <div class="text-xs text-emphasized">{{ event.property }}</div>
+
+        <!-- Input -->
+        <FlowEditorPanelPlaygroundMessageInput v-if="event.event === 'flow:start'" :event="event" />
+
+        <!-- Output -->
+        <template v-else-if="event.event === 'flow:output'">
+          <div class="text-xs text-emphasized">
+            {{ event.name }}
+          </div>
           <div
             v-markdown="String(event.value)"
-            class="prose text-sm !children:p-0 !children:m-0"
+            class="markdown"
           />
-        </div>
+        </template>
+
       </div>
     </template>
 
     <!-- User Input -->
     <form
-      class="p-md mt-auto"
+      class="flex p-md mt-auto b-t b-editor"
       :class="{ 'op-50 pointer-events-none': isDisabled }"
-      @submit.prevent="() => emit('start', { message })">
-      <InputText
-        v-model="message"
-        placeholder="Enter your message..."
-      />
-      <Button
-        class="w-full mt-2"
-        label="Send"
+      @submit.prevent="() => emit('start', inputData)">
+
+      <!-- Value -->
+      <div v-for="(input, index) in inputNodes" :key="index" class="flex items-center space-x-sm w-full">
+        <BaseInputText
+          type="textarea"
+          class="grow px-sm py-xs mt-xs b b-transparent hover:b-editor rd bg-transparent outline-none"
+          :placeholder="input.data.name as string"
+          :modelValue="inputData[input.data.name as string]"
+          @update:modelValue="(value: string) => setInputValue(input.data.name as string, value)"
+        />
+      </div>
+
+      <FlowEditorFab
         type="submit"
+        icon="i-carbon:send"
       />
     </form>
   </div>
