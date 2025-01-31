@@ -35,7 +35,7 @@ function handleGrab(event: MouseEvent) {
     :style="{ backgroundColor: `${color}!important` }"
     :class="{ 'cursor-grabbing': isDragging, 'cursor-pointer': !isDragging }"
     class="flex justify-start items-center h-8 pr-sm rd-t"
-    @mousedown="(event) => handleGrab(event)"
+    @mousedown.stop="(event) => handleGrab(event)"
     @mouseup="(event) => emit('handleRelease', event)">
 
     <!-- Tooltip -->
