@@ -35,22 +35,22 @@ const description = useVModel(props, 'description', emit, {
 
 // --- Formatted data.
 const dataResult = computed(() => {
-  const dataResult: Array<{ name: string; value: string }> = []
+  const dataResult: Array<{ name: string; value: unknown }> = []
   for (const key in props.node.result) {
     const value = props.node.result[key]
     const name = props.node.resultSchema.find(field => field.key === key)?.name ?? key
-    dataResult.push({ name, value: typeof value === 'string' ? value : JSON.stringify(value) })
+    dataResult.push({ name, value })
   }
   return dataResult
 })
 
 // --- Formatted result.
 const dataData = computed(() => {
-  const dataData: Array<{ name: string; value: string }> = []
+  const dataData: Array<{ name: string; value: unknown }> = []
   for (const key in props.node.data) {
     const value = props.node.data[key]
     const name = props.node.dataSchema.find(field => field.key === key)?.name ?? key
-    dataData.push({ name, value: typeof value === 'string' ? value : JSON.stringify(value) })
+    dataData.push({ name, value })
   }
   return dataData
 })
@@ -72,7 +72,6 @@ const dataData = computed(() => {
       v-model:isOpen="isDataOpen"
       :data="dataData"
       title="Data"
-      text="This is the data that is passed to this node in the flow."
     />
 
     <!-- Result fields and values -->
@@ -80,7 +79,6 @@ const dataData = computed(() => {
       v-model:isOpen="isResultOpen"
       :data="dataResult"
       title="Result"
-      text="This is the data that will be passed to the next node in the flow."
     />
   </div>
 </template>
