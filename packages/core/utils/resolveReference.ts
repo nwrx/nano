@@ -1,5 +1,14 @@
-import type { ReferenceResolver } from '../thread'
-import type { Reference } from './createReference'
+import type { MaybePromise } from '@unshared/types'
+import type { Reference, ReferenceType } from './createReference'
+import { ERRORS as E } from './errors'
+import { parseReference } from './parseReference'
+
+/**
+ * The function that is used to resolve a reference to a value. The resolve
+ * function is used to resolve the reference to a value that can be used in
+ * the flow.
+ */
+export type ReferenceResolver = (type: ReferenceType, ...values: string[]) => MaybePromise<unknown>
 
 /**
  * The function that is used to resolve a reference to a value. The resolve
@@ -10,10 +19,11 @@ import type { Reference } from './createReference'
  * @param resolvers The resolvers that are used to resolve the reference.
  * @returns The resolved value.
  */
-export async function resolveReference(reference: unknown, resolvers: ReferenceResolver[]): Promise<unknown> {
+export async function resolveReference(reference: Reference, resolvers: ReferenceResolver[]): Promise<unknown> {
+  const [type, ...values] = parseReference(reference)
   for (const resolve of resolvers) {
-    const value = await resolve(reference as Reference)
-    if (value) return value
+    const value = await resolve(type, ...values)
+    if (value !== undefined) return value
   }
-  throw new Error(`The reference "${JSON.stringify(reference)}" could not be resolved.`)
+  throw E.REFERENCE_UNRESOLVED(reference.$ref)
 }

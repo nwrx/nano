@@ -4,7 +4,7 @@ import { resolveSchema } from './resolveSchema'
 describe('resolveSchema', () => {
   describe('simple types', () => {
     it('should resolve a simple schema with string type', async() => {
-      const schema = { name: { type: typeString } }
+      const schema = { name: { type: 'string' } }
       const data = { name: 'John Doe' }
       const result = await resolveSchema({ schema, data })
       expect(result).toEqual({ name: 'John Doe' })

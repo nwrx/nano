@@ -1,8 +1,8 @@
 import type { MaybePromise } from '@unshared/types'
 import type { Component } from './defineComponent'
-import type { ComponentSpecifier } from './parseComponentSpecifier'
+import type { ComponentSpecifier } from './parseSpecifier'
 import { isComponent } from './isComponent'
-import { parseComponentSpecifier } from './parseComponentSpecifier'
+import { parseSpecifier } from './parseSpecifier'
 
 /**
  * A function that is used to resolve a component. The resolve function
@@ -21,7 +21,7 @@ export type ComponentResolver = (specifier: ComponentSpecifier) => MaybePromise<
  * @returns The resolved component.
  */
 export async function resolveComponent(specifier: string, resolvers: ComponentResolver[]): Promise<Component> {
-  const specifierObject = parseComponentSpecifier(specifier)
+  const specifierObject = parseSpecifier(specifier)
   for (const resolve of resolvers) {
     const component = await resolve(specifierObject)
     if (component === undefined) continue

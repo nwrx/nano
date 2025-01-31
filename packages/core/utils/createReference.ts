@@ -24,7 +24,7 @@ export type ReferenceType =
  * // Create a reference to a node value.
  * const nodeRef = createReference('Node', 'NODE_ID') // { $ref: '#Node/NODE_ID' }
  */
-export function createReference(type: ReferenceType, ...values: Array<string| undefined>): Reference {
+export function createReference(type: ReferenceType, ...values: Array<string | undefined>): Reference {
   if (values.length === 0) throw new Error('At least one value is required to create a reference')
   return { $ref: ['#', type, ...values].filter(Boolean).join('/') }
 }

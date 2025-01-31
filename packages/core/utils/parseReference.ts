@@ -1,4 +1,5 @@
 import type { Reference, ReferenceType } from './createReference'
+import { ERRORS as E } from './errors'
 
 /**
  * Parse a `Reference` object and extract the reference type and value.
@@ -9,9 +10,9 @@ import type { Reference, ReferenceType } from './createReference'
  */
 export function parseReference(value: Reference): [ReferenceType, ...string[]] {
   const parts = value.$ref.split('/')
-  if (parts.length < 3) throw new Error('Invalid reference format')
-  if (parts[0] !== '#') throw new Error('Invalid reference tag')
-  if (parts[1].trim() === '') throw new Error('Invalid reference type')
-  if (parts[2].trim() === '') throw new Error('Invalid reference value')
+  if (parts.length < 3) throw E.REFERENCE_INVALID_FORMAT()
+  if (parts[0] !== '#') throw E.REFERENCE_INVALID_TAG()
+  if (parts[1].trim() === '') throw E.REFERENCE_INVALID_TYPE()
+  if (parts[2].trim() === '') throw E.REFERENCE_INVALID_VALUE()
   return parts.slice(1) as [ReferenceType, ...string[]]
 }

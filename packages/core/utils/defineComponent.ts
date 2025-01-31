@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-empty-object-type */
 import type { OpenAPIV2 } from '@unshared/client/openapi'
-import type { MaybeLiteral, MaybePromise, ObjectLike } from '@unshared/types'
+import type { MaybePromise, ObjectLike } from '@unshared/types'
 import type { OpenAPIV3 } from 'openapi-types'
 
 export const SYMBOL_COMPONENT = Symbol.for('component')
@@ -10,23 +9,33 @@ export type InputControl =
   | 'radio'
   | 'select'
   | 'slider'
-  | 'socket'
   | 'stream'
+  | 'table'
   | 'text'
   | 'textarea'
   | 'variable'
 
+export interface InputOption {
+  value: unknown
+  label: string
+  icon?: string
+  description?: string
+}
+
 export type InputSocket = OpenAPIV3.SchemaObject & {
-  'x-control'?: MaybeLiteral<InputControl>
+  'x-control'?: InputControl
   'x-placeholder'?: string
   'x-internal'?: boolean
   'x-optional'?: boolean
   'x-stream'?: boolean
+  'x-options'?: (data: any, query?: string) => MaybePromise<InputOption[]>
+  [key: string]: any
 }
 
 export type OutputSocket = OpenAPIV3.SchemaObject & {
   'x-internal'?: boolean
   'x-stream'?: boolean
+  [key: string]: any
 }
 
 export type InferSchema<T> =
@@ -75,8 +84,8 @@ export interface Component<
 }
 
 export function defineComponent<
-  T extends Record<string, InputSocket> = {},
-  U extends Record<string, OutputSocket> = {},
+  T extends Record<string, InputSocket>,
+  U extends Record<string, OutputSocket>,
 >(options: ComponentOptions<T, U>, process?: ProcessFunction<T, U>): Component<T, U> {
   return {
     ['@instanceOf']: SYMBOL_COMPONENT,
