@@ -1,6 +1,5 @@
 import type { Type } from '@nwrx/core'
 import { defineNode } from '@nwrx/core'
-import { defineDataSchema } from '@nwrx/core'
 import { categoryBasic } from '../categories'
 import { boolean, string } from '../types'
 
@@ -11,7 +10,7 @@ export const nodeGate = defineNode({
   description: 'Routes a value based on a condition.',
   category: categoryBasic,
 
-  dataSchema: defineDataSchema({
+  inputSchema: {
     condition: {
       type: string as Type<'and' | 'nand' | 'nor' | 'not' | 'or' | 'xor'>,
       name: 'Condition',
@@ -73,9 +72,9 @@ export const nodeGate = defineNode({
       name: 'Value',
       description: 'The value to route based on the condition',
     },
-  }),
+  },
 
-  resultSchema: {
+  outputSchema: {
     success: {
       type: string,
       name: 'Success',
@@ -90,8 +89,8 @@ export const nodeGate = defineNode({
     },
   },
 
-  process: ({ data }) => {
-    const { condition, value } = data
+  process: ({ input }) => {
+    const { condition, value } = input
     return {
       success: condition ? value : undefined,
       failure: condition ? undefined : value,

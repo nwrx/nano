@@ -11,7 +11,7 @@ export const nodeParse = defineNode({
   description: 'This node parses a given string into an object. It supports both JSON and YAML formats, allowing users to specify the format of the input string. The parsed result is returned as a key-value map object.',
   category: categoryBasic,
 
-  dataSchema: {
+  inputSchema: {
     format: {
       name: 'Format',
       type: string as Type<'auto' | 'json' | 'yaml'>,
@@ -33,7 +33,7 @@ export const nodeParse = defineNode({
         },
       ],
     },
-    input: {
+    value: {
       type: string,
       name: 'JSON',
       control: 'socket',
@@ -41,7 +41,7 @@ export const nodeParse = defineNode({
     },
   },
 
-  resultSchema: {
+  outputSchema: {
     object: {
       type: object,
       name: 'Object',
@@ -49,9 +49,9 @@ export const nodeParse = defineNode({
     },
   },
 
-  process: ({ data }) => {
-    const { format, input } = data
-    if (format === 'yaml') return { object: YAML.parse(input) as Record<string, unknown> }
-    return { object: JSON.parse(input) as Record<string, unknown> }
+  process: ({ input }) => {
+    const { format, value } = input
+    if (format === 'yaml') return { object: YAML.parse(value) as Record<string, unknown> }
+    return { object: JSON.parse(value) as Record<string, unknown> }
   },
 })

@@ -1,19 +1,26 @@
-import type { InstanceContext, SocketListOption, Type } from '@nwrx/core'
+import type { SocketListOption, Type } from '@nwrx/core'
 import type { ObjectLike } from '@unshared/types'
-import type { InferenceResult } from '../nodes'
-import type { LanguageModel, LanguageModelOnDataContext } from '../types'
-import type { OpenaiChatRequest } from './OpenaiChatRequest'
-import type { OpenaiChatResponse } from './OpenaiChatResponse'
-import { defineDataSchema, defineNode } from '@nwrx/core'
+import type { LanguageModel } from '../types'
+import { defineNode } from '@nwrx/core'
 import { categoryLanguageModel } from '../categories'
 import { languageModel, string } from '../types'
 import { openaiGetBody } from './openaiGetBody'
 import { openaiGetModels } from './openaiGetModels'
+import { openaiOnData } from './openaiOnData'
+import { openaiOnError } from './openaiOnError'
 
 export interface LanguageModelData {
   baseUrl: string
   model: string
   token: string
+}
+
+export interface LanguageModelGetModelsOptions {
+  path: string
+  token?: string
+  baseUrl?: string
+  abortSignal: AbortSignal
+  query?: string
 }
 
 export interface LanguageModelOptions<T = ObjectLike, U = ObjectLike>
@@ -26,55 +33,7 @@ export interface LanguageModelOptions<T = ObjectLike, U = ObjectLike>
   defaultModel?: string
   pathModels?: string
   pathCompletions?: string
-  getModels?: (data: LanguageModelData, abortSignal: AbortSignal) => Promise<Array<SocketListOption<string>>>
-}
-
-async function DEFAULT_ON_DATA(
-  context: LanguageModelOnDataContext<OpenaiChatRequest, OpenaiChatResponse>,
-): Promise<InferenceResult | void> {
-  const { body, data, call, resume } = context
-  const { choices: [choice], id, usage } = data as unknown as OpenaiChatResponse
-
-  // --- Handle tool calls returned by the model.
-  if (choice.finish_reason === 'tool_calls') {
-    if (choice.message.role !== 'assistant') throw new Error('The assistant message was not provided.')
-    if (!choice.message.tool_calls) throw new Error('The tool calls were not provided.')
-    const toolResultPromises = choice.message.tool_calls.map(async(toolCall) => {
-      const name = toolCall.function.name
-      const parameters = JSON.parse(toolCall.function.arguments) as Record<string, unknown>
-      const result = await call(name, parameters)
-      body.messages.push(choice.message, {
-        role: 'tool',
-        content: JSON.stringify(result),
-        tool_call_id: toolCall.id,
-      })
-    })
-    await Promise.all(toolResultPromises)
-    return resume()
-  }
-
-  // --- Stop the completion.
-  if (choice.finish_reason === 'stop') {
-    if (choice.message.role !== 'assistant') throw new Error('The assistant message was not provided.')
-    const completion = Array.isArray(choice.message.content) ? choice.message.content.join('\n') : choice.message.content
-    return {
-      id,
-      completion: completion ?? '',
-      tokensTotal: usage.total_tokens,
-      tokensPrompt: usage.prompt_tokens,
-      tokensCompletion: usage.completion_tokens,
-    }
-  }
-}
-
-async function DEFAULT_ON_ERROR(response: Response) {
-  try {
-    const data = await response.json() as { error: { message: string } }
-    return data.error.message
-  }
-  catch {
-    return `OpenAI: ${response.statusText}`
-  }
+  getModels?: (options: LanguageModelGetModelsOptions) => Promise<Array<SocketListOption<string>>>
 }
 
 /**
@@ -95,10 +54,10 @@ export function defineLanguageModel<T, U>(options: LanguageModelOptions<T, U>) {
     defaultModel,
     pathModels = '/models',
     pathCompletions = '/chat/completions',
-    onData = DEFAULT_ON_DATA,
-    onError = DEFAULT_ON_ERROR,
+    onData = openaiOnData,
+    onError = openaiOnError,
     getBody = openaiGetBody,
-    getModels = openaiGetModels(pathModels),
+    getModels = openaiGetModels,
   } = options
 
   return defineNode({
@@ -108,7 +67,7 @@ export function defineLanguageModel<T, U>(options: LanguageModelOptions<T, U>) {
     description,
     category: categoryLanguageModel,
 
-    dataSchema: async({ data, abortSignal }: InstanceContext) => defineDataSchema({
+    inputSchema: {
       baseUrl: {
         name: 'URL',
         type: string,
@@ -130,11 +89,17 @@ export function defineLanguageModel<T, U>(options: LanguageModelOptions<T, U>) {
         name: 'Model',
         defaultValue: defaultModel,
         description: 'The name of the model to use for generating completions.',
-        options: await getModels(data as LanguageModelData, abortSignal).catch(() => []),
+        options: ({ input, abortSignal }, query) => getModels({
+          path: pathModels,
+          token: input.token as string,
+          baseUrl: input.baseUrl as string,
+          abortSignal,
+          query,
+        }),
       },
-    }),
+    },
 
-    resultSchema: {
+    outputSchema: {
       model: {
         name: 'Model',
         type: languageModel as Type<LanguageModel<T, U>>,
@@ -142,11 +107,11 @@ export function defineLanguageModel<T, U>(options: LanguageModelOptions<T, U>) {
       },
     },
 
-    process: ({ data }) => ({
+    process: ({ input }) => ({
       model: {
-        url: new URL(pathCompletions, data.baseUrl).toString(),
-        model: data.model,
-        token: data.token,
+        url: new URL(pathCompletions, input.baseUrl).toString(),
+        model: input.model,
+        token: input.token,
         getBody,
         onError,
         onData,

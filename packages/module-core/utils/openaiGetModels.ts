@@ -1,4 +1,4 @@
-import type { LanguageModelData } from './defineLanguageModel'
+import type { LanguageModelGetModelsOptions } from './defineLanguageModel'
 import type { OpenaiModelResponse } from './OpenaiModelResponse'
 
 const ICONS = [
@@ -16,17 +16,21 @@ function getModelIcon(model: string) {
   return ICONS.find(x => x.match.test(model))?.icon
 }
 
-export function openaiGetModels(path: string) {
-  return async(data: LanguageModelData, signal: AbortSignal) => {
-    if (!data.token) return []
-    const url = new URL(path, data.baseUrl).toString()
-    const response = await fetch(url, { signal, headers: { Authorization: `Bearer ${data.token}` } })
-    const models = await response.json() as OpenaiModelResponse
-    return models.data.filter(x => x.object === 'model').map(x => ({
+export async function openaiGetModels({ path, baseUrl, token, abortSignal, query }: LanguageModelGetModelsOptions) {
+  if (!token) return []
+  const url = new URL(path, baseUrl).toString()
+  const response = await fetch(url, { signal: abortSignal, headers: { Authorization: `Bearer ${token}` } })
+  const models = await response.json() as OpenaiModelResponse
+  return models.data
+    .filter((x) => {
+      if (x.object !== 'model') return false
+      if (!query) return true
+      return x.id.includes(query)
+    })
+    .map(x => ({
       value: x.id,
       label: x.id,
       description: x.owned_by,
       icon: getModelIcon(x.owned_by),
     }))
-  }
 }
