@@ -78,7 +78,7 @@ export class User extends BaseEntity {
   /**
    * The list of profiles associated with the user. It is used to store additional information about the user.
    *
-   * @example [UserProfile { ... }]
+   * @example UserProfile { ... }
    */
   @OneToOne(() => UserProfile, profile => profile.user, { nullable: false, cascade: true })
   profile?: UserProfile
