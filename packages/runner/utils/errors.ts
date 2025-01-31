@@ -14,10 +14,4 @@ export const ERRORS = {
     statusCode: 409,
     statusMessage: 'Conflict',
   }),
-  RUNNER_NOT_CLAIMED: () => createError({
-    name: 'E_RUNNER_NOT_CLAIMED',
-    message: 'Runner is not claimed',
-    statusCode: 407,
-    statusMessage: 'Proxy Authentication Required',
-  }),
 }
