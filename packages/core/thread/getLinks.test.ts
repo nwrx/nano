@@ -1,4 +1,4 @@
-import { defineComponent } from '../utils'
+import { defineComponent, ERRORS } from '../utils'
 import { addLink } from './addLink'
 import { addNode } from './addNode'
 import { createThread } from './createThread'
@@ -97,6 +97,16 @@ describe('getLinks', () => {
           targetPath: 'key2',
         },
       ])
+    })
+  })
+
+  describe('with invalid node references', () => {
+    it('should throw if one of the source nodes does not exist', () => {
+      const thread = createThread({ componentResolvers: [() => component] })
+      const id = addNode(thread, 'example', { input: { value: { $ref: '#/Nodes/not-existing/value' } } })
+      const shouldThrow = () => getLinks(thread)
+      const error = ERRORS.NODE_LINK_SOURCE_NOT_FOUND(id, 'value', 'not-existing')
+      expect(shouldThrow).toThrowError(error)
     })
   })
 })

@@ -1,6 +1,6 @@
 import type { Link } from './addLink'
 import type { Thread } from './createThread'
-import { isLink, parseLink } from '../utils'
+import { ERRORS as E, isLink, parseLink } from '../utils'
 
 /**
  * Get all the links between the nodes in the thread. This function iterates over
@@ -43,6 +43,12 @@ export function getLinks(thread: Thread): Link[] {
         links.push({ ...parseLink(value), targetId, targetName })
       }
     }
+  }
+
+  // --- Assert that each link is valid.
+  for (const link of links) {
+    if (!thread.nodes.has(link.sourceId))
+      throw E.NODE_LINK_SOURCE_NOT_FOUND(link.targetId, link.targetName, link.sourceId)
   }
 
   // --- Return the links collected so far.
