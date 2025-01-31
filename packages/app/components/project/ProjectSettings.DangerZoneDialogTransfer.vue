@@ -48,11 +48,9 @@ watch(search, async() => {
     <BaseCollapse vertical as="div" is-open class="transition-all mt-4 w-full">
       <div v-for="item in items" :key="item.username">
         <div class="flex items-center justify-start space-x-4 px-2 py-4 w-full">
-
-          <!-- Image -->
-          <img :src="item.avatarUrl" class="w-12 h-12 rounded-full">
-
-          <!-- Name -->
+          <img
+            :src="item.avatarUrl"
+            class="w-12 h-12 rounded-full">
           <div class="text-sm grow-1">
             <p class="font-medium">
               {{ item.displayName }}
@@ -61,8 +59,6 @@ watch(search, async() => {
               {{ item.username }}
             </p>
           </div>
-
-          <!-- CTA -->
           <Button
             :label="t('button.select')"
             link
