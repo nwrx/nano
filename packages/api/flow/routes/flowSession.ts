@@ -240,62 +240,29 @@ export function flowSession(this: ModuleFlow) {
           // --- Flow variable events.
           case 'flowVariableCreate': {
             const { user } = await userModule.authenticate(peer)
-            const { workspace: workspaceName, project: projectName } = parameters
-
-            // --- Resolve the workspace and project and check if the user has access to it.
-            const workspace = await workspaceModule.resolveWorkspace({ user, name: workspaceName, permission: 'Read' })
-            const project = await workspaceModule.resolveProject({ workspace, name: projectName, permission: 'WriteVariables' })
-
-            // --- Create the flow variable and save it to the database.
+            const { workspace, project } = parameters
             const { name, value } = message
+            const variable = await workspaceModule.createProjectVariable({ user, workspace, project, name, value })
             const { WorkspaceProjectVariable } = workspaceModule.getRepositories()
-            const variable = await workspaceModule.createProjectVariable({ workspace, project, name, value })
             await WorkspaceProjectVariable.save(variable)
-
-            // --- Update the flow session and broadcast the change to the peers.
             session.flow.variables[name] = value
             session.broadcast({ event: 'variables:create', name, value })
             break
           }
           case 'flowVariableUpdate': {
             const { user } = await userModule.authenticate(peer)
-            const { workspace: workspaceName, project: projectName } = parameters
-
-            // --- Resolve the workspace and project and check if the user has access to it.
-            const workspace = await workspaceModule.resolveWorkspace({ user, name: workspaceName, permission: 'Read' })
-            const project = await workspaceModule.resolveProject({ workspace, name: projectName, permission: 'WriteVariables' })
-
-            // --- Update the flow variable and save it to the database.
+            const { workspace, project } = parameters
             const { name, value } = message
-            const { WorkspaceProjectVariable } = workspaceModule.getRepositories()
-            const variable = await WorkspaceProjectVariable.findOneBy({ project, name })
-            if (!variable) throw workspaceModule.errors.PROJECT_VARIABLE_NOT_FOUND(workspaceName, projectName, name)
-
-            // --- Update the flow variable and save it to the database.
-            variable.value = value
-            await WorkspaceProjectVariable.save(variable)
-
-            // --- Update the flow session and broadcast the change to the peers.
+            await workspaceModule.updateProjectVariable({ user, workspace, project, name, value })
             session.flow.variables[name] = value
             session.broadcast({ event: 'variables:update', name, value })
             break
           }
           case 'flowVariableRemove': {
             const { user } = await userModule.authenticate(peer)
-            const { workspace: workspaceName, project: projectName } = parameters
-
-            // --- Resolve the workspace and project and check if the user has access to it.
-            const workspace = await workspaceModule.resolveWorkspace({ user, name: workspaceName, permission: 'Read' })
-            const project = await workspaceModule.resolveProject({ workspace, name: projectName, permission: 'WriteVariables' })
-
-            // --- Find the flow variable to remove.
+            const { workspace: workspace, project: project } = parameters
             const { name } = message
-            const { WorkspaceProjectVariable } = workspaceModule.getRepositories()
-            const variable = await WorkspaceProjectVariable.findOneBy({ project, name })
-            if (!variable) throw workspaceModule.errors.PROJECT_VARIABLE_NOT_FOUND(workspaceName, projectName, name)
-
-            // --- Save the changes to the database and update the flow session.
-            await WorkspaceProjectVariable.remove(variable)
+            await workspaceModule.removeProjectVariable({ user, workspace, project, name })
             delete session.flow.variables[name]
             session.broadcast({ event: 'variables:remove', name })
             break
@@ -304,39 +271,29 @@ export function flowSession(this: ModuleFlow) {
           // --- Flow secret events.
           case 'flowSecretCreate': {
             const { user } = await userModule.authenticate(peer)
-            const { workspace: workspaceName, project: projectName } = parameters
-
-            // --- Resolve the workspace and project and check if the user has access to it.
-            const workspace = await workspaceModule.resolveWorkspace({ user, name: workspaceName, permission: 'Read' })
-            const project = await workspaceModule.resolveProject({ workspace, name: projectName, permission: 'WriteSecrets' })
-
-            // --- Create the flow secret and save it to the database.
+            const { workspace, project } = parameters
             const { name, value } = message
+            const secret = await workspaceModule.createProjectSecret({ user, workspace, project, name, value })
             const { WorkspaceProjectSecret } = workspaceModule.getRepositories()
-            const secret = await workspaceModule.createProjectSecret({ workspace, project, name, value })
             await WorkspaceProjectSecret.save(secret)
-
-            // --- Update the flow session and broadcast the change to the peers.
             session.flow.secrets[name] = value
             session.broadcast({ event: 'secrets:create', name, value })
             break
           }
+          case 'flowSecretUpdate': {
+            const { user } = await userModule.authenticate(peer)
+            const { workspace, project } = parameters
+            const { name, value } = message
+            await workspaceModule.updateProjectSecret({ user, workspace, project, name, value })
+            session.flow.secrets[name] = value
+            session.broadcast({ event: 'secrets:update', name, value })
+            break
+          }
           case 'flowSecretRemove': {
             const { user } = await userModule.authenticate(peer)
-            const { workspace: workspaceName, project: projectName } = parameters
-
-            // --- Resolve the workspace and project and check if the user has access to it.
-            const workspace = await workspaceModule.resolveWorkspace({ user, name: workspaceName, permission: 'Read' })
-            const project = await workspaceModule.resolveProject({ workspace, name: projectName, permission: 'WriteSecrets' })
-
-            // --- Find the flow secret to remove.
+            const { workspace, project } = parameters
             const { name } = message
-            const { WorkspaceProjectSecret } = workspaceModule.getRepositories()
-            const secret = await WorkspaceProjectSecret.findOneBy({ project, name })
-            if (!secret) throw workspaceModule.errors.PROJECT_SECRET_NOT_FOUND(workspaceName, projectName, name)
-
-            // --- Save the changes to the database and update the flow session.
-            await WorkspaceProjectSecret.remove(secret)
+            await workspaceModule.removeProjectSecret({ user, workspace, project, name })
             delete session.flow.secrets[name]
             session.broadcast({ event: 'secrets:remove', name })
             break

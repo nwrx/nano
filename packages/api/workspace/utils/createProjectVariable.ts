@@ -1,16 +1,19 @@
 import type { Loose } from '@unshared/types'
-import type { WorkspaceProjectVariable } from '../entities'
-import type { ModuleWorkspace } from '../index'
+import type { ModuleWorkspace, WorkspaceProjectVariable } from '..'
 import { toConstantCase } from '@unshared/string'
-import { assertStringNotEmpty, assertStringUuid, createSchema } from '@unshared/validation'
+import { assertStringNotEmpty, assertStringUuid, assertUndefined, createSchema } from '@unshared/validation'
 
+/** A parser for the create project variable options. */
 export const CREATE_PROJECT_VARIABLE_OPTIONS = createSchema({
 
-  /** The workspace to create the project in. */
-  workspace: createSchema({ id: assertStringUuid, name: assertStringNotEmpty }),
+  /** The user responsible for creating the project secret. */
+  user: [[assertUndefined], [createSchema({ id: assertStringUuid })]],
 
-  /** The project to create the variable for. */
-  project: createSchema({ id: assertStringUuid, name: assertStringNotEmpty }),
+  /** The workspace to create the project in. */
+  workspace: assertStringNotEmpty,
+
+  /** The project to create the secret for. */
+  project: assertStringNotEmpty,
 
   /** The name of the variable to create. */
   name: [assertStringNotEmpty, toConstantCase],
@@ -33,9 +36,11 @@ export type CreateProjectVariableOptions = Loose<ReturnType<typeof CREATE_PROJEC
  */
 export async function createProjectVariable(this: ModuleWorkspace, options: CreateProjectVariableOptions): Promise<WorkspaceProjectVariable> {
   const { WorkspaceProjectVariable } = this.getRepositories()
-  const { workspace, project, name, value } = CREATE_PROJECT_VARIABLE_OPTIONS(options)
+  const { user, workspace: workspaceName, project: projectName, name, value } = CREATE_PROJECT_VARIABLE_OPTIONS(options)
 
-  // --- Assert the user has access to the workspace and the project.
+  // --- Resolve the workspace and project and check if the user can create the variable.
+  const workspace = await this.resolveWorkspace({ user, name: workspaceName, permission: 'Read' })
+  const project = await this.resolveProject({ workspace, name: projectName, permission: 'WriteVariables' })
   const variable = await WorkspaceProjectVariable.findOneBy({ project, name })
   if (variable) throw this.errors.PROJECT_VARIABLE_NAME_TAKEN(workspace.name, project.name, name)
 

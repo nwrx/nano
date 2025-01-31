@@ -1,17 +1,20 @@
 import type { Loose } from '@unshared/types'
-import type { WorkspaceProjectSecret } from '../entities'
-import type { ModuleWorkspace } from '../index'
+import type { ModuleWorkspace, WorkspaceProjectSecret } from '..'
 import { toConstantCase } from '@unshared/string'
-import { assertStringNotEmpty, assertStringUuid, createSchema } from '@unshared/validation'
+import { assertStringNotEmpty, assertStringUuid, assertUndefined, createSchema } from '@unshared/validation'
 import { createCipheriv, createHash, randomBytes } from 'node:crypto'
 
+/** A parser for the create project secret options. */
 export const CREATE_PROJECT_SECRET_OPTIONS = createSchema({
 
+  /** The user responsible for creating the project secret. */
+  user: [[assertUndefined], [createSchema({ id: assertStringUuid })]],
+
   /** The workspace to create the project in. */
-  workspace: createSchema({ id: assertStringUuid, name: assertStringNotEmpty }),
+  workspace: assertStringNotEmpty,
 
   /** The project to create the secret for. */
-  project: createSchema({ id: assertStringUuid, name: assertStringNotEmpty }),
+  project: assertStringNotEmpty,
 
   /** The name of the secret to create. */
   name: [assertStringNotEmpty, toConstantCase],
@@ -34,9 +37,11 @@ export type CreateProjectSecretOptions = Loose<ReturnType<typeof CREATE_PROJECT_
  */
 export async function createProjectSecret(this: ModuleWorkspace, options: CreateProjectSecretOptions): Promise<WorkspaceProjectSecret> {
   const { WorkspaceProjectSecret } = this.getRepositories()
-  const { workspace, project, name, value } = CREATE_PROJECT_SECRET_OPTIONS(options)
+  const { user, workspace: workspaceName, project: projectName, name, value } = CREATE_PROJECT_SECRET_OPTIONS(options)
 
-  // --- Assert the user has access to the workspace and the project.
+  // --- Resolve the workspace and project and check if the user can create the secret.
+  const workspace = await this.resolveWorkspace({ user, name: workspaceName, permission: 'Read' })
+  const project = await this.resolveProject({ workspace, name: projectName, permission: 'WriteSecrets' })
   const secret = await WorkspaceProjectSecret.findOneBy({ project, name })
   if (secret) throw this.errors.PROJECT_SECRET_NAME_TAKEN(workspace.name, project.name, name)
 
