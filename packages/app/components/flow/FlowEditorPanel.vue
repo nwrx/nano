@@ -56,12 +56,9 @@ const isNodeResultOpen = useVModel(props, 'isNodeResultOpen', emit, { passive: t
 const selectedTab = ref('flow')
 const tabs = computed(() => {
   const nodeSelected = props.nodeSelected ?? []
-  const tabs = [
-    { label: 'Events', id: 'events' },
-    { label: 'Playground', id: 'playground' },
-  ]
-  if (nodeSelected.length > 0) tabs.unshift({ label: 'Node', id: 'node' })
-  else tabs.unshift({ label: 'Settings', id: 'flow' })
+  const tabs = ['events', 'playground']
+  if (nodeSelected.length > 0) tabs.unshift('node')
+  else tabs.unshift('flow')
   return tabs
 })
 
@@ -107,8 +104,7 @@ watch(() => props.events, scrollToBottom, { deep: true })
     <!-- Tabs -->
     <FlowEditorPanelTabs
       v-model="selectedTab"
-      v-model:isOpen="isOpen"
-      :tabs="tabs"
+      :values="tabs"
       :class="{ 'op-0': !isOpen }"
       class="transition-all"
     />
