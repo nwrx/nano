@@ -1,7 +1,7 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
-  "daemon": true,
+  "daemon": false,
   "cacheDir": ".turbo/cache",
   "tasks": {
     "build": {
