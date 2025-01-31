@@ -11,7 +11,7 @@ const emit = defineEmits<{
   open: [project: string, flow: string]
 }>()
 
-const isOpen = ref(true)
+const isOpen = ref(false)
 </script>
 
 <template>

@@ -6,7 +6,7 @@ export const CHAT_SERVER_MESSAGE_SCHEMA = createRuleSet(
     event: assert.stringEquals('threadOpened'),
     id: assert.stringUuid,
     title: assert.stringNotEmpty,
-    summary: assert.stringNotEmpty,
+    description: assert.stringNotEmpty,
     messages: createArrayParser({
       id: assert.stringUuid,
       createdAt: assert.stringNotEmpty,

@@ -13,10 +13,14 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="flex flex-col w-full h-full select-text relative p-md">
+  <div class="flex flex-col w-full h-full select-text relative overflow-y-auto">
 
     <!-- Title -->
-    <div class="w-full mx-auto max-w-thread">
+    <div
+      class="
+      sticky top-0 w-full mx-auto max-w-thread bg-app p-lg pb-xl
+      mask-to-b-60/100
+    ">
       <h1 class="text-2xl font-bold text-app">
         {{ title }}
       </h1>
@@ -26,35 +30,19 @@ const emit = defineEmits<{
     </div>
 
     <!-- Messages -->
-    <div class="flex flex-col w-full mx-auto max-w-thread overflow-y-auto">
-      <TransitionGroup name="slide">
-        <template v-for="{ id, data } in messages" :key="id">
-
-          <ChatThreadMessageUserMessage
-            v-if="data.role === 'user'"
-            :name="data.name"
-            :content="data.content"
-            class="self-end my-lg first:mt-0"
-          />
-
-          <template v-if="data.role === 'assistant'">
-            <ChatThreadMessageAgentMessage
-              v-if="typeof data.content === 'string'"
-              :content="data.content"
-              class="self-start my-md"
-            />
-          </template>
-        </template>
-      </TransitionGroup>
+    <div class="flex flex-col w-full mx-auto max-w-thread px-xl pb-xl">
+      <ChatThreadMessages :messages="messages" />
     </div>
 
     <!-- Spacer -->
     <div class="grow" />
 
     <!-- Input -->
-    <ChatThreadInput
-      @send-message="(message) => emit('sendMessage', message)"
-      @submit-attachment="() => {}"
-    />
+    <div class="sticky bottom-0 w-full mx-auto max-w-thread bg-app p-lg pt-0">
+      <ChatThreadInput
+        @send-message="(message) => emit('sendMessage', message)"
+        @submit-attachment="() => {}"
+      />
+    </div>
   </div>
 </template>

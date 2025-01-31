@@ -18,6 +18,20 @@ export const CHAT_MESSAGE_DATA_SCHEMA = createRuleSet(
     content: assert.stringNotEmpty,
   })],
 
+  [createSchema({
+    role: assert.stringEquals('toolCallRequest'),
+    id: assert.stringUuid,
+    name: assert.stringNotEmpty,
+    content: assert.objectStrict,
+  })],
+
+  [createSchema({
+    role: assert.stringEquals('toolCallResponse'),
+    id: assert.stringUuid,
+    name: assert.stringNotEmpty,
+    content: assert.objectStrict,
+  })],
+
   /***************************************************************************/
   /* Questions                                                               */
   /***************************************************************************/
