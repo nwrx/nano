@@ -1,10 +1,13 @@
+import type { ModuleRunner } from '..'
 import { createHttpRoute } from '@unserved/server'
+import { authorize } from '../utils'
 
-export function ping() {
+export function ping(this: ModuleRunner) {
   return createHttpRoute(
-    {
-      name: 'GET /ping',
+    { name: 'GET /ping' },
+    ({ event }) => {
+      authorize.call(this, event)
+      return { ok: true }
     },
-    async({ event }) => ({ status: 'pong' }),
   )
 }
