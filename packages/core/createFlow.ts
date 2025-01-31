@@ -177,19 +177,6 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
   }
 
   /**
-   * Set the settings of the flow. This includes the name, icon and description of
-   * the flow that are displayed in the UI. Once called, an event is dispatched
-   * to notify listeners that the settings have been updated.
-   *
-   * @param meta The settings to set for the flow.
-   * @example flow.setMeta({ name: 'Flow', icon: 'flow', description: 'A flow' })
-   */
-  public setMeta(meta: Partial<FlowMeta>) {
-    this.meta = { ...this.meta, ...meta }
-    this.dispatch('flow:meta', this.meta)
-  }
-
-  /**
    * Set a specific value in the meta object of the flow. This allows us to reduce
    * the payload size when sending updates to the client by only sending the updated
    * value instead of the entire meta object.
@@ -305,34 +292,6 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
   }
 
   /**
-   * Given an composite ID, get the `FlowNodeSocket` that corresponds to the
-   * `{nodeId}:{edgeId}`. The composite ID is the ID of the node and the ID of
-   * the socket separated by a colon.
-   *
-   * @param compositeId The composite ID to get the socket and node for.
-   * @returns The socket that corresponds to the composite ID.
-   */
-  public getResultSocket(compositeId: string): ResultSocket {
-    const [nodeId, edgeId] = compositeId.split(':')
-    const node = this.getNodeInstance(nodeId)
-    return node.getResultSocket(edgeId)
-  }
-
-  /**
-   * Given an composite ID, get the `FlowNodeSocket` that corresponds to the
-   * `{nodeId}:{edgeId}`. The composite ID is the ID of the node and the ID of
-   * the socket separated by a colon.
-   *
-   * @param compositeId The composite ID to get the socket and node for.
-   * @returns The socket that corresponds to the composite ID.
-   */
-  public getDataSocket(compositeId: string): DataSocket {
-    const [nodeId, edgeId] = compositeId.split(':')
-    const node = this.getNodeInstance(nodeId)
-    return node.getDataSocket(edgeId)
-  }
-
-  /**
    * Traverse all nodes in the flow and return the links that connect the nodes
    * together. The links are used to connect the output of one node to the input
    * of another node.
@@ -368,18 +327,9 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
     // --- Resolve the source and target socket.
     const [sourceNodeId, sourceSocketId] = source.split(':')
     const [targetNodeId, targetSocketId] = target.split(':')
-    const sourceSocket = this.getResultSocket(source)
-    const targetSocket = this.getDataSocket(target)
-
-    // --- Check if the nodes can be linked.
-    if (sourceNodeId === targetNodeId)
-      throw new Error('Cannot link the node to itself')
-    if (sourceSocket.type.kind !== targetSocket.type.kind)
-      throw new Error(`Cannot link ${sourceSocket.type.name} to ${targetSocket.type.name}`)
 
     // --- If the target is already linked and it's `isArray` flag is false, remove the link.
-    if (!targetSocket.isArray)
-      this.removeLink(target)
+    this.removeLink(target)
 
     // --- Create the link and dispatch the event.
     const nodeTarget = this.getNodeInstance(targetNodeId)
@@ -399,10 +349,8 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
     const node = this.getNodeInstance(nodeId)
     const isDataSocket = socketId in node.dataSchema
 
-    // --- If the socket is a data socket, remove the link from the data socket.
-    if (isDataSocket) {
-      node.setDataValue(socketId, undefined)
-    }
+    // --- If the socket is a data socket, reset the value.
+    if (isDataSocket) node.setDataValue(socketId, undefined)
 
     // --- If the socket is a result socket, remove all links that are connected to the result socket.
     else {
