@@ -2,18 +2,50 @@
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
   "daemon": false,
+  "envMode": "strict",
   "cacheDir": ".turbo/cache",
+  "remoteCache": {
+    "enabled": true,
+    "preflight": true
+  },
+  "globalDependencies": [
+    ".env",
+    "tsconfig.json"
+  ],
   "tasks": {
-    "build": {
-      "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".nuxt/**"]
+    "@nwrx/nano#build": {
+      "outputs": ["dist/**"],
+      "outputLogs": "new-only"
     },
-    "test": {
-      "outputs": ["coverage/**"],
-      "dependsOn": ["build"]
+    "@nwrx/nano-module-core#build": {
+      "outputs": ["dist/**"],
+      "dependsOn": ["@nwrx/nano#build"],
+      "outputLogs": "new-only"
     },
-    "dev": {
-      "cache": false,
+    "@nwrx/nano-api#build": {
+      "outputs": ["dist/**"],
+      "dependsOn": ["@nwrx/nano#build", "@nwrx/nano-module-core#build"],
+      "outputLogs": "new-only"
+    },
+    "@nwrx/nano-api#start": {
+      "outputs": ["dist/**"],
+      "dependsOn": ["@nwrx/nano-api#build"]
+    },
+    "@nwrx/nano-app#build": {
+      "outputs": [".output/**"],
+      "outputLogs": "new-only"
+    },
+    "@nwrx/nano-app#start": {
+      "dependsOn": ["@nwrx/nano-app#build"],
+      "persistent": true
+    },
+    "@nwrx/nano-api#dev": {
+      "dependsOn": ["@nwrx/nano#build", "@nwrx/nano-module-core#build"],
+      "outputs": ["dist/**"],
+      "persistent": true
+    },
+    "@nwrx/nano-app#dev": {
+      "outputs": [".nuxt/**"],
       "persistent": true
     }
   }
