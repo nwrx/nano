@@ -76,13 +76,35 @@ const portsResult = ref<Record<string, ComponentPublicInstance>>({})
  * position can be accessed and used to create links between nodes.
  */
 defineExpose({ portsData, portsResult })
+
+/**
+ * Compute the ring color based on the node's state. If the node is
+ * selected or running, the ring will be colored. Otherwise, it will
+ * be transparent.
+ */
+const ringColor = computed(() => (
+  isRunningThrottled.value || props.isSelected
+    ? props.color
+    : 'transparent'
+))
+
+/**
+ * Compute the width of the ring based on the node's state and the
+ * current zoom level. If the node is running or selected, the ring
+ * width will be 3x the default width. Otherwise, it will be 1.25x.
+ */
+const ringWidth = computed(() => (
+  isRunningThrottled.value || props.isSelected
+    ? `${3 / props.zoom}px`
+    : `${1.25 / props.zoom}px`
+))
 </script>
 
 <template>
   <div
     :style="{
-      '--un-ring-color': (isRunningThrottled || isSelected) && color ? color : `transparent`,
-      '--un-ring-width': (isRunningThrottled || isSelected) ? `${3 / zoom}px` : `${1.25 / zoom}px`,
+      '--un-ring-color': ringColor,
+      '--un-ring-width': ringWidth,
     }"
     class="
       absolute min-h-24 w-96 bg-editor-node border border-editor
