@@ -1,5 +1,5 @@
 import * as YAML from 'yaml'
-import { defineComponent } from '../utils/defineComponent'
+import { defineComponent } from '../../utils/defineComponent'
 
 export const parse = defineComponent(
   {
@@ -11,23 +11,24 @@ export const parse = defineComponent(
       format: {
         'title': 'Format',
         'default': 'json',
+        'description': 'The format of the input string to parse.',
         'x-control': 'select',
         'x-optional': true,
-        'oneOf': [
-          {
-            'type': 'string',
-            'enum': ['json'] as const,
-            'title': 'JSON',
-            'description': 'The input string is in JSON format.',
-            'x-icon': 'https://api.iconify.design/carbon:json.svg',
-          },
-          {
-            'type': 'string',
-            'title': 'YAML',
-            'enum': ['yaml'] as const,
-            'description': 'The input is a YAML string.',
-            'x-icon': 'https://api.iconify.design/carbon:yaml.svg',
-          },
+        'enum': [
+          'json',
+          'yaml',
+        ] as const,
+        'x-enum-labels': [
+          'JSON',
+          'YAML',
+        ],
+        'x-enum-icons': [
+          'https://api.iconify.design/carbon:json.svg',
+          'https://api.iconify.design/carbon:yaml.svg',
+        ],
+        'x-enum-descriptions': [
+          'The input string is in JSON format.',
+          'The input is a YAML string.',
         ],
       },
       value: {
@@ -45,12 +46,9 @@ export const parse = defineComponent(
       },
     },
   },
-  ({ data }) => {
-    const { format, value } = data
-    return {
-      object: format === 'yaml'
-        ? YAML.parse(value) as Record<string, unknown>
-        : JSON.parse(value) as Record<string, unknown>,
-    }
-  },
+  ({ data }) => ({
+    object: data.format === 'yaml'
+      ? YAML.parse(data.value) as Record<string, unknown>
+      : JSON.parse(data.value) as Record<string, unknown>,
+  }),
 )

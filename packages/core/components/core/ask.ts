@@ -1,4 +1,5 @@
-import { defineComponent } from '../utils/defineComponent'
+import { defineComponent } from '../../utils/defineComponent'
+import { askQuestion } from './utils/askQuestion'
 
 export const ask = defineComponent(
   {
@@ -8,10 +9,10 @@ export const ask = defineComponent(
     description: 'Ask for user input and await the response. This will interrupt the flow until the user provides a response.',
     inputs: {
       question: {
-        'type': 'string',
-        'title': 'Question',
-        'description': 'The question to ask the user.',
-        'x-placeholder': 'What is your name?',
+        type: 'string',
+        title: 'Question',
+        description: 'The question to ask the user.',
+        example: 'What is your name?',
       },
       text: {
         'type': 'string',
@@ -64,6 +65,18 @@ export const ask = defineComponent(
           },
         },
       },
+      defaultValue: {
+        'title': 'Default Value',
+        'description': 'The default value for the response.',
+        'x-optional': true,
+        'oneOf': [
+          { type: 'array' },
+          { type: 'object' },
+          { type: 'string' },
+          { type: 'number' },
+          { type: 'boolean' },
+        ],
+      },
       timeout: {
         'type': 'integer',
         'title': 'Timeout',
@@ -86,12 +99,13 @@ export const ask = defineComponent(
       },
     },
   },
-  async({ data, askQuestion }) => ({
-    response: await askQuestion({
+  async({ data, thread, nodeId }) => ({
+    response: await askQuestion(thread, nodeId, {
       question: data.question,
       text: data.text,
       choices: data.choices,
       timeout: data.timeout,
+      defaultValue: data.defaultValue,
     }),
   }),
 )

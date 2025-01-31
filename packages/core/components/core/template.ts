@@ -1,5 +1,5 @@
 import { dedent } from '@unshared/string'
-import { defineComponent } from '../utils/defineComponent'
+import { defineComponent } from '../../utils/defineComponent'
 
 export const template = defineComponent(
   {

@@ -1,4 +1,4 @@
-import { defineComponent } from '../utils/defineComponent'
+import { defineComponent } from '../../utils/defineComponent'
 
 export const passthrough = defineComponent(
   {
@@ -35,5 +35,7 @@ export const passthrough = defineComponent(
       },
     },
   },
-  ({ data }) => ({ value: data.value }),
+  ({ data }) => ({
+    value: data.value,
+  }),
 )

@@ -1,5 +1,5 @@
 import * as YAML from 'yaml'
-import { defineComponent } from '../utils/defineComponent'
+import { defineComponent } from '../../utils/defineComponent'
 
 export const stringify = defineComponent(
   {
@@ -12,21 +12,21 @@ export const stringify = defineComponent(
         'title': 'Format',
         'default': 'json',
         'x-control': 'select',
-        'oneOf': [
-          {
-            'type': 'string',
-            'title': 'JSON',
-            'enum': ['json'] as const,
-            'description': 'The output string will be in JSON format.',
-            'x-icon': 'https://api.iconify.design/carbon:json.svg',
-          },
-          {
-            'type': 'string',
-            'title': 'YAML',
-            'enum': ['yaml'] as const,
-            'description': 'The output string will be in YAML format.',
-            'x-icon': 'https://api.iconify.design/carbon:yaml.svg',
-          },
+        'enum': [
+          'json',
+          'yaml',
+        ] as const,
+        'x-enum-labels': [
+          'JSON',
+          'YAML',
+        ],
+        'x-enum-icons': [
+          'https://api.iconify.design/carbon:json.svg',
+          'https://api.iconify.design/carbon:yaml.svg',
+        ],
+        'x-enum-descriptions': [
+          'The output string will be in JSON format.',
+          'The output string will be in YAML format.',
         ],
       },
       object: {
@@ -43,12 +43,9 @@ export const stringify = defineComponent(
       },
     },
   },
-  ({ data }) => {
-    const { format, object } = data
-    return {
-      value: format === 'yaml'
-        ? YAML.stringify(object, { indent: 2 })
-        : JSON.stringify(object, undefined, 2),
-    }
-  },
+  ({ data }) => ({
+    value: data.format === 'yaml'
+      ? YAML.stringify(data.object, { indent: 2 })
+      : JSON.stringify(data.object, undefined, 2),
+  }),
 )
