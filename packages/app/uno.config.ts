@@ -1,5 +1,5 @@
-import { defineConfig, presetIcons, presetUno, presetWebFonts } from 'unocss'
 import { presetUnshared } from '@unshared/unocss-preset'
+import { defineConfig, presetIcons, presetUno, presetWebFonts } from 'unocss'
 import * as COLORS from './utils/colors'
 
 const FONT_SANS = 'IBM Plex Sans'
@@ -9,22 +9,12 @@ export default defineConfig({
     presetUno(),
     presetIcons({ cdn: 'https://esm.sh/' }),
     presetUnshared(),
-
     presetWebFonts({
       fonts: {
         sans: [FONT_SANS],
       },
     }),
   ],
-
-  content: {
-    pipeline: {
-      include: [
-        './**/*',
-        '../@nuxt/**/*',
-      ],
-    },
-  },
 
   theme: {
     colors: COLORS,
