@@ -1,8 +1,13 @@
 {
   "name": "@nwrx/nano-api",
   "private": true,
+  "main": "./dist/server.js",
   "types": "./index.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "dev": "tsup --watch --onSuccess \"node dist/server.js\"",
     "build": "tsup",
     "start": "node dist/server.js"
   },

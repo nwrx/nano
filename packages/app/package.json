@@ -2,9 +2,12 @@
   "name": "@nwrx/nano-app",
   "type": "module",
   "private": true,
+  "files": [
+    ".output"
+  ],
   "scripts": {
     "dev": "nuxt dev",
-    "start": "nuxt start",
+    "start": "node .output/server/index.mjs",
     "build": "nuxt build",
     "storybook": "storybook dev"
   },
