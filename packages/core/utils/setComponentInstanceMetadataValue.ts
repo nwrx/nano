@@ -1,4 +1,4 @@
-import type { Thread } from '../thread'
+import type { Thread } from '../createThread'
 import { getComponentInstance } from './getComponentInstance'
 
 /**
@@ -9,9 +9,8 @@ import { getComponentInstance } from './getComponentInstance'
  * @param name The name of the meta value to set.
  * @param value The value to set on the meta key.
  */
-export function setComponentInstanceMetaValue(thread: Thread, id: string, name: string, value: unknown) {
-  if (thread.isRunning) throw new Error('Cannot set meta values on component instances while the thread is running.')
+export function setComponentInstanceMetadataValue(thread: Thread, id: string, name: string, value: unknown) {
   const componentInstance = getComponentInstance(thread, id)
-  componentInstance.meta = componentInstance.meta ?? {}
-  componentInstance.meta[name] = value
+  componentInstance.metadata = componentInstance.metadata ?? {}
+  componentInstance.metadata[name] = value
 }
