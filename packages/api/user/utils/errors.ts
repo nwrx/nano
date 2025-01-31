@@ -132,4 +132,10 @@ export const ERRORS = {
     statusMessage: 'Bad Request',
     message: 'The user is already disabled',
   }),
+  USER_ALREADY_VERIFIED: () => createError({
+    name: 'E_USER_ALREADY_VERIFIED',
+    statusCode: 400,
+    statusMessage: 'Bad Request',
+    message: 'The user is already verified',
+  }),
 }
