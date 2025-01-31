@@ -10,7 +10,11 @@ import type { ObjectLike } from './types'
  * @template T The type of data that the socket will output.
  * @template O A boolean indicating whether the socket is optional.
  */
-export type ResultSocket<T = unknown, O extends boolean | undefined = boolean | undefined> = Loose<{
+export type ResultSocket<
+  T = unknown,
+  O extends boolean | undefined = boolean | undefined,
+  A extends boolean | undefined = boolean | undefined,
+> = Loose<{
 
   /**
    * The type of the socket. This is used to validate the data passed to the socket
@@ -59,6 +63,12 @@ export type ResultSocket<T = unknown, O extends boolean | undefined = boolean | 
    * @default false
    */
   isOptional: O
+
+  /**
+   * Indicates whether the socket is an array. If true, the socket will output an array
+   * of values of the specified type. This is useful for nodes that output multiple values.
+   */
+  isArray: A
 }>
 
 /**
@@ -93,8 +103,10 @@ export type ResultSchema<T extends ObjectLike = never> =
  */
 export type ResultFromSchema<T extends ResultSchema> =
   { [P in keyof T]:
-    T[P] extends { type: Type<infer U>; isOptional: true } ? U | undefined :
-      T[P] extends { type: Type<infer U> } ? U : never
+    T[P] extends { type: Type<infer U>; isOptional: true; isArray: true } ? U[] | undefined :
+      T[P] extends { type: Type<infer U>; isOptional: true } ? U | undefined :
+        T[P] extends { type: Type<infer U>; isArray: true } ? U[] :
+          T[P] extends { type: Type<infer U> } ? U : never
   }
 
 /**

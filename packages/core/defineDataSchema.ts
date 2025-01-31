@@ -40,7 +40,11 @@ export interface SocketListOption<T = ObjectLike> {
  * Interface representing a data socket, which can connect to another node in the flow.
  * It includes type validation and parsing logic for the data passed through the socket.
  */
-export type DataSocket<T = any, O extends boolean | undefined = boolean | undefined> = {
+export type DataSocket<
+  T = any,
+  O extends boolean | undefined = boolean | undefined,
+  A extends boolean | undefined = boolean | undefined,
+> = {
 
   /**
    * Control type of the socket, dictating its appearance and input method in the editor.
@@ -100,7 +104,7 @@ export type DataSocket<T = any, O extends boolean | undefined = boolean | undefi
    * will take precedence over the default value provided by the socket type.
    */
   defaultValue?: NoInfer<T>
-} & ResultSocket<T, O>
+} & ResultSocket<T, O, A>
 
 /**
  * Type representing the schema for a node's data, mapping socket names to their configurations.
@@ -132,8 +136,10 @@ export type DataSchema<T extends ObjectLike = never> =
  */
 export type DataFromSchema<T extends DataSchema> =
   { [P in keyof T]:
-    T[P] extends { type: Type<infer U>; isOptional: true } ? U | undefined :
-      T[P] extends { type: Type<infer U> } ? U : never
+    T[P] extends { type: Type<infer U>; isOptional: true; isArray: true } ? U[] | undefined :
+      T[P] extends { type: Type<infer U>; isOptional: true } ? U | undefined :
+        T[P] extends { type: Type<infer U>; isArray: true } ? U[] :
+          T[P] extends { type: Type<infer U> } ? U : never
   }
 
 /**
