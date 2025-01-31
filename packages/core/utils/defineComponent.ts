@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 import type { OpenAPIV2 } from '@unshared/client/openapi'
-import type { MaybeLiteral, MaybePromise } from '@unshared/types'
+import type { MaybeLiteral, MaybePromise, ObjectLike } from '@unshared/types'
 import type { OpenAPIV3 } from 'openapi-types'
 
 export const SYMBOL_COMPONENT = Symbol.for('component')
@@ -20,29 +21,34 @@ export type InputSchema = OpenAPIV3.SchemaObject & {
   'x-placeholder'?: string
   'x-internal'?: boolean
   'x-optional'?: boolean
+  'x-stream'?: boolean
 }
 
 export type OutputSchema = OpenAPIV3.SchemaObject & {
   'x-internal'?: boolean
+  'x-stream'?: boolean
 }
 
 export type InferSchema<T> =
 {
   [P in keyof T]:
-  T[P] extends { default: any }
-    ? OpenAPIV2.InferSchema<T[P]>
-    : OpenAPIV2.InferSchema<T[P]> | undefined
+  T[P] extends { default: any } ? OpenAPIV2.InferSchema<T[P]>
+    : T[P] extends { 'x-stream': true } ? AsyncIterable<OpenAPIV2.InferSchema<T[P]>>
+      : OpenAPIV2.InferSchema<T[P]> | undefined
 }
 
-export interface ProcessContext<T, U> {
+export interface ProcessContext<
+  T extends ObjectLike = ObjectLike,
+  U extends ObjectLike = ObjectLike,
+> {
   data: T
   result: U
-  trace: (data: any) => void
+  trace: (data: T) => void
   abortSignal: AbortSignal
 }
 
 export type ProcessFunction<T, U> =
-  [InferSchema<T>, InferSchema<U>] extends [infer Data, infer Result]
+  [InferSchema<T>, InferSchema<U>] extends [infer Data extends ObjectLike, infer Result extends ObjectLike]
     ? (context: ProcessContext<Data, Result>) => MaybePromise<Result>
     : never
 
@@ -50,8 +56,6 @@ export interface Component<
   T extends Record<string, InputSchema> = Record<string, InputSchema>,
   U extends Record<string, OutputSchema> = Record<string, OutputSchema>,
 > {
-  name: string
-  version: string
   icon?: string
   title?: string
   description?: string
@@ -61,15 +65,13 @@ export interface Component<
 }
 
 export function defineComponent<
-  T extends Record<string, InputSchema>,
-  U extends Record<string, OutputSchema>,
->(options: Component<T, U>, process?: ProcessFunction<T, U>): Component< T, U> {
+  T extends Record<string, InputSchema> = {},
+  U extends Record<string, OutputSchema> = {},
+>(options: Component<T, U>, process?: ProcessFunction<T, U>): Component {
   return {
-    [SYMBOL_COMPONENT]: true,
-    name: options.name,
-    version: options.version,
+    ['@instanceOf']: SYMBOL_COMPONENT,
     icon: options.icon,
-    title: options.title ?? options.name,
+    title: options.title,
     description: options.description,
     inputs: options.inputs,
     outputs: options.outputs,
