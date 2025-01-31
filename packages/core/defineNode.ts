@@ -1,5 +1,4 @@
 import type { Pretty } from '@unshared/types'
-import type { Flow } from './createFlow'
 import type { Category } from './defineCategory'
 import type { DataFromSchema } from './defineDataSchema'
 import type { DataSchema } from './defineDataSchema'
@@ -16,12 +15,6 @@ export interface NodeInstanceContext<
   T extends DataSchema = DataSchema,
   U extends ResultSchema = ResultSchema,
 > {
-
-  /**
-   * The flow which the node is a part of. The flow contains all the nodes and
-   * the connections between the nodes that are used to process the data.
-   */
-  flow: Flow
 
   /**
    * The data that is passed to the node when it is executed. The data comes
