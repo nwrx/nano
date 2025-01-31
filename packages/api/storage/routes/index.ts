@@ -1,1 +1,3 @@
-export * from './fileDownload'
+export * from './storageDelete'
+export * from './storageDownload'
+export * from './storageUpload'

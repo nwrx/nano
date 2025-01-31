@@ -8,7 +8,7 @@ import { StorageFile } from './StorageFile'
  * allows us to determine the ownership and permissions of the file.
  */
 @Entity({ name: 'StorageFileAssignment' })
-@Unique(['file', 'user'])
+@Unique(['file', 'user', 'permission'])
 export class StorageFileAssignment extends BaseEntity {
 
   /**

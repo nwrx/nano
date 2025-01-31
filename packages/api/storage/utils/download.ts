@@ -1,6 +1,7 @@
 import type { ModuleStorage } from '..'
-import type { StorageDownloadOptions, StorageDownloadResult } from '../adapters'
 import type { StorageFile } from '../entities'
+import type { StorageDownloadOptions, StorageDownloadResult } from './createStoragePool'
+import { getPool } from './getPool'
 
 /**
  * Download a file from the storage and return the result. This function
@@ -11,12 +12,7 @@ import type { StorageFile } from '../entities'
  * @param options The options to use to download the file.
  * @returns The result of the download operation.
  */
-export function download(this: ModuleStorage, file: StorageFile, options?: StorageDownloadOptions): StorageDownloadResult {
-
-  // --- Find the storage pool by the ID.
-  const pool = this.storagePools.find(pool => pool.name === file.pool)
-  if (!pool) throw new Error('The storage pool of the file does not exist')
-
-  // --- Download the file from the storage pool and return the result.
+export async function download(this: ModuleStorage, file: StorageFile, options?: StorageDownloadOptions): Promise<StorageDownloadResult> {
+  const pool = await getPool.call(this, file.pool)
   return pool.download(file, options)
 }

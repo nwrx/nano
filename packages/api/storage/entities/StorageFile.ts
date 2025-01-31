@@ -50,11 +50,11 @@ export class StorageFile extends BaseEntity {
 
   /**
    * If the file was uploaded from a remote URL, this field contains the URL of the remote
-   * file. It is used to determine the source of the asset and the ability to download the
+   * file. It is used to determine the origin of the asset and the ability to download the
    * asset from the remote URL.
    */
   @Column('text', { nullable: true })
-  source?: string
+  origin?: string
 
   /**
    * The name of the pool in which the asset is stored. It allows us to determine the
@@ -62,7 +62,7 @@ export class StorageFile extends BaseEntity {
    *
    * @default 'Default'
    */
-  @Column('varchar', { length: 255, default: 'Default' })
+  @Column('varchar', { length: 255, default: 'default' })
   pool: string
 
   /**

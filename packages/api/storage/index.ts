@@ -1,10 +1,9 @@
+import type { StoragePool } from './utils'
 import { ModuleBase } from '@unserved/server'
-import { type StoragePoolBase, StoragePoolFS } from './adapters'
 import * as ENTITIES from './entities'
 import * as ROUTES from './routes'
-import * as UTILS from './utils'
+import { download, erase, ERRORS, getFile, initialize, respondWith, upload, uploadFromUrl } from './utils'
 
-export * from './adapters'
 export * from './entities'
 
 export interface ModuleStorageOptions {
@@ -12,29 +11,27 @@ export interface ModuleStorageOptions {
   /**
    * The storage pools to use for the storage module.
    *
-   * @default [new StoragePoolFilesystem({ path: 'storage' })]
+   * @default new Map()
    */
-  storagePools?: StoragePoolBase[]
+  storagePools?: Map<string, StoragePool>
 }
 
 export class ModuleStorage extends ModuleBase {
   routes = ROUTES
-  errors = UTILS.ERRORS
+  errors = ERRORS
   entities = ENTITIES
-  storagePools: StoragePoolBase[] = [
-    new StoragePoolFS('Default', { path: './.data/storage' }),
-  ]
+  storagePools = new Map<string, StoragePool>()
 
   constructor(options: ModuleStorageOptions = {}) {
     super()
     if (options.storagePools) this.storagePools = options.storagePools
   }
 
-  initialize = UTILS.initialize.bind(this)
-  upload = UTILS.upload.bind(this)
-  uploadFromUrl = UTILS.uploadFromUrl.bind(this)
-  download = UTILS.download.bind(this)
-  resolveFile = UTILS.resolveFile.bind(this)
-  respondWith = UTILS.respondWith.bind(this)
-  erase = UTILS.erase.bind(this)
+  initialize = initialize.bind(this)
+  upload = upload.bind(this)
+  uploadFromUrl = uploadFromUrl.bind(this)
+  download = download.bind(this)
+  getFile = getFile.bind(this)
+  respondWith = respondWith.bind(this)
+  erase = erase.bind(this)
 }

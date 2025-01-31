@@ -1,21 +1,23 @@
 import type { ModuleStorage } from '../index'
 import { createHttpRoute } from '@unserved/server'
-import { assertStringUuid, createSchema } from '@unshared/validation'
+import { assertString, assertStringUuid, assertUndefined, createSchema } from '@unshared/validation'
 import { setResponseStatus } from 'h3'
 import { ModuleUser } from '../../user'
+import { erase, getFile } from '../utils'
 
-export function fileDelete(this: ModuleStorage) {
+export function storageDelete(this: ModuleStorage) {
   return createHttpRoute(
     {
-      name: 'DELETE /api/storage/:id',
+      name: 'DELETE /api/storage/:pool/:id',
       parseParameters: createSchema({
         id: assertStringUuid,
+        pool: [[assertUndefined], [assertString]],
       }),
     },
     async({ event, parameters }) => {
       const userModule = this.getModule(ModuleUser)
       const { user } = await userModule.authenticate(event)
-      const { id } = parameters
+      const { id, pool } = parameters
 
       // --- Only the super-admin can delete files.
       if (!user.isSuperAdministrator) throw userModule.errors.USER_NOT_ALLOWED()
@@ -26,8 +28,8 @@ export function fileDelete(this: ModuleStorage) {
       event.node.req.on('aborted', () => abortController.abort())
 
       // --- Delete the file from the database.
-      const entity = await this.resolveFile(id)
-      await this.erase(entity, { abortSignal })
+      const entity = await getFile.call(this, id, pool)
+      await erase.call(this, entity, { abortSignal })
       setResponseStatus(event, 204)
     },
   )

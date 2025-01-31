@@ -3,6 +3,7 @@ import { createHttpRoute } from '@unserved/server'
 import { assertStringUuid, createSchema } from '@unshared/validation'
 import { getHeader } from 'h3'
 import { ModuleUser } from '../../user'
+import { getFile } from '../utils'
 
 export function fileDownload(this: ModuleStorage) {
   return createHttpRoute(
@@ -32,7 +33,7 @@ export function fileDownload(this: ModuleStorage) {
       const size = end ? offset + Number.parseInt(end) : undefined
 
       // --- Respond with the file.
-      const file = await this.resolveFile(id)
+      const file = await getFile.call(this, id)
       return this.respondWith(event, file, { offset, size, abortSignal })
     },
   )

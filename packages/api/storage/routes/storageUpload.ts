@@ -2,8 +2,9 @@ import type { ModuleStorage } from '../index'
 import { createHttpRoute } from '@unserved/server'
 import { assert, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
+import { upload } from '../utils'
 
-export function fileUpload(this: ModuleStorage) {
+export function storageUpload(this: ModuleStorage) {
   return createHttpRoute(
     {
       name: 'POST /api/storage',
@@ -14,6 +15,7 @@ export function fileUpload(this: ModuleStorage) {
     async({ event, formData }) => {
       const userModule = this.getModule(ModuleUser)
       const { user } = await userModule.authenticate(event)
+      const { file } = formData
 
       // --- Only the super-admin can upload files.
       if (!user.isSuperAdministrator) throw userModule.errors.USER_NOT_ALLOWED()
@@ -25,7 +27,17 @@ export function fileUpload(this: ModuleStorage) {
 
       // --- Save the file to the database.
       const { StorageFile } = this.getRepositories()
-      const entity = await this.upload(formData.file, { abortSignal })
+      const entity = await upload.call(this, {
+        data: file,
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        origin: 'upload',
+        pool: 'default',
+        abortSignal,
+      })
+
+      // --- Return the file entity.
       await StorageFile.save(entity)
     },
   )

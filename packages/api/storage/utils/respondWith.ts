@@ -1,7 +1,8 @@
-import type { StorageDownloadOptions } from '../adapters'
 import type { StorageFile } from '../entities'
 import type { ModuleStorage } from '../index'
+import type { StorageDownloadOptions } from './createStoragePool'
 import { type H3Event, sendRedirect, sendStream, setResponseHeader } from 'h3'
+import { download } from './download'
 
 export interface StorageRespondWithOptions extends StorageDownloadOptions {
 
@@ -12,7 +13,7 @@ export interface StorageRespondWithOptions extends StorageDownloadOptions {
    *
    * @default false
    */
-  download?: boolean
+  isAttachment?: boolean
 }
 
 /**
@@ -27,8 +28,8 @@ export interface StorageRespondWithOptions extends StorageDownloadOptions {
  * @returns A promise that resolves when the response is sent.
  */
 export async function respondWith(this: ModuleStorage, event: H3Event, file: StorageFile, options: StorageRespondWithOptions = {}): Promise<void> {
-  const { download, ...downloadOptions } = options
-  const result = this.download(file, downloadOptions)
+  const { isAttachment, ...downloadOptions } = options
+  const result = await download.call(this, file, downloadOptions)
 
   // --- If the file has a redirect URL, send a redirect.
   if (result.getUrl) {
@@ -42,10 +43,10 @@ export async function respondWith(this: ModuleStorage, event: H3Event, file: Sto
   setResponseHeader(event, 'Content-Type', contentType)
   setResponseHeader(event, 'Content-Length', contentLength)
 
-  // --- If the `download` option is set, force the browser to download the file.
-  if (download) setResponseHeader(event, 'Content-Disposition', `attachment; filename="${file.name}"`)
+  // --- If the `isAttachment` option is set, force the browser to download the file as an attachment.
+  if (isAttachment) setResponseHeader(event, 'Content-Disposition', `attachment; filename="${file.name}"`)
 
   // --- Send the file stream.
-  const fileStream = await result.getStream()
-  return sendStream(event, fileStream)
+  const stream = await result.getStream()
+  return sendStream(event, stream)
 }

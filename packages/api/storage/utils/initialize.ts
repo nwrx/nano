@@ -5,5 +5,5 @@ import type { ModuleStorage } from '../index'
  * registered storage adapter on the `ModuleStorage` instance.
  */
 export async function initialize(this: ModuleStorage): Promise<void> {
-  for (const adapter of this.storagePools) await adapter.initialize()
+  for (const [,pool] of this.storagePools) await pool.initialize()
 }
