@@ -17,15 +17,11 @@ export function useWorkspace(workspace: MaybeRef<string>, options: UseProjectOpt
   const client = useClient()
   const alerts = useAlerts()
   const data = ref<WorkspaceObject>({} as WorkspaceObject)
-  const refresh = async() => {
 
-    await client.requestAttempt('GET /api/workspaces/:workspace', {
-      onError: error => showError(error),
+  const refresh = async() => {
+    await client.request('GET /api/workspaces/:workspace', {
       onData: project => data.value = project,
-      data: {
-        workspace: unref(workspace),
-        ...options,
-      },
+      data: { workspace: unref(workspace), ...options },
     })
   }
 
