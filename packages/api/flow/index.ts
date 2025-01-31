@@ -11,6 +11,7 @@ export type * from './utils/createFlowSession'
 export type * from './utils/serializeFlowCategories'
 export type * from './utils/serializeFlowNode'
 export type * from './utils/serializeFlowNodeInstance'
+export type * from './utils/serializeFlowNodePortValues'
 export type * from './utils/serializeFlowSchema'
 export type * from './utils/serializeFlowSession'
 
