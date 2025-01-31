@@ -26,11 +26,11 @@ export interface FlowSessionParticipant {
 }
 
 /**
- * The `FlowSessionEvents` type represents all possible events that can be
+ * The `FlowSessionEventMap` type represents all possible events that can be
  * emitted by a `FlowSession`. Each event has a corresponding data type that
  * represents the data that is sent with the event.
  */
-export interface FlowSessionEvents extends Record<keyof FlowEvents, unknown> {
+export interface FlowSessionEventMap extends Record<keyof FlowEvents, unknown> {
 
   // Flow
   'flow:refresh': FlowSessionJSON
@@ -73,9 +73,12 @@ export interface FlowSessionEvents extends Record<keyof FlowEvents, unknown> {
   error: { message: string }
 }
 
+/** The name of an event that can be emitted by a flow session. */
+export type FlowSessionEventName = keyof FlowSessionEventMap
+
 /** The payload of a flow session event. */
-export type FlowSessionPayload<K extends keyof FlowSessionEvents = keyof FlowSessionEvents> =
-  { [P in K]: { event: P } & FlowSessionEvents[P] }[K]
+export type FlowSessionEventPayload<K extends keyof FlowSessionEventMap = keyof FlowSessionEventMap> =
+  { [P in K]: { event: P } & FlowSessionEventMap[P] }[K]
 
 export class FlowSession {
 
@@ -182,7 +185,7 @@ export class FlowSession {
    *
    * @param payload The payload to send to the peers.
    */
-  broadcast<T extends keyof FlowSessionEvents>(payload: FlowSessionPayload<T>) {
+  broadcast<T extends keyof FlowSessionEventMap>(payload: FlowSessionEventPayload<T>) {
     for (const participant of this.participants) {
       if (!participant.peer) continue
       participant.peer.send(payload)
