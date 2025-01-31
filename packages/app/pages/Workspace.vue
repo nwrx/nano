@@ -2,7 +2,7 @@
 definePageMeta({
   name: 'Workspace',
   path: '/:workspace',
-  middleware: ['protected', 'workspace'],
+  middleware: ['redirect-when-guest', 'abort-reserved'],
 })
 
 const open = useLocalStorage<Record<string, boolean>>('__Workspace_Open', {})
