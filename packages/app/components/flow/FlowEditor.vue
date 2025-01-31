@@ -21,7 +21,7 @@ const editor = ref<HTMLElement>()
 const nodeSelectedId = ref<string | undefined>()
 
 /** Delete the selected node when pressing the `Delete` key. */
-onKeyStroke('Delete', (event) => {
+onKeyStroke(['Delete', 'Backspace'], (event) => {
   event.preventDefault()
   if (!nodeSelectedId.value) return
   if (document.activeElement instanceof HTMLInputElement) return
