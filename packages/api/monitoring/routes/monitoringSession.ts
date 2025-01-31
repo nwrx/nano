@@ -94,6 +94,7 @@ export function monitoringSession(this: ModuleMonitoring) {
             const entities = await MonitoringFlowThread.find({
               where: { flow: { name: flowName, project } },
               relations: { flow: { project: true } },
+              order: { createdAt: 'DESC' },
             })
             const threads = entities.map(thread => thread.serialize())
             peer.send({ event: 'threads:update', threads } as MonitoringSessionEventPayload<'threads:update'>)
@@ -102,8 +103,7 @@ export function monitoringSession(this: ModuleMonitoring) {
             const { thread } = message
             const entity = await MonitoringFlowThread.findOne({
               where: { id: thread as UUID },
-              relations: { events: true, nodeEvents: true,
-              },
+              relations: { events: true, nodeEvents: true },
             })
             if (!entity) throw this.errors.THREAD_NOT_FOUND(thread)
             const events = entity.events?.map(event => event.serialize()) ?? []
