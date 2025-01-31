@@ -1,7 +1,7 @@
-import { defineSocketType } from '@nwrx/core'
+import { defineType } from '@nwrx/core'
 import { assertBoolean, assertNumber, assertObject, assertString, createParser } from '@unshared/validation'
 
-export const string = defineSocketType({
+export const string = defineType({
   kind: 'string',
   name: 'String',
   color: '#F3CA40',

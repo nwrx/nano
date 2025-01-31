@@ -1,8 +1,8 @@
 /* eslint-disable n/no-unsupported-features/node-builtins */
-import { defineSocketType } from '@nwrx/core'
+import { defineType } from '@nwrx/core'
 import { createAssertInstance, createParser } from '@unshared/validation'
 
-export const stream = defineSocketType({
+export const stream = defineType({
   kind: 'stream',
   name: 'Stream',
   color: '#EEDCFF',

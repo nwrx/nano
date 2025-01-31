@@ -1,4 +1,4 @@
-import { defineSocketType } from '@nwrx/core'
+import { defineType } from '@nwrx/core'
 import { assertStringNotEmpty, assertUndefined, createAssertInstance, createParser } from '@unshared/validation'
 
 /** The context that is passed in the model inference process. */
@@ -17,7 +17,7 @@ export type LanguageModelGetCompletion = (response: any) => string
  * of text. The values bearing this type are passed to the `nwrx/inference` flow node to generate
  * completions based on some input text.
  */
-export const languageModelInstance = defineSocketType({
+export const languageModelInstance = defineType({
   kind: 'language-model-instance',
   name: 'LM Model',
   color: '#CB7fff',

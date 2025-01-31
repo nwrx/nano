@@ -1,7 +1,10 @@
-import type { NodeInstanceContext } from '@nwrx/core'
-import { defineDataSocket, defineNode, defineResultSocket } from '@nwrx/core'
+import type { NodeInstanceContext, SocketListOption } from '@nwrx/core'
+import { defineDataSchema, defineNode } from '@nwrx/core'
 import { languageModel } from '../categories'
 import { languageModelInstance, string } from '../types'
+
+/** The default BASE_URL for the Ollama API. */
+const BASE_URL = 'http://localhost:11434'
 
 interface OllamaModel {
   name: string
@@ -45,26 +48,27 @@ export const modelOllama = defineNode({
   category: languageModel,
 
   // --- Define the inputs of the node.
-  defineDataSchema: async({ data, abortSignal }: NodeInstanceContext) => {
-    const dataSchema = {
-      baseUrl: defineDataSocket({
+  dataSchema: async({ data, abortSignal }: NodeInstanceContext) => {
+    const dataSchema = defineDataSchema({
+      baseUrl: {
         type: string,
-        name: 'Base URL',
+        label: 'Base URL',
         control: 'variable',
         description: 'The base URL of the Ollama API.',
-      }),
-      model: defineDataSocket({
+        isOptional: true,
+      },
+      model: {
         type: string,
-        name: 'Model Name',
+        label: 'Model Name',
         control: 'select',
         description: 'The name of the model to use for generating completions.',
-        options: [],
-      }),
-    }
+        options: [] as Array<SocketListOption<string>>,
+      },
+    })
 
     // --- Attempt to fill the model names from the API.
     try {
-      const { baseUrl = 'http://localhost:11434' } = data as Record<string, string>
+      const { baseUrl = BASE_URL } = data as Record<string, string>
       const url = new URL('/api/tags', baseUrl)
       const response = await fetch(url.href, { signal: abortSignal })
       const models = await response.json() as OllamaTagsResponse
@@ -82,20 +86,18 @@ export const modelOllama = defineNode({
   },
 
   // --- Define the outputs of the node.
-  defineResultSchema: {
-    model: defineResultSocket({
+  resultSchema: {
+    model: {
       name: 'Model',
       type: languageModelInstance,
       description: 'The model information to use for generating completions.',
-    }),
+    },
   },
 
   // --- On processing the node, check the API key and model name
   // --- are valid and return the model information.
   process: async({ data, abortSignal }) => {
-    const { baseUrl, model } = data
-    if (!baseUrl) throw new Error('Please provide the base URL of the Ollama API.')
-    if (!model) throw new Error('Please select the model name to use for generating completions.')
+    const { baseUrl = BASE_URL } = data
 
     // --- Check the API is accessible and the model name is valid.
     const url = new URL('/api/tags', baseUrl)
@@ -110,13 +112,13 @@ export const modelOllama = defineNode({
     // --- Check if the model name is valid.
     const models = await response.json() as OllamaTagsResponse
     const modelExists = models.models.some(x => x.name === data.model)
-    if (!modelExists) throw new Error(`Could not find the model with the name "${model}".`)
+    if (!modelExists) throw new Error(`Could not find the model with the name "${data.model}".`)
 
     // --- Return the model information.
     return {
       model: {
         url: new URL('/api/chat', baseUrl).href,
-        model,
+        model: data.model,
         token: undefined,
         getBody: ({ prompt }) => ({
           stream: false,

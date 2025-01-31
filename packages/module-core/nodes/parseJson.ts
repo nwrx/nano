@@ -1,4 +1,4 @@
-import { defineDataSocket, defineNode, defineResultSocket } from '@nwrx/core'
+import { defineNode } from '@nwrx/core'
 import { basic } from '../categories'
 import { object, string } from '../types'
 
@@ -9,25 +9,24 @@ export const parseJson = defineNode({
   description: 'Parses a JSON string into an object.',
   category: basic,
 
-  defineDataSchema: {
-    json: defineDataSocket({
+  dataSchema: {
+    json: {
       type: string,
       name: 'JSON',
       control: 'socket',
       description: 'The JSON string to parse.',
-    }),
+    },
   },
 
-  defineResultSchema: {
-    object: defineResultSocket({
+  resultSchema: {
+    object: {
       type: object,
       name: 'Object',
       description: 'The parsed JSON object as a key-value map.',
-    }),
+    },
   },
 
-  process: ({ data }) => {
-    const { json = '{}' } = data
-    return { object: JSON.parse(json) as Record<string, unknown> }
-  },
+  process: ({ data }) => ({
+    object: JSON.parse(data.json) as Record<string, unknown>,
+  }),
 })

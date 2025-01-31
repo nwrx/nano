@@ -1,6 +1,5 @@
-import type { NodeInstanceContext, SocketType } from '@nwrx/core'
+import type { NodeInstanceContext, Type } from '@nwrx/core'
 import { defineNode } from '@nwrx/core'
-import { defineDataSocket } from '@nwrx/core'
 import { basic } from '../categories'
 import { boolean, number, object, stream, string } from '../types'
 
@@ -11,15 +10,15 @@ export const nodeOutput = defineNode({
   category: basic,
   description: ' A value that is sent to an exitpoint in the flow. The value can be any type of data, such as a string, number, or boolean and is provided as an output from the flow.',
 
-  defineDataSchema: ({ data }: NodeInstanceContext) => {
-    let type = string as SocketType<unknown>
+  dataSchema: ({ data }: NodeInstanceContext) => {
+    let type = string as Type<unknown>
     if (data.type === 'number') type = number
     else if (data.type === 'boolean') type = boolean
     else if (data.type === 'stream') type = stream
     else if (data.type === 'object') type = object
     return {
-      type: defineDataSocket({
-        type: string as SocketType<'boolean' | 'number' | 'object' | 'stream' | 'text'>,
+      type: {
+        type: string as Type<'boolean' | 'number' | 'object' | 'stream' | 'text'>,
         name: 'Type',
         control: 'select',
         description: 'The type of the value.',
@@ -55,25 +54,24 @@ export const nodeOutput = defineNode({
             description: 'An object value, such as a key-value map.',
           },
         ],
-      }),
-      property: defineDataSocket({
+      },
+      property: {
         type: string,
         name: 'Property',
         control: 'socket',
         description: 'The property name to send the value to the exitpoint.',
-      }),
-      value: defineDataSocket({
+      },
+      value: {
         name: 'Value',
         type,
         control: 'socket',
         description: 'The value to send to the exitpoint.',
-      }),
+      },
     }
   },
 
   process: ({ flow, data }) => {
-    if (!data.value) return
-    if (!data.property) throw new Error('The property name is required.')
     flow.dispatch('flow:output', data.property, data.value)
+    return {}
   },
 })
