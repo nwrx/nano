@@ -38,6 +38,7 @@ onMounted(async() => {
         @submitEnable="(username) => users.enable(username)"
         @submitDelete="(username) => users.delete(username)"
         @submitDisable="(username) => users.disable(username)"
+        @submitVerify="(username) => users.verify(username)"
       />
     </AppPageContainer>
   </AppPage>
