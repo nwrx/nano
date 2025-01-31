@@ -1,4 +1,4 @@
-import type { Thread } from '../thread'
+import type { Thread } from '../createThread'
 
 /**
  * Given a thread and a list of component instance IDs, remove the component
@@ -10,12 +10,4 @@ import type { Thread } from '../thread'
  */
 export function removeComponentInstances(thread: Thread, ...ids: string[]): void {
   for (const id of ids) thread.componentInstances.delete(id)
-
-  // --- If the thread is running, abort the nodes associated with the component instances.
-  if (thread.isRunning) {
-    for (const id of ids) {
-      const node = thread.nodes.get(id)
-      if (node) node.abort()
-    }
-  }
 }
