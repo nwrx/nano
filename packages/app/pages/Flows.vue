@@ -45,7 +45,7 @@ async function importModule() {
 </script>
 
 <template>
-  <div class="flex flex-col overflow-hidden h-screen p-4 space-y-8">
+  <div class="flex flex-col overflow-hidden w-full p-4 space-y-8">
     <FlowList
       :flows="flows"
       @flowCreate="() => createFlow()"

@@ -11,9 +11,9 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  setValue: [unknown]
-  dragLinkStart: [FlowDragState | void]
-  dragLinkTarget: [FlowDragState | void]
+  setValue: [value: unknown]
+  dragLinkStart: [state: FlowDragState | void]
+  dragLinkTarget: [state: FlowDragState | void]
   dragLinkDrop: []
 }>()
 
@@ -36,7 +36,7 @@ function setDragLinkStart(event: MouseEvent) {
   const { x, y, width, height } = pin.value!.getBoundingClientRect()
   emit('dragLinkStart', {
     id: `${props.nodeId}:${props.portId}`,
-    color: props.port.type.color,
+    color: props.port.type.color ?? 'black',
     kind: props.kind,
     position: {
       x: x + width / 2,
@@ -51,7 +51,7 @@ function setDragLinkTarget() {
   const { x, y, width, height } = pin.value!.getBoundingClientRect()
   emit('dragLinkTarget', {
     id: `${props.nodeId}:${props.portId}`,
-    color: props.port.type.color,
+    color: props.port.type.color ?? 'black',
     kind: props.kind,
     position: {
       x: x + width / 2,
@@ -78,7 +78,7 @@ function onTextAreaInput(event: Event) {
       'h-8': port.display !== 'textarea',
       'pr-2 flex-row': kind === 'data',
       'pl-2 flex-row-reverse': kind === 'result',
-      'hover:bg-primary-200': port.display === undefined,
+      'hover:bg-primary-200': port.display === undefined || port.disallowStatic,
     }"
     @mousedown="(event: MouseEvent) => setDragLinkStart(event)"
     @mouseover="() => setDragLinkTarget()"
@@ -101,7 +101,7 @@ function onTextAreaInput(event: Event) {
 
     <!-- Display the name -->
     <span
-      v-if="port.display === 'none' || port.display === undefined"
+      v-if="port.display === undefined || port.disallowStatic"
       class="truncate text-start px-2 py-1 outline-none"
       v-text="port.name"
     />
