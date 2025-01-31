@@ -2,7 +2,6 @@ import type { Flow } from '../entities'
 import type { ModuleFlow } from '../index'
 import { flowFromJsonV1 } from '@nwrx/core'
 import { Core } from '@nwrx/module-core'
-import { Openai } from '@nwrx/module-openai'
 
 declare module '@nwrx/core' {
   export interface FlowMeta {
@@ -13,7 +12,6 @@ declare module '@nwrx/core' {
 
 const MODULES = [
   Core,
-  Openai,
 ]
 
 /**

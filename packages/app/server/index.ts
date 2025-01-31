@@ -6,7 +6,6 @@ import Consola from 'consola'
 // --- This allows HMR to work when making changes to those packages.
 import '../../core/index'
 import '../../module-core/index'
-import '../../module-openai/index'
 
 // --- Expose the application for type inference.
 export const application = await Application.initialize([
