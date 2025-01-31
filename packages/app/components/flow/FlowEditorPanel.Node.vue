@@ -1,60 +1,86 @@
+<!-- eslint-disable vue/no-setup-props-reactivity-loss -->
 <script setup lang="ts">
 import type { FlowNodeInstanceJSON } from '@nwrx/api'
 
 const props = defineProps<{
-  node: FlowNodeInstanceJSON
   name: string
   description: string
+  node: FlowNodeInstanceJSON
+  isDataOpen: boolean
+  isResultOpen: boolean
 }>()
 
 const emit = defineEmits<{
   run: [id: string]
   'update:name': [name: string]
   'update:description': [description: string]
+  'update:isDataOpen': [isOpen: boolean]
+  'update:isResultOpen': [isOpen: boolean]
 }>()
 
-const title = useVModel(props, 'name', emit, { passive: true })
-const description = useVModel(props, 'description', emit, { passive: true })
+// --- UI state.
+const isDataOpen = useVModel(props, 'isDataOpen', emit, { passive: true })
+const isResultOpen = useVModel(props, 'isResultOpen', emit, { passive: true })
 
-function onTextareaInput(event: Event) {
-  const target = event.target as HTMLTextAreaElement
-  target.style.height = 'auto'
-  target.style.height = `${target.scrollHeight + 2}px`
-}
+// --- Data.
+const name = useVModel(props, 'name', emit, {
+  passive: true,
+  defaultValue: props.node.name,
+})
+
+const description = useVModel(props, 'description', emit, {
+  passive: true,
+  description: props.node.description,
+})
+
+// --- Formatted data.
+const dataResult = computed(() => {
+  const dataResult: Array<{ name: string; value: string }> = []
+  for (const key in props.node.result) {
+    const value = props.node.result[key]
+    const name = props.node.resultSchema.find(field => field.key === key)?.name ?? key
+    dataResult.push({ name, value: typeof value === 'string' ? value : JSON.stringify(value) })
+  }
+  return dataResult
+})
+
+// --- Formatted result.
+const dataData = computed(() => {
+  const dataData: Array<{ name: string; value: string }> = []
+  for (const key in props.node.data) {
+    const value = props.node.data[key]
+    const name = props.node.dataSchema.find(field => field.key === key)?.name ?? key
+    dataData.push({ name, value: typeof value === 'string' ? value : JSON.stringify(value) })
+  }
+  return dataData
+})
 </script>
 
 <template>
-  <div class="space-y-8 overflow-y-auto overflow-x-hidden">
+  <div>
 
     <!-- Title & Desscription -->
-    <div>
-      <input
-        v-model="name"
-        placeholder="Give your flow a name..."
-        class="text-2xl font-medium outline-none bg-transparent w-full"
-      />
-      <textarea
-        v-model="description"
-        placeholder="Describe your flow..."
-        class="text-sm outline-none bg-transparent w-full resize-none opacity-70"
-        @input="(event) => onTextareaInput(event)"
-      />
-    </div>
+    <FlowEditorPanelSectionName
+      v-model:name="name"
+      v-model:description="description"
+      placeholder-name="Describe the purpose of this node in the flow."
+      placeholder-description="Description to help you remember what this node does."
+    />
 
     <!-- Data fields and values -->
-    <div class="space-y-4">
-      <div v-for="field in node.dataSchema" :key="field.name" class="text-sm">
-        <p class="font-medium">{{ field.name }}</p>
-        <p class="opacity-70">{{ node.data[field.key] }}</p>
-      </div>
-    </div>
+    <FlowEditorPanelSectionData
+      v-model:isOpen="isDataOpen"
+      :data="dataData"
+      title="Data"
+      text="This is the data that is passed to this node in the flow."
+    />
 
     <!-- Result fields and values -->
-    <div class="space-y-4">
-      <div v-for="field in node.resultSchema" :key="field.name" class="text-sm">
-        <p class="font-medium">{{ field.name }}</p>
-        <p class="opacity-70">{{ node.result[field.key] }}</p>
-      </div>
-    </div>
+    <FlowEditorPanelSectionData
+      v-model:isOpen="isResultOpen"
+      :data="dataResult"
+      title="Result"
+      text="This is the data that will be passed to the next node in the flow."
+    />
   </div>
 </template>
