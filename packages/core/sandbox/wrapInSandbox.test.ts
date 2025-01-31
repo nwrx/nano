@@ -2,6 +2,32 @@ import ivm from 'isolated-vm'
 import { wrapInSandbox } from './wrapInSandbox'
 
 describe('wrapInSandbox', () => {
+  describe('properties', () => {
+    it('should pass string parameters to the function', async() => {
+      const wrapped = await wrapInSandbox((name: string) => `Hello, ${name}!`)
+      const result = await wrapped('World')
+      expect(result).toStrictEqual('Hello, World!')
+    })
+
+    it('should pass number parameters to the function', async() => {
+      const wrapped = await wrapInSandbox((n: number) => n * 2)
+      const result = await wrapped(21)
+      expect(result).toStrictEqual(42)
+    })
+
+    it('should pass object parameters to the function', async() => {
+      const wrapped = await wrapInSandbox((object: { name: string }) => `Hello, ${object.name}!`)
+      const result = await wrapped({ name: 'World' })
+      expect(result).toStrictEqual('Hello, World!')
+    })
+
+    it('should pass array parameters to the function', async() => {
+      const wrapped = await wrapInSandbox((array: string[]) => array.join(', '))
+      const result = await wrapped(['Hello', 'World'])
+      expect(result).toStrictEqual('Hello, World')
+    })
+  })
+
   describe('extra properties', () => {
     it('should expose the "isolate" property', async() => {
       const wrapped = await wrapInSandbox(() => 'Hello, World!')
