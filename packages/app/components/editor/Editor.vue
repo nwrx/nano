@@ -33,7 +33,7 @@ const emit = defineEmits<{
   setNodeLabel: [string, string]
   setNodeComment: [string, string]
   setNodeInputValue: [string, string, unknown]
-  getNodeInputOptions: [string, string, string | void]
+  getNodeInputOptions: [string, string, string | undefined]
   removeNodes: [string[]]
 
   // Links
