@@ -15,7 +15,8 @@ useHead(() => ({
 
 // --- Remote data.
 const route = useRoute()
-const workspace = useWorkspace(route.params.workspace as string, {
+const name = computed(() => route.params.workspace as string)
+const workspace = useWorkspace(name, {
   withProjects: true,
   withProjectFlows: true,
   withProjectAssignments: true,
@@ -63,7 +64,7 @@ onMounted(workspace.refresh)
     <!-- Create project dialog -->
     <ProjectListDialogCreate
       v-model="isDialogCreateProjectOpen"
-      :workspace="workspace.data.name"
+      :workspace="name"
       :baseUrl="CONSTANTS.appHost"
       @submit="options => workspace.createProject(options)"
     />

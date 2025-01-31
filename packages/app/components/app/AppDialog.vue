@@ -7,6 +7,7 @@ const props = defineProps<{
   text?: string
   icon?: string
   classHint?: string
+  classContent?: string
   variant?: Variant
   disabled?: boolean
   labelConfirm?: string
@@ -83,7 +84,7 @@ const { t, locale } = useI18n({ useScope: 'local' })
           </div>
 
           <!-- Dialog content -->
-          <div class="p-lg w-full">
+          <div class="p-lg w-full" :class="classContent">
             <slot v-bind="slots" />
           </div>
 

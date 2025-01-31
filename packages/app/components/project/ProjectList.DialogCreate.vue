@@ -26,30 +26,29 @@ const options = ref<CreateProjectOptions>({
     v-model="model"
     variant="success"
     class-hint="hint-success"
+    class-content="space-y-md"
     icon="i-carbon:flow"
     :title="t('title', { workspace })"
     :text="t('text')"
     :labelSubmit="t('submit')"
-    :labelCancel="t('cancel')">
-
-    <div class="space-y-4">
-      <InputText
-        v-model="options.name"
-        :textBefore="`${baseUrl}/${workspace}/`"
-        :parse="toSlug"
-        :placeholder="t('name.placeholder')"
-        :hint="t('name.hint')"
-      />
-      <InputText
-        v-model="options.title"
-        :placeholder="t('title.placeholder')"
-      />
-      <InputText
-        v-model="options.description"
-        :placeholder="t('description.placeholder')"
-        type="textarea"
-      />
-    </div>
+    :labelCancel="t('cancel')"
+    @confirm="() => emit('submit', options)">
+    <InputText
+      v-model="options.name"
+      :textBefore="`${baseUrl}/${workspace}/`"
+      :parse="toSlug"
+      :placeholder="t('name.placeholder')"
+      :hint="t('name.hint')"
+    />
+    <InputText
+      v-model="options.title"
+      :placeholder="t('title.placeholder')"
+    />
+    <InputText
+      v-model="options.description"
+      :placeholder="t('description.placeholder')"
+      type="textarea"
+    />
   </AppDialog>
 </template>
 
