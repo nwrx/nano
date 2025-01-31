@@ -54,17 +54,23 @@ export class Flow extends BaseEntity {
   project?: WorkspaceProject
 
   /**
+   * @param options The options to use when serializing the object.
    * @returns The object representation of the icon.
    */
-  serialize(): FlowObject {
+  serialize(options: SerializeOptions = {}): FlowObject {
     return {
       name: this.name,
       title: this.title,
       description: this.description,
       workspace: this.project?.workspace?.name,
       project: this.project?.name,
+      data: options.withData ? this.data : undefined,
     }
   }
+}
+
+interface SerializeOptions {
+  withData?: boolean
 }
 
 export interface FlowObject {
@@ -73,4 +79,5 @@ export interface FlowObject {
   description?: string
   workspace?: string
   project?: string
+  data?: FlowExport
 }
