@@ -16,6 +16,49 @@ const { t } = useI18n({ useScope: 'local' })
 const url = computed(() => `${CONSTANTS.appHost}/${props.workspace}/`)
 </script>
 
+<template>
+  <AppPageForm
+    :title="t('title')"
+    :label="t('submit.text')"
+    @submit="() => emit('submit', { title, description })">
+
+    <!-- Text -->
+    <template #text>
+      <I18nT keypath="text">
+        <template #newline><br><br></template>
+        <template #documentation="text">
+          <Button link variant="primary" :label="t('text.documentation')" :href="CONSTANTS.appCanonicalUrl" />
+        </template>
+      </I18nT>
+    </template>
+
+    <!-- Project Title -->
+    <InputText
+      :modelValue="title"
+      icon="i-carbon:label"
+      :placeholder="t('field.title.description')"
+      class="w-full"
+    />
+
+    <!-- Project Name / Readonly -->
+    <InputText
+      readonly
+      :modelValue="project"
+      :text-before="url"
+      :hint="t('field.name.description')"
+      class="w-full"
+    />
+
+    <!-- Project Description -->
+    <InputText
+      :modelValue="description"
+      :placeholder="t('field.description.description')"
+      type="textarea"
+      class-input="!h-32"
+    />
+  </AppPageForm>
+</template>
+
 <i18n lang="yaml">
   en:
     title: General
@@ -73,46 +116,3 @@ const url = computed(() => `${CONSTANTS.appHost}/${props.workspace}/`)
     field.description.label: 描述
     field.description.description: 为您的项目提供简要描述。
 </i18n>
-
-<template>
-  <AppPageForm
-    :title="t('title')"
-    :label="t('submit.text')"
-    @submit="() => emit('submit', { title, description })">
-
-    <!-- Text -->
-    <template #text>
-      <I18nT keypath="text">
-        <template #newline><br><br></template>
-        <template #documentation="text">
-          <Button link variant="primary" :label="t('text.documentation')" :href="CONSTANTS.appCanonicalUrl" />
-        </template>
-      </I18nT>
-    </template>
-
-    <!-- Project Title -->
-    <InputText
-      :modelValue="title"
-      icon="i-carbon:label"
-      :placeholder="t('field.title.description')"
-      class="w-full"
-    />
-
-    <!-- Project Name / Readonly -->
-    <InputText
-      readonly
-      :modelValue="project"
-      :text-before="url"
-      :hint="t('field.name.description')"
-      class="w-full"
-    />
-
-    <!-- Project Description -->
-    <InputText
-      :modelValue="description"
-      :placeholder="t('field.description.description')"
-      type="textarea"
-      class-input="!h-32"
-    />
-  </AppPageForm>
-</template>
