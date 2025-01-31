@@ -36,6 +36,24 @@ export const ERRORS = {
     statusMessage: 'Unauthorized',
     message: 'The username or password is incorrect',
   }),
+  USER_WRONG_PASSWORD: () => createError({
+    name: 'E_USER_WRONG_PASSWORD',
+    statusCode: 401,
+    statusMessage: 'Unauthorized',
+    message: 'The password is incorrect',
+  }),
+  USER_DISABLED: () => createError({
+    name: 'E_USER_DISABLED',
+    statusCode: 401,
+    statusMessage: 'Unauthorized',
+    message: 'The user is disabled',
+  }),
+  USER_NOT_VERIFIED: () => createError({
+    name: 'E_USER_NOT_VERIFIED',
+    statusCode: 401,
+    statusMessage: 'Unauthorized',
+    message: 'The user is not verified',
+  }),
   USER_NOT_AUTHENTICATED: () => createError({
     name: 'E_USER_NOT_AUTHENTICATED',
     statusCode: 401,
