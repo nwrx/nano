@@ -17,6 +17,9 @@
         "meow",
         "@typescript-eslint/parser"
       ]
+    },
+    "patchedDependencies": {
+      "@unshared/vue": "patches/@unshared__vue.patch"
     }
   },
   "scripts": {
