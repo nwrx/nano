@@ -376,7 +376,7 @@ export default defineConfig<Theme>({
             'editor-select': `${COLORS.primary[500]}40`,
             'editor-node': `${COLORS.primary[850]}80`,
             'editor-panel': `${COLORS.primary[850]}80`,
-            'editor-panel-data': `${COLORS.primary[400]}20`,
+            'editor-panel-data': `${COLORS.primary[400]}15`,
           },
           textColor: {
             'app': COLORS.primary[50],
