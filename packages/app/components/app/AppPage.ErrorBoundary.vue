@@ -13,10 +13,11 @@ const emit = defineEmits<{
 <template>
   <div
     class="
-      absolute top-0 left-0 w-full h-full space-y-base
+      absolute top-0 left-0 w-full h-full space-y-md
       flex flex-col items-center justify-center
-      bg-banknote-layout-foreground
-      border border-layout
+      rounded-app
+      bg-banknote-primary-800/50
+      border border-primary-800/50
   ">
 
     <!-- Status Code -->
@@ -26,7 +27,7 @@ const emit = defineEmits<{
     />
 
     <!-- Error Message -->
-    <p class="text-center text-xl font-mono bg-layout p-sm rounded border border-layout">
+    <p class="text-center text-xl font-mono bg-layout p-sm rounded border border-primary-800/50">
       {{ message }}
     </p>
 
