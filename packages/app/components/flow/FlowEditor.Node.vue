@@ -36,6 +36,14 @@ const isCollapsed = ref(false)
 watch(isCollapsed, value => emit('setCollapsed', value))
 
 /**
+ * A debounced `isRunning` state so when a node runs fast, it doesn't
+ * flash the running state. This is used to determine if the node is
+ * currently running or not.
+ */
+const isRunning = computed(() => props.isRunning)
+const isRunningThrottled = refThrottled(isRunning, 200)
+
+/**
  * When the node is collapsed, we only want to display the ports that
  * are connected to other nodes. Anything else should be hidden.
  */
@@ -73,12 +81,12 @@ defineExpose({ portsData, portsResult })
 <template>
   <div
     :style="{
-      '--un-ring-color': isSelected && color ? color : `${color}D0`,
-      '--un-ring-width': isSelected ? `${3 / zoom}px` : `${1.25 / zoom}px`,
+      '--un-ring-color': (isRunningThrottled || isSelected) && color ? color : `transparent`,
+      '--un-ring-width': (isRunningThrottled || isSelected) ? `${3 / zoom}px` : `${1.25 / zoom}px`,
     }"
     class="
-      absolute min-h-24 w-96 bg-editor-node
-      backdrop-blur-md rounded ring transition
+      absolute min-h-24 w-96 bg-editor-node border border-editor
+      backdrop-blur-2xl rounded ring transition-all
     "
     @mousedown.stop="(event) => emit('click', event)">
 
@@ -99,7 +107,7 @@ defineExpose({ portsData, portsResult })
 
     <!-- Graphflow Node Body -->
     <div class="flex flex-col py-sm space-y-sm">
-      <FlowEditorPort
+      <FlowEditorSocket
         v-for="port in dataSchema"
         v-bind="port"
         :ref="(component) => portsData[port.key] = (component as ComponentPublicInstance)"
@@ -115,7 +123,7 @@ defineExpose({ portsData, portsResult })
         @release="() => emit('portRelease')"
         @drop="() => emit('portRelease')"
       />
-      <FlowEditorPort
+      <FlowEditorSocket
         v-for="port in resultSchema"
         v-bind="port"
         :ref="(component) => portsResult[port.key] = (component as ComponentPublicInstance)"
