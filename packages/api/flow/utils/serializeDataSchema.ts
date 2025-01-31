@@ -10,6 +10,9 @@ export interface DataSocketJSON extends ResultSocketJSON {
   sliderMin?: number
   sliderStep?: number
   defaultValue?: unknown
+  isInternal?: boolean
+  isOptional?: boolean
+  isIterable?: boolean
 }
 
 /**
@@ -39,5 +42,8 @@ export function serializeDataSchema(schema?: MaybeFunction<MaybePromise<DataSche
     sliderMin: socket.sliderMin,
     sliderStep: socket.sliderStep,
     defaultValue: socket.defaultValue as unknown,
+    isInternal: socket.isInternal,
+    isOptional: socket.isOptional,
+    isIterable: socket.isIterable,
   }))
 }
