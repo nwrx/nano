@@ -32,7 +32,7 @@ export async function wrapInSandbox<T extends Function>(fn: string | T, options:
   // --- Get the reference to the injected function.
   const call = async(...parameters: unknown[]): Promise<unknown> => {
     const argsString = Array.from({ length: parameters.length }, (_, i) => `$${i}`).join(', ')
-    const ref = await context.evalClosure(`return (${fn.toString()})(${argsString})`, parameters, {
+    const ref = await context.evalClosure(`const fn = ${fn.toString()}\nreturn fn(${argsString})`, parameters, {
       arguments: { copy: true },
       result: { reference: true, promise: true },
       timeout,
