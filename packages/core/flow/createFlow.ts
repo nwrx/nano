@@ -1,8 +1,8 @@
 /* eslint-disable sonarjs/prefer-single-boolean-return */
-import type { FlowNodeDefinition } from '../module'
+import type { FlowNodeDefinition, SocketListOption } from '../module'
 import type { FlowEvents, FlowJSONv1, FlowJSONv1Node, FlowLink, FlowNode, FlowOptions } from '../utils'
 import { Memoize } from '@unshared/decorators'
-import { createReference, Emitter, isReferenceLink } from '../utils'
+import { createReference, Emitter, isReferenceLink, resolveSchema } from '../utils'
 import { FlowThread } from './createFlowThread'
 
 export class Flow extends Emitter<FlowEvents> {
@@ -48,6 +48,24 @@ export class Flow extends Emitter<FlowEvents> {
     node.meta = node.meta ?? {}
     node.meta[key] = value
     this.dispatch('setNodeMetaValue', node, key, value)
+  }
+
+  async getNodeInputValueOptions(id: string, key: string, query?: string): Promise<SocketListOption[]> {
+    const node = this.get(id)
+    const definition = await this.describe(node.kind)
+    const schema = definition.inputSchema
+    const socket = schema?.[key]
+    const options = socket?.options
+
+    // --- Assert that the schema and socket exist.
+    if (typeof options !== 'function') return options ?? []
+    const input = await resolveSchema({
+      values: node.input,
+      schema: definition.inputSchema,
+      resolvers: this.options.resolveReference,
+      skipErrors: true,
+    })
+    return options(input, query)
   }
 
   /***************************************************************************/

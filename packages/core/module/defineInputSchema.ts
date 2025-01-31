@@ -1,5 +1,4 @@
-import type { MaybeLiteral, MaybePromise } from '@unshared/types'
-import type { FlowNodeContext } from './defineNode'
+import type { MaybeLiteral, MaybePromise, ObjectLike } from '@unshared/types'
 import type { Type } from './defineType'
 
 export type SocketControl =
@@ -24,7 +23,7 @@ export type DataSocketOptions<T = any> = Array<SocketListOption<T>>
 
 export interface InputSocket<T = unknown> {
   control?: MaybeLiteral<SocketControl>
-  options?: ((context: FlowNodeContext, query?: string) => MaybePromise<DataSocketOptions<T>>) | DataSocketOptions<T>
+  options?: ((input: ObjectLike, query?: string) => MaybePromise<DataSocketOptions<T>>) | DataSocketOptions<T>
   sliderMax?: number
   sliderMin?: number
   sliderStep?: number

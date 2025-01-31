@@ -4,36 +4,22 @@ import type { SocketListOption } from '@nwrx/core'
 
 const props = defineProps<{
   name?: string
-  badge?: boolean
-  search?: string
   modelValue: unknown
   defaultValue?: unknown
   options?: SocketListOption[]
+  getOptions?: (query: string) => Promise<SocketListOption[]>
 }>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
-  'search': [query: string]
 }>()
 
-// --- Localize
 const { t } = useI18n()
-
-// --- State
 const isOpen = ref(false)
+const search = ref('')
+const searchOptions = ref<SocketListOption[]>([])
 const input = ref<HTMLInputElement>()
-
-// --- Two-way binding for the model value.
-const model = useVModel(props, 'modelValue', emit, {
-  passive: true,
-  eventName: 'update:modelValue',
-})
-
-// --- Two-way binding for the search query.
-const search = useVModel(props, 'search', emit, {
-  passive: true,
-  eventName: 'search',
-})
+const model = useVModel(props, 'modelValue', emit, { passive: true })
 
 // --- Resolve the label of the current value if it is set.
 const currentValue = computed(() => {
@@ -48,9 +34,13 @@ const currentValue = computed(() => {
 const defaultValue = computed(() => {
   if (!props.defaultValue) return
   if (!props.options) return
-  return Object.values(props.options)
-    .find(option => option.value === props.defaultValue)
-    ?.label
+  return props.defaultValue
+})
+
+// --- Get the options from the server if the `getOptions` function is provided.
+watch(search, async() => {
+  if (!props.getOptions) return
+  searchOptions.value = await props.getOptions(search.value)
 })
 
 // --- Track the list position so we can auto-scale the height based on the viewport.
@@ -97,7 +87,7 @@ function setOption(option: SocketListOption<unknown>) {
     <!-- List -->
     <Transition>
       <div
-        v-if="isOpen && options"
+        v-if="isOpen"
         ref="list"
         class="
             absolute left-0 w-full top-full
@@ -108,12 +98,14 @@ function setOption(option: SocketListOption<unknown>) {
           "
         @wheel.stop>
 
-        <template v-if="options.length === 0">
+        <!-- When no options are available, show a message. -->
+        <template v-if="!options || options.length === 0">
           <p class="text-xs text-subtle">
             {{ t('list.empty') }}
           </p>
         </template>
 
+        <!-- Otherwise, show the list of options. -->
         <template v-else>
           <EditorNodeSocketSelectItem
             v-for="(option, index) in options"

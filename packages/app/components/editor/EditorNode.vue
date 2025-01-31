@@ -7,6 +7,7 @@ const props = defineProps<{
   isSelected?: boolean
   secrets?: string[]
   variables?: string[]
+  getOptions?: (key: string, query: string) => Promise<SocketListOption[]>
 } & Partial<FlowThreadNodeJSON>>()
 
 const emit = defineEmits<{
@@ -117,11 +118,11 @@ function handleClick(event: MouseEvent) {
         :key="socket.key"
         :ref="(component) => socketsData[socket.key] = (component as ComponentPublicInstance)"
         :socket="socket"
-        :port-id="socket.key"
         :value="input?.[socket.key]"
         :secrets="secrets"
         :variables="variables"
         :error="inputErrors?.[socket.key]"
+        :get-options="getOptions ? (key, query) => getOptions!(socket.key, query) : undefined"
         kind="target"
         @set-value="(value) => emit('setInputValue', socket.key, value)"
         @search-options="(key, query) => emit('getInputOptions', key, query)"
