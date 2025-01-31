@@ -29,7 +29,7 @@ export function projectUpdateUserAssignments(this: ModuleWorkspace) {
       const { id } = await this.resolveProject({ user, name: project, workspace: workspaceResolved, permission: 'Owner' })
 
       // --- Get the existing assignments to the user.
-      const userToAssign = await userModule.resolveUser(username)
+      const userToAssign = await userModule.resolveUser({ username, user })
       const existingAssignments = await WorkspaceProjectAssignment.findBy({ user: userToAssign, project: { id } })
       const projectEntity = await WorkspaceProject.findOneOrFail({ where: { id }, relations: { assignments: true } })
 
