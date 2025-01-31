@@ -1,0 +1,30 @@
+<script setup lang="ts">
+import type { DataSocketJSON } from '@nwrx/api'
+import type { ResultSocket } from '@nwrx/core'
+
+const props = defineProps<{
+  modelValue?: object
+  socket?: DataSocketJSON | ResultSocket
+}>()
+
+const emit = defineEmits<{
+  'update:modelValue': [value: string]
+}>()
+
+const model = useVModel(props, 'modelValue', emit, {
+  passive: true,
+})
+</script>
+
+<template>
+  <div class="font-mono">
+    <div v-for="(value, key) in modelValue" class="flex">
+      <div class="w-140px shrink-0 py-xs px-sm truncate b-r b-editor">
+        {{ key }}
+      </div>
+      <div class="w-full py-xs px-sm truncate">
+        {{ value }}
+      </div>
+    </div>
+  </div>
+</template>
