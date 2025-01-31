@@ -31,7 +31,7 @@ export interface Type<T = unknown> {
    *
    * @example 'String'
    */
-  label?: string
+  name?: string
 
   /**
    * The color of the type. The color is used to visually identify the type
@@ -77,7 +77,7 @@ export function defineType<T>(options: Type<T>): Type<T> {
   assertStringNotEmpty(options.kind)
   return {
     kind: options.kind,
-    label: options.label ?? options.kind,
+    name: options.name ?? options.kind,
     color: options.color,
     description: options.description,
     parse: options.parse,
