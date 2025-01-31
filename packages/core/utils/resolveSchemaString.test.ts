@@ -15,19 +15,6 @@ describe('resolveSchemaString', () => {
     })
   })
 
-  describe('enum', () => {
-    it('should resolve a string that is in the enum', () => {
-      const result = resolveSchemaString('value', 'Hello', { type: 'string', enum: ['Hello', 'World'] })
-      expect(result).toBe('Hello')
-    })
-
-    it('should throw an error if the value is not in the enum', () => {
-      const shouldThrow = () => resolveSchemaString('value', 'Hi, World!', { type: 'string', enum: ['hello', 'world'] })
-      const error = E.INPUT_NOT_IN_ENUM('value', ['hello', 'world'])
-      expect(shouldThrow).toThrow(error)
-    })
-  })
-
   describe('pattern', () => {
     it('should resolve a string that matches the pattern', () => {
       const result = resolveSchemaString('value', 'Hello, World!', { type: 'string', pattern: '^Hello, World!$' })

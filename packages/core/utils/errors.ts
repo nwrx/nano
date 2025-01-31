@@ -141,11 +141,6 @@ export const ERRORS = {
     name: 'E_INPUT_REQUIRED',
     context: { path },
   }),
-  INPUT_NOT_ANY_OF: (errors: Error[]) => createError({
-    message: 'The value does not match any of the anyOf schemas',
-    name: 'E_NOT_ANY_OF',
-    context: { errors },
-  }),
   INPUT_NOT_ONE_OF: (path: string, errors: Error[]) => createError({
     message: [
       `The value at "${path}" did not match any of the oneOf schemas:`,
@@ -153,6 +148,19 @@ export const ERRORS = {
     ].join('\n'),
     name: 'E_NOT_ONE_OF',
     context: { errors, path },
+  }),
+  INPUT_NOT_IN_ENUM: (path: string, enumerations: unknown[]) => createError({
+    message: dedent(`
+      The input at "${path}" is expected to be one of the following values:
+      ${enumerations.map(x => `  - ${String(x)}`).join('\n')}
+    `),
+    name: 'E_INPUT_NOT_STRING_ENUM',
+    context: { path, enumerations },
+  }),
+  INPUT_NOT_CONST: (path: string, constant: unknown) => createError({
+    message: `The input at "${path}" is expected to be the constant value "${String(constant)}"`,
+    name: 'E_INPUT_NOT_CONST',
+    context: { path, constant },
   }),
 
   // String errors.
@@ -175,14 +183,6 @@ export const ERRORS = {
     message: `The input at "${path}" is too long, expected at most ${maxLength} characters`,
     name: 'E_INPUT_TOO_LONG',
     context: { path, maxLength },
-  }),
-  INPUT_NOT_IN_ENUM: (path: string, enumerations: Array<number | string>) => createError({
-    message: dedent(`
-      The input at "${path}" is expected to be one of the following values:
-      ${enumerations.map(x => `  - ${x}`).join('\n')}
-    `),
-    name: 'E_INPUT_NOT_STRING_ENUM',
-    context: { path, enumerations },
   }),
 
   // Number errors.
@@ -284,5 +284,17 @@ export const ERRORS = {
     `),
     name: 'E_INPUT_OBJECT_MISSING_PROPERTIES',
     context: { path, missing },
+  }),
+
+  // Stream errors.
+  INPUT_NOT_STREAM: (path: string) => createError({
+    message: `The input at "${path}" is not a stream`,
+    name: 'E_INPUT_NOT_STREAM',
+    context: { path },
+  }),
+  INPUT_STREAM_LOCKED: (path: string) => createError({
+    message: `The input stream at "${path}" is locked`,
+    name: 'E_INPUT_STREAM_LOCKED',
+    context: { path },
   }),
 }

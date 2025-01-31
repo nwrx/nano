@@ -9,10 +9,6 @@ export function resolveSchemaString(
   if (typeof value !== 'string')
     throw E.INPUT_NOT_STRING(path)
 
-  // --- Assert enums.
-  if (schema.enum && !schema.enum.includes(value))
-    throw E.INPUT_NOT_IN_ENUM(path, schema.enum as string[])
-
   // --- Assert pattern.
   if (schema.pattern && !new RegExp(schema.pattern).test(value))
     throw E.INPUT_PATTERN_MISMATCH(path, schema.pattern)

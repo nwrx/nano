@@ -41,7 +41,7 @@ describe('resolveSchema', () => {
     })
   })
 
-  describe('untyped schema', () => {
+  describe('untyped', () => {
     it('should accept string values', async() => {
       const result = await resolveSchema('value', 'Hello, World!', {})
       expect(result).toBe('Hello, World!')
@@ -68,8 +68,59 @@ describe('resolveSchema', () => {
     })
   })
 
-  describe('schema validation', () => {
+  describe('oneOf', () => {
+    it('should resolve a value that is in the oneOf', async() => {
+      const result = await resolveSchema('value', 42, { oneOf: [{ type: 'number' }, { type: 'string' }] })
+      expect(result).toBe(42)
+    })
 
+    it('should reject with an error if the value is not in the oneOf', async() => {
+      const shouldReject = resolveSchema('value', true, { oneOf: [{ type: 'number' }, { type: 'string' }] })
+      const error = E.INPUT_NOT_ONE_OF('value', [
+        E.INPUT_NOT_NUMBER('value'),
+        E.INPUT_NOT_STRING('value'),
+      ])
+      await expect(shouldReject).rejects.toThrow(error)
+    })
+  })
+
+  describe('enum', () => {
+    it('should resolve a string that is in the enum', async() => {
+      const result = await resolveSchema('value', 'Hello', { type: 'string', enum: ['Hello', 'World'] })
+      expect(result).toBe('Hello')
+    })
+
+    it('should resolve a number that is in the enum', async() => {
+      const result = await resolveSchema('value', 42, { type: 'number', enum: [42, 43] })
+      expect(result).toBe(42)
+    })
+
+    it('should reject with an error if the value is not in the enum', async() => {
+      const shouldReject = resolveSchema('value', 'Hi, World!', { type: 'string', enum: ['hello', 'world'] })
+      const error = E.INPUT_NOT_IN_ENUM('value', ['hello', 'world'])
+      await expect(shouldReject).rejects.toThrow(error)
+    })
+  })
+
+  describe('const', () => {
+    it('should resolve a string that is the same as the const', async() => {
+      const result = await resolveSchema('value', 'Hello', { type: 'string', const: 'Hello' })
+      expect(result).toBe('Hello')
+    })
+
+    it('should resolve a number that is the same as the const', async() => {
+      const result = await resolveSchema('value', 42, { type: 'number', const: 42 })
+      expect(result).toBe(42)
+    })
+
+    it('should reject with an error if the value is not the same as the const', async() => {
+      const shouldReject = resolveSchema('value', 'Hi, World!', { type: 'string', const: 'Hello' })
+      const error = E.INPUT_NOT_CONST('value', 'Hello')
+      await expect(shouldReject).rejects.toThrow(error)
+    })
+  })
+
+  describe('primitive', () => {
     it('should resolve a valid string', async() => {
       const result = await resolveSchema('value', 'Hello, World!', { type: 'string' })
       expect(result).toBe('Hello, World!')

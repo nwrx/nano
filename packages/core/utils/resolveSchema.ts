@@ -8,6 +8,7 @@ import { resolveSchemaBoolean } from './resolveSchemaBoolean'
 import { resolveSchemaNumber } from './resolveSchemaNumber'
 import { resolveSchemaObject } from './resolveSchemaObject'
 import { resolveSchemaOneOf } from './resolveSchemaOneOf'
+import { resolveSchemaStream } from './resolveSchemaStream'
 import { resolveSchemaString } from './resolveSchemaString'
 import { resolveSchemaUndefinedOrNull } from './resolveSchemaUndefinedOrNull'
 
@@ -23,10 +24,12 @@ export async function resolveSchema(
   }
   if (value === undefined || value === null)
     return resolveSchemaUndefinedOrNull(path, schema)
+  if (schema.enum && !schema.enum.includes(value))
+    throw E.INPUT_NOT_IN_ENUM(path, schema.enum as string[])
+  if (schema.const && schema.const !== value)
+    throw E.INPUT_NOT_CONST(path, schema.const)
   else if (schema.oneOf)
     return resolveSchemaOneOf(path, value, schema.oneOf, resolvers)
-  else if (schema.anyOf)
-    return resolveSchemaOneOf(path, value, schema.anyOf, resolvers)
   else if (schema.type === 'string')
     return resolveSchemaString(path, value, schema)
   else if (schema.type === 'number' || schema.type === 'integer')
@@ -37,5 +40,7 @@ export async function resolveSchema(
     return resolveSchemaArray(path, value, schema, resolvers)
   else if (schema.type === 'object')
     return resolveSchemaObject(path, value, schema, resolvers)
+  else if (schema['x-type'] === 'stream')
+    return resolveSchemaStream(path, value)
   return value
 }
