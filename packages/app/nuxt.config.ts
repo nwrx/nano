@@ -144,6 +144,12 @@ export default defineNuxtConfig({
   },
 
   vite: {
+    optimizeDeps: {
+      exclude: [
+        '@unserved/nuxt/useClient',
+        '@unserved/nuxt/useRequest',
+      ],
+    },
     server: {
       hmr: {
         port: Number.parseInt(process.env.PORT ?? '3000') + 1,
