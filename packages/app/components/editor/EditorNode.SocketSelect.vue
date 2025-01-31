@@ -35,6 +35,10 @@ const currentValue = computed(() => {
     .find(option => JSON.stringify(option.value) === JSON.stringify(model.value))
 })
 
+function isOptionSelected(option: SocketListOption<unknown>) {
+  return JSON.stringify(option.value) === JSON.stringify(model.value)
+}
+
 // --- Resolve the label of the default value if it exists.
 const defaultValue = computed(() => {
   if (!props.defaultValue) return
@@ -79,7 +83,7 @@ function setOption(option: SocketListOption<unknown>) {
     <!-- Current value label -->
     <p
       v-if="!isOpen || model"
-      class="line-clamp-1"
+      class="break-all line-clamp-1"
       :class="{
         'text-subtle': !model,
         'italic font-light': !model && !defaultValue,
@@ -112,7 +116,8 @@ function setOption(option: SocketListOption<unknown>) {
           bg-editor-panel backdrop-blur-2xl
           p-sm rounded space-y-xs rd
           b b-editor z-10 mt-sm
-          overflow-y-auto max-h-100
+          overflow-y-auto overflow-x-hidden
+          max-h-100
         "
         @wheel.stop>
 
@@ -129,7 +134,7 @@ function setOption(option: SocketListOption<unknown>) {
             :icon="option.icon"
             :label="option.label"
             :description="option.description"
-            :is-selected="option.value === model"
+            :is-selected="isOptionSelected(option)"
             @mousedown.stop="() => setOption(option)"
           />
         </template>
