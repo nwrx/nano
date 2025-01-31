@@ -275,8 +275,23 @@ export class NodeInstance<
   public setResult(result: DataFromSchema<U>): void {
     if (!this.resultSchema) throw new Error('Cannot set the result of the node before the result schema has been resolved')
     const newResult: Record<string, unknown> = {}
-    for (const key in this.resultSchema)
-      newResult[key] = this.resultSchema[key].type.parse(result[key])
+    for (const key in this.resultSchema) {
+      try {
+        const value = result[key]
+        const socket = this.resultSchema[key]
+        if (!value && socket.isOptional) continue
+        const parse = this.resultSchema[key].type.parse
+        newResult[key] = parse(value)
+      }
+      catch (_error) {
+        const error = _error instanceof Error ? _error : new Error(_error as string)
+        const message = `Failed to parse the result of the node "${this.id}" for the key "${key}"`
+        error.message = `${message}: ${error.message}`
+        this.dispatch('error', error)
+        console.warn(error)
+        newResult[key] = undefined
+      }
+    }
     this.result = newResult as DataFromSchema<U>
     this.dispatch('result', this.result)
   }
@@ -303,38 +318,45 @@ export class NodeInstance<
    * @returns The resolved data value of the node by key.
    */
   public resolveDataValue<K extends keyof DataFromSchema<T>>(key: MaybeLiteral<K & string>): DataFromSchema<T>[K] | undefined {
+    try {
 
-    // --- Get the parser for the data property.
-    const raw = this.dataRaw[key]
-    const socket = this.dataSchema[key]
-    if (!socket) return
-    const parse = socket.type.parse as (value: unknown) => DataFromSchema<T>[K]
+      // --- Get the parser for the data property.
+      const raw = this.dataRaw[key]
+      const socket = this.dataSchema[key]
+      if (!socket) return
+      const parse = socket.type.parse as (value: unknown) => DataFromSchema<T>[K]
 
-    // --- If the value is a variable, get the value of the variable.
-    if (typeof raw === 'string' && raw.startsWith('$VARIABLE.')) {
-      const name = raw.slice(10)
-      const value = this.flow.variables[name]
-      return parse(value)
+      // --- If the value is a variable, get the value of the variable.
+      if (typeof raw === 'string' && raw.startsWith('$VARIABLE.')) {
+        const name = raw.slice(10)
+        const value = this.flow.variables[name]
+        return parse(value)
+      }
+
+      // --- If the value is a secret, get the value of the secret.
+      else if (typeof raw === 'string' && raw.startsWith('$SECRET.')) {
+        const name = raw.slice(8)
+        const value = this.flow.secrets[name]
+        return parse(value)
+      }
+
+      // --- If the value is a result of another node, resolve it's value.
+      if (typeof raw === 'string' && raw.startsWith('$NODE.')) {
+        const [id, key] = raw.slice(6).split(':')
+        const node = this.flow.getNodeInstance(id)
+        if (!node.isDone) return
+        const value = node.getResultValue(key)
+        return parse(value)
+      }
+
+      // --- Otherwise, parse and return the value as is.
+      return parse(raw)
     }
-
-    // --- If the value is a secret, get the value of the secret.
-    else if (typeof raw === 'string' && raw.startsWith('$SECRET.')) {
-      const name = raw.slice(8)
-      const value = this.flow.secrets[name]
-      return parse(value)
+    catch (error) {
+      this.dispatch('error', error as Error)
+      console.warn(error)
+      return
     }
-
-    // --- If the value is a result of another node, resolve it's value.
-    if (typeof raw === 'string' && raw.startsWith('$NODE.')) {
-      const [id, key] = raw.slice(6).split(':')
-      const node = this.flow.getNodeInstance(id)
-      if (!node.isDone) return
-      const value = node.getResultValue(key)
-      return parse(value)
-    }
-
-    // --- Otherwise, parse and return the value as is.
-    return parse(raw)
   }
 
   /**
