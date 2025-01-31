@@ -1,6 +1,7 @@
 import { format } from 'date-fns/format'
 import { de } from 'date-fns/locale/de'
 import { enUS as en } from 'date-fns/locale/en-US'
+import { es } from 'date-fns/locale/es'
 import { fr } from 'date-fns/locale/fr'
 import { zhCN as zh } from 'date-fns/locale/zh-CN'
 
@@ -13,7 +14,6 @@ import { zhCN as zh } from 'date-fns/locale/zh-CN'
 export function formatDate(date?: string) {
   if (!date) return '-'
   const { locale } = useI18n()
-  return format(date, 'PP', {
-    locale: { de, en, fr, zh }[locale.value],
-  })
+  const localeObject = { de, en, fr, zh, es }[locale.value.split('-')[0]]
+  return format(date, 'PP', { locale: localeObject })
 }
