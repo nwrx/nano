@@ -1,5 +1,4 @@
 /* eslint-disable unicorn/prevent-abbreviations */
-
 import type { FlowNodeInstanceJSON, FlowSessionParticipantJSON } from '@nwrx/api'
 import type { FlowLink } from '@nwrx/core'
 import type { Position } from '@vueuse/core'
