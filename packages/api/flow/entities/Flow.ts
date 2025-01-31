@@ -1,6 +1,6 @@
 import { FlowExport } from '@nwrx/core'
 import { BaseEntity, transformerJson } from '@unserved/server'
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm'
 import { WorkspaceProject } from '../../workspace'
 
 /**
@@ -9,6 +9,7 @@ import { WorkspaceProject } from '../../workspace'
  * the nodes and the order in which they are executed.
  */
 @Entity({ name: 'Flow' })
+@Unique('Unique', ['name', 'project'])
 export class Flow extends BaseEntity {
 
   /**
@@ -17,7 +18,7 @@ export class Flow extends BaseEntity {
    *
    * @example 'resume-article'
    */
-  @Column('varchar', { length: 255, unique: true })
+  @Column('varchar', { unique: false })
   name: string
 
   /**
@@ -25,7 +26,7 @@ export class Flow extends BaseEntity {
    *
    * @example 'Resume Article'
    */
-  @Column('varchar', { length: 255 })
+  @Column('varchar')
   title: string
 
   /**
@@ -33,8 +34,8 @@ export class Flow extends BaseEntity {
    *
    * @example 'This flow is used to resume an article.'
    */
-  @Column('text', { nullable: true })
-  description?: string
+  @Column('text')
+  description: string
 
   /**
    * The nodes that are part of the flow.
