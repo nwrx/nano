@@ -1,122 +1,155 @@
 <script setup lang="ts">
 import type { SocketListOption } from '@nwrx/core'
 import type { BaseInputListProps } from '@unshared/vue'
-import type { BaseInputList } from '#components'
-import type { ComponentInstance } from 'vue'
 
 const props = defineProps<{
-  name: string
-  modelValue: unknown
+  name?: string
   badge?: boolean
+  modelValue: unknown
+  defaultValue?: unknown
 } & BaseInputListProps<SocketListOption<unknown>, unknown, false>>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
+// --- Localize
+const { t } = useI18n()
+
+// --- State
+const isOpen = ref(false)
 const search = ref<string>('')
-const input = ref<ComponentInstance<typeof BaseInputList>>()
+const input = ref<HTMLInputElement>()
+
+// --- Two-way binding for the model value.
 const model = useVModel(props, 'modelValue', emit, {
   passive: true,
   eventName: 'update:modelValue',
 })
 
-function onClick() {
-  if (!input.value) return
-  const element = input.value.$el.querySelector('input')
-  if (element) element.focus()
+// --- Search the options based on the search query.
+const filteredOptions = computed(() => {
+  if (!props.options) return []
+  if (!search.value) return Object.values(props.options)
+  const searchLower = search.value.toLowerCase()
+  const result: Array<SocketListOption<unknown>> = []
+  for (const option of Object.values(props.options)) {
+    if (option.label.toLowerCase().includes(searchLower)) result.push(option)
+    else if (option.description?.toLowerCase().includes(searchLower)) result.push(option)
+    else if (typeof option.value !== 'string') continue
+    else if (option.value.toLowerCase().includes(searchLower)) result.push(option)
+  }
+  return result
+})
+
+// --- Resolve the label of the current value if it is set.
+const currentValue = computed(() => {
+  if (!model.value) return
+  if (!props.options) return
+  return Object.values(props.options).find(option => option.value === model.value)
+})
+
+// --- Resolve the label of the default value if it exists.
+const defaultValue = computed(() => {
+  if (!props.defaultValue) return
+  if (!props.options) return
+  return Object.values(props.options)
+    .find(option => option.value === props.defaultValue)
+    ?.label
+})
+
+// --- Track the list position so we can auto-scale the height based on the viewport.
+const list = ref<HTMLDivElement>()
+const listBounding = useElementBounding(list)
+watch(listBounding, () => {
+  if (!list.value) return
+  list.value.style.maxHeight = `${window.innerHeight - listBounding.top.value - 16}px`
+})
+
+function focus() {
+  if (input.value) input.value.focus()
+}
+
+function setOption(option: SocketListOption<unknown>) {
+  model.value = option.value
+  if (input.value) input.value.blur()
 }
 </script>
 
 <template>
-  <FlowEditorSocketGroup class="h-8 cursor-pointer relative" @mousedown="() => onClick()">
+  <FlowEditorSocketGroup class="relative cursor-pointer" @mousedown.prevent="() => focus()">
 
     <!-- Label -->
     <FlowEditorSocketLabel :label="name" />
 
-    <!-- Field -->
-    <BaseInputList
+    <!-- Current value label -->
+    <p
+      class="truncate shrink-0"
+      :class="{ 'text-subtle': !model, 'italic font-light': !model && !defaultValue }"
+      v-text="currentValue?.label ?? model ?? defaultValue ?? t('empty')"
+    />
+
+    <!-- Search -->
+    <input
       ref="input"
-      v-model="model"
-      as="div"
-      :options="options"
-      :option-value="value => value.value"
-      :option-label="value => value.label"
-      :class="{ 'text-editor-node italic': !model }"
-      class="flex items-center w-full h-full outline-none bg-transparent truncate">
+      v-model="search"
+      :class="{ 'op-0': !isOpen }"
+      class="px-sm rd bg-transparent outline-none text-subtle transition w-full"
+      @focus="() => isOpen = true"
+      @blur="() => isOpen = false"
+      @mousedown.stop
+    />
 
-      <!-- Current value -->
-      <template #values="{ values }">
-        <span v-if="values.length === 0" class="text-editor-node italic text-sm">
-          No values
-        </span>
-        <Badge
-          v-else-if="badge"
-          :label="String(values[0].label)"
-          class="truncate"
-        />
-        <span v-else class="truncate w-full text-sm">
-          {{ values[0].label }}
-        </span>
-      </template>
-
-      <!-- Search -->
-      <template #search="{ open, close }">
-        <BaseInputText
-          v-model="search"
-          class="opacity-0 w-0 h-0"
-          @focus="() => open()"
-          @blur="() => close()"
-        />
-      </template>
-
-      <!-- Options -->
-      <template #options="{ options, isOpen, close }">
-        <div
-          v-if="isOpen"
-          class="
-            absolute left-0 top-full mt-xs
-            bg-app border border-editor divide-y divide-app
-            rounded w-full z-9999
-            max-h-60 overflow-y-auto
+    <!-- List -->
+    <Transition>
+      <div
+        v-if="isOpen && options"
+        ref="list"
+        class="
+            absolute left-0 w-full top-full
+            bg-editor-panel backdrop-blur-2xl
+            p-sm rounded space-y-xs rd
+            b b-editor z-10
+            overflow-y-auto max-h-100
           "
-          @mousedown="() => close()"
-          @wheel.stop>
+        @wheel.stop>
 
-          <!-- Option -->
-          <div
-            v-for="(option, index) in options"
+        <template v-if="filteredOptions.length === 0">
+          <p class="text-xs text-subtle">
+            {{ t('list.empty') }}
+          </p>
+        </template>
+
+        <template v-else>
+          <FlowEditorSocketSelectItem
+            v-for="(option, index) in filteredOptions"
             :key="index"
-            :class="{
-              'bg-app-prominent': option.value === model,
-              'font-bold': option.isSelected(),
-            }"
-            class="
-              flex items-center w-full p-2 cursor-pointer
-              hover:bg-primary-500/5
-            "
-            @click="() => option.toggle()">
-
-            <!-- Icon -->
-            <BaseIcon
-              v-if="option.option.icon"
-              :icon="option.option.icon"
-              :class="{
-                'size-4': !option.option.description,
-                'size-6': option.option.description,
-              }"
-              class="text-app mr-4"
-              load
-            />
-
-            <!-- Name -->
-            <div class="truncate">
-              <div class="text-sm text-app truncate">{{ option.label }}</div>
-              <div class="text-xs text-subtle truncate">{{ option.option.description }}</div>
-            </div>
-          </div>
-        </div>
-      </template>
-    </BaseInputList>
+            :icon="option.icon"
+            :label="option.label"
+            :description="option.description"
+            :isSelected="option.value === model"
+            @mousedown.stop="() => setOption(option)"
+          />
+        </template>
+      </div>
+    </Transition>
   </FlowEditorSocketGroup>
 </template>
+
+<i18n lang="yaml">
+  en:
+    empty: No default value
+    list.empty: Select list is empty or search query does not match any results.
+  fr:
+    empty: Aucune valeur par défaut
+    list.empty: La liste de sélection est vide ou la requête de recherche ne correspond à aucun résultat.
+  de:
+    empty: Kein Standardwert
+    list.empty: Die Liste ist leer oder die Suchanfrage ergibt keine Treffer.
+  es:
+    empty: Sin valor predeterminado
+    list.empty: La lista está vacía o la consulta de búsqueda no coincide con ningún resultado.
+  zh:
+    empty: 无默认值
+    list.empty: 列表为空或搜索查询不匹配任何结果。
+</i18n>

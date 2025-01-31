@@ -1,8 +1,8 @@
 <script setup lang="ts">
 defineProps<{
-  name: string
-  isLinked: boolean
-  defaultValue: string
+  name?: string
+  isLinked?: boolean
+  defaultValue?: unknown
 }>()
 </script>
 
@@ -17,9 +17,9 @@ defineProps<{
 
     <!-- Default -->
     <span
-      v-if="!isLinked"
+      v-if="defaultValue && !isLinked"
       class="text-subtle text-xs"
-      v-text="defaultValue"
+      v-text="typeof defaultValue === 'string' ? defaultValue : undefined"
     />
   </div>
 </template>

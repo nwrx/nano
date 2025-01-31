@@ -2,8 +2,8 @@
 import type { FlowSessionSecretJSON, FlowSessionVariableJSON } from '@nwrx/api'
 
 const props = defineProps<{
-  modelValue: string
-  name: string
+  modelValue?: string
+  name?: string
   secrets?: FlowSessionSecretJSON[]
   variables?: FlowSessionVariableJSON[]
 }>()
@@ -35,6 +35,5 @@ const options = computed(() => [
     v-model="model"
     :name="name"
     :options="options"
-    badge
   />
 </template>
