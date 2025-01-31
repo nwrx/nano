@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { FlowSessionEventPayload } from '@nwrx/api'
-defineProps<{ event: FlowSessionEventPayload<'thread:start'> }>()
+import type { EditorSessionServerMessage } from '@nwrx/api'
+defineProps<{ event: EditorSessionServerMessage & { event: 'thread:start' } }>()
 const { t } = useI18n()
 </script>
 

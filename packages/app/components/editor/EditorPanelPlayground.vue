@@ -1,10 +1,10 @@
 <!-- eslint-disable sonarjs/no-nested-assignment -->
 <script setup lang="ts">
 import type { FlowSessionEventName } from '@nwrx/api'
-import { type FlowSessionEventPayload, type ComponentInstanceJSON } from '@nwrx/api'
+import { type EditorSessionServerMessage, type ComponentInstanceJSON } from '@nwrx/api'
 
 const props = defineProps<{
-  events?: FlowSessionEventPayload[]
+  events?: EditorSessionServerMessage[]
   nodes?: ComponentInstanceJSON[]
 }>()
 

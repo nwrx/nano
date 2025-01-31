@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { FlowSessionEventPayload, ComponentInstanceJSON } from '@nwrx/api'
+import type { ComponentInstanceJSON, EditorSessionServerMessage } from '@nwrx/api'
 
 defineProps<{
-  event: FlowSessionEventPayload
+  event: EditorSessionServerMessage
   node?: ComponentInstanceJSON
 }>()
 

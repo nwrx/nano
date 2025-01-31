@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { FlowSessionEventPayload } from '@nwrx/api'
-import type { FlowThreadEventMeta, FlowThreadNodeEventMeta } from '@nwrx/core'
+import type { EditorSessionServerMessage } from '@nwrx/api'
+import type { NodeEventMeta, ThreadEventMeta } from '@nwrx/core'
 
 defineProps<{
-  event: FlowSessionEventPayload & Partial<FlowThreadEventMeta & FlowThreadNodeEventMeta>
+  event: EditorSessionServerMessage & Partial<NodeEventMeta & ThreadEventMeta>
 }>()
 
 const { t } = useI18n()

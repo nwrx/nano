@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { FlowSessionEventPayload } from '@nwrx/api'
+import type { EditorSessionServerMessage } from '@nwrx/api'
 
 defineProps<{
-  event: FlowSessionEventPayload<'thread:nodeError'>
+  event: EditorSessionServerMessage & { event: 'thread:nodeError' }
 }>()
 </script>
 
@@ -10,8 +10,8 @@ defineProps<{
   <div class="hint hint-danger select-text">
     <!-- Code -->
     <Badge
-      v-if="event.code"
-      :label="event.code"
+      v-if="event.name"
+      :label="event.name"
       class="badge-sm badge-danger mb-xs font-mono"
     />
 

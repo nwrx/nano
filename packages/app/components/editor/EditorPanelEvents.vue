@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { FlowSessionEventName, FlowSessionEventPayload, ComponentInstanceJSON } from '@nwrx/api'
+import type { ComponentInstanceJSON, EditorSessionServerMessage } from '@nwrx/api'
 
 const props = defineProps<{
-  events?: FlowSessionEventPayload[]
+  events?: EditorSessionServerMessage[]
   nodes?: ComponentInstanceJSON[]
 }>()
 
@@ -10,7 +10,7 @@ const emit = defineEmits<{
   'clear': []
 }>()
 
-const EVENTS_WHITELIST = new Set<FlowSessionEventName>([
+const EVENTS_WHITELIST = new Set<EditorSessionServerMessage['event']>([
   'thread:start',
   'thread:end',
   'thread:nodeError',
@@ -19,7 +19,7 @@ const EVENTS_WHITELIST = new Set<FlowSessionEventName>([
 ])
 
 // --- Compute the given node based on the event.
-function getNode(event: FlowSessionEventPayload): ComponentInstanceJSON | undefined {
+function getNode(event: EditorSessionServerMessage): ComponentInstanceJSON | undefined {
   return (props.nodes ?? []).find((node) => {
     if ('id' in event) return node.id === event.id
     return false
