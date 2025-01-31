@@ -29,8 +29,8 @@ import { isReferenceLink } from './createReference'
 export function getLinks(thread: Thread): Link[] {
   const links: Link[] = []
   for (const [id, componentInstance] of thread.componentInstances) {
-    for (const key in componentInstance.input) {
-      const value = componentInstance.input[key]
+    for (const name in componentInstance.input) {
+      const value = componentInstance.input[name]
 
       // --- If the value is an array, iterate over each value and add the links.
       if (Array.isArray(value)) {
@@ -41,7 +41,7 @@ export function getLinks(thread: Thread): Link[] {
             sourceName: x.$fromNode.name,
             sourcePath: x.$fromNode.path,
             targetId: id,
-            targetName: key,
+            targetName: name,
           })
         }
       }
@@ -56,7 +56,7 @@ export function getLinks(thread: Thread): Link[] {
             sourceName: x.$fromNode.name,
             sourcePath: x.$fromNode.path,
             targetId: id,
-            targetName: key,
+            targetName: name,
             targetPath: path,
           })
         }
@@ -69,7 +69,7 @@ export function getLinks(thread: Thread): Link[] {
           sourceName: value.$fromNode.name,
           sourcePath: value.$fromNode.path,
           targetId: id,
-          targetName: key,
+          targetName: name,
         })
       }
     }
