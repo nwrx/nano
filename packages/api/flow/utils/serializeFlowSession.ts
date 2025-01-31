@@ -80,13 +80,12 @@ export interface FlowThreadNodeJSON extends FlowNodeDefinitionJSON {
   state: FlowThreadNodeState
   error?: string
   errorCode?: string
+  errorContext?: Record<string, unknown>
   label?: string
   comment?: string
   position: { x: number; y: number }
   input: Record<string, unknown>
-  inputErrors: Record<string, string>
   output: Record<string, unknown>
-  outputErrors: Record<string, string>
 }
 
 export function serializeCategories() {
@@ -196,15 +195,12 @@ export async function serializeNode(session: FlowSessionInstance, node: FlowNode
     state: 'IDLE',
     error: session.thread.nodes.get(node.id)?.error?.message,
     errorCode: session.thread.nodes.get(node.id)?.error?.name,
+    errorContext: session.thread.nodes.get(node.id)?.error?.context,
     label: node.meta?.label,
     comment: node.meta?.comment,
     position: node.meta?.position ?? { x: 0, y: 0 },
     input: node.input ?? {},
     output: {},
-    inputErrors: {},
-    outputErrors: {},
-    // dataParseErrors: mapValues(node.dataParseErrors, error => error.message),
-    // resultParseErrors: mapValues(node.resultParseErrors, error => error.message),
   }
 }
 
