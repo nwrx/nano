@@ -73,6 +73,7 @@
     ],
     "dts": true,
     "clean": true,
+    "silent": true,
     "splitting": false,
     "sourcemap": true,
     "treeshaking": true,
