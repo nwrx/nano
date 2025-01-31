@@ -31,6 +31,7 @@ const isOpen = ref(false)
 
       <!-- Content -->
       <div class="w-full p-md pt-xs space-y-sm">
+        <FlowEditorPanelEventsEventMeta :event="event" />
         <FlowEditorPanelEventsFlowStart v-if="event.event === 'flow:start'" :event="event" />
         <FlowEditorPanelEventsFlowEnd v-if="event.event === 'flow:end'" :event="event" />
         <FlowEditorPanelEventsNodeEnd v-if="event.event === 'node:end'" :event="event" :node="node" />
