@@ -28,13 +28,11 @@ const confirm = ref('')
     @confirm="() => emit('submit')">
 
     <!-- User Card -->
-    <div class="flex items-center p-sm space-x-md">
-      <img :src="props.avatarUrl" class="size-12 rounded" />
-      <div>
-        <p class="font-medium">{{ props.displayName }}</p>
-        <p class="text-sm">{{ props.username }}</p>
-      </div>
-    </div>
+    <AdminUserCard
+      :avatarUrl="avatarUrl"
+      :displayName="displayName"
+      :username="username"
+    />
 
     <!-- Confirmation input -->
     <InputText
