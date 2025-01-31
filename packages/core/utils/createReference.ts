@@ -15,7 +15,7 @@ export type ReferenceType =
  * values that are stored in remote locations or in other nodes and are only
  * available at runtime.
  *
- * @param kind The kind of the reference to create.
+ * @param type The type of reference to create.
  * @param values The values to use to create the reference.
  * @returns The reference created with the given options.
  * @example
@@ -26,7 +26,6 @@ export type ReferenceType =
  * // Create a reference to a node value.
  * const nodeRef = createReference('Node', 'NODE_ID') // { $ref: '#Node/NODE_ID' }
  */
-export function createReference(kind: MaybeLiteral<ReferenceType>, ...values: string[]): Reference {
-  const value = [kind, ...values].join('/')
-  return { $ref: `#${value}` }
+export function createReference(type: MaybeLiteral<ReferenceType>, ...values: string[]): Reference {
+  return { $ref: ['#', type, ...values].join('/') }
 }
