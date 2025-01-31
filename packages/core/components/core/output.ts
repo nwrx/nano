@@ -1,4 +1,3 @@
-import { createEventMetadata } from '../../utils/createEventMetadata'
 import { defineComponent } from '../../utils/defineComponent'
 
 export const output = defineComponent(
@@ -37,9 +36,9 @@ export const output = defineComponent(
       },
     },
   },
-  ({ data, thread, nodeId }) => {
+  ({ data, thread }) => {
     thread.output[data.name] = data.value
-    thread.dispatch('output', data.name, data.value, createEventMetadata(thread, nodeId))
+    thread.dispatch('output', data.name, data.value)
     return {}
   },
 )
