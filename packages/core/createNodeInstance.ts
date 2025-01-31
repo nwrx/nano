@@ -172,6 +172,7 @@ export class NodeInstance<T extends DataSchema = DataSchema, U extends ResultSch
     else if (raw.startsWith(PREFIX_NODE)) {
       const [id, key] = raw.slice(PREFIX_NODE.length).split(':')
       const node = this.flow.get(id)
+      if (!node.isDone) return
       const value = node.result[key]
       return parse(value)
     }
@@ -261,6 +262,24 @@ export class NodeInstance<T extends DataSchema = DataSchema, U extends ResultSch
   }
 
   /**
+   * Refresh the data schema, the result schema, and the data of the node.
+   *
+   * @returns A promise that resolves when the node is initialized.
+   * @example
+   * // Create a new flow with a single node.
+   * using flow = createFlow()
+   * const node = flow.add(...)
+   *
+   * // Initialize the node before starting it.
+   * await node.refresh()
+   */
+  public async refresh(): Promise<void> {
+    await this.resolveData()
+    await this.resolveResultSchema()
+    await this.resolveDataSchema()
+  }
+
+  /**
    * Process the node by calling the `process` function of the node with the
    * context of the node. The context contains the data, the secrets, the
    * variables, and the abort signal.
@@ -282,17 +301,7 @@ export class NodeInstance<T extends DataSchema = DataSchema, U extends ResultSch
 
       // --- Initialize and resolve the data schema and the result schema.
       this.isRunning = true
-      await this.resolveDataSchema()
-      await this.resolveResultSchema()
-
-      // --- If any of the required data properties are missing,
-      // --- do not start processing the node and return early.
-      await this.resolveData()
-      for (const key in this.dataSchema) {
-        const { isOptional } = this.dataSchema[key]
-        const value = this.dataResolved[key]
-        if (value === undefined && !isOptional) return
-      }
+      await this.refresh()
 
       // --- Process the node by calling the process function of the node.
       this.dispatch('start', this.dataResolved, this.eventMeta)
