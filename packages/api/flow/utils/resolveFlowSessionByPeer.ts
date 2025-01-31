@@ -1,6 +1,6 @@
 import type { Peer } from 'crossws'
 import type { ModuleFlow } from '..'
-import type { FlowSession } from './createFlowSession'
+import type { FlowSession } from './resolveFlowSession'
 
 /**
  * Given a `Peer` instance, find the chain session that the peer is
