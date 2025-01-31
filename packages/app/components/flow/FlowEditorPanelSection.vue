@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import type { CSSProperties } from 'vue'
-
 const props = defineProps<{
   title?: string
   text?: string
   modelValue?: boolean
   classContent?: string
+  fullWidth?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -16,42 +15,10 @@ const content = ref<HTMLDivElement>()
 const isOpen = useVModel(props, 'modelValue', emit, {
   passive: true,
 })
-
-const styleContent = ref<CSSProperties>({})
-function setStyleContent() {
-  if (!content.value) return {}
-  styleContent.value= {
-    maxHeight: isOpen.value ? `${content.value.scrollHeight}px` : '0',
-    transitionProperty: 'max-height',
-    transitionDuration: '0.2s',
-    transitionTimingFunction: 'ease',
-  }
-}
-
-const observer = new MutationObserver(() => {
-  if (!content.value) return
-  setStyleContent()
-})
-
-watch(isOpen, () => {
-  setStyleContent()
-})
-
-onMounted(() => {
-  if (!content.value) return
-  setStyleContent()
-  observer.observe(content.value, { childList: true, subtree: true })
-})
 </script>
 
 <template>
-  <div
-    class="border-t border-black/10
-      bg-transparent hover:bg-primary-50/50
-      opacity-80 hover:opacity-100
-      transition-all duration-100
-      group
-    ">
+  <div class="border-t border-editor transition op-80 hover:op-100">
 
     <!-- Title & Description -->
     <BaseButton
@@ -65,7 +32,7 @@ onMounted(() => {
         <h3 v-if="title || $slots.title" class="text-base font-medium">
           <slot name="title">{{ title }}</slot>
         </h3>
-        <p v-if="text || $slots.text" class="text-xs opacity-60">
+        <p v-if="text || $slots.text" class="text-xs text-subtle">
           <slot name="text">{{ text }}</slot>
         </p>
       </div>
@@ -78,13 +45,17 @@ onMounted(() => {
     </BaseButton>
 
     <!-- Content -->
-    <div :style="styleContent" class="overflow-y-clip px-4">
+    <BaseCollapse
+      vertical
+      :isOpen="isOpen"
+      class="overflow-y-clip transition-all"
+      :class="{ 'px-md': !fullWidth }">
       <div
         ref="content"
         :class="[classContent, isOpen ? 'opacity-100' : 'opacity-0']"
-        class="pb-4 pt-px transition-opacity duration-200">
+        class="pb-md pt-px transition">
         <slot />
       </div>
-    </div>
+    </BaseCollapse>
   </div>
 </template>
