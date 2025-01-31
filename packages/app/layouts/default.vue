@@ -82,7 +82,7 @@ const NAV_GROUP_BOTTON = computed<NavItem[]>(() => [
       {
         to: '/feedback',
         label: 'Feedback',
-        icon: 'i-carbon:feedback',
+        icon: 'i-carbon:user-feedback',
       },
     ],
   },
@@ -94,7 +94,7 @@ const NAV_GROUP_BOTTON = computed<NavItem[]>(() => [
 
     <!-- Nav Drawer -->
     <AppNavDrawer
-      class="h-screen shrink-0"
+      class="h-screen shrink-0 pb-8"
       :itemsTop="NAV_GROUPS_TOP"
       :itemsBottom="NAV_GROUP_BOTTON"
     />
