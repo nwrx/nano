@@ -21,7 +21,7 @@ export type SocketControl =
  * Interface for defining options for sockets with 'autocomplete' or 'select' controls.
  * Each option includes a value and a label, with optional icon and description for enhanced UX.
  */
-export interface SocketListOption<T = ObjectLike> {
+export interface SocketListOption<T = unknown> {
 
   /** Internal value of the option. */
   value: T
@@ -114,7 +114,7 @@ export type DataSchema<T extends ObjectLike = never> =
   IsNever<T> extends true
     ? Record<string, DataSocket>
     : { [P in keyof T as undefined extends T[P] ? never : P & string]-?: DataSocket<T[P], false | undefined> } &
-    { [P in keyof T as undefined extends T[P] ? P & string : never]-?: DataSocket<NotUndefined<T[P]>, true> }
+      { [P in keyof T as undefined extends T[P] ? P & string : never]-?: DataSocket<NotUndefined<T[P]>, true> }
 
 /**
  * Extract the raw type described by the given schema instance.
