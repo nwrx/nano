@@ -57,13 +57,6 @@ export class FlowThreadNode extends Emitter<FlowThreadNodeEvents> {
   /* Runtime                                                                 */
   /***************************************************************************/
 
-  reset() {
-    this.state = 'IDLE'
-    this.error = undefined
-    this.input = {}
-    this.output = {}
-  }
-
   async process() {
     try {
       this.setState('RUNNING/RESOLVING_DEFINITION')
