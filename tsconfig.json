@@ -25,8 +25,7 @@
     "rollup.config.mjs",
     "vitest.config.ts",
     "vitest.workspace.ts",
-    "eslint.config.mjs",
-    "forcePnpm.js"
+    "eslint.config.mjs"
   ],
   "exclude": [
     "**/node_modules",
