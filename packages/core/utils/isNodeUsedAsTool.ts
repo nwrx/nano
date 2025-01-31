@@ -1,5 +1,5 @@
-import type { Thread } from './createThread'
-import { getLinks } from './getLinks'
+import type { Thread } from '../thread'
+import { getLinks } from '../thread'
 
 /**
  * Check if a node is used as a tool in the thread. A node is considered a tool

@@ -1,6 +1,5 @@
-import type { Thread } from './createThread'
-import { getLinks } from './getLinks'
-import { getNode } from './getNode'
+import type { Thread } from '../thread'
+import { getLinks, getNode } from '../thread'
 import { isNodeUsedAsTool } from './isNodeUsedAsTool'
 
 /**
