@@ -161,8 +161,8 @@ const barClasses = computed(() => {
   <BaseButton
     v-slot="slotProps"
     class="
-      inline-flex items-center justify-center focus:outline-none
-      transition-all duration-100 ease-out relative group
+      inline-flex items-center justify-center outline-none
+      transition relative group
     "
     :class="classes"
     v-bind="props">
@@ -186,13 +186,12 @@ const barClasses = computed(() => {
       v-if="link"
       :class="barClasses"
       class="
-        absolute -bottom-px left-0 h-px rounded-full
-        translate-x-1/2
+        absolute -bottom-px left-1/2 h-px
+        -translate-x-1/2
         w-1 opacity-0
-        group-hover:w-full
         group-hover:opacity-100
-        group-hover:translate-x-0
-        transition-all duration-100 ease-out
+        group-hover:w-full
+        transition-all
       "
     />
 
