@@ -42,7 +42,7 @@ export const template = defineComponent(
       },
     },
     outputs: {
-      compiled: {
+      value: {
         type: 'string',
         title: 'Compiled',
         description: 'The compiled string generated from the template.',
@@ -110,6 +110,6 @@ export const template = defineComponent(
     }
 
     // --- Return the compiled string.
-    return { compiled }
+    return { value: compiled }
   },
 )
