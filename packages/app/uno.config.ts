@@ -5,11 +5,11 @@ import { defineConfig, presetIcons, presetUno } from 'unocss'
 import { presetTheme } from 'unocss-preset-theme'
 import * as THEME from './theme'
 
-const stops = [50, 60, 70, 80, 90, 100, 200, 300, 400, 500, 600, 700, 750, 800, 850, 900, 950] as const
+const stops = [50, 60, 70, 80, 90, 100, 200, 300, 400, 500, 600, 700, 750, 800, 850, 900, 910, 920, 930, 940, 950] as const
 type STOPS = Array<typeof stops[number]>
 
 export const COLORS = {
-  primary: createColorPalette('#5636D9', { stepUp: 10, stepDown: 12, hueShift: 0, stops: stops as unknown as STOPS }),
+  primary: createColorPalette('#5636D9', { stepUp: 10, stepDown: 11, hueShift: 0, stops: stops as unknown as STOPS }),
   secondary: createColorPalette('#F59E0B', { stepUp: 9, stepDown: 10, hueShift: 50, stops: stops as unknown as STOPS }),
   danger: createColorPalette('#fb3618', { stepUp: 9, stepDown: 8, hueShift: 20 }),
   warning: createColorPalette('#f59e0b', { stepUp: 10, stepDown: 5, hueShift: 20 }),
@@ -64,45 +64,53 @@ export default defineConfig<Theme>({
     backgroundColor: {
       'app': COLORS.primary[50],
       'subtle': COLORS.primary[60],
-      'emphasized': COLORS.primary[70],
-      'prominent': COLORS.primary[80],
+      'emphasized': COLORS.primary[80],
+      'prominent': COLORS.primary[100],
 
       // Layout
       'layout': COLORS.primary[900],
       'layout-subtle': COLORS.primary[850],
       'layout-emphasized': COLORS.primary[800],
-      'layout-prominent': COLORS.primary[600],
+      'layout-prominent': COLORS.primary[750],
 
       // Editor
       'editor': COLORS.primary[50],
       'editor-select': `${COLORS.primary[500]}40`,
       'editor-node': `${COLORS.primary[50]}80`,
-      'editor-node-hover': `${COLORS.primary[60]}80`,
-      'editor-node-active': `${COLORS.primary[80]}80`,
+      'editor-panel': `${COLORS.primary[100]}40`,
+      'editor-panel-data': `${COLORS.primary[900]}10`,
     },
 
     textColor: {
+      'danger': COLORS.danger[800],
+      'warning': COLORS.warning[800],
+      'success': COLORS.success[800],
+
+      // App
       'app': COLORS.primary[900],
       'subtle': `${COLORS.primary[900]}80`,
-      'emphasized': `${COLORS.primary[800]}A0`,
-      'prominent': COLORS.primary[700],
+      'emphasized': `${COLORS.primary[900]}C0`,
+      'prominent': COLORS.primary[600],
 
       // Layout
       'layout': COLORS.primary[50],
       'layout-subtle': `${COLORS.primary[50]}80`,
       'layout-emphasized': `${COLORS.primary[50]}C0`,
       'layout-prominent': COLORS.primary[100],
+
+      // Editor
+      'editor-node': COLORS.primary[900],
     },
 
     borderColor: {
-      'danger': COLORS.danger[800],
+      'danger': `${COLORS.danger[800]}80`,
       'warning': COLORS.warning[800],
       'success': COLORS.success[800],
 
       // App
       'app': `${COLORS.primary[900]}20`,
-      'subtle': COLORS.primary[850],
-      'emphasized': COLORS.primary[300],
+      'subtle': `${COLORS.primary[500]}20`,
+      'emphasized': `${COLORS.primary[500]}40`,
       'prominent': COLORS.primary[500],
 
       // Layout
@@ -112,6 +120,7 @@ export default defineConfig<Theme>({
       'layout-prominent': `${COLORS.primary[50]}80`,
 
       // Editor
+      'editor': `${COLORS.primary[900]}20`,
       'editor-select': COLORS.primary[500],
     },
 
@@ -148,13 +157,12 @@ export default defineConfig<Theme>({
     },
 
     maxWidth: {
-      page: '1920px',
+      page: '1440px',
     },
 
     duration: {
-      DEFAULT: '100ms',
+      DEFAULT: '150ms',
       fast: '50ms',
-      base: '100ms',
       slow: '300ms',
     },
 
@@ -166,33 +174,49 @@ export default defineConfig<Theme>({
 
     // Input
     inputColor: {
-      DEFAULT: COLORS.primary[900],
-      hover: COLORS.primary[900],
-      focus: COLORS.primary[900],
-      error: COLORS.danger[600],
-      disabled: `${COLORS.primary[900]}40`,
-      readonly: COLORS.primary[900],
+      'DEFAULT': COLORS.primary[900],
+      'hover': COLORS.primary[900],
+      'focus': COLORS.primary[900],
+      'error': COLORS.danger[600],
+      'disabled': `${COLORS.primary[900]}C0`,
+      'readonly': COLORS.primary[900],
+
+      // Layout
+      'layout': COLORS.primary[50],
+      'layout-hover': COLORS.primary[50],
+      'layout-focus': COLORS.primary[50],
     },
     inputBackground: {
       DEFAULT: 'transparent',
       hover: 'transparent',
-      focus: `${COLORS.primary[500]}10`,
+      focus: `${COLORS.primary[500]}08`,
       error: COLORS.danger[50],
-      disabled: `${COLORS.primary[900]}10`,
-      readonly: `${COLORS.primary[900]}10`,
+      disabled: `${COLORS.primary[900]}5`,
+      readonly: 'transparent',
+
+      // Layout
+      layout: 'transparent',
     },
     inputBorder: {
-      DEFAULT: `${COLORS.primary[900]}20`,
-      hover: COLORS.primary[600],
-      focus: COLORS.primary[600],
-      error: COLORS.danger[600],
-      disabled: `${COLORS.primary[900]}10`,
-      readonly: `${COLORS.primary[900]}20`,
+      'DEFAULT': `${COLORS.primary[900]}20`,
+      'hover': COLORS.primary[600],
+      'focus': COLORS.primary[600],
+      'error': COLORS.danger[600],
+      'disabled': `${COLORS.primary[900]}10`,
+      'readonly': `${COLORS.primary[900]}20`,
+
+      // Layout
+      'layout': `${COLORS.primary[50]}20`,
+      'layout-hover': `${COLORS.primary[50]}80`,
+      'layout-focus': COLORS.primary[50],
+
+      // Editor
+      'editor': `${COLORS.primary[900]}20`,
     },
     inputVariant: {
       DEFAULT: {
         fontSize: '0.875rem',
-        borderRadius: '0.0rem',
+        borderRadius: '0.25rem',
         borderSize: '1px',
         paddingX: '0.75rem',
         paddingY: '0.5rem',
@@ -320,42 +344,43 @@ export default defineConfig<Theme>({
       prefix: '--theme',
       theme: {
         dark: {
-
-          // Theme
-          colors: {
-            ...COLORS,
-          },
           backgroundColor: {
             'app': COLORS.primary[900],
-            'subtle': COLORS.primary[850],
+            'subtle': COLORS.primary[920],
             'emphasized': COLORS.primary[850],
             'prominent': COLORS.primary[800],
 
             // Layout
             'layout': COLORS.primary[950],
-            'layout-subtle': COLORS.primary[900],
-            'layout-emphasized': COLORS.primary[850],
-            'layout-prominent': COLORS.secondary[800],
+            'layout-subtle': COLORS.primary[920],
+            'layout-emphasized': COLORS.primary[900],
+            'layout-prominent': COLORS.primary[850],
 
             // Editor
             'editor': COLORS.primary[900],
             'editor-select': `${COLORS.primary[500]}40`,
-            'editor-node': `${COLORS.primary[900]}80`,
-            'editor-node-hover': `${COLORS.primary[850]}80`,
-            'editor-node-active': `${COLORS.primary[800]}80`,
+            'editor-node': `${COLORS.primary[850]}80`,
+            'editor-panel': `${COLORS.primary[900]}C8`,
+            'editor-panel-data': `${COLORS.primary[500]}20`,
           },
           textColor: {
-            app: COLORS.primary[50],
-            subtle: `${COLORS.primary[50]}80`,
-            emphasized: `${COLORS.primary[50]}A0`,
-            prominent: COLORS.primary[100],
+            'app': COLORS.primary[50],
+            'subtle': `${COLORS.primary[50]}80`,
+            'emphasized': `${COLORS.primary[50]}A0`,
+            'prominent': COLORS.primary[100],
+
+            // Editor
+            'editor-node': COLORS.primary[50],
+            'editor-node-label': COLORS.primary[50],
           },
           borderColor: {
-            app: `${COLORS.primary[100]}20`,
+            app: `${COLORS.primary[400]}20`,
             subtle: COLORS.primary[850],
-            layout: COLORS.primary[800],
             emphasized: COLORS.primary[300],
             prominent: COLORS.primary[500],
+
+            // Editor
+            editor: `${COLORS.primary[400]}20`,
           },
 
           // Input
@@ -364,7 +389,7 @@ export default defineConfig<Theme>({
             hover: COLORS.primary[50],
             focus: COLORS.primary[50],
             error: COLORS.danger[50],
-            disabled: `${COLORS.primary[50]}40`,
+            disabled: `${COLORS.primary[50]}C0`,
             readonly: COLORS.primary[50],
           },
           inputBackground: {
@@ -372,11 +397,11 @@ export default defineConfig<Theme>({
             hover: 'transparent',
             focus: `${COLORS.primary[500]}04`,
             error: COLORS.danger[800],
-            disabled: `${COLORS.primary[50]}10`,
-            readonly: `${COLORS.primary[50]}10`,
+            disabled: `${COLORS.primary[400]}10`,
+            readonly: 'transparent',
           },
           inputBorder: {
-            DEFAULT: `${COLORS.primary[50]}40`,
+            DEFAULT: `${COLORS.primary[50]}20`,
             hover: `${COLORS.primary[50]}80`,
             focus: COLORS.primary[50],
             error: COLORS.danger[800],
