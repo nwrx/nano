@@ -11,9 +11,9 @@ type STOPS = Array<typeof stops[number]>
 export const COLORS = {
   primary: createColorPalette('#5636D9', { stepUp: 10, stepDown: 11, hueShift: 0, stops: stops as unknown as STOPS }),
   secondary: createColorPalette('#F59E0B', { stepUp: 9, stepDown: 10, hueShift: 50, stops: stops as unknown as STOPS }),
-  danger: createColorPalette('#fb3618', { stepUp: 9, stepDown: 8, hueShift: 20 }),
-  warning: createColorPalette('#f59e0b', { stepUp: 10, stepDown: 5, hueShift: 20 }),
-  success: createColorPalette('#86bd25', { stepUp: 11, stepDown: 5, hueShift: 20 }),
+  danger: createColorPalette('#D53B23', { stepUp: 9, stepDown: 8, hueShift: 20 }),
+  warning: createColorPalette('#ADEF1F', { stepUp: 10, stepDown: 5, hueShift: 20 }),
+  success: createColorPalette('#5DB65A', { stepUp: 11, stepDown: 10, hueShift: 10 }),
 }
 
 type Theme = THEME.ThemeBadge & THEME.ThemeHint & THEME.ThemeInput & ThemeUno
@@ -253,37 +253,38 @@ export default defineConfig<Theme>({
     },
 
     // Badge
-    badgeColor: {
-      DEFAULT: {
-        background: COLORS.primary[100],
-        foreground: COLORS.primary[800],
-        inverse: COLORS.primary[900],
-      },
-      primary: {
-        background: COLORS.primary[600],
-        foreground: COLORS.primary[50],
-      },
-      secondary: {
-        foreground: COLORS.secondary[50],
-        background: COLORS.secondary[500],
-      },
-      success: {
-        foreground: COLORS.success[50],
-        background: COLORS.success[500],
-        inverse: COLORS.success[700],
-      },
-      danger: {
-        foreground: COLORS.danger[50],
-        background: COLORS.danger[500],
-        inverse: COLORS.danger[700],
-      },
-      warning: {
-        foreground: COLORS.warning[50],
-        background: COLORS.warning[500],
-        inverse: COLORS.warning[700],
-      },
-    },
-    badgeSize: {
+    // badgeColor: {
+    //   DEFAULT: {
+    //     background: COLORS.primary[100],
+    //     foreground: COLORS.primary[800],
+    //     inverse: COLORS.primary[900],
+    //   },
+    //   primary: {
+    //     background: COLORS.primary[600],
+    //     foreground: COLORS.primary[50],
+    //   },
+    //   secondary: {
+    //     foreground: COLORS.secondary[50],
+    //     background: COLORS.secondary[500],
+    //   },
+    //   success: {
+    //     foreground: COLORS.success[50],
+    //     background: COLORS.success[500],
+    //     inverse: COLORS.success[700],
+    //   },
+    //   danger: {
+    //     foreground: COLORS.danger[50],
+    //     background: COLORS.danger[500],
+    //     inverse: COLORS.danger[700],
+    //   },
+    //   warning: {
+    //     foreground: COLORS.warning[50],
+    //     background: COLORS.warning[500],
+    //     inverse: COLORS.warning[700],
+    //   },
+    // },
+
+    badgeVariant: {
       DEFAULT: {
         height: '1.5rem',
         spacing: '0.5rem',
@@ -308,6 +309,30 @@ export default defineConfig<Theme>({
         borderRadius: '0.25rem',
         borderSize: '2px',
       },
+    },
+    badgeBackground: {
+      DEFAULT: COLORS.primary[100],
+      primary: COLORS.primary[100],
+      secondary: COLORS.secondary[200],
+      success: COLORS.success[200],
+      danger: COLORS.danger[200],
+      warning: COLORS.warning[200],
+    },
+    badgeColor: {
+      DEFAULT: COLORS.primary[900],
+      primary: COLORS.primary[600],
+      secondary: COLORS.secondary[500],
+      success: COLORS.success[600],
+      danger: COLORS.danger[600],
+      warning: COLORS.warning[600],
+    },
+    badgeBorderColor: {
+      DEFAULT: COLORS.primary[100],
+      primary: COLORS.primary[200],
+      secondary: COLORS.secondary[200],
+      success: COLORS.success[200],
+      danger: COLORS.danger[200],
+      warning: COLORS.warning[500],
     },
 
     // Hint
@@ -457,6 +482,32 @@ export default defineConfig<Theme>({
             error: COLORS.danger[800],
             disabled: `${COLORS.primary[50]}10`,
             readonly: `${COLORS.primary[50]}20`,
+          },
+
+          // Badge
+          badgeColor: {
+            DEFAULT: COLORS.primary[50],
+            primary: COLORS.primary[50],
+            secondary: COLORS.secondary[50],
+            success: COLORS.success[500],
+            danger: COLORS.danger[50],
+            warning: COLORS.warning[50],
+          },
+          badgeBackground: {
+            DEFAULT: COLORS.primary[700],
+            primary: COLORS.primary[500],
+            secondary: COLORS.secondary[500],
+            success: 'transparent',
+            danger: COLORS.danger[500],
+            warning: COLORS.warning[500],
+          },
+          badgeBorderColor: {
+            DEFAULT: COLORS.primary[800],
+            primary: COLORS.primary[600],
+            secondary: COLORS.secondary[500],
+            success: COLORS.success[500],
+            danger: COLORS.danger[500],
+            warning: COLORS.warning[500],
           },
 
           // Hint

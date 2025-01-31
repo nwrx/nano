@@ -8,6 +8,7 @@ export interface ThemeInput {
   inputBackground?: Record<string, string>
   inputVariant?: Record<string, {
     fontSize?: string
+    borderStyle?: string
     borderRadius?: string
     borderSize?: string
     paddingX?: string
@@ -25,19 +26,18 @@ export const ruleInput: DynamicRule<ThemeInput> = [
     const result: Record<string, string> = {}
 
     // --- Style.
-    const size = theme.inputVariant?.[b]
-    if (size) {
-      const { fontSize, borderRadius, borderSize, paddingX, paddingY } = size
+    const variant = theme.inputVariant?.[b]
+    if (variant) {
       Object.assign(result, {
-        'font-size': fontSize ? h.rem(fontSize) : undefined,
-        'border-radius': borderRadius ? h.px(borderRadius) : undefined,
-        'border-width': borderSize ? h.px(borderSize) : undefined,
-        'border-style': 'solid',
-        'padding-left': paddingX ? h.px(paddingX) : undefined,
-        'padding-right': paddingX ? h.px(paddingX) : undefined,
-        'padding-top': paddingY ? h.px(paddingY) : undefined,
-        'padding-bottom': paddingY ? h.px(paddingY) : undefined,
-        'height': size.height ? h.px(size.height) : undefined,
+        'font-size': variant.fontSize ? h.rem(variant.fontSize) : undefined,
+        'border-radius': variant.borderRadius ? h.px(variant.borderRadius) : undefined,
+        'border-width': variant.borderSize ? h.px(variant.borderSize) : undefined,
+        'border-style': variant.borderStyle ?? 'solid',
+        'padding-left': variant.paddingX ? h.px(variant.paddingX) : undefined,
+        'padding-right': variant.paddingX ? h.px(variant.paddingX) : undefined,
+        'padding-top': variant.paddingY ? h.px(variant.paddingY) : undefined,
+        'padding-bottom': variant.paddingY ? h.px(variant.paddingY) : undefined,
+        'height': variant.height ? h.px(variant.height) : undefined,
         'outline': 'none',
         'white-space': 'nowrap',
       })

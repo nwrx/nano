@@ -9,19 +9,21 @@ defineProps<{
 </script>
 
 <template>
-  <BaseBadge class="badge">
+  <BaseBadge class="badge space-x-xs">
 
     <!-- Prepend -->
     <BaseIcon
       v-if="iconPrepend || icon"
       :icon="iconPrepend || icon"
       :load="iconLoad"
-      class="size-4 last:mr-sm"
+      class="size-4"
     />
 
     <!-- Content -->
     <slot v-if="label || $slots.default">
-      {{ label }}
+      <span>
+        {{ label }}
+      </span>
     </slot>
 
     <!-- Append -->
@@ -29,7 +31,7 @@ defineProps<{
       v-if="iconAppend"
       :icon="iconAppend"
       :load="iconLoad"
-      class="size-4 first:ml-sm"
+      class="size-4"
     />
   </BaseBadge>
 </template>
