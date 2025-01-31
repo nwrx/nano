@@ -1,12 +1,12 @@
 import type { Node } from './defineNode'
-import type { SocketType } from './defineSocketType'
+import type { Type } from './defineType'
 import { assertNotNil, assertStringNotEmpty } from '@unshared/validation'
 
 /** The options for defining a flow module. */
 export interface Module<
   K extends string = string,
   N extends Node = Node,
-  T extends SocketType = SocketType,
+  T extends Type = Type,
 > {
 
   /**
@@ -73,7 +73,7 @@ export interface Module<
 export function defineModule<
   K extends string,
   N extends Node,
-  T extends SocketType,
+  T extends Type,
 >(options: Module<K, N, T>): Module<K, N, T> {
   assertNotNil(options)
   assertStringNotEmpty(options.kind)

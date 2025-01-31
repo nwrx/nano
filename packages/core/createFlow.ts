@@ -1,9 +1,10 @@
+import type { MaybeLiteral } from '@unshared/types'
 import type { NodeInstanceMeta, NodeInstanceOptions } from './createNodeInstance'
-import type { DataSchema, DataSocket } from './defineDataSocket'
+import type { DataSchema, DataSocket } from './defineDataSchema'
 import type { Module } from './defineModule'
 import type { Node } from './defineNode'
-import type { ResultSchema, ResultSocket } from './defineResultSocket'
-import type { InferNodeByKind, InferNodeKind } from './types'
+import type { ResultSchema, ResultSocket } from './defineResultSchema'
+import type { NodeByKind, NodeKind } from './types'
 import { createFlowNodeInstance as createNodeInstance, NodeInstance } from './createNodeInstance'
 
 /**
@@ -13,7 +14,7 @@ import { createFlowNodeInstance as createNodeInstance, NodeInstance } from './cr
 export interface FlowEvents {
 
   // Node
-  'node:create': [NodeInstance]
+  'node:create': [instance: NodeInstance]
   'node:meta': [id: string, NodeInstanceMeta]
   'node:metaValue': [id: string, key: string, value: unknown]
   'node:data': [id: string, data: Record<string, unknown>]
@@ -69,11 +70,11 @@ export interface FlowOptions<T extends Module = Module> {
 }
 
 /**
- * A `FlowLink` represents a link between two nodes in a flow. The link is used
+ * A `Link` represents a link between two nodes in a flow. The link is used
  * to connect the output of one node to the input of another node. This allows
  * the nodes to communicate with each other and pass data between them.
  */
-export interface FlowLink {
+export interface Link {
   source: string
   target: string
 }
@@ -174,13 +175,13 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
    * @param kind The kind of the node to get the node definition for.
    * @returns The node definition that corresponds to the node kind.
    */
-  public resolveNodeDefinition<K extends InferNodeKind<T>>(kind: K): InferNodeByKind<T, K> {
+  public resolveNodeDefinition<K extends NodeKind<T>>(kind: MaybeLiteral<K>): NodeByKind<T, K> {
     const [moduleKind, nodeKind] = kind.split(':')
     const module = this.modules.find(module => module.kind === moduleKind)
     if (!module) throw new Error(`Module "${moduleKind}" was not found`)
-    const nodeDefinition = module.nodes?.find(node => node.kind === nodeKind) as Node<string, any, any>
+    const nodeDefinition = module.nodes?.find(node => node.kind === nodeKind)
     if (!nodeDefinition) throw new Error(`Node definition "${nodeKind}" was not found in module "${moduleKind}"`)
-    return nodeDefinition as InferNodeByKind<T, K>
+    return nodeDefinition as NodeByKind<T, K>
   }
 
   /**
@@ -205,26 +206,27 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
    *
    * @param node The node definition to instantiate the node with.
    * @param options The options to instantiate the node with.
+   * @returns The node instance that was added to the flow.
    * @example
    *
    * // Create a flow with an entrypoint and a log node.
    * using flow = createFlow()
    * flow.createNode(Core.nodes.Entrypoint)
-   * flow.createNode('nwrx/core:log')
    */
-  public createNode<T extends Node<string, any, any>>(node: T, options?: Omit<NodeInstanceOptions<T>, 'flow' | 'node'>): NodeInstance<T>
-  public createNode<K extends InferNodeKind<T>>(node: K, options?: Omit<NodeInstanceOptions<InferNodeByKind<T, K>>, 'flow' | 'node'>): NodeInstance<InferNodeByKind<T, K>>
-  public createNode(node: Node | string, options?: Omit<NodeInstanceOptions, 'flow' | 'node'>): NodeInstance
-  public createNode(node: Node | string, options: Omit<NodeInstanceOptions, 'flow' | 'node'> = {}) {
-
-    // --- If the node is a string, get the node from the modules.
-    if (typeof node === 'string') node = this.resolveNodeDefinition(node as InferNodeKind<T>)
+  public createNode<
+    T extends DataSchema,
+    U extends ResultSchema,
+  >(
+    node: Node<string, T, U>,
+    options?: Omit<NodeInstanceOptions<T, U>, 'flow' | 'node'>,
+  ): NodeInstance<T, U> {
 
     // --- Create the node instance and add it to the flow.
     const instance = createNodeInstance({ ...options, flow: this, node })
-    this.nodes.push(instance)
-    this.dispatch('node:create', instance)
+    this.nodes.push(instance as NodeInstance)
+    this.dispatch('node:create', instance as NodeInstance)
     instance.on('data', data => this.dispatch('node:data', instance.id, data))
+    instance.on('dataRaw', data => this.dispatch('node:dataRaw', instance.id, data))
     instance.on('result', result => this.dispatch('node:result', instance.id, result))
     instance.on('dataSchema', schema => this.dispatch('node:dataSchema', instance.id, schema))
     instance.on('resultSchema', schema => this.dispatch('node:resultSchema', instance.id, schema))
@@ -301,8 +303,8 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
    *
    * @returns An array of links that connect the nodes together.
    */
-  get links(): FlowLink[] {
-    const links: FlowLink[] = []
+  get links(): Link[] {
+    const links: Link[] = []
     for (const node of this.nodes) {
       for (const edge in node.dataRaw) {
         const value = node.dataRaw[edge]

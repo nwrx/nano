@@ -1,4 +1,5 @@
 import type { Module } from './defineModule'
+import type { NodeKind } from './types'
 import { Flow } from './createFlow'
 import { FLOW_FILE_VERSION } from './flowToJson'
 
@@ -62,7 +63,8 @@ export function flowFromJsonV1<T extends Module = Module>(json: FlowExportV1, mo
     }
 
     // --- Create the node instance.
-    flow.createNode(kind, { id, meta, initialData })
+    const nodeDefinition = flow.resolveNodeDefinition(kind as NodeKind<T>)
+    flow.createNode(nodeDefinition, { id, meta, initialData })
   }
 
   // --- Return the flow instance.

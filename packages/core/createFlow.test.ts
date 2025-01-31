@@ -202,7 +202,7 @@ describe('createFlow', () => {
         using flow = createFlow({ modules: [moduleCore] })
         const node = flow.createNode(defineNode({
           kind: 'nwrx/core:parse-json',
-          defineDataSchema: () => ({
+          dataSchema: () => ({
             number: { name: 'Number', type: typeNumber, control: 'slider' },
           }),
         }))
@@ -274,7 +274,7 @@ describe('createFlow', () => {
 
       it('should emit a node:dataSchema event when the data schema of a node is resolved', async() => {
         using flow = createFlow({ modules: [moduleCore] })
-        const node = flow.createNode({ kind: 'nwrx/core:parse-json', defineDataSchema: () => ({}) })
+        const node = flow.createNode({ kind: 'nwrx/core:parse-json', dataSchema: () => ({}) })
         const listener = vi.fn()
         flow.on('node:dataSchema', listener)
         await node.resolveDataSchema()

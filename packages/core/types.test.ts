@@ -1,116 +1,113 @@
 import type { moduleCore, nodeInput, nodeJsonParse, nodeOutput } from './__fixtures__'
 import type { Flow } from './createFlow'
-import type { SocketType } from './defineSocketType'
+import type { Type } from './defineType'
 import type {
-  InferData,
-  InferDataKeys,
-  InferDataSchema,
-  InferDataValue,
-  InferNode,
-  InferNodeByKind,
-  InferNodeKind,
-  InferResult,
-  InferResultKeys,
-  InferResultSchema,
-  InferResultValue,
-  InferSchemaKeys,
-  InferSchemaType,
-  InferSchemaValue,
+  NodeByKind,
+  NodeData,
+  NodeDataKeys,
+  NodeDataSchema,
+  NodeDataValue,
+  NodeKind,
+  NodeOf,
+  NodeResult,
+  NodeResultKeys,
+  NodeResultSchema,
+  NodeResultValue,
 } from './types'
 
 describe('types', () => {
   describe('infer node', () => {
     it('should infer the nodes of a `Flow` instance', () => {
       type FlowInstance = Flow<typeof moduleCore>
-      type Result = InferNode<FlowInstance>
+      type Result = NodeOf<FlowInstance>
       expectTypeOf<Result>().toEqualTypeOf<typeof nodeInput | typeof nodeJsonParse | typeof nodeOutput>()
     })
 
-    it('should infer the node kind of a `FlowModule` instance', () => {
-      type Result = InferNode<typeof moduleCore>
+    it('should infer the node kind of a `Module` instance', () => {
+      type Result = NodeOf<typeof moduleCore>
       expectTypeOf<Result>().toEqualTypeOf<typeof nodeInput | typeof nodeJsonParse | typeof nodeOutput>()
     })
 
     it('should infer the node kind of a `Flow` instance', () => {
       type FlowInstance = Flow<typeof moduleCore>
-      type Result = InferNodeKind<FlowInstance>
+      type Result = NodeKind<FlowInstance>
       expectTypeOf<Result>().toEqualTypeOf<'nwrx/core:input' | 'nwrx/core:output' | 'nwrx/core:parse-json'>()
     })
 
-    it('should infer the node kind of a `FlowModule` instance', () => {
-      type Result = InferNodeKind<typeof moduleCore>
+    it('should infer the node kind of a `Module` instance', () => {
+      type Result = NodeKind<typeof moduleCore>
       expectTypeOf<Result>().toEqualTypeOf<'nwrx/core:input' | 'nwrx/core:output' | 'nwrx/core:parse-json'>()
     })
 
     it('should infer the node by kind of a `Flow` instance', () => {
       type FlowInstance = Flow<typeof moduleCore>
-      type Result = InferNodeByKind<FlowInstance, 'nwrx/core:output'>
+      type Result = NodeByKind<FlowInstance, 'nwrx/core:output'>
       expectTypeOf<Result>().toEqualTypeOf<typeof nodeOutput>()
     })
 
-    it('should infer the node by kind of a `FlowModule` instance', () => {
-      type Result = InferNodeByKind<typeof moduleCore, 'nwrx/core:output'>
+    it('should infer the node by kind of a `Module` instance', () => {
+      type Result = NodeByKind<typeof moduleCore, 'nwrx/core:output'>
       expectTypeOf<Result>().toEqualTypeOf<typeof nodeOutput>()
     })
   })
 
   describe('infer schema', () => {
     it('should infer the raw type of a `FlowNodePort`', () => {
-      type Result = InferSchemaType<{ value: { type: SocketType<string> } }>
+      type Result = InferSchemaType<{ value: { type: Type<string> } }>
       expectTypeOf<Result>().toEqualTypeOf<{ value: string }>()
     })
 
     it('should infer the keys of a `FlowNodeSchema`', () => {
-      type Result = InferSchemaKeys<{ value: { type: SocketType<string> } }>
+      type Result = InferSchemaKeys<{ value: { type: Type<string> } }>
       expectTypeOf<Result>().toEqualTypeOf<'value'>()
     })
 
     it('should infer the value type of a `FlowNodeSchema` by its key', () => {
-      type Result = InferSchemaValue<{ value: { type: SocketType<string> } }, 'value'>
+      type Result = InferSchemaValue<{ value: { type: Type<string> } }, 'value'>
       expectTypeOf<Result>().toEqualTypeOf<string>()
     })
   })
 
   describe('infer result', () => {
     it('should infer the result schema of a `Node`', () => {
-      type Result = InferResultSchema<typeof nodeJsonParse>
-      expectTypeOf<Result>().toEqualTypeOf<{ object: { name: string; type: SocketType<object> } }>()
+      type Result = NodeResultSchema<typeof nodeJsonParse>
+      expectTypeOf<Result>().toEqualTypeOf<{ object: { name: string; type: Type<object> } }>()
     })
 
     it('should infer the result of a `Node`', () => {
-      type Result = InferResult<typeof nodeJsonParse>
+      type Result = NodeResult<typeof nodeJsonParse>
       expectTypeOf<Result>().toEqualTypeOf<{ object: object }>()
     })
 
     it('should infer the keys of the result of a `Node`', () => {
-      type Result = InferResultKeys<typeof nodeJsonParse>
+      type Result = NodeResultKeys<typeof nodeJsonParse>
       expectTypeOf<Result>().toEqualTypeOf<'object'>()
     })
 
     it('should infer the value of the result of a `Node`', () => {
-      type Result = InferResultValue<typeof nodeJsonParse, 'object'>
+      type Result = NodeResultValue<typeof nodeJsonParse, 'object'>
       expectTypeOf<Result>().toEqualTypeOf<object>()
     })
   })
 
   describe('infer data', () => {
     it('should infer the data schema of a `Node`', () => {
-      type Result = InferDataSchema<typeof nodeJsonParse>
-      expectTypeOf<Result>().toEqualTypeOf<{ json: { name: string; type: SocketType<string> } }>()
+      type Result = NodeDataSchema<typeof nodeJsonParse>
+      expectTypeOf<Result>().toEqualTypeOf<{ json: { name: string; type: Type<string> } }>()
     })
 
     it('should infer the data of a `Node`', () => {
-      type Result = InferData<typeof nodeJsonParse>
+      type Result = NodeData<typeof nodeJsonParse>
       expectTypeOf<Result>().toEqualTypeOf<{ json: string }>()
     })
 
     it('should infer the keys of the data of a `Node`', () => {
-      type Result = InferDataKeys<typeof nodeJsonParse>
+      type Result = NodeDataKeys<typeof nodeJsonParse>
       expectTypeOf<Result>().toEqualTypeOf<'json'>()
     })
 
     it('should infer the value of the data of a `Node`', () => {
-      type Result = InferDataValue<typeof nodeJsonParse, 'json'>
+      type Result = NodeDataValue<typeof nodeJsonParse, 'json'>
       expectTypeOf<Result>().toEqualTypeOf<string>()
     })
   })

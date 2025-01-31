@@ -4,7 +4,7 @@ import { typeBoolean, typeString } from './__fixtures__'
 import { createFlow } from './createFlow'
 import { createFlowNodeInstance } from './createNodeInstance'
 import { defineNode } from './defineNode'
-import { defineSocketType } from './defineSocketType'
+import { defineType } from './defineType'
 
 describe('createFlowNodeInstance', () => {
   describe('createFlowNodeInstance', () => {
@@ -99,14 +99,14 @@ describe('createFlowNodeInstance', () => {
     it('should resolve the data schema imedialety if the initial data schema is an object', () => {
       using flow = createFlow()
       const port = { name: 'Value', type: typeString }
-      const node = defineNode({ kind: 'core:example', defineDataSchema: { string: port } })
+      const node = defineNode({ kind: 'core:example', dataSchema: { string: port } })
       using instance = createFlowNodeInstance({ flow, node })
       expect(instance.dataSchema).toStrictEqual({ string: port })
     })
 
     it('should resolve to an empty object if the initial data schema is a function', () => {
       using flow = createFlow()
-      const node = defineNode({ kind: 'core:example', defineDataSchema: () => ({}) })
+      const node = defineNode({ kind: 'core:example', dataSchema: () => ({}) })
       using instance = createFlowNodeInstance({ flow, node })
       expect(instance.dataSchema).toStrictEqual({})
     })
@@ -114,7 +114,7 @@ describe('createFlowNodeInstance', () => {
     it('should resolve the data schema when calling resolveDataSchema', async() => {
       using flow = createFlow()
       const port = { name: 'Value', type: typeString }
-      const node = defineNode({ kind: 'core:example', defineDataSchema: () => ({ string: port }) })
+      const node = defineNode({ kind: 'core:example', dataSchema: () => ({ string: port }) })
       using instance = createFlowNodeInstance({ flow, node })
       const result = await instance.resolveDataSchema()
       expect(result).toStrictEqual({ string: port })
@@ -124,7 +124,7 @@ describe('createFlowNodeInstance', () => {
     it('should emit the "dataSchema" event when the data schema is resolved', async() => {
       using flow = createFlow()
       const port = { name: 'Value', type: typeString }
-      const node = defineNode({ kind: 'core:example', defineDataSchema: () => ({ string: port }) })
+      const node = defineNode({ kind: 'core:example', dataSchema: () => ({ string: port }) })
       using instance = createFlowNodeInstance({ flow, node })
       const listener = vi.fn()
       instance.on('dataSchema', listener)
@@ -188,14 +188,14 @@ describe('createFlowNodeInstance', () => {
     it('should get the port by key from the data schema', () => {
       using flow = createFlow()
       const port = { name: 'Value', type: typeString }
-      const node = defineNode({ kind: 'core:example', defineDataSchema: { string: port } })
+      const node = defineNode({ kind: 'core:example', dataSchema: { string: port } })
       using instance = createFlowNodeInstance({ flow, node })
       expect(instance.getDataSocket('string')).toStrictEqual(port)
     })
 
     it('should throw an error if the data schema is not resolved', () => {
       using flow = createFlow()
-      const node = defineNode({ kind: 'core:example', defineDataSchema: () => ({ string: { name: 'Value', type: typeString } }) })
+      const node = defineNode({ kind: 'core:example', dataSchema: () => ({ string: { name: 'Value', type: typeString } }) })
       using instance = createFlowNodeInstance({ flow, node })
       const shouldThrow = () => instance.getDataSocket('string')
       expect(shouldThrow).toThrow('Data schema not resolved')
@@ -204,7 +204,7 @@ describe('createFlowNodeInstance', () => {
     it('should throw an error if the key does not exist in the data schema', () => {
       using flow = createFlow()
       const port = { name: 'Value', type: typeString }
-      const node = defineNode({ kind: 'core:example', defineDataSchema: { string: port } })
+      const node = defineNode({ kind: 'core:example', dataSchema: { string: port } })
       using instance = createFlowNodeInstance({ flow, node })
       // @ts-expect-error: The key "number" does not exist in the data schema.
       const shouldThrow = () => instance.getDataSocket('number')
@@ -243,7 +243,7 @@ describe('createFlowNodeInstance', () => {
   describe('setDataValue', () => {
     it('should set the value of a raw data property by key', async() => {
       using flow = createFlow()
-      const node = defineNode({ kind: 'core:example', defineDataSchema: { string: { name: 'Value', type: typeString } } })
+      const node = defineNode({ kind: 'core:example', dataSchema: { string: { name: 'Value', type: typeString } } })
       using instance = createFlowNodeInstance({ flow, node })
       await instance.setDataValue('string', 'Hello, World!')
       expect(instance.dataRaw).toStrictEqual({ string: 'Hello, World!' })
@@ -251,7 +251,7 @@ describe('createFlowNodeInstance', () => {
 
     it('should throw an error if the data schema is not resolved', async() => {
       using flow = createFlow()
-      const node = defineNode({ kind: 'core:example', defineDataSchema: () => ({ string: { name: 'Value', type: typeString } }) })
+      const node = defineNode({ kind: 'core:example', dataSchema: () => ({ string: { name: 'Value', type: typeString } }) })
       using instance = createFlowNodeInstance({ flow, node })
       const shouldReject = async() => await instance.setDataValue('string', 'Hello, World!')
       await expect(shouldReject).rejects.toThrow('Data schema not resolved')
@@ -259,7 +259,7 @@ describe('createFlowNodeInstance', () => {
 
     it('should throw an error if the key does not exist in the data schema', async() => {
       using flow = createFlow()
-      const node = defineNode({ kind: 'core:example', defineDataSchema: { string: { name: 'Value', type: typeString } } })
+      const node = defineNode({ kind: 'core:example', dataSchema: { string: { name: 'Value', type: typeString } } })
       using instance = createFlowNodeInstance({ flow, node })
       // @ts-expect-error: The key "number" does not exist in the data schema.
       const shouldReject = async() => await instance.setDataValue('number', 42)
@@ -268,8 +268,8 @@ describe('createFlowNodeInstance', () => {
 
     it('should not parse the input value based on the type parser of the port', async() => {
       using flow = createFlow()
-      const type = defineSocketType({ kind: 'core:number', parse: Number })
-      const node = defineNode({ kind: 'core:example', defineDataSchema: { number: { name: 'Value', type } } })
+      const type = defineType({ kind: 'core:number', parse: Number })
+      const node = defineNode({ kind: 'core:example', dataSchema: { number: { name: 'Value', type } } })
       using instance = createFlowNodeInstance({ flow, node })
       // @ts-expect-error: The value "42" can be parsed as a number.
       await instance.setDataValue('number', '42')
@@ -278,7 +278,7 @@ describe('createFlowNodeInstance', () => {
 
     it('should emit the "dataRaw" event when the data is set', async() => {
       using flow = createFlow()
-      const node = defineNode({ kind: 'core:example', defineDataSchema: { string: { name: 'Value', type: typeString } } })
+      const node = defineNode({ kind: 'core:example', dataSchema: { string: { name: 'Value', type: typeString } } })
       using instance = createFlowNodeInstance({ flow, node })
       const listener = vi.fn()
       instance.on('dataRaw', listener)
@@ -288,7 +288,7 @@ describe('createFlowNodeInstance', () => {
 
     it('should resolve the data schema when the data is set', async() => {
       using flow = createFlow()
-      const node = defineNode({ kind: 'core:example', defineDataSchema: { string: { name: 'Value', type: typeString } } })
+      const node = defineNode({ kind: 'core:example', dataSchema: { string: { name: 'Value', type: typeString } } })
       using instance = createFlowNodeInstance({ flow, node })
       const listener = vi.fn()
       instance.on('dataSchema', listener)
@@ -298,7 +298,7 @@ describe('createFlowNodeInstance', () => {
 
     it('should resolve the result schema when the data is set', async() => {
       using flow = createFlow()
-      const node = defineNode({ kind: 'core:example', defineDataSchema: { string: { name: 'Value', type: typeString } } })
+      const node = defineNode({ kind: 'core:example', dataSchema: { string: { name: 'Value', type: typeString } } })
       using instance = createFlowNodeInstance({ flow, node })
       const listener = vi.fn()
       instance.on('resultSchema', listener)
@@ -310,7 +310,7 @@ describe('createFlowNodeInstance', () => {
   describe('setData', () => {
     it('should set the raw data of the node', async() => {
       using flow = createFlow()
-      const node = defineNode({ kind: 'core:example', defineDataSchema: { string: { name: 'Value', type: typeString } } })
+      const node = defineNode({ kind: 'core:example', dataSchema: { string: { name: 'Value', type: typeString } } })
       using instance = createFlowNodeInstance({ flow, node })
       await instance.setData({ string: 'Hello, World!' })
       expect(instance.dataRaw).toStrictEqual({ string: 'Hello, World!' })
@@ -318,8 +318,8 @@ describe('createFlowNodeInstance', () => {
 
     it('should not parse the input data based on the type parser of the port', async() => {
       using flow = createFlow()
-      const type = defineSocketType({ kind: 'core:number', parse: Number })
-      const node = defineNode({ kind: 'core:example', defineDataSchema: { number: { name: 'Value', type } } })
+      const type = defineType({ kind: 'core:number', parse: Number })
+      const node = defineNode({ kind: 'core:example', dataSchema: { number: { name: 'Value', type } } })
       using instance = createFlowNodeInstance({ flow, node })
       // @ts-expect-error: The value "42" can be parsed as a number.
       await instance.setData({ number: '42' })
@@ -328,7 +328,7 @@ describe('createFlowNodeInstance', () => {
 
     it('should emit the "dataRaw" event when the data is set', async() => {
       using flow = createFlow()
-      const node = defineNode({ kind: 'core:example', defineDataSchema: { string: { name: 'Value', type: typeString } } })
+      const node = defineNode({ kind: 'core:example', dataSchema: { string: { name: 'Value', type: typeString } } })
       using instance = createFlowNodeInstance({ flow, node })
       const listener = vi.fn()
       instance.on('dataRaw', listener)
@@ -338,7 +338,7 @@ describe('createFlowNodeInstance', () => {
 
     it('should resolve the data schema when the data is set', async() => {
       using flow = createFlow()
-      const node = defineNode({ kind: 'core:example', defineDataSchema: { string: { name: 'Value', type: typeString } } })
+      const node = defineNode({ kind: 'core:example', dataSchema: { string: { name: 'Value', type: typeString } } })
       using instance = createFlowNodeInstance({ flow, node })
       const listener = vi.fn()
       instance.on('dataSchema', listener)
@@ -348,7 +348,7 @@ describe('createFlowNodeInstance', () => {
 
     it('should resolve the result schema when the data is set', async() => {
       using flow = createFlow()
-      const node = defineNode({ kind: 'core:example', defineDataSchema: { string: { name: 'Value', type: typeString } } })
+      const node = defineNode({ kind: 'core:example', dataSchema: { string: { name: 'Value', type: typeString } } })
       using instance = createFlowNodeInstance({ flow, node })
       const listener = vi.fn()
       instance.on('resultSchema', listener)
@@ -358,7 +358,7 @@ describe('createFlowNodeInstance', () => {
 
     it('should throw an error if the data schema is not resolved', async() => {
       using flow = createFlow()
-      const node = defineNode({ kind: 'core:example', defineDataSchema: () => ({ string: { name: 'Value', type: typeString } }) })
+      const node = defineNode({ kind: 'core:example', dataSchema: () => ({ string: { name: 'Value', type: typeString } }) })
       using instance = createFlowNodeInstance({ flow, node })
       const shouldReject = async() => await instance.setData({ string: 'Hello, World!' })
       await expect(shouldReject).rejects.toThrow('Data schema not resolved')
@@ -366,7 +366,7 @@ describe('createFlowNodeInstance', () => {
 
     it('should throw an error if a key does not exist in the data schema', async() => {
       using flow = createFlow()
-      const node = defineNode({ kind: 'core:example', defineDataSchema: { string: { name: 'Value', type: typeString } } })
+      const node = defineNode({ kind: 'core:example', dataSchema: { string: { name: 'Value', type: typeString } } })
       using instance = createFlowNodeInstance({ flow, node })
       // @ts-expect-error: The key "number" does not exist in the data schema.
       const shouldReject = async() => await instance.setData({ number: 42 })
@@ -402,7 +402,7 @@ describe('createFlowNodeInstance', () => {
 
     it('should parse the input value based on the type parser of the port', () => {
       using flow = createFlow()
-      const type = defineSocketType({ kind: 'core:number', parse: Number })
+      const type = defineType({ kind: 'core:number', parse: Number })
       const node = defineNode({ kind: 'core:example', defineResultSchema: { number: { name: 'Value', type } } })
       using instance = createFlowNodeInstance({ flow, node })
       // @ts-expect-error: The value "42" can be parsed as a number.
@@ -455,7 +455,7 @@ describe('createFlowNodeInstance', () => {
 
     it('should parse the input result based on the type parser of the port', () => {
       using flow = createFlow()
-      const type = defineSocketType({ kind: 'core:number', parse: Number })
+      const type = defineType({ kind: 'core:number', parse: Number })
       const node = defineNode({ kind: 'core:example', defineResultSchema: { number: { name: 'Value', type } } })
       using instance = createFlowNodeInstance({ flow, node })
       // @ts-expect-error: The value "42" can be parsed as a number.
@@ -493,7 +493,7 @@ describe('createFlowNodeInstance', () => {
 
     it('should throw an error if the parser throws an error', () => {
       using flow = createFlow()
-      const type = defineSocketType({ kind: 'core:number', parse: () => { throw new Error('Failed to parse') } })
+      const type = defineType({ kind: 'core:number', parse: () => { throw new Error('Failed to parse') } })
       const node = defineNode({ kind: 'core:example', defineResultSchema: { number: { name: 'Value', type } } })
       using instance = createFlowNodeInstance({ flow, node })
       // @ts-expect-error: Ignore the type error.
@@ -505,7 +505,7 @@ describe('createFlowNodeInstance', () => {
   describe('resolveDataValue', () => {
     it('should resolve and parse the value of a raw data property by key', () => {
       using flow = createFlow()
-      const node = defineNode({ kind: 'core:example', defineDataSchema: { string: { name: 'Value', type: typeString } } })
+      const node = defineNode({ kind: 'core:example', dataSchema: { string: { name: 'Value', type: typeString } } })
       using instance = createFlowNodeInstance({ flow, node, initialData: { string: 'Hello, World!' } })
       const result = instance.resolveDataValue('string')
       expect(result).toBe('Hello, World!')
@@ -513,7 +513,7 @@ describe('createFlowNodeInstance', () => {
 
     it('should resolve and parse value that reference a flow variable', () => {
       using flow = createFlow({ variables: { GREET: 'Hello, World!' } })
-      const node = defineNode({ kind: 'core:example', defineDataSchema: { string: { name: 'Value', type: typeString } } })
+      const node = defineNode({ kind: 'core:example', dataSchema: { string: { name: 'Value', type: typeString } } })
       using instance = createFlowNodeInstance({ flow, node, initialData: { string: '$VARIABLE.GREET' } })
       const result = instance.resolveDataValue('string')
       expect(result).toBe('Hello, World!')
@@ -521,7 +521,7 @@ describe('createFlowNodeInstance', () => {
 
     it('should resolve and parse value that reference a flow secret', () => {
       using flow = createFlow({ secrets: { GREET: 'Hello, World!' } })
-      const node = defineNode({ kind: 'core:example', defineDataSchema: { string: { name: 'Value', type: typeString } } })
+      const node = defineNode({ kind: 'core:example', dataSchema: { string: { name: 'Value', type: typeString } } })
       using instance = createFlowNodeInstance({ flow, node, initialData: { string: '$SECRET.GREET' } })
       const result = instance.resolveDataValue('string')
       expect(result).toBe('Hello, World!')
@@ -530,7 +530,7 @@ describe('createFlowNodeInstance', () => {
     it('should resolve and parse value that reference a node result port', async() => {
       using flow = createFlow()
       const nodeIn = defineNode({ kind: 'core:example', defineResultSchema: { string: { name: 'Value', type: typeString } } })
-      const nodeOut = defineNode({ kind: 'core:example', defineDataSchema: { string: { name: 'Value', type: typeString } } })
+      const nodeOut = defineNode({ kind: 'core:example', dataSchema: { string: { name: 'Value', type: typeString } } })
       using instanceIn = flow.createNode(nodeIn, { initialResult: { string: 'Hello, World!' } })
       using instanceOut = flow.createNode(nodeOut, { initialData: { string: `$NODE.${instanceIn.id}:string` } })
       const result = instanceOut.resolveDataValue('string')
@@ -539,7 +539,7 @@ describe('createFlowNodeInstance', () => {
 
     it('should throw an error if the data schema is not resolved', () => {
       using flow = createFlow()
-      const node = defineNode({ kind: 'core:example', defineDataSchema: () => ({ string: { name: 'Value', type: typeString } }) })
+      const node = defineNode({ kind: 'core:example', dataSchema: () => ({ string: { name: 'Value', type: typeString } }) })
       using instance = createFlowNodeInstance({ flow, node })
       const shouldThrow = () => instance.resolveDataValue('string')
       expect(shouldThrow).toThrow('Data schema not resolved')
@@ -547,7 +547,7 @@ describe('createFlowNodeInstance', () => {
 
     it('should throw an error if the key does not exist in the data schema', () => {
       using flow = createFlow()
-      const node = defineNode({ kind: 'core:example', defineDataSchema: { string: { name: 'Value', type: typeString } } })
+      const node = defineNode({ kind: 'core:example', dataSchema: { string: { name: 'Value', type: typeString } } })
       using instance = createFlowNodeInstance({ flow, node })
       // @ts-expect-error: The key "number" does not exist in the data schema.
       const shouldThrow = () => instance.resolveDataValue('number')
@@ -596,7 +596,7 @@ describe('createFlowNodeInstance', () => {
       using flow = createFlow()
       const node = defineNode({
         kind: 'core:example',
-        defineDataSchema: { string: { name: 'Value', type: typeString } },
+        dataSchema: { string: { name: 'Value', type: typeString } },
         defineResultSchema: { string: { name: 'Value', type: typeString } },
         process: ({ data }) => ({ string: data.string! }),
       })
@@ -609,7 +609,7 @@ describe('createFlowNodeInstance', () => {
       using flow = createFlow()
       const node = defineNode({
         kind: 'core:example',
-        defineDataSchema: { string: { name: 'Value', type: typeString } },
+        dataSchema: { string: { name: 'Value', type: typeString } },
         defineResultSchema: { string: { name: 'Value', type: typeString } },
         // @ts-expect-error: The result should be a string.
         process: () => ({ string: 42 }),
