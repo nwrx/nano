@@ -1,6 +1,7 @@
 import type { ModuleUser } from '../index'
 import { createRoute } from '@unserved/server'
-import { assertNumberPositiveStrict, assertString, assertStringNumber, assertUndefined, createSchema } from '@unshared/validation'
+import { parseBoolean } from '@unshared/string'
+import { assertNumberPositiveStrict, assertString, assertStringNotEmpty, assertStringNumber, assertUndefined, createSchema } from '@unshared/validation'
 import { ILike } from 'typeorm'
 
 export function userSearch(this: ModuleUser) {
@@ -11,26 +12,33 @@ export function userSearch(this: ModuleUser) {
         search: [[assertUndefined], [assertString]],
         page: [[assertUndefined], [assertStringNumber, Number.parseInt, assertNumberPositiveStrict]],
         limit: [[assertUndefined], [assertStringNumber, Number.parseInt, assertNumberPositiveStrict]],
+        withProfile: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
+        withSessions: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
       }),
     },
 
     async({ event, query }) => {
+      const { user } = await this.authenticate(event)
+      const { search, page = 1, limit = 10, withProfile = false, withSessions = false } = query
 
-      // --- Check if the user has the right permissions.
-      // await this.authorize(event, { permissions: [this.permissions.USER_SEARCH.id] })
-
-      // --- Destructure the parameters.
-      const { search, page = 1, limit = 10 } = query
+      // --- Check if the user is allowed to make the request.
+      const isPrivilegedQuery = withSessions
+      const isPrivilegedUser = user.isSuperAdministrator
+      if (isPrivilegedQuery && !isPrivilegedUser) throw this.errors.USER_NOT_ALLOWED()
 
       // --- Get the users.
-      const { User } = this.entities
+      const { User } = this.getRepositories()
       const users = await User.find({
-        where: {
-          username: search ? ILike(`%${search}%`) : undefined,
+        where: search
+          ? [
+            { username: ILike(`%${search}%`) },
+            { profile: { displayName: ILike(`%${search}%`) } },
+          ]
+          : undefined,
+        relations: {
+          profile: withProfile,
+          sessions: withSessions,
         },
-        // relations: {
-        //   roles: true,
-        // },
         order: {
           createdAt: 'DESC',
         },
@@ -39,7 +47,10 @@ export function userSearch(this: ModuleUser) {
       })
 
       // --- Return the users.
-      return users.map(user => user.serialize())
+      return users.map(user => user.serialize({
+        withProtected: isPrivilegedQuery,
+        withSessions: isPrivilegedQuery,
+      }))
     },
   )
 }
