@@ -29,7 +29,7 @@ const { t } = useI18n()
           <AppPageNavItem
             :label="t('access')"
             icon="i-carbon:user"
-            to="/settings/access"
+            :to="{ name: 'WorkspaceProjectSettingsAssignments', params: { workspace, project } }"
           />
           <AppPageNavItem
             :label="t('integrations')"

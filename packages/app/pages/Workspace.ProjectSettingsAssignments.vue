@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { useClient } from '#imports'
+import ProjectSettingsAssignments from '~/components/project/ProjectSettings.Assignments.vue'
 
 definePageMeta({
-  name: 'WorkspaceProjectSettings',
-  path: '/:workspace/:project/settings',
+  name: 'WorkspaceProjectSettingsAssignments',
+  path: '/:workspace/:project/settings/assignments',
   middleware: 'redirect-when-guest',
 })
 
@@ -17,7 +17,6 @@ const workspace = computed(() => route.params.workspace as string)
 // --- Remote data.
 const project = useProject(workspace, name, {
   withSecrets: true,
-  withVariables: true,
   withAssignments: true,
 })
 
@@ -39,30 +38,16 @@ onMounted(project.refresh)
 
 <template>
   <ProjectSettings :workspace="workspace" :project="name">
-    <ProjectSettingsGeneral
-      :project="name"
-      :title="project.data.title"
-      :description="project.data.description"
-      :workspace="workspace"
-      @submit="({ title, description }) => project.setSettings({ title, description })"
-    />
-    <ProjectSettingsAssigments
-      v-if="project.data.assignments"
+
+    <pre class="whitespace-pre-wrap break-words">{{ project.data }}</pre>
+
+    <ProjectSettingsAssignments
       :workspace="workspace"
       :project="name"
       :title="project.data.title"
-      :assigments="project.data.assignments"
+      :assignments="project.data.assignments"
       :search-users="searchUsers"
       @submit="(username, permissions) => project.setUserAssignments(username, permissions)"
-    />
-    <ProjectSettingsDangerZone
-      :search-users="searchUsers"
-      :workspace="workspace"
-      :project="name"
-      :title="project.data.title"
-      @submit-name="name => project.setName(name)"
-      @submit-delete="() => project.delete()"
-      @submit-transfer="username => project.setName(username)"
     />
   </ProjectSettings>
 </template>
