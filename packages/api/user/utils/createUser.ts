@@ -25,7 +25,7 @@ export async function createUser(this: ModuleUser, options: CreateUserOptions) {
 
   // --- Create the user and it's associated workspace, password and profile.
   const user = User.create({ email, username })
-  if (password) user.passwords = [await this.createPassword(user, password)]
+  if (password) user.passwords = [await this.createPassword(password)]
   const workspace = await workspaceModule.createWorkspace({ user, name: user.username, isPublic: true })
   user.profile = UserProfile.create({ displayName: user.username })
 
