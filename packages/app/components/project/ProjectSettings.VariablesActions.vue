@@ -23,12 +23,6 @@ const isDialogCreateOpen = ref(false)
     <ContextMenu x="right" y="top">
       <template #menu>
         <ContextMenuItem
-          icon="i-carbon:value-variable"
-          :label="t('create')"
-          keybind="Ctrl + N"
-          @click="() => isDialogCreateOpen = true"
-        />
-        <ContextMenuItem
           icon="i-carbon:edit"
           :label="t('update')"
           keybind="Ctrl + E"
