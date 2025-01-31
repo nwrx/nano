@@ -7,11 +7,11 @@
       transition-colors duration-200
       placeholder-black/50
 
-      bg-primary-500/0
-      hover:bg-primary-500/5
+      bg-transparent
+      hover:bg-black/5
 
       border-transparent
-      hover:border-primary-200
+      hover:border-black/10
     ">
 
     <!-- Field -->

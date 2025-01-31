@@ -36,7 +36,8 @@ onMounted(() => {
 
     <!-- Label -->
     <FlowEditorPortLabel
-      class="absolute self-start"
+      :class="{ 'opacity-0': model }"
+      class="absolute self-start pointer-events-none"
       :label="name"
     />
 
@@ -47,18 +48,14 @@ onMounted(() => {
       autocapitalize="sentences"
       autocomplete="off"
       spellcheck="false"
-      wrap="hard"
       rows="1"
-      :style="{
-        'text-indent': '5rem',
-      }"
       :class="{
         'font-mono': model,
       }"
       class="
       w-full text-start outline-none py-1
       bg-transparent appearance-none rounded max-h-128 resize-none
-      transition-all duration-100 text-sm
+      transition-all duration-100 text-sm whitespace-pre-wrap
       text-black/70 placeholder-black/50
     "
       @input="(event) => onTextAreaInput(event)"

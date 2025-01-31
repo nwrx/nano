@@ -86,10 +86,10 @@ function onRelease() {
       flex items-start gap-2 w-full
     "
     :class="{
-      'h-8': props.display !== 'textarea',
-      'pr-5 flex-row': props.kind === 'target',
-      'pl-5 flex-row-reverse': props.kind === 'source',
-      'hover:bg-primary-500/10': !props.display || isLinked,
+      'h-8': display !== 'textarea',
+      'pr-5 flex-row': kind === 'target',
+      'pl-5 flex-row-reverse': kind === 'source',
+      'hover:bg-black/10': (!display && isLinked && !disallowDynamic && !disallowStatic) || kind === 'source',
     }"
     @mousedown="(event: MouseEvent) => onGrab(event)"
     @mouseover="() => onAssign()"
@@ -100,12 +100,12 @@ function onRelease() {
     <div
       ref="pin"
       class="h-2 group-hover:scale-125 transition-transform duration-50 shrink-0 mt-3"
-      :style="{ backgroundColor: props.typeColor }"
+      :style="{ backgroundColor: typeColor }"
       :class="{
         'rounded-r-lg': kind === 'target',
         'rounded-l-lg': kind === 'source',
-        'w-4': !props.disallowDynamic,
-        'w-2 ml-2 rounded-lg': props.disallowDynamic,
+        'w-4': !disallowDynamic,
+        'w-2 ml-2 rounded-lg': disallowDynamic,
       }"
     />
 
