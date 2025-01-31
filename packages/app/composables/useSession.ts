@@ -13,6 +13,7 @@ export type SessionSignupCredentials = InferInput<typeof application, 'POST /api
 export const useSession = createSharedComposable(() => {
   const client = useClient()
   const router = useRouter()
+  const alerts = useAlerts()
   const session = ref<SessionObject>({})
 
   const refresh = async(force = false) => {
@@ -42,8 +43,8 @@ export const useSession = createSharedComposable(() => {
      */
     signupWithPassword: async(credentials: SessionSignupCredentials) => {
       await useClient().requestAttempt('POST /api/signup', {
-        onError: error => useAlerts().error(error),
-        onSuccess: () => useAlerts().success('Account created successfully'),
+        onError: error => alerts.error(error),
+        onSuccess: () => alerts.success('Account created successfully'),
         onData: () => {
           const redirect = useRoute().query.redirect as string | undefined
           session.value = { username: credentials.username }
@@ -65,10 +66,10 @@ export const useSession = createSharedComposable(() => {
      */
     signinWithPassword: async(credentials: SessionSigninCredentials) => {
       await useClient().requestAttempt('POST /api/session', {
-        onError: error => useAlerts().error(error),
+        onError: error => alerts.error(error),
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         onSuccess: async() => {
-          useAlerts().success('Logged in successfully')
+          alerts.success('Logged in successfully')
           const redirect = useRoute().query.redirect as string | undefined
           await refresh(true)
           return router.replace(redirect ?? { name: 'Workspace', params: { workspace: session.value.username } })
@@ -88,8 +89,8 @@ export const useSession = createSharedComposable(() => {
      */
     signout: async() => {
       await client.requestAttempt('DELETE /api/session', {
-        onSuccess: () => useAlerts().success('You have been signed out'),
-        onError: error => useAlerts().error(error),
+        onSuccess: () => alerts.success('You have been signed out'),
+        onError: error => alerts.error(error),
         onEnd: () => {
           session.value = {}
           void router.push({ name: 'Authentication' })
