@@ -20,7 +20,7 @@ const isOpen = useVModel(props, 'modelValue', emit, {
 
 <template>
   <div
-    class="flex flex-col px-4 transition-all duration-200 overflow-x-hidden"
+    class="flex flex-col px-4 transition-all duration-slow overflow-x-hidden"
     :class="{
       'w-64': isOpen,
       'w-18': !isOpen,
@@ -32,20 +32,20 @@ const isOpen = useVModel(props, 'modelValue', emit, {
       class="flex justify-between items-center sticky top-0 w-full px-2 rounded z-10"
       @click="() => { isOpen = !isOpen }">
       <BaseIcon
-        class="w-6 h-6 opacity-80 hover:opacity-100"
+        class="size-6 opacity-80 hover:opacity-100"
         :icon="isOpen ? 'i-carbon:side-panel-open-filled' : 'i-carbon:right-panel-open'"
       />
     </BaseButton>
 
     <!-- Nav -->
-    <AppNavDrawerSection
+    <AppDrawerSection
       v-if="itemsTop"
       :items="itemsTop"
       :isOpen="isOpen"
     />
 
     <!-- Bottom -->
-    <AppNavDrawerSection
+    <AppDrawerSection
       v-if="itemsBottom"
       class="!mt-auto"
       :items="itemsBottom"

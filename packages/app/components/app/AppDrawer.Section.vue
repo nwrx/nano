@@ -17,14 +17,14 @@ defineProps<{
 
     <!-- Nav items -->
     <template v-for="(item, index) in items" :key="index">
-      <AppNavDrawerGroup
+      <AppDrawerGroup
         v-if="item.items"
         :items="item.items"
         :label="item.label"
         :isOpen="isOpen"
       />
 
-      <AppNavDrawerItem
+      <AppDrawerItem
         v-else-if="item.to"
         :to="item.to"
         :icon="item.icon"
