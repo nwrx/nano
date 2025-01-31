@@ -283,8 +283,16 @@ export default defineConfig<Theme>({
       DEFAULT: {
         height: '1.5rem',
         spacing: '0.5rem',
-        fontSize: '0.860rem',
+        fontSize: '0.875rem',
         fontWeight: '500',
+        borderRadius: '0.25rem',
+        borderSize: '1px',
+      },
+      sm: {
+        height: '1.25rem',
+        spacing: '0.25rem',
+        fontSize: '0.75rem',
+        fontWeight: '600',
         borderRadius: '0.25rem',
         borderSize: '1px',
       },
