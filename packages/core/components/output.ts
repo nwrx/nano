@@ -1,4 +1,4 @@
-import { defineComponent } from '../utils'
+import { defineComponent } from '../utils/defineComponent'
 
 export const output = defineComponent({
   title: 'Output',
