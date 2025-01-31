@@ -113,4 +113,70 @@ const { setLocale, locale } = useI18n()
 .dark ::-webkit-scrollbar-thumb:hover {
   background-color: rgba(255, 255, 255, 0.5);
 }
+
+/* Markdown */
+.markdown {
+  white-space: wrap;
+  line-height: 1.25;
+}
+
+.markdown > *:first-child {
+  margin-top: 0;
+}
+
+.markdown h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.markdown h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.markdown h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.markdown p {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+}
+
+.markdown hr {
+  border: 0;
+  border-top: 2px solid var(--theme-borderColor-editor);
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.markdown ul {
+  white-space: normal;
+  margin-left: 1.5rem;
+  margin-bottom: 0.5rem;
+  list-style-type: disc;
+  list-style-position: outside;
+}
+
+.markdown ul > li > p {
+  display: inline;
+}
+
+.markdown ul ul {
+  list-style-type: circle;
+  margin-left: 1.5rem;
+}
+
+.markdown ul ul ul {
+  list-style-type: square;
+  margin-left: 1.5rem;
+}
 </style>
