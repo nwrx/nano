@@ -3,7 +3,7 @@ import type { NavItem } from '~/utils/types'
 
 defineProps<{
   items?: NavItem[]
-  collapsed?: boolean
+  isOpen?: boolean
 }>()
 </script>
 
@@ -11,8 +11,8 @@ defineProps<{
   <nav
     class="w-full children:transition-all children:duration-300"
     :class="{
-      'space-y-0': collapsed,
-      'space-y-12': !collapsed,
+      'space-y-0': !isOpen,
+      'space-y-12': isOpen,
     }">
 
     <!-- Nav items -->
@@ -21,7 +21,7 @@ defineProps<{
         v-if="item.items"
         :items="item.items"
         :label="item.label"
-        :collapsed="collapsed"
+        :isOpen="isOpen"
       />
 
       <AppNavDrawerItem
@@ -29,7 +29,7 @@ defineProps<{
         :to="item.to"
         :icon="item.icon"
         :label="item.label"
-        :collapsed="collapsed"
+        :isOpen="isOpen"
       />
     </template>
   </nav>

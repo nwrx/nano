@@ -28,12 +28,12 @@ const classes = computed(() => {
 
   const outlinedClasses = {
     'ring-1': true,
-    'ring-primary-100': variant === 'primary',
-    'ring-secondary-100': variant === 'secondary',
+    'ring-primary-300': variant === 'primary',
+    'ring-secondary-300': variant === 'secondary',
     'ring-success-100': variant === 'success',
-    'ring-danger-100': variant === 'danger',
-    'ring-warning-100': variant === 'warning',
-    'ring-accent-100': variant === 'accent',
+    'ring-danger-300': variant === 'danger',
+    'ring-warning-300': variant === 'warning',
+    'ring-accent-300': variant === 'accent',
     'ring-black': variant === 'light',
   }
 

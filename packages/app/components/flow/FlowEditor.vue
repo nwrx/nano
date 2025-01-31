@@ -1,237 +1,205 @@
 <script setup lang="ts">
-import type { FlowNodeInstanceJSON } from '@nanoworks/core'
-import type { DropPayload } from '~/utils/types'
+import type { FlowCategoryNodesJSON, FlowNodeInstanceJSON, FlowSessionParticipantJSON } from '@nwrx/api'
+import type { FlowLink } from '@nwrx/core'
+import { throttle } from '@unshared/functions/throttle'
 
 const props = defineProps<{
+  peerId: string
+  peers: FlowSessionParticipantJSON[]
+  name: string
+  icon: string
+  description: string
+  links: FlowLink[]
   nodes: FlowNodeInstanceJSON[]
-  links: Record<string, string>
+  categories: FlowCategoryNodesJSON[]
+  methods: string[]
+  secrets: string[]
+  variables: Array<{ name: string; value: string }>
+  projectSecrets: string[]
+  projectVariables: Array<{ name: string; value: string }>
+  isLocked: boolean
+  isRunning: boolean
+  isBookmarked: boolean
+  isPanelOpen: boolean
+  isPanelFlowMethodsOpen: boolean
+  isPanelFlowSecretsOpen: boolean
+  isPanelFlowEnvironmentsOpen: boolean
 }>()
 
 const emit = defineEmits<{
-  createNode: [kind: string, x: number, y: number]
-  createLink: [source: string, target: string]
-  removeLink: [source: string]
-  removeNode: [nodeId: string]
-  moveNode: [nodeId: string, x: number, y: number]
-  moveMouse: [x: number, y: number]
-  setNodeDataValue: [nodeId: string, portId: string, value: unknown]
+  run: []
+  abort: []
+  nodeStart: [id: string]
+  nodeAbort: [id: string]
+  nodeCreate: [kind: string, x: number, y: number]
+  nodeDuplicate: [nodeId: string, x: number, y: number]
+  nodeSetDataValue: [nodeId: string, key: string, value: unknown]
+  nodesMove: [payload: FlowNodePosition[]]
+  nodesRemove: [nodeIds: string[]]
+  linkCreate: [source: string, target: string]
+  linkRemove: [source: string]
+  userSetPosition: [x: number, y: number]
+  'update:name': [name: string]
+  'update:description': [description: string]
+  'update:isPanelOpen': [isOpen: boolean]
+  'update:isPanelFlowMethodsOpen': [isOpen: boolean]
+  'update:isPanelFlowSecretsOpen': [isOpen: boolean]
+  'update:isPanelFlowEnvironmentsOpen': [isOpen: boolean]
 }>()
 
-const editor = ref<HTMLElement>()
-const nodeSelectedId = ref<string | undefined>()
+// --- Two-way binding.
+const title = useVModel(props, 'name', emit, { passive: true })
+const methods = useVModel(props, 'methods', emit, { passive: true })
+const description = useVModel(props, 'description', emit, { passive: true })
+const isPanelOpen = useVModel(props, 'isPanelOpen', emit, { passive: true })
+const isPanelFlowMethodsOpen = useVModel(props, 'isPanelFlowMethodsOpen', emit, { passive: true })
+const isPanelFlowSecretsOpen = useVModel(props, 'isPanelFlowSecretsOpen', emit, { passive: true })
+const isPanelFlowEnvironmentsOpen = useVModel(props, 'isPanelFlowEnvironmentsOpen', emit, { passive: true })
 
-/** Delete the selected node when pressing the `Delete` key. */
-onKeyStroke(['Delete', 'Backspace'], (event) => {
-  event.preventDefault()
-  if (!nodeSelectedId.value) return
-  if (document.activeElement instanceof HTMLInputElement) return
-  if (document.activeElement instanceof HTMLTextAreaElement) return
-  if (document.activeElement instanceof HTMLSelectElement) return
-  emit('removeNode', nodeSelectedId.value)
-}, { eventName: 'keydown' })
+// --- Instanciate all composition functions from the FlowEditor component.
+// --- The entire view logic is encapsulated in this composition function.
+const editor = useFlowEditor({
+  viewSize: 10e4,
 
-/** Move the selected node using arrow or WASD keys. */
-onKeyStroke(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'], (event) => {
-  event.preventDefault()
-  if (!nodeSelectedId.value) return
-  const node = props.nodes.find(node => node.id === nodeSelectedId.value)
-  if (!node) return
-  const speed = event.shiftKey ? 100 : 10
-  const position = { ...node.position }
-  if (event.key === 'ArrowUp') position.y -= speed
-  if (event.key === 'ArrowDown') position.y += speed
-  if (event.key === 'ArrowLeft') position.x -= speed
-  if (event.key === 'ArrowRight') position.x += speed
-  emit('moveNode', node.id, position.x, position.y)
-}, { eventName: 'keydown' })
+  // Data
+  nodes: computed(() => props.nodes),
+  links: computed(() => props.links),
+  peers: computed(() => props.peers),
+  peerId: computed(() => props.peerId),
 
-/**
- * Watch the local mouse position and emit the `moveMouse` event
- * that allows the parent component to broadcast the mouse position
- * to other clients.
- */
-const mouse = useMouse()
-watch([mouse.x, mouse.y], ([x, y]) => emit('moveMouse', x, y))
-
-/**
- * Compute the position of the links between the nodes.
- * The links are computed based on the position of the `pin` elements
- * that are exposed by the Chain.Node component.
- */
-const nodeElements = ref<Record<string, ComponentPublicInstance>>({})
-const linkNodes = computed(() => {
-  const links = [] as FlowLinkProps[]
-  if (!props.links) return links
-  if (!editor.value) return links
-  const { left, top } = editor.value.getBoundingClientRect()
-
-  // --- Iterate over the links and compute the position of the source and target pins.
-  for (const [from, to] of Object.entries(props.links)) {
-    const [source, sourceProperty] = from.split(':')
-    const [target, targetProperty] = to.split(':')
-
-    // --- Get the source and target node elements.
-    const sourceNodeElement = nodeElements.value[source]
-    const targetNodeElement = nodeElements.value[target]
-    if (!sourceNodeElement || !targetNodeElement) continue
-
-    // --- Get the source and target pin elements.
-    // @ts-expect-error: The `portsData` is exposed by the Chain.Node component.
-    const sourcePin = sourceNodeElement.portsResult[sourceProperty]?.pin
-    // @ts-expect-error: The `portsData` is exposed by the Chain.Node component.
-    const targetPin = targetNodeElement.portsData[targetProperty]?.pin
-    if (!sourcePin || !targetPin) continue
-
-    // --- Compute the position of the source and target pins.
-    const sourceRect = sourcePin.getBoundingClientRect()
-    const targetRect = targetPin.getBoundingClientRect()
-
-    // --- Push the computed link to the links array.
-    links.push({
-      sourceX: (sourceRect.x + sourceRect.width / 2) - left,
-      sourceY: (sourceRect.y + sourceRect.height / 2) - top,
-      targetX: (targetRect.x + targetRect.width / 2) - left,
-      targetY: (targetRect.y + targetRect.height / 2) - top,
-      sourceColor: sourcePin.style.backgroundColor,
-      targetColor: targetPin.style.backgroundColor,
-    })
-  }
-
-  // --- Return the computed links.
-  return links
-})
-
-/**
- * Compute the link that is being dragged from one node to another.
- * This link is computed based on the position of the mouse and the node
- * that is being dragged from.
- */
-const dragLinkStart = ref<FlowDragState>()
-const dragLinkTarget = ref<FlowDragState>()
-const linkDrag = computed((): FlowLinkProps | undefined => {
-  if (!editor.value) return
-  if (!dragLinkStart.value) return
-  const { left, top } = editor.value.getBoundingClientRect()
-  const { position, color, kind = 'data' } = dragLinkStart.value
-  return {
-    sourceX: (kind === 'data' ? mouse.x.value : position.x) - left,
-    sourceY: (kind === 'data' ? mouse.y.value : position.y) - top,
-    targetX: (kind === 'data' ? position.x : mouse.x.value) - left,
-    targetY: (kind === 'data' ? position.y : mouse.y.value) - top,
-    sourceColor: color,
-    targetColor: color,
-  }
-})
-
-/**
- * When dropping a link, emit the `nodeLink` event trigger the parent
- * component to link the two nodes together and broadcast the new link.
- */
-function onLinkDrop() {
-  const source = dragLinkStart.value
-  const target = dragLinkTarget.value
-  dragLinkStart.value = undefined
-  dragLinkTarget.value = undefined
-  if (!source) return
-  else if (!target) emit('removeLink', source.id)
-  else if (target && target.kind === 'data') emit('createLink', source.id, target.id)
-  else if (target && target.kind === 'result') emit('createLink', target.id, source.id)
-}
-
-/**
- * When dropping an `application/json` file, emit the `createNode` event
- * to trigger the parent component to create a new node based on the
- * dropped JSON data.
- *
- * @param event The drop event that contains the JSON data.
- */
-function onDrop(event: DragEvent) {
-  if (!event.dataTransfer) return
-  const data = event.dataTransfer.getData('application/json')
-  if (!data) return
-  const node = JSON.parse(data) as DropPayload
-
-  if (node.type === 'createNode') {
-    if (!editor.value) return
-    const { left, top } = editor.value.getBoundingClientRect()
-    emit('createNode', node.kind, mouse.x.value - left, mouse.y.value - top)
-  }
-}
-
-/**
- * Each time a node is selected, update it's z-index to make it appear
- * on top of the other nodes. This is done by using a counter that is
- * incremented each time a node is selected.
- */
-const zIndexCounter = ref(0)
-const zIndexMap = reactive<Record<string, number>>({})
-watch(nodeSelectedId, () => {
-  if (!nodeSelectedId.value) return
-  zIndexMap[nodeSelectedId.value] = zIndexCounter.value++
+  // Handlers
+  onNodeCreate: (kind, x, y) => emit('nodeCreate', kind, x, y),
+  onNodeDuplicate: (nodeId, x, y) => emit('nodeDuplicate', nodeId, x, y),
+  onNodesRemove: ids => emit('nodesRemove', ids),
+  onLinkCreate: (source, target) => emit('linkCreate', source, target),
+  onLinkRemove: id => emit('linkRemove', id),
+  onNodesMove: throttle((payload: FlowNodePosition[]) => emit('nodesMove', payload), 50),
+  onUserSetPosition: throttle((x: number, y: number) => emit('userSetPosition', x, y), 50),
 })
 </script>
 
 <template>
   <div
-    ref="editor"
-    class="w-full h-full bg-graphpaper-blue-300/50 select-none"
-    dropzone="move"
-    @drop="(event) => onDrop(event)"
-    @dragover.prevent
-    @dragenter.prevent
-    @mouseup="() => onLinkDrop()"
-    @mousedown="() => nodeSelectedId = undefined">
+    :ref="(el) => editor.viewContainer = el as HTMLDivElement"
+    tabindex="0"
+    disabled
+    :style="editor.viewContainerStyle"
+    class="w-full h-full select-none relative overflow-hidden z-0 bg-white select-none"
+    @drop="(event) => editor.onScreenDrop(event)"
+    @mouseup="() => editor.onScreenMouseUp()"
+    @mousemove="(event) => editor.onScreenMouseMove(event)"
+    @mousedown="(event) => editor.onScreenMouseDown(event)"
+    @keydown="(event) => editor.onScreenKeyDown(event)"
+    @wheel="(event) => editor.onScreenWheel(event)">
 
-    <pre class="absolute pointer-events-none">{{ links }}</pre>
-
-    <!-- Nodes -->
-    <FlowEditorNode
-      v-for="(node, index) in nodes"
-      :id="node.id"
-      :ref="(el) => nodeElements[node.id] = el as ComponentPublicInstance"
-      :key="index"
-      :data="node.data"
-      :result="node.result"
-      :name="node.name ?? node.kind"
-      :icon="node.icon"
-      :dataSchema="node.dataSchema"
-      :resultSchema="node.resultSchema"
-      :position="node.position"
-      :is-selected="nodeSelectedId === node.id"
-      :style="{
-        'transform': `translate(${node.position.x}px, ${node.position.y}px)`,
-        'z-index': zIndexMap[node.id] ?? 0,
-      }"
-      :links="links"
-      @select="() => nodeSelectedId = node.id"
-      @move="(x, y) => emit('moveNode', node.id, x, y)"
-      @setDataValue="(portId, value) => emit('setNodeDataValue', node.id, portId, value)"
-      @dragLinkStart="(state) => dragLinkStart = state"
-      @dragLinkTarget="(state) => dragLinkTarget = state"
-      @dragLinkDrop="() => onLinkDrop()"
+    <!-- Selector box -->
+    <div
+      v-if="editor.viewSelecting"
+      :style="editor.viewSelectorStyle"
+      class="absolute border-3 border-primary-500 border-dashed rounded bg-primary-500/10 z-9999"
     />
 
-    <!-- Links -->
-    <FlowEditorLink
-      v-for="(link, index) in linkNodes"
-      :key="index"
-      :source-x="link.sourceX"
-      :source-y="link.sourceY"
-      :source-color="link.sourceColor"
-      :target-x="link.targetX"
-      :target-y="link.targetY"
-      :target-color="link.targetColor"
-    />
+    <!-- View -->
+    <div
+      :ref="(el) => editor.view = el as HTMLDivElement"
+      :style="editor.viewStyle"
+      class="bg-graphpaper-primary-100"
+      @dragover.prevent
+      @dragenter.prevent
+      @contextmenu.prevent>
 
-    <!-- Link used to drag from one node to another. -->
-    <FlowEditorLink
-      v-if="linkDrag"
-      :source-x="linkDrag.sourceX"
-      :source-y="linkDrag.sourceY"
-      :source-color="linkDrag.sourceColor"
-      :target-x="linkDrag.targetX"
-      :target-y="linkDrag.targetY"
-      :target-color="linkDrag.targetColor"
-    />
+      <!-- Cursors -->
+      <FlowEditorPeer
+        v-for="peer in editor.cursorPeers"
+        :style="editor.getPeerStyle(peer)"
+        name="John Doe"
+        color="blue"
+        :zoom="editor.viewZoom"
+      />
+
+      <!-- Nodes -->
+      <FlowEditorNode
+        v-for="node in nodes"
+        :id="node.id"
+        :ref="(el) => editor.nodeComponents[node.id] = el as ComponentPublicInstance"
+        :key="node.id"
+        :data="node.data"
+        :result="node.result"
+        :name="node.name ?? node.kind"
+        :icon="node.icon"
+        :color="node.categoryColor"
+        :dataSchema="node.dataSchema"
+        :resultSchema="node.resultSchema"
+        :position="node.position"
+        :style="editor.getNodeStyle(node)"
+        :links="links"
+        :zoom="editor.viewZoom"
+        :isRunning="node.isRunning"
+        :isCollapsed="node.isCollapsed"
+        :isSelected="editor.isNodeSelected(node.id)"
+        @run="() => emit('nodeStart', node.id)"
+        @abort="() => emit('nodeAbort', node.id)"
+        @click="(event) => editor.onNodeClick(event, node.id)"
+        @setDataValue="(key, value) => emit('nodeSetDataValue', node.id, key, value)"
+        @handleGrab="(event) => editor.onNodeHandleGrab(event, node.id)"
+        @handleRelease="() => editor.onNodeHandleRelease()"
+        @portGrab="(state) => editor.onNodePortGrab(state)"
+        @portAssign="(state) => editor.onNodePortAssign(state)"
+        @portRelease="() => editor.onNodePortRelease()"
+      />
+
+      <!-- Links -->
+      <FlowEditorLink
+        v-for="(link, index) in editor.linksProps"
+        :key="index"
+        v-bind="link"
+        class="absolute z-9999 pointer-events-none"
+        :zoom="editor.viewZoom"
+      />
+
+      <!-- Link used to drag from one node to another. -->
+      <FlowEditorLink
+        v-if="editor.linkDragProps"
+        v-bind="editor.linkDragProps"
+        class="absolute z-9999 pointer-events-none"
+        :zoom="editor.viewZoom"
+      />
+    </div>
+
+    <!-- Overlay -->
+    <div class="absolute top-4 left-4 bottom-4 right-4 z-9999 pointer-events-none children:pointer-events-auto">
+
+      <!-- Toolbar -->
+      <FlowEditorToolbar
+        :name="name"
+        :isRunning="isRunning"
+        class="absolute top-0 left-0"
+        @run="() => emit('run')"
+        @abort="() => emit('abort')"
+      />
+
+      <!-- Edit panel -->
+      <div class="absolute top-0 right-0 bottom-0 pointer-events-none">
+        <FlowEditorPanel
+          v-model:name="name"
+          v-model:description="description"
+          v-model:methods="methods"
+          v-model:isOpen="isPanelOpen"
+          v-model:isFlowMethodsOpen="isPanelFlowMethodsOpen"
+          v-model:isFlowSecretsOpen="isPanelFlowSecretsOpen"
+          v-model:isFlowVariablesOpen="isPanelFlowEnvironmentsOpen"
+          class="pointer-events-auto"
+          :secrets="secrets"
+          :variables="variables"
+          :nodeSelected="editor.nodeSelected"
+        />
+      </div>
+
+      <!-- Drawer -->
+      <FlowEditorDrawer
+        :categories="categories"
+        class="absolute bottom-0 left-0"
+      />
+    </div>
   </div>
 </template>

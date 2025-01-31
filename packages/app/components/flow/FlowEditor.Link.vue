@@ -1,8 +1,8 @@
-<!-- eslint-disable vue/no-setup-props-reactivity-loss -->
 <script setup lang="ts">
 import type { FlowLinkProps } from '~/utils/types'
 
-const props = defineProps<FlowLinkProps>()
+const props = defineProps<{ zoom?: number } & FlowLinkProps>()
+const id = useId()
 
 const offset = computed(() => {
   const x = props.targetX - props.sourceX
@@ -10,6 +10,10 @@ const offset = computed(() => {
   const lineLength = Math.hypot(x, y)
   return Math.max(30, lineLength / 2)
 })
+
+const strokeWidth = computed(() =>
+  Math.max(4, 3 / (props.zoom ?? 1)),
+)
 
 const d = computed(() => [
   'M',
@@ -23,20 +27,27 @@ const d = computed(() => [
   props.targetX,
   props.targetY,
 ].join(' '))
+
+const linearGradient = computed(() => ({
+  x1: props.sourceX >= props.targetX ? 1 : 0,
+  y1: props.sourceY >= props.targetY ? 1 : 0,
+  x2: props.sourceX >= props.targetX ? 0 : 1,
+  y2: props.sourceY >= props.targetY ? 0 : 1,
+}))
 </script>
 
 <template>
   <svg class="w-full h-full pointer-events-none">
     <defs>
-      <linearGradient id="line-gradient" x1="0" x2="1" y1="0" y2="0">
-        <stop :stop-color="sourceColor" offset="0" />
-        <stop :stop-color="targetColor" offset="1" />
+      <linearGradient :id v-bind="linearGradient">
+        <stop :stop-color="sourceColor" offset="0.50" />
+        <stop :stop-color="targetColor" offset="0.50" />
       </linearGradient>
     </defs>
     <path
       :d="d"
-      stroke="url(#line-gradient)"
-      stroke-width="4"
+      :stroke="`url(#${id})`"
+      :stroke-width="strokeWidth"
       fill="transparent"
     />
   </svg>

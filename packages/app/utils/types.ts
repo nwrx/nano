@@ -1,14 +1,15 @@
+import type { FlowObject } from '@nwrx/api'
 import type { RouteLocationRaw } from 'vue-router'
 import type { application } from '~/server'
-import type * as COLORS from './colors'
+import type { COLORS } from './colors'
 
 declare module '@unserved/nuxt/types' {
   // @ts-expect-error: override the global application type.
   export type GlobalApplication = typeof application
 }
 
-export type Size = 'large' | 'medium' | 'small'
-export type Variant = keyof typeof COLORS
+export type Size = 'large' | 'medium' | 'small' | 'xlarge' | 'xsmall'
+export type Variant = ({} & string) & keyof typeof COLORS
 export type Alignment = 'center' | 'left' | 'right'
 
 export interface NavItem {
@@ -22,7 +23,7 @@ export interface FlowDragState {
   id: string
   color: string
   position: { x: number; y: number }
-  kind: 'data' | 'result'
+  kind: 'source' | 'target'
 }
 
 export interface FlowLinkProps {
@@ -32,6 +33,12 @@ export interface FlowLinkProps {
   targetX: number
   targetY: number
   targetColor: string
+}
+
+export interface FlowNodePosition {
+  nodeId: string
+  x: number
+  y: number
 }
 
 export interface CardProps {
@@ -45,6 +52,15 @@ export interface CardProps {
   classContainer?: string
 }
 
-export type DropPayload =
-  { type: 'createLink'; source: string; target: string } |
-  { type: 'createNode'; kind: string }
+export interface DropPayload {
+  type: 'nodeCreate'
+  kind: string
+}
+
+export interface ProjectListItem {
+  name: string
+  icon?: string
+  description?: string
+  collaborators: Array<{ id: string; name: string; imageUrl: string }>
+  flows?: FlowObject[]
+}
