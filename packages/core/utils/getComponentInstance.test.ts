@@ -5,9 +5,9 @@ import { getComponentInstance } from './getComponentInstance'
 describe('getComponentInstance', () => {
   it('should return the component instance for a valid ID', () => {
     const thread = createThread()
-    const id = addComponentInstance(thread, { kind: 'example' })
+    const id = addComponentInstance(thread, { specifier: 'example' })
     const result = getComponentInstance(thread, id)
-    expect(result).toStrictEqual({ kind: 'example' })
+    expect(result).toStrictEqual({ specifier: 'example' })
   })
 
   it('should throw an error for an invalid ID', () => {
