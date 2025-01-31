@@ -98,6 +98,7 @@ export class ModuleUser extends ModuleBase implements ModuleUserOptions {
   // --- Methods.
   authenticate = UTILS.authenticate.bind(this) as typeof UTILS.authenticate
   createUser = UTILS.createUser.bind(this)
+  createPassword = UTILS.createPassword.bind(this)
   createSession = UTILS.createSession.bind(this)
   resolveUser = UTILS.resolveUser.bind(this)
 }

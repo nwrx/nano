@@ -1,4 +1,6 @@
 import type { ScryptOptions } from 'node:crypto'
+import type { User } from '../entities'
+import type { ModuleUser } from '../index'
 import { randomBytes, scrypt } from 'node:crypto'
 
 /**
@@ -38,13 +40,14 @@ export interface PasswordOptions extends ScryptOptions {
  * salt and hashes the password using the options provided. The default options
  * are provided by OWASP and are recommended for password hashing.
  *
+ * @param user The user to hash the password for.
  * @param password The password to hash.
  * @param options The options to hash the password.
  * @returns The salt, hash, and options used to hash the password.
  * @see https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#scrypt
  * @example await createPassword('password', USER_HASH_OPTIONS) // => { salt, hash, options }
  */
-export async function createPassword(password: string, options: PasswordOptions = {}) {
+export async function createPassword(this: ModuleUser, user: User, password: string, options: PasswordOptions = {}) {
   const {
     keylen = 32,
     encoding = 'hex',
@@ -63,7 +66,8 @@ export async function createPassword(password: string, options: PasswordOptions 
       else resolve(derivedKey.toString(encoding))
     }))
 
-  // --- Return the salt, hash, and options used to hash the password.
-  const passowrdOptions = { algorithm: 'scrypt', ...hashOptions, keylen, encoding, salt }
-  return { hash, options: passowrdOptions }
+  // --- Return the new password entity.
+  const passwordOptions = { algorithm: 'scrypt', ...hashOptions, keylen, encoding, salt }
+  const { UserPassword } = this.getRepositories()
+  return UserPassword.create({ user, hash, options: passwordOptions })
 }
