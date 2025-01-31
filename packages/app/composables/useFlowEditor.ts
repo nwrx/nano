@@ -336,7 +336,7 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
         left: `${x}px`,
         top: `${y}px`,
         zIndex: zIndexMap[node.id] ?? 1,
-        transition: isSelected ? 'none' : 'all 0.1s ease',
+        transition: isSelected ? 'none' : 'transform 0.1s ease',
       }
     },
 
@@ -354,7 +354,7 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
         left: `${x}px`,
         top: `${y}px`,
         pointerEvents: 'none',
-        transition: 'all 0.1s ease',
+        transition: 'transform 0.1s ease',
         zIndex: 9999,
       }
     },
