@@ -5,7 +5,7 @@ import type { WorkspacePermission, WorkspaceProjectPermission } from '../workspa
 import { Application } from '@unserved/server'
 import { randomUUID } from 'node:crypto'
 import { rm } from 'node:fs/promises'
-import { get } from 'node:http'
+import { request } from 'node:http'
 import { ModuleFlow } from '../flow'
 import { ModuleUser } from '../user'
 import { ModuleWorkspace } from '../workspace'
@@ -44,7 +44,7 @@ export async function createContext() {
 
     fetch: async(path: string, options: RequestInit = {}): Promise<Response> =>
       new Promise((resolve, reject) => {
-        const request = get({
+        const clientRequest = request({
           path,
           socketPath: socket,
           method: options.method,
@@ -58,7 +58,12 @@ export async function createContext() {
         // --- Handle incoming response.
         (response) => {
           let data = ''
+          setTimeout(reject, 10)
           response.on('data', chunk => data += chunk)
+          response.on('error', (error) => {
+            reject(error)
+            response.resume()
+          })
           response.on('end', () => resolve({
             status: response.statusCode!,
             statusText: response.statusMessage!,
@@ -68,8 +73,9 @@ export async function createContext() {
           } as Response))
         })
 
-        request.on('error', reject)
-        request.end()
+        // --- Write the request body.
+        if (options.body) clientRequest.write(options.body, 'utf8')
+        clientRequest.end()
       }),
 
     async destroy() {
@@ -100,6 +106,7 @@ export async function createContext() {
       })
 
       // --- Assign the super administrator role.
+      if (options.email) user.email = options.email
       if (options.isSuperAdministrator) user.isSuperAdministrator = true
 
       // --- Create the cookie header.
