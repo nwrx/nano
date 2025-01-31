@@ -1,6 +1,6 @@
 import type { Flow as FlowEntity } from '../entities'
 import type { ModuleFlow } from '../index'
-import { Flow } from '@nwrx/core'
+import { Flow, getModuleNode } from '@nwrx/core'
 import { defineNode } from '@nwrx/core'
 import { memoize } from '@unshared/functions'
 import { ModuleWorkspace } from '../../workspace'
@@ -22,22 +22,18 @@ function FALLBACK_NODE(kind: string) {
  */
 export function resolveFlowInstance(this: ModuleFlow, entity: FlowEntity) {
   const workspaceModule = this.getModule(ModuleWorkspace)
-
   return Flow.fromJSON(entity.data, {
     resolveNode: [
-      memoize((kind) => {
+      memoize(async(kind) => {
         if (kind.startsWith('nwrx/')) kind = kind.slice(5)
-        const [module] = kind.split('/')
-
-        // --- Find the module in the list.
-        const moduleInstance = MODULES.find(m => m.kind === module)
-        if (!moduleInstance) return FALLBACK_NODE(kind)
-        if (!moduleInstance.nodes) return FALLBACK_NODE(kind)
 
         // --- Find the node in the module.
-        const node = Object.values(moduleInstance.nodes).find(n => n.kind === kind)
-        if (!node) return FALLBACK_NODE(kind)
-        return node
+        for (const module of MODULES) {
+          const node = await getModuleNode(module, kind)
+          if (node) return node
+        }
+
+        return FALLBACK_NODE(kind)
       }),
     ],
     resolveReference: [
@@ -49,6 +45,14 @@ export function resolveFlowInstance(this: ModuleFlow, entity: FlowEntity) {
           const variable = await WorkspaceProjectVariable.findOne({ where: { project, name } })
           if (!variable) throw new Error(`Variable not found: ${name}`)
           return variable.value
+        }
+        if ('$fromSecret' in reference) {
+          const { name } = reference.$fromSecret
+          const { project } = entity
+          const { WorkspaceProjectSecret } = workspaceModule.getRepositories()
+          const secret = await WorkspaceProjectSecret.findOne({ where: { project, name } })
+          if (!secret) throw new Error(`Secret not found: ${name}`)
+          return secret.cipher
         }
       },
     ],
