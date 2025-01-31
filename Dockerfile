@@ -21,7 +21,7 @@ RUN apk add --no-cache \
 # Prefetch dependencies so they can be reused in the next steps
 # without having to download them again if the lockfile hasn't changed.
 COPY ./pnpm-lock.yaml ./
-RUN pnpm fetch
+RUN --mount=type=cache,target=/pnpm_cache,rw pnpm fetch
 
 # for each sub-package, we have to add one extra step to copy its manifest
 # to the right place, as docker have no way to filter out only package.json with
@@ -48,12 +48,41 @@ RUN \
 # Build the application.
 #######################################
 
-FROM base AS nano-app
+FROM base AS production
 WORKDIR /app
-COPY --from=build /build/app .
-ENTRYPOINT ["node", ".output/server/index.mjs"]
 
-FROM base AS nano-api
-WORKDIR /app
-COPY --from=build /build/api .
-ENTRYPOINT ["node", "dist/server.js"]
+COPY --from=build /build/app ./app
+COPY --from=build /build/api ./api
+
+# Write a single entry point that will start the app depending on the
+# arguments passed to the container. This is done to avoid having to
+# create multiple Dockerfiles for each sub-package.
+COPY <<EOF /usr/bin/nano
+#!/usr/bin/env sh
+
+show_help() {
+  echo "Usage: nano serve [app|api]"
+  echo "Commands:"
+  echo "  serve app    Start the app server"
+  echo "  serve api    Start the API server"
+  echo "  --help       Show this help message"
+}
+
+if [ "\$1" = "--help" ]; then
+  show_help
+elif [ "\$1" = "serve" ]; then
+  if [ "\$2" = "app" ]; then
+    node app/.output/server/index.mjs
+  else
+    node api/dist/server.js
+  fi
+else
+  echo "Invalid argument: \$1"
+  show_help
+  exit 1
+fi
+EOF
+
+# Make the entrypoint script executable.
+RUN chmod +x /usr/bin/nano
+ENTRYPOINT ["/usr/bin/nano"]

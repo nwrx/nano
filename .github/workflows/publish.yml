@@ -1,7 +1,7 @@
 name: CI
 permissions:
-  id-token: write
   contents: write
+  packages: write
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
 
 jobs:
   ci:
-    name: Continuous Integration & Deployment to Private Registry
+    name: Continuous Integration & Deployment to Registry
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -27,17 +27,16 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.repository_owner }}
+          username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract Docker metadata from GitHub event
-        id: meta-app
+        id: meta
         uses: docker/metadata-action@v5
         with:
           images: |
-            ghcr.io/nwrx/nano-app
+            ghcr.io/nwrx/nano
           tags: |
-            type=schedule
             type=ref,event=branch
             type=ref,event=pr
             type=semver,pattern={{version}}
@@ -45,34 +44,11 @@ jobs:
             type=semver,pattern={{major}}
             type=sha
 
-      - name: Extract Docker metadata from GitHub event
-        id: meta-api
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ghcr.io/nwrx/nano-api
-          tags: |
-            type=schedule
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=sha
-
-      - name: Build and push nano-app
+      - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
-          target: nano-app
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta-app.outputs.tags }}
-          labels: ${{ steps.meta-app.outputs.labels }}
-
-      - name: Build and push nano-api
-        uses: docker/build-push-action@v6
-        with:
-          target: nano-api
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta-api.outputs.tags }}
-          labels: ${{ steps.meta-api.outputs.labels }}
-
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

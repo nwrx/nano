@@ -17,14 +17,17 @@ services:
       - "5432:5432"
 
   app:
-    image: nano-app
+    image: nano
     build:
       context: .
-      target: nano-app
-      tags: 
-        - nano-app:latest
+      tags: [nano:latest]
     depends_on:
+      - postgres
       - api
+    entrypoint:
+      - nano
+      - serve
+      - app
     environment:
       - PORT=3000
       - HOST=0.0.0.0
@@ -32,24 +35,22 @@ services:
       - "3000:3000"
 
   api:
-    image: nano-api
+    image: nano
     build:
       context: .
-      target: nano-api
-      tags: 
-        - nano-api:latest
+      tags: [nano:latest]
     depends_on:
       - postgres
+    entrypoint:
+      - nano
+      - serve
+      - api
     links:
       - postgres:postgres
     environment:
       - PORT=3001
       - HOST=0.0.0.0
       - NANO_DATABASE_SYNCRONIZE=true
-
-      # - NANO_DATABASE_TYPE=sqlite
-      # - NANO_DATABASE_DATABASE=.data/database.sqlite
-
       - NANO_DATABASE_TYPE=postgres
       - NANO_DATABASE_HOST=postgres
       - NANO_DATABASE_PORT=5432
