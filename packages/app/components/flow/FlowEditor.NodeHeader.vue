@@ -5,6 +5,8 @@ defineProps<{
   icon: string
   color: string
   isRunning: boolean
+  isSelected: boolean
+  isDragging: boolean
 }>()
 
 const emit = defineEmits<{
@@ -25,35 +27,28 @@ const emit = defineEmits<{
     class="
       flex justify-start items-center
       h-8 w-full px-2 space-x-2 group
-      rounded-t cursor-move text-white
+      rounded-t text-white
     "
+    :class="{
+      'cursor-grabbing': isSelected && isDragging,
+      'cursor-grab': !isSelected || !isDragging,
+    }"
     @mousedown="(event) => emit('handleGrab', event)"
     @mousemove="(event) => emit('handleMove', event)"
     @mouseup="(event) => emit('handleRelease', event)">
 
     <!-- Circle/icon -->
-    <BaseIcon
-      v-if="icon"
-      :icon="icon"
-      class="w-4 h-4"
-      load
-    />
+    <BaseIcon v-if="icon" :icon="icon" class="size-4" load />
 
     <!-- Title -->
-    <p class="font-medium shrink-0">
+    <p class="font-medium grow">
       {{ name }}
     </p>
 
     <!-- Debug ID -->
-    <p v-if="id" class="text-sm opacity-80 truncate">
-      ({{ id.slice(0, 8) }})
+    <p v-if="id" class="text-sm truncate">
+      {{ id.slice(0, 8) }}
     </p>
-
-    <!-- Progress-bar -->
-    <div
-      v-if="isRunning"
-      class=" h-2 w-8 bg-green-500 rounded-full"
-    />
 
     <!-- Run button / play icon -->
     <BaseButton
