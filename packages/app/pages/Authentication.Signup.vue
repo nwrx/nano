@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { useClient } from '#imports'
-
 definePageMeta({
   name: 'AuthenticationSignup',
   path: '/auth/signup',
   alias: ['/auth/register', '/auth/sign-up'],
-  middleware: 'guest',
+  middleware: 'redirect-when-authenticated',
 })
 
 useSeoMeta({
@@ -14,27 +12,11 @@ useSeoMeta({
 })
 
 // Sign-up form
-const email = ref('')
+const session = useSession()
+const email = ref('' as `${string}@${string}`)
 const username = ref('')
 const password = ref('')
 const passwordConfirm = ref('')
-
-// Sign-up with email and password
-async function signupWithPassword() {
-  await useClient().requestAttempt('POST /api/signup', {
-    onError: error => useAlerts().error(error),
-    onSuccess: async() => {
-      useAlerts().success('Account created successfully')
-      await useRouter().replace('/flows')
-    },
-    data: {
-      email: email.value as `${string}@${string}`,
-      username: username.value,
-      password: password.value,
-      passwordConfirm: passwordConfirm.value,
-    },
-  })
-}
 
 // Auto-fill form in development
 onMounted(() => {
@@ -53,7 +35,7 @@ onMounted(() => {
       <AuthenticationDivider>or</AuthenticationDivider>
       <form
         class="flex flex-col space-y-2"
-        @submit.prevent="() => signupWithPassword()">
+        @submit.prevent="() => session.signupWithPassword({ email, username, password, passwordConfirm })">
 
         <!-- Username -->
         <InputText
@@ -108,7 +90,7 @@ onMounted(() => {
     <AuthenticationFooter
       text="Already have an account?"
       label="Sign in"
-      :to="{ name: 'AuthenticationSignin' }"
+      :to="{ name: 'Authentication' }"
     />
   </Authentication>
 </template>

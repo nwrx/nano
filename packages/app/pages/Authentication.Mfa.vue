@@ -2,7 +2,7 @@
 definePageMeta({
   name: 'AuthenticationTotp',
   path: '/auth/totp',
-  middleware: 'guest',
+  middleware: 'redirect-when-authenticated',
 })
 </script>
 

@@ -2,7 +2,7 @@
 definePageMeta({
   name: 'AuthenticationForgot',
   path: '/auth/forgot-password',
-  middleware: 'guest',
+  middleware: 'redirect-when-authenticated',
 })
 </script>
 
