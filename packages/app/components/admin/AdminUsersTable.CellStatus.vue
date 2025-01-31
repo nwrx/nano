@@ -33,8 +33,8 @@ const isDialogImpersonateOpen = ref(false)
 
     <!-- Creation Date -->
     <div :key="locale" class="lt-md:hidden">
-      <p class="text-sm">{{ t('lastSeen', { distance: formatDateFromNow(lastSeenAt) }) }}</p>
-      <p class="text-xs text-page-muted">{{ t('createdAt', { date: formatDate(createdAt) }) }}</p>
+      <p class="text-sm text-app">{{ t('lastSeen', { distance: formatDateFromNow(lastSeenAt) }) }}</p>
+      <p class="text-xs text-app-muted">{{ t('createdAt', { date: formatDate(createdAt) }) }}</p>
     </div>
 
     <!-- Spacer -->

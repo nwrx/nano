@@ -18,7 +18,7 @@ const { t } = useI18n({ useScope: 'local' })
 </script>
 
 <template>
-  <div class="w-full border border-page rounded bg-page-foreground">
+  <div class="w-full border border-app rounded bg-app-foreground">
 
     <!-- Table -->
     <BaseTable
