@@ -5,10 +5,10 @@ export interface Reference {
 }
 
 export type ReferenceType =
-  | 'Flow'
-  | 'Modules'
-  | 'Node'
+  | 'Nodes'
   | 'Secrets'
+  | 'Tools'
+  | 'Variables'
 
 /**
  * Create a reference of a given type. The reference can be used to reference
