@@ -24,14 +24,12 @@ const emit = defineEmits<{
     :workspace="workspace"
     @submit="({ title, description }) => emit('submitSettings', { title, description })"
   />
-  <AppPageDivider />
   <ProjectSettingsAssigments
     v-if="assignments"
     :assigments="assignments"
     :searchUsers="searchUsers"
     @submit="(username, permissions) => emit('submitUserAssignment', username, permissions)"
   />
-  <AppPageDivider />
   <ProjectSettingsDangerZone
     :searchUsers="searchUsers"
     :workspace="workspace"
