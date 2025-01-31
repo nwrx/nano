@@ -5,7 +5,7 @@ definePageMeta({
   middleware: ['redirect-when-guest', 'abort-reserved'],
 })
 
-const { t } = useI18n({ useScope: 'local' })
+const { t } = useI18n()
 useHead(() => ({
   title: t('title'),
   meta: [{ name: 'description', content: t('description') }],
