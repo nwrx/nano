@@ -6,7 +6,7 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 /* eslint-disable unicorn/prefer-module */
 import type { Function } from '@unshared/types'
-import { defineComponent } from '../utils'
+import { defineComponent, ERRORS as E } from '../utils'
 import { processInSandbox } from './processInSandbox'
 
 describe('processInSandbox', () => {
@@ -65,6 +65,19 @@ describe('processInSandbox', () => {
       // @ts-expect-error: ignore missing context properties.
       const shouldReject = processInSandbox(() => Promise.reject(new Error('An error occurred')), {})
       await expect(shouldReject).rejects.toThrowError('An error occurred')
+    })
+  })
+
+  describe('abort', () => {
+    it('should dispose the isolate when the abort signal is triggered', async() => {
+      const fn = () => new Promise(() => {})
+      const abortController = new AbortController()
+      // @ts-expect-error: ignore missing context properties.
+      const shouldReject = processInSandbox(fn, { abortSignal: abortController.signal })
+      await new Promise(resolve => setTimeout(resolve, 10))
+      abortController.abort()
+      const error = E.ISOLATED_VM_DISPOSED()
+      await expect(shouldReject).rejects.toThrowError(error)
     })
   })
 
