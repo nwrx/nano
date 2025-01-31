@@ -86,7 +86,7 @@ defineExpose({ portsData, portsResult })
     }"
     class="
       absolute min-h-24 w-96 bg-editor-node border border-editor
-      backdrop-blur-2xl rounded ring transition-all
+      backdrop-blur-2xl rounded ring
     "
     @mousedown.stop="(event) => emit('click', event)">
 
