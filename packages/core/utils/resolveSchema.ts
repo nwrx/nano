@@ -39,7 +39,9 @@ async function resolveSchemaValue(value: unknown, socket: InputSocket | OutputSo
   if (isReference(value)) {
     for (const resolve of resolvers) {
       const resolved = await resolve(value)
-      if (resolved) return resolved
+      if (resolved === undefined) continue
+      value = resolved
+      break
     }
   }
 
