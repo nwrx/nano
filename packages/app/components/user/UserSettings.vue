@@ -3,7 +3,7 @@ const { t } = useI18n({ useScope: 'local' })
 </script>
 
 <template>
-  <AppPage class="flex flex-col overflow-hidden w-full">
+  <AppPage>
 
     <!-- Header -->
     <AppPageHeader
@@ -13,8 +13,8 @@ const { t } = useI18n({ useScope: 'local' })
     />
 
     <!-- Side menu -->
-    <div class="flex w-full h-full">
-      <AppPageNav class="h-full shrink">
+    <div class="flex w-full gap-lg py-lg">
+      <AppPageNav class="shrink">
         <AppPageNavGroup>
           <AppPageNavItem :label="t('nav.settings.profile')" icon="i-carbon:user" :to="{ name: 'UserSettingsProfile' }" />
           <AppPageNavItem :label="t('nav.settings.account')" icon="i-carbon:settings" :to="{ name: 'UserSettingsAccount' }" />
