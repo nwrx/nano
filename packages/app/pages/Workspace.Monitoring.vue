@@ -15,6 +15,10 @@ const route = useRoute()
 const workspace = computed(() => route.params.workspace as string)
 const session = useMonitoringSession(workspace)
 const settings = useLocalSettings()
+
+onMounted(async() => {
+  await session.channel
+})
 </script>
 
 <template>

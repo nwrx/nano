@@ -1,10 +1,10 @@
 import type { UserObject } from '@nwrx/api'
-import type { InferInput } from '@unserved/client'
+import type { RouteRequestData } from '@unserved/client'
 import type { application } from '~/server'
 import { useAlerts, useClient, useRouter } from '#imports'
 
-export type SessionSigninCredentials = InferInput<typeof application, 'POST /api/session'>
-export type SessionSignupCredentials = InferInput<typeof application, 'POST /api/signup'>
+type SigninCredentials = RouteRequestData<typeof application, 'POST /api/session'>
+type SignupCredentials = RouteRequestData<typeof application, 'POST /api/signup'>
 
 /**
  * Fetch the current session data from the API and provide methods to
@@ -41,7 +41,7 @@ export const useSession = createSharedComposable(() => {
      *
      * @param credentials The credentials to sign-up with.
      */
-    signupWithPassword: async(credentials: SessionSignupCredentials) => {
+    signupWithPassword: async(credentials: SignupCredentials) => {
       await useClient().requestAttempt('POST /api/signup', {
         onError: error => alerts.error(error),
         onSuccess: () => alerts.success('Account created successfully'),
@@ -64,7 +64,7 @@ export const useSession = createSharedComposable(() => {
      *
      * @param credentials The credentials to sign-in with.
      */
-    signinWithPassword: async(credentials: SessionSigninCredentials) => {
+    signinWithPassword: async(credentials: SigninCredentials) => {
       await useClient().requestAttempt('POST /api/session', {
         onError: error => alerts.error(error),
         onSuccess: async() => {

@@ -1,10 +1,10 @@
 import type { WorkspaceObject } from '@nwrx/api'
-import type { InferInput } from '@unserved/client'
+import type { RouteRequestData } from '@unserved/client'
 import type { application } from '~/server'
 import { useAlerts, useClient } from '#imports'
 
-type UseProjectOptions = Omit<InferInput<typeof application, 'GET /api/workspaces/:workspace'>, 'workspace'>
-export type CreateProjectOptions = Omit<InferInput<typeof application, 'POST /api/workspaces/:workspace'>, 'workspace'>
+type UseProjectOptions = Omit<RouteRequestData<typeof application, 'GET /api/workspaces/:workspace'>, 'workspace'>
+export type CreateProjectOptions = Omit<RouteRequestData<typeof application, 'POST /api/workspaces/:workspace'>, 'workspace'>
 
 /**
  * Fetch the project data from the API and provide methods to interact with it.
@@ -39,7 +39,7 @@ export function useWorkspace(workspace: MaybeRef<string>, options: UseProjectOpt
       await client.requestAttempt('POST /api/workspaces/:workspace', {
         onError: error => alerts.error(error),
         onSuccess: () => alerts.success('Project created successfully'),
-        onEnd: () => { void refresh() },
+        onEnd: () => void refresh(),
         data: { workspace: unref(workspace), ...options },
       }),
 
@@ -53,7 +53,7 @@ export function useWorkspace(workspace: MaybeRef<string>, options: UseProjectOpt
       await client.requestAttempt('POST /api/workspaces/:workspace/:project', {
         onError: error => alerts.error(error),
         onSuccess: () => alerts.success('Flow created successfully'),
-        onEnd: () => { void refresh() },
+        onEnd: () => void refresh(),
         data: { workspace: unref(workspace), project },
       }),
 
@@ -70,7 +70,7 @@ export function useWorkspace(workspace: MaybeRef<string>, options: UseProjectOpt
       await client.requestAttempt('POST /api/workspaces/:workspace/:project/import', {
         onError: error => alerts.error(error),
         onSuccess: () => alerts.success('Flow imported successfully'),
-        onEnd: () => { void refresh() },
+        onEnd: () => void refresh(),
         data: { workspace: unref(workspace), project, file },
       })
     },
@@ -86,7 +86,7 @@ export function useWorkspace(workspace: MaybeRef<string>, options: UseProjectOpt
       await client.requestAttempt('DELETE /api/workspaces/:workspace/:project/:flow', {
         onError: error => alerts.error(error),
         onSuccess: () => alerts.success('Flow deleted successfully'),
-        onEnd: () => { void refresh() },
+        onEnd: () => void refresh(),
         data: { workspace: unref(workspace), project, flow },
       }),
 

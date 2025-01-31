@@ -1,12 +1,12 @@
 import type { UserObject } from '@nwrx/api'
-import type { InferInput } from '@unserved/client'
+import type { RouteRequestData } from '@unserved/client'
 import type { application } from '~/server'
 import { useAlerts, useClient } from '#imports'
 
-type UseUserOptions = Omit<InferInput<typeof application, 'GET /api/users/:username'>, 'username'>
-export type UserSetProfileOptions = Omit<InferInput<typeof application, 'PUT /api/users/:username/profile'>, 'username'>
-export type UserSetAvatarOptions = Omit<InferInput<typeof application, 'PUT /api/users/:username/avatar'>, 'username'>
-export type UserSetPasswordOptions = Omit<InferInput<typeof application, 'PUT /api/users/:username/password'>, 'username'>
+type Options = Omit<RouteRequestData<typeof application, 'GET /api/users/:username'>, 'username'>
+type SetProfileOptions = Omit<RouteRequestData<typeof application, 'PUT /api/users/:username/profile'>, 'username'>
+type SetAvatarOptions = Omit<RouteRequestData<typeof application, 'PUT /api/users/:username/avatar'>, 'username'>
+type SetPasswordOptions = Omit<RouteRequestData<typeof application, 'PUT /api/users/:username/password'>, 'username'>
 
 /**
  * Fetch the current user data from the API and provide methods to interact with it.
@@ -15,7 +15,7 @@ export type UserSetPasswordOptions = Omit<InferInput<typeof application, 'PUT /a
  * @param options The options to pass to the request.
  * @returns The user data and methods to interact with it.
  */
-export function useUser(username: MaybeRef<string>, options: UseUserOptions = {}) {
+export function useUser(username: MaybeRef<string | undefined>, options: Options = {}) {
   const client = useClient()
   const alerts = useAlerts()
   const data = ref<UserObject>({} as UserObject)
@@ -47,7 +47,7 @@ export function useUser(username: MaybeRef<string>, options: UseUserOptions = {}
      * @param options The options to pass to the request.
      * @returns A promise that resolves when the request is complete.
      */
-    async setProfile(options: UserSetProfileOptions) {
+    async setProfile(options: SetProfileOptions) {
       await client.requestAttempt('PUT /api/users/:username/profile', {
         onError: error => alerts.error(error),
         onSuccess: () => {
@@ -67,7 +67,7 @@ export function useUser(username: MaybeRef<string>, options: UseUserOptions = {}
      * @param options The options to pass to the request.
      * @returns A promise that resolves when the request is complete.
      */
-    async setAvatar(options: UserSetAvatarOptions) {
+    async setAvatar(options: SetAvatarOptions) {
       await client.requestAttempt('PUT /api/users/:username/avatar', {
         onError: error => alerts.error(error),
         onSuccess: () => {
@@ -87,7 +87,7 @@ export function useUser(username: MaybeRef<string>, options: UseUserOptions = {}
      * @param options The options to pass to the request.
      * @returns A promise that resolves when the request is complete.
      */
-    async setPassword(options: UserSetPasswordOptions) {
+    async setPassword(options: SetPasswordOptions) {
       await client.requestAttempt('PUT /api/users/:username/password', {
         onError: error => alerts.error(error),
         onSuccess: () => {
