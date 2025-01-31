@@ -5,6 +5,7 @@ import type { Module } from './defineModule'
 import type { Node } from './defineNode'
 import type { ResultSchema, ResultSocket } from './defineResultSchema'
 import type { NodeByKind, NodeKind } from './types'
+import { randomUUID } from 'node:crypto'
 import { createFlowNodeInstance as createNodeInstance, NodeInstance } from './createNodeInstance'
 
 /**
@@ -30,13 +31,13 @@ export interface FlowEvents {
   'node:abort': [id: string]
 
   // Flow
-  'flow:start': []
   'flow:meta': [FlowMeta]
   'flow:metaValue': [key: string, value: unknown]
   'flow:input': [property: string, value: unknown]
   'flow:output': [property: string, value: unknown]
-  'flow:abort': []
-  'flow:end': []
+  'flow:start': [id: string]
+  'flow:abort': [id: string, duration: number]
+  'flow:end': [id: string, duration: number]
 }
 
 /**
@@ -114,6 +115,8 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
   public isRunning = false
   public eventTarget = new EventTarget()
   public eventHandlers = new Map<string, EventListener>()
+  public runId = ''
+  public runStart = 0
 
   /**
    * Dispatch an event to the flow. The event is dispatched to all nodes in
@@ -384,9 +387,9 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
    * useful when the flow needs to be reprocessed with new input.
    */
   public reset(): void {
+    this.runId = randomUUID() as string
     for (const node of this.nodes)
       node.reset()
-
   }
 
   /**
@@ -396,7 +399,7 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
    */
   public abort(): void {
     for (const node of this.nodes) node.abort()
-    this.dispatch('flow:abort')
+    this.dispatch('flow:abort', this.runId, performance.now() - this.runStart)
     this.isRunning = false
   }
 
@@ -408,6 +411,8 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
     if (this.isRunning) return
     this.isRunning = true
     this.reset()
+    this.runId = randomUUID() as string
+    this.runStart = performance.now()
 
     // --- Start listening for node result events.
     const stop = this.on('node:result', (id) => {
@@ -417,23 +422,20 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
         const targetNode = this.getNodeInstance(targetId)
         void targetNode.process()
       }
-
-      // --- If the node has no target links, check if all nodes are done.
-      // --- If so, stop the flow and dispatch the flow:end event.
-      if (targetLinks.length === 0) {
-        setTimeout(() => {
-          for (const node of this.nodes) if (node.isRunning) return
-          this.isRunning = false
-          stop()
-          this.dispatch('flow:end')
-        }, 0)
-      }
     })
 
     // --- Check from time to time if at least one node is still running.
+    // --- If not, stop the flow and dispatch the flow:end event.
+    const interval = setInterval(() => {
+      for (const node of this.nodes) if (node.isRunning) return
+      this.isRunning = false
+      clearInterval(interval)
+      stop()
+      this.dispatch('flow:end', this.runId, performance.now() - this.runStart)
+    }, 100)
 
     // --- Find nodes that don't have any incoming links and set them as the entrypoints.
-    this.dispatch('flow:start')
+    this.dispatch('flow:start', this.runId)
     this.nodes
       .filter(node => !this.links.some(link => link.target.startsWith(node.id)))
       .forEach(node => void node.process())
