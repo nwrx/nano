@@ -22,10 +22,10 @@ export function userSetAvatar(this: ModuleUser) {
     },
     async({ event, parameters, formData }): Promise<void> => {
       const moduleStorage = this.getModule(ModuleStorage)
-      const { username } = parameters
       const { user } = await this.authenticate(event)
 
       // --- Check if the user is allowed to upload an avatar.
+      const { username } = parameters
       if (user.username !== username && !user.isSuperAdministrator)
         throw this.errors.USER_NOT_ALLOWED()
 
