@@ -123,7 +123,7 @@ export const modelOllama = defineFlowNode({
         getBody: ({ prompt }) => ({
           stream: false,
           model: data.model,
-          message: { role: 'user', content: prompt },
+          messages: [{ role: 'user', content: prompt }],
         }),
         getCompletion: ({ message }: OllamaChatResponse) =>
           message.content,
