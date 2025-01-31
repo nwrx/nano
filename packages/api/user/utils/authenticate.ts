@@ -32,40 +32,45 @@ export async function authenticate(this: ModuleUser, event: H3Event, options: Au
   const { optional = false } = options
 
   // --- Extract and decrypt the token from the cookie.
-  const token = getCookie(event, this.userSessionCookieName)
-  if (!token && optional) return
-  if (!token) throw this.errors.USER_NOT_AUTHENTICATED()
+  try {
+    const token = getCookie(event, this.userSessionCookieName)
+    if (!token) throw this.errors.USER_NOT_AUTHENTICATED()
 
-  // --- Decrypt the token to get the user session id.
-  const iv = Buffer.alloc(16, 0)
-  const key = createHash('sha256').update(this.userSecretKey).digest()
-  const id = createDecipheriv(this.userCypherAlgorithm, key, iv).update(token, 'hex', 'utf8').toString()
-  const isUuid = EXP_UUID.test(id)
-  if (!isUuid) throw this.errors.USER_SESSION_NOT_FOUND()
+    // --- Decrypt the token to get the user session id.
+    const iv = Buffer.alloc(16, 0)
+    const key = createHash('sha256').update(this.userSecretKey).digest()
+    const id = createDecipheriv(this.userCypherAlgorithm, key, iv).update(token, 'hex', 'utf8').toString()
+    const isUuid = EXP_UUID.test(id)
+    if (!isUuid) throw this.errors.USER_SESSION_NOT_FOUND()
 
-  // --- Find the user session by the token.
-  const { UserSession } = this.getRepositories()
-  const userSession = await UserSession.findOne({
-    where: { id: id as UUID },
-    relations: { user: true },
-    withDeleted: true,
-  })
+    // --- Find the user session by the token.
+    const { UserSession } = this.getRepositories()
+    const userSession = await UserSession.findOne({
+      where: { id: id as UUID },
+      relations: { user: true },
+      withDeleted: true,
+    })
 
-  // --- Get the IP address and user agent.
-  const requestIp = getRequestIP(event, { xForwardedFor: this.userTrustProxy })
-  const userAgent = getHeader(event, 'User-Agent')
-  const address = requestIp?.split(':')[0]
+    // --- Get the IP address and user agent.
+    const requestIp = getRequestIP(event, { xForwardedFor: this.userTrustProxy })
+    const userAgent = getHeader(event, 'User-Agent')
+    const address = requestIp?.split(':')[0]
 
-  // --- Assert the session exists and the user is not soft deleted.
-  const now = new Date()
-  if (!userSession) throw this.errors.USER_SESSION_NOT_FOUND()
-  if (!userSession.user) throw this.errors.USER_SESSION_NOT_FOUND()
-  if (userSession.user.deletedAt) throw this.errors.USER_SESSION_NOT_FOUND()
-  if (userSession.user.disabledAt) throw this.errors.USER_SESSION_NOT_FOUND()
-  if (userSession.address !== address) throw this.errors.USER_SESSION_NOT_FOUND()
-  if (userSession.userAgent !== userAgent) throw this.errors.USER_SESSION_NOT_FOUND()
-  if (userSession.expiresAt < now) throw this.errors.USER_SESSION_EXPIRED()
+    // --- Assert the session exists and the user is not soft deleted.
+    const now = new Date()
+    if (!userSession) throw this.errors.USER_SESSION_NOT_FOUND()
+    if (!userSession.user) throw this.errors.USER_SESSION_NOT_FOUND()
+    if (userSession.user.deletedAt) throw this.errors.USER_SESSION_NOT_FOUND()
+    if (userSession.user.disabledAt) throw this.errors.USER_SESSION_NOT_FOUND()
+    if (userSession.address !== address) throw this.errors.USER_SESSION_NOT_FOUND()
+    if (userSession.userAgent !== userAgent) throw this.errors.USER_SESSION_NOT_FOUND()
+    if (userSession.expiresAt < now) throw this.errors.USER_SESSION_EXPIRED()
 
-  // --- Return the user associated with the session.
-  return userSession as AuthenticateResult
+    // --- Return the user associated with the session.
+    return userSession as AuthenticateResult
+  }
+  catch (error) {
+    if (optional) return undefined
+    throw error
+  }
 }
