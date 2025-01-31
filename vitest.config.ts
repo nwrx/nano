@@ -26,8 +26,10 @@ export default defineConfig({
     includeSource,
     reporters: ['basic'],
     setupFiles: './packages/setupTest.ts',
-    testTimeout: process.env.DEBUGGER ? 100 : 0,
+    testTimeout: 1000,
     isolate: true,
+
+    // --- Worker pool configuration.
     pool: 'threads',
     maxConcurrency: cpus().length,
     poolOptions: {
