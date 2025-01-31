@@ -2,9 +2,10 @@ import type { ObjectLike } from '@unshared/types'
 import type { Node } from './addNode'
 import type { Thread } from './createThread'
 import { createResolvable } from '@unshared/functions'
+import { createEventMetadata } from '../utils'
 import { abort } from './abort'
-import { createEventMetadata } from './createEventMetadata'
 import { getLinks } from './getLinks'
+import { getNode } from './getNode'
 import { getNodeData } from './getNodeData'
 import { isNodeReadyToStart } from './isNodeReadyToStart'
 import { isThreadRunning } from './isThreadRunning'
@@ -17,7 +18,7 @@ function isCoreComponent(node: Node, name: string) {
     && node.name === name
 }
 
-export async function start(thread: Thread, input: ObjectLike = {}) {
+export async function start(thread: Thread, input: ObjectLike = {}): Promise<ObjectLike> {
   const output: ObjectLike = {}
   const links = getLinks(thread)
   const resolvable = createResolvable<ObjectLike>()
@@ -32,21 +33,22 @@ export async function start(thread: Thread, input: ObjectLike = {}) {
       const value = input[name]
       if (required && value === undefined)
         throw new Error(`Input "${name}" is required but not provided.`)
-      node.result.value = input[name]
+      node.result = { value: input[name] }
     }
   }
 
   // --- If an error occurs in any of the nodes, dispatch the error event and reject the promise.
-  const clearOnNodeError = thread.on('nodeError', (id, node, error) => {
-    if (isThreadRunning(thread)) return
+  const clearOnNodeError = thread.on('nodeError', (_, error) => {
     thread.dispatch('error', error, createEventMetadata(thread))
-    return resolvable.reject(error)
+    resolvable.reject(error)
+    abort(thread)
   })
 
-  const clearOnNodeDone = thread.on('nodeDone', async(id, node) => {
+  const clearOnNodeDone = thread.on('nodeDone', async(id) => {
 
     // --- If the node is an output, we collect this specific output value and it's corresponding name
     // --- and apply it to the thread output. We also dispatch the output event with the name and value.
+    const node = getNode(thread, id)
     if (isCoreComponent(node, 'output')) {
       const { name, value } = await getNodeData(thread, id) as { name: string; value: string }
       output[name] = value
@@ -58,13 +60,13 @@ export async function start(thread: Thread, input: ObjectLike = {}) {
     const outgoingLinks = links.filter(link => link.sourceId === id)
     for (const link of outgoingLinks) {
       if (!isNodeReadyToStart(thread, link.targetId)) continue
-      void startNode(thread, link.targetId)
+      void startNode(thread, link.targetId).catch(() => {})
     }
 
     // --- If all the nodes are done, dispatch the end event.
     if (isThreadRunning(thread)) return
     thread.dispatch('done', output, createEventMetadata(thread))
-    return resolvable.resolve(output)
+    resolvable.resolve(output)
   })
 
   // --- Iterate over all the nodes and resolve their components. Then, for each node
@@ -72,13 +74,12 @@ export async function start(thread: Thread, input: ObjectLike = {}) {
   for (const [id] of thread.nodes) {
     const hasIncomingLinks = links.some(link => link.targetId === id)
     if (hasIncomingLinks) continue
-    void startNode(thread, id)
+    void startNode(thread, id).catch(() => {})
   }
 
   // --- Return the output object.
-  return resolvable.promise.then((data) => {
+  return resolvable.promise.finally(() => {
     clearOnNodeDone()
     clearOnNodeError()
-    return data
   })
 }
