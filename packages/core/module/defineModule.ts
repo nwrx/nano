@@ -1,5 +1,11 @@
+import type { MaybePromise } from '@unshared/types'
 import type { FlowNodeDefinition } from './defineNode'
 import { assertNotNil, assertStringNotEmpty } from '@unshared/validation'
+
+/** The resolver for a flow node. */
+export type ModuleNodes =
+  | (() => MaybePromise<Record<string, FlowNodeDefinition<string, any, any>>>)
+  | Record<string, FlowNodeDefinition<string, any, any>>
 
 /** The options for defining a flow module. */
 export interface Module<K extends string = string> {
@@ -19,7 +25,7 @@ export interface Module<K extends string = string> {
    *
    * @example { CheckCredentials, CreateResource, DeleteResource }
    */
-  nodes: Record<string, FlowNodeDefinition<string, any, any>>
+  nodes: ModuleNodes
 
   /**
    * The display name of the flow module. The label is used to display the module
@@ -56,18 +62,9 @@ export interface Module<K extends string = string> {
  * @param options The options to define the flow module with.
  * @returns The flow module created with the given options.
  */
-export function defineModule<
-  K extends string,
->(options: Module<K>): Module<K> {
+export function defineModule<K extends string>(options: Module<K>): Module<K> {
   assertNotNil(options)
   assertStringNotEmpty(options.kind)
-
-  for (const name in options.nodes) {
-    const node = options.nodes[name]
-    const startsWithKind = node.kind.startsWith(`${options.kind}/`)
-    if (!startsWithKind) throw new Error(`The node kind '${node.kind}' does not start with the module kind '${options.kind}/'.`)
-  }
-
   return {
     kind: options.kind,
     nodes: options.nodes,

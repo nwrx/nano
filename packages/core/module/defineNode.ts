@@ -185,7 +185,11 @@ export interface FlowNodeDefinition<
  *   }),
  * })
  */
-export function defineNode<K extends string, T extends InputSchema, U extends OutputSchema>(options: FlowNodeDefinition<K, T, U>): FlowNodeDefinition<K, T, U> {
+export function defineNode<
+  K extends string,
+  T extends InputSchema,
+  U extends OutputSchema,
+>(options: FlowNodeDefinition<K, T, U>): FlowNodeDefinition<K, T, U> {
   assertNotNil(options)
   assertStringNotEmpty(options.kind)
   return {
