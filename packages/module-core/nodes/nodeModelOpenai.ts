@@ -1,6 +1,7 @@
-import { defineNodeLanguageModel, openaiGetBody, openaiGetModels } from '../utils'
+import type { OpenaiChatRequest, OpenaiChatResponse } from '../utils'
+import { defineLanguageModel, openaiGetBody, openaiGetModels } from '../utils'
 
-export const nodeModelOpenai = defineNodeLanguageModel({
+export const nodeModelOpenai = defineLanguageModel<OpenaiChatRequest, OpenaiChatResponse>({
   name: 'OpenAI',
   kind: 'core/openai',
   icon: 'https://api.iconify.design/simple-icons:openai.svg',
@@ -8,7 +9,6 @@ export const nodeModelOpenai = defineNodeLanguageModel({
 
   defaultUrl: 'https://api.openai.com',
   defaultModel: 'gpt-3.5-turbo',
-  pathModels: '/v1/models',
   pathCompletions: '/v1/chat/completions',
 
   getBody: openaiGetBody,

@@ -34,12 +34,13 @@ const INFERENCE_DATA_SCHEMA = defineDataSchema({
   },
   seed: {
     type: number,
-    control: 'slider',
     name: 'Seed',
+    control: 'slider',
+    description: 'The seed used to generate the completion.',
     defaultValue: 0,
     sliderMin: 0,
     sliderMax: 100,
-    description: 'The seed used to generate the completion.',
+    isOptional: true,
   },
   frequencyPenalty: {
     type: number,
@@ -135,11 +136,11 @@ export const inference = defineNode({
       canResume = true
     }
 
-    async function call(name: string, data: ObjectLike) {
+    async function call(name: string, parameters: ObjectLike) {
       if (!tools) throw new Error('The tools were not provided.')
       const tool = tools.find(tool => tool.name === name)
       if (!tool) throw new Error(`The tool "${name}" was not provided.`)
-      return await tool.call(data)
+      return await tool.call({ data, parameters })
     }
 
     // --- Send the request to the model API. Retry up to 10 times to handle any tool calls

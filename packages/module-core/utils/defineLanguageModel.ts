@@ -10,13 +10,13 @@ import { languageModel, string } from '../types'
 import { openaiGetBody } from './openaiGetBody'
 import { openaiGetModels } from './openaiGetModels'
 
-export interface LanguageModelNodeData {
+export interface LanguageModelData {
   baseUrl: string
   model: string
   token: string
 }
 
-interface Options<T = ObjectLike, U = ObjectLike>
+export interface LanguageModelOptions<T = ObjectLike, U = ObjectLike>
   extends Partial<Pick<LanguageModel<T, U>, 'getBody' | 'onData' | 'onError' >> {
   kind: string
   name?: string
@@ -26,7 +26,7 @@ interface Options<T = ObjectLike, U = ObjectLike>
   defaultModel?: string
   pathModels?: string
   pathCompletions?: string
-  getModels?: (data: LanguageModelNodeData, abortSignal: AbortSignal) => Promise<Array<SocketListOption<string>>>
+  getModels?: (data: LanguageModelData, abortSignal: AbortSignal) => Promise<Array<SocketListOption<string>>>
 }
 
 async function DEFAULT_ON_DATA(
@@ -85,7 +85,7 @@ async function DEFAULT_ON_ERROR(response: Response) {
  * @param options The options for creating the language model node.
  * @returns The language model node.
  */
-export function defineNodeLanguageModel<T, U>(options: Options<T, U>) {
+export function defineLanguageModel<T, U>(options: LanguageModelOptions<T, U>) {
   const {
     kind,
     name,
@@ -123,7 +123,6 @@ export function defineNodeLanguageModel<T, U>(options: Options<T, U>) {
         type: string,
         control: 'variable',
         description: 'The API Key used to authenticate with the inference provider.',
-        isOptional: true,
       },
       model: {
         type: string,
@@ -131,8 +130,7 @@ export function defineNodeLanguageModel<T, U>(options: Options<T, U>) {
         name: 'Model',
         defaultValue: defaultModel,
         description: 'The name of the model to use for generating completions.',
-        options: await getModels(data as LanguageModelNodeData, abortSignal).catch(() => []),
-        isOptional: true,
+        options: await getModels(data as LanguageModelData, abortSignal).catch(() => []),
       },
     }),
 

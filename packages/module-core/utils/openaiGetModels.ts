@@ -1,4 +1,4 @@
-import type { LanguageModelNodeData } from './defineNodeLanguageModel'
+import type { LanguageModelData } from './defineLanguageModel'
 import type { OpenaiModelResponse } from './OpenaiModelResponse'
 
 const ICONS = [
@@ -17,7 +17,7 @@ function getModelIcon(model: string) {
 }
 
 export function openaiGetModels(path: string) {
-  return async(data: LanguageModelNodeData, signal: AbortSignal) => {
+  return async(data: LanguageModelData, signal: AbortSignal) => {
     if (!data.token) return []
     const url = new URL(path, data.baseUrl).toString()
     const response = await fetch(url, { signal, headers: { Authorization: `Bearer ${data.token}` } })
