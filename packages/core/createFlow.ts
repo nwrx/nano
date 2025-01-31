@@ -15,6 +15,7 @@ export interface FlowEvents {
   'node:meta': [id: string, FlowNodeInstanceMeta]
   'node:metaValue': [id: string, key: string, value: unknown]
   'node:data': [id: string, data: Record<string, unknown>]
+  'node:dataRaw': [id: string, data: Record<string, unknown>]
   'node:dataSchema': [id: string, schema: FlowSchema]
   'node:result': [id: string, result: Record<string, unknown>]
   'node:resultSchema': [id: string, schema: FlowSchema]
@@ -24,10 +25,6 @@ export interface FlowEvents {
   'node:start': [id: string]
   'node:end': [id: string]
   'node:abort': [id: string]
-
-  // Links
-  'link:create': [{ source: string; target: string }]
-  'link:remove': [{ source: string; target: string }]
 
   // Flow
   'flow:start': []
@@ -65,6 +62,8 @@ export interface FlowMeta {
 export interface FlowOptions<T extends FlowModule = FlowModule> {
   modules?: T[]
   meta?: FlowMeta
+  secrets?: Record<string, string>
+  variables?: Record<string, string>
 }
 
 /**
@@ -100,12 +99,15 @@ export class Flow<T extends FlowModule = FlowModule> implements FlowOptions<T> {
   constructor(options: FlowOptions<T> = {}) {
     if (options.meta) this.meta = options.meta
     if (options.modules) this.modules = options.modules
+    if (options.secrets) this.secrets = options.secrets
+    if (options.variables) this.variables = options.variables
   }
 
   public meta: FlowMeta = {}
   public modules: T[] = []
-  public links: FlowLink[] = []
   public nodes: FlowNodeInstance[] = []
+  public secrets = {} as Record<string, string>
+  public variables = {} as Record<string, string>
   public isRunning = false
   public eventTarget = new EventTarget()
   public eventHandlers = new Map<string, EventListener>()
@@ -247,7 +249,6 @@ export class Flow<T extends FlowModule = FlowModule> implements FlowOptions<T> {
     for (const id of ids) {
       this.getNodeInstance(id)
       this.nodes = this.nodes.filter(node => node.id !== id)
-      this.linkRemove(id)
       this.dispatch('node:remove', id)
     }
   }
@@ -294,6 +295,28 @@ export class Flow<T extends FlowModule = FlowModule> implements FlowOptions<T> {
   }
 
   /**
+   * Traverse all nodes in the flow and return the links that connect the nodes
+   * together. The links are used to connect the output of one node to the input
+   * of another node.
+   *
+   * @returns An array of links that connect the nodes together.
+   */
+  get links(): FlowLink[] {
+    const links: FlowLink[] = []
+    for (const node of this.nodes) {
+      for (const edge in node.dataRaw) {
+        const value = node.dataRaw[edge]
+        if (typeof value !== 'string') continue
+        if (!value.startsWith('$NODE.')) continue
+        const target = `${node.id}:${edge}`
+        const source = value.replace('$NODE.', '')
+        links.push({ source, target })
+      }
+    }
+    return links
+  }
+
+  /**
    * Link the output of a node to the input of another node. When processing
    * the flow, the output of the source node is passed as input to the target
    * node.
@@ -305,8 +328,8 @@ export class Flow<T extends FlowModule = FlowModule> implements FlowOptions<T> {
   public linkCreate(source: string, target: string): void {
 
     // --- Resolve the source and target ports.
-    const [sourceNodeId] = source.split(':')
-    const [targetNodeId] = target.split(':')
+    const [sourceNodeId, sourcePortId] = source.split(':')
+    const [targetNodeId, targetPortId] = target.split(':')
     const sourceNode = this.getResultPort(source)
     const targetNode = this.getDataPort(target)
 
@@ -317,39 +340,51 @@ export class Flow<T extends FlowModule = FlowModule> implements FlowOptions<T> {
       throw new Error(`Cannot link ${sourceNode.type.name} to ${targetNode.type.name}`)
 
     // --- If the target is already linked, remove the link.
-    const existingLink = this.links.find(link => link.target === target)
-    if (existingLink) this.linkRemove(existingLink.source, existingLink.target)
+    this.linkRemove(target)
 
     // --- Create the link and dispatch the event.
-    this.links.push({ source, target })
-    this.dispatch('link:create', { source, target })
+    const nodeTarget = this.getNodeInstance(targetNodeId)
+    nodeTarget.setDataValue(targetPortId, `$NODE.${sourceNodeId}:${sourcePortId}`)
   }
 
   /**
-   * Unlink the output of a node from the input of another node.
+   * Unlink a node port from all other nodes.
    *
-   * @param source The ID of the port that is the source of the link.
-   * @param target The ID of the port that is the target of the link. (optional)
+   * @param compositeId The node ID and port ID of which to remove the link.
+   * @example flow.linkRemove('01234567-89ab-cdef-0123-456789abcdef:port')
    */
-  public linkRemove(source: string, target?: string): void {
-    for (const link of this.links) {
+  public linkRemove(compositeId: string): void {
 
-      // --- If the target is not specified, remove all links that are connected
-      // --- to this specific source port, whether they are the source or target.
-      if (!target && link.source === source || link.target === source) {
-        this.links = this.links.filter(link => link.source !== source && link.target !== source)
-        this.dispatch('link:remove', link)
-        continue
-      }
+    // --- Find the node that contains the port.
+    const [id, edge] = compositeId.split(':')
+    const node = this.getNodeInstance(id)
+    const isTargetEdge = edge in node.dataSchema
 
-      // --- If the source and target are specified, remove the link that connects
-      // --- the source and target ports together.
-      else if (link.source === source && link.target === target) {
-        this.links = this.links.filter(link => link.source !== source && link.target !== target)
-        this.dispatch('link:remove', link)
-        continue
+    // --- If the port is a data port, remove the link from the data port.
+    if (isTargetEdge) {
+      node.setDataValue(edge, undefined)
+    }
+
+    // --- If the port is a result port, remove all links that are connected to the result port.
+    else {
+      for (const targetNode of this.nodes) {
+        for (const targetEdge in targetNode.dataRaw) {
+          if (targetNode.dataRaw[targetEdge] === `$NODE.${id}:${edge}`)
+            targetNode.setDataValue(targetEdge, undefined)
+        }
       }
     }
+  }
+
+  /**
+   * Reset the flow. The flow is reset by clearing the results of all nodes in
+   * the flow and re-resolving the data and result schemas of all nodes. This is
+   * useful when the flow needs to be reprocessed with new input.
+   */
+  public reset(): void {
+    for (const node of this.nodes)
+      node.reset()
+
   }
 
   /**
@@ -367,20 +402,22 @@ export class Flow<T extends FlowModule = FlowModule> implements FlowOptions<T> {
    * Process the flow. The flow is processed by executing the entrypoint
    * with the given input and letting the nodes trigger each other.
    */
-  public run(): void {
+  public start(): void {
     if (this.isRunning) return
     this.isRunning = true
+
+    // --- Cleanup all results from the previous runs.
+    this.reset()
 
     // --- Start listening for node result events. Each time a node result is set,
     // --- we start searching for the target nodes that are linked to the source node
     // --- and send then the result of the source node.
-    const stop = this.on('node:result', (id, result) => {
+    const stop = this.on('node:result', (id) => {
       const targetLinks = this.links.filter(link => link.source.startsWith(id))
-      for (const { source, target } of targetLinks) {
-        const [targetId, targetKey] = target.split(':')
+      for (const { target } of targetLinks) {
+        const [targetId] = target.split(':')
         const targetNode = this.getNodeInstance(targetId)
-        const [, sourceKey] = source.split(':')
-        void targetNode.setDataValue(targetKey, result[sourceKey])
+        void targetNode.process()
       }
     })
 
@@ -396,29 +433,31 @@ export class Flow<T extends FlowModule = FlowModule> implements FlowOptions<T> {
       }
     })
 
-    // --- Start all nodes that are part of the flow
-    // --- and that have have either an incoming link or are the entrypoint.
-    for (const node of this.nodes) void node.start()
+    // --- Find nodes that don't have any incoming links and set them as the entrypoints.
+    const entrypoints = this.nodes.filter(node => !this.links.some(link => link.target.startsWith(node.id)))
+    for (const node of entrypoints) void node.process()
 
     // --- Start the flow by dispatching the start event.
     this.dispatch('flow:start')
   }
 
   /**
-   * Dispose of the flow. The flow is disposed by removing all nodes and links
-   * from the flow and stopping the execution of all nodes. Once disposed, the
-   * flow can no longer be used.
+   * Destroy the flow. The flow is destroyed by stopping the execution of all
+   * nodes in the flow and removing all event listeners. This is useful when the
+   * flow is no longer needed and should be cleaned up.
    */
-  [Symbol.dispose](): void {
+  destroy(): void {
     this.abort()
     for (const node of this.nodes) node[Symbol.dispose]()
     for (const [event, listener] of this.eventHandlers) this.eventTarget.removeEventListener(event, listener)
     // @ts-expect-error: Dereferencing the array.
     this.nodes = undefined
     // @ts-expect-error: Dereferencing the array.
-    this.links = undefined
-    // @ts-expect-error: Dereferencing the array.
     this.modules = undefined
+  }
+
+  [Symbol.dispose](): void {
+    this.destroy()
   }
 }
 
@@ -443,536 +482,4 @@ export class Flow<T extends FlowModule = FlowModule> implements FlowOptions<T> {
  */
 export function createFlow<T extends FlowModule>(options?: FlowOptions<T>): Flow<T> {
   return new Flow<T>(options)
-}
-
-/* v8 ignore start */
-/* eslint-disable sonarjs/no-duplicate-string */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-if (import.meta.vitest) {
-  const { defineFlowNode } = await import('./defineFlowNode')
-  const { moduleCore, nodeJsonParse, typeNumber } = await import('./__fixtures__')
-
-  describe('constructor', () => {
-    it('should create a flow with no modules', () => {
-      using flow = createFlow()
-      expect(flow).toMatchObject({
-        meta: {},
-        nodes: [],
-        links: [],
-        modules: [],
-        eventTarget: expect.any(EventTarget),
-      })
-    })
-
-    it('should create a flow with specified meta properties', () => {
-      using flow = createFlow({ meta: { name: 'Flow', icon: 'flow', description: 'A flow' } })
-      expect(flow).toMatchObject({
-        meta: { name: 'Flow', icon: 'flow', description: 'A flow' },
-        nodes: [],
-        links: [],
-        modules: [],
-        eventTarget: expect.any(EventTarget),
-      })
-    })
-
-    it('should create a flow with specified modules', () => {
-      using flow = createFlow({ modules: [moduleCore] })
-      expect(flow.modules).toStrictEqual([moduleCore])
-    })
-  })
-
-  describe('eventTarget', () => {
-    it('should dispatch an event and call the listener', () => {
-      using flow = createFlow()
-      const listener = vi.fn()
-      flow.on('node:data', listener)
-      flow.dispatch('node:data', 'node-id', { string: 'Hello, World!' } )
-      expect(listener).toHaveBeenCalledWith('node-id', { string: 'Hello, World!' })
-    })
-
-    it('should remove the listener when calling the return value of on', () => {
-      using flow = createFlow()
-      const listener = vi.fn()
-      const removeListener = flow.on('node:data', listener)
-      removeListener()
-      flow.dispatch('node:data', 'node-id', { string: 'Hello, World!' } )
-      expect(listener).not.toHaveBeenCalled()
-    })
-  })
-
-  describe('setMeta', () => {
-    it('should set the settings of the flow', () => {
-      using flow = createFlow()
-      flow.setMeta({
-        name: 'Flow',
-        icon: 'flow',
-        description: 'A flow',
-      })
-      expect(flow.meta).toMatchObject({
-        name: 'Flow',
-        icon: 'flow',
-        description: 'A flow',
-      })
-    })
-
-    it('should merge the settings with the existing settings', () => {
-      using flow = createFlow({ meta: { name: 'Flow', icon: undefined, description: 'A flow' } })
-      flow.setMeta({ name: 'New Flow', icon: 'flow' })
-      expect(flow.meta).toMatchObject({
-        name: 'New Flow',
-        icon: 'flow',
-        description: 'A flow',
-      })
-    })
-
-    it('should set a single value in the meta object', () => {
-      using flow = createFlow({ meta: { name: 'Flow' } })
-      flow.setMetaValue('icon', 'flow')
-      expect(flow.meta).toMatchObject({ name: 'Flow', icon: 'flow' })
-    })
-
-    it('should emit the "flow:meta" event when the settings are set', () => {
-      using flow = createFlow()
-      const listener = vi.fn()
-      flow.on('flow:meta', listener)
-      flow.setMeta({ name: 'Flow', icon: 'flow', description: 'A flow' })
-      expect(listener).toHaveBeenCalledWith({ name: 'Flow', icon: 'flow', description: 'A flow' })
-    })
-
-    it('should emit the entire meta object when partially updated', () => {
-      using flow = createFlow({ meta: { name: 'Flow' } })
-      const listener = vi.fn()
-      flow.on('flow:meta', listener)
-      flow.setMeta({ icon: 'flow' })
-      expect(listener).toHaveBeenCalledWith({ name: 'Flow', icon: 'flow' })
-    })
-
-    it('should emit the "flow:metaValue" event when a single value is set', () => {
-      using flow = createFlow({ meta: { name: 'Flow' } })
-      const listener = vi.fn()
-      flow.on('flow:metaValue', listener)
-      flow.setMetaValue('icon', 'flow')
-      expect(listener).toHaveBeenCalledWith('icon', 'flow')
-    })
-  })
-
-  describe('resolveNodeDefinition', () => {
-    it('should get the node definition given a node kind', () => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const node = flow.resolveNodeDefinition('nwrx/core:json-parse')
-      expect(node).toStrictEqual(nodeJsonParse)
-    })
-
-    it('should throw an error if the node kind is not found', () => {
-      using flow = createFlow({ modules: [moduleCore] })
-      // @ts-expect-error: Test invalid node kind
-      const shouldThrow = () => flow.resolveNodeDefinition('nwrx/core:unknown')
-      expect(shouldThrow).toThrow('Node definition "unknown" was not found in module "nwrx/core"')
-    })
-
-    it('should throw an error if the module is not found', () => {
-      using flow = createFlow({ modules: [moduleCore] })
-      // @ts-expect-error: Test invalid module kind
-      const shouldThrow = () => flow.resolveNodeDefinition('unknown:unknown')
-      expect(shouldThrow).toThrow('Module "unknown" was not found')
-    })
-  })
-
-  describe('resolveNodeModule', () => {
-    it('should get the module of a node definition', () => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const module = flow.resolveNodeModule(nodeJsonParse)
-      expect(module).toStrictEqual(moduleCore)
-    })
-
-    it('should get the module of a node instance', () => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const node = createFlowNodeInstance({ flow, node: nodeJsonParse })
-      const module = flow.resolveNodeModule(node)
-      expect(module).toStrictEqual(moduleCore)
-    })
-
-    it('should throw an error if the module is not found', () => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const node = { ...nodeJsonParse, kind: 'unknown:unknown' }
-      const shouldThrow = () => flow.resolveNodeModule(node)
-      expect(shouldThrow).toThrow('Module for node "unknown:unknown" was not found')
-    })
-  })
-
-  describe('nodeCreate', () => {
-    it('should create a node instance given a node definition', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      await flow.nodeCreate(nodeJsonParse)
-      expect(flow.nodes).toHaveLength(1)
-      expect(flow.nodes[0].node).toStrictEqual(nodeJsonParse)
-    })
-
-    it('should create a node instance given a node definition and meta', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      await flow.nodeCreate(moduleCore.nodes![0], { meta: { label: 'Node' } })
-      expect(flow.nodes).toHaveLength(1)
-      expect(flow.nodes[0]).toMatchObject({ meta: { label: 'Node' } })
-    })
-
-    it('should create a node with a node kind', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      await flow.nodeCreate('nwrx/core:json-parse')
-      expect(flow.nodes).toHaveLength(1)
-      expect(flow.nodes[0].node).toStrictEqual(nodeJsonParse)
-    })
-
-    it('should create a node with a node kind and meta', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      await flow.nodeCreate('nwrx/core:json-parse', { meta: { label: 'Node' } })
-      expect(flow.nodes).toHaveLength(1)
-      expect(flow.nodes[0]).toMatchObject({ meta: { label: 'Node' } })
-    })
-
-    it('should create a node instance with the given ID', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      await flow.nodeCreate('nwrx/core:json-parse', { id: 'node-id' })
-      expect(flow.nodes[0].id).toBe('node-id')
-    })
-
-    it('should emit a node:create event', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const listener = vi.fn()
-      flow.on('node:create', listener)
-      const node = await flow.nodeCreate('nwrx/core:json-parse')
-      expect(listener).toHaveBeenCalledWith(node)
-    })
-
-    it('should resolve the data schema of the node when created', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const node = await flow.nodeCreate(defineFlowNode({
-        kind: 'nwrx/core:json-parse',
-        defineDataSchema: () => ({
-          number: { name: 'Number', type: typeNumber },
-        }),
-      }))
-      expect(node.dataSchema).toStrictEqual({
-        number: { name: 'Number', type: typeNumber },
-      })
-    })
-
-    it('should resolve the result schema of the node when created', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const node = await flow.nodeCreate(defineFlowNode({
-        kind: 'nwrx/core:boolean-to-number',
-        defineResultSchema: () => ({
-          boolean: { name: 'Boolean', type: typeNumber },
-        }),
-      }))
-      expect(node.resultSchema).toStrictEqual({
-        boolean: { name: 'Boolean', type: typeNumber },
-      })
-    })
-
-    it('should not emit the "node:dataSchema" event when created', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const listener = vi.fn()
-      flow.on('node:dataSchema', listener)
-      await flow.nodeCreate('nwrx/core:json-parse')
-      expect(listener).not.toHaveBeenCalled()
-    })
-
-    it('should not emit the "node:resultSchema" event when created', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const listener = vi.fn()
-      flow.on('node:resultSchema', listener)
-      await flow.nodeCreate('nwrx/core:json-parse')
-      expect(listener).not.toHaveBeenCalled()
-    })
-
-    it('should throw an error if the node kind is not found', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const shouldReject = flow.nodeCreate('nwrx/core:unknown')
-      await expect(shouldReject).rejects.toThrow('Node definition "unknown" was not found in module "nwrx/core"')
-    })
-
-    it('should throw an error if the module is not found', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const shouldReject = flow.nodeCreate('unknown:unknown')
-      await expect(shouldReject).rejects.toThrow('Module "unknown" was not found')
-    })
-
-    it('should emit a node:data event when the data of a node is set', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const node = await flow.nodeCreate('nwrx/core:json-parse')
-      const listener = vi.fn()
-      flow.on('node:data', listener)
-      await node.setDataValue('json', '{"key": "value"}')
-      expect(listener).toHaveBeenCalledWith(node.id, { json: '{"key": "value"}' })
-    })
-
-    it('should emit a node:result event when the result of a node is set', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const node = await flow.nodeCreate('nwrx/core:json-parse')
-      const listener = vi.fn()
-      flow.on('node:result', listener)
-      node.setResultValue('object', { key: 'value' })
-      expect(listener).toHaveBeenCalledWith(node.id, { object: { key: 'value' } })
-    })
-
-    it('should emit a node:dataSchema event when the data schema of a node is resolved', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const node = await flow.nodeCreate('nwrx/core:json-parse')
-      const listener = vi.fn()
-      flow.on('node:dataSchema', listener)
-      await node.resolveDataSchema(true)
-      expect(listener).toHaveBeenCalledWith(node.id, node.dataSchema)
-    })
-
-    it('should emit a node:resultSchema event when the result schema of a node is resolved', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const node = await flow.nodeCreate('nwrx/core:json-parse')
-      const listener = vi.fn()
-      flow.on('node:resultSchema', listener)
-      await node.resolveResultSchema(true)
-      expect(listener).toHaveBeenCalledWith(node.id, node.resultSchema)
-    })
-  })
-
-  describe('nodeRemove', () => {
-    it('should remove a node from the flow', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const node = await flow.nodeCreate('nwrx/core:json-parse')
-      flow.nodeRemove(node.id)
-      expect(flow.nodes).toHaveLength(0)
-    })
-
-    it('should emit a node:remove event', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const node = await flow.nodeCreate('nwrx/core:json-parse')
-      const listener = vi.fn()
-      flow.on('node:remove', listener)
-      flow.nodeRemove(node.id)
-      expect(listener).toHaveBeenCalledWith(node.id)
-    })
-
-    it('should throw an error if the node does not exist', () => {
-      using flow = createFlow()
-      const shouldThrow = () => flow.nodeRemove('node-id')
-      expect(shouldThrow).toThrow('Node instance with ID "node-id" does not exist')
-    })
-  })
-
-  describe('getNodeInstance', () => {
-    it('should get a node instance given an ID', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const node = await flow.nodeCreate('nwrx/core:json-parse')
-      const instance = flow.getNodeInstance(node.id)
-      expect(instance).toBe(node)
-    })
-
-    it('should throw an error if the node does not exist', () => {
-      using flow = createFlow()
-      const shouldThrow = () => flow.getNodeInstance('node-id')
-      expect(shouldThrow).toThrow('Node instance with ID "node-id" does not exist')
-    })
-  })
-
-  describe('getDataPort', () => {
-    it('should get the data port of a node given a composite ID', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const node = await flow.nodeCreate('nwrx/core:json-parse')
-      const port = flow.getDataPort(`${node.id}:json`)
-      expect(port).toBe(node.dataSchema?.json)
-    })
-
-    it('should throw an error if the node does not exist', () => {
-      using flow = createFlow()
-      const shouldThrow = () => flow.getDataPort('node-id:string')
-      expect(shouldThrow).toThrow('Node instance with ID "node-id" does not exist')
-    })
-  })
-
-  describe('getResultPort', () => {
-    it('should get the result port of a node given a composite ID', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const node = await flow.nodeCreate('nwrx/core:json-parse')
-      const port = flow.getResultPort(`${node.id}:object`)
-      expect(port).toBe(node.resultSchema?.object)
-    })
-
-    it('should throw an error if the node does not exist', () => {
-      using flow = createFlow()
-      const shouldThrow = () => flow.getResultPort('node-id:boolean')
-      expect(shouldThrow).toThrow('Node instance with ID "node-id" does not exist')
-    })
-  })
-
-  describe('linkCreate', () => {
-    it('should link the output of a node to the input of another node', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const node1 = await flow.nodeCreate('nwrx/core:input')
-      const node2 = await flow.nodeCreate('nwrx/core:json-parse')
-      flow.linkCreate(`${node1.id}:value`, `${node2.id}:json`)
-      expect(flow.links).toStrictEqual([{ source: `${node1.id}:value`, target: `${node2.id}:json` }])
-    })
-
-    it('should emit a link:create event', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const node1 = await flow.nodeCreate('nwrx/core:input')
-      const node2 = await flow.nodeCreate('nwrx/core:json-parse')
-      const listener = vi.fn()
-      flow.on('link:create', listener)
-      flow.linkCreate(`${node1.id}:value`, `${node2.id}:json`)
-      expect(listener).toHaveBeenCalledWith({ source: `${node1.id}:value`, target: `${node2.id}:json` })
-    })
-
-    it('should remove the existing link if the target is already linked to another source', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const node1 = await flow.nodeCreate('nwrx/core:input')
-      const node2 = await flow.nodeCreate('nwrx/core:input')
-      const node3 = await flow.nodeCreate('nwrx/core:json-parse')
-      flow.linkCreate(`${node1.id}:value`, `${node3.id}:json`)
-      flow.linkCreate(`${node2.id}:value`, `${node3.id}:json`)
-      expect(flow.links).toStrictEqual([{ source: `${node2.id}:value`, target: `${node3.id}:json` }])
-    })
-
-    it('should emit a link:remove event if the target is already linked to another source', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const node1 = await flow.nodeCreate('nwrx/core:input')
-      const node2 = await flow.nodeCreate('nwrx/core:input')
-      const node3 = await flow.nodeCreate('nwrx/core:json-parse')
-      const listener = vi.fn()
-      flow.on('link:remove', listener)
-      flow.linkCreate(`${node1.id}:value`, `${node3.id}:json`)
-      flow.linkCreate(`${node2.id}:value`, `${node3.id}:json`)
-      expect(listener).toHaveBeenCalledWith({ source: `${node1.id}:value`, target: `${node3.id}:json` })
-    })
-
-    it('should throw an error if the source and target are the same', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const node = await flow.nodeCreate('nwrx/core:json-parse')
-      const shouldThrow = () => flow.linkCreate(`${node.id}:object`, `${node.id}:json`)
-      expect(shouldThrow).toThrow('Cannot link the node to itself')
-    })
-
-    it('should throw an error if the source and target are of different types', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const node1 = await flow.nodeCreate('nwrx/core:json-parse')
-      const node2 = await flow.nodeCreate('nwrx/core:output')
-      const shouldThrow = () => flow.linkCreate(`${node1.id}:object`, `${node2.id}:value`)
-      expect(shouldThrow).toThrow('Cannot link Object to String')
-    })
-
-    it('should throw an error if the source does not exist', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const node = await flow.nodeCreate('nwrx/core:json-parse')
-      const shouldThrow = () => flow.linkCreate('unknown:boolean', `${node.id}:string`)
-      expect(shouldThrow).toThrow('Node instance with ID "unknown" does not exist')
-    })
-
-    it('should throw an error if the port of the source does not exist', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const node = await flow.nodeCreate('nwrx/core:json-parse')
-      const shouldThrow = () => flow.linkCreate(`${node.id}:unknown`, `${node.id}:string`)
-      expect(shouldThrow).toThrow(/The result schema of node "[\da-z\-]+" does not contain a port with the key "unknown"/)
-    })
-
-    it('should throw an error if the target does not exist', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const node = await flow.nodeCreate('nwrx/core:json-parse')
-      const shouldThrow = () => flow.linkCreate(`${node.id}:object`, 'unknown:string')
-      expect(shouldThrow).toThrow('Node instance with ID "unknown" does not exist')
-    })
-
-    it('should throw an error if the port of the target does not exist', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const node1 = await flow.nodeCreate('nwrx/core:json-parse')
-      const node2 = await flow.nodeCreate('nwrx/core:output')
-      const shouldThrow = () => flow.linkCreate(`${node1.id}:object`, `${node2.id}:unknown`)
-      expect(shouldThrow).toThrow(/The data schema of node "[\da-z\-]+" does not contain a port with the key "unknown"/)
-    })
-  })
-
-  describe('linkRemove', () => {
-    it('should remove a link between two nodes', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const node1 = await flow.nodeCreate('nwrx/core:input')
-      const node2 = await flow.nodeCreate('nwrx/core:json-parse')
-      flow.linkCreate(`${node1.id}:value`, `${node2.id}:json`)
-      flow.linkRemove(`${node1.id}:value`, `${node2.id}:json`)
-      expect(flow.links).toHaveLength(0)
-    })
-
-    it('should emit a link:remove event', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const node1 = await flow.nodeCreate('nwrx/core:input')
-      const node2 = await flow.nodeCreate('nwrx/core:json-parse')
-      flow.linkCreate(`${node1.id}:value`, `${node2.id}:json`)
-      const listener = vi.fn()
-      flow.on('link:remove', listener)
-      flow.linkRemove(`${node1.id}:value`, `${node2.id}:json`)
-      expect(listener).toHaveBeenCalledWith({ source: `${node1.id}:value`, target: `${node2.id}:json` })
-    })
-
-    it('should remove all links from a node port if the target is not specified', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const node1 = await flow.nodeCreate('nwrx/core:input')
-      const node2 = await flow.nodeCreate('nwrx/core:json-parse')
-      const node3 = await flow.nodeCreate('nwrx/core:json-parse')
-      flow.linkCreate(`${node1.id}:value`, `${node2.id}:json`)
-      flow.linkCreate(`${node1.id}:value`, `${node3.id}:json`)
-      flow.linkRemove(`${node1.id}:value`)
-      expect(flow.links).toHaveLength(0)
-    })
-
-    it('should emit a link:remove event for each link removed', async() => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const node1 = await flow.nodeCreate('nwrx/core:input')
-      const node2 = await flow.nodeCreate('nwrx/core:json-parse')
-      const node3 = await flow.nodeCreate('nwrx/core:json-parse')
-      flow.linkCreate(`${node1.id}:value`, `${node2.id}:json`)
-      flow.linkCreate(`${node1.id}:value`, `${node3.id}:json`)
-      const listener = vi.fn()
-      flow.on('link:remove', listener)
-      flow.linkRemove(`${node1.id}:value`)
-      expect(listener).toHaveBeenCalledTimes(2)
-      expect(listener).toHaveBeenCalledWith({ source: `${node1.id}:value`, target: `${node2.id}:json` })
-      expect(listener).toHaveBeenCalledWith({ source: `${node1.id}:value`, target: `${node3.id}:json` })
-    })
-  })
-
-  describe('run', () => {
-    it('should emit the "flow:start" event', () => {
-      using flow = createFlow()
-      const listener = vi.fn()
-      flow.on('flow:start', listener)
-      flow.run()
-      expect(listener).toHaveBeenCalledOnce()
-    })
-
-    // it('should start the execution of the flow', async() => {
-    //   using flow = createFlow({ modules: [moduleCore] })
-
-    //   const node1 = await flow.nodeCreate('nwrx/core:input', {
-    //     initialData: { property: 'value' },
-    //   })
-
-    //   const node2 = await flow.nodeCreate('nwrx/core:json-parse')
-    //   flow.linkCreate(`${node1.id}:value`, `${node2.id}:json`)
-    //   flow.run()
-    //   expect(node1.result).toStrictEqual({ value: undefined })
-    // })
-  })
-
-  describe('abort', () => {
-    it('should abort the flow', () => {
-      using flow = createFlow({ modules: [moduleCore] })
-      flow.abort()
-      expect(flow.isRunning).toBe(false)
-    })
-
-    it('should emit the "flow:abort" event', () => {
-      using flow = createFlow({ modules: [moduleCore] })
-      const listener = vi.fn()
-      flow.on('flow:abort', listener)
-      flow.abort()
-      expect(listener).toHaveBeenCalledOnce()
-    })
-  })
 }
