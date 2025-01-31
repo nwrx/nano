@@ -82,14 +82,11 @@ function onRelease() {
 
 <template>
   <div
-    class="
-      flex items-start gap-2 w-full
-    "
+    class="flex items-center space-x-sm w-full hover:bg-emphasized rounded-lg"
     :class="{
-      'h-8': display !== 'textarea',
       'pr-5 flex-row': kind === 'target',
       'pl-5 flex-row-reverse': kind === 'source',
-      'hover:bg-black/10': (!display && isLinked && !disallowDynamic && !disallowStatic) || kind === 'source',
+      'hover:bg-app cursor-pointer': (!display && isLinked && !disallowDynamic && !disallowStatic) || kind === 'source',
     }"
     @mousedown="(event: MouseEvent) => onGrab(event)"
     @mouseover="() => onAssign()"
@@ -99,7 +96,7 @@ function onRelease() {
     <!-- Node pin, used to connect to other nodes. -->
     <div
       ref="pin"
-      class="h-2 group-hover:scale-125 transition-transform duration-50 shrink-0 mt-3"
+      class="h-2 shrink-0"
       :style="{ backgroundColor: typeColor }"
       :class="{
         'rounded-r-lg': kind === 'target',
@@ -111,7 +108,7 @@ function onRelease() {
 
     <FlowEditorPortVariable
       v-if="disallowStatic && disallowDynamic && !isLinked"
-      v-model="model as string"
+      v-model="(model as string)"
       :name="name"
       :secrets="secrets"
       :variables="variables"
@@ -121,14 +118,15 @@ function onRelease() {
     <!-- Display the name -->
     <span
       v-else-if="!display || isLinked"
-      class="truncate text-start px-2 py-1 outline-none"
-      v-text="props.name"
+      class="truncate text-start px-sm py-xs outline-none"
+      v-text="name"
     />
 
     <!-- Display an input field -->
     <FlowEditorPortText
       v-else-if="display === 'text'"
-      v-model="model"
+      v-model="(model as string)"
+      :defaultValue="defaultValue"
       :name="name"
       @mousedown.stop
     />
@@ -144,8 +142,8 @@ function onRelease() {
 
     <!-- Display a textarea field -->
     <FlowEditorPortTextarea
-      v-else-if="props.display === 'textarea'"
-      v-model="model"
+      v-else-if="display === 'textarea'"
+      v-model="(model as string)"
       :defaultValue="defaultValue"
       :name="name"
       @mousedown.stop
