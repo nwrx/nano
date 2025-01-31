@@ -136,4 +136,4 @@ function toggle() {
       </slot>
     </BaseCollapse>
   </div>
-</template>]
+</template>
