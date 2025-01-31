@@ -190,7 +190,7 @@ export class EditorSession {
       if (message.event === 'setNodeInputValue') {
         const { id, name, value } = message
         setComponentInstanceInputValue(this.thread, id, name, value)
-        this.broadcast({ event: 'node:inputValueChanged', id, name, value }, peer)
+        this.broadcast({ event: 'node:inputValueChanged', id, name, value })
         await this.save()
       }
 
