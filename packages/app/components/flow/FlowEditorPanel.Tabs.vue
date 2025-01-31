@@ -25,10 +25,11 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
         type="radio"
         class="
         flex items-center justify-center
-        cursor-pointer px-md h-10 rd font-medium transition
-        !selected:text-primary-50
-        !selected:bg-primary-500
-        hover:bg-primary-500/20
+        last:rd-r first:rd-l
+        cursor-pointer px-md h-10 font-medium transition
+        !selected:text-editor-active
+        !selected:bg-editor-active
+        hover:bg-editor-active/20
       ">
         {{ tab.label }}
       </BaseInputToggle>
