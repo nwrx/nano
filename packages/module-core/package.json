@@ -16,6 +16,16 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
+    "./categoryBasic": {
+      "require": "./dist/categoryBasic.cjs",
+      "types": "./dist/categoryBasic.d.ts",
+      "import": "./dist/categoryBasic.js"
+    },
+    "./categoryLmModels": {
+      "require": "./dist/categoryLmModels.cjs",
+      "types": "./dist/categoryLmModels.d.ts",
+      "import": "./dist/categoryLmModels.js"
+    },
     "./nodeInference": {
       "require": "./dist/nodeInference.cjs",
       "types": "./dist/nodeInference.d.ts",
@@ -40,6 +50,11 @@
       "require": "./dist/nodeModelOpenai.cjs",
       "types": "./dist/nodeModelOpenai.d.ts",
       "import": "./dist/nodeModelOpenai.js"
+    },
+    "./nodeOutput": {
+      "require": "./dist/nodeOutput.cjs",
+      "types": "./dist/nodeOutput.d.ts",
+      "import": "./dist/nodeOutput.js"
     },
     "./nodeTemplate": {
       "require": "./dist/nodeTemplate.cjs",
