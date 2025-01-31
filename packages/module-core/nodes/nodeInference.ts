@@ -159,8 +159,9 @@ export const nodeInference = defineNode({
       // --- extracted from the response body. This is specific to the `LanguageModel`
       // --- interface and requires the `onError` function to be defined.
       if (!response.ok) {
-        const message = typeof onError === 'function' ? await onError(response) : (response.statusText)
-        throw new Error(message)
+        throw typeof onError === 'function'
+          ? await onError(response)
+          : new Error(response.statusText)
       }
 
       // --- If the response is OK, extract the data from the response and pass it to the

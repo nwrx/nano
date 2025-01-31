@@ -19,7 +19,6 @@ export interface LanguageModelGetModelsOptions {
   path: string
   token?: string
   baseUrl?: string
-  abortSignal: AbortSignal
   query?: string
 }
 
@@ -89,11 +88,10 @@ export function defineLanguageModel<T, U>(options: LanguageModelOptions<T, U>) {
         name: 'Model',
         defaultValue: defaultModel,
         description: 'The name of the model to use for generating completions.',
-        options: ({ input, abortSignal }, query) => getModels({
+        options: ({ token, baseUrl }, query) => getModels({
           path: pathModels,
-          token: input.token as string,
-          baseUrl: input.baseUrl as string,
-          abortSignal,
+          token: token as string,
+          baseUrl: baseUrl as string,
           query,
         }),
       },
@@ -107,11 +105,11 @@ export function defineLanguageModel<T, U>(options: LanguageModelOptions<T, U>) {
       },
     },
 
-    process: ({ input }) => ({
+    process: ({ input: { model, baseUrl, token } }) => ({
       model: {
-        url: new URL(pathCompletions, input.baseUrl).toString(),
-        model: input.model,
-        token: input.token,
+        url: new URL(pathCompletions, baseUrl).toString(),
+        model,
+        token,
         getBody,
         onError,
         onData,
