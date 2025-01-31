@@ -27,7 +27,7 @@ export function flowDelete(this: ModuleFlow) {
 
       // --- Find the flow and soft remove it.
       const flow = await Flow.findOneBy({ project, name: flowName })
-      if (!flow) throw this.errors.FLOW_NOT_FOUND(workspace
+      if (!flow) throw this.errors.FLOW_NOT_FOUND(workspace.name, project.name, flowName)
       await Flow.softRemove(flow)
     },
   )
