@@ -1,6 +1,6 @@
 <script setup lang="ts">
 defineProps<{
-  label?: string
+  label?: number | string
   icon?: string
   iconLoad?: boolean
   iconAppend?: string
