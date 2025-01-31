@@ -4,7 +4,7 @@ import { vMarkdown } from '#imports'
 const props = defineProps<{
   text?: string
   kind?: string
-  name?: string
+  title?: string
   description?: string
   icon?: string
   color?: string
@@ -52,7 +52,7 @@ function handleGrab(event: MouseEvent) {
       </div>
 
       <!-- Title -->
-      <p class="font-medium text-white" v-text="name" />
+      <p class="font-medium text-white" v-text="title" />
 
       <!-- Tooltip content -->
       <template #tooltip>
