@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import ASSET_NWRX_LOGO from '~/assets/nwrx-logo-white.svg'
-import { CONSTANTS } from '~/utils/constants'
-import { NAV_BAR_END, NAV_BAR_START, NAV_DRAWER_END, NAV_DRAWER_START } from '~/utils/navigation'
 
 const route = useRoute()
 const session = useSession()
