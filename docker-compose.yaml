@@ -55,6 +55,24 @@ services:
       - NWRX_USER_TRUST_PROXY=true
       - NWRX_USER_SECRET_KEY=SECRET_KEY
 
+  nano-core:
+    image: cimg/node:20.17.0
+    container_name: nano-core
+    working_dir: /workspace
+    command: pnpm -F @nwrx/core dev
+    user: 1000:1000
+    volumes:
+      - .:/workspace
+
+  nano-module-core:
+    image: cimg/node:20.17.0
+    container_name: nano-module-core
+    working_dir: /workspace
+    command: pnpm -F @nwrx/module-core dev
+    user: 1000:1000
+    volumes:
+      - .:/workspace
+
   openhands:
     image: ghcr.io/all-hands-ai/openhands:0.9
     container_name: openhands
