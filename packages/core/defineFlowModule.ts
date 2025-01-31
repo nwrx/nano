@@ -1,26 +1,12 @@
-/* eslint-disable @typescript-eslint/no-empty-object-type */
-import type { FlowNode, FlowNodeJSON } from './defineFlowNode'
-import type { FlowType, FlowTypeJSON } from './defineFlowType'
-import { assertStringNotEmpty } from '@unshared/validation'
-
-/** A collection of flow nodes. */
-export type FlowModuleNodes = Record<string, FlowNode<string, any, any>>
-export type FlowModuleTypes = Record<string, FlowType<any>>
-
-/** The serialized representation of a flow module. */
-export interface FlowModuleJSON {
-  kind: string
-  name: string
-  description: string
-  nodes: FlowNodeJSON[]
-  types: FlowTypeJSON[]
-}
+import type { FlowNode } from './defineFlowNode'
+import type { FlowType } from './defineFlowType'
+import { assertNotNil, assertStringNotEmpty } from '@unshared/validation'
 
 /** The options for defining a flow module. */
-export interface FlowModuleOptions<
+export interface FlowModule<
   Kind extends string = string,
-  Nodes extends FlowModuleNodes = FlowModuleNodes,
-  Types extends FlowModuleTypes = FlowModuleTypes,
+  Node extends FlowNode = FlowNode,
+  Type extends FlowType = FlowType,
 > {
 
   /**
@@ -39,7 +25,7 @@ export interface FlowModuleOptions<
    *
    * @example 'Microsoft Azure'
    */
-  name: string
+  name?: string
 
   /**
    * The icon of the flow module. The icon is used to display the module in the UI
@@ -65,7 +51,7 @@ export interface FlowModuleOptions<
    *
    * @example { CheckCredentials, CreateResource, DeleteResource }
    */
-  nodes?: Nodes
+  nodes?: Node[]
 
   /**
    * The types that are defined in the flow module. The types are used to define
@@ -74,28 +60,7 @@ export interface FlowModuleOptions<
    *
    * @example { AzureCredentials, AzureResource }
    */
-  types?: Types
-}
-
-export interface FlowModule<
-  Kind extends string = string,
-  Nodes extends FlowModuleNodes = FlowModuleNodes,
-  Types extends FlowModuleTypes = FlowModuleTypes,
-> extends Required<FlowModuleOptions<Kind, Nodes, Types>> {
-
-  /**
-   * The internal name of the flow module. The name is used to identify the module
-   * in the backend and should be unique to the module. The name should be a camel
-   * case string without spaces or special characters.
-   */
-  toString(): Kind
-
-  /**
-   * Serialize the flow module to a JSON object. The JSON object can be used to
-   * store the flow module in a database or to send the flow module over the network.
-   * The JSON object contains the name, label, description, nodes, and types of the module.
-   */
-  toJSON(): FlowModuleJSON
+  types?: Type[]
 }
 
 /**
@@ -106,29 +71,115 @@ export interface FlowModule<
  * @returns The flow module created with the given options.
  */
 export function defineFlowModule<
-  Kind extends string = string,
-  Nodes extends FlowModuleNodes = {},
-  Types extends FlowModuleTypes = {},
->(options: FlowModuleOptions<Kind, Nodes, Types>): FlowModule<Kind, Nodes, Types> {
+  Kind extends string,
+  Node extends FlowNode,
+  Type extends FlowType,
+>(options: FlowModule<Kind, Node, Type>): FlowModule<Kind, Node, Type> {
+  assertNotNil(options)
   assertStringNotEmpty(options.kind)
   return {
     kind: options.kind,
     name: options.name ?? options.kind,
-    icon: options.icon ?? '',
-    description: options.description ?? '',
-    nodes: options.nodes ?? {} as Nodes,
-    types: options.types ?? {} as Types,
-    toString() {
-      return this.kind
-    },
-    toJSON() {
-      return {
-        kind: this.kind,
-        name: this.name,
-        description: this.description,
-        nodes: Object.values(this.nodes).map(node => node.toJSON()),
-        types: Object.values(this.types).map(type => type.toJSON()),
-      }
-    },
+    icon: options.icon,
+    description: options.description,
+    nodes: options.nodes ?? [] as Node[],
+    types: options.types ?? [] as Type[],
   }
+}
+
+/* v8 ignore start */
+if (import.meta.vitest) {
+  const { nodeJsonParse, nodeInput, typeBoolean, typeNumber, typeString } = await import('./__fixtures__')
+
+  describe('defineFlowModule', () => {
+    it('should define a flow module with the given options', () => {
+      const module = defineFlowModule({
+        kind: 'microsoft-azure',
+        name: 'Microsoft Azure',
+        icon: 'https://api.iconify.design/carbon:cloud.svg',
+        description: 'A collection of nodes for working with Microsoft Azure services.',
+        nodes: [nodeJsonParse, nodeInput],
+        types: [typeBoolean, typeNumber, typeString],
+      })
+      expect(module).toStrictEqual({
+        kind: 'microsoft-azure',
+        name: 'Microsoft Azure',
+        icon: 'https://api.iconify.design/carbon:cloud.svg',
+        description: 'A collection of nodes for working with Microsoft Azure services.',
+        nodes: [nodeJsonParse, nodeInput],
+        types: [typeBoolean, typeNumber, typeString],
+      })
+    })
+
+    it('should define a flow module with minimal options', () => {
+      const module = defineFlowModule({ kind: 'microsoft-azure' })
+      expect(module).toStrictEqual({
+        kind: 'microsoft-azure',
+        name: 'microsoft-azure',
+        icon: undefined,
+        description: undefined,
+        nodes: [],
+        types: [],
+      })
+    })
+
+    it('should not return the same object', () => {
+      const object = { kind: 'microsoft-azure' }
+      const module = defineFlowModule(object)
+      expect(module).not.toBe(object)
+    })
+  })
+
+  describe('edge cases', () => {
+    it('should throw an error if options is undefined', () => {
+    // @ts-expect-error: test invalid input
+      const shouldThrow = () => defineFlowModule()
+      expect(shouldThrow).toThrow('Expected value not to be null or undefined')
+    })
+
+    it('should throw an error if the kind is undefined', () => {
+      // @ts-expect-error: test invalid input
+      const shouldThrow = () => defineFlowModule({ kind: undefined })
+      expect(shouldThrow).toThrow('Expected value to be a string but received: undefined')
+    })
+
+    it('should throw an error if the kind is null', () => {
+      // @ts-expect-error: test invalid input
+      // eslint-disable-next-line unicorn/no-null
+      const shouldThrow = () => defineFlowModule({ kind: null })
+      expect(shouldThrow).toThrow('Expected value to be a string but received: null')
+    })
+
+    it('should throw an error if the kind is an empty string', () => {
+      const shouldThrow = () => defineFlowModule({ kind: '' })
+      expect(shouldThrow).toThrow('Expected value to be a non-empty string but received an empty string')
+    })
+
+    it('should throw an error if the kind is not a string', () => {
+      // @ts-expect-error: test invalid input
+      const shouldThrow = () => defineFlowModule({ kind: 123 })
+      expect(shouldThrow).toThrow('Expected value to be a string but received: number')
+    })
+  })
+
+  describe('type inference', () => {
+    it('should infer the type of the flow module', () => {
+      const module = defineFlowModule({
+        kind: 'microsoft-azure',
+        name: 'Microsoft Azure',
+        icon: 'https://api.iconify.design/carbon:cloud.svg',
+        description: 'A collection of nodes for working with Microsoft Azure services.',
+        nodes: [nodeJsonParse, nodeInput],
+        types: [typeBoolean, typeNumber, typeString],
+      })
+
+      expectTypeOf(module).toMatchTypeOf<
+        FlowModule<
+          'microsoft-azure',
+          FlowNode<'input' | 'json-parse', any, any>,
+          FlowType<boolean | number | string>
+        >
+      >()
+    })
+  })
 }
