@@ -12,12 +12,9 @@ export const NAV_DRAWER_START = computed<NavItem[]>(() => {
           icon: 'i-carbon:home',
         },
         {
-          label: 'Modules',
-          icon: 'i-carbon:box',
-        },
-        {
           label: 'Integrations',
           icon: 'i-carbon:integration',
+          to: { name: 'Modules' },
         },
         {
           label: 'Storage',
