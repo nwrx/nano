@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { FlowNodeDefinitionJSON } from '@nwrx/api'
+import type { ComponentJSON } from '@nwrx/api'
 import type { DropPayload } from '~/utils/types'
 
-const props = defineProps<FlowNodeDefinitionJSON>()
+const props = defineProps<ComponentJSON>()
 
 // --- Drag start event handler.
 function onDragStart(event: DragEvent) {

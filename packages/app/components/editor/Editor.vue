@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { FlowJSON, FlowLinkSocketJSON } from '@nwrx/api'
+import type { EditorSessionJSON, LinkJSON } from '@nwrx/api'
 import type { SocketListOption } from '@nwrx/core'
 import { throttle } from '@unshared/functions/throttle'
 import PATTERN_EDITOR_URL from '~/assets/pattern-editor.svg'
 
-const props = defineProps<{
+const props = defineProps<Partial<EditorSessionJSON> & {
   getOptions?: (id: string, key: string, query: string) => Promise<SocketListOption[]>
-} & Partial<FlowJSON>>()
+}>()
 
 const emit = defineEmits<{
   clearEvents: []
@@ -30,8 +30,8 @@ const emit = defineEmits<{
   setNodeInputValue: [string, string, unknown]
   getNodeInputOptions: [string, string, string | undefined]
   removeNodes: [string[]]
-  createLink: [FlowLinkSocketJSON, FlowLinkSocketJSON]
-  removeLink: [FlowLinkSocketJSON]
+  createLink: [LinkJSON, LinkJSON]
+  removeLink: [LinkJSON]
   setUserPosition: [number, number]
 }>()
 
@@ -41,7 +41,7 @@ const panelWidth = computed({
   set: value => settings.value.editorPanelWidth = value,
 })
 
-const editor = useFlowEditor({
+const editor = useFlowEditorView({
   viewSize: 10e4,
   panelWidth: panelWidth as Ref<number>,
   nodes: computed(() => props.nodes ?? []),

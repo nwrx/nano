@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { FlowThreadNodeJSON } from '@nwrx/api'
+import type { ComponentInstanceJSON } from '@nwrx/api'
 import type { SocketListOption } from '@nwrx/core'
-import type { FlowLinkSocket } from '~/composables/useFlowEditor'
+import type { FlowLinkSocket } from '~/composables/useFlowEditorView'
 
 const props = defineProps<{
   zoom?: number
@@ -10,7 +10,7 @@ const props = defineProps<{
   secrets?: string[]
   variables?: string[]
   getOptions?: (key: string, query: string) => Promise<SocketListOption[]>
-} & FlowThreadNodeJSON>()
+} & ComponentInstanceJSON>()
 
 const emit = defineEmits<{
   start: []

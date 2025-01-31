@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { FlowSessionEventName, FlowSessionEventPayload, FlowThreadNodeJSON } from '@nwrx/api'
+import type { FlowSessionEventName, FlowSessionEventPayload, ComponentInstanceJSON } from '@nwrx/api'
 
 const props = defineProps<{
   events?: FlowSessionEventPayload[]
-  nodes?: FlowThreadNodeJSON[]
+  nodes?: ComponentInstanceJSON[]
 }>()
 
 const emit = defineEmits<{
@@ -19,7 +19,7 @@ const EVENTS_WHITELIST = new Set<FlowSessionEventName>([
 ])
 
 // --- Compute the given node based on the event.
-function getNode(event: FlowSessionEventPayload): FlowThreadNodeJSON | undefined {
+function getNode(event: FlowSessionEventPayload): ComponentInstanceJSON | undefined {
   return (props.nodes ?? []).find((node) => {
     if ('id' in event) return node.id === event.id
     return false

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FlowLinkProps } from '~/composables/useFlowEditor'
+import type { FlowLinkProps } from '~/composables/useFlowEditorView'
 
 const props = defineProps<{ zoom?: number } & FlowLinkProps>()
 const id = useId()

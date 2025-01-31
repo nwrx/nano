@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { FlowSessionEventPayload, FlowThreadNodeJSON } from '@nwrx/api'
+import type { FlowSessionEventPayload, ComponentInstanceJSON } from '@nwrx/api'
 
 defineProps<{
   event: FlowSessionEventPayload
-  node?: FlowThreadNodeJSON
+  node?: ComponentInstanceJSON
 }>()
 
 // --- Localization

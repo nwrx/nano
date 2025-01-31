@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { FlowSessionEventPayload, FlowThreadNodeJSON } from '@nwrx/api'
+import type { FlowSessionEventPayload, ComponentInstanceJSON } from '@nwrx/api'
 
 const props = defineProps<{
   event: FlowSessionEventPayload
-  node?: FlowThreadNodeJSON
+  node?: ComponentInstanceJSON
   isOpen: boolean
 }>()
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { isReferenceLink } from '@nwrx/core/utils'
+import { isReferenceLink } from '#imports'
 import { ref } from 'vue'
 
 const props = defineProps<{

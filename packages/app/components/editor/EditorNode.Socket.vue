@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { InputSocketJSON } from '@nwrx/api'
+import type { InputJSON } from '@nwrx/api'
 import type { SocketListOption } from '@nwrx/core'
-import { isReferenceLink } from '@nwrx/core/utils'
+import { isReferenceLink } from '#imports'
 
 const props = defineProps<{
   id: string
@@ -9,7 +9,7 @@ const props = defineProps<{
   value: unknown
   secrets?: string[]
   variables?: string[]
-  socket: InputSocketJSON
+  socket: InputJSON
   getOptions?: (key: string, query: string) => Promise<SocketListOption[]>
 }>()
 
