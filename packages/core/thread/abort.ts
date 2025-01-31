@@ -1,5 +1,5 @@
 import type { Thread } from './createThread'
-import { createEventMetadata } from './createEventMetadata'
+import { createEventMetadata } from '../utils'
 
 /**
  * Aborts a thread and all its nodes.
