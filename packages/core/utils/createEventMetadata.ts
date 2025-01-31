@@ -1,5 +1,4 @@
-import type { Node, NodeState } from './addNode'
-import type { Thread } from './createThread'
+import type { Node, NodeState, Thread } from '../thread'
 
 export interface EventMetadata {
 
