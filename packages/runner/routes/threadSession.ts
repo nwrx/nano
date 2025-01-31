@@ -20,7 +20,7 @@ export function threadSession(this: ModuleRunner) {
           thread = createThreadWorkerSession.call(this)
           this.runnerSessions.set(peer.id, thread)
           thread.port.on('message', message => peer.send(message))
-          peer.send({ event: 'worker:ready', data: { id: peer.id } } as ThreadWorkerMessage)
+          peer.send({ event: 'worker:ready', data: [peer.id] } as ThreadWorkerMessage)
         }
 
         // --- Handle the message event.

@@ -1,6 +1,6 @@
 /* eslint-disable unicorn/prefer-top-level-await */
 import type { ModuleRunner } from '.'
-import type { ThreadWorkerMessage } from './utils'
+import type { ThreadWorkerMessage } from './worker'
 import { createClient } from '@unserved/client'
 
 async function main() {
@@ -48,7 +48,7 @@ async function main() {
       }
 
       if (message.event === 'worker:ready')
-        id = message.data.id
+        id = message.data[0]
 
       if (message.event === 'done') {
         const [output] = message.data

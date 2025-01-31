@@ -9,7 +9,7 @@ export type ThreadWorkerMessage =
   | { [K in keyof ThreadEventMap]: { event: K; data: ThreadEventMap[K] } }[keyof ThreadEventMap]
   | { event: 'worker:created' }
   | { event: 'worker:outputValue'; data: [name: string, value: unknown] }
-  | { event: 'worker:ready'; data: { id: string } }
+  | { event: 'worker:ready'; data: [id: string] }
 
 export type ThreadSessionMessage =
   | { event: 'done'; data: [ObjectLike] }
