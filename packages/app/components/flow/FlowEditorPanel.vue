@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { NodeInstanceJSON, FlowSessionEventPayload, FlowSessionSecretJSON, FlowSessionVariableJSON } from '@nwrx/api'
+import type { FlowSessionEventPayload, FlowSessionSecretJSON, FlowSessionVariableJSON, NodeInstanceJSON } from '@nwrx/api'
 
 const props = defineProps<{
   name: string
@@ -10,12 +10,12 @@ const props = defineProps<{
   nodeSelected: NodeInstanceJSON[]
   events: FlowSessionEventPayload[]
   isOpen: boolean
+  nodes: NodeInstanceJSON[]
   isFlowMethodsOpen?: boolean
   isFlowSecretsOpen?: boolean
   isFlowVariablesOpen?: boolean
   isNodeDataOpen?: boolean
   isNodeResultOpen?: boolean
-  isEventsOpen?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -25,7 +25,6 @@ const emit = defineEmits<{
   'update:isFlowVariablesOpen': [isOpen: boolean]
   'update:isNodeDataOpen': [isOpen: boolean]
   'update:isNodeResultOpen': [isOpen: boolean]
-  'update:isEventsOpen': [isOpen: boolean]
   setName: [name: string]
   setMethods: [methods: string[]]
   setDescription: [description: string]
@@ -50,13 +49,12 @@ const isFlowSecretsOpen = useVModel(props, 'isFlowSecretsOpen', emit, { passive:
 const isFlowVariablesOpen = useVModel(props, 'isFlowVariablesOpen', emit, { passive: true })
 const isNodeDataOpen = useVModel(props, 'isNodeDataOpen', emit, { passive: true })
 const isNodeResultOpen = useVModel(props, 'isNodeResultOpen', emit, { passive: true })
-const isEventsOpen = useVModel(props, 'isEventsOpen', emit, { passive: true })
 
 // --- Compute tabs based on selected node.
 const selectedTab = ref('flow')
 const tabs = computed(() => {
   const nodeSelected = props.nodeSelected ?? []
-  const tabs = [{ label: 'Logs', id: 'logs' }]
+  const tabs = [{ label: 'Events', id: 'events' }]
   if (nodeSelected.length > 0) tabs.unshift({ label: 'Node', id: 'node' })
   else tabs.unshift({ label: 'Settings', id: 'flow' })
   return tabs
@@ -77,46 +75,36 @@ watch(() => props.nodeSelected, () => {
 
 <template>
   <div
-    class="
-      flex flex-col max-h-full rd overflow-hidden relative
-      bg-editor-panel border border-editor backdrop-blur-2xl
-    "
     :class="{
-      'w-16': !isOpen,
+      'w-16 !h-16': !isOpen,
       'w-128': isOpen,
     }"
+    class="
+      flex flex-col rd backdrop-blur-2xl overflow-hidden
+      bg-editor-panel border border-editor transition-all duration-slow
+    "
     @mousedown.stop>
 
-    <Button
-      filled
-      variant="secondary"
-      icon="i-carbon:close"
-      class="!absolute right-md top-md z-10"
+    <!-- Tabs -->
+    <FlowEditorPanelTabs
+      v-model="selectedTab"
+      v-model:isOpen="isOpen"
+      :tabs="tabs"
+      :class="{ 'op-0': !isOpen }"
+      class="transition-all"
+    />
+
+    <!-- Toggle -->
+    <FlowEditorFab
+      class="absolute top-0 right-0 mt-3 mr-3"
+      :icon="isOpen ? 'i-carbon:right-panel-close-filled' : 'i-carbon:right-panel-open'"
       @click="() => isOpen = !isOpen"
     />
 
-    <!-- Tab selector -->
-    <div class="flex gap-md p-md" :class="{ 'opacity-0': !isOpen }">
-      <BaseInputToggle
-        v-for="tab in tabs"
-        :key="tab.id"
-        v-model="selectedTab"
-        :value="tab.id"
-        eager
-        as="div"
-        type="radio"
-        class="
-          cursor-pointer px-md py-sm rd font-medium transition
-          !selected:bg-primary-500
-          selected:text-white
-          hover:bg-prominent
-        ">
-        {{ tab.label }}
-      </BaseInputToggle>
-    </div>
-
-    <!-- Flow settings -->
-    <div :class="{ 'opacity-0': !isOpen }" class="flex-grow overflow-y-auto">
+    <!-- Flow -->
+    <div
+      class="flex flex-col flex-1 overflow-y-auto transition"
+      :class="{ 'op-0': !isOpen }">
       <FlowEditorPanelFlow
         v-if="selectedTab === 'flow'"
         v-model:isMethodsOpen="isFlowMethodsOpen"
@@ -138,7 +126,7 @@ watch(() => props.nodeSelected, () => {
         @secretRemove="(name) => emit('secretRemove', name)"
       />
 
-      <!-- Selected node settings -->
+      <!-- Node -->
       <FlowEditorPanelNode
         v-else-if="selectedTab === 'node' && node"
         v-model:isDataOpen="isNodeDataOpen"
@@ -152,9 +140,9 @@ watch(() => props.nodeSelected, () => {
 
       <!-- Events -->
       <FlowEditorPanelEvents
-        v-else-if="selectedTab === 'logs'"
-        v-model:isEventsOpen="isEventsOpen"
+        v-else-if="selectedTab === 'events'"
         :events="events"
+        :nodes="nodes"
         @clear="() => emit('eventsClear')"
       />
     </div>

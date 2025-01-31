@@ -1,33 +1,49 @@
 <script setup lang="ts">
-const props = defineProps<{
-  data: Array<{ name: string; value: unknown }>
-  title: string
-  text?: string
-  isOpen: boolean
+defineProps<{
+  data: Record<string, unknown>
+  label?: string
+  labelEmpty?: string
 }>()
 
-const emit = defineEmits<{
-  'update:isOpen': [value: boolean]
-}>()
-
-const isOpen = useVModel(props, 'isOpen', emit, { passive: true })
+const { t } = useI18n()
 </script>
 
 <template>
-  <FlowEditorPanelSection
-    v-model="isOpen"
-    :title="title"
-    :text="text"
-    class-content="group space-y-2">
+  <div>
 
+    <!-- Label -->
+    <p class="text-sm text-subtle" v-text="label" />
+
+    <!-- No data -->
     <div class="border border-editor rounded select-text bg-editor-panel-data">
-      <FlowEditorPanelSectionDataProperty
-        v-for="property in data"
-        :key="property.name"
-        :name="property.name"
-        :value="property.value"
-      />
-    </div>
+      <template v-if="Object.values(data).length === 0">
+        <div class="text-center text-sm text-editor-node">
+          {{ labelEmpty || t('empty') }}
+        </div>
+      </template>
 
-  </FlowEditorPanelSection>
+      <!-- Data -->
+      <div v-else>
+        <FlowEditorPanelSectionDataProperty
+          v-for="(value, name) in data"
+          :key="name"
+          :name="name"
+          :value="value"
+        />
+      </div>
+    </div>
+  </div>
 </template>
+
+<i18n lang="yaml">
+  en:
+    empty: No data
+  fr:
+    empty: Aucune donnée
+  de:
+    empty: Keine Daten
+  es:
+    empty: Sin datos
+  zh:
+    empty: 没有数据
+</i18n>
