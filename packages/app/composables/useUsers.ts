@@ -155,5 +155,17 @@ export function useUsers(options: UseUserOptions = {}) {
         data: { username },
       })
     },
+
+    /**
+     * Search for users with the given query. This will search for users in the database that match
+     * the given `query`. The `query` can be a partial username or email address.
+     *
+     * @param query The query to search for.
+     * @returns A promise that resolves with the list of users that match the query.
+     */
+    search: async(query: string): Promise<UserObject[]> => await client.request('GET /api/users', {
+      onError: error => alerts.error(error),
+      data: { query },
+    }) as UserObject[],
   }
 }
