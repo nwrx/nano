@@ -13,7 +13,8 @@ export function flowProjectDelete(this: ModuleWorkspace) {
       }),
     },
     async({ event, parameters }): Promise<void> => {
-      const user = await this.getModule(ModuleUser).authenticate(event)
+      const userModule = this.getModule(ModuleUser)
+      const { user } = await userModule.authenticate(event)
       const { project, workspace } = parameters
 
       // --- Resolve the workspace and project and assert the user has access to them.

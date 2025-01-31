@@ -20,7 +20,8 @@ export function projectGet(this: ModuleWorkspace) {
       }),
     },
     async({ event, parameters, query }) => {
-      const user = await this.getModule(ModuleUser).authenticate(event, { optional: true })
+      const userModule = this.getModule(ModuleUser)
+      const { user } = await userModule.authenticate(event, { optional: true }) ?? {}
       const { project, workspace } = parameters
 
       // --- Resolve the workspace and project and assert the user has access to them.

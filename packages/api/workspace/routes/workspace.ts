@@ -19,7 +19,8 @@ export function workspaceGet(this: ModuleWorkspace) {
       }),
     },
     async({ event, query, parameters }) => {
-      const user = await this.getModule(ModuleUser).authenticate(event, { optional: true })
+      const userModule = this.getModule(ModuleUser)
+      const { user } = await userModule.authenticate(event, { optional: true }) ?? {}
       const { workspace } = parameters
 
       // --- Assert that the user has access and fetch the workspace.

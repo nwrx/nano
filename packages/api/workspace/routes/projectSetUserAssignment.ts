@@ -19,7 +19,7 @@ export function projectUpdateUserAssignments(this: ModuleWorkspace) {
     },
     async({ event, parameters, body }) => this.withTransaction(async() => {
       const userModule = this.getModule(ModuleUser)
-      const user = await userModule.authenticate(event)
+      const { user } = await userModule.authenticate(event)
       const { WorkspaceProjectAssignment, WorkspaceProject } = this.getRepositories()
       const { project, workspace, username } = parameters
       const { permissions } = body
