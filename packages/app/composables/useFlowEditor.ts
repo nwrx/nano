@@ -195,50 +195,57 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
       for (const node of nodes.value) {
         for (const key in node.data) {
           const value = node.data[key]
-          if (typeof value !== 'string') continue
-          if (!value.startsWith('$NODE.')) continue
+          if (value === undefined) continue
 
-          // --- Get the source and target node IDs.
-          const [source, sourceProperty] = value.slice(6).split(':')
-          const [target, targetProperty] = [node.id, key]
+          // --- Cast as an array and iterate over the values.
+          const values = Array.isArray(value) ? value : [value]
+          for (const value of values) {
 
-          // --- Get the source and target node elements.
-          /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-          /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-          const sourceNodeComponent = nodeComponents.value[source] as unknown as typeof FlowEditorNode
-          const targetNodeComponent = nodeComponents.value[target] as unknown as typeof FlowEditorNode
-          if (!sourceNodeComponent || !targetNodeComponent) continue
+            if (typeof value !== 'string') continue
+            if (!value.startsWith('$NODE.')) continue
 
-          // --- Get the source and target pin elements.
-          const sourceElement = sourceNodeComponent.socketsResult[sourceProperty]?.pin as HTMLElement
-          const targetElement = targetNodeComponent.socketsData[targetProperty]?.pin as HTMLElement
-          if (!sourceElement || !targetElement) continue
-          /* eslint-enable @typescript-eslint/no-unsafe-member-access */
-          /* eslint-enable @typescript-eslint/no-unsafe-assignment */
+            // --- Get the source and target node IDs.
+            const [source, sourceProperty] = value.slice(6).split(':')
+            const [target, targetProperty] = [node.id, key]
 
-          // --- Get the source and target pin rectangles.
-          const sourceRect = sourceElement.getBoundingClientRect()
-          const targetRect = targetElement.getBoundingClientRect()
+            // --- Get the source and target node elements.
+            /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+            /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+            const sourceNodeComponent = nodeComponents.value[source] as unknown as typeof FlowEditorNode
+            const targetNodeComponent = nodeComponents.value[target] as unknown as typeof FlowEditorNode
+            if (!sourceNodeComponent || !targetNodeComponent) continue
 
-          const sourcePosition = screenToView({
-            x: sourceRect.x + sourceRect.width / 2,
-            y: sourceRect.y + sourceRect.height / 2,
-          })
+            // --- Get the source and target pin elements.
+            const sourceElement = sourceNodeComponent.socketsResult[sourceProperty]?.pin as HTMLElement
+            const targetElement = targetNodeComponent.socketsData[targetProperty]?.pin as HTMLElement
+            if (!sourceElement || !targetElement) continue
+            /* eslint-enable @typescript-eslint/no-unsafe-member-access */
+            /* eslint-enable @typescript-eslint/no-unsafe-assignment */
 
-          const targetPosition = screenToView({
-            x: targetRect.x + targetRect.width / 2,
-            y: targetRect.y + targetRect.height / 2,
-          })
+            // --- Get the source and target pin rectangles.
+            const sourceRect = sourceElement.getBoundingClientRect()
+            const targetRect = targetElement.getBoundingClientRect()
 
-          // --- Push the computed link to the links array.
-          result.push({
-            sourceX: sourcePosition.x,
-            sourceY: sourcePosition.y,
-            targetX: targetPosition.x,
-            targetY: targetPosition.y,
-            sourceColor: sourceElement.style.backgroundColor,
-            targetColor: targetElement.style.backgroundColor,
-          })
+            const sourcePosition = screenToView({
+              x: sourceRect.x + sourceRect.width / 2,
+              y: sourceRect.y + sourceRect.height / 2,
+            })
+
+            const targetPosition = screenToView({
+              x: targetRect.x + targetRect.width / 2,
+              y: targetRect.y + targetRect.height / 2,
+            })
+
+            // --- Push the computed link to the links array.
+            result.push({
+              sourceX: sourcePosition.x,
+              sourceY: sourcePosition.y,
+              targetX: targetPosition.x,
+              targetY: targetPosition.y,
+              sourceColor: sourceElement.style.backgroundColor,
+              targetColor: targetElement.style.backgroundColor,
+            })
+          }
         }
       }
 
