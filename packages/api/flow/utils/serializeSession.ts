@@ -1,8 +1,8 @@
 /* eslint-disable sonarjs/todo-tag */
 import type { Peer } from 'crossws'
 import type { EditorSession } from './createSession'
-import type { ComponentInstanceJSON } from './serializeComponentInstance'
 import type { EditorSessionServerMessage } from './editorSessionServerMessage'
+import type { ComponentInstanceJSON } from './serializeComponentInstance'
 import { type CategoryJSON, searchCategories } from './searchCategories'
 import { serializeComponentInstance } from './serializeComponentInstance'
 
