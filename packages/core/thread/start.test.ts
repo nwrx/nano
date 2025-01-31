@@ -151,6 +151,22 @@ describe('start', () => {
       await start(thread)
       expect(thread.eventListeners).toHaveLength(0)
     })
+
+    it('should dispatch the "done" event when all nodes are done, even if the thread is empty', async() => {
+      const thread = createThread()
+      const callback = vi.fn()
+      thread.on('done', callback)
+      await start(thread)
+      expect(callback).toHaveBeenCalledOnce()
+      expect(callback).toHaveBeenCalledWith({})
+    })
+
+    it('should dispatch the "done" event with the output object', async() => {
+      const thread = createThread()
+      addNode(thread, 'output', { input: { value: 'Hello, World!', name: 'result' } })
+      const output = await start(thread)
+      expect(output).toEqual({ result: 'Hello, World!' })
+    })
   })
 
   describe('flow', () => {
