@@ -120,5 +120,133 @@ export function useProject(workspace: MaybeRef<string>, project: MaybeRef<string
           project: unref(project),
         },
       }),
+
+    /**
+     * Create a new variable in the project.
+     *
+     * @param name The name of the variable.
+     * @param value The value of the variable.
+     * @returns A promise that resolves when the variable is created.
+     */
+    createVariable: async(name: string, value: string) =>
+      await client.requestAttempt('POST /api/workspaces/:workspace/:project/variables', {
+        onError: error => alerts.error(error),
+        onSuccess: () => {
+          alerts.success('Variable created successfully')
+          void refresh()
+        },
+        data: {
+          workspace: unref(workspace),
+          project: unref(project),
+          name,
+          value,
+        },
+      }),
+
+    /**
+     * Update an existing variable in the project.
+     *
+     * @param name The name of the variable.
+     * @param value The new value of the variable.
+     * @returns A promise that resolves when the variable is updated.
+     */
+    updateVariable: async(name: string, value: string) =>
+      await client.requestAttempt('PUT /api/workspaces/:workspace/:project/variables/:name', {
+        onError: error => alerts.error(error),
+        onSuccess: () => {
+          alerts.success('Variable updated successfully')
+          void refresh()
+        },
+        data: {
+          workspace: unref(workspace),
+          project: unref(project),
+          name,
+          value,
+        },
+      }),
+
+    /**
+     * Delete a variable from the project.
+     *
+     * @param name The name of the variable to delete.
+     * @returns A promise that resolves when the variable is deleted.
+     */
+    deleteVariable: async(name: string) =>
+      await client.requestAttempt('DELETE /api/workspaces/:workspace/:project/variables/:name', {
+        onError: error => alerts.error(error),
+        onSuccess: () => {
+          alerts.success('Variable deleted successfully')
+          void refresh()
+        },
+        data: {
+          workspace: unref(workspace),
+          project: unref(project),
+          name,
+        },
+      }),
+
+    /**
+     * Create a new secret in the project.
+     *
+     * @param name The name of the secret.
+     * @param value The value of the secret.
+     * @returns A promise that resolves when the secret is created.
+     */
+    createSecret: async(name: string, value: string) =>
+      await client.requestAttempt('POST /api/workspaces/:workspace/:project/secrets', {
+        onError: error => alerts.error(error),
+        onSuccess: () => {
+          alerts.success('Secret created successfully')
+          void refresh()
+        },
+        data: {
+          workspace: unref(workspace),
+          project: unref(project),
+          name,
+          value,
+        },
+      }),
+
+    /**
+     * Update an existing secret in the project.
+     *
+     * @param name The name of the secret.
+     * @param value The new value of the secret.
+     * @returns A promise that resolves when the secret is updated.
+     */
+    updateSecret: async(name: string, value: string) =>
+      await client.requestAttempt('PUT /api/workspaces/:workspace/:project/secrets/:name', {
+        onError: error => alerts.error(error),
+        onSuccess: () => {
+          alerts.success('Secret updated successfully')
+          void refresh()
+        },
+        data: {
+          workspace: unref(workspace),
+          project: unref(project),
+          name,
+          value,
+        },
+      }),
+
+    /**
+     * Delete a secret from the project.
+     *
+     * @param name The name of the secret to delete.
+     * @returns A promise that resolves when the secret is deleted.
+     */
+    deleteSecret: async(name: string) =>
+      await client.requestAttempt('DELETE /api/workspaces/:workspace/:project/secrets/:name', {
+        onError: error => alerts.error(error),
+        onSuccess: () => {
+          alerts.success('Secret deleted successfully')
+          void refresh()
+        },
+        data: {
+          workspace: unref(workspace),
+          project: unref(project),
+          name,
+        },
+      }),
   }
 }
