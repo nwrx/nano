@@ -26,17 +26,17 @@ export interface FlowSessionEventMap {
   'user:position': { id: string; x: number; y: number }
   'meta': { key: string; value: unknown }
   'error': { message: string }
-  'thread:start': { input: Record<string, unknown> } & FlowThreadEventMeta
+  'thread:start': FlowThreadEventMeta & { input: Record<string, unknown> }
   'thread:abort': FlowThreadEventMeta
   'thread:error': { code?: string; message: string }
-  'thread:end': { output: Record<string, unknown> } & FlowThreadEventMeta
-  'thread:input': { name: string; value: unknown } & FlowThreadEventMeta
-  'thread:output': { name: string; value: unknown } & FlowThreadEventMeta
-  'thread:nodeState': { id: string } & FlowThreadNodeEventMeta
-  'thread:nodeStart': { id: string; input: Record<string, unknown> } & FlowThreadNodeEventMeta
-  'thread:nodeTrace': { id: string; data: ObjectLike } & FlowThreadNodeEventMeta
-  'thread:nodeError': { id: string; code?: string; message: string; context: Record<string, unknown> } & FlowThreadNodeEventMeta
-  'thread:nodeEnd': { id: string; input: Record<string, unknown>; output: Record<string, unknown> } & FlowThreadNodeEventMeta
+  'thread:end': FlowThreadEventMeta & { output: Record<string, unknown> }
+  'thread:input': FlowThreadEventMeta & { name: string; value: unknown }
+  'thread:output': FlowThreadEventMeta & { name: string; value: unknown }
+  'thread:nodeState': FlowThreadNodeEventMeta & { id: string }
+  'thread:nodeStart': FlowThreadNodeEventMeta & { id: string; input: Record<string, unknown> }
+  'thread:nodeTrace': FlowThreadNodeEventMeta & { id: string; data: ObjectLike }
+  'thread:nodeError': FlowThreadNodeEventMeta & { id: string; code?: string; message: string; context: Record<string, unknown> }
+  'thread:nodeEnd': FlowThreadNodeEventMeta & { id: string; input: Record<string, unknown>; output: Record<string, unknown> }
   'variables:create': { name: string; value: string }
   'variables:update': { name: string; value: string }
   'variables:remove': { name: string }
@@ -52,7 +52,7 @@ export interface FlowSessionEventMap {
 
 export type FlowSessionEventName = keyof FlowSessionEventMap
 export type FlowSessionEventPayload<K extends FlowSessionEventName = FlowSessionEventName> =
-  { [P in K]: { event: P } & FlowSessionEventMap[P] }[K]
+  { [P in K]: FlowSessionEventMap[P] & { event: P } }[K]
 
 export class FlowSessionInstance {
   constructor(
