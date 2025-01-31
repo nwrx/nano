@@ -9,11 +9,11 @@ import { resolveFlow } from '../utils'
 export function flowGet(this: ModuleFlow) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/:project/:flow',
+      name: 'GET /api/workspaces/:workspace/:project/:name',
       parseParameters: createSchema({
         workspace: assertStringNotEmpty,
         project: assertStringNotEmpty,
-        flow: assertStringNotEmpty,
+        name: assertStringNotEmpty,
       }),
       parseQuery: createSchema({
         withData: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
@@ -21,16 +21,11 @@ export function flowGet(this: ModuleFlow) {
     },
     async({ event, parameters, query }) => {
       const userModule = this.getModule(ModuleUser)
-      const workspaceModule = this.getModule(ModuleWorkspace)
       const { user } = await userModule.authenticate(event)
-      const { workspace: workspaceName, project: projectName, flow: flowName } = parameters
-
-      // --- Resolve the flow and check if the user has access to it.
-      const workspace = await workspaceModule.resolveWorkspace({ user, name: workspaceName, permission: 'Read' })
-      const project = await workspaceModule.resolveProject({ workspace, name: projectName, permission: 'Read' })
-      const flow = await resolveFlow.call(this, { name: flowName, project, workspace })
+      const { workspace, project, name } = parameters
 
       // --- Return the serialized flow.
+      const flow = await resolveFlow.call(this, { user, name, project, workspace, permission: 'Read' })
       const { withData = false } = query
       return flow.serialize({ withData })
     },

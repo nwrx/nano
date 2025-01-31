@@ -9,7 +9,7 @@ import { resolveFlow } from '../utils'
 export function flowExport(this: ModuleFlow) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/:projectnameflow/export',
+      name: 'GET /api/workspaces/:workspace/:project/:name/export',
       parseParameters: createSchema({
         workspace: assertStringNotEmpty,
         project: assertStringNotEmpty,
