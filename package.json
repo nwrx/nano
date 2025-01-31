@@ -24,9 +24,7 @@
     }
   },
   "scripts": {
-    "dev": "pnpm dev:compose",
-    "dev:turbo": "turbo run dev",
-    "dev:compose": "docker-compose up -d",
+    "dev": "turbo run dev",
     "build": "turbo run build",
     "lint": "DEBUG=eslint:eslint eslint --cache",
     "lint:ci": "eslint --cache --ignore-pattern examples",
