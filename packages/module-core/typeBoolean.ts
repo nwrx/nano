@@ -1,4 +1,4 @@
-import { defineFlowType } from '@nanoworks/core'
+import { defineFlowType } from '@nwrx/core'
 import { parseBoolean } from '@unshared/string'
 import { assertBoolean, assertStringNotEmpty, createParser } from '@unshared/validation'
 
