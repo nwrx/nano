@@ -54,7 +54,6 @@ const node = computed(() => props.nodes.find(node => node.id === props.event.id)
       <div class="w-full p-md pt-xs space-y-sm">
         <FlowEditorPanelSectionData
           :title="t('event.flow')"
-          :label="t('event.flow')"
           :data="{
             [t('label.id')]: 'id' in event ? event.id : '',
             [t('label.event')]: event.event,
@@ -93,7 +92,6 @@ const node = computed(() => props.nodes.find(node => node.id === props.event.id)
   en:
     label.id: ID
     label.event: Event
-    event.flow: Flow
     event.flow:start: Start
     event.flow:end: Completed
     event.flow:abort: Aborted
@@ -105,7 +103,6 @@ const node = computed(() => props.nodes.find(node => node.id === props.event.id)
   fr:
     label.id: ID
     label.event: Événement
-    event.flow: Flux
     event.flow:start: Démarrage
     event.flow:end: Terminé
     event.flow:abort: Annulé
@@ -117,7 +114,6 @@ const node = computed(() => props.nodes.find(node => node.id === props.event.id)
   de:
     label.id: ID
     label.event: Ereignis
-    event.flow: Fluss
     event.flow:start: Start
     event.flow:end: Abgeschlossen
     event.flow:abort: Abgebrochen
@@ -129,7 +125,6 @@ const node = computed(() => props.nodes.find(node => node.id === props.event.id)
   es:
     label.id: ID
     label.event: Evento
-    event.flow: Flujo
     event.flow:start: Comienzo
     event.flow:end: Completado
     event.flow:abort: Abortado
@@ -141,7 +136,6 @@ const node = computed(() => props.nodes.find(node => node.id === props.event.id)
   zh:
     label.id: ID
     label.event: 事件
-    event.flow: 流程
     event.flow:start: 开始
     event.flow:end: 完成
     event.flow:abort: 已中止
