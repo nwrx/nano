@@ -15,8 +15,8 @@ const props = defineProps<{
     class="
       flex items-center justify-start
       w-full p-sm space-x-md rounded
-      text-subtle hover:text-app-emphasis
-      hover:bg-prominent
+      text-app hover:text-app-emphasis
+      hover:bg-emphasized
       transition
     ">
 
