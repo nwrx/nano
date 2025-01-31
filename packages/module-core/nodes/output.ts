@@ -1,29 +1,29 @@
-import type { FlowNodeContext, FlowNodePortValue, FlowType } from '@nwrx/core'
-import { defineFlowNode } from '@nwrx/core'
+import type { NodeInstanceContext, SocketType } from '@nwrx/core'
+import { defineNode } from '@nwrx/core'
+import { defineDataSocket } from '@nwrx/core'
 import { basic } from '../categories'
 import { boolean, number, object, stream, string } from '../types'
 
-export const nodeOutput = defineFlowNode({
+export const nodeOutput = defineNode({
   kind: 'output',
   name: 'Output',
   icon: 'https://api.iconify.design/carbon:arrow-up.svg',
   category: basic,
   description: ' A value that is sent to an exitpoint in the flow. The value can be any type of data, such as a string, number, or boolean and is provided as an output from the flow.',
 
-  defineDataSchema: ({ data }: FlowNodeContext) => {
-    let type = string as FlowType<unknown>
+  defineDataSchema: ({ data }: NodeInstanceContext) => {
+    let type = string as SocketType<unknown>
     if (data.type === 'number') type = number
     else if (data.type === 'boolean') type = boolean
     else if (data.type === 'stream') type = stream
     else if (data.type === 'object') type = object
     return {
-      type: {
+      type: defineDataSocket({
+        type: string as SocketType<'boolean' | 'number' | 'object' | 'stream' | 'text'>,
         name: 'Type',
-        display: 'select',
-        type: string as FlowType<'boolean' | 'number' | 'stream' | 'text'>,
+        control: 'select',
         description: 'The type of the value.',
-        disallowDynamic: true,
-        values: [
+        options: [
           {
             value: 'text',
             label: 'Text',
@@ -54,20 +54,20 @@ export const nodeOutput = defineFlowNode({
             icon: 'https://api.iconify.design/carbon:json.svg',
             description: 'An object value, such as a key-value map.',
           },
-        ] satisfies FlowNodePortValue[],
-      },
-      property: {
-        name: 'Property',
-        display: 'text',
+        ],
+      }),
+      property: defineDataSocket({
         type: string,
-        disallowDynamic: true,
+        name: 'Property',
+        control: 'socket',
         description: 'The property name to send the value to the exitpoint.',
-      },
-      value: {
+      }),
+      value: defineDataSocket({
         name: 'Value',
         type,
+        control: 'socket',
         description: 'The value to send to the exitpoint.',
-      },
+      }),
     }
   },
 

@@ -1,12 +1,12 @@
-import type { FlowNodeContext, FlowNodePort, FlowSchema } from '@nwrx/core'
-import { defineFlowNode } from '@nwrx/core'
+import type { NodeInstanceContext } from '@nwrx/core'
+import { defineDataSocket, defineNode, defineResultSocket } from '@nwrx/core'
 import { basic } from '../categories'
 import { string } from '../types'
 
 /** The regular expression for extracting variables from the template. */
 const EXP_VAR_REGEX = /{{\s*(\w+)\s*}}/g
 
-export const template = defineFlowNode({
+export const template = defineNode({
   kind: 'template',
   name: 'Template',
   icon: 'https://api.iconify.design/carbon:template.svg',
@@ -14,18 +14,17 @@ export const template = defineFlowNode({
   category: basic,
 
   // --- Create the data schema that infers the variables from the template.
-  defineDataSchema: ({ data }: FlowNodeContext) => {
+  defineDataSchema: ({ data }: NodeInstanceContext) => {
 
     // --- Define the schema for the template and its variables.
     const dataSchema = {
-      template: {
-        name: 'Template',
+      template: defineDataSocket({
         type: string,
-        display: 'textarea',
-        disallowDynamic: true,
+        name: 'Template',
+        control: 'textarea',
         description: 'The template for generating the string.',
-      },
-    } satisfies FlowSchema
+      }),
+    }
 
     // --- Extract the variables from the template.
     const { template = '' } = data as { template: string }
@@ -35,11 +34,12 @@ export const template = defineFlowNode({
       if (key === '') continue
       if (key === 'template') continue
       // @ts-expect-error: key is dynamic.
-      dataSchema[key] = {
+      dataSchema[key] = defineDataSocket({
         name: key,
         type: string,
+        control: 'socket',
         description: `The value for the template variable '${key}'.`,
-      } as FlowNodePort
+      })
     }
 
     // --- Return the computed data schema.
@@ -48,11 +48,11 @@ export const template = defineFlowNode({
 
   // --- Define the result schema that returns the compiled string.
   defineResultSchema: {
-    compiled: {
-      name: 'Compiled',
+    compiled: defineResultSocket({
       type: string,
+      name: 'Compiled',
       description: 'The compiled string generated from the template.',
-    },
+    }),
   },
 
   // --- Process the template by replacing the variables with the values.

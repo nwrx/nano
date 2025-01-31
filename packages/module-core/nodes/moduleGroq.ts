@@ -1,5 +1,5 @@
-import type { FlowNodeContext, FlowNodePortValue, FlowSchema } from '@nwrx/core'
-import { defineFlowNode } from '@nwrx/core'
+import type { NodeInstanceContext } from '@nwrx/core'
+import { defineDataSocket, defineNode, defineResultSocket } from '@nwrx/core'
 import { languageModel } from '../categories'
 import { languageModelInstance, string } from '../types'
 
@@ -42,7 +42,7 @@ interface OpenaiChatResponse {
   }
 }
 
-export const modelGroq = defineFlowNode({
+export const modelGroq = defineNode({
   kind: 'groq-api',
   name: 'Groq API',
   icon: 'https://api.iconify.design/simple-icons:openai.svg',
@@ -50,25 +50,22 @@ export const modelGroq = defineFlowNode({
   category: languageModel,
 
   // --- Define the inputs of the node.
-  defineDataSchema: async({ data, abortSignal }: FlowNodeContext) => {
+  defineDataSchema: async({ data, abortSignal }: NodeInstanceContext) => {
     const dataSchema = {
-      token: {
+      token: defineDataSocket({
         name: 'API Key',
         type: string,
-        display: 'text',
-        disallowStatic: true,
-        disallowDynamic: true,
+        control: 'variable',
         description: 'The API key for the OpenAI API.',
-      },
-      model: {
-        type: string,
-        display: 'select',
+      }),
+      model: defineDataSocket({
         name: 'Model Name',
+        type: string,
+        control: 'select',
         description: 'The name of the model to use for generating completions.',
-        disallowDynamic: true,
-        values: [] as Array<FlowNodePortValue<string>>,
-      },
-    } satisfies FlowSchema
+        options: [],
+      }),
+    }
 
     // --- Attempt to fill the model names from the API.
     try {
@@ -76,7 +73,7 @@ export const modelGroq = defineFlowNode({
       const url = new URL('/openai/v1/models', GROQ_BASE_URL)
       const response = await fetch(url.href, { signal: abortSignal, headers: { Authorization: `Bearer ${token}` } })
       const models = await response.json() as OpenaiModelResponse
-      dataSchema.model.values = models.data.filter(x => x.object === 'model').map(x => ({
+      dataSchema.model.options = models.data.filter(x => x.object === 'model').map(x => ({
         value: x.id,
         label: x.id,
         description: x.owned_by,
@@ -91,11 +88,11 @@ export const modelGroq = defineFlowNode({
 
   // --- Define the outputs of the node.
   defineResultSchema: {
-    model: {
+    model: defineResultSocket({
       name: 'Model',
       type: languageModelInstance,
       description: 'The model information to use for generating completions.',
-    },
+    }),
   },
 
   // --- On processing the node, check the API key and model name

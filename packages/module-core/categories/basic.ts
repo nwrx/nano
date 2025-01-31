@@ -1,6 +1,6 @@
-import { defineFlowCategory } from '@nwrx/core'
+import { defineCategory } from '@nwrx/core'
 
-export const basic = defineFlowCategory({
+export const basic = defineCategory({
   kind: 'basic',
   name: 'Basic',
   color: '#E3B505',

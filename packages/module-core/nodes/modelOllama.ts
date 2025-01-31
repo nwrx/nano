@@ -1,5 +1,5 @@
-import type { FlowNodeContext, FlowNodePortValue, FlowSchema } from '@nwrx/core'
-import { defineFlowNode } from '@nwrx/core'
+import type { NodeInstanceContext } from '@nwrx/core'
+import { defineDataSocket, defineNode, defineResultSocket } from '@nwrx/core'
 import { languageModel } from '../categories'
 import { languageModelInstance, string } from '../types'
 
@@ -37,7 +37,7 @@ interface OllamaChatResponse {
   eval_duration: number
 }
 
-export const modelOllama = defineFlowNode({
+export const modelOllama = defineNode({
   kind: 'ollama-api',
   name: 'Ollama API',
   icon: 'https://api.iconify.design/simple-icons:ollama.svg',
@@ -45,24 +45,22 @@ export const modelOllama = defineFlowNode({
   category: languageModel,
 
   // --- Define the inputs of the node.
-  defineDataSchema: async({ data, abortSignal }: FlowNodeContext) => {
+  defineDataSchema: async({ data, abortSignal }: NodeInstanceContext) => {
     const dataSchema = {
-      baseUrl: {
+      baseUrl: defineDataSocket({
         type: string,
         name: 'Base URL',
+        control: 'variable',
         description: 'The base URL of the Ollama API.',
-        disallowStatic: true,
-        disallowDynamic: true,
-      },
-      model: {
+      }),
+      model: defineDataSocket({
         type: string,
-        display: 'select',
         name: 'Model Name',
+        control: 'select',
         description: 'The name of the model to use for generating completions.',
-        disallowDynamic: true,
-        values: [] as Array<FlowNodePortValue<string>>,
-      },
-    } satisfies FlowSchema
+        options: [],
+      }),
+    }
 
     // --- Attempt to fill the model names from the API.
     try {
@@ -70,7 +68,7 @@ export const modelOllama = defineFlowNode({
       const url = new URL('/api/tags', baseUrl)
       const response = await fetch(url.href, { signal: abortSignal })
       const models = await response.json() as OllamaTagsResponse
-      dataSchema.model.values = models.models.map(x => ({
+      dataSchema.model.options = models.models.map(x => ({
         value: x.name,
         label: x.name,
         description: `Size: ${x.details.parameter_size} | Quantization: ${x.details.quantization_level}`,
@@ -85,11 +83,11 @@ export const modelOllama = defineFlowNode({
 
   // --- Define the outputs of the node.
   defineResultSchema: {
-    model: {
+    model: defineResultSocket({
       name: 'Model',
       type: languageModelInstance,
       description: 'The model information to use for generating completions.',
-    },
+    }),
   },
 
   // --- On processing the node, check the API key and model name

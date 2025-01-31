@@ -1,9 +1,9 @@
-import type { FlowNodePortValue, FlowType } from '@nwrx/core'
-import { defineFlowNode } from '@nwrx/core'
+import type { FlowNodePortValue, SocketType } from '@nwrx/core'
+import { defineNode } from '@nwrx/core'
 import { basic } from '../categories'
 import { boolean, number, stream, string } from '../types'
 
-export const input = defineFlowNode({
+export const input = defineNode({
   kind: 'input',
   name: 'Input',
   icon: 'https://api.iconify.design/carbon:arrow-down.svg',
@@ -21,7 +21,7 @@ export const input = defineFlowNode({
     type: {
       name: 'Type',
       display: 'select',
-      type: string as FlowType<'boolean' | 'number' | 'stream' | 'text'>,
+      type: string as SocketType<'boolean' | 'number' | 'stream' | 'text'>,
       description: 'The type of the value.',
       defaultValue: 'text',
       disallowDynamic: true,
@@ -55,7 +55,7 @@ export const input = defineFlowNode({
   },
 
   defineResultSchema: ({ data }) => {
-    let type: FlowType<any> = string
+    let type: SocketType<any> = string
     if (data.type === 'number') type = number
     else if (data.type === 'boolean') type = boolean
     else if (data.type === 'stream') type = stream

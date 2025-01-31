@@ -1,5 +1,5 @@
-import type { FlowNodeContext, FlowNodePortValue, FlowSchema } from '@nwrx/core'
-import { defineFlowNode } from '@nwrx/core'
+import type { NodeInstanceContext } from '@nwrx/core'
+import { defineDataSocket, defineNode } from '@nwrx/core'
 import { languageModel } from '../categories'
 import { languageModelInstance, string } from '../types'
 
@@ -42,7 +42,7 @@ interface OpenaiChatResponse {
   }
 }
 
-export const modelOpenai = defineFlowNode({
+export const modelOpenai = defineNode({
   kind: 'openai-api',
   name: 'OpenAI API',
   icon: 'https://api.iconify.design/simple-icons:openai.svg',
@@ -50,25 +50,22 @@ export const modelOpenai = defineFlowNode({
   category: languageModel,
 
   // --- Define the inputs of the node.
-  defineDataSchema: async({ data, abortSignal }: FlowNodeContext) => {
+  defineDataSchema: async({ data, abortSignal }: NodeInstanceContext) => {
     const dataSchema = {
-      token: {
+      token: defineDataSocket({
         name: 'API Key',
         type: string,
-        display: 'text',
-        disallowStatic: true,
-        disallowDynamic: true,
+        control: 'variable',
         description: 'The API key for the OpenAI API.',
-      },
-      model: {
+      }),
+      model: defineDataSocket({
         type: string,
-        display: 'select',
+        control: 'select',
         name: 'Model Name',
         description: 'The name of the model to use for generating completions.',
-        disallowDynamic: true,
-        values: [] as Array<FlowNodePortValue<string>>,
-      },
-    } satisfies FlowSchema
+        options: [],
+      }),
+    }
 
     // --- Attempt to fill the model names from the API.
     try {
@@ -76,7 +73,7 @@ export const modelOpenai = defineFlowNode({
       const url = new URL('/v1/models', OPENAI_BASE_URL)
       const response = await fetch(url.href, { signal: abortSignal, headers: { Authorization: `Bearer ${token}` } })
       const models = await response.json() as OpenaiModelResponse
-      dataSchema.model.values = models.data.filter(x => x.object === 'model').map(x => ({
+      dataSchema.model.options = models.data.filter(x => x.object === 'model').map(x => ({
         value: x.id,
         label: x.id,
         description: x.owned_by,

@@ -1,8 +1,8 @@
-import { defineFlowType } from '@nwrx/core'
+import { defineSocketType } from '@nwrx/core'
 import { parseBoolean } from '@unshared/string'
 import { assertBoolean, assertStringNotEmpty, createParser } from '@unshared/validation'
 
-export const boolean = defineFlowType({
+export const boolean = defineSocketType({
   kind: 'boolean',
   name: 'Boolean',
   color: '#3386CF',
