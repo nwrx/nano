@@ -1,3 +1,4 @@
+import type { Pretty } from '@unshared/types'
 import type { Flow } from './createFlow'
 import type { FlowNode, FlowNodeContext, FlowSchema, FlowSchemaJSON } from './defineFlowNode'
 import type {
@@ -242,8 +243,8 @@ export class FlowNodeInstance<T extends FlowNode = FlowNode> implements FlowNode
   public get context(): FlowNodeContext<InferDataSchema<T>, InferResultSchema<T>> {
     return {
       flow: this.flow,
-      data: this.data,
-      result: this.result,
+      data: this.data as Partial<Pretty<InferData<T>>>,
+      result: this.result as Partial<Pretty<InferResult<T>>>,
       dataSchema: this.dataSchema as Readonly<InferDataSchema<T>>,
       resultSchema: this.resultSchema as Readonly<InferResultSchema<T>>,
       secrets: this.secrets,

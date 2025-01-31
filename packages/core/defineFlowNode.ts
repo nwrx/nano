@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
-import type { MaybePromise } from '@unshared/types'
+import type { MaybePromise, Pretty } from '@unshared/types'
 import type { Flow } from './createFlow'
 import type { FlowCategory } from './defineFlowCategory'
 import type { FlowType, FlowTypeJSON } from './defineFlowType'
@@ -93,14 +93,14 @@ export interface FlowNodeContext<
    * The data that is passed to the node when it is executed. The data comes
    * from the previous nodes or can be statically defined in the flow.
    */
-  readonly data: Partial<InferSchemaType<Data>>
+  readonly data: Partial<Pretty<InferSchemaType<Data>>>
 
   /**
    * The current result that is produced by the node when it is executed. The
    * result is used to pass the output of the node to the next nodes in the flow.
    * The result can be modified by the node to produce the desired output.
    */
-  readonly result: Partial<InferSchemaType<Result>>
+  readonly result: Partial<Pretty<InferSchemaType<Result>>>
 
   /**
    * The resolved data schema that is used to validate the data that is passed
@@ -279,7 +279,7 @@ export interface FlowNodeOptions<
    *   },
    * })
    */
-  process: (context: FlowNodeContext<Data, Result>) => InferSchemaType<Result> | Promise<InferSchemaType<Result> | undefined> | undefined
+  process: (context: FlowNodeContext<Data, Result>) => InferSchemaType<Result> | Promise<InferSchemaType<Result> | void> | void
 }
 
 /**
