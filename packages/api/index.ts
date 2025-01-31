@@ -1,3 +1,4 @@
+export * from './chat'
 export * from './flow'
 export * from './monitoring'
 export * from './storage'
