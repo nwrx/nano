@@ -91,7 +91,7 @@ export class ModuleUser extends ModuleBase implements ModuleUserOptions {
   userTrustProxy = true
   userSecretKey = randomBytes(64).toString('hex')
   userCypherAlgorithm = 'aes-256-gcm'
-  userSessionCookieName = '__Secure_Session_Token'
+  userSessionCookieName = '__Secure-Session-Token'
   userSessionDuration = 1000 * 60 * 60 * 24
   userRecoveryDuration = 1000 * 60 * 30
 
