@@ -53,7 +53,7 @@ export interface LanguageModelTool<T = ObjectLike> {
    *
    * @example ({ location, unit }) => `What is the temperature in ${location} in ${unit}?`
    */
-  call: (parameters: T) => MaybePromise<string>
+  call: (parameters: T) => MaybePromise<object>
 }
 
 export const languageModelTool = defineType({

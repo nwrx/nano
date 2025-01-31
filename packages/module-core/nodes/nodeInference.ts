@@ -1,6 +1,7 @@
 import type { InferInput, InferOutput } from '@nwrx/nano'
 import type { ObjectLike } from '@unshared/types'
 import { defineComponent, defineInputSchema, defineOutputSchema } from '@nwrx/nano'
+import { randomUUID } from 'node:crypto'
 import { categoryLanguageModel } from '../categories'
 import { languageModel, languageModelTool, number, string } from '../types'
 
@@ -75,6 +76,16 @@ const INFERENCE_INPUT_SCHEMA = defineInputSchema({
     defaultValue: 1024,
     isOptional: true,
   },
+  maxToolCalls: {
+    type: number,
+    name: 'Max Tool Calls',
+    control: 'slider',
+    description: 'The maximum number of tool calls to handle in the completion process.',
+    sliderMin: 0,
+    sliderMax: 100,
+    defaultValue: 10,
+    isOptional: true,
+  },
   seed: {
     type: number,
     name: 'Seed',
@@ -111,7 +122,7 @@ export const nodeInference = defineComponent({
   outputSchema: INFERENCE_OUTPUT_SCHEMA,
 
   process: async({ data, trace }) => {
-    const { model, tools } = data
+    const { model, tools, maxToolCalls = 10 } = data
     const { url, token, getBody, onData, onError } = model
     const body = getBody(data)
 
@@ -123,17 +134,18 @@ export const nodeInference = defineComponent({
     async function call(name: string, parameters: ObjectLike) {
       if (!tools) throw new Error('The tools were not provided.')
       const tool = tools.find(tool => tool.name === name)
+      const id = randomUUID()
       if (!tool) throw new Error(`The tool "${name}" was not provided.`)
-      trace({ type: 'tool_call_request', name, parameters })
+      trace({ id, type: 'tool_call_request', name, parameters })
       const data = await tool.call(parameters)
-      trace({ type: 'tool_call_response', name, data })
-      return data
+      trace({ id, type: 'tool_call_response', name, data })
+      return JSON.stringify(data)
     }
 
-    // --- Send the request to the model API. Retry up to 10 times to handle any tool calls
+    // --- Send the request to the model API. Retry up to 50 times to handle any tool calls
     // --- that may be requested by the model. Resume the completion process after handling
     // --- the tool calls.
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < maxToolCalls; i++) {
       const response = await fetch(url, {
         method: 'POST',
         body: JSON.stringify(body),
