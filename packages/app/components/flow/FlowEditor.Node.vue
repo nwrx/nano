@@ -28,6 +28,8 @@ const emit = defineEmits<{
 // --- State
 const isRunning = computed(() => props.isRunning)
 const isRunningThrottled = refThrottled(isRunning, 200)
+const dataSchema = computed(() => props.dataSchema.filter(x => !x.isInternal))
+const resultSchema = computed(() => props.resultSchema.filter(x => !x.isInternal))
 
 /**
  * Expose the ports components to the parent component so their
