@@ -13,9 +13,10 @@ export interface LinkSourceObject {
  * @returns The source node ID and path extracted from the reference.
  * @example parseReferenceLink({ $ref: '#Node/NODE_ID/foo.bar' }) // { id: 'NODE_ID', path: 'foo.bar' }
  */
-export function parseLink(value: Reference): LinkSourceObject {
-  const [kind, sourceId, sourceName, sourcePath] = value.$ref.slice(1).split('/')
-  if (kind !== 'Node') throw new Error(`Invalid reference kind: ${kind}`)
+export function parseReferenceLink(value: Reference): LinkSourceObject {
+  const [tag, kind, sourceId, sourceName, sourcePath] = value.$ref.split('/')
+  if (tag !== '#') throw new Error('Invalid reference tag')
+  if (kind !== 'Nodes') throw new Error(`Invalid reference kind: ${kind}`)
   if (!sourceId) throw new Error('The reference does not contain a node ID')
   if (!sourceName) throw new Error('The reference does not contain a name')
   return { sourceId, sourceName, sourcePath }
