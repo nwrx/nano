@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import type { InputSocketJSON } from '@nwrx/api'
 import type { SocketListOption } from '@nwrx/core'
+import { isReferenceLink } from '@nwrx/core/utils'
 
 const props = defineProps<{
   id: string
-  kind: 'source' | 'target'
+  isOutput?: boolean
   value: unknown
   error?: string
   secrets?: string[]
@@ -14,11 +15,11 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  setValue: [value: unknown]
-  searchOptions: [key: string, query: string]
-  grab: [state: FlowDragState]
-  assign: [state: FlowDragState | void]
-  release: []
+  setValue: [unknown]
+  searchOptions: [string, string]
+  linkGrab: [path?: string]
+  linkAssign: [path?: string]
+  linkUnassign: []
 }>()
 
 // --- Use the `useModel` composition function to create a two-way binding.
@@ -30,94 +31,43 @@ const model = useVModel(props, 'value', emit, {
 // --- Determine if the pin is linked to another node.
 const isLinked = computed(() => {
   if (!model.value) return false
-  if (typeof model.value !== 'string') return false
-  return model.value.startsWith('$NODE.')
+  return isReferenceLink(model.value)
 })
 
 // --- Assert if the control is linkea to another node.
-const isLinkeable = computed(() => props.socket.control === 'socket' || !props.socket.control || isLinked.value)
-
-// --- Reference to the color pin HTML element.
-const pin = ref<HTMLDivElement>()
-defineExpose({ pin })
-
-// --- Handle dragging from this pin to create a new
-function onGrab(event: MouseEvent) {
-  if (!pin.value) return
-  if (!isLinkeable.value) return
-  if (event.target instanceof HTMLInputElement) return
-  if (event.target instanceof HTMLTextAreaElement) return
-  if (event.target instanceof HTMLSelectElement) return
-  const { x, y, width, height } = pin.value.getBoundingClientRect()
-  emit('grab', {
-    id: `${props.id}:${props.socket.key}`,
-    color: props.socket.typeColor ?? 'black',
-    kind: props.kind,
-    position: {
-      x: x + width / 2,
-      y: y + height / 2,
-    },
-  })
-}
-
-// --- When the mouse hovers over a pin, set the target of the new
-function onAssign() {
-  if (!pin.value) return
-  if (!isLinkeable.value) return
-  const { x, y, width, height } = pin.value.getBoundingClientRect()
-  emit('assign', {
-    id: `${props.id}:${props.socket.key}`,
-    color: props.socket.typeColor ?? 'black',
-    kind: props.kind,
-    position: {
-      x: x + width / 2,
-      y: y + height / 2,
-    },
-  })
-}
-
-// When the mouse leaves the pin, unset the target of the new
-function onUnassign() {
-  emit('assign')
-}
-
-// --- When the mouse is released, emit the release event.
-function onRelease() {
-  emit('release')
-}
+const isLinkeable = computed(() =>
+  props.socket.control === 'socket'
+  || props.socket.control === undefined
+  || props.isOutput
+  || isLinked.value)
 </script>
 
 <template>
   <div
-    class="flex items-center space-x-sm w-full"
+    class="flex items-center w-full relative"
     :class="{
-      'pr-5 flex-row': kind === 'target',
-      'pl-5 flex-row-reverse': kind === 'source',
+      'pr-5 flex-row': !isOutput,
+      'pl-5 flex-row-reverse': isOutput,
       'hover:bg-emphasized cursor-pointer': isLinkeable,
       'bg-diagonallines-danger-500/80': error,
     }"
-    @mousedown="(event: MouseEvent) => onGrab(event)"
-    @mouseover="() => onAssign()"
-    @mouseout="() => onUnassign()"
-    @mouseup="() => onRelease()">
+    @mousedown.left="() => { if (isLinkeable) emit('linkGrab') }"
+    @mouseenter="() => emit('linkAssign')"
+    @mouseleave="() => emit('linkUnassign')">
 
     <!-- Node pin, used to connect to other nodes. -->
-    <div
-      ref="pin"
-      class="self-start mt-3 h-2 shrink-0"
-      :style="{ backgroundColor: socket.typeColor }"
-      :class="{
-        'rounded-r-lg': kind === 'target',
-        'rounded-l-lg': kind === 'source',
-        'w-4': isLinkeable,
-        'w-2 ml-2 rounded-lg': !isLinkeable,
-      }"
+    <EditorNodeSocketPin
+      :id="id"
+      :name="socket.key"
+      :color="socket.typeColor"
+      :is-output="isOutput"
+      :is-linkeable="isLinkeable"
     />
 
     <!-- Linkeable pin, used to connect to other nodes. -->
     <EditorNodeSocketLink
       v-if="isLinkeable"
-      :name="socket.name"
+      :label="socket.name"
       :is-linked="isLinked"
       :default-value="socket.defaultValue"
     />
@@ -176,6 +126,14 @@ function onRelease() {
       :min="socket.sliderMin"
       :max="socket.sliderMax"
       :step="socket.sliderStep"
+      :default-value="socket.defaultValue"
+    />
+
+    <!-- Linkeable pin, used to connect to other nodes. -->
+    <EditorNodeSocketLink
+      v-else
+      :label="socket.name"
+      :is-linked="isLinked"
       :default-value="socket.defaultValue"
     />
   </div>

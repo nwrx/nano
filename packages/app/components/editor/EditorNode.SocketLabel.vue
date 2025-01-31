@@ -3,7 +3,7 @@ defineProps<{ label?: string }>()
 </script>
 
 <template>
-  <p class="whitespace-nowrap truncate pl-sm text-subtle shrink-0 mr-sm">
+  <p class="text-sm truncate text-subtle shrink-0 mr-sm">
     {{ label }}:
   </p>
 </template>

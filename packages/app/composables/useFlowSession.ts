@@ -1,5 +1,5 @@
 /* eslint-disable sonarjs/cognitive-complexity */
-import type { FlowJSON, FlowSessionEventPayload } from '@nwrx/api'
+import type { FlowJSON, FlowLinkSocketJSON, FlowSessionEventPayload } from '@nwrx/api'
 import type { SocketListOption } from '@nwrx/core'
 import { useAlerts, useClient } from '#imports'
 
@@ -292,12 +292,20 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
     /* Links                                                                   */
     /***************************************************************************/
 
-    createLink: (source: string, target: string) => {
-      session.send({ event: 'createLink', source, target })
+    createLink: (source: FlowLinkSocketJSON, target: FlowLinkSocketJSON) => {
+      session.send({
+        event: 'createLink',
+        sourceId: source.id,
+        sourceName: source.name,
+        sourcePath: source.path,
+        targetId: target.id,
+        targetName: target.name,
+        targetPath: target.path,
+      })
     },
 
-    removeLink: (source: string) => {
-      session.send({ event: 'removeLink', source })
+    removeLink: (link: FlowLinkSocketJSON) => {
+      session.send({ event: 'removeLink', id: link.id, name: link.name, path: link.path })
     },
 
     /***************************************************************************/

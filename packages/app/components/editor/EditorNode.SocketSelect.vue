@@ -73,7 +73,7 @@ function setOption(option: SocketListOption<unknown>) {
 
 <template>
   <EditorNodeSocketGroup
-    class="relative cursor-pointer"
+    class="flex items-center relative cursor-pointer"
     :class="{ '!b-editor-active': isOpen }"
     @mousedown.prevent="() => focus()">
 

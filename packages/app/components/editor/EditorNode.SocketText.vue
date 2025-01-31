@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const props = defineProps<{
   name: string
-  modelValue: string
+  modelValue?: string
   defaultValue?: unknown
 }>()
 
@@ -21,7 +21,9 @@ const model = useVModel(props, 'modelValue', emit, {
 </script>
 
 <template>
-  <EditorNodeSocketGroup class="cursor-text" @click="() => input?.focus()">
+  <EditorNodeSocketGroup
+    class="flex items-center cursor-text"
+    @click="() => input?.focus()">
 
     <!-- Label -->
     <EditorNodeSocketLabel :label="name" />
@@ -38,9 +40,9 @@ const model = useVModel(props, 'modelValue', emit, {
 
 <i18n lang="yaml">
 en:
-  empty: No default value
+  empty: Empty
 fr:
-  empty: Aucune valeur par défaut
+  empty: Aucune valeur
 de:
   empty: Kein Standardwert
 es:

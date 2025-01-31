@@ -22,12 +22,12 @@ function openDialog() {
 
 <template>
   <EditorNodeSocketGroup
-    class="cursor-pointer pt-0.5 !items-start"
+    class="cursor-pointer pt-0.5 flex items-start"
     @mousedown.stop="() => openDialog()">
 
     <!-- Preview -->
-    <div class="px-sm py-xs whitespace-pre-wrap line-clamp-4">
-      <span class="text-subtle text-sm mr-sm">
+    <div class="py-xs whitespace-pre-wrap line-clamp-4">
+      <span class="text-subtle text-sm mr-xs">
         {{ name }}:
       </span>
       <span class="text-sm">

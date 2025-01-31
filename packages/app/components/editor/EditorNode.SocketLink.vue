@@ -1,25 +1,9 @@
 <script setup lang="ts">
-defineProps<{
-  name?: string
-  isLinked?: boolean
-  defaultValue?: unknown
-}>()
+defineProps<{ label?: string }>()
 </script>
 
 <template>
   <div class="truncate px-sm py-xs">
-
-    <!-- Name -->
-    <span
-      class="text-sm"
-      v-text="name"
-    />
-
-    <!-- Default -->
-    <span
-      v-if="defaultValue && !isLinked"
-      class="text-subtle text-xs"
-      v-text="typeof defaultValue === 'string' ? defaultValue : undefined"
-    />
+    <span class="text-sm" v-text="label" />
   </div>
 </template>

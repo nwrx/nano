@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { FlowThreadNodeJSON } from '@nwrx/api'
 import type { SocketListOption } from '@nwrx/core'
+import type { FlowLinkSocket } from '~/composables/useFlowEditor'
 
 const props = defineProps<{
   zoom?: number
@@ -9,7 +10,7 @@ const props = defineProps<{
   secrets?: string[]
   variables?: string[]
   getOptions?: (key: string, query: string) => Promise<SocketListOption[]>
-} & Partial<FlowThreadNodeJSON>>()
+} & FlowThreadNodeJSON>()
 
 const emit = defineEmits<{
   start: []
@@ -17,41 +18,22 @@ const emit = defineEmits<{
   click: [event: MouseEvent]
   setInputValue: [key: string, value: unknown]
   getInputOptions: [key: string, query: string]
-  linkGrab: [FlowDragState]
-  linkAssign: [FlowDragState | void]
-  linkRelease: []
   handleGrab: [event: MouseEvent]
   handleRelease: [event: MouseEvent]
+  linkGrab: [FlowLinkSocket]
+  linkAssign: [FlowLinkSocket]
+  linkUnassign: []
 }>()
 
-// --- State
-const isRunning = computed(() => props.state?.startsWith('RUNNING'))
+const isRunning = computed(() => props.state.startsWith('RUNNING'))
 const isRunningThrottled = refThrottled(isRunning, 300)
 
-/**
- * Expose the ports components to the parent component so their
- * position can be accessed and used to create links between nodes.
- */
-const socketsData = ref<Record<string, ComponentPublicInstance>>({})
-const socketsResult = ref<Record<string, ComponentPublicInstance>>({})
-defineExpose({ socketsData, socketsResult })
-
-/**
- * Compute the ring color based on the node's state. If the node is
- * selected or running, the ring will be colored. Otherwise, it will
- * be transparent.
- */
 const ringColor = computed(() => (
   isRunningThrottled.value || props.isSelected
     ? props.categoryColor ?? 'transparent'
     : 'transparent'
 ))
 
-/**
- * Compute the width of the ring based on the node's state and the
- * current zoom level. If the node is running or selected, the ring
- * width will be 3x the default width. Otherwise, it will be 1.25x.
- */
 const ringWidth = computed(() => (
   isRunningThrottled.value || props.isSelected
     ? `${3 / (props.zoom ?? 1)}px`
@@ -115,38 +97,33 @@ function handleClick(event: MouseEvent) {
 
       <EditorNodeSocket
         v-for="socket in inputSchema"
-        :id="id!"
+        :id="id"
         :key="socket.key"
-        :ref="(component) => socketsData[socket.key] = (component as ComponentPublicInstance)"
         :socket="socket"
-        :value="input?.[socket.key]"
+        :value="input[socket.key]"
         :secrets="secrets"
         :variables="variables"
-        :error="inputErrors?.[socket.key]"
+        :error="inputErrors[socket.key]"
         :get-options="getOptions ? (key, query) => getOptions!(socket.key, query) : undefined"
-        kind="target"
         @set-value="(value) => emit('setInputValue', socket.key, value)"
         @search-options="(key, query) => emit('getInputOptions', key, query)"
-        @grab="(state) => emit('linkGrab', state)"
-        @assign="(state) => emit('linkAssign', state)"
-        @release="() => emit('linkRelease')"
-        @drop="() => emit('linkRelease')"
+        @link-grab="(path) => emit('linkGrab', { id, name: socket.key, path })"
+        @link-assign="(path) => emit('linkAssign', { id, name: socket.key, path })"
+        @link-unassign="() => emit('linkUnassign')"
       />
 
       <EditorNodeSocket
         v-for="socket in outputSchema"
-        :id="id!"
+        :id="id"
         :key="socket.key"
-        :ref="(component) => socketsResult[socket.key] = (component as ComponentPublicInstance)"
         :socket="socket"
         :port-id="socket.key"
-        :value="output?.[socket.key]"
-        :error="outputErrors?.[socket.key]"
-        kind="source"
-        @grab="(state) => emit('linkGrab', state)"
-        @assign="(state) => emit('linkAssign', state)"
-        @release="() => emit('linkRelease')"
-        @drop="() => emit('linkRelease')"
+        :value="output[socket.key]"
+        :error="outputErrors[socket.key]"
+        :is-output="true"
+        @link-grab="(path) => emit('linkGrab', { id, name: socket.key, path, isOutput: true })"
+        @link-assign="(path) => emit('linkAssign', { id, name: socket.key, path, isOutput: true })"
+        @link-unassign="() => emit('linkUnassign')"
       />
     </div>
   </div>

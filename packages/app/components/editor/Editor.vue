@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FlowJSON } from '@nwrx/api'
+import type { FlowJSON, FlowLinkSocketJSON } from '@nwrx/api'
 import type { SocketListOption } from '@nwrx/core'
 import { throttle } from '@unshared/functions/throttle'
 import PATTERN_EDITOR_URL from '~/assets/pattern-editor.svg'
@@ -30,8 +30,8 @@ const emit = defineEmits<{
   setNodeInputValue: [string, string, unknown]
   getNodeInputOptions: [string, string, string | undefined]
   removeNodes: [string[]]
-  createLink: [string, string]
-  removeLink: [string]
+  createLink: [FlowLinkSocketJSON, FlowLinkSocketJSON]
+  removeLink: [FlowLinkSocketJSON]
   setUserPosition: [number, number]
 }>()
 
@@ -51,8 +51,8 @@ const editor = useFlowEditor({
   onNodeDuplicate: (id, x, y) => emit('cloneNodes', id, x, y),
   onNodesRemove: ids => emit('removeNodes', ids),
   onNodesSetPosition: throttle((positions: FlowNodePosition[]) => emit('setNodesPosition', positions), 50),
-  onLinkCreate: (source, target) => emit('createLink', source, target),
-  onLinkRemove: sourceOrTarget => emit('removeLink', sourceOrTarget),
+  onLinkCreate: (from, to) => emit('createLink', from, to),
+  onLinkRemove: link => emit('removeLink', link),
   onUserSetPosition: throttle((x: number, y: number) => emit('setUserPosition', x, y), 50),
 })
 </script>
@@ -78,7 +78,6 @@ const editor = useFlowEditor({
       :style="editor.viewSelectorStyle"
       class="absolute border-2 border-editor-select border-dashed rounded bg-editor-select z-9999"
     />
-
     <!-- View -->
     <div
       :ref="(el) => editor.view = (el as HTMLDivElement)"
@@ -128,9 +127,9 @@ const editor = useFlowEditor({
         @get-input-options="(key, query) => emit('getNodeInputOptions', node.id, key, query)"
         @handle-grab="(event) => editor.onNodeHandleGrab(event, node.id)"
         @handle-release="() => editor.onNodeHandleRelease()"
-        @link-grab="(state) => editor.onLinkGrab(state)"
-        @link-assign="(state) => editor.onLinkAssign(state)"
-        @link-release="() => editor.onLinkRelease()"
+        @link-grab="(link) => editor.onLinkGrab(link)"
+        @link-assign="(link) => editor.onLinkAssign(link)"
+        @link-unassign="() => editor.onLinkUnassign()"
       />
 
       <!-- Links -->
@@ -174,7 +173,6 @@ const editor = useFlowEditor({
           v-model:is-node-input-open="settings.editorPanelNodeInputOpen"
           v-model:is-node-output-open="settings.editorPanelNodeOutputOpen"
           :width="editor.panelWidth"
-
           :name="name"
           :secrets="secrets"
           :variables="variables"
@@ -182,17 +180,13 @@ const editor = useFlowEditor({
           :node-selected="editor.nodeSelected"
           :events="events"
           :nodes="nodes"
-
           class="pointer-events-auto row-span-2 justify-self-end h-full"
-
           @start="(input) => emit('start', input)"
           @set-name="(name) => emit('setName', name)"
           @set-description="(description) => emit('setDescription', description)"
-
           @set-node-label="(id, label) => emit('setNodeLabel', id, label)"
           @set-node-comment="(id, comment) => emit('setNodeComment', id, comment)"
           @set-node-input-value="(id, key, value) => emit('setNodeInputValue', id, key, value)"
-
           @secret-create="(name, value) => emit('createSecret', name, value)"
           @secret-remove="(name) => emit('removeSecret', name)"
           @variable-create="(name, value) => emit('createVariable', name, value)"
@@ -210,14 +204,13 @@ const editor = useFlowEditor({
         />
 
         <!-- Console -->
-        <!--
-          <EditorConsole
-          :events="events"
+        <EditorConsole
           class="pointer-events-auto select-auto col-span-2"
           @clear="() => emit('clearEvents')"
-          @mousedown.stop
-          />
-        -->
+          @mousedown.stop>
+          {{ editor.linkDragFrom }}
+          {{ editor.linkDragTo }}
+        </EditorConsole>
       </div>
     </div>
   </div>

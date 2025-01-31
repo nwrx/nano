@@ -27,15 +27,6 @@ export interface FlowDragState {
   kind: 'source' | 'target'
 }
 
-export interface FlowLinkProps {
-  sourceX: number
-  sourceY: number
-  sourceColor: string
-  targetX: number
-  targetY: number
-  targetColor: string
-}
-
 export interface FlowNodePosition {
   id: string
   x: number

@@ -1,9 +1,21 @@
 /* eslint-disable unicorn/prevent-abbreviations */
-import type { FlowSessionParticipantJSON, FlowThreadNodeJSON } from '@nwrx/api'
+import type { FlowLinkSocketJSON, FlowSessionParticipantJSON, FlowThreadNodeJSON } from '@nwrx/api'
 import type { Position } from '@vueuse/core'
-import type { EditorNode } from '#build/components'
 import type { CSSProperties } from 'vue'
 import { isReferenceLink } from '@nwrx/core/utils'
+
+export interface FlowLinkSocket extends FlowLinkSocketJSON {
+  isOutput?: boolean
+}
+
+export interface FlowLinkProps {
+  sourceX: number
+  sourceY: number
+  sourceColor: string
+  targetX: number
+  targetY: number
+  targetColor: string
+}
 
 export interface UseFlowEditorOptions {
 
@@ -78,17 +90,17 @@ export interface UseFlowEditorOptions {
   /**
    * The function to call when a link is dropped on the flow editor.
    *
-   * @param source The source node of the link.
-   * @param target The target node of the link.
+   * @param source The source socket of the link.
+   * @param target The target socket of the link.
    */
-  onLinkCreate?: (source: string, target: string) => void
+  onLinkCreate?: (source: FlowLinkSocketJSON, target: FlowLinkSocketJSON) => void
 
   /**
    * The function to call when a link is removed from the flow editor.
    *
-   * @param source The source node of the link.
+   * @param link The source node of the link.
    */
-  onLinkRemove?: (source: string) => void
+  onLinkRemove?: (link: FlowLinkSocketJSON) => void
 
   /**
    * The function to call when the current user moves in the flow editor.
@@ -177,9 +189,9 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
 
   // --- Initialize the drag link state.
   const linksProps = ref<FlowLinkProps[]>([])
-  const linkDragFrom = ref<FlowDragState>()
-  const linkDragTo = ref<FlowDragState | void>()
   const linkDragProps = ref<FlowLinkProps>()
+  const linkDragFrom = ref<FlowLinkSocket>()
+  const linkDragTo = ref<FlowLinkSocket>()
 
   // --- Compute the position of the cursor in the world coordinates.
   function screenToWorld(position: Position) {
@@ -204,63 +216,64 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
     return worldToView(world)
   }
 
+  // --- Get the pin element based on the link ID.
+  function getPinAttributes(link?: FlowLinkSocket) {
+    if (!link) return
+    const pinType = link.isOutput ? 'out' : 'in'
+    const pinSelectorDataId = ['pin', pinType, link.id, link.name, link.path].filter(Boolean).join('-')
+    const pinSelector = `[data-id="${pinSelectorDataId}"]`
+    const pinElement = document.querySelector<HTMLDivElement>(pinSelector)
+    if (!pinElement) return
+
+    // --- Get the position and color of the pin.
+    const { x, y, width, height } = pinElement.getBoundingClientRect()
+    return {
+      color: pinElement.style.backgroundColor,
+      position: screenToView({
+        x: x + width / 2,
+        y: y + height / 2,
+      }),
+    }
+  }
+
   // --- Compute the position of the cursor in the screen coordinates.
   function setLinkProps() {
     setTimeout(() => {
       const result = [] as FlowLinkProps[]
 
-      // --- Iterate over the links and compute the position of the source and target pins.
+      // --- Helper function to collect the link based on the value.
+      function collectLink(node: FlowThreadNodeJSON, value: unknown, targetName: string, targetPath?: string) {
+        if (!isReferenceLink(value)) return
+        const { id, name, path } = value.$fromNode
+        const pinSource = getPinAttributes({ id, name, path, isOutput: true })
+        const pinTarget = getPinAttributes({ id: node.id, name: targetName, path: targetPath, isOutput: false })
+        if (!pinTarget || !pinSource) return
+        result.push({
+          sourceX: pinSource.position.x,
+          sourceY: pinSource.position.y,
+          targetX: pinTarget.position.x,
+          targetY: pinTarget.position.y,
+          sourceColor: pinSource.color,
+          targetColor: pinTarget.color,
+        })
+      }
+
+      // --- Inspect every input value of every nodes and collect the links.
       for (const node of nodes.value) {
         for (const key in node.input) {
           const value = node.input[key]
           if (value === undefined) continue
-
-          // --- Cast as an array and iterate over the values.
-          const values = Array.isArray(value) ? value : [value]
-          for (const value of values) {
-            if (!isReferenceLink(value)) continue
-
-            // --- Get the source and target node IDs.
-            const { id: source, key: sourceProperty } = value.$fromNode
-            const [target, targetProperty] = [node.id, key]
-
-            // --- Get the source and target node elements.
-            /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-            /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-            const sourceNodeComponent = nodeComponents.value[source] as unknown as typeof EditorNode
-            const targetNodeComponent = nodeComponents.value[target] as unknown as typeof EditorNode
-            if (!sourceNodeComponent || !targetNodeComponent) continue
-
-            // --- Get the source and target pin elements.
-            const sourceElement = sourceNodeComponent.socketsResult[sourceProperty]?.pin as HTMLElement
-            const targetElement = targetNodeComponent.socketsData[targetProperty]?.pin as HTMLElement
-            if (!sourceElement || !targetElement) continue
-            /* eslint-enable @typescript-eslint/no-unsafe-member-access */
-            /* eslint-enable @typescript-eslint/no-unsafe-assignment */
-
-            // --- Get the source and target pin rectangles.
-            const sourceRect = sourceElement.getBoundingClientRect()
-            const targetRect = targetElement.getBoundingClientRect()
-
-            const sourcePosition = screenToView({
-              x: sourceRect.x + sourceRect.width / 2,
-              y: sourceRect.y + sourceRect.height / 2,
-            })
-
-            const targetPosition = screenToView({
-              x: targetRect.x + targetRect.width / 2,
-              y: targetRect.y + targetRect.height / 2,
-            })
-
-            // --- Push the computed link to the links array.
-            result.push({
-              sourceX: sourcePosition.x,
-              sourceY: sourcePosition.y,
-              targetX: targetPosition.x,
-              targetY: targetPosition.y,
-              sourceColor: sourceElement.style.backgroundColor,
-              targetColor: targetElement.style.backgroundColor,
-            })
+          if (isReferenceLink(value)) {
+            collectLink(node, value, key)
+          }
+          else if (Array.isArray(value)) {
+            for (const [index, item] of value.entries())
+              collectLink(node, item, key, index.toString())
+          }
+          else if (typeof value === 'object' && value !== null) {
+            const values = Object.entries(value)
+            for (const [path, value] of values)
+              collectLink(node, value, key, path)
           }
         }
       }
@@ -482,15 +495,17 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
 
       // --- If dragging a link, update the link position based on the mouse movement.
       else if (linkDragFrom.value) {
-        const source = screenToView(linkDragFrom.value.position)
+        const pin = getPinAttributes(linkDragFrom.value)
+        if (!pin) return
+
         const target = screenToView({ x: event.clientX, y: event.clientY })
         linkDragProps.value = {
-          sourceX: source.x,
-          sourceY: source.y,
+          sourceX: pin.position.x,
+          sourceY: pin.position.y,
           targetX: target.x,
           targetY: target.y,
-          sourceColor: linkDragFrom.value.color ?? 'black',
-          targetColor: linkDragFrom.value.color ?? 'black',
+          sourceColor: pin.color,
+          targetColor: pin.color,
         }
       }
 
@@ -518,9 +533,19 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
 
       // --- If a drag link is active, emit a link remove event.
       if (linkDragFrom.value && !linkDragTo.value) {
-        onLinkRemove(linkDragFrom.value.id)
+        onLinkRemove(linkDragFrom.value)
         linkDragFrom.value = undefined
         linkDragTo.value = undefined
+      }
+
+      // --- If dragFrom and dragTo are set, emit the link create event.
+      else if (linkDragFrom.value && linkDragTo.value) {
+        const from = linkDragFrom.value
+        const to = linkDragTo.value
+        linkDragFrom.value = undefined
+        linkDragTo.value = undefined
+        if (from.isOutput) onLinkCreate(from, to)
+        else if (to.isOutput) onLinkCreate(to, from)
       }
     },
 
@@ -681,40 +706,33 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
     /***************************************************************************/
 
     /**
-     * When a port is being dragged, update the `dragLinkTo` state to the port
+     * When a socket is being dragged, update the `dragLinkTo` state to the socket
      * that is being dragged to.
      *
-     * @param state The port that is being dragged to.
+     * @param link The socket that is being dragged to.
      */
-    onLinkGrab: (state?: FlowDragState) => {
-      if (!state) return
-      linkDragFrom.value = state
+    onLinkGrab: (link: FlowLinkSocket) => {
+      linkDragFrom.value = link
     },
 
     /**
-     * When a port is being dragged onto another port, update the `dragLinkTo` state
-     * to the port that is being dragged to.
+     * When a socket is being dragged onto another socket, update the `dragLinkTo` state
+     * to the socket that is being dragged to.
      *
-     * @param state The port that is being dragged to.
+     * @param link The socket that is being dragged to.
      */
-    onLinkAssign: (state?: FlowDragState | void) => {
-      if (state?.id === linkDragFrom.value?.id) return
-      linkDragTo.value = state
+    onLinkAssign: (link: FlowLinkSocket) => {
+      if (!linkDragFrom.value) return
+      if (link.id === linkDragFrom.value.id) return
+      linkDragTo.value = link
     },
 
     /**
-     * When a port is being dragged and the mouse button is released, determine
-     * if the port is being dropped on another port and if so, emit the `createLink`
-     * event to trigger the parent component to create a new link between the two ports.
+     * When a socket is being dragged and the cursor leaves the socket, reset the
+     * `dragLinkTo` state to `undefined`.
      */
-    onLinkRelease: () => {
-      const from = linkDragFrom.value
-      const to = linkDragTo.value
-      linkDragFrom.value = undefined
+    onLinkUnassign: () => {
       linkDragTo.value = undefined
-      if (!from || !to) return
-      else if (to.kind === 'source') onLinkCreate(to.id, from.id)
-      else if (from.kind === 'source') onLinkCreate(from.id, to.id)
     },
 
     /**
@@ -724,15 +742,24 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
      */
     linkDragProps: computed((): FlowLinkProps | undefined => {
       if (!linkDragFrom.value) return
-      const { position, color, kind } = linkDragFrom.value
-      const viewPosition = screenToView(position)
+
+      // --- Get the element of the pin that is being dragged from.
+      const { id, name, path, isOutput } = linkDragFrom.value
+      const pin = getPinAttributes({ id, name, path, isOutput })
+      if (!pin) return
+
+      // --- Compute the target color if present.
+      const pinTarget = getPinAttributes(linkDragTo.value)
+      const pinTargetcolor = pinTarget ? pinTarget.color : pin.color
+
+      // --- Return the computed link properties.
       return {
-        sourceX: kind === 'source' ? viewPosition.x : cursorView.value.x,
-        sourceY: kind === 'source' ? viewPosition.y : cursorView.value.y,
-        targetX: kind === 'source' ? cursorView.value.x : viewPosition.x,
-        targetY: kind === 'source' ? cursorView.value.y : viewPosition.y,
-        sourceColor: color,
-        targetColor: color,
+        sourceX: isOutput ? pin.position.x : cursorView.value.x,
+        sourceY: isOutput ? pin.position.y : cursorView.value.y,
+        targetX: isOutput ? cursorView.value.x : pin.position.x,
+        targetY: isOutput ? cursorView.value.y : pin.position.y,
+        sourceColor: isOutput ? pin.color : pinTargetcolor,
+        targetColor: isOutput ? pinTargetcolor : pin.color,
       }
     }),
   })
