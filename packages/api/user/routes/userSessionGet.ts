@@ -6,7 +6,7 @@ export function userSessionGet(this: ModuleUser) {
     {
       name: 'GET /api/session',
     },
-    async({ event }): Promise<UserObject | object> => {
+    async({ event }): Promise<Partial<UserObject>> => {
       const session = await this.authenticate(event, { optional: true })
       if (!session) return {}
 
