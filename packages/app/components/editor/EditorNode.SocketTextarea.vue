@@ -4,7 +4,7 @@ import { ref } from 'vue'
 const props = defineProps<{
   name: string
   description?: string
-  modelValue: string
+  modelValue?: string
   defaultValue?: unknown
 }>()
 
