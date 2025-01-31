@@ -9,6 +9,7 @@ const props = defineProps<{
   isDragging: boolean
   isSelected: boolean
   isCollapsed: boolean
+  isHighlighted: boolean
   secrets: FlowSessionSecretJSON[]
   variables: FlowSessionVariableJSON[]
 } & NodeInstanceJSON>()
@@ -72,7 +73,7 @@ defineExpose({ socketsData, socketsResult })
  * be transparent.
  */
 const ringColor = computed(() => (
-  isRunningThrottled.value || props.isSelected
+  isRunningThrottled.value || props.isSelected || props.isHighlighted
     ? props.color
     : 'transparent'
 ))
@@ -83,10 +84,21 @@ const ringColor = computed(() => (
  * width will be 3x the default width. Otherwise, it will be 1.25x.
  */
 const ringWidth = computed(() => (
-  isRunningThrottled.value || props.isSelected
+  isRunningThrottled.value || props.isSelected || props.isHighlighted
     ? `${3 / props.zoom}px`
-    : `${1.25 / props.zoom}px`
+    : `${5 / props.zoom}px`
 ))
+
+/**
+ * Handle the click event on the node. This will emit the `click`
+ * event to the parent component with the original event object.
+ *
+ * @param event The mouse event that triggered the click.
+ */
+function handleClick(event: MouseEvent) {
+  if (event.button === 0) event.stopPropagation()
+  emit('click', event)
+}
 </script>
 
 <template>
@@ -97,10 +109,10 @@ const ringWidth = computed(() => (
     }"
     class="
       min-h-24 w-100
-      backdrop-blur-2xl rounded ring
-      bg-editor-node border border-editor
+      backdrop-blur-2xl rd ring
+      bg-editor-node
     "
-    @mousedown="(event) => emit('click', event)">
+    @mousedown="(event) => handleClick(event)">
 
     <!-- Error Overlay -->
     <div
@@ -131,7 +143,7 @@ const ringWidth = computed(() => (
     />
 
     <!-- Graphflow Node Body -->
-    <div class="flex flex-col py-sm space-y-sm">
+    <div class="flex flex-col py-sm space-y-xs">
       <FlowEditorSocket
         v-for="port in dataSchema"
         v-bind="port"
@@ -165,20 +177,22 @@ const ringWidth = computed(() => (
     </div>
 
     <!-- Collapse bar -->
-    <div
+    <!--
+      <div
       class="
-        flex justify-center items-center
-        h-8 w-full cursor-pointer
-        opacity-0 hover:opacity-100
-        bg-primary-500/5
-        transition
-        rounded-b-md
+      flex justify-center items-center
+      h-8 w-full cursor-pointer
+      opacity-0 hover:opacity-100
+      bg-primary-500/5
+      transition
+      rounded-b-md
       "
       @mousedown.stop="() => isCollapsed = !isCollapsed">
       <BaseIcon
-        :icon="isCollapsed ? 'i-carbon:chevron-down' : 'i-carbon:chevron-up'"
-        class="size-4"
+      :icon="isCollapsed ? 'i-carbon:chevron-down' : 'i-carbon:chevron-up'"
+      class="size-4"
       />
-    </div>
+      </div>
+    -->
   </div>
 </template>
