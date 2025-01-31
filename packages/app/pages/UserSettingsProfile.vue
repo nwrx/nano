@@ -1,7 +1,8 @@
 <script setup lang="ts">
 definePageMeta({
-  name: 'SettingsProfile',
+  name: 'UserSettingsProfile',
   path: '/settings/profile',
+  alias: '/settings',
   middleware: 'redirect-when-guest',
 })
 
@@ -26,7 +27,6 @@ onMounted(async() => {
       :company="user.data.company"
       @submit="(profile) => user.setProfile(profile)"
     />
-    <AppPageDivider />
     <UserSettingsAvatar
       :avatarUrl="`/api/users/${user.data.username}/avatar`"
       @submit="(avatar) => user.setAvatar({ avatar })"
