@@ -7,11 +7,15 @@ export const application = await Application.initialize([
   Nwrx.ModuleUser,
   Nwrx.ModuleFlow,
   Nwrx.ModuleWorkspace,
+  Nwrx.ModuleStorage,
 ], {
   prefix: 'NWRX',
   logger: Consola,
   projectSecretKey: 'SECRET',
   userSecretKey: 'SECRET',
+  storagePools: [
+    new Nwrx.StoragePoolFS('Default', { path: '.data/storage' }),
+  ],
   dataSource: {
     type: 'sqlite',
     database: '.data/db.sqlite',
