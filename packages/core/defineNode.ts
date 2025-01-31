@@ -250,8 +250,8 @@ export function defineNode<N extends string, T extends DataSchema, U extends Res
     icon: options.icon,
     category: options.category,
     description: options.description,
-    dataSchema: options.dataSchema,
-    resultSchema: options.resultSchema,
+    dataSchema: options.dataSchema ?? {} as T,
+    resultSchema: options.resultSchema ?? {} as U,
     process: options.process,
   }
 }

@@ -58,7 +58,7 @@ export const nodeOutput = defineNode({
       property: {
         type: string,
         name: 'Property',
-        control: 'socket',
+        control: 'text',
         description: 'The property name to send the value to the exitpoint.',
       },
       value: {
@@ -71,7 +71,7 @@ export const nodeOutput = defineNode({
   },
 
   process: ({ flow, data }) => {
-    flow.dispatch('flow:output', data.property, data.value)
+    flow.dispatch('flow:output', flow.run, data.property, data.value)
     return {}
   },
 })
