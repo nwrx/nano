@@ -81,6 +81,7 @@ export class FlowThreadNode extends Emitter<FlowThreadNodeEvents> {
       }
 
       // --- Set the state of the node to done.
+      this.setState('DONE')
       this.dispatch('end', context, this.eventMetadata)
       return this.output
     }
