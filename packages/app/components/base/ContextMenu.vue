@@ -1,9 +1,10 @@
+<!-- eslint-disable vue/prop-name-casing -->
 <script setup lang="ts">
 import type { BaseMenuProps } from '@unshared/vue'
 
-const props = defineProps<{
+const props = defineProps<BaseMenuProps & {
   modelValue?: boolean
-} & BaseMenuProps>()
+}>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
