@@ -17,7 +17,7 @@ describe.concurrent<Context>('request GET /api/user', () => {
       const response = await ctx.fetch('/api/users/jdoe', { method: 'GET', headers })
       const body = await response.json() as Record<string, string>
       expect(response.status).toBe(200)
-      expect(response.headers.get('Content-Type')).toBe('application/json')
+      expect(response.statusText).toBe('OK')
       expect(body).toStrictEqual({ username: user.username })
     })
 
@@ -27,7 +27,7 @@ describe.concurrent<Context>('request GET /api/user', () => {
       const response = await ctx.fetch('/api/users/other', { method: 'GET', headers })
       const body = await response.json() as Record<string, string>
       expect(response.status).toBe(403)
-      expect(response.headers.get('Content-Type')).toBe('application/json')
+      expect(response.statusText).toBe('Forbidden')
       expect(body).toMatchObject({ data: { name: 'E_USER_NOT_ALLOWED' } })
     })
 
@@ -36,18 +36,30 @@ describe.concurrent<Context>('request GET /api/user', () => {
       const response = await ctx.fetch('/api/users/does-not-exists', { method: 'GET', headers })
       const body = await response.json() as Record<string, string>
       expect(response.status).toBe(403)
-      expect(response.headers.get('Content-Type')).toBe('application/json')
+      expect(response.statusText).toBe('Forbidden')
+      expect(body).toMatchObject({ data: { name: 'E_USER_NOT_ALLOWED' } })
+    })
+
+    it('should return an error if the user is deleted', async({ expect, ctx }) => {
+      const { headers } = await ctx.createUser('jdoe')
+      const { user } = await ctx.createUser('other')
+      const { User } = ctx.ModuleUser.getRepositories()
+      await User.softRemove(user)
+      const response = await ctx.fetch('/api/users/other', { method: 'GET', headers })
+      const body = await response.json() as Record<string, string>
+      expect(response.status).toBe(403)
+      expect(response.statusText).toBe('Forbidden')
       expect(body).toMatchObject({ data: { name: 'E_USER_NOT_ALLOWED' } })
     })
   })
 
-  describe<Context>('with superadministrator', (it) => {
+  describe<Context>('with super administrator', (it) => {
     it('should return the user details of the super administrator', async({ expect, ctx }) => {
       const { user, headers } = await ctx.createUser('jdoe', { isSuperAdministrator: true })
       const response = await ctx.fetch('/api/users/jdoe', { method: 'GET', headers })
       const body = await response.json() as Record<string, string>
       expect(response.status).toBe(200)
-      expect(response.headers.get('Content-Type')).toBe('application/json')
+      expect(response.statusText).toBe('OK')
       expect(body).toStrictEqual({ username: user.username })
     })
 
@@ -57,7 +69,7 @@ describe.concurrent<Context>('request GET /api/user', () => {
       const response = await ctx.fetch('/api/users/other', { method: 'GET', headers })
       const body = await response.json() as Record<string, string>
       expect(response.status).toBe(200)
-      expect(response.headers.get('Content-Type')).toBe('application/json')
+      expect(response.statusText).toBe('OK')
       expect(body).toStrictEqual({ username: 'other' })
     })
 
@@ -66,8 +78,20 @@ describe.concurrent<Context>('request GET /api/user', () => {
       const response = await ctx.fetch('/api/users/does-not-exists', { method: 'GET', headers })
       const body = await response.json() as Record<string, string>
       expect(response.status).toBe(404)
-      expect(response.headers.get('Content-Type')).toBe('application/json')
+      expect(response.statusText).toBe('Not Found')
       expect(body).toMatchObject({ data: { name: 'E_USER_NOT_FOUND' } })
+    })
+
+    it('should return the user details of a deleted user', async({ expect, ctx }) => {
+      const { headers } = await ctx.createUser('jdoe', { isSuperAdministrator: true })
+      const { user } = await ctx.createUser('other')
+      const { User } = ctx.ModuleUser.getRepositories()
+      await User.softRemove(user)
+      const response = await ctx.fetch('/api/users/other', { method: 'GET', headers })
+      const body = await response.json() as Record<string, string>
+      expect(response.status).toBe(200)
+      expect(response.statusText).toBe('OK')
+      expect(body).toMatchObject({ username: 'other' })
     })
   })
 
@@ -76,7 +100,7 @@ describe.concurrent<Context>('request GET /api/user', () => {
       const response = await ctx.fetch('/api/users/does-not-exists', { method: 'GET' })
       const body = await response.json() as Record<string, string>
       expect(response.status).toBe(401)
-      expect(response.headers.get('Content-Type')).toBe('application/json')
+      expect(response.statusText).toBe('Unauthorized')
       expect(body).toMatchObject({ data: { name: 'E_USER_NOT_AUTHENTICATED' } })
     })
 
@@ -85,7 +109,7 @@ describe.concurrent<Context>('request GET /api/user', () => {
       const response = await ctx.fetch('/api/users/jdoe', { method: 'GET' })
       const body = await response.json() as Record<string, string>
       expect(response.status).toBe(401)
-      expect(response.headers.get('Content-Type')).toBe('application/json')
+      expect(response.statusText).toBe('Unauthorized')
       expect(body).toMatchObject({ data: { name: 'E_USER_NOT_AUTHENTICATED' } })
     })
   })
