@@ -13,6 +13,8 @@ export const nodeModelGroq = defineLanguageModel({
   defaultModel: 'llama3-8b-8192',
   pathModels: '/openai/v1/models',
   pathCompletions: '/openai/v1/chat/completions',
+  allowCustomToken: true,
+  allowCustomModel: true,
 
   // --- Compute the body of the request.
   getBody: (data: InferenceData) => {

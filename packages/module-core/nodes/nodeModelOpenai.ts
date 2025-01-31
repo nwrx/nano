@@ -11,6 +11,8 @@ export const nodeModelOpenai = defineLanguageModel<OpenaiChatRequest, OpenaiChat
   defaultModel: 'gpt-3.5-turbo',
   pathModels: '/v1/models',
   pathCompletions: '/v1/chat/completions',
+  allowCustomToken: true,
+  allowCustomModel: true,
 
   getBody: openaiGetBody,
   getModels: openaiGetModels,
