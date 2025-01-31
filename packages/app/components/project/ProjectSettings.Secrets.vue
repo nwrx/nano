@@ -4,7 +4,7 @@ import type { WorkspaceProjectSecretObject } from '@nwrx/api'
 const props = defineProps<{
   workspace: string
   project: string
-  secrets: WorkspaceProjectSecretObject[]
+  secrets?: WorkspaceProjectSecretObject[]
 }>()
 
 const emit = defineEmits<{
@@ -54,7 +54,7 @@ const isDialogCreateOpen = ref(false)
             <Badge
               size="small"
               :label="name"
-              icon="i-carbon:tag"
+              icon="i-carbon:rule-locked"
               class="font-mono"
             />
           </div>
@@ -62,8 +62,11 @@ const isDialogCreateOpen = ref(false)
 
         <!-- Cell / Stats -->
         <template #cell.stats="{ createdAt }">
-          <div class="text-sm text-subtle">
-            {{ t('createdAt', { createdAt: formatDateTime(createdAt) }) }}
+          <div class="text-xs text-subtle">
+            {{ t('createdAt') }} {{ formatDate(createdAt) }}
+          </div>
+          <div class="text-sm">
+            {{ formatDateFromNow(createdAt) }}
           </div>
         </template>
 

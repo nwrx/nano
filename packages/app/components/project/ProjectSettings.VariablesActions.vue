@@ -23,7 +23,7 @@ const isDialogCreateOpen = ref(false)
     <ContextMenu x="right" y="top">
       <template #menu>
         <ContextMenuItem
-          icon="i-carbon:add"
+          icon="i-carbon:value-variable"
           :label="t('create')"
           keybind="Ctrl + N"
           @click="() => isDialogCreateOpen = true"
@@ -35,9 +35,9 @@ const isDialogCreateOpen = ref(false)
           @click="() => isDialogUpdateOpen = true"
         />
         <ContextMenuItem
-          icon="i-carbon:edit"
+          icon="i-carbon:trash-can"
           :label="t('delete')"
-          keybind="Ctrl + E"
+          keybind="Ctrl + X"
           @click="() => isDialogDeleteOpen = true"
         />
       </template>

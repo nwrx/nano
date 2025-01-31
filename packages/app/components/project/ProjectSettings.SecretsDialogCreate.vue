@@ -57,7 +57,7 @@ en:
   text: Create a new secret in the project **{workspace}/{project}**. Please provide a name and value for the secret.
   cancel: Cancel
   confirm: Create
-  name: Enter the secret name...
+  name: SECRET_NAME
   value: Enter the secret value...
   nameLabel: Secret Name
   valueLabel: Secret Value
@@ -66,7 +66,7 @@ fr:
   text: Créez un nouveau secret dans le projet **{workspace}/{project}**. Veuillez fournir un nom et une valeur pour le secret.
   cancel: Annuler
   confirm: Créer
-  name: Entrez le nom du secret...
+  name: NOM_DU_SECRET
   value: Entrez la valeur du secret...
   nameLabel: Nom du secret
   valueLabel: Valeur du secret
@@ -75,7 +75,7 @@ de:
   text: Erstellen Sie ein neues Geheimnis im Projekt **{workspace}/{project}**. Bitte geben Sie einen Namen und einen Wert für das Geheimnis an.
   cancel: Abbrechen
   confirm: Erstellen
-  name: Geben Sie den Geheimnisnamen ein...
+  name: GEHEIMNISNAME
   value: Geben Sie den Geheimniswert ein...
   nameLabel: Geheimnisname
   valueLabel: Geheimniswert
@@ -84,7 +84,7 @@ es:
   text: Cree un nuevo secreto en el proyecto **{workspace}/{project}**. Proporcione un nombre y un valor para el secreto.
   cancel: Cancelar
   confirm: Crear
-  name: Introduzca el nombre del secreto...
+  name: NOMBRE_DEL_SECRETO
   value: Introduzca el valor del secreto...
   nameLabel: Nombre del secreto
   valueLabel: Valor del secreto
@@ -93,7 +93,7 @@ zh:
   text: 在项目 **{workspace}/{project}** 中创建一个新秘密。请提供秘密的名称和值。
   cancel: 取消
   confirm: 创建
-  name: 输入秘密名称...
+  name: MI_MI_MING_CHENG
   value: 输入秘密值...
   nameLabel: 秘密名称
   valueLabel: 秘密值
