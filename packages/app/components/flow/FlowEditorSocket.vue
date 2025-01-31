@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { DataSocketJSON, FlowSessionSecretJSON, FlowSessionVariableJSON } from '@nwrx/api'
-import type { SocketListOption } from '@nwrx/core'
 
 const props = defineProps<{
   id: string
@@ -14,6 +13,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   setValue: [value: unknown]
+  searchOptions: [key: string, query: string]
   grab: [state: FlowDragState]
   assign: [state: FlowDragState | void]
   release: []
@@ -145,7 +145,7 @@ function onRelease() {
       :name="socket.name"
       :default-value="socket.defaultValue"
       :options="socket.options"
-      :get-options="getOptions"
+      @search="(query) => emit('searchOptions', socket.key, query)"
     />
 
     <!-- Radio -->

@@ -1,5 +1,6 @@
 /* eslint-disable sonarjs/cognitive-complexity */
 import type { FlowSessionEventPayload, FlowSessionJSON } from '@nwrx/api'
+import type { SocketListOption } from '@nwrx/core'
 import { useAlerts, useClient } from '#imports'
 
 export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<string>, name: MaybeRef<string>) {
@@ -124,6 +125,7 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
         const node = flow.nodes.find(n => n.id === id)
         if (!node) return
         if (key === 'label') node.label = value as string
+        if (key === 'comment') node.comment = value as string
         if (key === 'position') node.position = value as { x: number; y: number }
         flow.nodes = [...flow.nodes]
         break
@@ -175,6 +177,16 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
         const node = flow.nodes.find(n => n.id === id)
         if (!node) return
         node.data = data
+        flow.nodes = [...flow.nodes]
+        break
+      }
+      case 'node:dataOptions': {
+        const { id, key, options } = payload
+        const node = flow.nodes.find(n => n.id === id)
+        if (!node) return
+        const socket = node.dataSchema?.find(s => s.key === key)
+        if (!socket) return
+        socket.options = options
         flow.nodes = [...flow.nodes]
         break
       }
@@ -457,6 +469,27 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
      */
     nodeSetDataValue: (nodeId: string, portId: string, value: unknown) => {
       session.send({ event: 'nodeSetDataValue', nodeId, portId, value })
+    },
+
+    /**
+     * Get the options list for the given node id and key. This will trigger the server to
+     * fetch the options list and return the list of options to the client asking for it.
+     *
+     * @param id The ID of the node where the data options are requested.
+     * @param key The key of the data options.
+     * @param query The query to filter the data options.
+     * @returns The list of options for the given node id and key.
+     */
+    nodeSearchDataOptions: (id: string, key: string, query: string): Promise<SocketListOption[]> => {
+      session.send({ event: 'nodeSearchDataOptions', id, key, query })
+      return new Promise((resolve) => {
+        const stop = session.on('message', (payload: FlowSessionEventPayload) => {
+          if (payload.event === 'node:dataOptions') {
+            stop()
+            resolve(payload.options)
+          }
+        })
+      })
     },
 
     /**

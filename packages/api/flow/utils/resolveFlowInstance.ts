@@ -40,7 +40,6 @@ export async function resolveFlowInstance(this: ModuleFlow, entity: Flow) {
       if (!node) throw new Error(`Node not found: ${kind}`)
       return node
     },
-
     resolveReference: (flow, type, reference) => {
       if (!entity.project) throw new Error('The project of the flow is not loaded.')
 
@@ -58,18 +57,10 @@ export async function resolveFlowInstance(this: ModuleFlow, entity: Flow) {
         if (!variable) throw new Error(`Variable not found: ${reference}`)
         return variable.value
       }
-
-      // --- Value from node result.
-      if (type === 'NODE') {
-        const [id, key] = reference.split(':')
-        const node = flow.get(id)
-        if (node.state !== 'DONE') return
-        return node.result[key]
-      }
     },
   })
 
   // --- Resolve all the nodes in the flow.
-  for (const node of flowInstance.nodes) await node.refresh()
+  for (const node of flowInstance.nodes) await node.resolveData()
   return flowInstance
 }

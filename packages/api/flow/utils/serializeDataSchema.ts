@@ -1,7 +1,6 @@
 import type { DataSchema, SocketControl, SocketListOption } from '@nwrx/core'
-import type { MaybeFunction, MaybeLiteral, MaybePromise } from '@unshared/types'
+import type { MaybeLiteral } from '@unshared/types'
 import type { ResultSocketJSON } from './serializeResultSchema'
-import { serializeSocketOptions } from './serializeSocketOptions'
 
 export interface DataSocketJSON extends ResultSocketJSON {
   control?: MaybeLiteral<SocketControl>
@@ -22,13 +21,13 @@ export interface DataSocketJSON extends ResultSocketJSON {
  * @param schema The `DataSchema` object to serialize.
  * @returns The serialized version of the `DataSchema` object.
  */
-export function serializeDataSchema(schema?: MaybeFunction<MaybePromise<DataSchema>, any[]>): DataSocketJSON[] {
+export function serializeDataSchema(schema?: unknown): DataSocketJSON[] {
   if (!schema) return []
   if (typeof schema === 'function') return []
   if (schema instanceof Promise) return []
 
   // --- Map the schema object to an array of serialized ports.
-  return Object.entries(schema).map(([key, socket]) => ({
+  return Object.entries(schema as DataSchema).map(([key, socket]) => ({
     key,
     name: socket.name ?? key,
     typeKind: socket.type?.kind,
@@ -37,7 +36,7 @@ export function serializeDataSchema(schema?: MaybeFunction<MaybePromise<DataSche
     typeDescription: socket.type?.description,
     control: socket.control,
     description: socket.description,
-    options: serializeSocketOptions(socket.options),
+    options: typeof socket.options === 'function' ? undefined : socket.options,
     sliderMax: socket.sliderMax,
     sliderMin: socket.sliderMin,
     sliderStep: socket.sliderStep,

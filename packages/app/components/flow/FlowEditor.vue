@@ -51,10 +51,11 @@ const emit = defineEmits<{
   nodeStart: [id: string]
   nodeAbort: [id: string]
   nodeCreate: [kind: string, x: number, y: number]
-  nodeDuplicate: [nodeId: string, x: number, y: number]
-  nodeSetDataValue: [nodeId: string, key: string, value: unknown]
+  nodeDuplicate: [id: string, x: number, y: number]
+  nodeSetDataValue: [id: string, key: string, value: unknown]
+  nodeSearchDataOptions: [id: string, key: string, query: string]
   nodesMove: [payload: FlowNodePosition[]]
-  nodesRemove: [nodeIds: string[]]
+  nodesRemove: [ids: string[]]
 
   // --- Links.
   linkCreate: [source: string, target: string]
@@ -169,6 +170,7 @@ const editor = useFlowEditor({
         @abort="() => emit('nodeAbort', node.id)"
         @click="(event) => editor.onNodeClick(event, node.id)"
         @set-data-value="(key, value) => emit('nodeSetDataValue', node.id, key, value)"
+        @search-data-options="(key, query) => emit('nodeSearchDataOptions', node.id, key, query)"
         @handle-grab="(event) => editor.onNodeHandleGrab(event, node.id)"
         @handle-release="() => editor.onNodeHandleRelease()"
         @port-grab="(state) => editor.onNodePortGrab(state)"

@@ -14,7 +14,6 @@ export type * from './utils/serializeFlowSession'
 export type * from './utils/serializeNode'
 export type * from './utils/serializeNodeInstance'
 export type * from './utils/serializeResultSchema'
-export type * from './utils/serializeSocketOptions'
 
 export interface ModuleFlowOptions {
 
