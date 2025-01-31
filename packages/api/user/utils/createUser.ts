@@ -23,11 +23,12 @@ export async function createUser(this: ModuleUser, options: CreateUserOptions) {
   const exists = await User.findOne({ where: [{ username }, { email }] })
   if (exists) throw this.errors.USER_EMAIL_OR_NAME_TAKEN()
 
-  // --- Create the user and assign the password if provided.
+  // --- Create the user and it's associated workspace, password and profile.
   const user = User.create({ email, username })
   if (password) user.passwords = [await this.createPassword(user, password)]
+  const workspace = await workspaceModule.createWorkspace({ user, name: user.username, isPublic: true })
+  user.profile = this.createProfile({ displayName: user.username, user })
 
-  // --- Create the associated workspace.
-  const workspace = await workspaceModule.createWorkspace({ name: user.username, isPublic: true, user })
+  // --- Return the entities to save.
   return { user, workspace }
 }
