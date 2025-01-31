@@ -2,6 +2,7 @@ import type { ModuleUser } from '..'
 import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, createSchema } from '@unshared/validation'
 import { setResponseStatus } from 'h3'
+import { getUser } from '../utils'
 
 export function userVerify(this: ModuleUser) {
   return createHttpRoute(
@@ -19,7 +20,7 @@ export function userVerify(this: ModuleUser) {
       if (!user.isSuperAdministrator) throw this.errors.USER_NOT_ALLOWED()
 
       // --- Resolve the user to verify.
-      const userToVerify = await this.resolveUser({
+      const userToVerify = await getUser.call(this, {
         user,
         username,
         withDeleted: true,

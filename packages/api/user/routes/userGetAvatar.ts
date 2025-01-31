@@ -1,9 +1,10 @@
 import type { ModuleUser } from '..'
 import { createHttpRoute } from '@unserved/server'
-import { dedent } from '@unshared/string'
-import { assertStringNotEmpty, createSchema } from '@unshared/validation'
+import { dedent, parseBoolean } from '@unshared/string'
+import { assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
 import { setResponseHeader } from 'h3'
 import { ModuleStorage } from '../../storage'
+import { getUser } from '../utils'
 
 export function userGetAvatar(this: ModuleUser) {
   return createHttpRoute(
@@ -12,14 +13,18 @@ export function userGetAvatar(this: ModuleUser) {
       parseParameters: createSchema({
         username: assertStringNotEmpty,
       }),
+      parseQuery: createSchema({
+        download: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
+      }),
     },
-    async({ event, parameters }) => {
+    async({ event, parameters, query }) => {
       const storageModule = this.getModule(ModuleStorage)
       const { user } = await this.authenticate(event, { optional: true }) ?? {}
       const { username } = parameters
+      const { download } = query
 
       // --- Resolve the user to get the avatar of.
-      const userToGet = await this.resolveUser({
+      const userToGet = await getUser.call(this, {
         user,
         username,
         withProfile: true,
@@ -42,7 +47,9 @@ export function userGetAvatar(this: ModuleUser) {
       }
 
       // --- Return the avatar URL of the user.
-      return storageModule.respondWith(event, userToGet.profile!.avatar)
+      return storageModule.respondWith(event, userToGet.profile!.avatar, {
+        isAttachment: download,
+      })
     },
   )
 }

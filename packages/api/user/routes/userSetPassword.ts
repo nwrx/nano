@@ -1,6 +1,7 @@
 import type { ModuleUser } from '../index'
 import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, createSchema } from '@unshared/validation'
+import { checkPassword, createPassword, getUser } from '../utils'
 
 export function userSetPassword(this: ModuleUser) {
   return createHttpRoute(
@@ -26,19 +27,19 @@ export function userSetPassword(this: ModuleUser) {
 
       // --- Check the old password.
       if (newPassword !== newPasswordConfirm) throw this.errors.USER_PASSWORD_MISMATCH()
-      const isOldPasswordValid = await this.checkPassword(user, oldPassword)
+      const isOldPasswordValid = await checkPassword.call(this, user, oldPassword)
       if (!isOldPasswordValid) throw this.errors.USER_WRONG_PASSWORD()
 
       // --- Expire the old password.
       const { User } = this.getRepositories()
-      const userToSave = await this.resolveUser({ user, username })
+      const userToSave = await getUser.call(this, { user, username })
       for (const password of userToSave.passwords!) {
         if (password.expiredAt) continue
         password.expiredAt = new Date()
       }
 
       // --- Append the new password to the user's password history.
-      const newPasswordEntity = await this.createPassword(newPassword)
+      const newPasswordEntity = await createPassword.call(this, newPassword)
       userToSave.passwords!.push(newPasswordEntity)
 
       // --- Save the password entities.

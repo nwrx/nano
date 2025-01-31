@@ -1,7 +1,9 @@
 import type { ModuleUser } from '../index'
 import { createHttpRoute } from '@unserved/server'
 import { assert, createSchema } from '@unshared/validation'
+import { setResponseStatus } from 'h3'
 import { ModuleStorage } from '../../storage'
+import { getUser } from '../utils'
 
 const ACCEPTED_IMAGE_TYPES = new Set([
   'image/png',
@@ -17,34 +19,45 @@ export function userSetAvatar(this: ModuleUser) {
         username: assert.stringNotEmpty,
       }),
       parseFormData: createSchema({
-        avatar: assert.instance(File),
+        file: assert.instance(File),
       }),
     },
     async({ event, parameters, formData }): Promise<void> => {
       const moduleStorage = this.getModule(ModuleStorage)
       const { user } = await this.authenticate(event)
+      const { username } = parameters
+      const { file } = formData
 
       // --- Check if the user is allowed to upload an avatar.
-      const { username } = parameters
       if (user.username !== username && !user.isSuperAdministrator)
         throw this.errors.USER_NOT_ALLOWED()
 
       // --- Assert the file is an image.
-      const file = formData.avatar
       const isImage = ACCEPTED_IMAGE_TYPES.has(file.type)
       if (!isImage) throw this.errors.USER_AVATAR_NOT_IMAGE()
 
-      // --- Create an abort signal to cancel the upload.
+      // --- Create an abort signal to cancel the upload when the request is aborted.
       const abortController = new AbortController()
       const abortSignal = abortController.signal
       event.node.req.on('aborted', () => abortController.abort())
 
-      // // --- Find the user and upload the avatar.
+      // --- Find the user and upload the avatar.
       const { User } = this.getRepositories()
-      const userToUpdate = await this.resolveUser({ user, username, withProfile: true })
+      const userToUpdate = await getUser.call(this, { user, username, withProfile: true })
       if (!userToUpdate.profile) throw new Error('Profile not found.')
-      userToUpdate.profile.avatar = await moduleStorage.upload(file, { abortSignal })
+      userToUpdate.profile.avatar = await moduleStorage.upload({
+        data: file,
+        pool: 'default',
+        name: `avatar-${userToUpdate.username}`,
+        type: file.type,
+        size: file.size,
+        origin: `user:${userToUpdate.id}`,
+        abortSignal,
+      })
+
+      // --- Save the user with the new avatar.
       await User.save(userToUpdate)
+      setResponseStatus(event, 201)
     },
   )
 }

@@ -1,6 +1,7 @@
 import type { ModuleUser } from '../index'
 import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, createSchema } from '@unshared/validation'
+import { checkPassword, createSession, setSessionCookie } from '../utils'
 
 export function userSigninWithPassword(this: ModuleUser) {
   return createHttpRoute(
@@ -27,16 +28,16 @@ export function userSigninWithPassword(this: ModuleUser) {
       if (user.verifiedAt === null) throw this.errors.USER_NOT_VERIFIED()
 
       // --- Find and check the user's password.
-      const isPasswordCorrect = await this.checkPassword(user, password)
+      const isPasswordCorrect = await checkPassword.call(this, user, password)
       if (!isPasswordCorrect) throw this.errors.USER_BAD_CREDENTIALS()
 
       // --- Create a session for the user.
       const { UserSession } = this.getRepositories()
-      const session = this.createSession(event, { user })
+      const session = createSession.call(this, event, { user })
       await UserSession.save(session)
 
       // --- Set the response status, content type, and user session cookie.
-      this.setSessionCookie(event, session)
+      setSessionCookie.call(this, event, session)
     },
   )
 }

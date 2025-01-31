@@ -1,5 +1,8 @@
 import { ModuleBase } from '@unserved/server'
 import { randomBytes } from 'node:crypto'
+import { ModuleFlow } from '../flow'
+import { ModuleProject } from '../project'
+import { ModuleStorage } from '../storage'
 import { ModuleWorkspace } from '../workspace'
 import * as ENTITIES from './entities'
 import * as ROUTES from './routes'
@@ -75,7 +78,12 @@ export class ModuleUser extends ModuleBase implements ModuleUserOptions {
   errors = UTILS.ERRORS
   routes = ROUTES
   entities = ENTITIES
-  dependencies = [ModuleWorkspace]
+  dependencies = [
+    ModuleStorage,
+    ModuleWorkspace,
+    ModuleProject,
+    ModuleFlow,
+  ]
 
   constructor(options: ModuleUserOptions = {}) {
     super()
@@ -96,12 +104,6 @@ export class ModuleUser extends ModuleBase implements ModuleUserOptions {
   userRecoveryDuration = 1000 * 60 * 30
 
   // --- Methods.
+  getUser = UTILS.getUser.bind(this)
   authenticate = UTILS.authenticate.bind(this) as typeof UTILS.authenticate
-  createUser = UTILS.createUser.bind(this)
-  createPassword = UTILS.createPassword.bind(this)
-  createSession = UTILS.createSession.bind(this)
-  resolveUser = UTILS.resolveUser.bind(this)
-  checkPassword = UTILS.checkPassword.bind(this)
-  setSessionCookie = UTILS.setSessionCookie.bind(this)
-  getEventInformation = UTILS.getEventInformation.bind(this)
 }

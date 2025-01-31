@@ -2,6 +2,7 @@ import type { ModuleUser } from '../index'
 import { createHttpRoute } from '@unserved/server'
 import { assertStringEmail, assertStringNotEmpty, createSchema } from '@unshared/validation'
 import { ModuleWorkspace } from '../../workspace'
+import { createSession, createUser, setSessionCookie } from '../utils'
 
 export function userSignupWithPassword(this: ModuleUser) {
   return createHttpRoute(
@@ -27,8 +28,8 @@ export function userSignupWithPassword(this: ModuleUser) {
 
       // --- Create the user and session.
       if (password !== passwordConfirm) throw this.errors.USER_PASSWORD_MISMATCH()
-      const { user, workspace } = await this.createUser({ email, username, password })
-      const session = this.createSession(event, { user })
+      const { user, workspace } = await createUser.call(this, { email, username, password })
+      const session = createSession.call(this, event, { user })
 
       // --- Save all entities in a transaction.
       await this.withTransaction(async() => {
@@ -38,7 +39,7 @@ export function userSignupWithPassword(this: ModuleUser) {
       })
 
       // --- Send the token to the user in a cookie.
-      this.setSessionCookie(event, session)
+      setSessionCookie.call(this, event, session)
     },
   )
 }

@@ -12,7 +12,11 @@ export function userSignout(this: ModuleUser) {
       const session = await this.authenticate(event)
       await UserSession.softRemove(session)
       setResponseStatus(event, 204)
-      deleteCookie(event, this.userSessionCookieName)
+      deleteCookie(event, this.userSessionCookieName, {
+        httpOnly: true,
+        sameSite: 'strict',
+        secure: true,
+      })
     },
   )
 }

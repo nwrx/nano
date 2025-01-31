@@ -1,6 +1,7 @@
 import type { ModuleUser } from '../index'
 import { createHttpRoute } from '@unserved/server'
 import { assertString, assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
+import { getUser } from '../utils'
 
 export function userSetProfile(this: ModuleUser) {
   return createHttpRoute(
@@ -25,7 +26,7 @@ export function userSetProfile(this: ModuleUser) {
         throw this.errors.USER_NOT_ALLOWED()
 
       // --- Find the user by the ID.
-      const userToUpdate = await this.resolveUser({ user, username, withProfile: true })
+      const userToUpdate = await getUser.call(this, { user, username, withProfile: true })
       if (body.displayName !== undefined) userToUpdate.profile!.displayName = body.displayName
       if (body.biography !== undefined) userToUpdate.profile!.biography = body.biography
       if (body.company !== undefined) userToUpdate.profile!.company = body.company

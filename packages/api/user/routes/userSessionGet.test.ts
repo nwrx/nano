@@ -1,81 +1,80 @@
-/* eslint-disable sonarjs/no-hardcoded-ip */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import type { Context } from '../../__fixtures__'
-import { createContext } from '../../__fixtures__'
+import { EXP_UUID } from '@unshared/validation'
+import { createTestContext } from '../../__fixtures__'
 
-describe.concurrent<Context>('userSessionGet', () => {
+describe.concurrent('userSessionGet', () => {
   beforeEach<Context>(async(context) => {
-    context.ctx = await createContext()
-    await context.ctx.createServer()
+    await createTestContext(context)
+    await context.application.createTestServer()
   })
 
   afterEach<Context>(async(context) => {
-    await context.ctx.destroy()
+    await context.application.destroy()
   })
 
   describe<Context>('with authenticated user', (it) => {
-    it('should return the username of the authenticated user', async({ expect, ctx }) => {
-      const { headers } = await ctx.createUser()
-      const response = await ctx.fetch('/api/session', { method: 'GET', headers })
+    it('should return the username of the authenticated user', async({ createUser, application }) => {
+      const { headers } = await createUser()
+      const response = await application.fetch('/api/session', { method: 'GET', headers })
       const body = await response.json() as Record<string, string>
       expect(response.status).toBe(200)
       expect(response.headers.get('Content-Type')).toBe('application/json')
       expect(body).toStrictEqual({
-        avatarUrl: '/api/users/jdoe/avatar',
-        displayName: 'jdoe',
-        email: 'jdoe@acme.com',
+        id: expect.stringMatching(EXP_UUID),
         username: 'jdoe',
+        email: 'jdoe@acme.com',
+        displayName: 'jdoe',
+        avatarUrl: '/api/users/jdoe/avatar',
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+
+        biography: '',
+        company: '',
+        socials: [],
+        website: '',
       })
     })
+  })
 
-    it('should return empty object if the user is not authenticated', async({ expect, ctx }) => {
-      const response = await ctx.fetch('/api/session', { method: 'GET' })
-      const body = await response.json() as Record<string, string>
-      expect(response.status).toBe(200)
-      expect(response.headers.get('Content-Type')).toBe('application/json')
-      expect(body).toStrictEqual({})
+  describe<Context>('with unauthenticated user', (it) => {
+    it('should return empty object if the user is not authenticated', async({ application }) => {
+      const response = await application.fetch('/api/session', { method: 'GET' })
+      expect(response).toMatchObject({ status: 204, statusText: 'No Content' })
     })
   })
 
   describe<Context>('with invalid user session', (it) => {
-    it('should return an error if the session token is invalid', async({ expect, ctx }) => {
-      const headers = { Cookie: `${ctx.ModuleUser.userSessionCookieName}=000000` }
-      const response = await ctx.fetch('/api/session', { method: 'GET', headers })
-      const body = await response.json() as Record<string, string>
-      expect(response.status).toBe(401)
-      expect(response.headers.get('Content-Type')).toBe('application/json')
-      expect(body).toMatchObject({ data: { name: 'E_USER_SESSION_NOT_FOUND' } })
-    })
-
-    it('should return an error if the session is expired', async({ expect, ctx }) => {
-      const { session, headers } = await ctx.createUser()
-      const { UserSession } = ctx.ModuleUser.getRepositories()
+    it('should return an error if the session is invalid', async({ createUser, moduleUser, application }) => {
+      const { session, headers } = await createUser()
+      const { UserSession } = moduleUser.getRepositories()
       session.expiresAt = new Date(0)
       await UserSession.save(session)
-      const response = await ctx.fetch('/api/session', { method: 'GET', headers })
+      const response = await application.fetch('/api/session', { method: 'GET', headers })
       const body = await response.json() as Record<string, string>
       expect(response.status).toBe(401)
       expect(response.headers.get('Content-Type')).toBe('application/json')
       expect(body).toMatchObject({ data: { name: 'E_USER_SESSION_EXPIRED' } })
     })
 
-    it('should return an error if the session address is invalid', async({ expect, ctx }) => {
-      const { session, headers } = await ctx.createUser()
-      const { UserSession } = ctx.ModuleUser.getRepositories()
-      session.address = '10.10.10.10'
+    it('should return an error if the session address is not matching', async({ createUser, moduleUser, application }) => {
+      const { session, headers } = await createUser()
+      const { UserSession } = moduleUser.getRepositories()
+      session.address = '0.0.0.0'
       await UserSession.save(session)
-      const response = await ctx.fetch('/api/session', { method: 'GET', headers })
+      const response = await application.fetch('/api/session', { method: 'GET', headers })
       const body = await response.json() as Record<string, string>
       expect(response.status).toBe(401)
       expect(response.headers.get('Content-Type')).toBe('application/json')
       expect(body).toMatchObject({ data: { name: 'E_USER_SESSION_NOT_FOUND' } })
     })
 
-    it('should return an error if the session user agent is invalid', async({ expect, ctx }) => {
-      const { session, headers } = await ctx.createUser()
-      const { UserSession } = ctx.ModuleUser.getRepositories()
-      session.userAgent = 'Mozilla/5.0'
+    it('should return an error if the session user agent is not matching', async({ createUser, moduleUser, application }) => {
+      const { session, headers } = await createUser()
+      const { UserSession } = moduleUser.getRepositories()
+      session.userAgent = 'Not-Mozilla/5.0'
       await UserSession.save(session)
-      const response = await ctx.fetch('/api/session', { method: 'GET', headers })
+      const response = await application.fetch('/api/session', { method: 'GET', headers })
       const body = await response.json() as Record<string, string>
       expect(response.status).toBe(401)
       expect(response.headers.get('Content-Type')).toBe('application/json')

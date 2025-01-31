@@ -2,6 +2,7 @@ import type { ModuleUser } from '../index'
 import { createHttpRoute } from '@unserved/server'
 import { assertStringEmail, createSchema } from '@unshared/validation'
 import { createCipheriv, createHash } from 'node:crypto'
+import { getUser } from '../utils'
 
 export function userResetPassword(this: ModuleUser) {
   return createHttpRoute(
@@ -17,7 +18,7 @@ export function userResetPassword(this: ModuleUser) {
 
       // --- Create a recovery request for the user.
       const { UserRecovery } = this.getRepositories()
-      const user = await this.resolveUser({ username })
+      const user = await getUser.call(this, { username })
       const expiredAt = new Date(Date.now() + this.userRecoveryDuration)
       const request = UserRecovery.create({ user, expiredAt })
 

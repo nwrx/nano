@@ -3,6 +3,7 @@ import type { ModuleUser } from '../index'
 import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, createSchema, EXP_UUID } from '@unshared/validation'
 import { createDecipheriv, createHash } from 'node:crypto'
+import { createPassword, createSession, setSessionCookie } from '../utils'
 
 export function userRecover(this: ModuleUser) {
   return createHttpRoute(
@@ -48,8 +49,8 @@ export function userRecover(this: ModuleUser) {
       recovery.consumedAt = new Date()
 
       // --- Set the new password for the user.
-      const password = await this.createPassword(newPassword, { user: recovery.user })
-      const session = this.createSession(event, { user: recovery.user })
+      const password = await createPassword.call(this, newPassword, { user: recovery.user })
+      const session = createSession.call(this, event, { user: recovery.user })
 
       const { UserPassword, UserSession } = this.getRepositories()
       await this.withTransaction(async() => {
@@ -59,7 +60,7 @@ export function userRecover(this: ModuleUser) {
       })
 
       // --- Set the response status, content type, and user session cookie.
-      this.setSessionCookie(event, session)
+      setSessionCookie.call(this, event, session)
     },
   )
 }
