@@ -1,6 +1,6 @@
 # Maestrau - SDK
 
-The Maestrau SDK is a collection of utilities and tools that helps developers integrate Maestrau chains within their applications. It is designed to be a lightweight and easy-to-use and type-safe library that wraps API calls to a Maestrau instance with a simple interface.
+The Maestrau SDK is a collection of utilities and tools that helps developers integrate Maestrau workflows within their applications. It is designed to be a lightweight and easy-to-use and type-safe library that wraps API calls to a Maestrau instance with a simple interface.
 
 ## Installation
 
@@ -22,8 +22,8 @@ const maestrau = new Maestrau('https://app.maestrau.com', {
   apiKey: 'YOUR_API_KEY',
 });
 
-// List all chains available on the Maestrau instance.
-const chains = await maestrau.getChains(); // Returns a list of Chain objects.
+// List all workflows available on the Maestrau instance.
+const workflows = await maestrau.getFlows(); // Returns a list of Chain objects.
 
 // Call a chain with a specific input.
 const result = await maestrau.callChain('summarize-email', { data: 'value' }); // Returns the result of the chain call.
