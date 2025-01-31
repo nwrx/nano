@@ -1,10 +1,10 @@
 import type { OpenAPIV3 } from 'openapi-types'
-import type { InputOption } from '../utils'
+import type { SchemaOption } from '../utils'
 import type { Thread } from './createThread'
 import { getNodeData } from './getNodeData'
 import { getNodeInputSocket } from './getNodeInputSocket'
 
-export async function getNodeInputOptions(thread: Thread, id: string, name: string, query?: string): Promise<InputOption[]> {
+export async function getNodeInputOptions(thread: Thread, id: string, name: string, query?: string): Promise<SchemaOption[]> {
   const socket = await getNodeInputSocket(thread, id, name)
 
   // --- If `x-options` is provided, use it as the options.

@@ -1,4 +1,5 @@
-import type { Node, NodeState, Thread } from '../thread'
+import type { NodeState, Thread } from '../thread'
+import { getNode } from '../thread/getNode'
 
 export interface EventMetadata {
 
@@ -19,10 +20,11 @@ export interface EventMetadata {
  * Creates a metadata object for a thread event.
  *
  * @param thread The thread to create the metadata for.
- * @param node The node instance to create the metadata for.
+ * @param nodeId The node instance to create the metadata for.
  * @returns The metadata object for the thread event.
  */
-export function createEventMetadata(thread: Thread, node?: Node): EventMetadata {
+export function createEventMetadata(thread: Thread, nodeId?: string): EventMetadata {
+  const node = nodeId ? getNode(thread, nodeId) : undefined
   return {
     delta: thread.startedAt > 0 ? Date.now() - thread.startedAt : 0,
     timestamp: new Date().toISOString(),

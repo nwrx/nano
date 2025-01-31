@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/todo-tag */
 import type { Link } from './addLink'
 import type { Thread } from './createThread'
 import { ERRORS as E, isLink, parseLink } from '../utils'
@@ -29,7 +30,7 @@ export function getLinks(thread: Thread): Link[] {
         }
       }
 
-      // --- If the value is a map, iterate over each value and add the links.
+      // --- If the value is an object, iterate over each value and add the links.
       else if (typeof value === 'object' && value !== null && !isLink(value)) {
         for (const targetPath in value) {
           const x = (value as Record<string, unknown>)[targetPath]
@@ -46,6 +47,7 @@ export function getLinks(thread: Thread): Link[] {
   }
 
   // --- Assert that each link is valid.
+  // TODO: Move this logic to the `checker` scope.
   for (const link of links) {
     if (!thread.nodes.has(link.sourceId))
       throw E.NODE_LINK_SOURCE_NOT_FOUND(link.targetId, link.targetName, link.sourceId)

@@ -11,6 +11,13 @@ describe('isNodeReadyToStart', () => {
     },
   })
 
+  it('should return true if node has no incoming links', () => {
+    const thread = createThread()
+    const targetId = addNode(thread, 'target')
+    const result = isNodeReadyToStart(thread, targetId)
+    expect(result).toBe(true)
+  })
+
   it('should return true if all incoming links points to a node that is done', async() => {
     const thread = createThread()
     const sourceId = addNode(thread, 'source', { component })
@@ -21,7 +28,7 @@ describe('isNodeReadyToStart', () => {
     expect(result).toBe(true)
   })
 
-  it('should return false if any incoming link points to a node that is not done', async() => {
+  it('should return false if any of the incoming link points to a node that is not done', async() => {
     const thread = createThread()
     const sourceId = addNode(thread, 'source', { component })
     const targetId = addNode(thread, 'target', { component })
@@ -29,12 +36,5 @@ describe('isNodeReadyToStart', () => {
     await addLink(thread, { sourceId, sourceName: 'output', targetId, targetName: 'input' })
     const result = isNodeReadyToStart(thread, targetId)
     expect(result).toBe(false)
-  })
-
-  it('should return true if there are no incoming links', () => {
-    const thread = createThread()
-    const targetId = addNode(thread, 'target')
-    const result = isNodeReadyToStart(thread, targetId)
-    expect(result).toBe(true)
   })
 })

@@ -40,35 +40,52 @@ describe('startNode', () => {
     it('should call the process function with the resolved data', async() => {
       const component = createComponent()
       const thread = createThread()
-      const id = addNode(thread, 'core/example', {
+      const nodeId = addNode(thread, 'core/example', {
         input: { name: 'World' },
         component,
       })
-      await startNode(thread, id)
+      await startNode(thread, nodeId)
       expect(component.process).toHaveBeenCalledOnce()
       expect(component.process).toHaveBeenCalledWith({
         data: { name: 'World' },
-        abortSignal: expect.any(AbortSignal),
-        notifyAction: expect.any(Function),
-        askQuestion: expect.any(Function),
-        askConfirmation: expect.any(Function),
+        thread,
+        nodeId,
       })
     })
 
     it('should override the data with the data argument', async() => {
       const component = createComponent()
       const thread = createThread()
-      const id = addNode(thread, 'core/example', {
+      const nodeId = addNode(thread, 'core/example', {
         input: { name: 'World' },
         component,
       })
-      await startNode(thread, id, { name: 'Universe' })
+      await startNode(thread, nodeId, { name: 'Universe' })
       expect(component.process).toHaveBeenCalledWith({
         data: { name: 'Universe' },
-        abortSignal: expect.any(AbortSignal),
-        notifyAction: expect.any(Function),
-        askQuestion: expect.any(Function),
-        askConfirmation: expect.any(Function),
+        thread,
+        nodeId,
+      })
+    })
+
+    it('should not expose the "thread" and "nodeId" when the component is untrusted', async() => {
+      const component = createComponent()
+      component.isTrusted = false
+      component.process = ({ data, thread, nodeId }) => ({
+        hasThread: thread,
+        hasNodeId: nodeId,
+        result: `Hello, ${data.name}!`,
+      })
+      const thread = createThread()
+      const nodeId = addNode(thread, 'core/example', {
+        input: { name: 'World' },
+        component,
+      })
+      const result = await startNode(thread, nodeId)
+      expect(result).toStrictEqual({
+        hasThread: undefined,
+        hasNodeId: undefined,
+        result: 'Hello, World!',
       })
     })
   })
@@ -86,6 +103,7 @@ describe('startNode', () => {
     it('should call the process function in the sandbox', async() => {
       const component = createComponent()
       component.isTrusted = false
+      // @ts-expect-error: override the process function
       component.process = () => {
         const error = new Error('foo')
         return { stack: error.stack }
@@ -100,6 +118,7 @@ describe('startNode', () => {
       const component = createComponent()
       component.isTrusted = false
       const value = 'Hello, World!'
+      // @ts-expect-error: override the process function
       component.process = () => ({ value })
       const thread = createThread()
       const id = addNode(thread, 'example', { input: { name: 'World' }, component })

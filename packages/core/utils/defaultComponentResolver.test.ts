@@ -1,4 +1,4 @@
-import * as COMPONENTS from '../components'
+import { components } from '../components'
 import { DEFAULT_COMPONENT_RESOLVER } from './defaultComponentResolver'
 
 describe('DEFAULT_COMPONENT_RESOLVER', () => {
@@ -32,13 +32,13 @@ describe('DEFAULT_COMPONENT_RESOLVER', () => {
     it('should return the "input" component', () => {
       const specifier = { collection: 'core', registry: 'default', tag: 'latest', name: 'input' }
       const result = DEFAULT_COMPONENT_RESOLVER(specifier)
-      expect(result).toBe(COMPONENTS.input)
+      expect(result).toBe(components.input)
     })
 
     it('should return the "output" component', () => {
       const specifier = { collection: 'core', registry: 'default', tag: 'latest', name: 'output' }
       const result = DEFAULT_COMPONENT_RESOLVER(specifier)
-      expect(result).toBe(COMPONENTS.output)
+      expect(result).toBe(components.output)
     })
   })
 })
