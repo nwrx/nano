@@ -47,7 +47,7 @@
     "@nwrx/core": "workspace:*",
     "@nwrx/module-core": "workspace:*",
     "@types/json-schema": "7.0.15",
-    "@unshared/string": "0.3.1",
+    "@unshared/string": "0.3.2",
     "googleapis": "144.0.0"
   }
 }
