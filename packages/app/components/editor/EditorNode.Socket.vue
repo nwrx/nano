@@ -73,7 +73,7 @@ const isLinkeable = computed(() =>
     <!-- Variable & secret input -->
     <EditorNodeSocketVariable
       v-else-if="socket.control === 'variable'"
-      v-model="(model as string)"
+      v-model="model"
       :name="socket.name"
       :secrets="secrets"
       :variables="variables"
@@ -83,7 +83,7 @@ const isLinkeable = computed(() =>
     <!-- Text input -->
     <EditorNodeSocketText
       v-else-if="socket.control === 'text'"
-      v-model="(model as string)"
+      v-model="model"
       :name="socket.name"
       :default-value="socket.defaultValue"
     />
@@ -110,7 +110,7 @@ const isLinkeable = computed(() =>
     <!-- Textarea input -->
     <EditorNodeSocketTextarea
       v-else-if="socket.control === 'textarea'"
-      v-model="(model as string)"
+      v-model="model"
       :name="socket.name"
       :description="socket.description"
       :default-value="socket.defaultValue"
@@ -119,7 +119,7 @@ const isLinkeable = computed(() =>
     <!-- Slider -->
     <EditorNodeSocketSlider
       v-else-if="socket.control === 'slider'"
-      v-model="(model as number)"
+      v-model="model"
       :name="socket.name"
       :min="socket.sliderMin"
       :max="socket.sliderMax"
