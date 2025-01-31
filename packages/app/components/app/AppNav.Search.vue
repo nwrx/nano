@@ -1,15 +1,27 @@
+<script lang="ts" setup>
+const isFocused = ref(false)
+
+function handleGroupClick(event: MouseEvent) {
+  const element = event.target as HTMLElement
+  const input = element.querySelector('input')
+  if (input) input.focus()
+}
+</script>
+
 <template>
-  <!-- Search bar with icon -->
   <div
     class="
-    flex items-center rd h-8 px-sm space-x-sm
-    bg-layout border-1 border-layout hover:border-layout-subtle
-    transition group
-  ">
+      flex items-center transition py-xs group cursor-text
+      input input-layout hover:input-layout-hover
+    "
+    :class="{
+      'input-layout-focus': isFocused,
+    }"
+    @click="(event) => handleGroupClick(event)">
 
     <!-- Search icon -->
     <BaseIcon
-      class="w-6 h-6 opacity-80"
+      class="size-6 mr-4 pointer-events-none"
       icon="i-carbon:search"
     />
 
@@ -17,20 +29,17 @@
     <input
       type="text"
       placeholder="Search..."
-      class="
-        w-full h-8 px-2 outline-none
-        bg-transparent text-white
-      "
+      :class="{ 'input-focus': isFocused }"
+      class="w-full outline-none bg-transparent"
+      @focus="() => isFocused = true"
+      @blur="() => isFocused = false"
     />
 
     <!-- Keybind -->
     <Keybind
-      class="
-        opacity-0 group-hover:opacity-100
-        transition-all duration-200
-      "
       label="Ctrl + K"
       icon="i-carbon:keyboard"
+      class="opacity-0 group-hover:opacity-100 transition pointer-events-none"
     />
   </div>
 </template>

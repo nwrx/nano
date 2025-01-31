@@ -87,14 +87,10 @@ const locale = useVModel(props, 'locale', emit, {
       />
     </nav>
 
-    <!-- Theme switch -->
-    <div>
-      <BaseIcon
-        :icon="theme === 'dark' ? 'i-carbon:moon' : 'i-carbon:sunny'"
-        class="cursor-pointer text-subtle hover:text-app transition"
-        @click="() => theme = theme === 'dark' ? 'light' : 'dark'"
-      />
-    </div>
+    <AppNavFab
+      :icon="theme === 'dark' ? 'i-carbon:moon' : 'i-carbon:sunny'"
+      @click="() => theme = theme === 'dark' ? 'light' : 'dark'"
+    />
 
     <!-- Language -->
     <AppNavLanguage

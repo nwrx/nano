@@ -12,10 +12,10 @@ defineProps<{
     eager
     :to="to"
     :label="label"
-    class="flex items-center text-subtle hover:text-app transition">
+    class="flex items-center text-layout-subtle hover:text-layout transition">
 
     <!-- Label -->
-    <span>{{ label }}</span>
+    <span class="px-md text-sm">{{ label }}</span>
 
   </BaseButton>
 </template>

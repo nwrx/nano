@@ -11,7 +11,6 @@ const emit = defineEmits<{
 }>()
 
 // --- Value and icon for the current locale.
-const isOpen = ref(false)
 const model = useVModel(props, 'modelValue', emit, { passive: true })
 const icon = computed(() => props.locales?.find(language => language.code === model.value)?.icon)
 
@@ -22,10 +21,12 @@ const locales = computed(() => props.locales
 </script>
 
 <template>
-  <ContextMenu v-model="isOpen" x="right" y="below" @mouseenter="() => isOpen = true">
-    <BaseButton class="hover:bg-app-foreground transition rounded">
-      <BaseIcon :icon="icon" />
-    </BaseButton>
+  <ContextMenu x="right" y="below">
+
+    <!-- Language Button -->
+    <template #default="{ open }">
+      <AppNavFab :icon="icon" @mouseenter="() => open()"/>
+    </template>
 
     <!-- Menu -->
     <template #menu="{ close }">
