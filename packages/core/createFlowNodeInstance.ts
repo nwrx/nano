@@ -57,7 +57,7 @@ export interface FlowNodeInstanceJSON {
   id: string
   kind: string
   icon?: string
-  name: string
+  name?: string
   description?: string
   position: { x: number; y: number }
   data: Record<string, unknown>
