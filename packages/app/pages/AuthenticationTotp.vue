@@ -1,7 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
   name: 'AuthenticationTotp',
-  path: '/auth/totp',
+  path: '/login/totp',
   middleware: 'redirect-when-authenticated',
 })
 </script>
