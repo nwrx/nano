@@ -52,7 +52,7 @@ function handleGrab(event: MouseEvent) {
       <!-- Tooltip content -->
       <template #tooltip>
         <div class="w-99 divide-y divide-editor">
-          <p v-if="description" v-markdown="description" class="px-md py-0 text-app markdown" />
+          <p v-if="description" v-markdown="description" class="px-md pt-md text-app markdown" />
           <p class="px-md py-sm font-medium text-app">
             (node): {{ kind }}
           </p>
