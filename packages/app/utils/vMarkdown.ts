@@ -1,5 +1,6 @@
 import type { Directive } from 'vue'
-import Markdown from 'markdown-it'
+import DOMPurify from 'dompurify'
+import { marked } from 'marked'
 
 /**
  * The `v-markdown` directive is used to render markdown content in the UI. It takes a string
@@ -14,8 +15,9 @@ import Markdown from 'markdown-it'
  */
 export const vMarkdown: Directive<HTMLElement, string | undefined> = {
   mounted(element, binding) {
-    const markdown = new Markdown()
-    const html = binding.value ? markdown.render(binding.value) : ''
-    element.setHTMLUnsafe(html)
+    if (!binding.value) return
+    const html = marked(binding.value, { gfm: true, breaks: true }) as string
+    const htmlSafe= DOMPurify.sanitize(html)
+    element.setHTMLUnsafe(htmlSafe)
   },
 }
