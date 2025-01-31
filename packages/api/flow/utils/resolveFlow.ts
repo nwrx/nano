@@ -1,65 +1,35 @@
-import type { H3Event } from 'h3'
-import type { FindOptionsRelations } from 'typeorm'
-import type { WorkspaceProjectPermission } from '@nwrx/api'
-import type { Flow } from '../entities'
+import type { Loose } from '@unshared/types'
 import type { ModuleFlow } from '../index'
-import { ModuleWorkspace } from '@nwrx/api'
+import { assertStringNotEmpty, assertStringUuid, createSchema } from '@unshared/validation'
 
-export interface ResolveFlowOptions {
+/** The parser fuction for the {@linkcode resolveProject} function. */
+const RESOLVE_FLOW_OPTIONS = createSchema({
 
-  /**
-   * The name of the flow to find.
-   *
-   * @example 'my-flow'
-   */
-  flowName: string
+  /** The `name` of the `WorkspaceProject` to find. */
+  name: assertStringNotEmpty,
 
-  /**
-   * The username of the owner of the project. This is used to find the project
-   * attached to the owner with the given slug.
-   *
-   * @example 'john-doe'
-   */
-  projectOwner: string
+  /** The `Project` to find the flow in. */
+  project: createSchema({ id: assertStringUuid, name: assertStringNotEmpty }),
 
-  /**
-   * The name of the project to find. This is used to find the project with the
-   * given slug or ID.
-   *
-   * @example 'resume-article'
-   */
-  projectName: string
+  /** The `Workspace` to find the project in. */
+  workspace: createSchema({ id: assertStringUuid, name: assertStringNotEmpty }),
+})
 
-  /**
-   * The relations to include in the resolved `Flow`. If provided, the
-   * specified relations will be fetched and included in the resolved project.
-   *
-   * @default true
-   */
-  relations?: FindOptionsRelations<Flow> | true
+/** The options to resolve the project with. */
+export type ResolveFlowOptions = Loose<ReturnType<typeof RESOLVE_FLOW_OPTIONS>>
 
-  /**
-   * A map of permissions required to access the project.
-   *
-   * @default ['Owner']
-   */
-  permissions?: WorkspaceProjectPermission[]
-}
+/**
+ * Resolves a flow by its name, project, and workspace.
+ *
+ * @param options The options to resolve the flow with.
+ * @returns The resolved flow.
+ */
+export async function resolveFlow(this: ModuleFlow, options: ResolveFlowOptions) {
+  const { name, project, workspace } = RESOLVE_FLOW_OPTIONS(options)
 
-export async function resolveFlow(this: ModuleFlow, event: H3Event, options: ResolveFlowOptions) {
-  const { flowName, projectOwner, projectName, relations = true, permissions } = options
-
-  // --- Check if the user has the right permissions.
-  const projectModule = this.getModule(ModuleWorkspace)
-  const project = await projectModule.resolveProject(event, {
-    owner: projectOwner,
-    name: projectName,
-    relations: { flows: relations },
-    permission: permissions,
-  })
-
-  // --- Search for the flow in the project.
-  const flow = project.flows!.find(flow => flow.name === flowName)
-  if (!flow) throw this.errors.FLOW_NOT_FOUND(flowName)
-  return flow
+  // --- Find the project in the workspace.
+  const { Flow } = this.getRepositories()
+  const result = await Flow.findOneBy({ name, project })
+  if (!result) throw this.errors.FLOW_NOT_FOUND(workspace.name, project.name, name)
+  return result
 }

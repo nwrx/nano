@@ -1,32 +1,33 @@
-import { createError } from 'h3'
+import { createError } from '@unserved/server'
 
 export const ERRORS = {
 
   // Flow
-  FLOW_NOT_FOUND: (name: string) => createError({
+  FLOW_NOT_FOUND: (workspace: string, project: string, name: string) => createError({
     name: 'E_FLOW_NOT_FOUND',
-    message: `Chain "${name}" not found`,
-    statusText: 'Not Found',
     statusCode: 404,
+    statusMessage: 'Not Found',
+    message: `Flow "${workspace}/${project}/${name}" was not found in the database or the user does not have access to it`,
+    data: { workspace, project, name },
   }),
-  FLOW_ALREADY_EXISTS: (name: string) => createError({
-    name: 'E_FLOW_ALREADY_EXISTS',
-    message: `Flow "${name}" already exists`,
-    statusText: 'Conflict',
+  FLOW_NAME_TAKEN: (workspace: string, project: string, name: string) => createError({
+    name: 'E_FLOW_NAME_TAKEN',
     statusCode: 409,
+    statusMessage: 'Conflict',
+    message: `Flow "${name}" already exists in the "${workspace}/${project}" project`,
   }),
   FLOW_IMPORT_FAILED: (response: Response) => createError({
     name: 'E_FLOW_IMPORT_FAILED',
     message: response.statusText,
-    statusText: response.statusText,
+    statusMessage: response.statusText,
     statusCode: response.status,
   }),
 
   // Module
   FLOW_MODULE_NOT_FOUND: (idOrSlug: string) => createError({
     name: 'E_FLOW_MODULE_NOT_FOUND',
-    message: `Module "${idOrSlug}" was not found in the database`,
-    statusText: 'Not Found',
     statusCode: 404,
+    statusMessage: 'Not Found',
+    message: `Module "${idOrSlug}" was not found in the database`,
   }),
 }

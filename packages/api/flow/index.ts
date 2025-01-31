@@ -4,7 +4,7 @@ import { ModuleUser } from '../user'
 import { ModuleWorkspace } from '../workspace'
 import * as ENTITIES from './entities'
 import * as ROUTES from './routes'
-import { ERRORS, resolveFlow, resolveFlowModule, resolveFlowSession, resolveFlowSessionByPeer } from './utils'
+import * as UTILS from './utils'
 
 export * from './entities'
 export type * from './utils/createFlowSession'
@@ -35,21 +35,21 @@ export interface ModuleFlowOptions {
  * modules in the application.
  */
 export class ModuleFlow extends ModuleBase implements ModuleFlowOptions {
+  errors = UTILS.ERRORS
+  routes = ROUTES
+  entities = ENTITIES
+  dependencies = [ModuleUser, ModuleWorkspace]
+
   constructor(options: ModuleFlowOptions = {}) {
     super()
     if (options.flowSessions) this.flowSessions = options.flowSessions
     if (options.flowModuleDir) this.flowModuleDir = options.flowModuleDir
   }
 
-  errors = ERRORS
-  routes = ROUTES
-  entities = ENTITIES
-  dependencies = [ModuleUser, ModuleWorkspace]
-
   flowSessions = new Map<string, FlowSession>()
   flowModuleDir = '../.data/modules'
-  resolveFlow = resolveFlow.bind(this)
-  resolveFlowModule = resolveFlowModule.bind(this)
-  resolveFlowSession = resolveFlowSession.bind(this)
-  resolveFlowSessionByPeer = resolveFlowSessionByPeer.bind(this)
+  resolveFlow = UTILS.resolveFlow.bind(this)
+  resolveFlowModule = UTILS.resolveFlowModule.bind(this)
+  resolveFlowSession = UTILS.resolveFlowSession.bind(this)
+  resolveFlowSessionByPeer = UTILS.resolveFlowSessionByPeer.bind(this)
 }
