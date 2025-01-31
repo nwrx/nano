@@ -1,7 +1,8 @@
 <script setup lang="ts">
 const props = defineProps<{
-  modelValue: string
   name: string
+  modelValue: string
+  defaultValue?: unknown
 }>()
 
 const emit = defineEmits<{
@@ -13,9 +14,8 @@ const model = useVModel(props, 'modelValue', emit, {
   eventName: 'update:modelValue',
 })
 
-const textarea = ref<HTMLTextAreaElement>()
-
 // --- On input on the text area element, automatically resize the height.
+const textarea = ref<HTMLTextAreaElement>()
 function onTextAreaInput(event: Event) {
   const target = event.target as HTMLTextAreaElement
   target.style.height = 'auto'
@@ -32,32 +32,36 @@ onMounted(() => {
 </script>
 
 <template>
-  <textarea
-    ref="textarea"
-    v-model="model"
-    :placeholder="name"
-    autocapitalize="sentences"
-    autocomplete="off"
-    spellcheck="false"
-    wrap="hard"
-    rows="1"
-    :class="{ 'font-mono': model }"
-    class="
-      w-full text-start px-2 py-1 outline-none
-      bg-transparent  border
-      appearance-none rounded max-h-128 resize-none
-      transition-all duration-100
+  <FlowEditorPortGroup class="relative" @click="() => textarea?.focus()">
 
-      hover:bg-white
-      focus:bg-white
+    <!-- Label -->
+    <FlowEditorPortLabel
+      class="absolute self-start"
+      :label="name"
+    />
 
-      border-transparent
-      focus:border-primary-500
-
-      text-black/70
-      placeholder-black/50
-
+    <textarea
+      ref="textarea"
+      v-model="model"
+      :placeholder="typeof defaultValue === 'string' ? defaultValue : undefined"
+      autocapitalize="sentences"
+      autocomplete="off"
+      spellcheck="false"
+      wrap="hard"
+      rows="1"
+      :style="{
+        'text-indent': '5rem',
+      }"
+      :class="{
+        'font-mono': model,
+      }"
+      class="
+      w-full text-start outline-none py-1
+      bg-transparent appearance-none rounded max-h-128 resize-none
+      transition-all duration-100 text-sm
+      text-black/70 placeholder-black/50
     "
-    @input="(event) => onTextAreaInput(event)"
-  />
+      @input="(event) => onTextAreaInput(event)"
+    />
+  </FlowEditorPortGroup>
 </template>

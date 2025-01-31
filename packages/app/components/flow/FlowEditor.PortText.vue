@@ -2,12 +2,14 @@
 const props = defineProps<{
   name: string
   modelValue: string
+  defaultValue: string
 }>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
+const input = ref<HTMLInputElement>()
 const model = useVModel(props, 'modelValue', emit, {
   passive: true,
   eventName: 'update:modelValue',
@@ -15,26 +17,18 @@ const model = useVModel(props, 'modelValue', emit, {
 </script>
 
 <template>
-  <input
-    v-model="model"
-    :placeholder="name"
-    :class="{
-      'font-medium italic': model,
-    }"
-    class="
-      w-full text-start px-2 py-0.5 outline-none
-      border appearance-none rounded
-      transition-colors duration-200
+  <FlowEditorPortGroup class="cursor-text" @click="() => input?.focus()">
 
-      bg-primary-50
-      hover:bg-primary-100
-      focus:bg-primary-100
+    <!-- Label -->
+    <FlowEditorPortLabel :label="name" />
 
-      border-transparent
-      hover:border-primary-300
-      focus:border-primary-500
-
-      placeholder-black/50
-    "
-  />
+    <!-- Field -->
+    <input
+      ref="input"
+      v-model="model"
+      :placeholder="defaultValue"
+      :class="{ 'text-black/50 italic': !model }"
+      class="w-full outline-none bg-transparent text-sm"
+    />
+  </FlowEditorPortGroup>
 </template>
