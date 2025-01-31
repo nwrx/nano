@@ -1,5 +1,7 @@
 export * from './userCreate'
 export * from './userDelete'
+export * from './userDisable'
+export * from './userEnable'
 export * from './userGet'
 export * from './userGetAvatar'
 export * from './userRecover'

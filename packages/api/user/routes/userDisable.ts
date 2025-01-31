@@ -1,0 +1,33 @@
+import type { ModuleUser } from '..'
+import { createRoute } from '@unserved/server'
+import { assertStringNotEmpty, createSchema } from '@unshared/validation'
+import { setResponseStatus } from 'h3'
+
+export function userDisable(this: ModuleUser) {
+  return createRoute(
+    {
+      name: 'PATCH /api/users/:username/disable',
+      parameters: createSchema({
+        username: assertStringNotEmpty,
+      }),
+    },
+    async({ event, parameters }) => {
+      const { user } = await this.authenticate(event)
+      const { username } = parameters
+
+      // --- Only super administrators can disable users.
+      if (!user.isSuperAdministrator) throw this.errors.USER_NOT_ALLOWED()
+
+      // --- Resolve the user to disable.
+      const userToDisable = await this.resolveUser(username)
+
+      // --- Disable the user and save the changes.
+      const { User } = this.getRepositories()
+      userToDisable.disabledAt = new Date()
+      await User.save(userToDisable)
+
+      // --- Respond with a 204 status code.
+      setResponseStatus(event, 204)
+    },
+  )
+}
