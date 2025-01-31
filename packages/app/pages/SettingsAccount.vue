@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import UserSettingsDangerZone from '~/components/user/UserSettings.DangerZone.vue'
-
 definePageMeta({
   name: 'SettingsAccount',
   path: '/settings/account',
