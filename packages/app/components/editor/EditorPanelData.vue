@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { InputSocketJSON, FlowThreadNodeJSON } from '@nwrx/api'
+import type { FlowThreadNodeJSON, InputSocketJSON } from '@nwrx/api'
 
 const props = defineProps<{
   name?: string
@@ -11,6 +11,7 @@ const props = defineProps<{
   isEditable?: boolean
   isClearable?: boolean
   isNameEditable?: boolean
+  depth?: number
 }>()
 
 const emit = defineEmits<{
@@ -35,15 +36,21 @@ function toggle() {
   if (!hasDetail.value) return
   isOpen.value = !isOpen.value
 }
+
+const cellStyle = computed(() => ({
+  width: `${155 - (props.depth ?? 0) * 5}px`,
+}))
 </script>
 
 <template>
   <div
+    :class="{
+      'hover:ring-editor-active group': !depth,
+    }"
     class="
       flex flex-wrap items-stretch
-      not-first:b-t b-editor first:rd-t last:rd-b
+      not-first:b-t b-editor
       ring-1 ring-transparent relative
-      hover:ring-editor-active group
     ">
 
     <!-- Header -->
@@ -56,12 +63,14 @@ function toggle() {
       <input
         v-if="isNameEditable"
         v-model="name"
-        class="w-144.5px shrink-0 px-sm bg-transparent outline-none">
+        :style="cellStyle"
+        class="shrink-0 px-sm bg-transparent outline-none">
 
       <!-- Name -->
       <div
         v-else
-        class="text-start w-144.5px shrink-0 px-sm"
+        :style="cellStyle"
+        class="text-start shrink-0 px-sm"
         v-text="name"
       />
 
@@ -80,6 +89,9 @@ function toggle() {
         :is-clearable="isClearable"
         :class="{ 'pointer-events-none': hasDetail }"
       />
+
+      <!-- Spacer -->
+      <div class="grow" />
 
       <!-- Collapse -->
       <div class="flex items-center space-x-sm op-0 group-hover:op-100 px-sm">
@@ -119,6 +131,7 @@ function toggle() {
             :socket="socket"
             :is-editable="isEditable"
             :is-clearable="isClearable"
+            :depth="depth ? depth + 1 : 1"
           />
         </slot>
       </div>

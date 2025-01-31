@@ -2,31 +2,15 @@
 import { type FlowThreadNodeJSON } from '@nwrx/api'
 
 const props = defineProps<{
-  modelValue?: unknown
+  id?: unknown
+  name?: string
+  path?: string
   nodes?: FlowThreadNodeJSON[]
 }>()
 
-const emit = defineEmits<{
-  'update:modelValue': [value: string]
-}>()
-
-// --- Localization
 const { t } = useI18n()
-
-// --- Two-way binding
-const model = useVModel(props, 'modelValue', emit, { passive: true })
-
-// --- Extract the source node and socket from the model value.
-const source = computed(() => {
-  if (!model.value) return { key: undefined, id: undefined }
-  if (typeof model.value !== 'string') return { key: undefined, id: undefined }
-  const [id, key] = model.value.slice(6).split(':')
-  return { id, key }
-})
-
-// --- Resolve the target node and socket.
-const node = computed(() => props.nodes?.find(n => n.id === source.value.id))
-const socket = computed(() => node.value?.outputSchema?.find(s => s.key === source.value.key))
+const node = computed(() => props.nodes?.find(n => n.id === props.id))
+const socket = computed(() => node.value?.outputSchema?.find(s => s.key === props.name))
 </script>
 
 <template>
@@ -36,7 +20,7 @@ const socket = computed(() => node.value?.outputSchema?.find(s => s.key === sour
         v-if="node.id"
         class="text-white badge-sm font-mono"
         :style="{ backgroundColor: node.categoryColor }"
-        :label="node.name"
+        :label="node.label ?? node.name"
         :icon="node.icon"
         icon-load
       />

@@ -1,6 +1,7 @@
 <!-- eslint-disable vue/no-extra-parens -->
 <script setup lang="ts">
-import type { InputSocketJSON, FlowThreadNodeJSON } from '@nwrx/api'
+import type { FlowThreadNodeJSON, InputSocketJSON } from '@nwrx/api'
+import { isReferenceLink } from '@nwrx/core/utils'
 
 const props = defineProps<{
   nodes?: FlowThreadNodeJSON[]
@@ -8,6 +9,7 @@ const props = defineProps<{
   modelValue?: unknown
   isEditable?: boolean
   isClearable?: boolean
+  depth?: number
 }>()
 
 const emit = defineEmits<{
@@ -20,12 +22,14 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
 </script>
 
 <template>
-  <!-- Link -->
-  <EditorPanelDataDetailLink
-    v-if="socket?.control === 'socket'"
-    v-model="model"
-    :nodes="nodes"
-    :is-editable="isEditable"
+  <!-- Reference/Link -->
+  <EditorPanelDataDetailObject
+    v-if="isReferenceLink(model)"
+    :depth="depth"
+    :model-value="{
+      [t('linkNode')]: model.$fromNode.id,
+      [t('linkName')]: model.$fromNode.name,
+    }"
   />
 
   <!-- Text -->
@@ -35,11 +39,26 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
   />
 
   <!-- Object -->
-  <EditorPanelDataDetailObject
+  <!--
+    <EditorPanelDataDetailObject
     v-else-if="typeof model === 'object' && model !== null"
     v-model="model"
     :socket="socket"
-  />
+    />
+  -->
+
+  <!-- Object / Recrusive -->
+  <template v-else-if="typeof model === 'object' && model !== null">
+    <EditorPanelData
+      v-for="(value, key) in (model as Record<string, unknown>)"
+      :key="key"
+      :name="typeof key === 'number' ? `#${key}` : key"
+      :model-value="value"
+      :nodes="nodes"
+      :depth="depth"
+      is-nested
+    />
+  </template>
 
   <!-- No Data -->
   <div
@@ -53,7 +72,23 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
 
 <i18n lang="yaml">
 en:
-  noData: No data
+  noData: No data available
+  linkNode: Node
+  linkName: Property
 fr:
-  noData: Pas de données
+  noData: Aucune donnée disponible
+  linkNode: Noeud
+  linkName: Propriété
+de:
+  noData: Keine Daten verfügbar
+  linkNode: Knoten
+  linkName: Eigenschaft
+es:
+  noData: No hay datos disponibles
+  linkNode: Nodo
+  linkName: Propiedad
+zh:
+  noData: 没有可用数据
+  linkNode: 节点
+  linkName: 属性
 </i18n>
