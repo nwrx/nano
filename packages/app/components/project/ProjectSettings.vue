@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { t } = useI18n({ useScope: 'local' })
+const { t } = useI18n()
 </script>
 
 <template>
@@ -13,8 +13,8 @@ const { t } = useI18n({ useScope: 'local' })
     />
 
     <!-- Side menu -->
-    <AppPageContainer contained class="bg-white">
-      <div class="flex w-full h-full gap-16">
+    <div class="flex w-full h-full my-lg">
+      <div class="flex w-full h-full gap-xl">
         <AppPageNav class="h-full shrink">
           <AppPageNavGroup>
             <AppPageNavItem :label="t('nav.settings.settings')" icon="i-carbon:settings" :to="{ name: 'ProjectSettings' }" />
@@ -33,11 +33,11 @@ const { t } = useI18n({ useScope: 'local' })
         </AppPageNav>
 
         <!-- Content -->
-        <div class="w-full">
+        <AppPageContainer contained>
           <slot/>
-        </div>
+        </AppPageContainer>
       </div>
-    </AppPageContainer>
+    </div>
   </AppPage>
 </template>
 
