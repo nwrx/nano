@@ -1,8 +1,8 @@
 import type { ModuleFlow } from '..'
 import { createRoute } from '@unserved/server'
+import { parseBoolean } from '@unshared/string'
 import { assertStringNotEmpty, assertStringNumber, assertUndefined, createSchema } from '@unshared/validation'
 import { ILike } from 'typeorm'
-import { parseBoolean } from 'unshared'
 
 export function moduleSearch(this: ModuleFlow) {
   return createRoute(

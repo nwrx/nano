@@ -14,7 +14,7 @@ export function moduleImport(this: ModuleFlow) {
     },
     async({ body }) => {
       const { FlowModule } = this.entities
-      const { moduleId, moduleContent } = body
+      const { moduleId /* , moduleContent */ } = body
 
       // --- Import the module.
       const moduleImport = await import(moduleId) as { default: FlowModuleConstructor }
@@ -22,8 +22,8 @@ export function moduleImport(this: ModuleFlow) {
 
       // --- Create and save the module.
       const moduleEntity = new FlowModule()
-      moduleEntity.name = moduleInstance.label
-      moduleEntity.kind = moduleInstance.name
+      moduleEntity.name = moduleInstance.name
+      moduleEntity.kind = moduleInstance.kind
       moduleEntity.moduleId = moduleId
       moduleEntity.description = moduleInstance.description ?? ''
 

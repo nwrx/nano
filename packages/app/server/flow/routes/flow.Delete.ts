@@ -4,7 +4,7 @@ import { createRoute } from '@unserved/server'
 import { setResponseStatus } from 'h3'
 import { assertStringUuid, createParser } from 'unshared'
 
-export function formDelete(this: ModuleFlow) {
+export function flowDelete(this: ModuleFlow) {
   return createRoute(
     {
       name: 'DELETE /api/flows/:id',
