@@ -18,12 +18,11 @@ const { t } = useI18n()
 const isOpen = ref(false)
 const search = ref('')
 const searchOptions = ref<SocketListOption[]>([])
-const isLoading = ref(false)
 const input = ref<HTMLInputElement>()
 const model = useVModel(props, 'modelValue', emit, { passive: true })
 
 const options = computed(() => {
-  if (search.value.length > 0) return searchOptions.value
+  if (searchOptions.value.length > 0) return searchOptions.value
   return props.options
 })
 
@@ -44,24 +43,18 @@ const defaultValue = computed(() => {
 })
 
 // --- Resolve the list of options based on the search query.
+const isLoading = ref(false)
+const isLoadingDelayed = refDebounced(isLoading, 100)
 async function startSearch() {
   if (!props.getOptions) return
   isLoading.value = true
-  await props.getOptions(search.value)
-    .then(options => searchOptions.value = options)
-    .finally(() => isLoading.value = false)
+  try { searchOptions.value = await props.getOptions(search.value) }
+  catch { searchOptions.value = [] }
+  isLoading.value = false
 }
 
 // --- Get the options from the server if the `getOptions` function is provided.
-watch(search, startSearch)
-
-// --- Track the list position so we can auto-scale the height based on the viewport.
-const list = ref<HTMLDivElement>()
-const listBounding = useElementBounding(list)
-watch(listBounding, () => {
-  if (!list.value) return
-  list.value.style.maxHeight = `${window.innerHeight - listBounding.top.value - 16}px`
-})
+watchDebounced(search, startSearch, { debounce: 200 })
 
 function focus() {
   if (input.value) input.value.focus()
@@ -75,15 +68,22 @@ function setOption(option: SocketListOption<unknown>) {
 </script>
 
 <template>
-  <EditorNodeSocketGroup class="relative cursor-pointer" @mousedown.prevent="() => focus()">
+  <EditorNodeSocketGroup
+    class="relative cursor-pointer"
+    :class="{ '!b-editor-active': isOpen }"
+    @mousedown.prevent="() => focus()">
 
     <!-- Label -->
     <EditorNodeSocketLabel :label="name" />
 
     <!-- Current value label -->
     <p
-      class="truncate shrink-0"
-      :class="{ 'text-subtle': !model, 'italic font-light': !model && !defaultValue }"
+      v-if="!isOpen || model"
+      class="line-clamp-1"
+      :class="{
+        'text-subtle': !model,
+        'italic font-light': !model && !defaultValue,
+      }"
       v-text="currentValue?.label ?? model ?? defaultValue ?? t('none')"
     />
 
@@ -91,11 +91,16 @@ function setOption(option: SocketListOption<unknown>) {
     <input
       ref="input"
       v-model="search"
-      :class="{ 'op-0': !isOpen }"
-      class="px-sm rd bg-transparent outline-none text-subtle transition w-full"
+      :class="{ 'w-0 op-0': !isOpen }"
+      class="px-sm rd bg-transparent outline-none text-subtle transition max-w-24"
       @focus="() => isOpen = true"
       @blur="() => isOpen = false"
       @mousedown.stop>
+
+    <!-- Loading -->
+    <div :class="{ '!op-100': isLoadingDelayed }" class="ml-auto px-sm transition op-0">
+      <BaseIcon icon="i-line-md:loading-loop" class="size-4" />
+    </div>
 
     <!-- List -->
     <Transition>
@@ -103,17 +108,17 @@ function setOption(option: SocketListOption<unknown>) {
         v-if="isOpen"
         ref="list"
         class="
-            absolute left-0 w-full top-full
-            bg-editor-panel backdrop-blur-2xl
-            p-sm rounded space-y-xs rd
-            b b-editor z-10 mt-sm
-            overflow-y-auto max-h-100
-          "
+          absolute left-0 w-full top-full
+          bg-editor-panel backdrop-blur-2xl
+          p-sm rounded space-y-xs rd
+          b b-editor z-10 mt-sm
+          overflow-y-auto max-h-100
+        "
         @wheel.stop>
 
         <!-- When no options are available, show a message. -->
         <p v-if="!options || options.length === 0" class="text-xs text-subtle">
-          {{ isLoading ? t('loading') : t('empty') }}
+          {{ isLoadingDelayed ? t('loading') : t('empty') }}
         </p>
 
         <!-- Otherwise, show the list of options. -->
@@ -130,13 +135,6 @@ function setOption(option: SocketListOption<unknown>) {
         </template>
       </div>
     </Transition>
-
-    <!-- Loading -->
-    <BaseIcon
-      :class="{ '!op-100': isLoading }"
-      class="size-8"
-      icon="i-line-md:loading-loop mx-sm transition op-0"
-    />
   </EditorNodeSocketGroup>
 </template>
 
