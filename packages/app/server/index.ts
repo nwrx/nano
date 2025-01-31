@@ -1,3 +1,4 @@
+/* eslint-disable perfectionist/sort-imports */
 import * as Nwrx from '@nwrx/api'
 import { Application } from '@unserved/server'
 import Consola from 'consola'
@@ -7,6 +8,7 @@ import Consola from 'consola'
 import '../../core/index'
 import '../../module-core/index'
 import '../../module-google/index'
+import '../../module-piste-gouv-fr/index'
 
 // --- Expose the application for type inference.
 export const application = await Application.initialize([
