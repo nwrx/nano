@@ -21,11 +21,10 @@ const activeCategory = ref<FlowCategoryNodesJSON>()
         @mouseenter="() => activeCategory = category">
 
         <!-- Trigger -->
-        <BaseIcon
-          load
-          :icon="category.icon"
-          class="size-8"
-        />
+        <template v-if="category.icon">
+          <img v-if="!category.icon.endsWith('.svg')" :src="category.icon" class="size-8 rd">
+          <BaseIcon v-else :icon="category.icon" class="size-8" load />
+        </template>
       </div>
     </div>
 

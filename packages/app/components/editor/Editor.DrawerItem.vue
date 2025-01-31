@@ -41,7 +41,10 @@ const colors = computed(() => {
 
     <!-- Icon -->
     <div class="flex items-center space-x-sm">
-      <BaseIcon :icon="icon" class="size-6" load />
+      <template v-if="icon">
+        <img v-if="!icon.endsWith('.svg')" :src="icon" class="w-6 h-6">
+        <BaseIcon v-else :icon="icon" class="size-6" load />
+      </template>
 
       <!-- Name & Description -->
       <div class="w-full">
