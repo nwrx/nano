@@ -1,11 +1,5 @@
 import type { MaybeFunction } from '@unshared/types'
-import { assertStringNotEmpty, ValidationError } from '@unshared/validation'
-
-export interface FlowTypeCast<T = any, U = any> {
-  type: FlowType<U>
-  from: (value: T) => U
-  to: (value: U) => T
-}
+import { assertStringNotEmpty, assertStringNumber, ValidationError } from '@unshared/validation'
 
 /**
  * A flow type defines the type of a value in the flow. The type is used to
@@ -14,7 +8,7 @@ export interface FlowTypeCast<T = any, U = any> {
  * @template T The internal type of the flow type.
  * @example type TypePrimitiveString = FlowType<string> // { parse: (value: unknown) => string, ... }
  */
-export interface FlowTypeOptions<T = unknown, U = unknown> {
+export interface FlowTypeOptions<T = unknown> {
 
   /**
    * A unique identifier of the type. The identifier is used to identify the
@@ -60,12 +54,6 @@ export interface FlowTypeOptions<T = unknown, U = unknown> {
    * @example 'Hello, World!'
    */
   defaultValue?: MaybeFunction<T>
-
-  /**
-   * Cast the value of the type to another type. The cast is used to convert
-   * the value of the type to another type.
-   */
-  casts?: Array<FlowTypeCast<T, U>>
 }
 
 /**
@@ -73,8 +61,8 @@ export interface FlowTypeOptions<T = unknown, U = unknown> {
  */
 export interface FlowTypeJSON {
   kind: string
-  name: string
-  color: string
+  name?: string
+  color?: string
   description?: string
 }
 
@@ -85,9 +73,7 @@ export interface FlowTypeJSON {
  * @template T The internal type of the flow type.
  * @example type TypePrimitiveString = FlowType<string> // { parse: (value: unknown) => string, ... }
  */
-export interface FlowType<T = unknown, U = unknown> extends
-  Pick<Required<FlowTypeOptions<T, U>>, 'casts' | 'color' | 'name'>,
-  Omit<FlowTypeOptions<T, U>, 'casts' | 'color' | 'name'> {
+export interface FlowType<T = unknown> extends FlowTypeOptions<T> {
 
   /**
    * Convert the type to a string.
@@ -108,7 +94,7 @@ export interface FlowType<T = unknown, U = unknown> extends
  * type Type = FlowType<string>
  * type Result = InferType<Type> // string
  */
-export type InferType<T> = T extends FlowType<infer U, any> ? U : never
+export type InferType<T> = T extends FlowType<infer U> ? U : never
 
 /**
  * Create a flow type with the given options. The options must contain a
@@ -126,15 +112,14 @@ export type InferType<T> = T extends FlowType<infer U, any> ? U : never
  *   },
  * })
  */
-export function defineFlowType<T, U>(options: FlowTypeOptions<T, U>): FlowType<T, U> {
+export function defineFlowType<T>(options: FlowTypeOptions<T>): FlowType<T> {
   assertStringNotEmpty(options.kind)
   return {
     kind: options.kind,
-    name: options.name ?? options.kind,
-    color: options.color ?? '#000000',
+    name: options.name,
+    color: options.color,
     description: options.description,
     parse: options.parse,
-    casts: options.casts ?? [],
     defaultValue: options.defaultValue!,
     toString() { return options.kind },
     toJSON() {
@@ -152,7 +137,6 @@ export function defineFlowType<T, U>(options: FlowTypeOptions<T, U>): FlowType<T
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 if (import.meta.vitest) {
   const { assertString, assertNumber, createParser } = await import('@unshared/validation')
-  const { typeString } = await import('./__fixtures__')
 
   test('should define a flow type', () => {
     const type = defineFlowType({
@@ -162,8 +146,8 @@ if (import.meta.vitest) {
 
     expect(type).toStrictEqual({
       kind: 'type-id',
-      name: 'type-id',
-      color: '#000000',
+      name: undefined,
+      color: undefined,
       parse: expect.any(Function),
       description: undefined,
       defaultValue: undefined,
@@ -273,32 +257,13 @@ if (import.meta.vitest) {
       kind: 'number',
       name: 'Number',
       defaultValue: 0,
-      parse: createParser(assertNumber),
-      casts: [{
-        type: typeString,
-        from: value => value.toFixed(2),
-        to: value => Number.parseFloat(value),
-      }],
+      parse: createParser(
+        [assertNumber],
+        [assertStringNumber, Number.parseFloat],
+      ),
     })
 
-    const result = type.casts[0].from(3.14159)
-    expect(result).toBe('3.14')
-  })
-
-  test('should cast from one type to another', () => {
-    const type = defineFlowType({
-      kind: 'number',
-      name: 'Number',
-      defaultValue: 0,
-      parse: createParser(assertNumber),
-      casts: [{
-        type: typeString,
-        from: value => value.toFixed(2),
-        to: value => Number.parseFloat(value),
-      }],
-    })
-
-    const result = type.casts[0].to('3.14')
+    const result = type.parse('3.14')
     expect(result).toBe(3.14)
   })
 }
