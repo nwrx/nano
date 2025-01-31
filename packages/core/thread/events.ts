@@ -25,6 +25,8 @@ export type ThreadEventMap = {
   'abort': [metadata: EventMetadata]
   'input': [name: string, value: unknown]
   'done': [output: ObjectLike]
+
+  // Node events.
   'nodeState': [nodeId: string, state: NodeState]
   'nodeError': [nodeId: string, error: Error]
   'nodeEvent': [nodeId: string, trace: Event]
