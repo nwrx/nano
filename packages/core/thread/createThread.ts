@@ -1,45 +1,8 @@
-/* eslint-disable @typescript-eslint/consistent-type-definitions */
-import type { ObjectLike } from '@unshared/types'
 import type { ComponentResolver, ReferenceResolver } from '../utils'
 import type { Node } from './addNode'
-import type { EventMetadata } from './createEventMetadata'
-import { DEFAULT_COMPONENT_RESOLVER, DEFAULT_REFERENCE_RESOLVER, Emitter } from '../utils'
-
-export type ThreadEvents = {
-
-  /** When the thread is started. */
-  'start': [input: ObjectLike, metadata: EventMetadata]
-
-  /** When an error occurs during the execution of the flow outside of a node. */
-  'error': [error: Error, metadata: EventMetadata]
-
-  /** When the thread is aborted. */
-  'abort': [metadata: EventMetadata]
-
-  /** When the thread receives an input. */
-  'input': [name: string, value: unknown, metadata: EventMetadata]
-
-  /** When the thread outputs a value. */
-  'output': [name: string, value: unknown, metadata: EventMetadata]
-
-  /** When the thread is done. */
-  'done': [output: ObjectLike, metadata: EventMetadata]
-
-  /** When the state of a node changes. */
-  'nodeState': [id: string, node: Node, metadata: EventMetadata]
-
-  /** When a node emits an error event. */
-  'nodeError': [id: string, node: Node, error: Error, metadata: EventMetadata]
-
-  /** When a node emits a trace event. */
-  'nodeTrace': [id: string, node: Node, trace: ObjectLike, metadata: EventMetadata]
-
-  /** When a node is about to start processing. */
-  'nodeStart': [id: string, node: Node, data: ObjectLike, metadata: EventMetadata]
-
-  /** When a node is done processing. */
-  'nodeDone': [id: string, node: Node, result: ObjectLike, metadata: EventMetadata]
-}
+import type { ThreadEventMap } from './events'
+import { DEFAULT_COMPONENT_RESOLVER, DEFAULT_REFERENCE_RESOLVER } from '../utils'
+import { Emitter } from '../utils/createEmitter'
 
 /**
  * The options that are used to create a new flow instance. The options can be
@@ -67,7 +30,7 @@ export interface ThreadOptions {
  * and collect the output of the flow. The thread is used to run the flow
  * in a separate context and collect the output of the flow.
  */
-export class Thread extends Emitter<ThreadEvents> implements ThreadOptions {
+export class Thread extends Emitter<ThreadEventMap> implements ThreadOptions {
   constructor(options: ThreadOptions = {}) {
     super()
     if (options.componentResolvers) this.componentResolvers.push(...options.componentResolvers)
