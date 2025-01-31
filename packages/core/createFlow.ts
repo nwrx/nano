@@ -34,7 +34,8 @@ interface FlowEvents {
   // 'flow:start': [data: Record<string, unknown>]
   // 'flow:end': []
   // 'flow:result': [data: Record<string, unknown>]
-  'flow:output': [output: Record<string, unknown>]
+  'flow:input': { property: string; value: unknown }
+  'flow:output': { property: string; value: unknown }
   'flow:update': FlowSettings
 
   event: { event: string; data: unknown }
