@@ -21,11 +21,13 @@ export async function openaiGetModels({ path, baseUrl, token, query }: LanguageM
   const url = new URL(path, baseUrl).toString()
   const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
   const models = await response.json() as OpenaiModelResponse
+  const queryLower = query?.toLowerCase()
   return models.data
     .filter((x) => {
       if (x.object !== 'model') return false
-      if (!query) return true
-      return x.id.includes(query)
+      if (!queryLower) return true
+      return x.id.toLowerCase().includes(queryLower)
+        || x.owned_by.toLowerCase().includes(queryLower)
     })
     .map(x => ({
       value: x.id,
