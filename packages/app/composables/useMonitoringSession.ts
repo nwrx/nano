@@ -1,6 +1,11 @@
 import type { MonitoringSessionEventPayload, MonitoringSessionState } from '@nwrx/api'
 import { useAlerts, useClient } from '#imports'
 
+export interface MonitoringSessionFilters {
+  eventNames: string[]
+  eventTypes: string[]
+}
+
 export function useMonitoringSession(workspace: MaybeRef<string>) {
   const client = useClient()
   const alerts = useAlerts()
@@ -10,15 +15,23 @@ export function useMonitoringSession(workspace: MaybeRef<string>) {
     },
   })
 
+  const filters = useLocalStorage<MonitoringSessionFilters>('___Monitoring_Filters', {
+    eventNames: [],
+    eventTypes: [],
+  })
+
   const data = reactive<MonitoringSessionState>({
     projects: [],
     threads: [],
     events: [],
     nodeEvents: [],
-    selectedProject: undefined,
-    selectedFlow: undefined,
-    selectedThread: undefined,
-    selectedEvent: undefined,
+  })
+
+  const selection = reactive({
+    project: undefined as string | undefined,
+    flow: undefined as string | undefined,
+    thread: undefined as string | undefined,
+    event: undefined as string | undefined,
   })
 
   session.on('message', (payload: MonitoringSessionEventPayload) => {
@@ -34,8 +47,8 @@ export function useMonitoringSession(workspace: MaybeRef<string>) {
         data.threads = payload.threads
         data.events = []
         data.nodeEvents = []
-        data.selectedEvent = undefined
-        data.selectedThread = undefined
+        selection.event = undefined
+        selection.thread = undefined
         break
       }
       // case 'threads:push': {
@@ -62,24 +75,26 @@ export function useMonitoringSession(workspace: MaybeRef<string>) {
 
   return reactive({
     data,
+    selection,
+    filters,
 
     selectFlow: (project: string, name: string) => {
-      if (data.selectedFlow === name && data.selectedProject === project) return
+      if (selection.flow === name && selection.project === project) return
       session.send({ event: 'selectFlow', project, name })
-      data.selectedFlow = name
-      data.selectedProject = project
+      selection.flow = name
+      selection.project = project
     },
 
     selectThread: (thread: string) => {
-      if (data.selectedThread === thread) return
+      if (selection.thread === thread) return
       session.send({ event: 'selectThread', thread })
-      data.selectedThread = thread
+      selection.thread = thread
     },
 
     selectEvent: (id: string) => {
-      if (data.selectedEvent === id) return
+      if (selection.event === id) return
       session.send({ event: 'selectEvent', id })
-      data.selectedEvent = id
+      selection.event = id
     },
 
     setProjectFilter: (project: string) => {

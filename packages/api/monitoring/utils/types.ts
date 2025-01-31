@@ -6,10 +6,6 @@ export interface MonitoringSessionState {
   threads: MonitoringFlowThreadObject[]
   events: MonitoringFlowThreadEventObject[]
   nodeEvents: MonitoringFlowThreadNodeEventObject[]
-  selectedProject: string | undefined
-  selectedFlow: string | undefined
-  selectedThread: string | undefined
-  selectedEvent: string | undefined
 }
 
 export interface MonitoringSessionEventMap {
