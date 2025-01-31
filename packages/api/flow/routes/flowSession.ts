@@ -215,7 +215,7 @@ export function flowSession(this: ModuleFlow) {
           }
           case 'userSetPosition': {
             const { x, y } = message
-            session.broadcast({ event: 'user:position', id: peer.id, x, y })
+            session.broadcast({ event: 'user:position', id: peer.id, x, y }, peer)
             break
           }
 

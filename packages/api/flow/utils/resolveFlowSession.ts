@@ -186,10 +186,12 @@ export class FlowSessionInstance {
    * Broadcast a message to all subscribed peers.
    *
    * @param payload The payload to send to the peers.
+   * @param except The peer to exclude from the broadcast.
    */
-  broadcast<T extends keyof FlowSessionEventMap>(payload: FlowSessionEventPayload<T>) {
+  broadcast<T extends keyof FlowSessionEventMap>(payload: FlowSessionEventPayload<T>, except?: Peer) {
     for (const participant of this.participants) {
       if (!participant.peer) continue
+      if (participant.peer.id === except?.id) continue
       participant.peer.send(payload)
     }
   }
@@ -236,7 +238,6 @@ export async function resolveFlowSession(this: ModuleFlow, flow: Flow): Promise<
     await node.resolveDataSchema()
     await node.resolveDataSchema()
     await node.resolveResultSchema()
-    console.log(`Resolving node: ${node.node.kind}`, { keys: Object.keys(node.dataSchema) })
   }
 
   // --- Create the flow session and store it in memory.
