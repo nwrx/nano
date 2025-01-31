@@ -13,6 +13,7 @@ export interface LocalSettings {
   editorPanelNodeOutputOpen?: boolean
   editorPanelNodeMetadataOpen?: boolean
   editorNodeTextareaShowPreview?: boolean
+  chatPanelOpen?: boolean
 }
 
 export const useLocalSettings = createGlobalState(() =>
@@ -30,4 +31,5 @@ export const useLocalSettings = createGlobalState(() =>
     editorPanelNodeOutputOpen: false,
     editorPanelNodeMetadataOpen: false,
     editorNodeTextareaShowPreview: true,
+    chatPanelOpen: true,
   }))

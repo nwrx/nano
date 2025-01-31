@@ -189,6 +189,7 @@ export default defineConfig<Theme>({
 
     maxWidth: {
       page: '1440px',
+      thread: '1024px',
     },
 
     duration: {
