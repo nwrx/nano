@@ -82,7 +82,7 @@ const INFERENCE_INPUT_SCHEMA = defineInputSchema({
     sliderMin: 0.1,
     sliderMax: 2,
     sliderStep: 0.1,
-    defaultValue: 0.7,
+    defaultValue: 1,
     isOptional: true,
   },
 })
