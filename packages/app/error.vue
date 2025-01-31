@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import { type NuxtError } from 'nuxt/app'
 
-defineProps<{ error: NuxtError }>()
+const props = defineProps<{ error: NuxtError }>()
 
-const showStack = import.meta.env.DEV === true
+const showStack = import.meta.dev
+const stack = computed(() => {
+  if (!props.error) return ''
+  return props.error.stack
+    ?.replaceAll('\n', '\n  ')
+    .replaceAll(/https?:\/\/[^:]+:\d+\/_nuxt\//g, '/_nuxt/')
+})
 </script>
 
 <template>
@@ -13,24 +19,26 @@ const showStack = import.meta.env.DEV === true
     </h3>
 
     <!-- Generic error message -->
-    <p class="text-xl text-center max-w-md">
+    <p class="text-2xl text-center max-w-md">
       {{ error.message }}
     </p>
 
     <!-- Error message -->
     <pre
       v-if="showStack"
-      class="bg-gray-100 p-4 rounded-lg mt-8 w-xl whitespace-pre overflow-auto"
-      v-html="error.stack"
+      class="bg-primary-900 text-white p-4 rounded-lg mt-8 w-4xl whitespace-pre overflow-x-auto"
+      v-text="stack"
     />
 
     <!-- CTA -->
     <Button
-      class="cta-filled-primary-600 mt-16"
-      icon-prepend="carbon:home"
-      icon-append="carbon:arrow-right"
+      outlined
+      variant="primary"
+      class="mt-16"
+      icon-prepend="i-carbon:home"
+      icon-append="i-carbon:arrow-right"
       label="Retourner à l'accueil"
-      to="/"
+      to="/flows"
     />
   </main>
 </template>
