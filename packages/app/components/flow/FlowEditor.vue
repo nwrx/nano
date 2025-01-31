@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import type { FlowCategoryNodesJSON, FlowNodeInstanceJSON, FlowSessionParticipantJSON, FlowSessionSecretJSON, FlowSessionVariableJSON } from '@nwrx/api'
+import type { FlowCategoryNodesJSON, FlowNodeInstanceJSON, FlowSessionEventPayload, FlowSessionParticipantJSON, FlowSessionSecretJSON, FlowSessionVariableJSON } from '@nwrx/api'
 import { throttle } from '@unshared/functions/throttle'
+import PATTERN_EDITOR_URL from '~/assets/pattern-editor.svg'
 
 const props = defineProps<{
   peerId: string
@@ -13,6 +14,7 @@ const props = defineProps<{
   methods: string[]
   secrets: FlowSessionSecretJSON[]
   variables: FlowSessionVariableJSON[]
+  events: FlowSessionEventPayload[]
   isLocked: boolean
   isRunning: boolean
   isBookmarked: boolean
@@ -53,6 +55,9 @@ const emit = defineEmits<{
 
   // --- User.
   userSetPosition: [x: number, y: number]
+
+  // --- Events.
+  eventsClear: []
 
   // --- UI state.
   'update:isPanelFlowMethodsOpen': [isOpen: boolean]
@@ -97,7 +102,7 @@ const editor = useFlowEditor({
     tabindex="0"
     disabled
     :style="editor.viewContainerStyle"
-    class="w-full h-full select-none relative overflow-hidden z-0 bg-white select-none"
+    class="w-full h-full bg-editor select-none relative overflow-hidden z-0 select-none"
     @drop="(event) => editor.onScreenDrop(event)"
     @mouseup="() => editor.onScreenMouseUp()"
     @mousemove="(event) => editor.onScreenMouseMove(event)"
@@ -109,24 +114,33 @@ const editor = useFlowEditor({
     <div
       v-if="editor.viewSelecting"
       :style="editor.viewSelectorStyle"
-      class="absolute border-3 border-primary-500 border-dashed rounded bg-primary-500/10 z-9999"
+      class="absolute border-2 border-editor-select border-dashed rounded bg-editor-select z-9999"
     />
 
     <!-- View -->
     <div
-      :ref="(el) => editor.view = el as HTMLDivElement"
+      :ref="(el) => editor.view = (el as HTMLDivElement)"
       :style="editor.viewStyle"
-      class="bg-graphpaper-primary-100"
       @dragover.prevent
       @dragenter.prevent
       @contextmenu.prevent>
+
+      <!-- Pattern -->
+      <div
+        class="absolute top-0 left-0 right-0 bottom-0 dark:op-5 op-20 dark:invert"
+        :style="{
+          backgroundImage: `url(${PATTERN_EDITOR_URL})`,
+          backgroundSize: '60px',
+          backgroundRepeat: 'repeat',
+        }"
+      />
 
       <!-- Cursors -->
       <FlowEditorPeer
         v-for="peer in editor.cursorPeers"
         :style="editor.getPeerStyle(peer)"
-        name="John Doe"
-        color="blue"
+        :name="peer.name"
+        :color="peer.color"
         :zoom="editor.viewZoom"
       />
 
@@ -134,7 +148,7 @@ const editor = useFlowEditor({
       <FlowEditorNode
         v-for="node in nodes"
         :id="node.id"
-        :ref="(el) => editor.nodeComponents[node.id] = el as ComponentPublicInstance"
+        :ref="(el) => editor.nodeComponents[node.id] = (el as ComponentPublicInstance)"
         :key="node.id"
         :data="node.data"
         :result="node.result"
@@ -151,6 +165,7 @@ const editor = useFlowEditor({
         :zoom="editor.viewZoom"
         :isRunning="node.isRunning"
         :isCollapsed="node.isCollapsed"
+        :isDragging="editor.nodeDragging"
         :isSelected="editor.isNodeSelected(node.id)"
         @run="() => emit('nodeStart', node.id)"
         @abort="() => emit('nodeAbort', node.id)"
@@ -183,9 +198,8 @@ const editor = useFlowEditor({
 
     <!-- Overlay -->
     <div
-      class="absolute top-4 left-4 bottom-4 right-4 z-9999 pointer-events-none children:pointer-events-auto"
-      @wheel.stop
-    >
+      class="absolute top-md left-md bottom-md right-md z-9999 pointer-events-none children:pointer-events-auto"
+      @wheel.stop>
 
       <!-- Toolbar -->
       <FlowEditorToolbar
@@ -211,6 +225,7 @@ const editor = useFlowEditor({
           :variables="variables"
           :description="description"
           :nodeSelected="editor.nodeSelected"
+          :events="events"
           class="pointer-events-auto"
           @setName="(name) => emit('setName', name)"
           @setMethods="(methods) => emit('setMethods', methods)"
@@ -220,6 +235,7 @@ const editor = useFlowEditor({
           @variableCreate="(name, value) => emit('variableCreate', name, value)"
           @variableUpdate="(name, value) => emit('variableUpdate', name, value)"
           @variableRemove="(name) => emit('variableRemove', name)"
+          @eventsClear="() => emit('eventsClear')"
         />
       </div>
 

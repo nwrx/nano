@@ -61,6 +61,7 @@ const isPanelNodeResultOpen = useLocalStorage<boolean>('__FlowEditorPanel_NodeRe
       :variables="session.flow.variables"
       :peers="session.flow.peers"
       :peerId="session.flow.peerId"
+      :events="session.events.value"
 
       :isLocked="isLocked"
       :isRunning="session.flow.isRunning"
@@ -90,6 +91,8 @@ const isPanelNodeResultOpen = useLocalStorage<boolean>('__FlowEditorPanel_NodeRe
       @linkCreate="(source, target) => session.linkCreate(source, target)"
 
       @userSetPosition="(x, y) => session.userSetPosition(x, y)"
+
+      @eventsClear="() => session.eventsClear()"
     />
   </AppPage>
 </template>
