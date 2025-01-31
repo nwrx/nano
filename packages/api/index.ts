@@ -1,5 +1,6 @@
 export * from './chat'
 export * from './flow'
+export * from './main'
 export * from './monitoring'
 export * from './storage'
 export * from './user'

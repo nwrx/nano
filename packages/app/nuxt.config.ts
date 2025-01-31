@@ -27,11 +27,6 @@ export default defineNuxtConfig({
     },
   },
 
-  serverHandlers: [
-    { route: '/api/**', handler: '~/server/index.ts' },
-    { route: '/ws/**', handler: '~/server/index.ts' },
-  ],
-
   modules: [
     'nuxt-security',
     '@nuxt/eslint',
@@ -184,6 +179,17 @@ export default defineNuxtConfig({
     experimental: {
       websocket: true,
     },
+    devProxy: {
+      '/api': {
+        target: 'http://localhost:3001/api',
+        changeOrigin: true,
+      },
+      '/ws': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        ws: true,
+      },
+    },
     esbuild: {
       options: {
         target: 'esnext',
@@ -242,7 +248,7 @@ export default defineNuxtConfig({
     },
     server: {
       hmr: {
-        port: Number.parseInt(process.env.PORT ?? '3000') + 1,
+        port: Number.parseInt(process.env.PORT ?? '3000') + 2,
       },
     },
   },
