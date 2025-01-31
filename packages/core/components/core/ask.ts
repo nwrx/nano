@@ -1,5 +1,30 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
+import { randomUUID } from 'node:crypto'
 import { defineComponent } from '../../utils/defineComponent'
-import { askQuestion } from './utils/askQuestion'
+
+export type QuestionChoiceValue = boolean | number | string
+
+export interface QuestionChoice {
+  value: QuestionChoiceValue
+  label: string
+  description?: string
+  icon?: string
+  imageUrl?: string
+}
+
+export interface EventQuestion {
+  id: string
+  question: string
+  text?: string
+  timeout?: number
+  defaultValue?: QuestionChoiceValue
+  choices?: QuestionChoice[]
+}
+
+export interface EventResponse {
+  id: string
+  response: QuestionChoiceValue
+}
 
 export const ask = defineComponent(
   {
@@ -93,13 +118,61 @@ export const ask = defineComponent(
       },
     },
   },
-  async({ data, thread, nodeId }) => ({
-    response: await askQuestion(thread, nodeId, {
-      question: data.question,
-      text: data.text,
-      choices: data.choices,
-      timeout: data.timeout,
-      defaultValue: data.defaultValue,
-    }),
-  }),
+  async({ data, thread, nodeId }) => {
+    const { question, text, defaultValue, timeout = 60000, choices } = data
+    const eventQuestion: EventQuestion = { id: randomUUID(), question, text, timeout, choices, defaultValue }
+
+    // --- If timeout is reached, reject the promise with an error.
+    return new Promise((resolve, reject) => {
+      let timeoutInstance: NodeJS.Timeout
+      if (typeof timeout === 'number' && timeout > 0) {
+        timeoutInstance = setTimeout(() => {
+          stopOnAbort()
+          stopOnCancel()
+          stopOnResponse()
+          const error = new Error('Timeout.')
+          reject(error)
+        }, timeout)
+      }
+
+      // --- If the question was canceled, reject the promise with an error.
+      const stopOnCancel = thread.on('nodeQuestionCancel', (id, eventId) => {
+        if (id === nodeId && eventId === eventQuestion.id) {
+          stopOnAbort()
+          stopOnCancel()
+          stopOnResponse()
+          const error = new Error('Canceled by user.')
+          reject(error)
+        }
+      })
+
+      // --- If a response is received, resolve the promise with the response.
+      const stopOnResponse = thread.on('nodeResponse', (id, event) => {
+        if (id === nodeId && event.id === eventQuestion.id) {
+          stopOnAbort()
+          stopOnCancel()
+          stopOnResponse()
+          if (timeoutInstance) clearTimeout(timeoutInstance)
+          resolve({ response: event.response })
+        }
+      })
+
+      // --- If the user aborts the thread, reject the promise with an error.
+      const stopOnAbort = thread.on('abort', () => {
+        stopOnAbort()
+        stopOnCancel()
+        stopOnResponse()
+        if (timeoutInstance) clearTimeout(timeoutInstance)
+        const error = new Error('Aborted by user.')
+        reject(error)
+      })
+
+      // --- Dispatch the question to the thread.
+      thread.dispatch(
+        'nodeQuestionRequest',
+        nodeId,
+        eventQuestion,
+      )
+    })
+  },
 )

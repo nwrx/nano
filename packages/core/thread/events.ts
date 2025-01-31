@@ -2,7 +2,7 @@
 import type { ObjectLike } from '@unshared/types'
 import type {
   EventConfirmRequest,
-  EventMessage,
+  // EventMessage,
   EventMessageDelta,
   EventMessageDeltaEnd,
   EventMessageDeltaStart,
@@ -10,26 +10,27 @@ import type {
   EventRequest,
   EventRequestError,
   EventRequestResponse,
+  EventResponse,
   EventToolError,
   EventToolRequest,
   EventToolResult,
+  LanguageModelMessage,
 } from '../components'
 import type { EventMetadata } from '../utils'
 import type { NodeState } from './addNode'
-import type { EventResponse } from './sendResponse'
 
 export type ThreadEventMap = {
   'start': [input: ObjectLike]
   'error': [error: Error]
   'abort': [metadata: EventMetadata]
   'input': [name: string, value: unknown]
-  'output': [name: string, value: unknown]
   'done': [output: ObjectLike]
   'nodeState': [nodeId: string, state: NodeState]
   'nodeError': [nodeId: string, error: Error]
   'nodeEvent': [nodeId: string, trace: Event]
   'nodeStart': [nodeId: string, data: ObjectLike]
   'nodeDone': [nodeId: string, result: ObjectLike]
+  'nodeOutput': [nodeId: string, name: string, value: unknown]
 
   // Questions.
   'nodeResponse': [nodeId: string, event: EventResponse]
@@ -38,7 +39,7 @@ export type ThreadEventMap = {
   'nodeConfirmRequest': [nodeId: string, event: EventConfirmRequest]
 
   // Messages
-  'nodeMessage': [nodeId: string, event: EventMessage]
+  'nodeMessage': [nodeId: string, event: LanguageModelMessage]
   'nodeMessageDeltaStart': [nodeId: string, event: EventMessageDeltaStart]
   'nodeMessageDelta': [nodeId: string, event: EventMessageDelta]
   'nodeMessageDeltaEnd': [nodeId: string, event: EventMessageDeltaEnd]
