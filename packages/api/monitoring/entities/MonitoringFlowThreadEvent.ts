@@ -1,16 +1,16 @@
 import { FlowThreadEvents } from '@nwrx/core'
-import { BaseEntity, transformerDate, transformerJson } from '@unserved/server'
+import { BaseEntity, transformerJson } from '@unserved/server'
 import { ObjectLike } from '@unshared/types'
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
-import { FlowThread } from './FlowThread'
+import { MonitoringFlowThread } from './MonitoringFlowThread'
 
 /**
  * A `FlowThreadEvent` is used to log the events that occurred during the execution
  * of a flow. It is used to store the information about the event such as the
  * type, message, etc.
  */
-@Entity({ name: 'FlowThreadEvent' })
-export class FlowThreadEvent extends BaseEntity {
+@Entity({ name: 'MonitoringFlowThreadEvent' })
+export class MonitoringFlowThreadEvent extends BaseEntity {
 
   /**
    * The type of the event. It is used to determine the action that was performed
@@ -25,8 +25,8 @@ export class FlowThreadEvent extends BaseEntity {
    * The timestamp when the event occurred. It is used to determine the time when
    * the event was triggered.
    */
-  @Column('varchar', { length: 255, nullable: true, transformer: transformerDate })
-  timestamp?: Date
+  @Column('int')
+  timestamp: number
 
   /**
    * The delta since the start of the thread. It is used to determine the time
@@ -50,25 +50,29 @@ export class FlowThreadEvent extends BaseEntity {
    * @example FlowSession { ... }
    */
   @JoinColumn()
-  @ManyToOne(() => FlowThread, run => run.events, { nullable: false, onDelete: 'CASCADE' })
-  thread: FlowThread
+  @ManyToOne(() => MonitoringFlowThread, run => run.events, { nullable: false, onDelete: 'CASCADE' })
+  thread: MonitoringFlowThread
 
   /**
    * @returns The object representation of the event.
    */
-  serialize(): FlowThreadEventObject {
+  serialize(): MonitoringFlowThreadEventObject {
     return {
+      id: this.id,
       event: this.event,
       data: this.data,
       delta: this.delta,
       timestamp: this.timestamp,
+      createdAt: this.createdAt.toISOString(),
     }
   }
 }
 
-export interface FlowThreadEventObject {
+export interface MonitoringFlowThreadEventObject {
+  id: string
   event: keyof FlowThreadEvents
   data: ObjectLike
   delta: number
-  timestamp?: Date
+  timestamp: number
+  createdAt: string
 }
