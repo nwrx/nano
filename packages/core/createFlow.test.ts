@@ -2,8 +2,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { moduleCore, nodeJsonParse, typeNumber } from './__fixtures__'
 import { createFlow } from './createFlow'
-import { createFlowNodeInstance } from './createFlowNodeInstance'
-import { defineFlowNode } from './defineFlowNode'
+import { createFlowNodeInstance } from './createNodeInstance'
+import { defineNode } from './defineNode'
 
 describe('createFlow', () => {
   describe('constructor', () => {
@@ -156,64 +156,62 @@ describe('createFlow', () => {
 
   describe('nodeCreate', () => {
     describe('when creating a node instance', () => {
-      it('should create a node instance given a node definition', async() => {
+      it('should create a node instance given a node definition', () => {
         using flow = createFlow({ modules: [moduleCore] })
-        await flow.nodeCreate(nodeJsonParse)
+        flow.nodeCreate(nodeJsonParse)
         expect(flow.nodes).toHaveLength(1)
         expect(flow.nodes[0].node).toStrictEqual(nodeJsonParse)
       })
 
-      it('should create a node instance given a node definition and meta', async() => {
+      it('should create a node instance given a node definition and meta', () => {
         using flow = createFlow({ modules: [moduleCore] })
-        await flow.nodeCreate(moduleCore.nodes![0], { meta: { label: 'Node' } })
+        flow.nodeCreate(moduleCore.nodes![0], { meta: { label: 'Node' } })
         expect(flow.nodes).toHaveLength(1)
         expect(flow.nodes[0]).toMatchObject({ meta: { label: 'Node' } })
       })
 
-      it('should create a node with a node kind', async() => {
+      it('should create a node with a node kind', () => {
         using flow = createFlow({ modules: [moduleCore] })
-        await flow.nodeCreate('nwrx/core:parse-json')
+        flow.nodeCreate('nwrx/core:parse-json')
         expect(flow.nodes).toHaveLength(1)
         expect(flow.nodes[0].node).toStrictEqual(nodeJsonParse)
       })
 
-      it('should create a node with a node kind and meta', async() => {
+      it('should create a node with a node kind and meta', () => {
         using flow = createFlow({ modules: [moduleCore] })
-        await flow.nodeCreate('nwrx/core:parse-json', { meta: { label: 'Node' } })
+        flow.nodeCreate('nwrx/core:parse-json', { meta: { label: 'Node' } })
         expect(flow.nodes).toHaveLength(1)
         expect(flow.nodes[0]).toMatchObject({ meta: { label: 'Node' } })
       })
 
-      it('should create a node instance with the given ID', async() => {
+      it('should create a node instance with the given ID', () => {
         using flow = createFlow({ modules: [moduleCore] })
-        await flow.nodeCreate('nwrx/core:parse-json', { id: 'node-id' })
+        flow.nodeCreate('nwrx/core:parse-json', { id: 'node-id' })
         expect(flow.nodes[0].id).toBe('node-id')
       })
 
-      it('should emit a node:create event', async() => {
+      it('should emit a node:create event', () => {
         using flow = createFlow({ modules: [moduleCore] })
         const listener = vi.fn()
         flow.on('node:create', listener)
-        const node = await flow.nodeCreate('nwrx/core:parse-json')
+        const node = flow.nodeCreate('nwrx/core:parse-json')
         expect(listener).toHaveBeenCalledWith(node)
       })
 
-      it('should resolve the data schema of the node when created', async() => {
+      it('should not resolve the data schema of the node when created', () => {
         using flow = createFlow({ modules: [moduleCore] })
-        const node = await flow.nodeCreate(defineFlowNode({
+        const node = flow.nodeCreate(defineNode({
           kind: 'nwrx/core:parse-json',
           defineDataSchema: () => ({
-            number: { name: 'Number', type: typeNumber },
+            number: { name: 'Number', type: typeNumber, control: 'slider' },
           }),
         }))
-        expect(node.dataSchema).toStrictEqual({
-          number: { name: 'Number', type: typeNumber },
-        })
+        expect(node.dataSchema).toStrictEqual({})
       })
 
-      it('should resolve the result schema of the node when created', async() => {
+      it('should resolve the result schema of the node when created', () => {
         using flow = createFlow({ modules: [moduleCore] })
-        const node = await flow.nodeCreate(defineFlowNode({
+        const node = flow.nodeCreate(defineNode({
           kind: 'nwrx/core:boolean-to-number',
           defineResultSchema: () => ({
             boolean: { name: 'Boolean', type: typeNumber },
@@ -224,49 +222,49 @@ describe('createFlow', () => {
         })
       })
 
-      it('should not emit the "node:dataSchema" event when created', async() => {
+      it('should not emit the "node:dataSchema" event when created', () => {
         using flow = createFlow({ modules: [moduleCore] })
         const listener = vi.fn()
         flow.on('node:dataSchema', listener)
-        await flow.nodeCreate('nwrx/core:parse-json')
+        flow.nodeCreate('nwrx/core:parse-json')
         expect(listener).not.toHaveBeenCalled()
       })
 
-      it('should not emit the "node:resultSchema" event when created', async() => {
+      it('should not emit the "node:resultSchema" event when created', () => {
         using flow = createFlow({ modules: [moduleCore] })
         const listener = vi.fn()
         flow.on('node:resultSchema', listener)
-        await flow.nodeCreate('nwrx/core:parse-json')
+        flow.nodeCreate('nwrx/core:parse-json')
         expect(listener).not.toHaveBeenCalled()
       })
 
-      it('should throw an error if the node kind is not found', async() => {
+      it('should throw an error if the node kind is not found', () => {
         using flow = createFlow({ modules: [moduleCore] })
-        const shouldReject = flow.nodeCreate('nwrx/core:unknown')
-        await expect(shouldReject).rejects.toThrow('Node definition "unknown" was not found in module "nwrx/core"')
+        const shouldThrow = () => flow.nodeCreate('nwrx/core:unknown')
+        expect(shouldThrow).toThrow('Node definition "unknown" was not found in module "nwrx/core"')
       })
 
-      it('should throw an error if the module is not found', async() => {
+      it('should throw an error if the module is not found', () => {
         using flow = createFlow({ modules: [moduleCore] })
-        const shouldReject = flow.nodeCreate('unknown:unknown')
-        await expect(shouldReject).rejects.toThrow('Module "unknown" was not found')
+        const shouldThrow = () => flow.nodeCreate('unknown:unknown')
+        expect(shouldThrow).toThrow('Module "unknown" was not found')
       })
     })
 
     describe('with event listeners', () => {
-      it('should emit a node:dataRaw event when the data of a node is set', async() => {
+      it('should emit a node:data event when the data of a node is set', () => {
         using flow = createFlow({ modules: [moduleCore] })
-        const node = await flow.nodeCreate('nwrx/core:parse-json')
+        const node = flow.nodeCreate('nwrx/core:parse-json')
         const listener = vi.fn()
-        flow.on('node:dataRaw', listener)
+        flow.on('node:data', listener)
         node.setDataValue('json', '{"key": "value"}')
         expect(listener).toHaveBeenCalledOnce()
         expect(listener).toHaveBeenCalledWith(node.id, { json: '{"key": "value"}' })
       })
 
-      it('should emit a node:result event when the result of a node is set', async() => {
+      it('should emit a node:result event when the result of a node is set', () => {
         using flow = createFlow({ modules: [moduleCore] })
-        const node = await flow.nodeCreate('nwrx/core:parse-json')
+        const node = flow.nodeCreate('nwrx/core:parse-json')
         const listener = vi.fn()
         flow.on('node:result', listener)
         node.setResultValue('object', { key: 'value' })
@@ -276,7 +274,7 @@ describe('createFlow', () => {
 
       it('should emit a node:dataSchema event when the data schema of a node is resolved', async() => {
         using flow = createFlow({ modules: [moduleCore] })
-        const node = await flow.nodeCreate({ kind: 'nwrx/core:parse-json', defineDataSchema: () => ({}) })
+        const node = flow.nodeCreate({ kind: 'nwrx/core:parse-json', defineDataSchema: () => ({}) })
         const listener = vi.fn()
         flow.on('node:dataSchema', listener)
         await node.resolveDataSchema()
@@ -285,7 +283,7 @@ describe('createFlow', () => {
 
       it('should emit a node:resultSchema event when the result schema of a node is resolved', async() => {
         using flow = createFlow({ modules: [moduleCore] })
-        const node = await flow.nodeCreate({ kind: 'nwrx/core:parse-json', defineResultSchema: () => ({}) })
+        const node = flow.nodeCreate({ kind: 'nwrx/core:parse-json', defineResultSchema: () => ({}) })
         const listener = vi.fn()
         flow.on('node:resultSchema', listener)
         await node.resolveResultSchema()
@@ -295,16 +293,16 @@ describe('createFlow', () => {
   })
 
   describe('nodeRemove', () => {
-    it('should remove a node from the flow', async() => {
+    it('should remove a node from the flow', () => {
       using flow = createFlow({ modules: [moduleCore] })
-      const node = await flow.nodeCreate('nwrx/core:parse-json')
+      const node = flow.nodeCreate('nwrx/core:parse-json')
       flow.nodeRemove(node.id)
       expect(flow.nodes).toHaveLength(0)
     })
 
-    it('should emit a node:remove event', async() => {
+    it('should emit a node:remove event', () => {
       using flow = createFlow({ modules: [moduleCore] })
-      const node = await flow.nodeCreate('nwrx/core:parse-json')
+      const node = flow.nodeCreate('nwrx/core:parse-json')
       const listener = vi.fn()
       flow.on('node:remove', listener)
       flow.nodeRemove(node.id)
@@ -319,9 +317,9 @@ describe('createFlow', () => {
   })
 
   describe('getNodeInstance', () => {
-    it('should get a node instance given an ID', async() => {
+    it('should get a node instance given an ID', () => {
       using flow = createFlow({ modules: [moduleCore] })
-      const node = await flow.nodeCreate('nwrx/core:parse-json')
+      const node = flow.nodeCreate('nwrx/core:parse-json')
       const instance = flow.getNodeInstance(node.id)
       expect(instance).toBe(node)
     })
@@ -333,49 +331,49 @@ describe('createFlow', () => {
     })
   })
 
-  describe('getDataPort', () => {
-    it('should get the data port of a node given a composite ID', async() => {
+  describe('getDataSocket', () => {
+    it('should get the data port of a node given a composite ID', () => {
       using flow = createFlow({ modules: [moduleCore] })
-      const node = await flow.nodeCreate('nwrx/core:parse-json')
-      const port = flow.getDataPort(`${node.id}:json`)
+      const node = flow.nodeCreate('nwrx/core:parse-json')
+      const port = flow.getDataSocket(`${node.id}:json`)
       expect(port).toBe(node.dataSchema?.json)
     })
 
     it('should throw an error if the node does not exist', () => {
       using flow = createFlow()
-      const shouldThrow = () => flow.getDataPort('node-id:string')
+      const shouldThrow = () => flow.getDataSocket('node-id:string')
       expect(shouldThrow).toThrow('Node instance with ID "node-id" does not exist')
     })
   })
 
-  describe('getResultPort', () => {
-    it('should get the result port of a node given a composite ID', async() => {
+  describe('getResultSocket', () => {
+    it('should get the result port of a node given a composite ID', () => {
       using flow = createFlow({ modules: [moduleCore] })
-      const node = await flow.nodeCreate('nwrx/core:parse-json')
-      const port = flow.getResultPort(`${node.id}:object`)
+      const node = flow.nodeCreate('nwrx/core:parse-json')
+      const port = flow.getResultSocket(`${node.id}:object`)
       expect(port).toBe(node.resultSchema?.object)
     })
 
     it('should throw an error if the node does not exist', () => {
       using flow = createFlow()
-      const shouldThrow = () => flow.getResultPort('node-id:boolean')
+      const shouldThrow = () => flow.getResultSocket('node-id:boolean')
       expect(shouldThrow).toThrow('Node instance with ID "node-id" does not exist')
     })
   })
 
   describe('linkCreate', () => {
-    it('should link the output of a node to the input of another node', async() => {
+    it('should link the output of a node to the input of another node', () => {
       using flow = createFlow({ modules: [moduleCore] })
-      const node1 = await flow.nodeCreate('nwrx/core:input')
-      const node2 = await flow.nodeCreate('nwrx/core:parse-json')
+      const node1 = flow.nodeCreate('nwrx/core:input')
+      const node2 = flow.nodeCreate('nwrx/core:parse-json')
       flow.linkCreate(`${node1.id}:value`, `${node2.id}:json`)
       expect(flow.links).toStrictEqual([{ source: `${node1.id}:value`, target: `${node2.id}:json` }])
     })
 
     it('should emit a node:dataRaw event when the data of a node is set', async() => {
       using flow = createFlow({ modules: [moduleCore] })
-      const node1 = await flow.nodeCreate('nwrx/core:input')
-      const node2 = await flow.nodeCreate('nwrx/core:parse-json')
+      const node1 = flow.nodeCreate('nwrx/core:input')
+      const node2 = flow.nodeCreate('nwrx/core:parse-json')
       const listener = vi.fn()
       flow.on('node:dataRaw', listener)
       flow.linkCreate(`${node1.id}:value`, `${node2.id}:json`)
@@ -385,9 +383,9 @@ describe('createFlow', () => {
 
     it('should remove the existing link if the target is already linked to another source', async() => {
       using flow = createFlow({ modules: [moduleCore] })
-      const node1 = await flow.nodeCreate('nwrx/core:input')
-      const node2 = await flow.nodeCreate('nwrx/core:input')
-      const node3 = await flow.nodeCreate('nwrx/core:parse-json')
+      const node1 = flow.nodeCreate('nwrx/core:input')
+      const node2 = flow.nodeCreate('nwrx/core:input')
+      const node3 = flow.nodeCreate('nwrx/core:parse-json')
       flow.linkCreate(`${node1.id}:value`, `${node3.id}:json`)
       flow.linkCreate(`${node2.id}:value`, `${node3.id}:json`)
       expect(flow.links).toStrictEqual([{ source: `${node2.id}:value`, target: `${node3.id}:json` }])
@@ -395,44 +393,44 @@ describe('createFlow', () => {
 
     it('should throw an error if the source and target are the same', async() => {
       using flow = createFlow({ modules: [moduleCore] })
-      const node = await flow.nodeCreate('nwrx/core:parse-json')
+      const node = flow.nodeCreate('nwrx/core:parse-json')
       const shouldThrow = () => flow.linkCreate(`${node.id}:object`, `${node.id}:json`)
       expect(shouldThrow).toThrow('Cannot link the node to itself')
     })
 
     it('should throw an error if the source and target are of different types', async() => {
       using flow = createFlow({ modules: [moduleCore] })
-      const node1 = await flow.nodeCreate('nwrx/core:parse-json')
-      const node2 = await flow.nodeCreate('nwrx/core:output')
+      const node1 = flow.nodeCreate('nwrx/core:parse-json')
+      const node2 = flow.nodeCreate('nwrx/core:output')
       const shouldThrow = () => flow.linkCreate(`${node1.id}:object`, `${node2.id}:value`)
       expect(shouldThrow).toThrow('Cannot link Object to String')
     })
 
     it('should throw an error if the source does not exist', async() => {
       using flow = createFlow({ modules: [moduleCore] })
-      const node = await flow.nodeCreate('nwrx/core:parse-json')
+      const node = flow.nodeCreate('nwrx/core:parse-json')
       const shouldThrow = () => flow.linkCreate('unknown:boolean', `${node.id}:string`)
       expect(shouldThrow).toThrow('Node instance with ID "unknown" does not exist')
     })
 
     it('should throw an error if the port of the source does not exist', async() => {
       using flow = createFlow({ modules: [moduleCore] })
-      const node = await flow.nodeCreate('nwrx/core:parse-json')
+      const node = flow.nodeCreate('nwrx/core:parse-json')
       const shouldThrow = () => flow.linkCreate(`${node.id}:unknown`, `${node.id}:string`)
       expect(shouldThrow).toThrow(/The result schema of node "[\da-z\-]+" does not contain a port with the key "unknown"/)
     })
 
     it('should throw an error if the target does not exist', async() => {
       using flow = createFlow({ modules: [moduleCore] })
-      const node = await flow.nodeCreate('nwrx/core:parse-json')
+      const node = flow.nodeCreate('nwrx/core:parse-json')
       const shouldThrow = () => flow.linkCreate(`${node.id}:object`, 'unknown:string')
       expect(shouldThrow).toThrow('Node instance with ID "unknown" does not exist')
     })
 
     it('should throw an error if the port of the target does not exist', async() => {
       using flow = createFlow({ modules: [moduleCore] })
-      const node1 = await flow.nodeCreate('nwrx/core:parse-json')
-      const node2 = await flow.nodeCreate('nwrx/core:output')
+      const node1 = flow.nodeCreate('nwrx/core:parse-json')
+      const node2 = flow.nodeCreate('nwrx/core:output')
       const shouldThrow = () => flow.linkCreate(`${node1.id}:object`, `${node2.id}:unknown`)
       expect(shouldThrow).toThrow(/The data schema of node "[\da-z\-]+" does not contain a port with the key "unknown"/)
     })
@@ -441,8 +439,8 @@ describe('createFlow', () => {
   describe('linkRemove', () => {
     it('should remove a link specified by the source', async() => {
       using flow = createFlow({ modules: [moduleCore] })
-      const node1 = await flow.nodeCreate('nwrx/core:input')
-      const node2 = await flow.nodeCreate('nwrx/core:parse-json')
+      const node1 = flow.nodeCreate('nwrx/core:input')
+      const node2 = flow.nodeCreate('nwrx/core:parse-json')
       flow.linkCreate(`${node1.id}:value`, `${node2.id}:json`)
       flow.linkRemove(`${node1.id}:value`)
       expect(flow.links).toHaveLength(0)
@@ -450,8 +448,8 @@ describe('createFlow', () => {
 
     it('should remove a link specified by the target', async() => {
       using flow = createFlow({ modules: [moduleCore] })
-      const node1 = await flow.nodeCreate('nwrx/core:input')
-      const node2 = await flow.nodeCreate('nwrx/core:parse-json')
+      const node1 = flow.nodeCreate('nwrx/core:input')
+      const node2 = flow.nodeCreate('nwrx/core:parse-json')
       flow.linkCreate(`${node1.id}:value`, `${node2.id}:json`)
       flow.linkRemove(`${node2.id}:json`)
       expect(flow.links).toHaveLength(0)
@@ -459,9 +457,9 @@ describe('createFlow', () => {
 
     it('should remove all links associated with a result port', async() => {
       using flow = createFlow({ modules: [moduleCore] })
-      const node1 = await flow.nodeCreate('nwrx/core:input')
-      const node2 = await flow.nodeCreate('nwrx/core:parse-json')
-      const node3 = await flow.nodeCreate('nwrx/core:parse-json')
+      const node1 = flow.nodeCreate('nwrx/core:input')
+      const node2 = flow.nodeCreate('nwrx/core:parse-json')
+      const node3 = flow.nodeCreate('nwrx/core:parse-json')
       flow.linkCreate(`${node1.id}:value`, `${node2.id}:json`)
       flow.linkCreate(`${node1.id}:value`, `${node3.id}:json`)
       flow.linkRemove(`${node1.id}:value`)
@@ -481,11 +479,11 @@ describe('createFlow', () => {
     // it('should start the execution of the flow', async() => {
     //   using flow = createFlow({ modules: [moduleCore] })
 
-    //   const node1 = await flow.nodeCreate('nwrx/core:input', {
+    //   const node1 = flow.nodeCreate('nwrx/core:input', {
     //     initialData: { property: 'value' },
     //   })
 
-  //   const node2 = await flow.nodeCreate('nwrx/core:parse-json')
+  //   const node2 = flow.nodeCreate('nwrx/core:parse-json')
   //   flow.linkCreate(`${node1.id}:value`, `${node2.id}:json`)
   //   flow.run()
   //   expect(node1.result).toStrictEqual({ value: undefined })

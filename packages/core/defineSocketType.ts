@@ -6,9 +6,9 @@ import { assertNotNil, assertStringNotEmpty } from '@unshared/validation'
  * validate the value and provide information about the type in the flow editor.
  *
  * @template T The internal type of the flow type.
- * @example type TypePrimitiveString = FlowType<string> // { parse: (value: unknown) => string, ... }
+ * @example type TypePrimitiveString = SocketType<string> // { parse: (value: unknown) => string, ... }
  */
-export interface FlowType<T = unknown> {
+export interface SocketType<T = unknown> {
 
   /**
    * A unique identifier of the type. The identifier is used to identify the
@@ -59,7 +59,7 @@ export interface FlowType<T = unknown> {
 /**
  * The serialized representation of a flow type.
  */
-export interface FlowTypeJSON {
+export interface SocketTypeJSON {
   kind: string
   name?: string
   color?: string
@@ -67,14 +67,14 @@ export interface FlowTypeJSON {
 }
 
 /**
- * Extract the type of the given `FlowType` instance.
+ * Extract the type of the given `SocketType` instance.
  *
- * @template T The `FlowType` instance to extract the type from.
+ * @template T The `SocketType` instance to extract the type from.
  * @example
- * type Type = FlowType<string>
+ * type Type = SocketType<string>
  * type Result = InferType<Type> // string
  */
-export type InferType<T> = T extends FlowType<infer U> ? U : never
+export type InferType<T> = T extends SocketType<infer U> ? U : never
 
 /**
  * Create a flow type with the given options. The options must contain a
@@ -83,7 +83,7 @@ export type InferType<T> = T extends FlowType<infer U> ? U : never
  * @param options The options to create the flow type.
  * @returns The flow type created with the given options.
  * @example
- * const TypePrimitiveString = defineFlowType({
+ * const TypePrimitiveString = defineSocketType({
  *   name: 'primitive:string',
  *   label: 'String',
  *   parse: (value: unknown) => {
@@ -92,7 +92,7 @@ export type InferType<T> = T extends FlowType<infer U> ? U : never
  *   },
  * })
  */
-export function defineFlowType<T>(options: FlowType<T>): FlowType<T> {
+export function defineSocketType<T>(options: SocketType<T>): SocketType<T> {
   assertNotNil(options)
   assertStringNotEmpty(options.kind)
   return {

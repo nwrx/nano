@@ -1,16 +1,16 @@
-import { defineFlowCategory } from '../defineFlowCategory'
-import { defineFlowModule } from '../defineFlowModule'
-import { defineFlowNode } from '../defineFlowNode'
-import { defineFlowType } from '../defineFlowType'
+import { defineCategory } from '../defineCategory'
+import { defineModule } from '../defineModule'
+import { defineNode } from '../defineNode'
+import { defineSocketType } from '../defineSocketType'
 
-export const categoryBasic = defineFlowCategory({
+export const categoryBasic = defineCategory({
   kind: 'basic',
   name: 'Basic',
   icon: 'https://api.iconify.design/carbon:basic.svg',
   description: 'A collection of basic nodes for working with data.',
 })
 
-export const typeString = defineFlowType({
+export const typeString = defineSocketType({
   kind: 'string',
   name: 'String',
   parse: (value) => {
@@ -19,7 +19,7 @@ export const typeString = defineFlowType({
   },
 })
 
-export const typeObject = defineFlowType({
+export const typeObject = defineSocketType({
   kind: 'object',
   name: 'Object',
   parse: (value) => {
@@ -28,7 +28,7 @@ export const typeObject = defineFlowType({
   },
 })
 
-export const typeNumber = defineFlowType({
+export const typeNumber = defineSocketType({
   kind: 'number',
   name: 'Number',
   parse: (value) => {
@@ -37,7 +37,7 @@ export const typeNumber = defineFlowType({
   },
 })
 
-export const typeBoolean = defineFlowType({
+export const typeBoolean = defineSocketType({
   kind: 'boolean',
   name: 'Boolean',
   parse: (value) => {
@@ -46,7 +46,7 @@ export const typeBoolean = defineFlowType({
   },
 })
 
-export const nodeInput = defineFlowNode({
+export const nodeInput = defineNode({
   kind: 'input',
   name: 'Input',
   icon: 'https://api.iconify.design/carbon:arrow-down.svg',
@@ -56,9 +56,8 @@ export const nodeInput = defineFlowNode({
   defineDataSchema: {
     property: {
       name: 'Property',
-      display: 'text',
+      control: 'text',
       type: typeString,
-      disallowDynamic: true,
       description: 'The name of the entrypoint.',
     },
   },
@@ -78,7 +77,7 @@ export const nodeInput = defineFlowNode({
   },
 })
 
-export const nodeOutput = defineFlowNode({
+export const nodeOutput = defineNode({
   kind: 'output',
   name: 'Output',
   icon: 'https://api.iconify.design/carbon:arrow-up.svg',
@@ -88,9 +87,8 @@ export const nodeOutput = defineFlowNode({
   defineDataSchema: () => ({
     property: {
       name: 'Property',
-      display: 'text',
       type: typeString,
-      disallowDynamic: true,
+      control: 'text',
       description: 'The name of the exitpoint.',
     },
     value: {
@@ -107,7 +105,7 @@ export const nodeOutput = defineFlowNode({
   },
 })
 
-export const nodeJsonParse = defineFlowNode({
+export const nodeJsonParse = defineNode({
   kind: 'parse-json',
   name: 'JSON Parse',
   icon: 'https://api.iconify.design/carbon:json.svg',
@@ -133,7 +131,7 @@ export const nodeJsonParse = defineFlowNode({
   },
 })
 
-export const moduleCore = defineFlowModule({
+export const moduleCore = defineModule({
   kind: 'nwrx/core',
   name: 'Core',
   nodes: [

@@ -1,4 +1,4 @@
-import type { FlowModule } from './defineFlowModule'
+import type { Module } from './defineModule'
 import { Flow } from './createFlow'
 import { FLOW_FILE_VERSION } from './flowToJson'
 
@@ -26,7 +26,7 @@ export interface FlowExportV1 {
  * @param modules The modules that are available to the flow.
  * @returns The new flow instance.
  */
-export function flowFromJsonV1<T extends FlowModule = FlowModule>(json: FlowExportV1, modules: T[] = []): Flow<T> {
+export function flowFromJsonV1<T extends Module = Module>(json: FlowExportV1, modules: T[] = []): Flow<T> {
   const { version, nodes = {}, ...meta } = json
 
   // --- Assert that the version is supported.

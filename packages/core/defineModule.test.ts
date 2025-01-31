@@ -1,13 +1,13 @@
-import type { FlowModule } from './defineFlowModule'
-import type { FlowNode } from './defineFlowNode'
-import type { FlowType } from './defineFlowType'
+import type { Module } from './defineModule'
+import type { Node } from './defineNode'
+import type { SocketType } from './defineSocketType'
 import { nodeInput, nodeJsonParse, typeBoolean, typeNumber, typeString } from './__fixtures__'
-import { defineFlowModule } from './defineFlowModule'
+import { defineModule } from './defineModule'
 
 describe('defineFlowModule', () => {
   describe('defineFlowModule', () => {
     it('should define a flow module with the given options', () => {
-      const module = defineFlowModule({
+      const module = defineModule({
         kind: 'microsoft-azure',
         name: 'Microsoft Azure',
         icon: 'https://api.iconify.design/carbon:cloud.svg',
@@ -26,7 +26,7 @@ describe('defineFlowModule', () => {
     })
 
     it('should define a flow module with minimal options', () => {
-      const module = defineFlowModule({ kind: 'microsoft-azure' })
+      const module = defineModule({ kind: 'microsoft-azure' })
       expect(module).toStrictEqual({
         kind: 'microsoft-azure',
         name: 'microsoft-azure',
@@ -39,7 +39,7 @@ describe('defineFlowModule', () => {
 
     it('should not return the same object', () => {
       const object = { kind: 'microsoft-azure' }
-      const module = defineFlowModule(object)
+      const module = defineModule(object)
       expect(module).not.toBe(object)
     })
   })
@@ -47,38 +47,38 @@ describe('defineFlowModule', () => {
   describe('edge cases', () => {
     it('should throw an error if options is undefined', () => {
       // @ts-expect-error: test invalid input
-      const shouldThrow = () => defineFlowModule()
+      const shouldThrow = () => defineModule()
       expect(shouldThrow).toThrow('Expected value not to be null or undefined')
     })
 
     it('should throw an error if the kind is undefined', () => {
     // @ts-expect-error: test invalid input
-      const shouldThrow = () => defineFlowModule({ kind: undefined })
+      const shouldThrow = () => defineModule({ kind: undefined })
       expect(shouldThrow).toThrow('Expected value to be a string but received: undefined')
     })
 
     it('should throw an error if the kind is null', () => {
     // @ts-expect-error: test invalid input
     // eslint-disable-next-line unicorn/no-null
-      const shouldThrow = () => defineFlowModule({ kind: null })
+      const shouldThrow = () => defineModule({ kind: null })
       expect(shouldThrow).toThrow('Expected value to be a string but received: null')
     })
 
     it('should throw an error if the kind is an empty string', () => {
-      const shouldThrow = () => defineFlowModule({ kind: '' })
+      const shouldThrow = () => defineModule({ kind: '' })
       expect(shouldThrow).toThrow('Expected value to be a non-empty string but received an empty string')
     })
 
     it('should throw an error if the kind is not a string', () => {
     // @ts-expect-error: test invalid input
-      const shouldThrow = () => defineFlowModule({ kind: 123 })
+      const shouldThrow = () => defineModule({ kind: 123 })
       expect(shouldThrow).toThrow('Expected value to be a string but received: number')
     })
   })
 
   describe('type inference', () => {
     it('should infer the type of the flow module', () => {
-      const module = defineFlowModule({
+      const module = defineModule({
         kind: 'microsoft-azure',
         name: 'Microsoft Azure',
         icon: 'https://api.iconify.design/carbon:cloud.svg',
@@ -88,10 +88,10 @@ describe('defineFlowModule', () => {
       })
 
       expectTypeOf(module).toMatchTypeOf<
-        FlowModule<
+        Module<
           'microsoft-azure',
-          FlowNode<'input' | 'parse-json', any, any>,
-          FlowType<boolean | number | string>
+          Node<'input' | 'parse-json', any, any>,
+          SocketType<boolean | number | string>
         >
       >()
     })

@@ -1,59 +1,20 @@
 import type { Pretty } from '@unshared/types'
 import type { Flow } from './createFlow'
-import type { FlowCategory } from './defineFlowCategory'
-import type { FlowType } from './defineFlowType'
+import type { Category } from './defineCategory'
+import type { DataSchema } from './defineDataSocket'
+import type { ResultSchema } from './defineResultSocket'
+import type { MaybePromise } from './types'
 import type { InferSchemaType } from './types'
 import { assertNotNil, assertStringNotEmpty } from '@unshared/validation'
-
-export type FlowNodePortDisplay =
-  | 'password'
-  | 'select'
-  | 'slider'
-  | 'stream'
-  | 'switch'
-  | 'text'
-  | 'textarea'
-  | 'toggle'
-
-export interface FlowNodePortValue<T = unknown> {
-  value: T
-  label: string
-  icon?: string
-  description?: string
-}
-
-/**
- * A schema that contains the ports of a flow. It allows the definition of
- * the label as well as the type of the port that is used in the flow.
- */
-export interface FlowNodePort<T = unknown> {
-  type: FlowType<T>
-  name?: string
-  display?: FlowNodePortDisplay
-  description?: string
-  defaultValue?: NoInfer<T>
-  disallowStatic?: boolean
-  disallowDynamic?: boolean
-  values?: Array<FlowNodePortValue<NoInfer<T>>> | Array<NoInfer<T> & string>
-  numberMax?: number
-  numberMin?: number
-  numberStep?: number
-}
-
-/**
- * A schema that contains a mapping of the ports of a flow. It allows the
- * definition of the ports and their types that are used in the flow.
- */
-export type FlowSchema = Record<string, FlowNodePort>
 
 /**
  * The parameters passed to the process function of a flow node. The parameters
  * contain the input values and additional parameters that can be used to
  * process the data.
  */
-export interface FlowNodeContext<
-  Data extends FlowSchema = FlowSchema,
-  Result extends FlowSchema = FlowSchema,
+export interface NodeInstanceContext<
+  T extends DataSchema = DataSchema,
+  U extends ResultSchema = ResultSchema,
 > {
 
   /**
@@ -66,14 +27,14 @@ export interface FlowNodeContext<
    * The data that is passed to the node when it is executed. The data comes
    * from the previous nodes or can be statically defined in the flow.
    */
-  data: Pretty<Partial<InferSchemaType<Data>>>
+  data: Pretty<Partial<InferSchemaType<T>>>
 
   /**
    * The current result that is produced by the node when it is executed. The
    * result is used to pass the output of the node to the next nodes in the flow.
    * The result can be modified by the node to produce the desired output.
    */
-  result: Pretty<Partial<InferSchemaType<Result>>>
+  result: Pretty<Partial<InferSchemaType<U>>>
 
   /**
    * The resolved data schema that is used to validate the data that is passed
@@ -89,7 +50,7 @@ export interface FlowNodeContext<
    *   },
    * }
    */
-  dataSchema: FlowSchema extends Data ? any : Data
+  dataSchema: DataSchema extends T ? any : T
 
   /**
    * The resolved result schema that is used to validate the result that is
@@ -105,7 +66,7 @@ export interface FlowNodeContext<
    *   },
    * }
    */
-  resultSchema: FlowSchema extends Result ? any : Result
+  resultSchema: ResultSchema extends U ? any : U
 
   /**
    * Secrets that are passed to the node when it is executed. The secrets
@@ -140,7 +101,7 @@ export interface FlowNodeContext<
    *
    * @example
    *
-   * const node = defineFlowNode({
+   * const node = defineNode({
    *   ...
    *   process: ({ abortSignal }) => {
    *     fetch('https://api.example.com/data', { signal: abortSignal })
@@ -155,13 +116,13 @@ export interface FlowNodeContext<
  * name, label, icon, description, initial data, data schema, result schema,
  * and the process function of the flow node.
  *
- * @template D The schema of the data that the node expects.
- * @template R The schema of the result that the node produces.
+ * @template T The schema of the data that the node expects.
+ * @template U The schema of the result that the node produces.
  */
-export interface FlowNode<
+export interface Node<
   K extends string = string,
-  D extends FlowSchema = FlowSchema,
-  R extends FlowSchema = FlowSchema,
+  T extends DataSchema = DataSchema,
+  U extends ResultSchema = ResultSchema,
 > {
 
   /**
@@ -202,7 +163,7 @@ export interface FlowNode<
    *
    * @example FlowCategory { ... }
    */
-  category?: FlowCategory
+  category?: Category
 
   /**
    * A function that defines the schema of the data that the node expects.
@@ -211,7 +172,7 @@ export interface FlowNode<
    *
    * @returns The schema of the data that the node expects.
    */
-  defineDataSchema?: ((context: NoInfer<FlowNodeContext<D, R>>) => D | Promise<D>) | D
+  defineDataSchema?: ((context: NodeInstanceContext<NoInfer<T>, NoInfer<U>>) => MaybePromise<T>) | Readonly<T>
 
   /**
    * A function that defines the schema of the result that the node produces.
@@ -220,7 +181,7 @@ export interface FlowNode<
    *
    * @returns The schema of the result that the node produces.
    */
-  defineResultSchema?: ((context: NoInfer<FlowNodeContext<D, R>>) => Promise<R> | R) | (object & R)
+  defineResultSchema?: ((context: NodeInstanceContext<NoInfer<T>, NoInfer<U>>) => MaybePromise<U>) | Readonly<U>
 
   /**
    * A function that processes the data of the node and produces a result.
@@ -238,7 +199,7 @@ export interface FlowNode<
    *   },
    * })
    */
-  process?: (context: NoInfer<FlowNodeContext<D, R>>) => InferSchemaType<R> | Promise<InferSchemaType<R> | void> | void
+  process?: (context: NodeInstanceContext<NoInfer<T>, NoInfer<U>>) => MaybePromise<InferSchemaType<NoInfer<U>> | void>
 }
 
 /**
@@ -249,7 +210,7 @@ export interface FlowNode<
  * @example
  *
  * // Define a flow node that parses JSON data.
- * const jsonParse = defineFlowNode({
+ * const jsonParse = defineNode({
  *   name: 'parse-json',
  *   label: 'JSON Parse',
  *   icon: 'https://api.iconify.design/carbon:json.svg',
@@ -279,11 +240,11 @@ export interface FlowNode<
  *   }),
  * })
  */
-export function defineFlowNode<
+export function defineNode<
   N extends string,
-  T extends FlowSchema = FlowSchema,
-  U extends FlowSchema = FlowSchema,
->(options: FlowNode<N, T, U>): FlowNode<N, T, U> {
+  T extends DataSchema = DataSchema,
+  U extends ResultSchema = ResultSchema,
+>(options: Node<N, T, U>): Node<N, T, U> {
   assertNotNil(options)
   assertStringNotEmpty(options.kind)
   return {
