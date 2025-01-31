@@ -11,7 +11,7 @@ const GROQ_MODEL_OWNER_ICON: Record<string, string> = {
   'OpenAI': 'https://api.iconify.design/simple-icons:openai.svg',
   'Other': 'https://api.iconify.design/carbon:flow-stream.svg',
   'Google': 'https://api.iconify.design/logos:google-icon.svg',
-  'Groq': 'https://api.iconify.design/logos:groq-icon.svg',
+  'Groq': 'https://api.iconify.design/prime:sparkles.svg',
   'Hugging Face': 'https://api.iconify.design/logos:hugging-face-icon.svg',
   'Microsoft': 'https://api.iconify.design/logos:microsoft-icon.svg',
 }
