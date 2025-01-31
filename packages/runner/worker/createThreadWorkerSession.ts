@@ -17,8 +17,8 @@ export type ThreadSessionMessage =
 export class ThreadWorkerSession {
   constructor(public port: MessagePort) {}
 
-  create(flow: FlowV1) {
-    this.port.postMessage({ event: 'create', data: flow } as ThreadClientMessage)
+  create(data: FlowV1) {
+    this.port.postMessage({ event: 'create', data } as ThreadClientMessage)
     return new Promise<void>((resolve, reject) => {
       const callback = (message: ThreadWorkerMessage) => {
         if (message.event === 'worker:created') {
@@ -31,8 +31,8 @@ export class ThreadWorkerSession {
     })
   }
 
-  start(input: ThreadInputObject) {
-    this.port.postMessage({ event: 'start', data: input } as ThreadClientMessage)
+  start(data: ThreadInputObject) {
+    this.port.postMessage({ event: 'start', data } as ThreadClientMessage)
     return new Promise<ObjectLike>((resolve, reject) => {
       const callback = (message: ThreadWorkerMessage) => {
         if (message.event === 'done') {
