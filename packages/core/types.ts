@@ -1,4 +1,3 @@
-import type { Flow } from './createFlow'
 import type { Module } from './defineModule'
 
 export type ObjectLike = Record<string, any>
@@ -11,10 +10,9 @@ export type MaybePromise<T> = Promise<T> | T
  *
  * @template T The `Module` instance to infer the node kinds from.
  */
-export type NodeKind<T extends Flow | Module> =
-    T extends Flow<infer U extends Module> ? NodeKind<U>
-      : T extends Module<infer U, infer N> ? `${U}:${N['kind']}`
-        : never
+export type NodeKind<T extends Module> =
+    T extends Module<infer U, infer N> ? `${U}:${N['kind']}`
+      : never
 
 /**
  * Given a `Flow` instance or a `Module` instance, infer the available node
@@ -30,10 +28,9 @@ export type NodeKind<T extends Flow | Module> =
  * // Infer the node kinds from a module instance.
  * type NodeKind = InferNodeKind<typeof module>
  */
-export type NodeOf<T extends Flow | Module> =
-  T extends Flow<infer U extends Module> ? NodeOf<U>
-    : T extends Module<string, infer N> ? N
-      : never
+export type NodeOf<T extends Module> =
+  T extends Module<string, infer N> ? N
+    : never
 
 /**
  * Given a `Flow` instance or a `Module` instance and a kind, infer the node
@@ -50,15 +47,11 @@ export type NodeOf<T extends Flow | Module> =
  * // Infer the node from a module instance.
  * type Node = InferNode<typeof module, 'example:parse:boolean'>
  */
-export type NodeByKind<T extends Flow | Module, K extends NodeKind<T>> =
+export type NodeByKind<T extends Module, K extends NodeKind<T>> =
   K extends `${infer U}:${infer N}`
 
     // Infer the node from a flow module instance.
     ? T extends Module<U, any, any>
       ? NodeOf<T> extends infer R ? R extends { kind: N } ? R : never : never
-
-      // Infer the node from a flow instance.
-      : T extends Flow<infer M extends Module<U>>
-        ? K extends NodeKind<M> ? NodeByKind<M, K> : never : never
-
+      : never
     : never
