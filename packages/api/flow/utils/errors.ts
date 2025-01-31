@@ -22,8 +22,6 @@ export const ERRORS = {
     statusMessage: response.statusText,
     statusCode: response.status,
   }),
-
-  // Module
   FLOW_MODULE_NOT_FOUND: (idOrSlug: string) => createError({
     name: 'E_FLOW_MODULE_NOT_FOUND',
     statusCode: 404,

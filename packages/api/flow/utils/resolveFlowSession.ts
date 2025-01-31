@@ -1,12 +1,13 @@
 import type { ModuleFlow, User } from '@nwrx/api'
 import type { FlowEvents, Flow as FlowInstance, FlowThreadEventMeta, FlowThreadNodeEventMeta, SocketListOption } from '@nwrx/core'
+import type { FlowThread } from '@nwrx/core'
 import type { Peer } from 'crossws'
 import type { Repository } from 'typeorm'
 import type { Flow as FlowEntity } from '../entities'
 import type { FlowSessionMessage } from './flowSessionMessageSchema'
 import type { FlowJSON, FlowThreadNodeJSON } from './serializeFlowSession'
-import { FlowThread } from '@nwrx/core'
 import { randomUUID } from 'node:crypto'
+import { resolveFlowInstance } from './resolveFlowInstance'
 import { serializeFlowSession, serializeNode } from './serializeFlowSession'
 
 export interface FlowSessionParticipant {
@@ -68,10 +69,10 @@ export type FlowSessionEventPayload<K extends FlowSessionEventName = FlowSession
 export class FlowSessionInstance {
   constructor(
     public flow: FlowInstance,
+    public thread: FlowThread,
     public entity: FlowEntity,
     public repository: Repository<FlowEntity>,
   ) {
-    this.thread = new FlowThread(flow)
     this.flow.on('createNode', async node => this.broadcast({ event: 'node:created', ...await serializeNode(this, node) }))
     this.flow.on('setNodeInputValue', ({ id }, key, value) => this.broadcast({ event: 'node:inputValueChanged', id, key, value }))
     this.thread.on('input', (name, value, meta) => this.broadcast({ event: 'thread:input', name, value, ...meta }))
@@ -91,9 +92,6 @@ export class FlowSessionInstance {
       console.error(error)
     })
   }
-
-  /** The thread that is running the flow. */
-  thread: FlowThread
 
   /** The peers that are subscribed to the session. */
   participants: FlowSessionParticipant[] = []
@@ -355,20 +353,21 @@ export class FlowSessionInstance {
 /**
  * Given an ID, create or get the `FlowSession` that corresponds to the ID of the flow.
  *
- * @param flow The flow to resolve the session for.
+ * @param entity The flow to resolve the session for.
  * @returns The `FlowSession` that corresponds to the given ID.
  */
-export function resolveFlowSession(this: ModuleFlow, flow: FlowEntity): FlowSessionInstance {
+export function resolveFlowSession(this: ModuleFlow, entity: FlowEntity): FlowSessionInstance {
 
   // --- Check if the chain session is already in memory.
   // --- If so, return the chain session from memory.
-  const exists = this.flowSessions.get(flow.id)
+  const exists = this.flowSessions.get(entity.id)
   if (exists) return exists
 
   // --- Create the flow session and store it in memory.
-  const flowInstance = this.resolveFlowInstance(flow)
   const { Flow } = this.getRepositories()
-  const session = new FlowSessionInstance(flowInstance, flow, Flow)
-  this.flowSessions.set(flow.id, session)
+  const flow = resolveFlowInstance.call(this, entity)
+  const thread = flow.createThread()
+  const session = new FlowSessionInstance(flow, thread, entity, Flow)
+  this.flowSessions.set(entity.id, session)
   return session
 }
