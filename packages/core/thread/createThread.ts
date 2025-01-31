@@ -6,7 +6,7 @@ import { Emitter } from '../utils/createEmitter'
 import { DEFAULT_COMPONENT_RESOLVER } from '../utils/defaultComponentResolver'
 import { DEFAULT_REFERENCE_RESOLVER } from '../utils/defaultReferenceResolver'
 
-export type ThreadInput =
+export type ThreadInputValue =
   | boolean
   | File
   | number
@@ -56,7 +56,7 @@ export class Thread extends Emitter<ThreadEventMap> implements ThreadOptions {
   output: ObjectLike = {}
 
   /** The input of the flow thread. */
-  input: Record<string, ThreadInput> = {}
+  input: Record<string, ThreadInputValue> = {}
 
   /** The abort controller that is used to abort the flow thread. */
   abortController = new AbortController()
