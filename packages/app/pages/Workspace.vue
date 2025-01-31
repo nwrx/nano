@@ -25,21 +25,40 @@ const workspace = useWorkspace(route.params.workspace as string, {
 // --- Dialog and list state.
 const isDialogCreateProjectOpen = ref(false)
 const isWorkspaceOpen = useLocalStorage<Record<string, boolean>>('__Workspace_Open', {})
-
-onMounted(async() => {
-  await workspace.refresh()
-})
+onMounted(workspace.refresh)
 </script>
 
 <template>
-  <AppPage class="flex flex-col overflow-hidden w-full space-y-md">
+  <AppPage>
     <AppPageHeader
       icon="i-carbon:flow"
       :title="t('title')"
       :description="t('description')"
-      badge="Beta"
-      badgeVariant="primary"
     />
+
+    <!-- Project list -->
+    <AppPageContainer class="space-y-lg">
+      <ProjectList
+        v-model="isWorkspaceOpen"
+        :workspace="workspace.data.name"
+        :projects="workspace.data.projects"
+        :baseUrl="CONSTANTS.appHost"
+        @flowCreate="(project) => workspace.createFlow(project)"
+        @flowImport="(project, file) => workspace.importFlow(project, file)"
+        @flowDelete="(project, flow) => workspace.deleteFlow(project, flow)"
+      />
+
+      <!-- Create project button -->
+      <div class="flex items-center space-x-md">
+        <Button
+          link
+          variant="primary"
+          icon="i-carbon:add"
+          :label="t('createProject')"
+          @click="() => isDialogCreateProjectOpen = true"
+        />
+      </div>
+    </AppPageContainer>
 
     <!-- Create project dialog -->
     <ProjectListDialogCreate
@@ -48,29 +67,6 @@ onMounted(async() => {
       :baseUrl="CONSTANTS.appHost"
       @submit="options => workspace.createProject(options)"
     />
-
-    <!-- Create project -->
-    <AppPageContainer class="space-y-lg">
-      <div class="flex items-center space-x-md">
-        <Button
-          link
-          variant="primary"
-          icon="i-carbon:add"
-          label="Create Project"
-          @click="() => isDialogCreateProjectOpen = true"
-        />
-      </div>
-
-      <!-- Project list -->
-      <ProjectList
-        v-model="isWorkspaceOpen"
-        :workspace="workspace.data.name"
-        :projects="workspace.data.projects"
-        :baseUrl="CONSTANTS.appHost"
-        @flowCreate="(project) => workspace.createFlow(project)"
-        @flowDelete="(project, flow) => workspace.deleteFlow(project, flow)"
-      />
-    </AppPageContainer>
   </AppPage>
 </template>
 
@@ -78,16 +74,21 @@ onMounted(async() => {
   en:
     title: Workspace
     description: Create, edit, and delete your flows.
+    createProject: Create new project
   fr:
     title: Espace de travail
     description: Créez, éditez et supprimez vos flux.
+    createProject: Créer nouveau projet
   de:
     title: Arbeitsbereich
     description: Erstellen, bearbeiten und löschen Sie Ihre Flows.
+    createProject: Neues Projekt erstellen
   es:
     title: Espacio de trabajo
     description: Crea, edita y elimina tus flujos.
+    createProject: Crear nuevo proyecto
   zh:
     title: 工作区
     description: 创建、编辑和删除您的流程。
+    createProject: 创建新项目
 </i18n>
