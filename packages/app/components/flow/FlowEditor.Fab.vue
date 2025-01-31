@@ -12,13 +12,8 @@ const props = defineProps<{
   <BaseButton
     v-bind="props"
     eager
-    :class="{
-      'text-app !bg-prominent': isActive,
-    }"
-    class="
-      flex items-center justify-center size-10 rounded
-      hover:bg-prominent transition
-    ">
+    :class="{ 'text-white !bg-primary-500': isActive }"
+    class="flex items-center justify-center size-10 rounded hover:bg-prominent transition">
 
     <!-- Icon -->
     <BaseIcon
