@@ -19,6 +19,10 @@ export default defineNuxtConfig({
     baseURL: '/',
     keepalive: {
       max: 10,
+      include: [
+        '/admin/**',
+        '/settings/**',
+      ],
     },
   },
 
