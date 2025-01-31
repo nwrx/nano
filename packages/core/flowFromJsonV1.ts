@@ -53,27 +53,12 @@ export function flowFromJsonV1<T extends Module = Module>(json: FlowExportV1, mo
     const initialData: Record<string, unknown> = {}
 
     // --- Collect the static data and the links.
+    // --- If the key starts with an underscore, store it as meta data.
+    // --- Otherwise, store the value as initial data.
     for (const key in data) {
       const value = data[key]
-
-      // --- If the key starts with an underscore, store it as meta data.
-      if (key.startsWith('_')) {
-        const metaKey = key.slice(1)
-        meta[metaKey] = value
-      }
-
-      // --- If the value is a reference to another node, store it as a link.
-      else if (typeof value === 'string' && value.startsWith('$NODE.')) {
-        const source = value.slice(6)
-        const target = `${id}:${key}`
-        flow.links.push({ source, target })
-        initialData[key] = value
-      }
-
-      // --- Otherwise, store the value as initial data.
-      else {
-        initialData[key] = value
-      }
+      if (key.startsWith('_')) meta[key.slice(1)] = value
+      else initialData[key] = value
     }
 
     // --- Create the node instance.
