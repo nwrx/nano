@@ -21,5 +21,6 @@ export async function resolveUser(this: ModuleUser, username: string, relations?
 
   // --- Throw an error if the user does not exist.
   if (!user) throw this.errors.USER_NOT_FOUND(username)
+  if (user.disabledAt) throw this.errors.USER_NOT_FOUND(username)
   return user
 }

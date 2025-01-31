@@ -1,66 +1,65 @@
 import type { UUID } from 'node:crypto'
 import type { ModuleUser } from '../index'
 import { createRoute } from '@unserved/server'
-import { assertStringNotEmpty, createSchema } from '@unshared/validation'
-import { getHeader, getRequestIP, setCookie, setResponseHeader } from 'h3'
+import { assertStringNotEmpty, createSchema, EXP_UUID } from '@unshared/validation'
+import { createDecipheriv, createHash } from 'node:crypto'
 
 export function userRecover(this: ModuleUser) {
   return createRoute(
     {
-      name: 'POST /api/recover',
-      body: createSchema({
+      name: 'POST /api/users/:username/recover',
+      parameters: createSchema({
         username: assertStringNotEmpty,
-        password: assertStringNotEmpty,
-        passwordConfirm: assertStringNotEmpty,
+      }),
+      body: createSchema({
         token: assertStringNotEmpty,
+        newPassword: assertStringNotEmpty,
+        newPasswordConfirm: assertStringNotEmpty,
       }),
     },
+    async({ event, parameters, body }) => {
+      const { username } = parameters
+      const { token, newPassword, newPasswordConfirm } = body
 
-    async({ event, body }) => {
-      const { token, username } = body
-
-      // --- Get the IP address and user agent.
-      const requestIp = getRequestIP(event, { xForwardedFor: this.userTrustProxy })
-      const userAgent = getHeader(event, 'User-Agent')
-      if (!requestIp || !userAgent) throw this.errors.USER_MISSING_HEADER()
-      const address = requestIp.split(':')[0]
+      // --- Check if the passwords match.
+      if (newPassword !== newPasswordConfirm) throw this.errors.USER_PASSWORD_MISMATCH()
 
       // --- Decrypt the token and find the recovery request.
-      const requestId = this.decryptToken(token)
-      const request = await this.entities.UserRecovery.findOne({
-        where: { id: requestId as UUID },
+      const iv = Buffer.alloc(16, 0)
+      const key = createHash('sha256').update(this.userSecretKey).digest()
+      const id = createDecipheriv(this.userCypherAlgorithm, key, iv).update(token, 'hex', 'utf8').toString()
+      const isUuid = EXP_UUID.test(id)
+      if (!isUuid) throw this.errors.USER_RECOVERY_INVALID()
+
+      // --- Find the user recovery request by the token.
+      const { UserRecovery } = this.getRepositories()
+      const recovery = await UserRecovery.findOne({
+        where: { id: id as UUID },
         relations: { user: true },
       })
 
       // --- Check if the recovery request is valid.
-      if (!request) throw this.errors.USER_RECOVERY_INVALID()
-      if (request.user.username !== username) throw this.errors.USER_RECOVERY_INVALID()
-      if (request.user.deletedAt) throw this.errors.USER_RECOVERY_INVALID()
-      if (request.user.disabledAt) throw this.errors.USER_RECOVERY_INVALID()
-      if (request.address !== address) throw this.errors.USER_RECOVERY_INVALID()
-      if (request.userAgent !== userAgent) throw this.errors.USER_RECOVERY_INVALID()
-      if (request.expiresAt < new Date()) throw this.errors.USER_RECOVERY_EXPIRED()
+      if (!recovery) throw this.errors.USER_RECOVERY_INVALID()
+      if (!recovery.user) throw this.errors.USER_RECOVERY_INVALID()
+      if (recovery.user.disabledAt) throw this.errors.USER_DISABLED()
+      if (recovery.consumedAt) throw this.errors.USER_RECOVERY_INVALID()
+      if (recovery.user.username !== username) throw this.errors.USER_RECOVERY_INVALID()
+      if (recovery.expiredAt < new Date()) throw this.errors.USER_RECOVERY_EXPIRED()
+      recovery.consumedAt = new Date()
 
       // --- Set the new password for the user.
-      const user = request.user
-      await user.setPassword(body.password)
-      await user.save()
+      const password = await this.createPassword(newPassword, { user: recovery.user })
+      const session = this.createSession(event, { user: recovery.user })
 
-      // --- Create a session for the user and return it's associated token.
-      const userSession = this.createSession(event, user)
-      await userSession.save()
-      const sessionToken = this.createSessionToken(userSession)
-      request.consumedAt = new Date()
-      await request.save()
+      const { UserPassword, UserSession } = this.getRepositories()
+      await this.withTransaction(async() => {
+        await UserSession.save(session)
+        await UserPassword.save(password)
+        await UserRecovery.save(recovery)
+      })
 
       // --- Set the response status, content type, and user session cookie.
-      setResponseHeader(event, 'Content-Type', 'text/plain')
-      setCookie(event, this.userSessionCookieName, sessionToken, {
-        secure: true,
-        httpOnly: true,
-        sameSite: 'strict',
-        maxAge: (userSession.expiresAt.getTime() - Date.now()) / 1000,
-      })
+      this.setSessionCookie(event, session)
     },
   )
 }
