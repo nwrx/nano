@@ -20,7 +20,7 @@ const isOpen = useVModel(props, 'isOpen', emit, { passive: true })
     :text="text"
     class-content="group space-y-2">
 
-    <div class="border border-black/10 rounded select-text bg-black/5">
+    <div class="border border-editor rounded select-text bg-editor-panel-data">
       <FlowEditorPanelSectionDataProperty
         v-for="property in data"
         :key="property.name"

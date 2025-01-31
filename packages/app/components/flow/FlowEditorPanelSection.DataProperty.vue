@@ -17,15 +17,15 @@ const md = new Markdown({
   <div class="flex flex-wrap">
 
     <!-- Name -->
-    <div class="text-sm w-4/12 px-sm py-xs border-r border-app font-sans">
+    <div class="text-sm w-4/12 px-sm py-xs border-r border-editor font-sans">
       {{ name }}
     </div>
 
     <!-- Object -->
     <template v-if="typeof value === 'object'">
-      <div class="w-full border-t border-black/10"/>
+      <div class="w-full border-t border-editor"/>
       <template v-for="(value, key) in value">
-        <div class="text-sm w-4/12 px-sm py-xs truncate font-mono border-r border-black/10">{{ key }}</div>
+        <div class="text-sm w-4/12 px-sm py-xs truncate font-mono border-r border-editor">{{ key }}</div>
         <div class="text-sm w-8/12 px-sm py-xs truncate font-mono">{{ value }}</div>
       </template>
     </template>
