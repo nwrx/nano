@@ -37,8 +37,8 @@ export interface FlowSessionEventMap extends Record<keyof FlowEvents, unknown> {
   // Flow
   'flow:refresh': FlowSessionJSON
   'flow:metaValue': { key: string; value: unknown }
-  'flow:input': { property: string; value: unknown } & FlowEventMeta
-  'flow:output': { property: string; value: unknown } & FlowEventMeta
+  'flow:input': { name: string; value: unknown } & FlowEventMeta
+  'flow:output': { name: string; value: unknown } & FlowEventMeta
 
   // Flow lifecycle
   'flow:start': { input: Record<string, unknown> } & FlowEventMeta
@@ -103,8 +103,8 @@ export class FlowSessionInstance {
 
     // --- Flow events.
     this.flow.on('flow:metaValue', (key, value) => this.broadcast({ event: 'flow:metaValue', key, value }))
-    this.flow.on('flow:input', (property, value, meta) => this.broadcast({ event: 'flow:input', property, value, ...meta }))
-    this.flow.on('flow:output', (property, value, meta) => this.broadcast({ event: 'flow:output', property, value, ...meta }))
+    this.flow.on('flow:input', (name, value, meta) => this.broadcast({ event: 'flow:input', name, value, ...meta }))
+    this.flow.on('flow:output', (name, value, meta) => this.broadcast({ event: 'flow:output', name, value, ...meta }))
 
     // --- Flow lifecycle events.
     this.flow.on('flow:start', (input, meta) => this.broadcast({ event: 'flow:start', input, ...meta }))

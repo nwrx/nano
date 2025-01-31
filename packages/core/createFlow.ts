@@ -42,8 +42,8 @@ export interface FlowEvents {
   // Flow
   'flow:meta': [FlowMeta]
   'flow:metaValue': [key: string, value: unknown]
-  'flow:input': [property: string, value: unknown, meta: FlowEventMeta]
-  'flow:output': [property: string, value: unknown, meta: FlowEventMeta]
+  'flow:input': [name: string, value: unknown, meta: FlowEventMeta]
+  'flow:output': [name: string, value: unknown, meta: FlowEventMeta]
 
   // Flow Lifecycle
   'flow:start': [input: Record<string, unknown>, meta: FlowEventMeta]
@@ -463,7 +463,9 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
     }
 
     // --- Start listening for node result events.
-    const stop = this.on('node:result', (node, result) => {
+    const stop = this.on('node:end', (node, data, result) => {
+
+      // --- Handle links that are connected to the node.
       const links = this.links.filter(link => link.source.startsWith(node.id))
       for (const { source, target } of links) {
         const [node] = target.split(':')
@@ -472,14 +474,24 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
         const targetNode = this.getNodeInstance(node)
         void targetNode.process()
       }
+
+      // --- If the node is `nwrx/core:output`, set the output of the flow.
+      if (node.kind === 'nwrx/core:output') {
+        this.dispatch(
+          'flow:output',
+          data.name as string,
+          result.value,
+          this.eventMeta,
+        )
+      }
     })
 
     // --- When the `input` nodes are started, dispatch the `flow:input` event.
     const stopInput = this.on('node:start', (node, data) => {
       if (node.kind !== 'nwrx/core:input') return
-      const property = data.property as string
-      const value = input[property]
-      nextTick(() => this.dispatch('flow:input', property, value, this.eventMeta))
+      const name = data.name as string
+      const value = input[name]
+      nextTick(() => this.dispatch('flow:input', name, value, this.eventMeta))
     })
 
     // --- Check from time to time if at least one node is still running.
