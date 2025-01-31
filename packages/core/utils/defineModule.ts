@@ -1,11 +1,10 @@
 import type { MaybePromise } from '@unshared/types'
 import type { Component } from '../utils/defineComponent'
-import { assertNotNil, assertStringNotEmpty } from '@unshared/validation'
 
 /** The resolver for a flow node. */
-export type ModuleNodes =
-  | (() => MaybePromise<Record<string, Component<string, any, any>>>)
-  | Record<string, Component<string, any, any>>
+export type ModuleComponents =
+  | (() => MaybePromise<Record<string, Component>>)
+  | Record<string, Component>
 
 /** The options for defining a flow module. */
 export interface Module<K extends string = string> {
@@ -17,15 +16,7 @@ export interface Module<K extends string = string> {
    *
    * @example 'microsoft-azure'
    */
-  kind: K
-
-  /**
-   * The nodes that are defined in the flow module. The nodes are used to define
-   * the logic of the flow and can be connected to other nodes to create a flow
-   *
-   * @example { CheckCredentials, CreateResource, DeleteResource }
-   */
-  nodes: ModuleNodes
+  name: K
 
   /**
    * The display name of the flow module. The label is used to display the module
@@ -34,7 +25,7 @@ export interface Module<K extends string = string> {
    *
    * @example 'Microsoft Azure'
    */
-  name?: string
+  title?: string
 
   /**
    * The icon of the flow module. The icon is used to display the module in the UI
@@ -53,6 +44,14 @@ export interface Module<K extends string = string> {
    * @example 'A collection of nodes for working with Microsoft Azure services.'
    */
   description?: string
+
+  /**
+   * The nodes that are defined in the flow module. The nodes are used to define
+   * the logic of the flow and can be connected to other nodes to create a flow
+   *
+   * @example { CheckCredentials, CreateResource, DeleteResource }
+   */
+  components?: ModuleComponents
 }
 
 /**
@@ -63,13 +62,11 @@ export interface Module<K extends string = string> {
  * @returns The flow module created with the given options.
  */
 export function defineModule<K extends string>(options: Module<K>): Module<K> {
-  assertNotNil(options)
-  assertStringNotEmpty(options.kind)
   return {
-    kind: options.kind,
-    nodes: options.nodes,
-    name: options.name ?? options.kind,
+    name: options.name,
     icon: options.icon,
+    title: options.title ?? options.name,
     description: options.description,
+    components: options.components,
   }
 }
