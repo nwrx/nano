@@ -147,6 +147,16 @@ function onRelease() {
       @mousedown.stop
     />
 
+    <!-- Radio -->
+    <FlowEditorSocketRadio
+      v-else-if="control === 'radio'"
+      v-model="model"
+      :name="name"
+      :defaultValue="defaultValue"
+      :options="options"
+      @mousedown.stop
+    />
+
     <!-- Textarea input -->
     <FlowEditorSocketTextarea
       v-else-if="control === 'textarea'"
