@@ -6,7 +6,7 @@ defineProps<NavItem & { isOpen?: boolean }>()
 <template>
   <div>
     <h2
-      class="text-sm ml-md transition text-layout-subtle"
+      class="text-sm ml-md transition text-layout-subtle whitespace-nowrap"
       :class="{ 'opacity-0': !isOpen }"
       v-text="label"
     />
