@@ -2,11 +2,12 @@ import type { H3Event } from 'h3'
 import type { User } from '../entities'
 import type { UserSession } from '../entities'
 import type { ModuleUser } from '../index'
+import { getEventInformation } from './getEventInformation'
 
 export interface CreateSessionOptions {
 
   /** The user to create the session for. */
-  user?: User
+  user: User
 
   /** The duration of the session in milliseconds. */
   duration?: number
@@ -21,14 +22,21 @@ export interface CreateSessionOptions {
  * @param options The options to create the session with.
  * @returns The user session.
  */
-export function createSession(this: ModuleUser, event: H3Event, options: CreateSessionOptions = {}): UserSession {
+export function createSession(this: ModuleUser, event: H3Event, options: CreateSessionOptions): UserSession {
   const { UserSession } = this.getRepositories()
   const { user, duration = this.userSessionDuration } = options
 
-  // --- Get the IP address and user agent.
-  const { address, userAgent } = this.getEventInformation(event)
-  const expiresAt = new Date(Date.now() + duration)
+  // --- Get the IP address and user agent from the request.
+  const { address, userAgent } = getEventInformation(event, {
+    cookieName: this.userSessionCookieName,
+    trustProxy: this.userTrustProxy,
+  })
+
+  // --- Throw an error if address or user agent is missing.
+  if (!address) throw this.errors.USER_ADDRESS_NOT_RESOLVED()
+  if (!userAgent) throw this.errors.USER_MISSING_USER_AGENT_HEADER()
 
   // --- Create the session entity.
+  const expiresAt = new Date(Date.now() + duration)
   return UserSession.create({ user, address, userAgent, expiresAt })
 }

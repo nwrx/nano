@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/no-duplicate-string */
 import { createError } from '@unserved/server'
 
 export const ERRORS = {
@@ -98,11 +99,17 @@ export const ERRORS = {
     statusMessage: 'Unauthorized',
     message: 'The user session is associated with a non-existing user',
   }),
-  USER_MISSING_HEADER: () => createError({
-    name: 'E_USER_MISSING_HEADER',
-    statusCode: 401,
-    statusMessage: 'Unauthorized',
-    message: 'The user session is missing the required header',
+  USER_MISSING_USER_AGENT_HEADER: () => createError({
+    name: 'E_USER_MISSING_USER_AGENT_HEADER',
+    statusCode: 400,
+    statusMessage: 'Bad Request',
+    message: 'The user agent header is missing',
+  }),
+  USER_ADDRESS_NOT_RESOLVED: () => createError({
+    name: 'E_USER_ADDRESS_NOT_RESOLVED',
+    statusCode: 400,
+    statusMessage: 'Bad Request',
+    message: 'The address could not be resolved',
   }),
 
   // Recovery
@@ -119,7 +126,7 @@ export const ERRORS = {
     message: 'The recovery token has expired',
   }),
 
-  // --- Updates
+  // Update
   USER_ALREADY_ENABLED: () => createError({
     name: 'E_USER_ALREADY_ENABLED',
     statusCode: 400,

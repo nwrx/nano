@@ -4,6 +4,7 @@ import type { User, UserSession } from '../entities'
 import type { ModuleUser } from '../index'
 import { EXP_UUID } from '@unshared/validation'
 import { createDecipheriv, createHash, type UUID } from 'node:crypto'
+import { getEventInformation } from './getEventInformation'
 
 export interface AuthenticateOptions<U extends boolean = boolean> {
 
@@ -14,7 +15,7 @@ export interface AuthenticateOptions<U extends boolean = boolean> {
   optional?: U
 }
 
-export type AuthenticateResult = { user: User } & UserSession
+export type AuthenticateResult = UserSession & { user: User }
 
 /**
  * Authenticate the user by the token contained in the request's cookie payload
@@ -30,11 +31,16 @@ export async function authenticate(this: ModuleUser, event: H3Event | Peer, opti
 export async function authenticate(this: ModuleUser, event: H3Event | Peer, options: AuthenticateOptions<true>): Promise<AuthenticateResult | undefined>
 export async function authenticate(this: ModuleUser, event: H3Event | Peer, options: AuthenticateOptions = {}): Promise<AuthenticateResult | undefined> {
   const { optional = false } = options
+  const { token, address, userAgent } = getEventInformation(event, {
+    cookieName: this.userSessionCookieName,
+    trustProxy: this.userTrustProxy,
+  })
 
   // --- Extract and decrypt the token from the cookie.
   try {
-    const { token, address, userAgent } = this.getEventInformation(event)
     if (!token) throw this.errors.USER_NOT_AUTHENTICATED()
+    if (!address) throw this.errors.USER_ADDRESS_NOT_RESOLVED()
+    if (!userAgent) throw this.errors.USER_MISSING_USER_AGENT_HEADER()
 
     // --- Decrypt the token to get the user session id.
     const iv = Buffer.alloc(16, 0)
@@ -54,6 +60,7 @@ export async function authenticate(this: ModuleUser, event: H3Event | Peer, opti
     // --- Assert the session exists and the user is not soft deleted.
     const now = new Date()
     if (!userSession) throw this.errors.USER_SESSION_NOT_FOUND()
+    if (userSession.deletedAt) throw this.errors.USER_SESSION_NOT_FOUND()
     if (!userSession.user) throw this.errors.USER_SESSION_NOT_FOUND()
     if (userSession.user.deletedAt) throw this.errors.USER_SESSION_NOT_FOUND()
     if (userSession.user.disabledAt) throw this.errors.USER_SESSION_NOT_FOUND()

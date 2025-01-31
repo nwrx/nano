@@ -1,92 +1,92 @@
-import { createEvent, createPeer } from '../../__fixtures__'
+import { createTestEvent, createTestPeer } from '@unserved/server'
 import { getEventInformation } from './getEventInformation'
 
 describe('getEventInformation', () => {
   describe('with H3Event', () => {
     it('should get the address from the X-Forwarded-For header when `userTrustProxy` is true', () => {
-      const event = createEvent({ headers: { 'x-forwarded-for': '127.0.0.1' } })
-      // @ts-expect-error: The `this` context is not important for this test.
-      const result = getEventInformation.call({ userTrustProxy: true }, event)
+      const event = createTestEvent({ headers: { 'x-forwarded-for': '127.0.0.1' } })
+      const result = getEventInformation(event, { trustProxy: true, cookieName: 'token' })
       expect(result.address).toStrictEqual('127.0.0.1')
     })
 
     it('should get the address from the remote address when `userTrustProxy` is false', () => {
-      const event = createEvent({ remoteAddress: '127.0.0.1' })
-      // @ts-expect-error: The `this` context is not important for this test.
-      const result = getEventInformation.call({ userTrustProxy: false }, event)
+      const event = createTestEvent({ remoteAddress: '127.0.0.1' })
+      const result = getEventInformation(event, { trustProxy: false, cookieName: 'token' })
       expect(result.address).toStrictEqual('127.0.0.1')
     })
 
     it('should get the token from the cookie', () => {
-      const event = createEvent({ headers: { cookie: 'token=token' } })
-      // @ts-expect-error: The `this` context is not important for this test.
-      const result = getEventInformation.call({ userSessionCookieName: 'token' }, event)
+      const event = createTestEvent({ headers: { cookie: 'token=token' } })
+      const result = getEventInformation(event, { trustProxy: false, cookieName: 'token' })
       expect(result.token).toStrictEqual('token')
     })
 
     it('should handle whitespace in the cookie', () => {
-      const event = createEvent({ headers: { cookie: ' token = Bearer token ' } })
-      // @ts-expect-error: The `this` context is not important for this test.
-      const result = getEventInformation.call({ userSessionCookieName: 'token' }, event)
+      const event = createTestEvent({ headers: { cookie: ' token = Bearer token ' } })
+      const result = getEventInformation(event, { trustProxy: false, cookieName: 'token' })
       expect(result.token).toStrictEqual('Bearer token')
     })
 
     it('should get the user agent from the User-Agent header', () => {
-      const event = createEvent({ headers: { 'user-agent': 'user-agent' } })
-      // @ts-expect-error: The `this` context is not important for this test.
-      const result = getEventInformation.call({}, event)
+      const event = createTestEvent({ headers: { 'user-agent': 'user-agent' } })
+      const result = getEventInformation(event, { trustProxy: false, cookieName: 'token' })
       expect(result.userAgent).toStrictEqual('user-agent')
     })
 
-    it('should return all the information', () => {
-      const event = createEvent({ headers: { 'x-forwarded-for': '127.0.0.1', 'cookie': 'token=token', 'user-agent': 'user-agent' } })
-      // @ts-expect-error: The `this` context is not important for this test.
-      const result = getEventInformation.call({ userTrustProxy: true, userSessionCookieName: 'token' }, event)
+    it('should return all the information when provided', () => {
+      const event = createTestEvent({ headers: { 'x-forwarded-for': '127.0.0.1', 'cookie': 'token=token', 'user-agent': 'user-agent' } })
+      const result = getEventInformation(event, { trustProxy: true, cookieName: 'token' })
       expect(result).toMatchObject({ address: '127.0.0.1', token: 'token', userAgent: 'user-agent' })
+    })
+
+    it('should return all the information when not provided', () => {
+      const event = createTestEvent()
+      const result = getEventInformation(event, { trustProxy: true, cookieName: 'token' })
+      expect(result).toMatchObject({ address: '127.0.0.1', token: undefined, userAgent: undefined })
     })
   })
 
   describe('with Peer', () => {
     it('should get the address from the X-Forwarded-For header when `userTrustProxy` is true', () => {
-      const peer = createPeer({ headers: { 'x-forwarded-for': '127.0.0.1' } })
-      // @ts-expect-error: The `this` context is not important for this test.
-      const result = getEventInformation.call({ userTrustProxy: true }, peer)
+      const peer = createTestPeer({ headers: { 'x-forwarded-for': '127.0.0.1' } })
+      const result = getEventInformation(peer, { trustProxy: true, cookieName: 'token' })
       expect(result.address).toStrictEqual('127.0.0.1')
     })
 
     it('should get the address from the remote address when `userTrustProxy` is false', () => {
-      const peer = createPeer({ remoteAddress: '127.0.0.1' })
-      // @ts-expect-error: The `this` context is not important for this test.
-      const result = getEventInformation.call({ userTrustProxy: false }, peer)
+      const peer = createTestPeer({ remoteAddress: '127.0.0.1' })
+      const result = getEventInformation(peer, { trustProxy: false, cookieName: 'token' })
       expect(result.address).toStrictEqual('127.0.0.1')
     })
 
     it('should get the token from the cookie', () => {
-      const peer = createPeer({ headers: { cookie: 'token=token' } })
-      // @ts-expect-error: The `this` context is not important for this test.
-      const result = getEventInformation.call({ userSessionCookieName: 'token' }, peer)
+      const peer = createTestPeer({ headers: { cookie: 'token=token' } })
+      const result = getEventInformation(peer, { trustProxy: false, cookieName: 'token' })
       expect(result.token).toStrictEqual('token')
     })
 
     it('should handle whitespace in the cookie', () => {
-      const peer = createPeer({ headers: { cookie: ' token = Bearer token ' } })
-      // @ts-expect-error: The `this` context is not important for this test.
-      const result = getEventInformation.call({ userSessionCookieName: 'token' }, peer)
+      const peer = createTestPeer({ headers: { cookie: ' token = Bearer token ' } })
+      const result = getEventInformation(peer, { trustProxy: false, cookieName: 'token' })
       expect(result.token).toStrictEqual('Bearer token')
     })
 
     it('should get the user agent from the User-Agent header', () => {
-      const peer = createPeer({ headers: { 'user-agent': 'user-agent' } })
-      // @ts-expect-error: The `this` context is not important for this test.
-      const result = getEventInformation.call({}, peer)
+      const peer = createTestPeer({ headers: { 'user-agent': 'user-agent' } })
+      const result = getEventInformation(peer, { trustProxy: false, cookieName: 'token' })
       expect(result.userAgent).toStrictEqual('user-agent')
     })
 
-    it('should return all the information', () => {
-      const event = createPeer({ headers: { 'x-forwarded-for': '127.0.0.1', 'cookie': 'token=token', 'user-agent': 'user-agent' } })
-      // @ts-expect-error: The `this` context is not important for this test.
-      const result = getEventInformation.call({ userTrustProxy: true, userSessionCookieName: 'token' }, event)
+    it('should return all the information when provided', () => {
+      const event = createTestPeer({ headers: { 'x-forwarded-for': '127.0.0.1', 'cookie': 'token=token', 'user-agent': 'user-agent' } })
+      const result = getEventInformation(event, { trustProxy: true, cookieName: 'token' })
       expect(result).toMatchObject({ address: '127.0.0.1', token: 'token', userAgent: 'user-agent' })
+    })
+
+    it('should return all the information when not provided', () => {
+      const event = createTestPeer()
+      const result = getEventInformation(event, { trustProxy: true, cookieName: 'token' })
+      expect(result).toMatchObject({ address: '127.0.0.1', token: undefined, userAgent: undefined })
     })
   })
 })

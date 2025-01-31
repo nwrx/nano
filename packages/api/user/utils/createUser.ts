@@ -1,5 +1,6 @@
 import type { ModuleUser } from '../index'
 import { ModuleWorkspace } from '../../workspace'
+import { createPassword } from './createPassword'
 
 export interface CreateUserOptions {
   email: string
@@ -25,7 +26,7 @@ export async function createUser(this: ModuleUser, options: CreateUserOptions) {
 
   // --- Create the user and it's associated workspace, password and profile.
   const user = User.create({ email, username })
-  if (password) user.passwords = [await this.createPassword(password)]
+  if (password) user.passwords = [await createPassword.call(this, password)]
   const workspace = await workspaceModule.createWorkspace({ user, name: user.username, isPublic: true })
   user.profile = UserProfile.create({ displayName: user.username })
 
