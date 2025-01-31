@@ -49,7 +49,7 @@ const classes = computed(() => {
     'px-3 py-2 md:px-4 md:py-3': !link && size === 'lg',
     'px-3 py-2 md:px-5 md:py-3': !link && size === 'xl',
     'px-7 py-5 md:px-8 md:py-6': !link && size === '2xl',
-    'opacity-80 hover:opacity-100 ring-transparent outline-none': true,
+    'opacity-80 hover:opacity-100 outline-none': true,
   }
 
   const classesLink = {
@@ -85,7 +85,7 @@ const classes = computed(() => {
   }
 
   const classesOutlined = {
-    'ring-1 focus:ring-offset-4 hover:ring-offset-0 hover:ring-4 backdrop-blur-md': true,
+    'ring-1 active:ring-offset-0 hover:ring-offset-2 hover:ring-2 backdrop-blur-md': true,
     'ring-primary-500 text-primary-500': variant === 'primary',
     'ring-secondary-500 text-secondary-500': variant === 'secondary',
     'ring-success-500 text-success-500': variant === 'success',
@@ -135,7 +135,7 @@ const iconClasses = computed(() => {
   const { size = 'md', iconExpand } = props
   return {
     'w-4 h-4': size === 'sm',
-    'w-4 h-4': size === 'md',
+    'w-5 h-5': size === 'md',
     'w-6 h-6': size === 'lg',
     'w-7 h-7': size === 'xl',
     'transition-transform duration-200 ease-out': true,
