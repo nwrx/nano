@@ -120,7 +120,6 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
         node.error = undefined
         node.isRunning = true
         flow.nodes = [...flow.nodes]
-        events.value.push(payload)
         break
       }
       case 'node:end':
