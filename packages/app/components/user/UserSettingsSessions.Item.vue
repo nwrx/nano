@@ -1,56 +1,42 @@
 <script setup lang="ts">
 import type { UserSessionObject } from '@nwrx/api'
-import { formatDistanceToNow } from 'date-fns/formatDistanceToNow'
 
-defineProps<{ isCurrent: boolean } & UserSessionObject>()
+const props = defineProps<{
+  isCurrent: boolean
+} & UserSessionObject>()
 
 const emit = defineEmits<{
   remove: []
 }>()
+
+// --- Localize
+const { t } = useI18n()
+const lastUsedAt = computed(() => formatDateFromNow(props.lastUsedAt))
 </script>
 
 <template>
-  <div class="flex items-center px-8 not-last:border-b border-black/10 py-4 gap-8">
+  <div class="flex items-center px-8 not-last:border-b border-app py-4 gap-8">
 
     <!-- Is current indicator (circle) -->
-    <div
-      class="w-2 h-2 rounded-full border border-black/10"
-      :class="isCurrent ? 'bg-success-400' : 'bg-black/10'"
+    <BaseIcon
+      icon="i-carbon:circle-solid"
+      class="size-2 rounded-full border border-app shrink"
+      :class="isCurrent ? 'text-success' : 'text-subtle'"
     />
 
     <!-- Icon -->
     <BaseIcon
       icon="i-carbon:screen"
-      class="w-10 h-10 text-black/70 shrink-0"
+      class="size-10 text-app shrink-0"
     />
 
     <!-- IP Address -->
-    <div v-if="address">
-      <p class="text-xs text-black/60">IP Address</p>
-      <p class="text-sm font-medium text-black/60">{{ address }}</p>
-    </div>
-
-    <div v-if="lastUsedAt">
-      <p class="text-xs text-black/60">Last used</p>
-      <p class="text-sm font-medium text-black/60">{{ formatDistanceToNow(lastUsedAt, { addSuffix: true }) }}</p>
-    </div>
-
-    <!-- Browser -->
-    <div v-if="browser">
-      <p class="text-xs text-black/60">Browser</p>
-      <p class="text-sm font-medium text-black/60">{{ browser }}</p>
-    </div>
-
-    <!-- System -->
-    <div v-if="os">
-      <p class="text-xs text-black/60">System</p>
-      <p class="text-sm font-medium text-black/60">{{ os }}</p>
-    </div>
-
-    <!-- Device -->
-    <div v-if="device">
-      <p class="text-xs text-black/60">Device</p>
-      <p class="text-sm font-medium text-black/60">{{ device }}</p>
+    <div class="flex items-center space-x-lg">
+      <UserSettingsSessionsItemValue v-if="address" :name="t('value.address')" :value="address" />
+      <UserSettingsSessionsItemValue v-if="lastUsedAt" :name="t('value.lastUsedAt')" :value="lastUsedAt" />
+      <UserSettingsSessionsItemValue v-if="browser" :name="t('value.browser')" :value="browser" />
+      <UserSettingsSessionsItemValue v-if="os" :name="t('value.os')" :value="os"/>
+      <UserSettingsSessionsItemValue v-if="device" :name="t('value.device')" :value="device" />
     </div>
 
     <!-- Delete button -->
@@ -58,10 +44,49 @@ const emit = defineEmits<{
       outlined
       size="sm"
       variant="danger"
-      label="Remove"
+      :label="t('button.remove')"
       class="ml-auto"
       icon-prepend="i-carbon:logout"
       @click="() => emit('remove')"
     />
   </div>
 </template>
+
+<i18n lang="yaml">
+  en:
+    value.address: "IP Address"
+    value.lastUsedAt: "Last used"
+    value.browser: "Browser"
+    value.os: "System"
+    value.device: "Device"
+    button.remove: "Sign out"
+  fr:
+    value.address: "Adresse IP"
+    value.lastUsedAt: "Dernière utilisation"
+    value.browser: "Navigateur"
+    value.os: "Système"
+    value.device: "Appareil"
+    button.remove: "Déconnecter"
+
+  de:
+    value.address: "IP-Adresse"
+    value.lastUsedAt: "Zuletzt verwendet"
+    value.browser: "Browser"
+    value.os: "System"
+    value.device: "Gerät"
+    button.remove: "Abmelden"
+  es:
+    value.address: "Dirección IP"
+    value.lastUsedAt: "Último uso"
+    value.browser: "Navegador"
+    value.os: "Sistema"
+    value.device: "Dispositivo"
+    button.remove: "Cerrar sesión"
+  zh:
+    value.address: "IP 地址"
+    value.lastUsedAt: "上次使用"
+    value.browser: "浏览器"
+    value.os: "系统"
+    value.device: "设备"
+    button.remove: "登出"
+</i18n>
