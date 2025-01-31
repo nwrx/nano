@@ -24,7 +24,7 @@ export function flowCreate(this: ModuleFlow) {
       const userModule = this.getModule(ModuleUser)
       const workspaceModule = this.getModule(ModuleWorkspace)
       const { user } = await userModule.authenticate(event)
-      const { name = randomName(), title = name, description } = body
+      const { name = randomName(), title = name, description = '' } = body
       const { workspace: workspaceName, project: projectName } = parameters
 
       // --- Resolve the workspace and project and assert the user has access to them.
