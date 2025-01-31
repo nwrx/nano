@@ -25,7 +25,7 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
     v-if="socket?.control === 'socket'"
     v-model="model"
     :nodes="nodes"
-    :isEditable="isEditable"
+    :is-editable="isEditable"
   />
 
   <!-- Text -->
@@ -52,8 +52,8 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
 </template>
 
 <i18n lang="yaml">
-  en:
-    noData: No data
-  fr:
-    noData: Pas de données
+en:
+  noData: No data
+fr:
+  noData: Pas de données
 </i18n>

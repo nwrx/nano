@@ -17,7 +17,7 @@ const isOpen = ref(false)
 
     <!-- Header -->
     <FlowEditorPanelEventsEventHeader
-      v-model:isOpen="isOpen"
+      v-model:is-open="isOpen"
       :event="event"
       :node="node"
     />
@@ -25,16 +25,16 @@ const isOpen = ref(false)
     <!-- Detail -->
     <BaseCollapse
       vertical
-      :isOpen="isOpen"
+      :is-open="isOpen"
       class="w-full transition-all overflow-clip"
       :class="{ 'op-0 pointer-events-none': !isOpen }">
 
       <!-- Content -->
       <div class="w-full p-md pt-xs space-y-sm">
-        <FlowEditorPanelEventsFlowStart v-if="event.event === 'flow:start'" :event="event"/>
-        <FlowEditorPanelEventsFlowEnd v-if="event.event === 'flow:end'" :event="event"/>
-        <FlowEditorPanelEventsNodeEnd v-if="event.event === 'node:end'" :event="event" :node="node"/>
-        <FlowEditorPanelEventsNodeError v-if="event.event === 'node:error'" :event="event"/>
+        <FlowEditorPanelEventsFlowStart v-if="event.event === 'flow:start'" :event="event" />
+        <FlowEditorPanelEventsFlowEnd v-if="event.event === 'flow:end'" :event="event" />
+        <FlowEditorPanelEventsNodeEnd v-if="event.event === 'node:end'" :event="event" :node="node" />
+        <FlowEditorPanelEventsNodeError v-if="event.event === 'node:error'" :event="event" />
       </div>
     </BaseCollapse>
   </div>

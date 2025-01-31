@@ -97,8 +97,7 @@ function setOption(option: SocketListOption<unknown>) {
       class="px-sm rd bg-transparent outline-none text-subtle transition w-full"
       @focus="() => isOpen = true"
       @blur="() => isOpen = false"
-      @mousedown.stop
-    />
+      @mousedown.stop>
 
     <!-- List -->
     <Transition>
@@ -127,7 +126,7 @@ function setOption(option: SocketListOption<unknown>) {
             :icon="option.icon"
             :label="option.label"
             :description="option.description"
-            :isSelected="option.value === model"
+            :is-selected="option.value === model"
             @mousedown.stop="() => setOption(option)"
           />
         </template>
@@ -137,19 +136,19 @@ function setOption(option: SocketListOption<unknown>) {
 </template>
 
 <i18n lang="yaml">
-  en:
-    empty: No default value
-    list.empty: Select list is empty or search query does not match any results.
-  fr:
-    empty: Aucune valeur par défaut
-    list.empty: La liste de sélection est vide ou la requête de recherche ne correspond à aucun résultat.
-  de:
-    empty: Kein Standardwert
-    list.empty: Die Liste ist leer oder die Suchanfrage ergibt keine Treffer.
-  es:
-    empty: Sin valor predeterminado
-    list.empty: La lista está vacía o la consulta de búsqueda no coincide con ningún resultado.
-  zh:
-    empty: 无默认值
-    list.empty: 列表为空或搜索查询不匹配任何结果。
+en:
+  empty: No default value
+  list.empty: Select list is empty or search query does not match any results.
+fr:
+  empty: Aucune valeur par défaut
+  list.empty: La liste de sélection est vide ou la requête de recherche ne correspond à aucun résultat.
+de:
+  empty: Kein Standardwert
+  list.empty: Die Liste ist leer oder die Suchanfrage ergibt keine Treffer.
+es:
+  empty: Sin valor predeterminado
+  list.empty: La lista está vacía o la consulta de búsqueda no coincide con ningún resultado.
+zh:
+  empty: 无默认值
+  list.empty: 列表为空或搜索查询不匹配任何结果。
 </i18n>

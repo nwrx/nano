@@ -39,8 +39,12 @@ function setInputValue(name: string, value: string) {
       v-if="isDisabled"
       class="absolute inset-0 backdrop-opacity-50 flex items-center justify-center p-xl">
       <div class="text-app text-center">
-        <h2 class="text-lg font-bold">{{ t('disabled.title') }}</h2>
-        <div class="text-sm">{{ t('disabled.message') }}</div>
+        <h2 class="text-lg font-bold">
+          {{ t('disabled.title') }}
+        </h2>
+        <div class="text-sm">
+          {{ t('disabled.message') }}
+        </div>
       </div>
     </div>
 
@@ -81,8 +85,8 @@ function setInputValue(name: string, value: string) {
           :key="input.data.name as string"
           class="w-full px-sm py-xs mt-xs b b-transparent hover:b-editor rd bg-transparent outline-none"
           :placeholder="input.data.name as string"
-          :modelValue="inputData[input.data.name as string]"
-          @update:modelValue="(value: string) => setInputValue(input.data.name as string, value)"
+          :model-value="inputData[input.data.name as string]"
+          @update:model-value="(value: string) => setInputValue(input.data.name as string, value)"
         />
       </div>
 
@@ -95,19 +99,19 @@ function setInputValue(name: string, value: string) {
 </template>
 
 <i18n lang="yaml">
-  en:
-    disabled.title: Playground Disabled
-    disabled.message: Requires both an input and an output node. Add at least one of each to enable the playground.
-  fr:
-    disabled.title: Terrain de jeu désactivé
-    disabled.message: Nécessite un nœud d'entrée et un nœud de sortie. Ajoutez au moins un de chaque pour activer le terrain de jeu.
-  de:
-    disabled.title: Spielplatz deaktiviert
-    disabled.message: Benötigt einen Eingabe- und einen Ausgabeknoten. Fügen Sie mindestens einen von jedem hinzu, um den Spielplatz zu aktivieren.
-  es:
-    disabled.title: Patio de recreo deshabilitado
-    disabled.message: Requiere un nodo de entrada y uno de salida. Agregue al menos uno de cada uno para habilitar el patio de recreo.
-  zh:
-    disabled.title: 游乐场已禁用
-    disabled.message: 需要输入节点和输出节点。请添加至少一个输入节点和一个输出节点以启用游乐场。
+en:
+  disabled.title: Playground Disabled
+  disabled.message: Requires both an input and an output node. Add at least one of each to enable the playground.
+fr:
+  disabled.title: Terrain de jeu désactivé
+  disabled.message: Nécessite un nœud d'entrée et un nœud de sortie. Ajoutez au moins un de chaque pour activer le terrain de jeu.
+de:
+  disabled.title: Spielplatz deaktiviert
+  disabled.message: Benötigt einen Eingabe- und einen Ausgabeknoten. Fügen Sie mindestens einen von jedem hinzu, um den Spielplatz zu aktivieren.
+es:
+  disabled.title: Patio de recreo deshabilitado
+  disabled.message: Requiere un nodo de entrada y uno de salida. Agregue al menos uno de cada uno para habilitar el patio de recreo.
+zh:
+  disabled.title: 游乐场已禁用
+  disabled.message: 需要输入节点和输出节点。请添加至少一个输入节点和一个输出节点以启用游乐场。
 </i18n>

@@ -21,7 +21,7 @@ defineProps<{
         v-if="item.items"
         :items="item.items"
         :label="item.label"
-        :isOpen="isOpen"
+        :is-open="isOpen"
       />
 
       <AppDrawerItem
@@ -29,7 +29,7 @@ defineProps<{
         :to="item.to"
         :icon="item.icon"
         :label="item.label"
-        :isOpen="isOpen"
+        :is-open="isOpen"
       />
     </template>
   </nav>

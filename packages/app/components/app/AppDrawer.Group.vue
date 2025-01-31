@@ -18,7 +18,7 @@ defineProps<{ isOpen?: boolean } & NavItem>()
         :to="item.to"
         :icon="item.icon"
         :label="item.label"
-        :isOpen="isOpen"
+        :is-open="isOpen"
       />
     </div>
   </div>

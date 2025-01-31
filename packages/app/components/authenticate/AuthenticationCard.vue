@@ -6,7 +6,7 @@
     ">
 
     <!-- slots -->
-    <slot/>
+    <slot />
 
   </div>
 </template>

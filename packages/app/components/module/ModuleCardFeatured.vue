@@ -33,7 +33,9 @@ defineProps<{
         </p>
 
         <!-- Maintainer -->
-        <p class="text-xs text-subtle">{{ maintainer }}</p>
+        <p class="text-xs text-subtle">
+          {{ maintainer }}
+        </p>
       </h3>
 
       <!-- Actions -->
@@ -48,7 +50,9 @@ defineProps<{
     </div>
 
     <!-- Description -->
-    <p class="text-sm text-subtle mt-md">{{ description }}</p>
+    <p class="text-sm text-subtle mt-md">
+      {{ description }}
+    </p>
 
     <!-- Categories -->
     <div class="flex items-center gap-xs text-subtle mt-auto pt-md">

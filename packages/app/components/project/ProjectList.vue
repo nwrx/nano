@@ -27,15 +27,15 @@ const model = useVModel(props, 'modelValue', emit, {
     <ProjectListItem
       v-for="project in projects"
       :key="project.name"
-      v-model:modelValue="model[project.name]"
+      v-model:model-value="model[project.name]"
       v-bind="project"
       :workspace="workspace"
       class="pb-md"
       @delete="() => emit('projectDelete', project.name)"
-      @flowCreate="() => emit('flowCreate', project.name)"
-      @flowImport="file => emit('flowImport', project.name, file)"
-      @flowDelete="flow => emit('flowDelete', project.name, flow)"
-      @flowDuplicate="flow => emit('flowDuplicate', project.name, flow)"
+      @flow-create="() => emit('flowCreate', project.name)"
+      @flow-import="file => emit('flowImport', project.name, file)"
+      @flow-delete="flow => emit('flowDelete', project.name, flow)"
+      @flow-duplicate="flow => emit('flowDuplicate', project.name, flow)"
     />
   </div>
 </template>

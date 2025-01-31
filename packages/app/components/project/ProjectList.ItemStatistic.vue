@@ -21,8 +21,12 @@ defineProps<{
     <!-- Value -->
     <div class="flex flex-col items-start justify-center ">
       <h4 class="flex items-end whitespace-nowrap space-x-sm">
-        <p class="text-lg font-medium">{{ value }}</p>
-        <p class="text-sm text-subtle mb-1">{{ unit }}</p>
+        <p class="text-lg font-medium">
+          {{ value }}
+        </p>
+        <p class="text-sm text-subtle mb-1">
+          {{ unit }}
+        </p>
       </h4>
 
       <!-- Name -->

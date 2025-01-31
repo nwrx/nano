@@ -17,7 +17,7 @@ function handleClick(event: MouseEvent) {
     @mouseleave="() => isOpen = false">
 
     <!-- Trigger -->
-    <template v-slot="slotProps">
+    <template #default="slotProps">
       <slot v-bind="slotProps" />
     </template>
 

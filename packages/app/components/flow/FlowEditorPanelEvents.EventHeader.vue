@@ -32,7 +32,7 @@ const isOpen = useVModel(props, 'isOpen', emit, { passive: true })
       }"
       :label="t(event.event)"
       icon="i-carbon:dot-mark"
-      iconLoad
+      icon-load
     />
 
     <!-- Node -->
@@ -41,7 +41,7 @@ const isOpen = useVModel(props, 'isOpen', emit, { passive: true })
       class="text-white"
       :style="{ backgroundColor: node.categoryColor }"
       :label="node.name"
-      iconLoad
+      icon-load
     />
 
     <!-- Spacer -->
@@ -49,40 +49,42 @@ const isOpen = useVModel(props, 'isOpen', emit, { passive: true })
 
     <!-- Duration -->
     <div v-if="'delta' in event && typeof event.delta === 'number'" class="flex items-center space-x-md ml-auto text-end">
-      <p class="text-xs text-subtle">{{ event.delta }} ms</p>
+      <p class="text-xs text-subtle">
+        {{ event.delta }} ms
+      </p>
     </div>
   </BaseButton>
 </template>
 
 <i18n lang="yaml">
-  en:
-    flow:start: Start
-    flow:end: Completed
-    flow:abort: Aborted
-    node:error: Error
-    node:end: Node
-  fr:
-    flow:start: Démarrage
-    flow:end: Terminé
-    flow:abort: Abandonné
-    node:error: Erreur
-    node:end: Noeud
-  de:
-    flow:start: Start
-    flow:end: Beendet
-    flow:abort: Abgebrochen
-    node:error: Fehler
-    node:end: Knoten
-  es:
-    flow:start: Inicio
-    flow:end: Completado
-    flow:abort: Abortado
-    node:error: Error
-    node:end: Nodo
-  zh:
-    flow:start: 开始
-    flow:end: 完成
-    flow:abort: 已中止
-    node:error: 错误
-    node:end: 节点
+en:
+  flow:start: Start
+  flow:end: Completed
+  flow:abort: Aborted
+  node:error: Error
+  node:end: Node
+fr:
+  flow:start: Démarrage
+  flow:end: Terminé
+  flow:abort: Abandonné
+  node:error: Erreur
+  node:end: Noeud
+de:
+  flow:start: Start
+  flow:end: Beendet
+  flow:abort: Abgebrochen
+  node:error: Fehler
+  node:end: Knoten
+es:
+  flow:start: Inicio
+  flow:end: Completado
+  flow:abort: Abortado
+  node:error: Error
+  node:end: Nodo
+zh:
+  flow:start: 开始
+  flow:end: 完成
+  flow:abort: 已中止
+  node:error: 错误
+  node:end: 节点
 </i18n>

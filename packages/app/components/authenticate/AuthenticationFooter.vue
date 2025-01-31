@@ -10,7 +10,11 @@ defineProps<{
 
 <template>
   <div class="flex flex-col items-center justify-center text-sm">
-    <p class="text-white/50">{{ text }}</p>
-    <Button :to="to" class="text-sm" link>{{ label }}</Button>
+    <p class="text-white/50">
+      {{ text }}
+    </p>
+    <Button :to="to" class="text-sm" link>
+      {{ label }}
+    </Button>
   </div>
 </template>

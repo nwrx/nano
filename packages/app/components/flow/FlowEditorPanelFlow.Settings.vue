@@ -1,23 +1,23 @@
 <template>
   <FlowEditorPanelSection
-    classContent="space-y-md"
+    class-content="space-y-md"
     title="HTTP"
     text="Define the behavior of the HTTP trigger.">
 
     <div>
       <InputText
         placeholder="https://example.com/schema/input.json"
-        classGroup="input-sm bg-editor-panel-data"
+        class-group="input-sm bg-editor-panel-data"
       />
       <InputText
-        :modelValue="`${CONSTANTS.appHost}/john-doe/sfdc-lead-automation/unsightly-mango`"
-        classGroup="input-sm bg-editor-panel-data"
+        :model-value="`${CONSTANTS.appHost}/john-doe/sfdc-lead-automation/unsightly-mango`"
+        class-group="input-sm bg-editor-panel-data"
       />
     </div>
     <FlowEditorPanelDataContainer>
       <FlowEditorPanelData
         name="Enabled"
-        :modelValue="false"
+        :model-value="false"
       />
       <FlowEditorPanelSectionInputSwitch
         label="Override Variables"

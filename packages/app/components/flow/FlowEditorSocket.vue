@@ -8,7 +8,7 @@ const props = defineProps<{
   value: unknown
   secrets?: FlowSessionSecretJSON[]
   variables?: FlowSessionVariableJSON[]
-} & DataSocketJSON>()
+} & Omit<DataSocketJSON, 'key'>>()
 
 const emit = defineEmits<{
   setValue: [value: unknown]
@@ -113,8 +113,8 @@ function onRelease() {
     <FlowEditorSocketLink
       v-if="isLinkeable"
       :name="name"
-      :isLinked="isLinked"
-      :defaultValue="defaultValue"
+      :is-linked="isLinked"
+      :default-value="defaultValue"
     />
 
     <!-- Variable & secret input -->
@@ -124,7 +124,7 @@ function onRelease() {
       :name="name"
       :secrets="secrets"
       :variables="variables"
-      :defaultValue="defaultValue"
+      :default-value="defaultValue"
       @mousedown.stop
     />
 
@@ -133,7 +133,7 @@ function onRelease() {
       v-else-if="control === 'text'"
       v-model="(model as string)"
       :name="name"
-      :defaultValue="defaultValue"
+      :default-value="defaultValue"
       @mousedown.stop
     />
 
@@ -142,7 +142,7 @@ function onRelease() {
       v-else-if="control === 'select'"
       v-model="model"
       :name="name"
-      :defaultValue="defaultValue"
+      :default-value="defaultValue"
       :options="options"
       @mousedown.stop
     />
@@ -152,7 +152,7 @@ function onRelease() {
       v-else-if="control === 'radio'"
       v-model="model"
       :name="name"
-      :defaultValue="defaultValue"
+      :default-value="defaultValue"
       :options="options"
       @mousedown.stop
     />
@@ -162,7 +162,7 @@ function onRelease() {
       v-else-if="control === 'textarea'"
       v-model="(model as string)"
       :name="name"
-      :defaultValue="defaultValue"
+      :default-value="defaultValue"
       @mousedown.stop
     />
 
@@ -174,7 +174,7 @@ function onRelease() {
       :min="sliderMin"
       :max="sliderMax"
       :step="sliderStep"
-      :defaultValue="defaultValue"
+      :default-value="defaultValue"
       @mousedown.stop
     />
   </div>

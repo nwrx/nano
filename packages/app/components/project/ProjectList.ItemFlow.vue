@@ -138,39 +138,39 @@ function getFlowRoute(workspace: string, project: string, flow: string) {
 </template>
 
 <i18n lang="yaml">
-  en:
-    menu.edit: Edit
-    menu.delete: Delete
-    menu.duplicate: Duplicate
-    menu.export: Export
-    menu.publish: Publish
-    menu.settings: Settings
-  fr:
-    menu.edit: Modifier
-    menu.delete: Supprimer
-    menu.duplicate: Dupliquer
-    menu.export: Exporter
-    menu.publish: Publier
-    menu.settings: Paramètres
-  de:
-    menu.edit: Bearbeiten
-    menu.delete: Löschen
-    menu.duplicate: Duplizieren
-    menu.export: Exportieren
-    menu.publish: Veröffentlichen
-    menu.settings: Einstellungen
-  es:
-    menu.edit: Editar
-    menu.delete: Eliminar
-    menu.duplicate: Duplicar
-    menu.export: Exportar
-    menu.publish: Publicar
-    menu.settings: Ajustes
-  zh:
-    menu.edit: 编辑
-    menu.delete: 删除
-    menu.duplicate: 复制
-    menu.export: 导出
-    menu.publish: 发布
-    menu.settings: 设置
+en:
+  menu.edit: Edit
+  menu.delete: Delete
+  menu.duplicate: Duplicate
+  menu.export: Export
+  menu.publish: Publish
+  menu.settings: Settings
+fr:
+  menu.edit: Modifier
+  menu.delete: Supprimer
+  menu.duplicate: Dupliquer
+  menu.export: Exporter
+  menu.publish: Publier
+  menu.settings: Paramètres
+de:
+  menu.edit: Bearbeiten
+  menu.delete: Löschen
+  menu.duplicate: Duplizieren
+  menu.export: Exportieren
+  menu.publish: Veröffentlichen
+  menu.settings: Einstellungen
+es:
+  menu.edit: Editar
+  menu.delete: Eliminar
+  menu.duplicate: Duplicar
+  menu.export: Exportar
+  menu.publish: Publicar
+  menu.settings: Ajustes
+zh:
+  menu.edit: 编辑
+  menu.delete: 删除
+  menu.duplicate: 复制
+  menu.export: 导出
+  menu.publish: 发布
+  menu.settings: 设置
 </i18n>

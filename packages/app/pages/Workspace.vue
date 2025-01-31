@@ -43,10 +43,10 @@ onMounted(workspace.refresh)
         v-model="isWorkspaceOpen"
         :workspace="workspace.data.name"
         :projects="workspace.data.projects"
-        :baseUrl="CONSTANTS.appHost"
-        @flowCreate="(project) => workspace.createFlow(project)"
-        @flowImport="(project, file) => workspace.importFlow(project, file)"
-        @flowDelete="(project, flow) => workspace.deleteFlow(project, flow)"
+        :base-url="CONSTANTS.appHost"
+        @flow-create="(project) => workspace.createFlow(project)"
+        @flow-import="(project, file) => workspace.importFlow(project, file)"
+        @flow-delete="(project, flow) => workspace.deleteFlow(project, flow)"
       />
 
       <!-- Create project button -->
@@ -65,31 +65,31 @@ onMounted(workspace.refresh)
     <ProjectListDialogCreate
       v-model="isDialogCreateProjectOpen"
       :workspace="name"
-      :baseUrl="CONSTANTS.appHost"
+      :base-url="CONSTANTS.appHost"
       @submit="options => workspace.createProject(options)"
     />
   </AppPage>
 </template>
 
 <i18n lang="yaml">
-  en:
-    title: Workspace
-    description: Create, edit, and delete your flows.
-    createProject: Create new project
-  fr:
-    title: Espace de travail
-    description: Créez, éditez et supprimez vos flux.
-    createProject: Créer nouveau projet
-  de:
-    title: Arbeitsbereich
-    description: Erstellen, bearbeiten und löschen Sie Ihre Flows.
-    createProject: Neues Projekt erstellen
-  es:
-    title: Espacio de trabajo
-    description: Crea, edita y elimina tus flujos.
-    createProject: Crear nuevo proyecto
-  zh:
-    title: 工作区
-    description: 创建、编辑和删除您的流程。
-    createProject: 创建新项目
+en:
+  title: Workspace
+  description: Create, edit, and delete your flows.
+  createProject: Create new project
+fr:
+  title: Espace de travail
+  description: Créez, éditez et supprimez vos flux.
+  createProject: Créer nouveau projet
+de:
+  title: Arbeitsbereich
+  description: Erstellen, bearbeiten und löschen Sie Ihre Flows.
+  createProject: Neues Projekt erstellen
+es:
+  title: Espacio de trabajo
+  description: Crea, edita y elimina tus flujos.
+  createProject: Crear nuevo proyecto
+zh:
+  title: 工作区
+  description: 创建、编辑和删除您的流程。
+  createProject: 创建新项目
 </i18n>

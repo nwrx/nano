@@ -30,10 +30,14 @@ const isOpen = useVModel(props, 'modelValue', emit, {
       <!-- Left / Title & Text -->
       <div class="flex flex-col items-start text-left">
         <h3 v-if="title || $slots.title" class="text-base font-medium">
-          <slot name="title">{{ title }}</slot>
+          <slot name="title">
+            {{ title }}
+          </slot>
         </h3>
         <p v-if="text || $slots.text" class="text-sm text-subtle">
-          <slot name="text">{{ text }}</slot>
+          <slot name="text">
+            {{ text }}
+          </slot>
         </p>
       </div>
 
@@ -47,7 +51,7 @@ const isOpen = useVModel(props, 'modelValue', emit, {
     <!-- Content -->
     <BaseCollapse
       vertical
-      :isOpen="isOpen"
+      :is-open="isOpen"
       class="overflow-y-clip transition-all"
       :class="{ 'px-md': !fullWidth, 'op-0': !isOpen }">
       <div

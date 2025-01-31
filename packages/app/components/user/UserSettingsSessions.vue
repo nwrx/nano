@@ -36,19 +36,19 @@ const { t } = useI18n()
 </template>
 
 <i18n lang="yaml">
-  en:
-    title: Sessions
-    text: Manage your active sessions and sign out from devices you no longer use. We advise you to sign out from devices you no longer use to keep your account secure.
-  fr:
-    title: Sessions
-    text: Gérez vos sessions actives et déconnectez-vous des appareils que vous n'utilisez plus. Nous vous conseillons de vous déconnecter des appareils que vous n'utilisez plus pour sécuriser votre compte.
-  de:
-    title: Sitzungen
-    text: Verwalten Sie Ihre aktiven Sitzungen und melden Sie sich von Geräten ab, die Sie nicht mehr verwenden. Wir raten Ihnen, sich von Geräten abzumelden, die Sie nicht mehr verwenden, um Ihr Konto sicher zu halten.
-  es:
-    title: Sesiones
-    text: Administre sus sesiones activas y cierre la sesión en dispositivos que ya no utiliza. Le aconsejamos que cierre la sesión en dispositivos que ya no utiliza para mantener segura su cuenta.
-  zh:
-    title: 会话
-    text: 管理您的活动会话并注销您不再使用的设备。我们建议您注销您不再使用的设备，以保护您的帐户安全。
+en:
+  title: Sessions
+  text: Manage your active sessions and sign out from devices you no longer use. We advise you to sign out from devices you no longer use to keep your account secure.
+fr:
+  title: Sessions
+  text: Gérez vos sessions actives et déconnectez-vous des appareils que vous n'utilisez plus. Nous vous conseillons de vous déconnecter des appareils que vous n'utilisez plus pour sécuriser votre compte.
+de:
+  title: Sitzungen
+  text: Verwalten Sie Ihre aktiven Sitzungen und melden Sie sich von Geräten ab, die Sie nicht mehr verwenden. Wir raten Ihnen, sich von Geräten abzumelden, die Sie nicht mehr verwenden, um Ihr Konto sicher zu halten.
+es:
+  title: Sesiones
+  text: Administre sus sesiones activas y cierre la sesión en dispositivos que ya no utiliza. Le aconsejamos que cierre la sesión en dispositivos que ya no utiliza para mantener segura su cuenta.
+zh:
+  title: 会话
+  text: 管理您的活动会话并注销您不再使用的设备。我们建议您注销您不再使用的设备，以保护您的帐户安全。
 </i18n>

@@ -19,13 +19,17 @@ defineProps<{
 
     <!-- Icon -->
     <div v-if="icon" class="size-4 mt-xs self-start">
-      <BaseIcon class="size-4" :icon="icon" load/>
+      <BaseIcon class="size-4" :icon="icon" load />
     </div>
 
     <!-- Name -->
     <div class="grow">
-      <p class="text-sm">{{ label }}</p>
-      <p class="text-xs text-subtle">{{ description }}</p>
+      <p class="text-sm">
+        {{ label }}
+      </p>
+      <p class="text-xs text-subtle">
+        {{ description }}
+      </p>
     </div>
 
     <!-- Checkmark -->

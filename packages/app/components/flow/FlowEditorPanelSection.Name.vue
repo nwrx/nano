@@ -43,8 +43,7 @@ watch(description, async() => {
       v-model="name"
       :placeholder="placeholderName"
       :readonly="isReadonly"
-      class="text-xl font-medium outline-none bg-transparent w-full"
-    />
+      class="text-xl font-medium outline-none bg-transparent w-full">
     <textarea
       v-model="description"
       :placeholder="placeholderDescription"

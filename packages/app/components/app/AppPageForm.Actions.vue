@@ -1,5 +1,5 @@
 <template>
   <div class="flex flex-col w-full border rounded">
-    <slot/>
+    <slot />
   </div>
 </template>

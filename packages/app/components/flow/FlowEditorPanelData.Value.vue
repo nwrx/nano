@@ -37,7 +37,7 @@ const isLink = computed(() => {
 <template>
   <FlowEditorPanelDataValueLink
     v-if="isLink"
-    :modelValue="model"
+    :model-value="model"
     :nodes="nodes"
   />
 
@@ -70,24 +70,23 @@ const isLink = computed(() => {
     class="px-sm line-clamp-1 font-mono bg-transparent outline-none transition grow"
     :class="{ 'opacity-50': isOpen, 'cursor-default italic': !model && !defaultValue }"
     :placeholder="defaultValue ?? t('noDefault')"
-    :readonly="!isEditable"
-  />
+    :readonly="!isEditable">
 </template>
 
 <i18n lang="yaml">
-  en:
-    object: Object
-    noDefault: No default value
-  fr:
-    object: Objet
-    noDefault: Aucune valeur par défaut
-  de:
-    object: Objekt
-    noDefault: Kein Standardwert
-  es:
-    object: Objeto
-    noDefault: Sin valor predeterminado
-  zh:
-    object: 对象
-    noDefault: 没有默认值
+en:
+  object: Object
+  noDefault: No default value
+fr:
+  object: Objet
+  noDefault: Aucune valeur par défaut
+de:
+  object: Objekt
+  noDefault: Kein Standardwert
+es:
+  object: Objeto
+  noDefault: Sin valor predeterminado
+zh:
+  object: 对象
+  noDefault: 没有默认值
 </i18n>

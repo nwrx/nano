@@ -29,7 +29,7 @@ const emit = defineEmits<{
     <div class="h-full border-r border-editor" />
 
     <!-- Settings -->
-    <FlowEditorFab icon="i-carbon:settings"/>
+    <FlowEditorFab icon="i-carbon:settings" />
 
     <!-- Export -->
     <FlowEditorFab
@@ -39,7 +39,7 @@ const emit = defineEmits<{
 
     <!-- Start -->
     <FlowEditorFab
-      :isActive="isRunning"
+      :is-active="isRunning"
       :icon="isRunning ? 'i-line-md:loading-loop' : 'i-carbon:play'"
       @click="() => isRunning ? emit('abort') : emit('start')"
     />

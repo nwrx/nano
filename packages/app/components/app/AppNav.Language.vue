@@ -30,7 +30,7 @@ const locales = computed(() => props.locales
     @mouseleave="() => isOpen = false">
 
     <!-- Language Button -->
-    <AppNavFab :icon="icon"/>
+    <AppNavFab :icon="icon" />
 
     <!-- Menu -->
     <template #menu="{ close }">

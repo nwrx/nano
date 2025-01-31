@@ -26,10 +26,14 @@ const emit = defineEmits<{
     <!-- Title and Text -->
     <div class="w-full" :class="{ 'lg:basis-1/3': !vertical }">
       <h2 class="text-2xl font-medium">
-        <slot name="title">{{ title }}</slot>
+        <slot name="title">
+          {{ title }}
+        </slot>
       </h2>
       <p class="text-sm text-subtle mt-1">
-        <slot name="text">{{ text }}</slot>
+        <slot name="text">
+          {{ text }}
+        </slot>
       </p>
     </div>
 
@@ -38,7 +42,7 @@ const emit = defineEmits<{
       class="flex items-start flex-col gap-md grow lg:basis-2/3 mt-lg"
       :class="{ 'lg:mt-0': !vertical }"
       @submit.prevent="() => emit('submit')">
-      <slot/>
+      <slot />
       <Button
         v-if="label"
         size="md"

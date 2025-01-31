@@ -18,10 +18,14 @@ const emit = defineEmits<{
     <!-- Description -->
     <div class="grow">
       <h3 class="text-base font-medium">
-        <slot name="title">{{ title }}</slot>
+        <slot name="title">
+          {{ title }}
+        </slot>
       </h3>
       <p class="text-sm text-subtle">
-        <slot name="text">{{ text }}</slot>
+        <slot name="text">
+          {{ text }}
+        </slot>
       </p>
     </div>
 
