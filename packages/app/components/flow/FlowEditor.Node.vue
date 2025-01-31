@@ -154,7 +154,7 @@ defineExpose({ portsData, portsResult })
       @mousedown.stop="() => isCollapsed = !isCollapsed">
       <BaseIcon
         :icon="isCollapsed ? 'i-carbon:chevron-down' : 'i-carbon:chevron-up'"
-        class="w-4 h-4"
+        class="size-4"
       />
     </div>
 
