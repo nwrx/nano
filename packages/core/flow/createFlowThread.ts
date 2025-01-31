@@ -78,6 +78,7 @@ export class FlowThread extends Emitter<FlowThreadEvents> {
         const threadNode = new FlowThreadNode(this, node)
         this.nodes.set(node.id, threadNode)
         threadNode.on('state', meta => this.dispatch('nodeState', threadNode, meta))
+        threadNode.on('trace', (data, meta) => this.dispatch('nodeTrace', threadNode, data, meta))
 
         // --- If the node is an input, apply the input value to the thread input.
         threadNode.on('start', (context, meta) => {
