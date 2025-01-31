@@ -116,7 +116,7 @@ const { setLocale, locale } = useI18n()
 /* Markdown */
 .markdown {
   white-space: wrap;
-  line-height: 1.25;
+  line-height: 1.5;
 }
 
 .markdown > *:first-child {
