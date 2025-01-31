@@ -1,11 +1,13 @@
+<!-- eslint-disable vue/prop-name-casing -->
 <script setup lang="ts">
 import type { BaseButtonProps } from '@unshared/vue'
 
-defineProps<{
+defineProps<BaseButtonProps & {
   title: string
   text: string
   icon?: string
-} & BaseButtonProps>()
+  classButton?: string
+}>()
 
 const emit = defineEmits<{
   click: []
@@ -31,9 +33,11 @@ const emit = defineEmits<{
 
     <!-- CTA -->
     <Button
+      eager
       :label="label"
       :icon-append="icon"
       class="shrink-0"
+      :class="classButton"
       @click="() => emit('click')"
     />
   </div>
