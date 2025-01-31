@@ -2,6 +2,7 @@ import type { ModuleRunner } from '..'
 import type { ThreadWorkerMessage } from '../worker'
 import { createWebSocketRoute } from '@unserved/server'
 import { assertObjectStrict } from '@unshared/validation'
+import { authorize } from '../utils'
 import { createThreadWorkerSession, THREAD_CLIENT_MESSAGE_SCHEMA } from '../worker'
 
 export function threadSession(this: ModuleRunner) {
@@ -12,6 +13,12 @@ export function threadSession(this: ModuleRunner) {
       parseServerMessage: assertObjectStrict<ThreadWorkerMessage>,
     },
     {
+      onOpen: ({ peer }) => {
+        authorize.call(this, peer)
+      },
+      onError: ({ peer, error }) => {
+        peer.send({ event: 'error', data: [error as Error] } as ThreadWorkerMessage)
+      },
       onMessage: async({ peer, message }) => {
 
         // --- Get the thread session for the given peer. If it doesn't exist, create a new one.
@@ -27,9 +34,6 @@ export function threadSession(this: ModuleRunner) {
         if (message.event === 'create') await thread.create(message.data)
         if (message.event === 'start') await thread.start(message.data)
         if (message.event === 'abort') await thread.abort()
-      },
-      onError: ({ peer, error }) => {
-        peer.send({ event: 'error', data: [error as Error] } as ThreadWorkerMessage)
       },
     },
   )

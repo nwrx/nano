@@ -2,6 +2,7 @@ import type { ModuleRunner } from '..'
 import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, assertStringUuid, createSchema } from '@unshared/validation'
 import { sendStream, setResponseHeader } from 'h3'
+import { authorize } from '../utils'
 import { deserialize } from '../worker'
 
 export function threadGetOuputValue(this: ModuleRunner) {
@@ -14,6 +15,7 @@ export function threadGetOuputValue(this: ModuleRunner) {
       }),
     },
     async({ event, parameters }) => {
+      authorize.call(this, event)
       const { id, name } = parameters
       const thread = this.runnerSessions.get(id)
       if (!thread) throw new Error('Thread not found')
