@@ -1,3 +1,4 @@
+export * from './nodeFetch'
 export * from './nodeGate'
 export * from './nodeInference'
 export * from './nodeInput'
