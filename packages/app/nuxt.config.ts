@@ -29,10 +29,19 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiUrl: 'http://localhost:3001',
-      appUrl: 'http://localhost:3000',
+      apiUrl: '',
+      appUrl: 'app.nwrx.io',
+      appTitle: 'Nanoworks',
+      appDescription: 'A flow-based programming environment.',
+      appHostname: 'app.nwrx.io',
+      appCanonicalUrl: 'https://app.nwrx.io',
     },
   },
+
+  serverHandlers: [
+    { route: '/api/**', handler: '~/server/index.ts' },
+    { route: '/ws/**', handler: '~/server/index.ts' },
+  ],
 
   modules: [
     'nuxt-security',

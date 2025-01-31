@@ -1,7 +1,8 @@
 {
   "name": "@nwrx/nano-api",
   "private": true,
-  "main": "./dist/server.js",
+  "bin": "./dist/server.js",
+  "main": "./index.ts",
   "types": "./index.ts",
   "files": [
     "dist"

@@ -39,10 +39,7 @@ RUN printf "y\n" | pnpm install --recursive --frozen-lockfile --offline
 COPY ./turbo.json .
 COPY ./tsconfig.json .
 COPY ./packages ./packages
-RUN \
-  pnpm build && \
-  pnpm deploy --filter @nwrx/nano-app --prod /build/app && \
-  pnpm deploy --filter @nwrx/nano-api --prod /build/api
+RUN pnpm build
 
 #######################################
 # Build the application.
@@ -51,8 +48,7 @@ RUN \
 FROM base AS production
 WORKDIR /app
 
-COPY --from=build /build/app ./app
-COPY --from=build /build/api ./api
+COPY --from=build /build/packages/app/.output .
 
 # Write a single entry point that will start the app depending on the
 # arguments passed to the container. This is done to avoid having to
@@ -61,23 +57,17 @@ COPY <<EOF /usr/bin/nano
 #!/usr/bin/env sh
 
 show_help() {
-  echo "Usage: nano serve [app|api]"
+  echo "Usage: nano serve"
   echo "Commands:"
-  echo "  serve app    Start the app server"
-  echo "  serve api    Start the API server"
+  echo "  serve        Start the Nano UI server"
   echo "  --help       Show this help message"
 }
 
 if [ "\$1" = "--help" ]; then
   show_help
 elif [ "\$1" = "serve" ]; then
-  if [ "\$2" = "app" ]; then
-    node app/.output/server/index.mjs
-  else
-    node api/dist/server.js
-  fi
+  node /app/server/index.mjs
 else
-  echo "Invalid argument: \$1"
   show_help
   exit 1
 fi
@@ -85,4 +75,4 @@ EOF
 
 # Make the entrypoint script executable.
 RUN chmod +x /usr/bin/nano
-ENTRYPOINT ["/usr/bin/nano"]
+ENTRYPOINT ["/usr/bin/nano", "serve"]

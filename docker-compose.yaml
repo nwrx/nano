@@ -23,32 +23,8 @@ services:
       tags: [nano:latest]
     depends_on:
       - postgres
-      - api
-    entrypoint:
-      - nano
-      - serve
-      - app
     environment:
       - PORT=3000
-      - HOST=0.0.0.0
-    ports:
-      - "3000:3000"
-
-  api:
-    image: nano
-    build:
-      context: .
-      tags: [nano:latest]
-    depends_on:
-      - postgres
-    entrypoint:
-      - nano
-      - serve
-      - api
-    links:
-      - postgres:postgres
-    environment:
-      - PORT=3001
       - HOST=0.0.0.0
       - NANO_DATABASE_SYNCRONIZE=true
       - NANO_DATABASE_TYPE=postgres
@@ -58,4 +34,4 @@ services:
       - NANO_DATABASE_PASSWORD=nano
       - NANO_DATABASE_DATABASE=nano
     ports:
-      - "3001:3001"
+      - "3000:3000"
