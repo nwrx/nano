@@ -29,10 +29,10 @@ function onClick() {
 </script>
 
 <template>
-  <FlowEditorPortGroup class="h-8 cursor-pointer relative" @mousedown="() => onClick()">
+  <FlowEditorSocketGroup class="h-8 cursor-pointer relative" @mousedown="() => onClick()">
 
     <!-- Label -->
-    <FlowEditorPortLabel :label="name" />
+    <FlowEditorSocketLabel :label="name" />
 
     <!-- Field -->
     <BaseInputList
@@ -50,7 +50,7 @@ function onClick() {
         <span v-if="values.length === 0" class="text-editor-node italic text-sm">
           No values
         </span>
-        <FlowEditorPortLabel
+        <FlowEditorSocketLabel
           v-else-if="badge"
           :label="String(values[0].label)"
           class="truncate"
@@ -119,5 +119,5 @@ function onClick() {
         </div>
       </template>
     </BaseInputList>
-  </FlowEditorPortGroup>
+  </FlowEditorSocketGroup>
 </template>

@@ -32,10 +32,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <FlowEditorPortGroup class="relative" @click="() => textarea?.focus()">
+  <FlowEditorSocketGroup class="relative" @click="() => textarea?.focus()">
 
     <!-- Label -->
-    <FlowEditorPortLabel
+    <FlowEditorSocketLabel
       :class="{ 'opacity-0': model }"
       class="absolute self-start pointer-events-none"
       :label="name"
@@ -58,5 +58,5 @@ onMounted(() => {
       @input="(event) => onTextAreaInput(event)"
       @wheel.stop
     />
-  </FlowEditorPortGroup>
+  </FlowEditorSocketGroup>
 </template>

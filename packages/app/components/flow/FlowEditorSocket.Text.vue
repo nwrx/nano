@@ -16,10 +16,10 @@ const model = useVModel(props, 'modelValue', emit, {
 </script>
 
 <template>
-  <FlowEditorPortGroup class="cursor-text" @click="() => input?.focus()">
+  <FlowEditorSocketGroup class="cursor-text" @click="() => input?.focus()">
 
     <!-- Label -->
-    <FlowEditorPortLabel light :label="name" />
+    <FlowEditorSocketLabel light :label="name" />
 
     <!-- Field -->
     <input
@@ -28,5 +28,5 @@ const model = useVModel(props, 'modelValue', emit, {
       :class="{ 'text-editor-node italic': !model }"
       class="w-full outline-none bg-transparent text-sm"
     />
-  </FlowEditorPortGroup>
+  </FlowEditorSocketGroup>
 </template>
