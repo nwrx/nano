@@ -45,18 +45,18 @@ const locale = useVModel(props, 'locale', emit, {
   <header class="flex items-center justify-start w-full space-x-md">
 
     <!-- Title and logo -->
-    <div class="flex items-center space-x-sm">
+    <div class="flex items-center justify-center size-10">
       <img
         v-if="imageUrl"
         :src="imageUrl"
         alt="Logo"
         class="size-8 rounded"
       />
-
-      <h1 class="text-sm font-medium font-mono lowercase">
-        {{ title }}
-      </h1>
     </div>
+
+    <h1 class="text-sm font-medium font-mono lowercase">
+      {{ title }}
+    </h1>
 
     <!-- Items - Start -->
     <nav class="flex h-full items-center grow">
