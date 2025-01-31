@@ -87,4 +87,32 @@ const { setLocale, locale } = useI18n()
 .no-transition * {
   transition: none!important;
 }
+
+/* Scrollbar should be light, thin and hidden when not in use. */
+::-webkit-scrollbar {
+  width: 0.15rem;
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background-color: rgba(0 0 0 / 0.3);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0 0 0 / 0.5);
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* Scollbar when dark mode is enabled. */
+.dark ::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.5);
+}
 </style>
