@@ -15,16 +15,16 @@ function onDragStart(event: DragEvent) {
 
 // --- Collect all colors from the data and result schema.
 const colors = computed(() => {
-  const colors: string[] = []
+  const colors = new Set<string>()
   if (props.dataSchema) {
     for (const socket of props.dataSchema)
-      if (socket.typeColor) colors.push(socket.typeColor)
+      if (socket.typeColor) colors.add(socket.typeColor)
   }
   if (props.resultSchema) {
     for (const socket of props.resultSchema)
-      if (socket.typeColor) colors.push(socket.typeColor)
+      if (socket.typeColor) colors.add(socket.typeColor)
   }
-  return colors
+  return [...colors]
 })
 </script>
 
