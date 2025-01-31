@@ -1,5 +1,5 @@
 import type { Thread } from './createThread'
-import { resolveComponent } from '../utils/resolveComponent'
+import { resolveComponent } from '../utils'
 import { getNode } from './getNode'
 
 export async function getNodeComponent(thread: Thread, id: string) {
