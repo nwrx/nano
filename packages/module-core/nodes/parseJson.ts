@@ -1,4 +1,5 @@
 import { defineFlowNode } from '@nwrx/core'
+import { basic } from '../categories'
 import { object, string } from '../types'
 
 export const parseJson = defineFlowNode({
@@ -6,6 +7,7 @@ export const parseJson = defineFlowNode({
   name: 'Parse JSON',
   icon: 'https://api.iconify.design/carbon:json.svg',
   description: 'Parses a JSON string into an object.',
+  category: basic,
 
   defineDataSchema: {
     json: {
