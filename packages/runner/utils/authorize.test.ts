@@ -1,6 +1,5 @@
 import type { TestApplication } from '@unserved/server'
-import { createPeer } from '@nwrx/api/__fixtures__'
-import { createTestApplication, createTestEvent } from '@unserved/server'
+import { createTestApplication, createTestEvent, createTestPeer } from '@unserved/server'
 import { ModuleRunner } from '..'
 import { authorize } from './authorize'
 
@@ -66,7 +65,7 @@ describe.concurrent<Context>('getEventInformation', () => {
   describe<Context>('with peer', (it) => {
     it('should authorize the peer when the token and address are valid with "runnerTrustProxy" set to true', ({ moduleRunner }) => {
       moduleRunner.runnerTrustProxy = true
-      const peer = createPeer({
+      const peer = createTestPeer({
         headers: {
           'authorization': `Bearer ${moduleRunner.runnerToken}`,
           'x-forwarded-for': moduleRunner.runnerMasterAddress,
@@ -77,7 +76,7 @@ describe.concurrent<Context>('getEventInformation', () => {
     })
 
     it('should authorize the peer when the token and address are valid with "runnerTrustProxy" set to false', ({ moduleRunner }) => {
-      const peer = createPeer({
+      const peer = createTestPeer({
         headers: { authorization: `Bearer ${moduleRunner.runnerToken}` },
         remoteAddress: moduleRunner.runnerMasterAddress,
       })
@@ -86,7 +85,7 @@ describe.concurrent<Context>('getEventInformation', () => {
     })
 
     it('should throw an error when the token is invalid', ({ moduleRunner }) => {
-      const peer = createPeer({
+      const peer = createTestPeer({
         headers: { authorization: 'Bearer invalid' },
         remoteAddress: moduleRunner.runnerMasterAddress,
       })
@@ -96,7 +95,7 @@ describe.concurrent<Context>('getEventInformation', () => {
     })
 
     it('should throw an error when the address is invalid', ({ moduleRunner }) => {
-      const peer = createPeer({
+      const peer = createTestPeer({
         headers: { authorization: `Bearer ${moduleRunner.runnerToken}` },
         remoteAddress: '0.0.0.0',
       })
