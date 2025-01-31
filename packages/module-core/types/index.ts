@@ -1,6 +1,5 @@
 export * from './boolean'
 export * from './file'
-export * from './languageModelInstance'
 export * from './number'
 export * from './object'
 export * from './storageInstance'

@@ -1,7 +1,7 @@
 import type { NodeInstanceContext, SocketListOption } from '@nwrx/core'
 import { defineDataSchema, defineNode } from '@nwrx/core'
 import { languageModel } from '../categories'
-import { languageModelInstance, string } from '../types'
+import { languageModel, string } from '../types'
 
 /** The default BASE_URL for the Ollama API. */
 const BASE_URL = 'http://localhost:11434'
@@ -89,7 +89,7 @@ export const modelOllama = defineNode({
   resultSchema: {
     model: {
       name: 'Model',
-      type: languageModelInstance,
+      type: languageModel,
       description: 'The model information to use for generating completions.',
     },
   },

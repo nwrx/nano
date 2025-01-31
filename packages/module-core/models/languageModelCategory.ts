@@ -1,7 +1,7 @@
 import { defineCategory } from '@nwrx/core'
 
-export const languageModel = defineCategory({
-  kind: 'languageModel',
+export const languageModelCategory = defineCategory({
+  kind: 'language-model',
   name: 'Language Models',
   color: '#5636D9',
   icon: 'https://api.iconify.design/carbon:model.svg',
