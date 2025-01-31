@@ -8,10 +8,10 @@ export type EmitterEvents = Record<string, any[]>
 export class Emitter<T extends EmitterEvents> {
 
   /** The event target that is used to dispatch events. */
-  eventTarget = new EventTarget()
+  private eventTarget = new EventTarget()
 
   /** The event handlers that are currently active. */
-  eventHandlers: Array<[keyof T & string, EventListener]> = []
+  private eventHandlers: Array<[keyof T & string, EventListener]> = []
 
   /**
    * Add a listener for the specified event. The listener will be called whenever
@@ -70,5 +70,13 @@ export class Emitter<T extends EmitterEvents> {
     for (const [event, handler] of this.eventHandlers)
       this.eventTarget.removeEventListener(event, handler)
     this.eventHandlers = []
+  }
+
+  /**
+   * Remove all event listeners that are currently active. This will prevent any
+   * listeners from being called when the event is dispatched.
+   */
+  [Symbol.dispose]() {
+    this.clearListeners()
   }
 }
