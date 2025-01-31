@@ -67,6 +67,7 @@ export async function flowFromJsonV1<T extends FlowModule = FlowModule>(json: Fl
         const source = value.slice(6)
         const target = `${id}:${key}`
         flow.links.push({ source, target })
+        initialData[key] = value
       }
 
       // --- Otherwise, store the value as initial data.
