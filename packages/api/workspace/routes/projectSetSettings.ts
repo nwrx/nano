@@ -1,7 +1,7 @@
 import type { ModuleWorkspace } from '../index'
-import { ModuleUser } from '@nwrx/api'
 import { createHttpRoute } from '@unserved/server'
 import { assertNil, assertString, assertStringNotEmpty, createSchema } from '@unshared/validation'
+import { ModuleUser } from '../../user'
 
 export function projectSetSettings(this: ModuleWorkspace) {
   return createHttpRoute(

@@ -1,8 +1,8 @@
 import type { ModuleWorkspace } from '../index'
-import { ModuleUser } from '@nwrx/api'
 import { createHttpRoute } from '@unserved/server'
 import { parseBoolean } from '@unshared/string'
 import { assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
+import { ModuleUser } from '../../user'
 
 export function workspaceGet(this: ModuleWorkspace) {
   return createHttpRoute(
