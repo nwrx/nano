@@ -50,10 +50,14 @@ export class WorkspaceProjectSecret extends BaseEntity {
   serialize(): WorkspaceProjectSecretObject {
     return {
       name: this.name,
+      updatedAt: this.updatedAt.toISOString(),
+      createdAt: this.createdAt.toISOString(),
     }
   }
 }
 
 export interface WorkspaceProjectSecretObject {
   name: string
+  updatedAt: string
+  createdAt: string
 }
