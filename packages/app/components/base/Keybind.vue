@@ -10,20 +10,20 @@ defineProps<{
   <div
     class="
       inline-flex items-center space-x-1 px-1 rounded
-      h-6 whitespace-nowrap
+      h-6 whitespace-nowrap text-subtle
     ">
 
     <!-- Key icon -->
     <BaseIcon
       v-if="icon"
       :icon="icon"
-      class="opacity-60 w-4 h-4"
+      class="size-4"
     />
 
     <!-- Key label -->
     <span
       v-if="label"
-      class="opacity-60 text-xs"
+      class="text-xs"
       v-text="label"
     />
   </div>
