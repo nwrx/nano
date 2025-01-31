@@ -1,7 +1,7 @@
 import type { Loose } from '@unshared/types'
 import type { User } from '../entities'
 import type { ModuleUser } from '../index'
-import { assertBoolean, assertNull, assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
+import { assertBoolean, assertNil, assertNull, assertStringNotEmpty, createSchema } from '@unshared/validation'
 
 /** The options to resolve the user. */
 const RESOLVE_USER_OPTIONS = createSchema({
@@ -10,19 +10,19 @@ const RESOLVE_USER_OPTIONS = createSchema({
   username: assertStringNotEmpty,
 
   /** The user responsible for resolving the user. */
-  user: [[assertUndefined], [createSchema({
+  user: [[assertNil], [createSchema({
     username: assertStringNotEmpty,
     isSuperAdministrator: [[assertNull], [assertBoolean]],
   })]],
 
   /** Also resolve deleted users. */
-  withDeleted: [[assertUndefined], [assertBoolean]],
+  withDeleted: [[assertNil], [assertBoolean]],
 
   /** Also resolve disabled users. */
-  withDisabled: [[assertUndefined], [assertBoolean]],
+  withDisabled: [[assertNil], [assertBoolean]],
 
   /** Also resolve the user's profile. */
-  withProfile: [[assertUndefined], [assertBoolean]],
+  withProfile: [[assertNil], [assertBoolean]],
 })
 
 /** The options to resolve the user. */
