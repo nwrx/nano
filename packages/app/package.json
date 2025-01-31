@@ -37,6 +37,7 @@
     "@unshared/client": "0.4.0",
     "@unshared/color": "0.4.0",
     "@unshared/eslint-config": "0.4.0",
+    "@unshared/functions": "0.4.0",
     "@unshared/string": "0.4.0",
     "@unshared/types": "0.4.0",
     "@unshared/unocss-preset": "0.4.0",
