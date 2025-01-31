@@ -38,16 +38,22 @@ watch(description, async() => {
 </script>
 
 <template>
-  <div class="pb-4 px-4">
+  <div class="py-4 px-4">
+
+    <!-- Name -->
     <input
       v-model="name"
       :placeholder="placeholderName"
       :readonly="isReadonly"
       class="text-xl font-medium outline-none bg-transparent w-full">
+
+    <!-- Description -->
     <textarea
       v-model="description"
       :placeholder="placeholderDescription"
       :readonly="isReadonly"
+      rows="1"
+      :class="{ italic: !description }"
       class="text-sm outline-none bg-transparent w-full resize-none opacity-70"
       @input="(event) => onTextareaInput(event)"
     />
