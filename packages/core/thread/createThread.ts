@@ -6,6 +6,13 @@ import { Emitter } from '../utils/createEmitter'
 import { DEFAULT_COMPONENT_RESOLVER } from '../utils/defaultComponentResolver'
 import { DEFAULT_REFERENCE_RESOLVER } from '../utils/defaultReferenceResolver'
 
+export type ThreadInput =
+  | boolean
+  | File
+  | number
+  | ReadableStream
+  | string
+
 /**
  * The options that are used to create a new flow instance. The options can be
  * used to configure the flow instance with custom settings and resolvers.
@@ -49,7 +56,7 @@ export class Thread extends Emitter<ThreadEventMap> implements ThreadOptions {
   output: ObjectLike = {}
 
   /** The input of the flow thread. */
-  input: ObjectLike = {}
+  input: Record<string, ThreadInput> = {}
 
   /** The abort controller that is used to abort the flow thread. */
   abortController = new AbortController()
