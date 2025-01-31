@@ -1,4 +1,4 @@
-import type { Thread } from '@nwrx/core'
+import type { Thread } from '@nwrx/nano'
 import type { Peer } from 'crossws'
 import type { UUID } from 'node:crypto'
 import type { User } from '../../user'
@@ -6,6 +6,7 @@ import type { ChatThread } from '../entities'
 import type { ChatMessageData, ModuleChat } from '../index'
 import type { ChatClientMessage } from './chatClientMessage'
 import type { ChatServerMessage } from './chatServerMessage'
+import { env } from 'node:process'
 import { ModuleFlow } from '../../flow'
 
 export interface ChatSessionOptions {
@@ -136,7 +137,7 @@ export class ChatSession {
       this.broadcast({
         event: 'error',
         message: (error as Error).message,
-        stack: import.meta.dev ? (error as Error).stack : undefined,
+        stack: env.NODE_ENV === 'production' ? undefined : (error as Error).stack,
       })
     }
   }

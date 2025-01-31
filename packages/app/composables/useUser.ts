@@ -1,4 +1,4 @@
-import type { UserObject } from '@nwrx/api'
+import type { UserObject } from '@nwrx/nano-api'
 import type { RouteRequestData } from '@unserved/client'
 import type { application } from '~/server'
 import { useAlerts, useClient } from '#imports'

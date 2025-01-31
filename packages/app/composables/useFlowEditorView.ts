@@ -1,5 +1,5 @@
 /* eslint-disable unicorn/prevent-abbreviations */
-import type { ComponentInstanceJSON, EditorParticipantJSON, LinkJSON } from '@nwrx/api'
+import type { ComponentInstanceJSON, EditorParticipantJSON, LinkJSON } from '@nwrx/nano-api'
 import type { Position } from '@vueuse/core'
 import type { CSSProperties } from 'vue'
 import { isReferenceLink } from '#imports'

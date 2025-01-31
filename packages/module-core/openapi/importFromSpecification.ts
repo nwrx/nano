@@ -1,4 +1,4 @@
-import type { Component } from '@nwrx/core'
+import type { Component } from '@nwrx/nano'
 import type { OpenAPI } from 'openapi-types'
 import { resolveDocument } from '@unshared/client/openapi'
 import { withTemporaryFiles } from '@unshared/fs'

@@ -1,4 +1,4 @@
-import { defineCategory } from '@nwrx/core'
+import { defineCategory } from '@nwrx/nano'
 
 export const categoryLanguageModelTool = defineCategory({
   kind: 'language-model-tool',

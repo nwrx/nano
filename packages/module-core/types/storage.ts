@@ -1,4 +1,4 @@
-import { defineType } from '@nwrx/core'
+import { defineType } from '@nwrx/nano'
 import { assertFunction, createParser } from '@unshared/validation'
 
 /** A function that performs a search operation in the storage. */

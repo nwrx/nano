@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { WorkspaceProjectPermission } from '@nwrx/api'
+import type { WorkspaceProjectPermission } from '@nwrx/nano-api'
 
 const props = defineProps<{
   modelValue?: boolean

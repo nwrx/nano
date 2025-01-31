@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { EditorSessionJSON, LinkJSON } from '@nwrx/api'
-import type { SocketListOption } from '@nwrx/core'
+import type { EditorSessionJSON, LinkJSON } from '@nwrx/nano-api'
+import type { SocketListOption } from '@nwrx/nano'
 import { throttle } from '@unshared/functions/throttle'
-import PATTERN_EDITOR_URL from '~/assets/pattern-editor.svg'
+import PATTERN_EDITOR_URL from '~/assets/pattern-editor.svg?no-inline'
 
 const props = defineProps<Partial<EditorSessionJSON> & {
   getOptions?: (id: string, key: string, query: string) => Promise<SocketListOption[]>
@@ -89,9 +89,9 @@ const editor = useFlowEditorView({
 
       <!-- Pattern -->
       <div
-        class="absolute top-0 left-0 right-0 bottom-0 dark:op-5 op-10 dark:invert"
+        class="absolute top-0 left-0 right-0 bottom-0 dark:op-10 op-10 dark:invert"
         :style="{
-          backgroundImage: `url(${PATTERN_EDITOR_URL})`,
+          backgroundImage: `url('${PATTERN_EDITOR_URL}')`,
           backgroundSize: '60px',
           backgroundRepeat: 'repeat',
         }"

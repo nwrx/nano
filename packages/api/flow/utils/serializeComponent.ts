@@ -1,4 +1,4 @@
-import type { Component } from '@nwrx/core'
+import type { Component } from '@nwrx/nano'
 import type { InputJSON } from './serializeInputSchema'
 import type { OutputJSON } from './serializeOutputSchema'
 import { serializeInputSchema } from './serializeInputSchema'

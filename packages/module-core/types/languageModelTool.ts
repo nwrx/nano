@@ -1,6 +1,6 @@
 import type { MaybePromise, ObjectLike } from '@unshared/types'
 import type { JSONSchema4 } from 'json-schema'
-import { defineType } from '@nwrx/core'
+import { defineType } from '@nwrx/nano'
 import { toKebabCase } from '@unshared/string'
 import { assertFunction, assertObject, assertStringNotEmpty, createParser } from '@unshared/validation'
 

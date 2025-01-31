@@ -1,4 +1,4 @@
-import { defineComponent } from '@nwrx/core'
+import { defineComponent } from '@nwrx/nano'
 import { getServerUrl, type Operation, resolveOperationTokenOptions } from '@unshared/client/openapi'
 import { parseRequest } from '@unshared/client/utils'
 import { toSlug } from '@unshared/string'

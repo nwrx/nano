@@ -1,5 +1,5 @@
-import type { Type } from '@nwrx/core'
-import { defineComponent } from '@nwrx/core'
+import type { Type } from '@nwrx/nano'
+import { defineComponent } from '@nwrx/nano'
 import * as YAML from 'yaml'
 import { categoryBasic } from '../categories'
 import { object, string } from '../types'

@@ -1,7 +1,7 @@
+import type { WorkspaceProjectPermission } from '../utils'
 import { BaseEntity } from '@unserved/server'
 import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm'
 import { User } from '../../user'
-import { WorkspaceProjectPermission } from '../utils'
 import { WorkspaceProject } from './WorkspaceProject'
 
 /**

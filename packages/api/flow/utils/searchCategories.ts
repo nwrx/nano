@@ -1,5 +1,5 @@
 import type { ComponentJSON } from './serializeComponent'
-import { getModuleNodes } from '@nwrx/core'
+import { getModuleNodes } from '@nwrx/nano'
 import { MODULES } from './constants'
 import { serializeComponent } from './serializeComponent'
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { UserObject } from '@nwrx/api'
+import type { UserObject } from '@nwrx/nano-api'
 
 const props = defineProps<{
   workspace?: string

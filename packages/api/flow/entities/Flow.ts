@@ -1,4 +1,4 @@
-import { FlowV1 } from '@nwrx/core'
+import type { FlowV1 } from '@nwrx/nano'
 import { BaseEntity, transformerJson } from '@unserved/server'
 import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm'
 import { WorkspaceProject } from '../../workspace'

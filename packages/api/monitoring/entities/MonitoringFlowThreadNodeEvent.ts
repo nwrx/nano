@@ -1,6 +1,6 @@
-import { FlowThreadNodeEvents } from '@nwrx/core'
+import type { ObjectLike } from '@unshared/types'
+import { FlowThreadNodeEvents } from '@nwrx/nano'
 import { BaseEntity, transformerJson } from '@unserved/server'
-import { ObjectLike } from '@unshared/types'
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
 import { MonitoringFlowThread } from './MonitoringFlowThread'
 

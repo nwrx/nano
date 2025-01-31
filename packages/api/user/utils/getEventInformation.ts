@@ -40,8 +40,8 @@ export function getEventInformation(this: ModuleUser, event: H3Event | Peer) {
     const cookiesEntries = cookiesValue.split(';').map(x => x.trim().split('=').map(x => x.trim()))
     const cookies = Object.fromEntries(cookiesEntries) as Record<string, string>
     result.token = cookies[this.userSessionCookieName]
+    result.address = (this.userTrustProxy ? headers.get('X-Forwarded-For') : undefined) ?? event.remoteAddress
     result.userAgent = headers.get('User-Agent') ?? undefined
-    result.address = this.userTrustProxy ? headers.get('X-Forwarded-For')! : event.remoteAddress
   }
 
   // --- Return the event information.

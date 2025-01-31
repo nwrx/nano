@@ -1,7 +1,5 @@
-import type { UserObject } from '@nwrx/api'
+import type { application, UserObject } from '@nwrx/nano-api'
 import type { RouteRequestData } from '@unserved/client'
-import type { application } from '~/server'
-import { useAlerts, useClient, useRouter } from '#imports'
 
 type SigninCredentials = RouteRequestData<typeof application, 'POST /api/session'>
 type SignupCredentials = RouteRequestData<typeof application, 'POST /api/signup'>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { WorkspaceProjectObject } from '@nwrx/api'
+import type { WorkspaceProjectObject } from '@nwrx/nano-api'
 
 defineProps<{
   project: WorkspaceProjectObject

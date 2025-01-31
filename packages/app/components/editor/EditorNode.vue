@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { ComponentInstanceJSON } from '@nwrx/api'
-import type { SocketListOption } from '@nwrx/core'
+import type { ComponentInstanceJSON } from '@nwrx/nano-api'
+import type { SocketListOption } from '@nwrx/nano'
 import type { FlowLinkSocket } from '~/composables/useFlowEditorView'
 
 const props = defineProps<ComponentInstanceJSON & {

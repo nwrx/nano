@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { UserSessionObject } from '@nwrx/api'
+import type { UserSessionObject } from '@nwrx/nano-api'
 
 defineProps<{
   sessions: UserSessionObject[]

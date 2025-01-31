@@ -1,4 +1,4 @@
-import { defineType } from '@nwrx/core'
+import { defineType } from '@nwrx/nano'
 import { assertObject, assertString, createRuleSet } from '@unshared/validation'
 
 export const object = defineType({

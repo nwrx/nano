@@ -1,5 +1,5 @@
 /* eslint-disable sonarjs/todo-tag */
-import type { ChatServerMessage, ChatThreadObject } from '@nwrx/api'
+import type { ChatServerMessage, ChatThreadObject } from '@nwrx/nano-api'
 import type { UUID } from 'node:crypto'
 import { useAlerts, useClient } from '#imports'
 
@@ -7,12 +7,10 @@ export function useChat(workspace: MaybeRef<string>) {
   const client = useClient()
   const alerts = useAlerts()
   const threads = ref([] as ChatThreadObject[])
-
   const thread = reactive({} as ChatThreadObject)
 
   const channel = client.connect('WS /ws/chat/:workspace', {
     data: { workspace: unref(workspace) },
-    // @ts-expect-error: TODO Fix in `@unserved/client`
     onMessage: (payload: ChatServerMessage) => {
       switch (payload.event) {
 

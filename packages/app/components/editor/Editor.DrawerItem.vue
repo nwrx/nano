@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ComponentJSON } from '@nwrx/api'
+import type { ComponentJSON } from '@nwrx/nano-api'
 import type { DropPayload } from '~/utils/types'
 
 const props = defineProps<ComponentJSON>()

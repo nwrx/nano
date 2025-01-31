@@ -4,7 +4,7 @@ import type {
   MonitoringFlowThreadNodeEventObject,
   MonitoringFlowThreadObject,
   WorkspaceProjectObject,
-} from '@nwrx/api'
+} from '@nwrx/nano-api'
 
 const props = defineProps<{
   selectedProject?: string

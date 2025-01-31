@@ -1,7 +1,7 @@
+import type { ChatMessageData } from '../utils'
 import { BaseEntity, transformerJson } from '@unserved/server'
 import { UUID } from 'node:crypto'
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
-import { ChatMessageData } from '../utils'
 import { ChatThread } from './Chat'
 
 /**

@@ -1,4 +1,4 @@
-import type { Thread } from '@nwrx/core'
+import type { Thread } from '@nwrx/nano'
 import type { Flow } from '../../flow'
 import type { MonitoringFlowThread } from '../entities'
 import type { ModuleMonitoring } from '../index'

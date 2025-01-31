@@ -1,4 +1,4 @@
-import { defineComponent, NODE_INPUT_KIND } from '@nwrx/core'
+import { defineComponent, NODE_INPUT_KIND } from '@nwrx/nano'
 import { categoryBasic } from '../categories'
 import { boolean, string } from '../types'
 

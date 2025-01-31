@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ChatMessageObject } from '@nwrx/api'
+import type { ChatMessageObject } from '@nwrx/nano-api'
 
 defineProps<{
   title?: string

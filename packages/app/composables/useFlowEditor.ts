@@ -1,7 +1,7 @@
 /* eslint-disable sonarjs/todo-tag */
 /* eslint-disable sonarjs/cognitive-complexity */
-import type { EditorSessionJSON, EditorSessionServerMessage, LinkJSON } from '@nwrx/api'
-import type { SocketListOption } from '@nwrx/core'
+import type { EditorSessionJSON, EditorSessionServerMessage, LinkJSON } from '@nwrx/nano-api'
+import type { SocketListOption } from '@nwrx/nano'
 import { useAlerts, useClient } from '#imports'
 
 export function useFlowEditor(workspace: MaybeRef<string>, project: MaybeRef<string>, name: MaybeRef<string>) {

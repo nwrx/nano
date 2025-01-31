@@ -1,4 +1,4 @@
-import { ThreadError } from '@nwrx/core'
+import { ThreadError } from '@nwrx/nano'
 import { toConstantCase } from '@unshared/string'
 
 export async function openaiOnError(response: Response, prefix = 'OPENAI'): Promise<ThreadError> {

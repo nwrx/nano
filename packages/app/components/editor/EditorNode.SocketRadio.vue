@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SocketListOption } from '@nwrx/core'
+import type { SocketListOption } from '@nwrx/nano'
 
 const props = defineProps<{
   name?: string

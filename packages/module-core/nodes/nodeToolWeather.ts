@@ -1,5 +1,5 @@
 import type { JSONSchema4 } from 'json-schema'
-import { defineComponent } from '@nwrx/core'
+import { defineComponent } from '@nwrx/nano'
 import { categoryLanguageModelTool } from '../categories'
 import { languageModelTool, string } from '../types'
 

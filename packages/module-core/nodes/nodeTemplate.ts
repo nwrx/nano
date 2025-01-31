@@ -1,4 +1,4 @@
-import { defineComponent } from '@nwrx/core'
+import { defineComponent } from '@nwrx/nano'
 import { categoryBasic } from '../categories'
 import { string } from '../types'
 

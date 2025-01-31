@@ -1,6 +1,6 @@
+import type { PasswordOptions } from '../utils'
 import { BaseEntity, transformerDate, transformerJson } from '@unserved/server'
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
-import { PasswordOptions } from '../utils'
 import { User } from './User'
 
 /**

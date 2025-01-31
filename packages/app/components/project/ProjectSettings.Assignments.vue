@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { UserObject, WorkspaceProjectPermission, WorkspaceProjectUserPermissionsObject } from '@nwrx/api'
+import type { UserObject, WorkspaceProjectPermission, WorkspaceProjectUserPermissionsObject } from '@nwrx/nano-api'
 import ProjectSettingsAssignmentsPermissions from './ProjectSettings.AssignmentsPermissions.vue'
 
 const props = defineProps<{

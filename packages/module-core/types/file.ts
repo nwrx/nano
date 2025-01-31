@@ -1,6 +1,6 @@
 import type { MaybePromise } from '@unshared/types'
 import type { ReadableStream } from 'node:stream/web'
-import { defineType } from '@nwrx/core'
+import { defineType } from '@nwrx/nano'
 import { assert, assertFunction, createSchema } from '@unshared/validation'
 
 export const file = defineType({

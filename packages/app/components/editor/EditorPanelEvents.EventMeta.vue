@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { EditorSessionServerMessage } from '@nwrx/api'
-import type { NodeEventMeta, ThreadEventMeta } from '@nwrx/core'
+import type { NodeEventMeta, ThreadEventMeta } from '@nwrx/nano'
+import type { EditorSessionServerMessage } from '@nwrx/nano-api'
 
 defineProps<{
   event: EditorSessionServerMessage & Partial<NodeEventMeta & ThreadEventMeta>

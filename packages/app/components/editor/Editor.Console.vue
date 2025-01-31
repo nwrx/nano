@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { FlowSessionEventName } from '@nwrx/api'
-import type { EditorSessionServerMessage } from '@nwrx/api'
+import type { FlowSessionEventName } from '@nwrx/nano-api'
+import type { EditorSessionServerMessage } from '@nwrx/nano-api'
 
 const props = defineProps<{
   events?: EditorSessionServerMessage[]

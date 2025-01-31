@@ -1,6 +1,6 @@
 import type { MaybePromise, ObjectLike } from '@unshared/types'
 import type { InferenceData, InferenceResult } from '../nodes'
-import { defineType } from '@nwrx/core'
+import { defineType } from '@nwrx/nano'
 import { assertFunction, assertStringNotEmpty, assertUndefined, createParser } from '@unshared/validation'
 
 /** The context that is passed in the model completion process. */

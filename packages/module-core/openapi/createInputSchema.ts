@@ -1,4 +1,4 @@
-import type { InputSchema } from '@nwrx/core'
+import type { InputSchema } from '@nwrx/nano'
 import type { OpenAPI } from 'openapi-types'
 import { resolveOperationTokenOptions } from '@unshared/client/openapi'
 import { toTitleCase } from '@unshared/string'

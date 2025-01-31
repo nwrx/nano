@@ -1,4 +1,4 @@
-import type { InputSocket } from '@nwrx/core'
+import type { InputSocket } from '@nwrx/nano'
 import type { OpenAPIV2, OpenAPIV3 } from 'openapi-types'
 import { number, object, string } from '../types'
 

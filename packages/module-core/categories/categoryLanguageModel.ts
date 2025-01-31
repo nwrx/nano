@@ -1,4 +1,4 @@
-import { defineCategory } from '@nwrx/core'
+import { defineCategory } from '@nwrx/nano'
 
 export const categoryLanguageModel = defineCategory({
   kind: 'language-model',

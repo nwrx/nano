@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { ComponentInstanceJSON } from '@nwrx/api'
-import type { SocketListOption } from '@nwrx/core'
+import type { SocketListOption } from '@nwrx/nano'
+import type { ComponentInstanceJSON } from '@nwrx/nano-api'
 
 const props = defineProps<{
   isOpen?: boolean

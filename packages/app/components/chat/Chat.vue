@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ChatThreadObject, WorkspaceProjectObject } from '@nwrx/api'
+import type { ChatThreadObject, WorkspaceProjectObject } from '@nwrx/nano-api'
 import type { UUID } from 'node:crypto'
 
 const props = defineProps<{

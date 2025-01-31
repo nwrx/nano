@@ -1,6 +1,6 @@
+import type { application } from '@nwrx/nano-api'
 import type { Channels, Routes } from '@unserved/client'
 import type { Client } from '@unshared/client'
-import type { application } from '~/server'
 import { createClient } from '@unshared/client'
 
 export const useClient = createSharedComposable(() => createClient({

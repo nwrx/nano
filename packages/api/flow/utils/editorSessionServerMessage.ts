@@ -1,4 +1,4 @@
-import type { NodeState } from '@nwrx/core'
+import type { NodeState } from '@nwrx/nano'
 import type { ComponentInstanceJSON } from './serializeComponentInstance'
 import type { EditorSessionJSON } from './serializeSession'
 import { assert, assertObjectStrict, createArrayParser, createRuleSet, createSchema } from '@unshared/validation'

@@ -1,4 +1,4 @@
-import type { InputSchema, SocketControl, SocketListOption } from '@nwrx/core'
+import type { InputSchema, SocketControl, SocketListOption } from '@nwrx/nano'
 import type { MaybeLiteral } from '@unshared/types'
 import type { OutputJSON } from './serializeOutputSchema'
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { InputJSON } from '@nwrx/api'
-import type { SocketListOption } from '@nwrx/core'
+import type { SocketListOption } from '@nwrx/nano'
+import type { InputJSON } from '@nwrx/nano-api'
 import { isReferenceLink } from '#imports'
 
 const props = defineProps<{

@@ -1,4 +1,4 @@
-import type { FlowObject } from '@nwrx/api'
+import type { FlowObject } from '@nwrx/nano-api'
 import type { MaybeLiteral } from '@unshared/types'
 import type { RouteLocationRaw } from 'vue-router'
 

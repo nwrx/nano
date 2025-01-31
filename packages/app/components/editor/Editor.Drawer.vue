@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CategoryJSON } from '@nwrx/api'
+import type { CategoryJSON } from '@nwrx/nano-api'
 
 defineProps<{
   categories?: CategoryJSON[]

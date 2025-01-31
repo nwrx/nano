@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { EditorSessionServerMessage } from '@nwrx/api'
+import type { EditorSessionServerMessage } from '@nwrx/nano-api'
 import { vMarkdown } from '#imports'
 
 defineProps<{

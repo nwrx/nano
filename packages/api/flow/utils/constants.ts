@@ -1,7 +1,5 @@
-import { Core } from '@nwrx/module-core'
-import { Google } from '@nwrx/module-google'
+import { Core } from '@nwrx/nano-module-core'
 
 export const MODULES = [
   Core,
-  Google,
 ]

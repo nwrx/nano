@@ -1,7 +1,7 @@
-import type { NodeState, Thread } from '@nwrx/core'
+import type { NodeState, Thread } from '@nwrx/nano'
 import type { ComponentJSON } from './serializeComponent'
-import { resolveComponent } from '@nwrx/core'
-import { getComponentInstance } from '@nwrx/core'
+import { resolveComponent } from '@nwrx/nano'
+import { getComponentInstance } from '@nwrx/nano'
 import { serializeComponent } from './serializeComponent'
 
 export interface ComponentInstanceJSON extends ComponentJSON {

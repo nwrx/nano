@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type ComponentInstanceJSON } from '@nwrx/api'
+import { type ComponentInstanceJSON } from '@nwrx/nano-api'
 
 const props = defineProps<{
   id?: unknown

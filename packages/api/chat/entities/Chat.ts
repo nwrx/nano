@@ -1,4 +1,4 @@
-import { FlowV1 } from '@nwrx/core'
+import type { FlowV1 } from '@nwrx/nano'
 import { BaseEntity, transformerJson } from '@unserved/server'
 import { UUID } from 'node:crypto'
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm'

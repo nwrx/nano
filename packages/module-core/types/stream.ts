@@ -1,4 +1,4 @@
-import { defineType } from '@nwrx/core'
+import { defineType } from '@nwrx/nano'
 import { assert, createParser } from '@unshared/validation'
 
 export const stream = defineType({

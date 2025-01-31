@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import type { OutputSchema } from '@nwrx/core'
+import type { OutputSchema } from '@nwrx/nano'
 import type { OpenAPI, OpenAPIV2, OpenAPIV3 } from 'openapi-types'
 import { createNodeSocket } from './createNodeSocket'
 

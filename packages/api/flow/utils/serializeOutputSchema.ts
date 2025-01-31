@@ -1,4 +1,4 @@
-import type { OutputSchema } from '@nwrx/core'
+import type { OutputSchema } from '@nwrx/nano'
 
 export interface OutputJSON {
   key: string

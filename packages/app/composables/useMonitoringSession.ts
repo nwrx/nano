@@ -1,4 +1,4 @@
-import type { MonitoringSessionEventPayload, MonitoringSessionState } from '@nwrx/api'
+import type { MonitoringSessionEventPayload, MonitoringSessionState } from '@nwrx/nano-api'
 import { useAlerts, useClient } from '#imports'
 
 export interface MonitoringSessionFilters {

@@ -2,7 +2,7 @@
 import type {
   MonitoringFlowThreadEventObject,
   MonitoringFlowThreadNodeEventObject,
-} from '@nwrx/api'
+} from '@nwrx/nano-api'
 
 const props = defineProps<{
   isOpen: boolean

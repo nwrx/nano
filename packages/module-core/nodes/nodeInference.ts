@@ -1,6 +1,6 @@
-import type { InferInput, InferOutput } from '@nwrx/core'
+import type { InferInput, InferOutput } from '@nwrx/nano'
 import type { ObjectLike } from '@unshared/types'
-import { defineComponent, defineInputSchema, defineOutputSchema } from '@nwrx/core'
+import { defineComponent, defineInputSchema, defineOutputSchema } from '@nwrx/nano'
 import { categoryLanguageModel } from '../categories'
 import { languageModel, languageModelTool, number, string } from '../types'
 

@@ -41,6 +41,7 @@ export function flowEditor(this: ModuleFlow) {
 
       onMessage: async({ peer, message }) => {
         const session = resolveSessionByPeer.call(this, peer)
+        peer.send({ event: 'message', message: 'Received message.' })
         await session.onMessage(peer, message)
       },
     },
