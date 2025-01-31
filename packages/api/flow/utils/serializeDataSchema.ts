@@ -9,6 +9,7 @@ export interface DataSocketJSON extends ResultSocketJSON {
   sliderMax?: number
   sliderMin?: number
   sliderStep?: number
+  defaultValue?: unknown
 }
 
 /**
@@ -37,5 +38,6 @@ export function serializeDataSchema(schema?: MaybeFunction<MaybePromise<DataSche
     sliderMax: socket.sliderMax,
     sliderMin: socket.sliderMin,
     sliderStep: socket.sliderStep,
+    defaultValue: socket.defaultValue as unknown,
   }))
 }
