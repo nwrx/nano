@@ -133,12 +133,13 @@ interface ToolFunctionDefinition {
 interface ToolChoiceFunction {
   type: 'function'
   function: { name: string }
+}
 
 /**************************************************************/
 /* Response                                                   */
 /**************************************************************/
 
-}export interface OpenaiChatResponse {
+export interface OpenaiChatResponse {
   id: string
   object: 'chat.completion'
   created: number
@@ -157,15 +158,15 @@ interface Choice {
 }
 
 interface LogProbs {
-  content?: TokenLogProbs[] | null
-  refusal?: TokenLogProbs[] | null
+  content?: null | TokenLogProbs[]
+  refusal?: null | TokenLogProbs[]
 }
 
 interface TokenLogProbs {
   token: string
   logprob: number
   bytes?: number[]
-  top_logprobs?: TopLogProb[] | null
+  top_logprobs?: null | TopLogProb[]
 }
 
 interface TopLogProb {
