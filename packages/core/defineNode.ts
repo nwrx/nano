@@ -1,9 +1,8 @@
-import type { Pretty } from '@unshared/types'
+import type { MaybePromise } from '@unshared/types'
 import type { Category } from './defineCategory'
 import type { DataFromSchema } from './defineDataSchema'
 import type { DataSchema } from './defineDataSchema'
 import type { ResultFromSchema, ResultSchema } from './defineResultSchema'
-import type { MaybePromise } from './types'
 import { assertNotNil, assertStringNotEmpty } from '@unshared/validation'
 
 /**
@@ -11,7 +10,7 @@ import { assertNotNil, assertStringNotEmpty } from '@unshared/validation'
  * contain the input values and additional parameters that can be used to
  * process the data.
  */
-export interface NodeInstanceContext<
+export interface InstanceContext<
   T extends DataSchema = DataSchema,
   U extends ResultSchema = ResultSchema,
 > {
@@ -20,14 +19,14 @@ export interface NodeInstanceContext<
    * The data that is passed to the node when it is executed. The data comes
    * from the previous nodes or can be statically defined in the flow.
    */
-  data: Pretty<DataFromSchema<NoInfer<T>>>
+  data: DataFromSchema<T>
 
   /**
    * The current result that is produced by the node when it is executed. The
    * result is used to pass the output of the node to the next nodes in the flow.
    * The result can be modified by the node to produce the desired output.
    */
-  result: Pretty<ResultFromSchema<NoInfer<U>>>
+  result: ResultFromSchema<U>
 
   /**
    * The abort signal that can be triggered to cancel the execution of the
@@ -57,8 +56,8 @@ export interface NodeInstanceContext<
  */
 export interface Node<
   K extends string = string,
-  T extends DataSchema = any,
-  U extends ResultSchema = any,
+  T extends DataSchema = DataSchema,
+  U extends ResultSchema = ResultSchema,
 > {
 
   /**
@@ -108,7 +107,7 @@ export interface Node<
    *
    * @returns The schema of the data that the node expects.
    */
-  dataSchema?: ((context: NodeInstanceContext<T, U>) => MaybePromise<T>) | T
+  dataSchema?: ((context: InstanceContext<T, U>) => MaybePromise<T>) | T
 
   /**
    * A function that defines the schema of the result that the node produces.
@@ -117,7 +116,7 @@ export interface Node<
    *
    * @returns The schema of the result that the node produces.
    */
-  resultSchema?: ((context: NodeInstanceContext<T, U>) => MaybePromise<U>) | U
+  resultSchema?: ((context: InstanceContext<T, U>) => MaybePromise<U>) | U
 
   /**
    * A function that processes the data of the node and produces a result.
@@ -135,7 +134,7 @@ export interface Node<
    *   },
    * })
    */
-  process?: (context: NodeInstanceContext<NoInfer<T>, NoInfer<U>>) => MaybePromise<ResultFromSchema<NoInfer<U>>>
+  process?: (context: InstanceContext<NoInfer<T>, NoInfer<U>>) => MaybePromise<ResultFromSchema<NoInfer<U>>>
 }
 
 /**
@@ -176,7 +175,7 @@ export interface Node<
  *   }),
  * })
  */
-export function defineNode<N extends string, T extends DataSchema, U extends ResultSchema>(options: Node<N, T, U>): Node<N, T, U>
+export function defineNode<K extends string, T extends DataSchema, U extends ResultSchema>(options: Node<K, T, U>): Node<K, T, U>
 export function defineNode<T extends Node>(options: Readonly<T>): T
 export function defineNode(options: Readonly<Node>): Node {
   assertNotNil(options)
@@ -187,8 +186,8 @@ export function defineNode(options: Readonly<Node>): Node {
     icon: options.icon,
     category: options.category,
     description: options.description,
-    dataSchema: options.dataSchema as DataSchema ?? {},
-    resultSchema: options.resultSchema as ResultSchema ?? {},
+    dataSchema: options.dataSchema,
+    resultSchema: options.resultSchema,
     process: options.process,
-  }
+  } as Node
 }

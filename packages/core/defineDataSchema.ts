@@ -1,7 +1,6 @@
-import type { IsNever, MaybeLiteral, NotUndefined } from '@unshared/types'
+import type { MaybeLiteral } from '@unshared/types'
 import type { ResultSocket } from './defineResultSchema'
 import type { Type } from './defineType'
-import type { ObjectLike } from './types'
 
 /**
  * Enum-like type representing the various control types a socket can have in the editor.
@@ -21,7 +20,7 @@ export type SocketControl =
  * Interface for defining options for sockets with 'autocomplete' or 'select' controls.
  * Each option includes a value and a label, with optional icon and description for enhanced UX.
  */
-export interface SocketListOption<T = unknown> {
+export interface SocketListOption<T = any> {
 
   /** Internal value of the option. */
   value: T
@@ -40,11 +39,7 @@ export interface SocketListOption<T = unknown> {
  * Interface representing a data socket, which can connect to another node in the flow.
  * It includes type validation and parsing logic for the data passed through the socket.
  */
-export type DataSocket<
-  T = any,
-  O extends boolean | undefined = boolean | undefined,
-  A extends boolean | undefined = boolean | undefined,
-> = {
+export interface DataSocket<T = any> extends ResultSocket<T> {
 
   /**
    * Control type of the socket, dictating its appearance and input method in the editor.
@@ -104,17 +99,13 @@ export type DataSocket<
    * will take precedence over the default value provided by the socket type.
    */
   defaultValue?: NoInfer<T>
-} & ResultSocket<T, O, A>
+}
 
 /**
  * Type representing the schema for a node's data, mapping socket names to their configurations.
  * This schema is used to validate the data passed to the node during execution.
  */
-export type DataSchema<T extends ObjectLike = never> =
-  IsNever<T> extends true
-    ? Record<string, DataSocket>
-    : { [P in keyof T as undefined extends T[P] ? never : P & string]-?: DataSocket<T[P], false | undefined> } &
-      { [P in keyof T as undefined extends T[P] ? P & string : never]-?: DataSocket<NotUndefined<T[P]>, true> }
+export type DataSchema = Record<string, DataSocket>
 
 /**
  * Extract the raw type described by the given schema instance.
@@ -136,10 +127,10 @@ export type DataSchema<T extends ObjectLike = never> =
  */
 export type DataFromSchema<T extends DataSchema> =
   { [P in keyof T]:
-    T[P] extends { type: Type<infer U>; isOptional: true; isArray: true } ? U[] | undefined :
-      T[P] extends { type: Type<infer U>; isOptional: true } ? U | undefined :
-        T[P] extends { type: Type<infer U>; isArray: true } ? U[] :
-          T[P] extends { type: Type<infer U> } ? U : never
+    T[P] extends { [x: string]: any; type: Type<infer U>; isOptional: true; isIterable: true } ? U[] | undefined :
+      T[P] extends { [x: string]: any; type: Type<infer U>; isOptional: true } ? U | undefined :
+        T[P] extends { [x: string]: any; type: Type<infer U>; isIterable: true } ? U[] :
+          T[P] extends { [x: string]: any; type: Type<infer U> } ? U : unknown
   }
 
 /**
@@ -157,8 +148,6 @@ export type DataFromSchema<T extends DataSchema> =
  *   other: { type: number, name: 'Other', description: 'Another value to process.' },
  * })
  */
-export function defineDataSchema<T extends DataSchema>(schema: T): T
-export function defineDataSchema<T extends ObjectLike>(schema: DataSchema<T>): DataSchema<T>
-export function defineDataSchema(schema: DataSchema): DataSchema {
+export function defineDataSchema<T extends DataSchema>(schema: Readonly<T>): T {
   return schema
 }
