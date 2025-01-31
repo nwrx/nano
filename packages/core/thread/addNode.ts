@@ -49,7 +49,7 @@ export function addNode(thread: Thread, specifier: string, options: NodeOptions 
   const {
     component,
     input = {},
-    metadata= {},
+    metadata = {},
   } = options
 
   // --- Check if the component instance already exists in the thread.
