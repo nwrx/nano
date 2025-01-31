@@ -3,7 +3,7 @@ import { defineFlowCategory } from '@nwrx/core'
 export const languageModel = defineFlowCategory({
   kind: 'languageModel',
   name: 'Language Models',
-  color: '#070416',
+  color: '#160D45',
   icon: 'https://api.iconify.design/carbon:model.svg',
   description: 'A collection of nodes for working with language models.',
 })
