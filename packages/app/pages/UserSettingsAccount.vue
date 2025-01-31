@@ -21,12 +21,15 @@ onMounted(async() => {
   <UserSettings>
     <UserSettingsUsername
       :username="user.data.username"
+      :avatarUrl="user.data.avatarUrl"
+      :displayName="user.data.displayName"
       @submitRename="(profile) => user.setProfile(profile)"
     />
-    <UserSettingsDangerZone @submit="(password) => user.setPassword(password)"/>
-    <AppPageDivider />
-    <!-- <UserSettingsEmail @submit="(email) => user.setEmail(email)"/> -->
-    <AppPageDivider />
-    <!-- <UserSettingsDangerZone @submitDelete="() => user.delete()"/> -->
+    <UserSettingsDangerZone
+      :username="user.data.username"
+      :avatarUrl="user.data.avatarUrl"
+      :displayName="user.data.displayName"
+      @submit="(password) => user.setPassword(password)"
+    />
   </UserSettings>
 </template>
