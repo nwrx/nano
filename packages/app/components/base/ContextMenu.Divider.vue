@@ -1,3 +1,3 @@
 <template>
-  <div class="border-t border-black/10"/>
+  <div class="border-t border-app"/>
 </template>

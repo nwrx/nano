@@ -24,17 +24,17 @@ const model = useVModel(props, 'modelValue', emit, {
 
     <!-- User Image -->
     <template #default="slotProps">
-      <BaseButton
-        eager
-        class="p-2 rounded hover:bg-black/5 transition-all duration-100"
-        @click="() => slotProps.toggle()">
-        <slot v-bind="slotProps">
+      <slot v-bind="slotProps">
+        <BaseButton
+          eager
+          class="p-sm rounded hover:bg-prominent transition"
+          @click="() => slotProps.toggle()">
           <BaseIcon
             icon="i-carbon:overflow-menu-vertical"
-            class="w-6 h-6"
+            class="size-6"
           />
-        </slot>
-      </BaseButton>
+        </BaseButton>
+      </slot>
     </template>
 
     <!-- Menu -->
@@ -50,7 +50,7 @@ const model = useVModel(props, 'modelValue', emit, {
         <div
           v-if="slotProps.isOpen"
           :class="{ 'z-9999': slotProps.isOpen }"
-          class="p-4 space-y-2 w-64 bg-white border border-black/10 rounded cursor-auto">
+          class="p-md space-y-sm w-full min-w-48 bg-app border border-app rounded cursor-auto">
           <slot name="menu" v-bind="slotProps"/>
         </div>
       </Transition>
