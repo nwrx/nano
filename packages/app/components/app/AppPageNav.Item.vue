@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import type { RouteLocationRaw } from 'vue-router'
+import type { BaseButtonProps } from '@unshared/vue'
 
 defineProps<{
   icon?: string
   label?: string
-  to?: RouteLocationRaw
-}>()
+  compact?: boolean
+} & BaseButtonProps>()
 </script>
 
 <template>
@@ -13,9 +13,15 @@ defineProps<{
     eager
     :to="to"
     :label="label"
-    class-active="font-medium !bg-prominent !text-prominent"
+    :class="{
+      'h-8 text-sm': compact,
+      'h-10 text-base': !compact,
+    }"
+    class-active="
+      font-medium !bg-prominent !text-prominent
+    "
     class="
-      flex items-center gap-sm px-md py-sm rd
+      flex items-center gap-sm px-md rd
       bg-transparent hover:bg-emphasized
       text-app hover:text-app
     ">

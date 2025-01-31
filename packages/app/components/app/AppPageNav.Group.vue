@@ -9,7 +9,7 @@ defineProps<{
   <div class="flex flex-col py-sm first:pt-0 last:pb-0">
 
     <!-- Label -->
-    <div v-if="label" class="text-xs text-subtle uppercase ml-md">
+    <div v-if="label" class="text-xs text-subtle uppercase mb-sm ml-md">
       {{ label }}
     </div>
 
