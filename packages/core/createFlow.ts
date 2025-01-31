@@ -334,7 +334,7 @@ export class Flow<T extends FlowModule = FlowModule> implements FlowSettings {
    * Process the flow. The flow is processed by executing the entrypoint
    * with the given input and letting the nodes trigger each other.
    */
-  public process() {
+  public process(): void {
     void this.entrypoint.process()
   }
 
@@ -343,7 +343,7 @@ export class Flow<T extends FlowModule = FlowModule> implements FlowSettings {
    * in the flow. This is useful when the flow is stuck in an infinite loop or
    * when the flow is no longer needed.
    */
-  public abort() {
+  public abort(): void {
     for (const node of this.nodes) node.abort()
   }
 
