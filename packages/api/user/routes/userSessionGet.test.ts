@@ -81,4 +81,4 @@ describe.concurrent('userSessionGet', () => {
       expect(body).toMatchObject({ data: { name: 'E_USER_SESSION_NOT_FOUND' } })
     })
   })
-})
+}, 1000)

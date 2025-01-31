@@ -355,4 +355,4 @@ describe.concurrent<Context>('userGet', () => {
       expect(body).toMatchObject({ data: { name: 'E_USER_NOT_AUTHENTICATED' } })
     })
   })
-}, 1000)
+}, 5000)

@@ -213,4 +213,4 @@ describe('userSetAvatar', () => {
       expect(text).toContain(error.message)
     })
   })
-})
+}, 1000)
