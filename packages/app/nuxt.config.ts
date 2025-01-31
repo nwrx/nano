@@ -27,6 +27,13 @@ export default defineNuxtConfig({
     },
   },
 
+  runtimeConfig: {
+    public: {
+      apiUrl: 'http://localhost:3001',
+      appUrl: 'http://localhost:3000',
+    },
+  },
+
   modules: [
     'nuxt-security',
     '@nuxt/eslint',
@@ -178,17 +185,6 @@ export default defineNuxtConfig({
   nitro: {
     experimental: {
       websocket: true,
-    },
-    devProxy: {
-      '/api': {
-        target: 'http://localhost:3001/api',
-        changeOrigin: true,
-      },
-      '/ws': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-        ws: true,
-      },
     },
     esbuild: {
       options: {
