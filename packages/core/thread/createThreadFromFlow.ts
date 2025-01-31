@@ -22,10 +22,10 @@ export function createThreadFromFlow(flow: FlowV1, options: ThreadOptions = {}):
   const thread = createThread(options)
   for (const id in nodes) {
     const node = nodes[id]
-    if (typeof node !== 'object' || !node.specifier) throw E.FLOW_NODE_NOT_OBJECT(id)
-    if (typeof node.specifier !== 'string') throw E.FLOW_NODE_SPECIFIER_NOT_STRING(id)
+    if (typeof node !== 'object' || !node.component) throw E.FLOW_NODE_NOT_OBJECT(id)
+    if (typeof node.component !== 'string') throw E.FLOW_NODE_SPECIFIER_NOT_STRING(id)
 
-    const { specifier, ...data } = nodes[id]
+    const { component: specifier, ...data } = nodes[id]
     const metadata: Record<string, unknown> = {}
     const input: Record<string, unknown> = {}
 
