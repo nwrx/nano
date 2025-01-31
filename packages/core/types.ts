@@ -122,13 +122,13 @@ export type InferSchemaValue<T extends FlowNodeSchema, K extends InferSchemaKeys
   InferSchemaType<T>[K]
 
 /**
- * Given a `FlowNode` instance, infer the schema of the data that the node
+ * Given a `Node` instance, infer the schema of the data that the node
  * requires. The schema is the type that is parsed from the schema and used in
  * the chain.
  *
- * @template T The `FlowNode` instance to infer the data schema from.
+ * @template T The `Node` instance to infer the data schema from.
  * @example
- * class Node extends FlowNode {
+ * class Node extends Node {
  *   defineDataSchema() {
  *    return {
  *     value: { name: 'Value', type: TypePrimitiveString },
@@ -146,13 +146,13 @@ export type InferDataSchema<T extends Node> =
   T extends Node<string, infer U extends DataSchema, any> ? U : never
 
 /**
- * Given a `FlowNode` instance, infer the schema of the result that the node
+ * Given a `Node` instance, infer the schema of the result that the node
  * produces. The schema is the type that is parsed from the schema and used in
  * the chain.
  *
- * @template T The `FlowNode` instance to infer the result schema from.
+ * @template T The `Node` instance to infer the result schema from.
  * @example
- * class Node extends FlowNode {
+ * class Node extends Node {
  *   defineResultSchema() {
  *    return {
  *     value: { name: 'Value', type: TypePrimitiveString },
@@ -170,10 +170,10 @@ export type InferResultSchema<T extends Node> =
   T extends Node<any, any, infer U extends ResultSchema> ? U : never
 
 /**
- * Given a `FlowNode` instance, infer the type of the result that the node
+ * Given a `Node` instance, infer the type of the result that the node
  * produces when the node is processed.
  *
- * @template T The `FlowNode` instance to infer the result from.
+ * @template T The `Node` instance to infer the result from.
  * @example
  * const node = defineNode({
  *   defineResultSchema: {
@@ -189,10 +189,10 @@ export type InferResultKeys<T extends Node> = keyof InferResultSchema<T> & strin
 export type InferResultValue<T extends Node, K extends InferResultKeys<T>> = InferResult<T>[K]
 
 /**
- * Given a `FlowNode` instance, infer the type of the data that the node expects
+ * Given a `Node` instance, infer the type of the data that the node expects
  * when the node is processed.
  *
- * @template T The `FlowNode` instance to infer the data from.
+ * @template T The `Node` instance to infer the data from.
  * @example
  * const node = defineNode({
  *   defineDataSchema: {

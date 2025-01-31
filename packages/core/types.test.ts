@@ -72,44 +72,44 @@ describe('types', () => {
   })
 
   describe('infer result', () => {
-    it('should infer the result schema of a `FlowNode`', () => {
+    it('should infer the result schema of a `Node`', () => {
       type Result = InferResultSchema<typeof nodeJsonParse>
       expectTypeOf<Result>().toEqualTypeOf<{ object: { name: string; type: SocketType<object> } }>()
     })
 
-    it('should infer the result of a `FlowNode`', () => {
+    it('should infer the result of a `Node`', () => {
       type Result = InferResult<typeof nodeJsonParse>
       expectTypeOf<Result>().toEqualTypeOf<{ object: object }>()
     })
 
-    it('should infer the keys of the result of a `FlowNode`', () => {
+    it('should infer the keys of the result of a `Node`', () => {
       type Result = InferResultKeys<typeof nodeJsonParse>
       expectTypeOf<Result>().toEqualTypeOf<'object'>()
     })
 
-    it('should infer the value of the result of a `FlowNode`', () => {
+    it('should infer the value of the result of a `Node`', () => {
       type Result = InferResultValue<typeof nodeJsonParse, 'object'>
       expectTypeOf<Result>().toEqualTypeOf<object>()
     })
   })
 
   describe('infer data', () => {
-    it('should infer the data schema of a `FlowNode`', () => {
+    it('should infer the data schema of a `Node`', () => {
       type Result = InferDataSchema<typeof nodeJsonParse>
       expectTypeOf<Result>().toEqualTypeOf<{ json: { name: string; type: SocketType<string> } }>()
     })
 
-    it('should infer the data of a `FlowNode`', () => {
+    it('should infer the data of a `Node`', () => {
       type Result = InferData<typeof nodeJsonParse>
       expectTypeOf<Result>().toEqualTypeOf<{ json: string }>()
     })
 
-    it('should infer the keys of the data of a `FlowNode`', () => {
+    it('should infer the keys of the data of a `Node`', () => {
       type Result = InferDataKeys<typeof nodeJsonParse>
       expectTypeOf<Result>().toEqualTypeOf<'json'>()
     })
 
-    it('should infer the value of the data of a `FlowNode`', () => {
+    it('should infer the value of the data of a `Node`', () => {
       type Result = InferDataValue<typeof nodeJsonParse, 'json'>
       expectTypeOf<Result>().toEqualTypeOf<string>()
     })
