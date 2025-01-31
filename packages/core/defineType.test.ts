@@ -1,79 +1,132 @@
+import type { Type } from './defineType'
 import { defineType } from './defineType'
 
 describe('defineType', () => {
   describe('defineType', () => {
-    it('should define a flow type with the given options', () => {
+    it('should define a type with the given options', () => {
       const parse = vi.fn()
       const type = defineType({
-        kind: 'type-id',
-        name: 'String',
-        color: '#ff0000',
+        kind: 'number',
         parse,
-        description: 'The string type.',
-        defaultValue: 'Hello, World!',
+        name: 'Number',
+        color: '#FF0000',
+        description: 'A numeric value.',
+        defaultValue: 0,
       })
 
       expect(type).toStrictEqual({
-        kind: 'type-id',
-        name: 'String',
-        color: '#ff0000',
+        kind: 'number',
         parse,
-        description: 'The string type.',
-        defaultValue: 'Hello, World!',
+        name: 'Number',
+        color: '#FF0000',
+        description: 'A numeric value.',
+        defaultValue: 0,
       })
     })
 
-    it('should define a flow type with minimal options', () => {
+    it('should define a type with minimal options', () => {
       const parse = vi.fn()
-      const type = defineType({ kind: 'type-id', parse })
-
+      const type = defineType({ kind: 'number', parse })
       expect(type).toStrictEqual({
-        kind: 'type-id',
-        name: 'type-id',
-        color: undefined,
+        kind: 'number',
         parse,
+        name: 'number',
+        color: undefined,
         description: undefined,
         defaultValue: undefined,
       })
     })
 
     it('should not return the same object', () => {
-      const object = { kind: 'type-id', parse: vi.fn() }
+      const parse = vi.fn()
+      const object = { kind: 'number', parse }
       const type = defineType(object)
       expect(type).not.toBe(object)
     })
   })
 
-  describe('error cases', () => {
-    it('should throw an error if options is undefined', () => {
-    // @ts-expect-error: test invalid input
-      const shouldThrow = () => defineType()
-      expect(shouldThrow).toThrow('Expected value not to be null or undefined')
-    })
-
+  describe('kind', () => {
     it('should throw an error if the kind is undefined', () => {
-    // @ts-expect-error: test invalid input
-      const shouldThrow = () => defineType({ kind: undefined })
-      expect(shouldThrow).toThrow('Expected value to be a string but received: undefined')
-    })
-
-    it('should throw an error if the kind is null', () => {
-    // @ts-expect-error: test invalid input
-    // eslint-disable-next-line unicorn/no-null
-      const shouldThrow = () => defineType({ kind: null })
-      expect(shouldThrow).toThrow('Expected value to be a string but received: null')
-    })
-
-    it('should throw an error if the kind is an empty string', () => {
-    // @ts-expect-error: test invalid input
-      const shouldThrow = () => defineType({ kind: '' })
-      expect(shouldThrow).toThrow('Expected value to be a non-empty string but received an empty string')
+      // @ts-expect-error: test invalid input
+      const shouldThrow = () => defineType({ kind: undefined, parse: vi.fn() })
+      expect(shouldThrow).toThrow('You must provide a kind for the type.')
     })
 
     it('should throw an error if the kind is not a string', () => {
-    // @ts-expect-error: test invalid input
-      const shouldThrow = () => defineType({ kind: 123 })
-      expect(shouldThrow).toThrow('Expected value to be a string but received: number')
+      // @ts-expect-error: test invalid input
+      const shouldThrow = () => defineType({ kind: 123, parse: vi.fn() })
+      expect(shouldThrow).toThrow('The kind of the type must be a string.')
+    })
+
+    it('should throw an error if the kind is an empty string', () => {
+      const shouldThrow = () => defineType({ kind: '', parse: vi.fn() })
+      expect(shouldThrow).toThrow('The kind of the type must be a non-empty string.')
+    })
+
+    it('should throw an error if the kind is not kebab-case', () => {
+      const shouldThrow = () => defineType({ kind: 'Number', parse: vi.fn() })
+      expect(shouldThrow).toThrow('The kind of the type must be kebab-case.')
+    })
+  })
+
+  describe('parse', () => {
+    it('should throw an error if the parse function is undefined', () => {
+      // @ts-expect-error: test invalid input
+      const shouldThrow = () => defineType({ kind: 'number', parse: undefined })
+      expect(shouldThrow).toThrow('You must provide a parse function for the type.')
+    })
+
+    it('should throw an error if the parse function is not a function', () => {
+      // @ts-expect-error: test invalid input
+      const shouldThrow = () => defineType({ kind: 'number', parse: 123 })
+      expect(shouldThrow).toThrow('The parse function must be a function.')
+    })
+  })
+
+  describe('name', () => {
+    it('should throw an error if the name is not a string', () => {
+      // @ts-expect-error: test invalid input
+      const shouldThrow = () => defineType({ kind: 'number', parse: vi.fn(), name: 123 })
+      expect(shouldThrow).toThrow('The name of the type must be a string.')
+    })
+
+    it('should throw an error if the name is an empty string', () => {
+      const shouldThrow = () => defineType({ kind: 'number', parse: vi.fn(), name: '' })
+      expect(shouldThrow).toThrow('The name of the type must be a non-empty string.')
+    })
+  })
+
+  describe('color', () => {
+    it('should throw an error if the color is not a string', () => {
+      // @ts-expect-error: test invalid input
+      const shouldThrow = () => defineType({ kind: 'number', parse: vi.fn(), color: 123 })
+      expect(shouldThrow).toThrow('The color of the type must be a string.')
+    })
+
+    it('should throw an error if the color is not a hexadecimal color code', () => {
+      const shouldThrow = () => defineType({ kind: 'number', parse: vi.fn(), color: '#FF000' })
+      expect(shouldThrow).toThrow('The color of the type must be a hexadecimal color code.')
+    })
+  })
+
+  describe('description', () => {
+    it('should throw an error if the description is not a string', () => {
+      // @ts-expect-error: test invalid input
+      const shouldThrow = () => defineType({ kind: 'number', parse: vi.fn(), description: 123 })
+      expect(shouldThrow).toThrow('The description of the type must be a string.')
+    })
+  })
+
+  describe('inference', () => {
+    it('should return the type of a flow type', () => {
+      const type = defineType({
+        kind: 'number',
+        parse: (value) => {
+          if (typeof value !== 'string') throw new Error('The value must be a number.')
+          return value
+        },
+      })
+      expectTypeOf(type).toEqualTypeOf<Type<string>>()
     })
   })
 })
