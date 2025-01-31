@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const props = defineProps<{
-  title: string
-  imageUrl: string
+  title?: string
+  imageUrl?: string
   itemsStart?: NavItem[]
   itemsEnd?: NavItem[]
   userAvatarUrl?: string
@@ -9,16 +9,29 @@ const props = defineProps<{
   userDisplayName?: string
   search?: string
   searchOpen?: boolean
+  locale?: string
+  languages?: Array<{
+    code: string
+    name: string
+    icon: string
+  }>
 }>()
 
 const emit = defineEmits<{
   signout: []
-  'update:search': [value: string]
-  'update:searchOpen': [open: boolean]
+  setLanguage: [language: string]
 }>()
 
+// --- Search.
 const search = useVModel(props, 'search', emit, { passive: true })
 const searchOpen = useVModel(props, 'searchOpen', emit, { passive: true })
+
+// --- Language.
+const locale = useVModel(props, 'locale', emit, {
+  passive: false,
+  defaultValue: 'en',
+  eventName: 'setLanguage',
+}) as Ref<string>
 </script>
 
 <template>
@@ -76,6 +89,13 @@ const searchOpen = useVModel(props, 'searchOpen', emit, { passive: true })
       :email="userEmail"
       :displayName="userDisplayName"
       @signout="() => emit('signout')"
+    />
+
+    <!-- Language -->
+    <AppNavBarLanguage
+      v-if="languages"
+      v-model="locale"
+      :languages="languages"
     />
   </header>
 </template>

@@ -3,11 +3,20 @@ import ASSET_NWRX_LOGO from '~/assets/nwrx-logo-white.svg'
 
 const route = useRoute()
 const session = useSession()
-const isDrawerOpen = useLocalStorage('__DrawerOpen', true)
+
+// --- Conditional UI.
 const isAuthenticationRoute = computed(() => {
   if (typeof route.name !== 'string') return false
   return route.name.startsWith('Authentication')
 })
+
+// --- State
+const isDrawerOpen = useLocalStorage('__DrawerOpen', true)
+const initialLocale = useLocalStorage('__Language', 'en')
+
+// --- Locale
+const { setLocale, locale } = useI18n()
+onMounted(() => setLocale(initialLocale.value))
 </script>
 
 <template>
@@ -16,6 +25,7 @@ const isAuthenticationRoute = computed(() => {
     <!-- Header -->
     <AppNavBar
       class="shrink-0 col-span-2"
+      :locale="locale"
       :title="CONSTANTS.appTitle"
       :imageUrl="ASSET_NWRX_LOGO"
       :itemsStart="NAV_BAR_START"
@@ -23,7 +33,9 @@ const isAuthenticationRoute = computed(() => {
       :userAvatarUrl="session.data.avatarUrl"
       :userEmail="session.data.email"
       :userDisplayName="session.data.displayName"
+      :languages="LANGUAGES"
       @signout="() => session.signout()"
+      @set-language="(locale) => setLocale(locale)"
     />
 
     <!-- Nav Drawer -->
