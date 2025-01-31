@@ -4,7 +4,7 @@ import type { MaybeLiteral } from '@unshared/types'
 import type { Peer } from 'crossws'
 import type { FlowSessionEventPayload, FlowSessionInstance } from './resolveFlowSession'
 import { getModuleNodes } from '@nwrx/core'
-import { MODULES } from './constants'
+import { MODULES } from '../constants'
 
 export interface FlowSessionParticipantJSON {
   id: string
