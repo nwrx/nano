@@ -1,39 +1,47 @@
-import type { UserObject } from '../entities'
 import type { ModuleUser } from '../index'
 import { createRoute } from '@unserved/server'
-import { assertStringNotEmpty, assertStringUuid, assertUndefined, createSchema } from '@unshared/validation'
+import { assertStringNotEmpty, createSchema } from '@unshared/validation'
 
 export function userSetPassword(this: ModuleUser) {
   return createRoute(
     {
-      name: 'PUT /api/users/:username',
+      name: 'PUT /api/users/:username/password',
       parameters: createSchema({
-        username: assertStringUuid,
+        username: assertStringNotEmpty,
       }),
       body: createSchema({
-        oldPassword: [[assertUndefined], [assertStringNotEmpty]],
-        password: [[assertUndefined], [assertStringNotEmpty]],
-        passwordConfirm: [[assertUndefined], [assertStringNotEmpty]],
+        newPassword: assertStringNotEmpty,
+        oldPassword: assertStringNotEmpty,
+        oldPasswordConfirm: assertStringNotEmpty,
       }),
     },
-    async({ event, parameters, body }): Promise<UserObject> => {
+    async({ event, parameters, body }): Promise<void> => {
+      const { User, UserPassword } = this.getRepositories()
       const { username } = parameters
-      const { password, passwordConfirm } = body
-      const response = await this.authenticate(event)
-      if (!response.user.isSuperAdministrator) throw this.errors.USER_NOT_ALLOWED()
+      const { newPassword, oldPassword, oldPasswordConfirm } = body
+      const { user } = await this.authenticate(event)
 
-      // --- Find the user by the ID.
-      const user = await this.resolveUser(username)
+      // --- If the request is made by a user other than the super administrator, return an error.
+      if (user.username !== username && !user.isSuperAdministrator)
+        throw this.errors.USER_NOT_ALLOWED()
 
-      // --- Update the password.
-      if (password) {
-        if (password !== passwordConfirm) throw this.errors.USER_PASSWORD_MISMATCH()
-        await user.setPassword(password)
-      }
+      // --- Check if the old password matches the user's password.
+      if (oldPassword !== oldPasswordConfirm) throw this.errors.USER_PASSWORD_MISMATCH()
 
-      // --- Save and return the user.
-      await user.save()
-      return user.serialize()
+      // --- Expire the old password.
+      const oldPasswordEntity = await UserPassword.findOne({ where: { user } })
+      if (oldPasswordEntity) oldPasswordEntity.expiresAt = new Date()
+
+      // --- Create a new password entity and add it to the user.
+      const userToSave = await this.resolveUser(username, { passwords: true })
+      const newPasswordEntity = await this.createPassword(userToSave, newPassword)
+      userToSave.passwords!.push(newPasswordEntity)
+
+      // --- Save the password entities.
+      await this.withTransaction(async() => {
+        await User.save(userToSave)
+        if (oldPasswordEntity) await UserPassword.save(oldPasswordEntity)
+      })
     },
   )
 }
