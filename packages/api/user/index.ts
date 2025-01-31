@@ -101,4 +101,5 @@ export class ModuleUser extends ModuleBase implements ModuleUserOptions {
   createPassword = UTILS.createPassword.bind(this)
   createSession = UTILS.createSession.bind(this)
   resolveUser = UTILS.resolveUser.bind(this)
+  checkPassword = UTILS.checkPassword.bind(this)
 }
