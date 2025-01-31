@@ -9,7 +9,6 @@
     "@azure/storage-blob": "12.25.0",
     "@nwrx/core": "workspace:*",
     "@nwrx/module-core": "workspace:*",
-    "@nwrx/module-openai": "workspace:*",
     "@unserved/server": "0.0.16",
     "@unshared/binary": "0.1.0",
     "@unshared/collection": "0.1.0",
