@@ -95,9 +95,9 @@ export default defineConfig<Theme>({
     },
 
     textColor: {
-      'danger': COLORS.danger[800],
-      'warning': COLORS.warning[800],
-      'success': COLORS.success[800],
+      'danger': COLORS.danger[500],
+      'warning': COLORS.warning[500],
+      'success': COLORS.success[500],
 
       // App
       'app': COLORS.primary[900],
