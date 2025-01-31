@@ -28,7 +28,7 @@ export class UserRecovery extends BaseEntity {
    * @example Date { ... }
    */
   @Column('varchar', { length: 255, transformer: transformerDate })
-  expiresAt: Date
+  expiredAt: Date
 
   /**
    * The date at which the recovery request was consumed. It is used to determine if the
