@@ -129,6 +129,19 @@ const isLinkeable = computed(() =>
       :default-value="socket.defaultValue"
     />
 
+    <!-- Display a select field -->
+    <EditorNodeSocketMap
+      v-else-if="socket.control === 'map'"
+      :id="id"
+      v-model="model"
+      :name="socket.key"
+      :label="socket.name"
+      :color="socket.typeColor ?? 'var(--theme-textColor-app)'"
+      @link-grab="(path) => emit('linkGrab', path)"
+      @link-assign="(path) => emit('linkAssign', path)"
+      @link-unassign="() => emit('linkUnassign')"
+    />
+
     <!-- Linkeable pin, used to connect to other nodes. -->
     <EditorNodeSocketLink
       v-else
