@@ -92,11 +92,12 @@ export class User extends BaseEntity {
    * @returns The most recent session.
    * @example UserSession { ... }
    */
-  get lastSession(): UserSession | undefined {
+  get lastSession(): undefined | UserSession {
     if (!this.sessions) return undefined
-    return this.sessions
-      .sort((a, b) => (a.lastUsedAt > b.lastUsedAt ? -1 : 1))
-      .shift()
+    let session: undefined | UserSession = undefined
+    for (const x of this.sessions)
+      if (!session || x.lastUsedAt > session.lastUsedAt) session = x
+    return session
   }
 
   /**
