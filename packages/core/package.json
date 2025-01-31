@@ -21,8 +21,8 @@
     "LICENSE.md"
   ],
   "scripts": {
-    "dev": "rollup -c ../../rollup.config.mjs -w",
-    "build": "rollup -c ../../rollup.config.mjs"
+    "dev": "NODE_OPTIONS='--max-old-space-size=16384' tsup --watch",
+    "build": "tsup"
   },
   "dependencies": {
     "@unshared/collection": "0.3.2",

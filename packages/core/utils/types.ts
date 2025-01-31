@@ -1,59 +1,40 @@
 /* eslint-disable @typescript-eslint/consistent-type-definitions */
-import type { MaybeLiteral, MaybePromise, ObjectLike } from '@unshared/types'
-import type { FlowError, Reference } from '.'
-import type { FlowThreadNode } from '../flow/createFlowThreadNode'
-import type { FlowNodeContext, FlowNodeDefinition } from '../module'
+import type { MaybeLiteral, ObjectLike } from '@unshared/types'
+import type { ThreadError } from '.'
+import type { NodeContext } from '../module'
 
-export interface FlowJSONv1Node {
+export interface FlowV1ComponentInstance {
   kind: string
   [key: string]: unknown
 }
 
-export interface FlowJSONv1Meta {
+export interface FlowV1Meta {
   name?: string
   icon?: string
   description?: string
 }
 
-export interface FlowJSONv1 {
+export interface FlowV1 {
   version: MaybeLiteral<'1'>
-  nodes?: Record<string, FlowJSONv1Node>
+  nodes?: Record<string, FlowV1ComponentInstance>
+  components?: Record<string, FlowV1ComponentInstance>
 }
 
-/**
- * The function that is used to resolve a reference to a value. The resolve
- * function is used to resolve the reference to a value that can be used in
- * the flow.
- */
-export type ResolveReference = (reference: Reference) => MaybePromise<unknown>
-
-/**
- * The options that are used to create a new flow instance. The options can be
- * used to configure the flow instance with custom settings and resolvers.
- * The options can also be used to resolve references to values that are only
- * available at runtime.
- */
-export interface FlowOptions {
-  resolveNode?: Array<(kind: string) => MaybePromise<FlowNodeDefinition | void>>
-  resolveReference?: ResolveReference[]
-}
-
-export interface FlowNodeMeta {
+export interface ComponentInstanceMeta {
   label?: string
   comment?: string
   position?: { x: number; y: number }
   [key: string]: unknown
 }
 
-export interface FlowNode {
-  id: string
+export interface ComponentInstance {
   kind: string
   input?: ObjectLike
-  meta?: FlowNodeMeta
+  meta?: ComponentInstanceMeta
 }
 
 /** The object representation of a link between two nodes in the flow. */
-export interface FlowLink {
+export interface Link {
   sourceId: string
   sourceName: string
   sourcePath?: string
@@ -62,65 +43,55 @@ export interface FlowLink {
   targetPath?: string
 }
 
-export type FlowEvents = {
-  'createNode': [node: FlowNode]
-  'removeNodes': [nodes: FlowNode[]]
-  'setNodeInputValue': [node: FlowNode, key: string, value: unknown]
-  'setNodeMetaValue': [node: FlowNode, key: string, value: unknown]
-}
-
 /***************************************************************************/
 /* Threads                                                                 */
 /***************************************************************************/
 
-export type FlowThreadState =
+export type ThreadState =
   | 'DONE'
   | 'ERROR'
   | 'IDLE'
   | 'RUNNING'
 
-export interface FlowThreadEventMeta {
-  threadId: string
-  delta: number
+export interface ThreadEventMeta {
   timestamp: number
+  threadId: string
+  threadDelta: number
 }
 
-export type FlowThreadEvents = {
-  'start': [input: ObjectLike, meta: FlowThreadEventMeta]
-  'error': [error: FlowError, meta: FlowThreadEventMeta]
-  'abort': [meta: FlowThreadEventMeta]
-  'input': [name: string, value: unknown, meta: FlowThreadEventMeta]
-  'output': [name: string, value: unknown, meta: FlowThreadEventMeta]
-  'end': [output: ObjectLike, meta: FlowThreadEventMeta]
-  'nodeState': [node: FlowThreadNode, meta: FlowThreadNodeEventMeta]
-  'nodeError': [node: FlowThreadNode, error: FlowError, meta: FlowThreadNodeEventMeta]
-  'nodeTrace': [node: FlowThreadNode, trace: ObjectLike, meta: FlowThreadNodeEventMeta]
-  'nodeStart': [node: FlowThreadNode, context: FlowNodeContext, meta: FlowThreadNodeEventMeta]
-  'nodeEnd': [node: FlowThreadNode, context: FlowNodeContext, meta: FlowThreadNodeEventMeta]
+export type ThreadEvents = {
+  'start': [input: ObjectLike, meta: ThreadEventMeta]
+  'error': [error: ThreadError, meta: ThreadEventMeta]
+  'abort': [meta: ThreadEventMeta]
+  'input': [name: string, value: unknown, meta: ThreadEventMeta]
+  'output': [name: string, value: unknown, meta: ThreadEventMeta]
+  'end': [output: ObjectLike, meta: ThreadEventMeta]
+  'nodeState': [id: string, meta: NodeEventMeta]
+  'nodeError': [id: string, error: ThreadError, meta: NodeEventMeta & ThreadEventMeta]
+  'nodeTrace': [id: string, trace: ObjectLike, meta: NodeEventMeta & ThreadEventMeta]
+  'nodeStart': [id: string, context: NodeContext, meta: NodeEventMeta & ThreadEventMeta]
+  'nodeEnd': [id: string, context: NodeContext, meta: NodeEventMeta & ThreadEventMeta]
 }
 
 /***************************************************************************/
 /* Execution                                                               */
 /***************************************************************************/
 
-export type FlowThreadNodeState =
+export type NodeState =
   | 'DONE'
   | 'ERROR'
   | 'IDLE'
-  | 'RUNNING/PROCESSING'
-  | 'RUNNING/RESOLVING_DEFINITION'
-  | 'RUNNING/RESOLVING_INPUT'
-  | 'RUNNING/RESOLVING_OUTPUT'
+  | 'PROCESSING'
 
-export interface FlowThreadNodeEventMeta extends FlowThreadEventMeta {
-  state: FlowThreadNodeState
-  duration: number
+export interface NodeEventMeta {
+  nodeState: NodeState
+  nodeDuration: number
 }
 
-export type FlowThreadNodeEvents = {
-  state: [meta: FlowThreadNodeEventMeta]
-  error: [error: FlowError, meta: FlowThreadNodeEventMeta]
-  trace: [trace: ObjectLike, meta: FlowThreadNodeEventMeta]
-  start: [context: FlowNodeContext, meta: FlowThreadNodeEventMeta]
-  end: [context: FlowNodeContext, meta: FlowThreadNodeEventMeta]
+export type NodeEvents = {
+  state: [meta: NodeEventMeta]
+  error: [error: ThreadError, meta: NodeEventMeta]
+  trace: [trace: ObjectLike, meta: NodeEventMeta]
+  start: [context: NodeContext, meta: NodeEventMeta]
+  end: [context: NodeContext, meta: NodeEventMeta]
 }

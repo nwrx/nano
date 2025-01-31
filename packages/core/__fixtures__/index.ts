@@ -1,4 +1,4 @@
-import { defineCategory, defineModule, defineNode, defineType } from '../module'
+import { defineCategory, defineModule, defineComponent, defineType } from '../module'
 
 export const categoryBasic = defineCategory({
   kind: 'basic',
@@ -43,7 +43,7 @@ export const typeBoolean = defineType({
   },
 })
 
-export const nodeInput = defineNode({
+export const nodeInput = defineComponent({
   kind: 'core/input',
   name: 'Input',
   icon: 'https://api.iconify.design/carbon:arrow-down.svg',
@@ -69,7 +69,7 @@ export const nodeInput = defineNode({
   }),
 })
 
-export const nodeOutput = defineNode({
+export const nodeOutput = defineComponent({
   kind: 'core/output',
   name: 'Output',
   icon: 'https://api.iconify.design/carbon:arrow-up.svg',
@@ -91,7 +91,7 @@ export const nodeOutput = defineNode({
   },
 })
 
-export const nodeParse = defineNode({
+export const nodeParse = defineComponent({
   kind: 'core/parse',
   name: 'JSON Parse',
   icon: 'https://api.iconify.design/carbon:json.svg',
@@ -102,7 +102,7 @@ export const nodeParse = defineNode({
   outputSchema: {
     object: { type: typeObject },
   },
-  process: ({ input }) => ({
+  process: ({ data: input }) => ({
     object: JSON.parse(input.json) as Record<string, unknown>,
   }),
 })
