@@ -1,4 +1,4 @@
-import { BaseEntity, transformerJson } from '@unserved/server'
+import { BaseEntity, transformerDate, transformerJson } from '@unserved/server'
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
 import { PasswordOptions } from '../utils'
 import { User } from './User'
@@ -32,6 +32,6 @@ export class UserPassword extends BaseEntity {
    * The expiration date of the password. It is used to determine when the password
    * will expire and the user will have to change it.
    */
-  @Column('varchar', { length: 255, nullable: true, transformer: transformerJson })
-  expiresAt?: Date
+  @Column('varchar', { length: 255, nullable: true, transformer: transformerDate })
+  expiredAt?: Date
 }
