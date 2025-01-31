@@ -51,12 +51,12 @@ const node = computed(() => props.nodes.find(node => node.id === props.event.id)
       :class="{ 'opacity-0': !isOpen }">
 
       <!-- Meta -->
-      <div class="w-full p-md pt-xs space-y-lg">
+      <div class="w-full p-md pt-xs space-y-sm">
         <FlowEditorPanelSectionData
           :title="t('event.flow')"
           :label="t('event.flow')"
           :data="{
-            [t('label.id')]: event.id,
+            [t('label.id')]: 'id' in event ? event.id : '',
             [t('label.event')]: event.event,
           }"
         />
@@ -65,24 +65,24 @@ const node = computed(() => props.nodes.find(node => node.id === props.event.id)
         <FlowEditorPanelSectionData
           v-if="isOpen && event.event === 'node:end'"
           :title="t('event.node:end')"
+          :label="t('event.node:end.result')"
           :data="event.data"
-          :label="t('event.node:end.label')"
         />
 
         <!-- Result -->
         <FlowEditorPanelSectionData
           v-if="isOpen && event.event === 'node:end'"
           :title="t('event.node:end')"
+          :label="t('event.node:end.data')"
           :data="event.result"
-          :label="t('event.node:end.label')"
         />
 
         <!-- Error -->
         <FlowEditorPanelSectionData
           v-if="isOpen && event.event === 'node:error'"
           :title="t('event.node:error')"
+          :label="t('event.node:error.error')"
           :data="{ Message: event.message }"
-          :label="t('event.node:error.label')"
         />
       </div>
     </BaseCollapse>
@@ -93,17 +93,61 @@ const node = computed(() => props.nodes.find(node => node.id === props.event.id)
   en:
     label.id: ID
     label.event: Event
+    event.flow: Flow
     event.flow:start: Start
     event.flow:end: Completed
     event.flow:abort: Aborted
     event.node:end: Node
     event.node:error: Error
+    event.node:end.result: Result
+    event.node:end.data: Data
+    event.node:error.error: Error
   fr:
     label.id: ID
     label.event: Événement
+    event.flow: Flux
     event.flow:start: Démarrage
     event.flow:end: Terminé
     event.flow:abort: Annulé
     event.node:end: Noeud
     event.node:error: Erreur
+    event.node:end.result: Résultat
+    event.node:end.data: Données
+    event.node:error.error: Erreur
+  de:
+    label.id: ID
+    label.event: Ereignis
+    event.flow: Fluss
+    event.flow:start: Start
+    event.flow:end: Abgeschlossen
+    event.flow:abort: Abgebrochen
+    event.node:end: Knoten
+    event.node:error: Fehler
+    event.node:end.result: Ergebnis
+    event.node:end.data: Daten
+    event.node:error.error: Fehler
+  es:
+    label.id: ID
+    label.event: Evento
+    event.flow: Flujo
+    event.flow:start: Comienzo
+    event.flow:end: Completado
+    event.flow:abort: Abortado
+    event.node:end: Nodo
+    event.node:error: Error
+    event.node:end.result: Resultado
+    event.node:end.data: Datos
+    event.node:error.error: Error
+  zh:
+    label.id: ID
+    label.event: 事件
+    event.flow: 流程
+    event.flow:start: 开始
+    event.flow:end: 完成
+    event.flow:abort: 已中止
+    event.node:end: 节点
+    event.node:error: 错误
+    event.node:end.result: 结果
+    event.node:end.data: 数据
+    event.node:error.error: 错误
 </i18n>
