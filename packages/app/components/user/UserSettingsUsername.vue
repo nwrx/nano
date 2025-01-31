@@ -27,9 +27,9 @@ function onSubmit() {
       <br>
       <br>
       Note that changing your username might affect how other users recognize you. For more information, please
-      refer to the <Button link variant="primary" href="#">
+      refer to the <Hyperlink variant="primary" href="#">
         documentation
-      </Button>.
+      </Hyperlink>.
 
     </template>
     <InputText

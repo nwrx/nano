@@ -21,16 +21,18 @@ const isDialogRenameOpen = ref(false)
     :text="t('text')">
 
     <!-- Actions -->
-    <AppPageFormActions class="border-danger">
+    <AppPageFormActions class="b-danger">
       <AppPageFormAction
-        class="border-danger"
+        class="b-danger"
+        class-button="button-danger"
         :title="t('changeUsername.title')"
         :text="t('changeUsername.text')"
         :label="t('changeUsername.label')"
         @click="() => isDialogRenameOpen = true"
       />
       <AppPageFormAction
-        class="border-danger"
+        class="b-danger"
+        class-button="button-danger"
         :title="t('deleteUser.title')"
         :text="t('deleteUser.text')"
         :label="t('deleteUser.label')"
