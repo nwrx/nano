@@ -8,12 +8,7 @@ import * as UTILS from './utils'
 
 export * from './entities'
 export type * from './utils/resolveFlowSession'
-export type * from './utils/serializeCategories'
-export type * from './utils/serializeDataSchema'
 export type * from './utils/serializeFlowSession'
-export type * from './utils/serializeNode'
-export type * from './utils/serializeNodeInstance'
-export type * from './utils/serializeResultSchema'
 
 export interface ModuleFlowOptions {
 
@@ -49,7 +44,6 @@ export class ModuleFlow extends ModuleBase implements ModuleFlowOptions {
 
   flowSessions = new Map<string, FlowSessionInstance>()
   flowModuleDir = '../.data/modules'
-  resolveModule = UTILS.resolveModule.bind(this)
   resolveFlowEntity = UTILS.resolveFlowEntity.bind(this)
   resolveFlowInstance = UTILS.resolveFlowInstance.bind(this)
   resolveFlowSession = UTILS.resolveFlowSession.bind(this)
