@@ -2,7 +2,6 @@ import { createEventMetadata } from '../utils'
 import { addNode } from './addNode'
 import { cancelQuestion } from './cancelQuestion'
 import { createThread } from './createThread'
-import { getNode } from './getNode'
 
 describe('cancelQuestion', () => {
   beforeAll(() => {
@@ -22,9 +21,8 @@ describe('cancelQuestion', () => {
     cancelQuestion(thread, nodeId, eventId)
     expect(callback).toHaveBeenCalledWith(
       nodeId,
-      getNode(thread, nodeId),
       eventId,
-      createEventMetadata(thread, getNode(thread, nodeId)),
+      createEventMetadata(thread, nodeId),
     )
   })
 
