@@ -9,7 +9,7 @@ const activeCategory = ref<FlowCategoryNodesJSON>()
 </script>
 
 <template>
-  <div class="flex items-start space-x-md" @mouseleave="() => activeCategory = undefined">
+  <div class="flex items-start space-x-md overflow-hidden h-full" @mouseleave="() => activeCategory = undefined">
 
     <!-- Categories -->
     <div class="bg-editor-panel rounded border border-editor backdrop-blur-2xl max-w-16">
@@ -33,7 +33,8 @@ const activeCategory = ref<FlowCategoryNodesJSON>()
       v-if="activeCategory"
       class="
         transition pl-md min-w-64 max-w-96
-        p-4 bg-editor-panel rounded border border-editor backdrop-blur-md
+        p-4 bg-editor-panel rd b b-editor backdrop-blur-md
+        max-h-full overflow-y-auto
       ">
 
       <!-- Title -->
