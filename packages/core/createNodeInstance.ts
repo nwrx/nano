@@ -445,10 +445,6 @@ export class NodeInstance<
       flow: this.flow,
       data: this.data as NodeInstanceContext<T, U>['data'],
       result: this.result as NodeInstanceContext<T, U>['result'],
-      dataSchema: this.dataSchema,
-      resultSchema: this.resultSchema,
-      secrets: this.flow.secrets,
-      variables: this.flow.variables,
       abortSignal: this.abortController.signal,
     }
   }
