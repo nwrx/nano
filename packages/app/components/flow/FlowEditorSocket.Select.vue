@@ -50,11 +50,10 @@ function onClick() {
         <span v-if="values.length === 0" class="text-editor-node italic text-sm">
           No values
         </span>
-        <FlowEditorSocketLabel
+        <Badge
           v-else-if="badge"
           :label="String(values[0].label)"
           class="truncate"
-          light
         />
         <span v-else class="truncate w-full text-sm">
           {{ values[0].label }}
