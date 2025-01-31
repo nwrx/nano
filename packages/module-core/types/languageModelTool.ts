@@ -1,10 +1,10 @@
-import type { MaybePromise } from '@nwrx/core'
+import type { MaybePromise, ObjectLike } from '@unshared/types'
 import type { JSONSchema4 } from 'json-schema'
 import { defineType } from '@nwrx/core'
 import { toKebabCase } from '@unshared/string'
 import { assertFunction, assertObject, assertStringNotEmpty, createParser } from '@unshared/validation'
 
-export interface LanguageModelTool<T = any> {
+export interface LanguageModelTool<T = ObjectLike> {
 
   /**
    * The name of the tool. It is used to identify the tool in the list of tools
