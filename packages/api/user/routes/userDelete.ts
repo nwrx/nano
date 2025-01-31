@@ -1,14 +1,14 @@
 import type { ModuleUser } from '../index'
-import { createRoute } from '@unserved/server'
+import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, createSchema } from '@unshared/validation'
 import { setResponseStatus } from 'h3'
 import { ModuleWorkspace } from '../../workspace'
 
 export function userDelete(this: ModuleUser) {
-  return createRoute(
+  return createHttpRoute(
     {
       name: 'DELETE /api/users/:username',
-      parameters: createSchema({
+      parseParameters: createSchema({
         username: assertStringNotEmpty,
       }),
     },

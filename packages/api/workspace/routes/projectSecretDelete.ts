@@ -1,13 +1,13 @@
 import type { ModuleWorkspace } from '..'
-import { createRoute } from '@unserved/server'
+import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, assertStringUuid, createSchema } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 
 export function projectSecretDelete(this: ModuleWorkspace) {
-  return createRoute(
+  return createHttpRoute(
     {
       name: 'DELETE /api/workspaces/:workspace/:project/secrets/:name',
-      parameters: createSchema({
+      parseParameters: createSchema({
         workspace: assertStringNotEmpty,
         project: assertStringUuid,
         name: assertStringUuid,

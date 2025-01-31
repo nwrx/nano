@@ -1,13 +1,13 @@
 import type { ModuleWorkspace } from '../index'
-import { createRoute } from '@unserved/server'
+import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, createSchema } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 
 export function flowProjectDelete(this: ModuleWorkspace) {
-  return createRoute(
+  return createHttpRoute(
     {
       name: 'DELETE /api/workspaces/:workspace/:project',
-      parameters: createSchema({
+      parseParameters: createSchema({
         workspace: assertStringNotEmpty,
         project: assertStringNotEmpty,
       }),

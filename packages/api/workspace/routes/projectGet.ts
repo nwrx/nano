@@ -1,18 +1,18 @@
 import type { ModuleWorkspace } from '../index'
-import { createRoute } from '@unserved/server'
+import { createHttpRoute } from '@unserved/server'
 import { parseBoolean } from '@unshared/string'
 import { assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 
 export function projectGet(this: ModuleWorkspace) {
-  return createRoute(
+  return createHttpRoute(
     {
       name: 'GET /api/workspaces/:workspace/:project',
-      parameters: createSchema({
+      parseParameters: createSchema({
         project: assertStringNotEmpty,
         workspace: assertStringNotEmpty,
       }),
-      query: createSchema({
+      parseQuery: createSchema({
         withFlows: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
         withSecrets: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
         withVariables: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
@@ -37,6 +37,11 @@ export function projectGet(this: ModuleWorkspace) {
           secrets: query.withSecrets,
           variables: query.withVariables,
           assignments: query.withAssignments ? { user: { profile: true } } : false,
+        },
+        order: {
+          name: 'ASC',
+          secrets: { name: 'ASC' },
+          variables: { name: 'ASC' },
         },
       })
 

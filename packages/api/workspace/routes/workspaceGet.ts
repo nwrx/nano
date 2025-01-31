@@ -1,17 +1,17 @@
 import type { ModuleWorkspace } from '../index'
 import { ModuleUser } from '@nwrx/api'
-import { createRoute } from '@unserved/server'
+import { createHttpRoute } from '@unserved/server'
 import { parseBoolean } from '@unshared/string'
 import { assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
 
 export function workspaceGet(this: ModuleWorkspace) {
-  return createRoute(
+  return createHttpRoute(
     {
       name: 'GET /api/workspaces/:workspace',
-      parameters: createSchema({
+      parseParameters: createSchema({
         workspace: assertStringNotEmpty,
       }),
-      query: createSchema({
+      parseQuery: createSchema({
         withProjects: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
         withProjectFlows: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
         withProjectAssignments: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],

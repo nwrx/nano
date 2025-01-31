@@ -1,14 +1,14 @@
 import type { ModuleUser } from '../index'
-import { createRoute } from '@unserved/server'
+import { createHttpRoute } from '@unserved/server'
 import { parseBoolean } from '@unshared/string'
 import { assertNumberPositiveStrict, assertString, assertStringNotEmpty, assertStringNumber, assertUndefined, createSchema } from '@unshared/validation'
 import { ILike } from 'typeorm'
 
 export function userSearch(this: ModuleUser) {
-  return createRoute(
+  return createHttpRoute(
     {
       name: 'GET /api/users',
-      query: createSchema({
+      parseQuery: createSchema({
         search: [[assertUndefined], [assertString]],
         page: [[assertUndefined], [assertStringNumber, Number.parseInt, assertNumberPositiveStrict]],
         limit: [[assertUndefined], [assertStringNumber, Number.parseInt, assertNumberPositiveStrict]],

@@ -1,13 +1,13 @@
 import type { ModuleUser } from '..'
-import { createRoute } from '@unserved/server'
+import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, createSchema } from '@unshared/validation'
 import { setResponseStatus } from 'h3'
 
 export function userDisable(this: ModuleUser) {
-  return createRoute(
+  return createHttpRoute(
     {
       name: 'PATCH /api/users/:username/disable',
-      parameters: createSchema({
+      parseParameters: createSchema({
         username: assertStringNotEmpty,
       }),
     },

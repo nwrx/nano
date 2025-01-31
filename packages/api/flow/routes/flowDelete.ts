@@ -1,14 +1,14 @@
 import type { ModuleFlow } from '../index'
-import { createRoute } from '@unserved/server'
+import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
 
 export function flowDelete(this: ModuleFlow) {
-  return createRoute(
+  return createHttpRoute(
     {
       name: 'DELETE /api/workspaces/:workspace/:project/:flow',
-      parameters: createParser({
+      parseParameters: createParser({
         workspace: assertStringNotEmpty,
         project: assertStringNotEmpty,
         flow: assertStringNotEmpty,

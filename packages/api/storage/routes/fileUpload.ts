@@ -1,13 +1,13 @@
 import type { ModuleStorage } from '../index'
-import { createRoute } from '@unserved/server'
+import { createHttpRoute } from '@unserved/server'
 import { assert, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 
 export function fileUpload(this: ModuleStorage) {
-  return createRoute(
+  return createHttpRoute(
     {
       name: 'POST /api/storage',
-      formData: createParser({
+      parseFormData: createParser({
         file: assert.instance(File),
       }),
     },

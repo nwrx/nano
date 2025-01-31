@@ -1,19 +1,19 @@
 import type { ModuleWorkspace } from '../index'
 import { ModuleUser } from '@nwrx/api'
-import { createRoute } from '@unserved/server'
+import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, createArrayParser, createSchema } from '@unshared/validation'
 import { assertProjectPermission } from '../utils'
 
 export function projectUpdateUserAssignments(this: ModuleWorkspace) {
-  return createRoute(
+  return createHttpRoute(
     {
       name: 'PUT /api/workspaces/:workspace/:project/assignments/:username',
-      parameters: createSchema({
+      parseParameters: createSchema({
         workspace: assertStringNotEmpty,
         project: assertStringNotEmpty,
         username: assertStringNotEmpty,
       }),
-      body: createSchema({
+      parseBody: createSchema({
         permissions: createArrayParser(assertProjectPermission),
       }),
     },

@@ -1,16 +1,16 @@
 import type { ModuleUser } from '../index'
-import { createRoute } from '@unserved/server'
+import { createHttpRoute } from '@unserved/server'
 import { parseBoolean } from '@unshared/string'
 import { assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
 
 export function userGet(this: ModuleUser) {
-  return createRoute(
+  return createHttpRoute(
     {
       name: 'GET /api/users/:username',
-      parameters: createSchema({
+      parseParameters: createSchema({
         username: assertStringNotEmpty,
       }),
-      query: createSchema({
+      parseQuery: createSchema({
         withProfile: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
         withSessions: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
       }),

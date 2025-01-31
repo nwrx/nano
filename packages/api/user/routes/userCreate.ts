@@ -1,16 +1,16 @@
 import type { UserObject } from '../entities'
 import type { ModuleUser } from '../index'
-import { createRoute } from '@unserved/server'
+import { createHttpRoute } from '@unserved/server'
 import { toSlug } from '@unshared/string'
 import { assert, createSchema } from '@unshared/validation'
 import { setResponseStatus } from 'h3'
 import { ModuleWorkspace } from '../../workspace'
 
 export function userCreate(this: ModuleUser) {
-  return createRoute(
+  return createHttpRoute(
     {
       name: 'POST /api/users',
-      body: createSchema({
+      parseBody: createSchema({
         email: [assert.stringNotEmpty, assert.stringEmail],
         username: [assert.stringNotEmpty, assert.stringKebabCase, toSlug],
       }),

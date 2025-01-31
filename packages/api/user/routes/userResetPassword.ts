@@ -1,13 +1,13 @@
 import type { ModuleUser } from '../index'
-import { createRoute } from '@unserved/server'
+import { createHttpRoute } from '@unserved/server'
 import { assertStringEmail, createSchema } from '@unshared/validation'
 import { createCipheriv, createHash } from 'node:crypto'
 
 export function userResetPassword(this: ModuleUser) {
-  return createRoute(
+  return createHttpRoute(
     {
       name: 'POST /api/:username/reset-password',
-      parameters: createSchema({
+      parseParameters: createSchema({
         username: assertStringEmail,
       }),
     },

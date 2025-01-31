@@ -1,14 +1,14 @@
 /* eslint-disable unicorn/no-null */
 import type { ModuleUser } from '..'
-import { createRoute } from '@unserved/server'
+import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, createSchema } from '@unshared/validation'
 import { setResponseStatus } from 'h3'
 
 export function userEnable(this: ModuleUser) {
-  return createRoute(
+  return createHttpRoute(
     {
       name: 'PATCH /api/users/:username/enable',
-      parameters: createSchema({
+      parseParameters: createSchema({
         username: assertStringNotEmpty,
       }),
     },

@@ -1,5 +1,5 @@
 import type { ModuleUser } from '../index'
-import { createRoute } from '@unserved/server'
+import { createHttpRoute } from '@unserved/server'
 import { assert, createSchema } from '@unshared/validation'
 import { ModuleStorage } from '../../storage'
 
@@ -10,13 +10,13 @@ const ACCEPTED_IMAGE_TYPES = new Set([
 ])
 
 export function userSetAvatar(this: ModuleUser) {
-  return createRoute(
+  return createHttpRoute(
     {
       name: 'PUT /api/users/:username/avatar',
-      parameters: createSchema({
+      parseParameters: createSchema({
         username: assert.stringNotEmpty,
       }),
-      formData: createSchema({
+      parseFormData: createSchema({
         avatar: assert.instance(File),
       }),
     },

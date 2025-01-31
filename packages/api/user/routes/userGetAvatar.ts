@@ -1,15 +1,15 @@
 import type { ModuleUser } from '..'
-import { createRoute } from '@unserved/server'
+import { createHttpRoute } from '@unserved/server'
 import { dedent } from '@unshared/string'
 import { assertStringNotEmpty, createSchema } from '@unshared/validation'
 import { setResponseHeader } from 'h3'
 import { ModuleStorage } from '../../storage'
 
 export function userGetAvatar(this: ModuleUser) {
-  return createRoute(
+  return createHttpRoute(
     {
       name: 'GET /api/users/:username/avatar',
-      parameters: createSchema({
+      parseParameters: createSchema({
         username: assertStringNotEmpty,
       }),
     },
