@@ -100,8 +100,21 @@ const NAV_GROUP_BOTTON = computed<NavItem[]>(() => [
     />
 
     <!-- Main Content -->
-    <main class="flex-1">
-      <NuxtPage />
-    </main>
+    <div class="relative w-full h-screen overflow-x-hidden p-8 bg-primary-100 pl-0">
+      <main class="relative w-full h-full overflow-hidden rounded-lg bg-white border border-primary-300">
+        <NuxtPage
+          class="absolute top-0 left-0 w-full h-full"
+          :transition="{
+            duration: 600,
+            enterActiveClass: 'transition-opacity duration-150 delay-150',
+            enterFromClass: 'opacity-0',
+            enterToClass: 'opacity-100',
+            leaveActiveClass: 'transition-opacity duration-150',
+            leaveFromClass: 'opacity-100',
+            leaveToClass: 'opacity-0',
+          }"
+        />
+      </main>
+    </div>
   </div>
 </template>
