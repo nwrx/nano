@@ -1,7 +1,6 @@
 import type { ModuleUser } from '../index'
 import { createRoute } from '@unserved/server'
 import { assertStringEmail, assertStringNotEmpty, createSchema } from '@unshared/validation'
-import { setCookie } from 'h3'
 import { ModuleWorkspace } from '../../workspace'
 
 export function userSignupWithPassword(this: ModuleUser) {
@@ -29,7 +28,7 @@ export function userSignupWithPassword(this: ModuleUser) {
       // --- Create the user and session.
       if (password !== passwordConfirm) throw this.errors.USER_PASSWORD_MISMATCH()
       const { user, workspace } = await this.createUser({ email, username, password })
-      const { session, token } = this.createSession(event, { user })
+      const session = this.createSession(event, { user })
 
       // --- Save all entities in a transaction.
       await this.withTransaction(async() => {
@@ -39,12 +38,7 @@ export function userSignupWithPassword(this: ModuleUser) {
       })
 
       // --- Send the token to the user in a cookie.
-      setCookie(event, this.userSessionCookieName, token, {
-        secure: true,
-        httpOnly: true,
-        sameSite: 'strict',
-        maxAge: (session.expiresAt.getTime() - Date.now()) / 1000,
-      })
+      this.setSessionCookie(event, session)
     },
   )
 }
