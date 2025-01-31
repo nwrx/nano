@@ -67,7 +67,6 @@ const lastUsedAt = computed(() => formatDateFromNow(props.lastUsedAt))
     value.os: "Système"
     value.device: "Appareil"
     button.remove: "Déconnecter"
-
   de:
     value.address: "IP-Adresse"
     value.lastUsedAt: "Zuletzt verwendet"
