@@ -1,5 +1,6 @@
 import type { ModuleUser } from '../index'
 import { ModuleWorkspace } from '../../workspace'
+import { createPassword } from './createPassword'
 
 export interface CreateUserOptions {
   email: string
@@ -19,15 +20,21 @@ export async function createUser(this: ModuleUser, options: CreateUserOptions) {
   const { username, password, email } = options
 
   // --- Check if the username or email is already taken.
-  const { User } = this.getRepositories()
+  const { User, UserPassword } = this.getRepositories()
   const exists = await User.findOne({ where: [{ username }, { email }] })
-  if (exists) throw this.errors.USER_EMAIL_TAKEN()
+  if (exists) throw this.errors.USER_EMAIL_OR_NAME_TAKEN()
 
   // --- Create the user.
   const user = User.create({ email, username })
-  if (password) await user.setPassword(password)
+
+  // --- If a password is provided, hash it and assign it to the user.
+  if (password) {
+    const { hash, options } = await createPassword(password)
+    const userPassword = UserPassword.create({ user, hash, options })
+    user.passwords = [userPassword]
+  }
 
   // --- Create the associated workspace.
-  const workspace = await workspaceModule.createWorkspace({ name: user.username, isPublic: false, user })
+  const workspace = await workspaceModule.createWorkspace({ name: user.username, isPublic: true, user })
   return { user, workspace }
 }
