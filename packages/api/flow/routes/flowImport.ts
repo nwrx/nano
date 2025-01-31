@@ -3,9 +3,9 @@ import { createHttpRoute } from '@unserved/server'
 import { toSlug } from '@unshared/string'
 import { assert, assertString, assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
 import * as YAML from 'yaml'
+import { ModuleProject } from '../../project'
 import { ModuleUser } from '../../user'
-import { randomName } from '../../utils'
-import { ModuleWorkspace } from '../../workspace'
+import { randomName } from '../utils'
 
 export function flowImport(this: ModuleFlow) {
   return createHttpRoute(
@@ -21,7 +21,7 @@ export function flowImport(this: ModuleFlow) {
     },
     async({ event, formData, parameters }) => {
       const userModule = this.getModule(ModuleUser)
-      const workspaceModule = this.getModule(ModuleWorkspace)
+      const workspaceModule = this.getModule(ModuleProject)
       const { user } = await userModule.authenticate(event)
       const { workspace: workspaceName, project: projectName } = parameters
       const { file } = formData

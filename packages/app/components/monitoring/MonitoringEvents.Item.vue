@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import type {
-  MonitoringFlowThreadEventObject,
-  MonitoringFlowThreadNodeEventObject,
+  ThreadEventObject,
+  ThreadNodeEventObject,
 } from '@nwrx/nano-api'
 
 const props = defineProps<{
   isOpen: boolean
   type: string
-  event: MonitoringFlowThreadEventObject | MonitoringFlowThreadNodeEventObject
+  event: ThreadEventObject | ThreadNodeEventObject
 }>()
 
 const emit = defineEmits<{
@@ -47,7 +47,7 @@ const typeBadgeClass = computed(() => {
 
     <!-- Event -->
     <Badge v-if="type === 'node'" class="shrink-0">
-      {{ (event as MonitoringFlowThreadNodeEventObject).kind }}
+      {{ (event as ThreadNodeEventObject).kind }}
     </Badge>
 
     <!-- Title -->

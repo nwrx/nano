@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FlowObject } from '@nwrx/api'
+import type { FlowObject } from '@nwrx/nano-api'
 import BOOKMARK_1_URL from '~/assets/bookmark-1.png'
 
 const props = defineProps<FlowObject & {
@@ -17,7 +17,7 @@ const { t } = useI18n()
 function getFlowRoute(workspace: string, project: string, flow: string) {
   if (!workspace || !project || !flow) return
   return {
-    name: 'WorkspaceProjectFlowEditor',
+    name: 'ProjectFlowEditor',
     params: { workspace, project, flow },
   }
 }

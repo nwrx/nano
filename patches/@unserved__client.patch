@@ -1,0 +1,263 @@
+diff --git a/dist/createClient.cjs.map b/dist/createClient.cjs.map
+index ddfee0fa25b345508df6ffe9216ab09b6da1aea6..8d117126f50faeb19f786e638f9b2688c1bd5ef0 100644
+--- a/dist/createClient.cjs.map
++++ b/dist/createClient.cjs.map
+@@ -1 +1 @@
+-{"version":3,"file":"createClient.cjs","sources":["../createClient.ts"],"sourcesContent":["import type { HttpRouteName, ModuleInstance, Parser, ServerError, ServerErrorData } from '@unserved/server'\nimport type { WebSocketRouteName } from '@unserved/server'\nimport type { EventStream } from '@unserved/server/utils'\nimport type { Client } from '@unshared/client'\nimport type { FetchMethod, RequestOptions } from '@unshared/client/utils'\nimport type { ConnectOptions } from '@unshared/client/websocket'\nimport type { Loose, MaybeFunction, ObjectLike, UnionMerge } from '@unshared/types'\nimport { createClient as createBaseClient } from '@unshared/client/createClient'\n\n/**************************************************************/\n/* HTTP Routes                                                */\n/**************************************************************/\n\nexport type RouteName<T> =\n  ModuleInstance<T> extends { routes: Record<string, MaybeFunction<infer R>> }\n    ? R extends { name: infer N extends HttpRouteName } ? HttpRouteName extends N ? never : N : never\n    : never\n\nexport type RouteByName<T, N extends RouteName<T> = RouteName<T>> =\n  ModuleInstance<T> extends { routes: Record<string, MaybeFunction<infer R>> }\n    ? R extends { name: N } ? R : never\n    : never\n\nexport type RouteRequestQuery<T, N extends RouteName<T>> =\n  RouteByName<T, N> extends { parseQuery: Parser<infer U extends ObjectLike> } ? Loose<U> : never\n\nexport type RouteRequestParameters<T, N extends RouteName<T>> =\n  RouteByName<T, N> extends { parseParameters: Parser<infer U extends ObjectLike> } ? Loose<U> : never\n\nexport type RouteRequestBody<T, N extends RouteName<T>> =\n  RouteByName<T, N> extends { parseBody: Parser<infer U> } ? (U extends ObjectLike ? Loose<U> : U)\n    : RouteByName<T, N> extends { parseFormData: Parser<infer U extends ObjectLike> } ? U\n      : never\n\nexport type RouteRequestData<T, N extends RouteName<T>> =\n  Loose<UnionMerge<\n    | RouteRequestBody<T, N>\n    | RouteRequestParameters<T, N>\n    | RouteRequestQuery<T, N>\n  >>\n\nexport type RouteResponseData<T, N extends RouteName<T>> =\n  RouteByName<T> extends infer Route\n    ? Route extends { name: N; handler: (...args: any[]) => infer U | Promise<infer U> }\n      ? U extends EventStream<infer V> ? AsyncIterable<V>\n        : U extends ServerError<infer N, infer T> ? ServerErrorData<N, T>\n          : U\n      : never\n    : never\n\nexport type Routes<T> = {\n  [P in RouteName<T>]:\n  RequestOptions<\n    FetchMethod,\n    string,\n    RouteRequestParameters<T, P>,\n    RouteRequestQuery<T, P>,\n    RouteRequestBody<T, P>,\n    ObjectLike,\n    RouteResponseData<T, P>\n  >\n}\n\n/**************************************************************/\n/* Web Sockets Channels                                       */\n/**************************************************************/\n\nexport type ChannelName<T> =\n  ModuleInstance<T> extends { routes: Record<string, MaybeFunction<infer R>> }\n    ? R extends { name: infer N extends WebSocketRouteName } ? WebSocketRouteName extends N ? never : N : never\n    : never\n\nexport type ChannelByName<T, N extends ChannelName<T> = ChannelName<T>> =\n  ModuleInstance<T> extends { routes: Record<string, MaybeFunction<infer R>> }\n    ? R extends { name: N } ? R : never\n    : never\n\nexport type ChannelParameters<T, N extends ChannelName<T>> =\n  ChannelByName<T, N> extends { parseParameters: Parser<infer U extends ObjectLike> } ? Loose<U> : ObjectLike\n\nexport type ChannelQuery<T, N extends ChannelName<T>> =\n  ChannelByName<T, N> extends { parseQuery: Parser<infer U extends ObjectLike> } ? Loose<U> : ObjectLike\n\nexport type ChannelClientMessage<T, N extends ChannelName<T>> =\n  ChannelByName<T, N> extends { parseClientMessage: Parser<infer U extends ObjectLike> } ? Loose<U> : ObjectLike\n\nexport type ChannelServerMessage<T, N extends ChannelName<T>> =\n  ChannelByName<T, N> extends { parseServerMessage: Parser<infer U extends ObjectLike> } ? Loose<U> : ObjectLike\n\nexport type Channels<T> = {\n  [P in ChannelName<T>]:\n  ConnectOptions<\n    string,\n    ChannelQuery<T, P>,\n    ChannelParameters<T, P>,\n    ChannelClientMessage<T, P>,\n    ChannelServerMessage<T, P>\n  >\n}\n\n/**\n * Create a new type-safe client for the application. The client can be used to fetch data from\n * the API and connect to the server using WebSockets with the given path.\n *\n * @param options The options to pass to the client.\n * @returns The client object with the request method.\n * @example\n * // Create a type-safe client for the application.\n * const client = createClient<[ModuleUser]>()\n *\n * // Fetch the data from the API.\n * const data = await client.request('GET /api/user/:id', { id: '1' })\n *\n * // Use the data from the API.\n * console.log(data) // { id: '1', name: 'John Doe' }\n */\nexport function createClient<T>(options?: RequestOptions): Client<Routes<T>, Channels<T>> {\n  return createBaseClient(options)\n}\n"],"names":["createBaseClient"],"mappings":";;AAoHO,SAAS,aAAgB,SAA0D;AACxF,SAAOA,eAAAA,aAAiB,OAAO;AACjC;;"}
+\ No newline at end of file
++{"version":3,"file":"createClient.cjs","sources":["../createClient.ts"],"sourcesContent":["import type { Client } from '@unshared/client'\nimport type { RequestOptions } from '@unshared/client/utils'\nimport type { Channels, Routes } from './types'\nimport { createClient as createBaseClient } from '@unshared/client/createClient'\n\n/**\n * Create a new type-safe client for the application. The client can be used to fetch data from\n * the API and connect to the server using WebSockets with the given path.\n *\n * @param options The options to pass to the client.\n * @returns The client object with the request method.\n * @example\n * // Create a type-safe client for the application.\n * const client = createClient<[ModuleUser]>()\n *\n * // Fetch the data from the API.\n * const data = await client.request('GET /api/user/:id', { id: '1' })\n *\n * // Use the data from the API.\n * console.log(data) // { id: '1', name: 'John Doe' }\n */\nexport function createClient<T>(options?: RequestOptions): Client<Routes<T>, Channels<T>> {\n  return createBaseClient(options)\n}\n"],"names":["createBaseClient"],"mappings":";;AAqBO,SAAS,aAAgB,SAA0D;AACxF,SAAOA,eAAAA,aAAiB,OAAO;AACjC;;"}
+\ No newline at end of file
+diff --git a/dist/createClient.d.ts b/dist/createClient.d.ts
+index a92ffc90b78c7f788f08be80212d78205731e000..70ed3f813dc0591493a466fe313edcd171bfd9ea 100644
+--- a/dist/createClient.d.ts
++++ b/dist/createClient.d.ts
+@@ -1,68 +1,11 @@
+-import { ModuleInstance, HttpRouteName, Parser, ServerError, ServerErrorData, WebSocketRouteName } from '@unserved/server';
+-import { EventStream } from '@unserved/server/utils';
+ import { Client } from '@unshared/client';
+-import { RequestOptions, FetchMethod } from '@unshared/client/utils';
+-import { ConnectOptions } from '@unshared/client/websocket';
+-import { MaybeFunction, ObjectLike, Loose, UnionMerge } from '@unshared/types';
++import { RequestOptions } from '@unshared/client/utils';
++import { Routes, Channels } from './types.js';
++import '@unserved/server';
++import '@unserved/server/utils';
++import '@unshared/client/websocket';
++import '@unshared/types';
+ 
+-/**************************************************************/
+-/**************************************************************/
+-type RouteName<T> = ModuleInstance<T> extends {
+-    routes: Record<string, MaybeFunction<infer R>>;
+-} ? R extends {
+-    name: infer N extends HttpRouteName;
+-} ? HttpRouteName extends N ? never : N : never : never;
+-type RouteByName<T, N extends RouteName<T> = RouteName<T>> = ModuleInstance<T> extends {
+-    routes: Record<string, MaybeFunction<infer R>>;
+-} ? R extends {
+-    name: N;
+-} ? R : never : never;
+-type RouteRequestQuery<T, N extends RouteName<T>> = RouteByName<T, N> extends {
+-    parseQuery: Parser<infer U extends ObjectLike>;
+-} ? Loose<U> : never;
+-type RouteRequestParameters<T, N extends RouteName<T>> = RouteByName<T, N> extends {
+-    parseParameters: Parser<infer U extends ObjectLike>;
+-} ? Loose<U> : never;
+-type RouteRequestBody<T, N extends RouteName<T>> = RouteByName<T, N> extends {
+-    parseBody: Parser<infer U>;
+-} ? (U extends ObjectLike ? Loose<U> : U) : RouteByName<T, N> extends {
+-    parseFormData: Parser<infer U extends ObjectLike>;
+-} ? U : never;
+-type RouteRequestData<T, N extends RouteName<T>> = Loose<UnionMerge<RouteRequestBody<T, N> | RouteRequestParameters<T, N> | RouteRequestQuery<T, N>>>;
+-type RouteResponseData<T, N extends RouteName<T>> = RouteByName<T> extends infer Route ? Route extends {
+-    name: N;
+-    handler: (...args: any[]) => infer U | Promise<infer U>;
+-} ? U extends EventStream<infer V> ? AsyncIterable<V> : U extends ServerError<infer N, infer T> ? ServerErrorData<N, T> : U : never : never;
+-type Routes<T> = {
+-    [P in RouteName<T>]: RequestOptions<FetchMethod, string, RouteRequestParameters<T, P>, RouteRequestQuery<T, P>, RouteRequestBody<T, P>, ObjectLike, RouteResponseData<T, P>>;
+-};
+-/**************************************************************/
+-/**************************************************************/
+-type ChannelName<T> = ModuleInstance<T> extends {
+-    routes: Record<string, MaybeFunction<infer R>>;
+-} ? R extends {
+-    name: infer N extends WebSocketRouteName;
+-} ? WebSocketRouteName extends N ? never : N : never : never;
+-type ChannelByName<T, N extends ChannelName<T> = ChannelName<T>> = ModuleInstance<T> extends {
+-    routes: Record<string, MaybeFunction<infer R>>;
+-} ? R extends {
+-    name: N;
+-} ? R : never : never;
+-type ChannelParameters<T, N extends ChannelName<T>> = ChannelByName<T, N> extends {
+-    parseParameters: Parser<infer U extends ObjectLike>;
+-} ? Loose<U> : ObjectLike;
+-type ChannelQuery<T, N extends ChannelName<T>> = ChannelByName<T, N> extends {
+-    parseQuery: Parser<infer U extends ObjectLike>;
+-} ? Loose<U> : ObjectLike;
+-type ChannelClientMessage<T, N extends ChannelName<T>> = ChannelByName<T, N> extends {
+-    parseClientMessage: Parser<infer U extends ObjectLike>;
+-} ? Loose<U> : ObjectLike;
+-type ChannelServerMessage<T, N extends ChannelName<T>> = ChannelByName<T, N> extends {
+-    parseServerMessage: Parser<infer U extends ObjectLike>;
+-} ? Loose<U> : ObjectLike;
+-type Channels<T> = {
+-    [P in ChannelName<T>]: ConnectOptions<string, ChannelQuery<T, P>, ChannelParameters<T, P>, ChannelClientMessage<T, P>, ChannelServerMessage<T, P>>;
+-};
+ /**
+  * Create a new type-safe client for the application. The client can be used to fetch data from
+  * the API and connect to the server using WebSockets with the given path.
+@@ -81,4 +24,4 @@ type Channels<T> = {
+  */
+ declare function createClient<T>(options?: RequestOptions): Client<Routes<T>, Channels<T>>;
+ 
+-export { type ChannelByName, type ChannelClientMessage, type ChannelName, type ChannelParameters, type ChannelQuery, type ChannelServerMessage, type Channels, type RouteByName, type RouteName, type RouteRequestBody, type RouteRequestData, type RouteRequestParameters, type RouteRequestQuery, type RouteResponseData, type Routes, createClient };
++export { createClient };
+diff --git a/dist/createClient.js.map b/dist/createClient.js.map
+index 04be61d2f5747dfd3b1b093d346ca6591428607b..9244603527672c5d406c2f27e916985b56155847 100644
+--- a/dist/createClient.js.map
++++ b/dist/createClient.js.map
+@@ -1 +1 @@
+-{"version":3,"file":"createClient.js","sources":["../createClient.ts"],"sourcesContent":["import type { HttpRouteName, ModuleInstance, Parser, ServerError, ServerErrorData } from '@unserved/server'\nimport type { WebSocketRouteName } from '@unserved/server'\nimport type { EventStream } from '@unserved/server/utils'\nimport type { Client } from '@unshared/client'\nimport type { FetchMethod, RequestOptions } from '@unshared/client/utils'\nimport type { ConnectOptions } from '@unshared/client/websocket'\nimport type { Loose, MaybeFunction, ObjectLike, UnionMerge } from '@unshared/types'\nimport { createClient as createBaseClient } from '@unshared/client/createClient'\n\n/**************************************************************/\n/* HTTP Routes                                                */\n/**************************************************************/\n\nexport type RouteName<T> =\n  ModuleInstance<T> extends { routes: Record<string, MaybeFunction<infer R>> }\n    ? R extends { name: infer N extends HttpRouteName } ? HttpRouteName extends N ? never : N : never\n    : never\n\nexport type RouteByName<T, N extends RouteName<T> = RouteName<T>> =\n  ModuleInstance<T> extends { routes: Record<string, MaybeFunction<infer R>> }\n    ? R extends { name: N } ? R : never\n    : never\n\nexport type RouteRequestQuery<T, N extends RouteName<T>> =\n  RouteByName<T, N> extends { parseQuery: Parser<infer U extends ObjectLike> } ? Loose<U> : never\n\nexport type RouteRequestParameters<T, N extends RouteName<T>> =\n  RouteByName<T, N> extends { parseParameters: Parser<infer U extends ObjectLike> } ? Loose<U> : never\n\nexport type RouteRequestBody<T, N extends RouteName<T>> =\n  RouteByName<T, N> extends { parseBody: Parser<infer U> } ? (U extends ObjectLike ? Loose<U> : U)\n    : RouteByName<T, N> extends { parseFormData: Parser<infer U extends ObjectLike> } ? U\n      : never\n\nexport type RouteRequestData<T, N extends RouteName<T>> =\n  Loose<UnionMerge<\n    | RouteRequestBody<T, N>\n    | RouteRequestParameters<T, N>\n    | RouteRequestQuery<T, N>\n  >>\n\nexport type RouteResponseData<T, N extends RouteName<T>> =\n  RouteByName<T> extends infer Route\n    ? Route extends { name: N; handler: (...args: any[]) => infer U | Promise<infer U> }\n      ? U extends EventStream<infer V> ? AsyncIterable<V>\n        : U extends ServerError<infer N, infer T> ? ServerErrorData<N, T>\n          : U\n      : never\n    : never\n\nexport type Routes<T> = {\n  [P in RouteName<T>]:\n  RequestOptions<\n    FetchMethod,\n    string,\n    RouteRequestParameters<T, P>,\n    RouteRequestQuery<T, P>,\n    RouteRequestBody<T, P>,\n    ObjectLike,\n    RouteResponseData<T, P>\n  >\n}\n\n/**************************************************************/\n/* Web Sockets Channels                                       */\n/**************************************************************/\n\nexport type ChannelName<T> =\n  ModuleInstance<T> extends { routes: Record<string, MaybeFunction<infer R>> }\n    ? R extends { name: infer N extends WebSocketRouteName } ? WebSocketRouteName extends N ? never : N : never\n    : never\n\nexport type ChannelByName<T, N extends ChannelName<T> = ChannelName<T>> =\n  ModuleInstance<T> extends { routes: Record<string, MaybeFunction<infer R>> }\n    ? R extends { name: N } ? R : never\n    : never\n\nexport type ChannelParameters<T, N extends ChannelName<T>> =\n  ChannelByName<T, N> extends { parseParameters: Parser<infer U extends ObjectLike> } ? Loose<U> : ObjectLike\n\nexport type ChannelQuery<T, N extends ChannelName<T>> =\n  ChannelByName<T, N> extends { parseQuery: Parser<infer U extends ObjectLike> } ? Loose<U> : ObjectLike\n\nexport type ChannelClientMessage<T, N extends ChannelName<T>> =\n  ChannelByName<T, N> extends { parseClientMessage: Parser<infer U extends ObjectLike> } ? Loose<U> : ObjectLike\n\nexport type ChannelServerMessage<T, N extends ChannelName<T>> =\n  ChannelByName<T, N> extends { parseServerMessage: Parser<infer U extends ObjectLike> } ? Loose<U> : ObjectLike\n\nexport type Channels<T> = {\n  [P in ChannelName<T>]:\n  ConnectOptions<\n    string,\n    ChannelQuery<T, P>,\n    ChannelParameters<T, P>,\n    ChannelClientMessage<T, P>,\n    ChannelServerMessage<T, P>\n  >\n}\n\n/**\n * Create a new type-safe client for the application. The client can be used to fetch data from\n * the API and connect to the server using WebSockets with the given path.\n *\n * @param options The options to pass to the client.\n * @returns The client object with the request method.\n * @example\n * // Create a type-safe client for the application.\n * const client = createClient<[ModuleUser]>()\n *\n * // Fetch the data from the API.\n * const data = await client.request('GET /api/user/:id', { id: '1' })\n *\n * // Use the data from the API.\n * console.log(data) // { id: '1', name: 'John Doe' }\n */\nexport function createClient<T>(options?: RequestOptions): Client<Routes<T>, Channels<T>> {\n  return createBaseClient(options)\n}\n"],"names":["createBaseClient"],"mappings":";AAoHO,SAAS,aAAgB,SAA0D;AACxF,SAAOA,eAAiB,OAAO;AACjC;"}
+\ No newline at end of file
++{"version":3,"file":"createClient.js","sources":["../createClient.ts"],"sourcesContent":["import type { Client } from '@unshared/client'\nimport type { RequestOptions } from '@unshared/client/utils'\nimport type { Channels, Routes } from './types'\nimport { createClient as createBaseClient } from '@unshared/client/createClient'\n\n/**\n * Create a new type-safe client for the application. The client can be used to fetch data from\n * the API and connect to the server using WebSockets with the given path.\n *\n * @param options The options to pass to the client.\n * @returns The client object with the request method.\n * @example\n * // Create a type-safe client for the application.\n * const client = createClient<[ModuleUser]>()\n *\n * // Fetch the data from the API.\n * const data = await client.request('GET /api/user/:id', { id: '1' })\n *\n * // Use the data from the API.\n * console.log(data) // { id: '1', name: 'John Doe' }\n */\nexport function createClient<T>(options?: RequestOptions): Client<Routes<T>, Channels<T>> {\n  return createBaseClient(options)\n}\n"],"names":["createBaseClient"],"mappings":";AAqBO,SAAS,aAAgB,SAA0D;AACxF,SAAOA,eAAiB,OAAO;AACjC;"}
+\ No newline at end of file
+diff --git a/dist/index.cjs b/dist/index.cjs
+index bc7c836fd738fe0e2c563961d826d86c80437aec..61b50fa31eec9cf3a047e53399b4d29b7e1c42bd 100644
+--- a/dist/index.cjs
++++ b/dist/index.cjs
+@@ -1,5 +1,6 @@
+ "use strict";
+ var createClient = require("./createClient.cjs");
++require("./types.cjs");
+ require("@unshared/client/createClient");
+ exports.createClient = createClient.createClient;
+ //# sourceMappingURL=index.cjs.map
+diff --git a/dist/index.cjs.map b/dist/index.cjs.map
+index 32a0c91d23bdcdd2d247641fbf9162cea7168795..5f0f93eff54ed51d932b0b76b91e4a0527f723bf 100644
+--- a/dist/index.cjs.map
++++ b/dist/index.cjs.map
+@@ -1 +1 @@
+-{"version":3,"file":"index.cjs","sources":[],"sourcesContent":[],"names":[],"mappings":";;;;"}
+\ No newline at end of file
++{"version":3,"file":"index.cjs","sources":[],"sourcesContent":[],"names":[],"mappings":";;;;;"}
+\ No newline at end of file
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+index 548fe98cbe4be6bea165c328b4883588ac1c2e08..9db0301e1e556a8f1122402f69de92e111a07330 100644
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -1,7 +1,8 @@
+-export { ChannelByName, ChannelClientMessage, ChannelName, ChannelParameters, ChannelQuery, ChannelServerMessage, Channels, RouteByName, RouteName, RouteRequestBody, RouteRequestData, RouteRequestParameters, RouteRequestQuery, RouteResponseData, Routes, createClient } from './createClient.js';
+-import '@unserved/server';
+-import '@unserved/server/utils';
++export { createClient } from './createClient.js';
++export { ChannelByName, ChannelClientMessage, ChannelConnectOptions, ChannelName, ChannelParameters, ChannelQuery, ChannelServerMessage, Channels, RouteByName, RouteName, RouteRequestBody, RouteRequestData, RouteRequestOptions, RouteRequestParameters, RouteRequestQuery, RouteResponseData, Routes } from './types.js';
+ import '@unshared/client';
+ import '@unshared/client/utils';
++import '@unserved/server';
++import '@unserved/server/utils';
+ import '@unshared/client/websocket';
+ import '@unshared/types';
+diff --git a/dist/index.js b/dist/index.js
+index c34b60739ab754310dc1260d8fb21845a3dd5797..f65b43665cec0f4f6ede2ad8ff86d4c9087a6248 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -1,4 +1,5 @@
+ import { createClient } from "./createClient.js";
++import "./types.js";
+ import "@unshared/client/createClient";
+ export {
+   createClient
+diff --git a/dist/index.js.map b/dist/index.js.map
+index 279dc400ea131e36763800cf0332bc36e4150c48..a7ed8ab7baae91bac57e9f33fb2aba98630685d3 100644
+--- a/dist/index.js.map
++++ b/dist/index.js.map
+@@ -1 +1 @@
+-{"version":3,"file":"index.js","sources":[],"sourcesContent":[],"names":[],"mappings":";;"}
+\ No newline at end of file
++{"version":3,"file":"index.js","sources":[],"sourcesContent":[],"names":[],"mappings":";;;"}
+\ No newline at end of file
+diff --git a/dist/types.cjs b/dist/types.cjs
+new file mode 100644
+index 0000000000000000000000000000000000000000..3cf9c829286bbaede6b83a1462c74c029298168f
+--- /dev/null
++++ b/dist/types.cjs
+@@ -0,0 +1,2 @@
++"use strict";
++//# sourceMappingURL=types.cjs.map
+diff --git a/dist/types.cjs.map b/dist/types.cjs.map
+new file mode 100644
+index 0000000000000000000000000000000000000000..8bfa8a4e984f10846a9aaa5c6a8319ce04d416f9
+--- /dev/null
++++ b/dist/types.cjs.map
+@@ -0,0 +1 @@
++{"version":3,"file":"types.cjs","sources":[],"sourcesContent":[],"names":[],"mappings":""}
+\ No newline at end of file
+diff --git a/dist/types.d.ts b/dist/types.d.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..a3db3335b36c69d41b49b9ff065649a6eca42fc6
+--- /dev/null
++++ b/dist/types.d.ts
+@@ -0,0 +1,68 @@
++import { ModuleInstance, HttpRouteName, Parser, ServerError, ServerErrorData, WebSocketRouteName } from '@unserved/server';
++import { EventStream } from '@unserved/server/utils';
++import { RequestOptions, FetchMethod } from '@unshared/client/utils';
++import { ConnectOptions } from '@unshared/client/websocket';
++import { MaybeFunction, ObjectLike, Loose, UnionMerge } from '@unshared/types';
++
++/**************************************************************/
++/**************************************************************/
++type RouteName<T> = ModuleInstance<T> extends {
++    routes: Record<string, MaybeFunction<infer R>>;
++} ? R extends {
++    name: infer N extends HttpRouteName;
++} ? HttpRouteName extends N ? never : N : never : never;
++type RouteByName<T, N extends RouteName<T> = RouteName<T>> = ModuleInstance<T> extends {
++    routes: Record<string, MaybeFunction<infer R>>;
++} ? R extends {
++    name: N;
++} ? R : never : never;
++type RouteRequestQuery<T, N extends RouteName<T>> = RouteByName<T, N> extends {
++    parseQuery: Parser<infer U extends ObjectLike>;
++} ? Loose<U> : never;
++type RouteRequestParameters<T, N extends RouteName<T>> = RouteByName<T, N> extends {
++    parseParameters: Parser<infer U extends ObjectLike>;
++} ? Loose<U> : never;
++type RouteRequestBody<T, N extends RouteName<T>> = RouteByName<T, N> extends {
++    parseBody: Parser<infer U>;
++} ? (U extends ObjectLike ? Loose<U> : U) : RouteByName<T, N> extends {
++    parseFormData: Parser<infer U extends ObjectLike>;
++} ? U : never;
++type RouteRequestData<T, N extends RouteName<T>> = Loose<UnionMerge<RouteRequestBody<T, N> | RouteRequestParameters<T, N>>>;
++type RouteResponseData<T, N extends RouteName<T>> = RouteByName<T> extends infer Route ? Route extends {
++    name: N;
++    handler: (...args: any[]) => infer U | Promise<infer U>;
++} ? U extends EventStream<infer V> ? AsyncIterable<V> : U extends ServerError<infer N, infer T> ? ServerErrorData<N, T> : U : never : never;
++type RouteRequestOptions<T, N extends RouteName<T>> = RequestOptions<FetchMethod, string, RouteRequestParameters<T, N>, RouteRequestQuery<T, N>, RouteRequestBody<T, N>, ObjectLike, RouteResponseData<T, N>>;
++type Routes<T> = {
++    [P in RouteName<T>]: RouteRequestOptions<T, P>;
++};
++/**************************************************************/
++/**************************************************************/
++type ChannelName<T> = ModuleInstance<T> extends {
++    routes: Record<string, MaybeFunction<infer R>>;
++} ? R extends {
++    name: infer N extends WebSocketRouteName;
++} ? WebSocketRouteName extends N ? never : N : never : never;
++type ChannelByName<T, N extends ChannelName<T> = ChannelName<T>> = ModuleInstance<T> extends {
++    routes: Record<string, MaybeFunction<infer R>>;
++} ? R extends {
++    name: N;
++} ? R : never : never;
++type ChannelParameters<T, N extends ChannelName<T>> = ChannelByName<T, N> extends {
++    parseParameters: Parser<infer U extends ObjectLike>;
++} ? Loose<U> : ObjectLike;
++type ChannelQuery<T, N extends ChannelName<T>> = ChannelByName<T, N> extends {
++    parseQuery: Parser<infer U extends ObjectLike>;
++} ? Loose<U> : ObjectLike;
++type ChannelClientMessage<T, N extends ChannelName<T>> = ChannelByName<T, N> extends {
++    parseClientMessage: Parser<infer U extends ObjectLike>;
++} ? Loose<U> : ObjectLike;
++type ChannelServerMessage<T, N extends ChannelName<T>> = ChannelByName<T, N> extends {
++    parseServerMessage: Parser<infer U extends ObjectLike>;
++} ? Loose<U> : ObjectLike;
++type ChannelConnectOptions<T, N extends ChannelName<T>> = ConnectOptions<string, ChannelQuery<T, N>, ChannelParameters<T, N>, ChannelClientMessage<T, N>, ChannelServerMessage<T, N>>;
++type Channels<T> = {
++    [P in ChannelName<T>]: ChannelConnectOptions<T, P>;
++};
++
++export type { ChannelByName, ChannelClientMessage, ChannelConnectOptions, ChannelName, ChannelParameters, ChannelQuery, ChannelServerMessage, Channels, RouteByName, RouteName, RouteRequestBody, RouteRequestData, RouteRequestOptions, RouteRequestParameters, RouteRequestQuery, RouteResponseData, Routes };
+diff --git a/dist/types.js b/dist/types.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..8b2679e747d2607da8bcca80fc75ceffb30f7f1a
+--- /dev/null
++++ b/dist/types.js
+@@ -0,0 +1,2 @@
++"use strict";
++//# sourceMappingURL=types.js.map
+diff --git a/dist/types.js.map b/dist/types.js.map
+new file mode 100644
+index 0000000000000000000000000000000000000000..5e1669be717f34c9097d728b020c6e08d4a043ff
+--- /dev/null
++++ b/dist/types.js.map
+@@ -0,0 +1 @@
++{"version":3,"file":"types.js","sources":[],"sourcesContent":[],"names":[],"mappings":""}

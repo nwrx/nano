@@ -2,7 +2,7 @@
 import type { FlowV1 } from '@nwrx/nano'
 import { BaseEntity, transformerJson } from '@unserved/server'
 import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm'
-import { WorkspaceProject } from '../../workspace'
+import { Project } from '../../project'
 
 /**
  * The Flow entity represents a flow of nodes that are connected to each other
@@ -44,16 +44,16 @@ export class Flow extends BaseEntity {
    * @example [Node, Node, Node]
    */
   @Column('json', { default: '{"version":"1"}', transformer: transformerJson })
-  data: FlowV1 = { version: '1' }
+  data: FlowV1 = { version: '1', nodes: {}, metadata: {} }
 
   /**
    * The project that the flow is part of.
    *
-   * @example WorkspaceProject { ... }
+   * @example Project { ... }
    */
   @JoinColumn()
-  @ManyToOne(() => WorkspaceProject, project => project.flows, { onDelete: 'CASCADE', nullable: false })
-  project?: WorkspaceProject
+  @ManyToOne(() => Project, project => project.flows, { onDelete: 'CASCADE', nullable: false })
+  project?: Project
 
   /**
    * @param options The options to use when serializing the object.
@@ -88,7 +88,6 @@ export class Flow extends BaseEntity {
 interface SerializeOptions {
   withData?: boolean
 }
-
 export interface FlowObject {
   id: string
   name: string

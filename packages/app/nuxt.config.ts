@@ -188,8 +188,6 @@ export default defineNuxtConfig({
   /**
    * Enable `experimentalDecorator` when bundling the server code with Vite. It
    * allows use to use decorators when declaring the TypeORM entities.
-   *
-   * @see https://typeorm.io/#typescript-configuration
    */
   nitro: {
     experimental: {

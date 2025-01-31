@@ -3,7 +3,6 @@ import { createHttpRoute } from '@unserved/server'
 import { parseBoolean } from '@unshared/string'
 import { assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
 import { ModuleUser } from '../../user'
-import { ModuleWorkspace } from '../../workspace'
 import { resolveFlow } from '../utils'
 
 export function flowGet(this: ModuleFlow) {

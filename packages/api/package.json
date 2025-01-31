@@ -23,7 +23,6 @@
     "@aws-sdk/s3-request-presigner": "3.738.0",
     "@azure/storage-blob": "12.26.0",
     "@nwrx/nano": "workspace:*",
-    "@nwrx/nano-module-core": "workspace:*",
     "@types/node": "22.12.0",
     "@unserved/server": "0.3.2",
     "@unshared/binary": "0.4.1",

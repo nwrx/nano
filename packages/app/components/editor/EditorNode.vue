@@ -17,6 +17,7 @@ const emit = defineEmits<{
   abort: []
   click: [event: MouseEvent]
   setInputValue: [key: string, value: unknown]
+  setSocketVisibility: [key: string, visible: boolean]
   getInputOptions: [key: string, query: string]
   handleGrab: [event: MouseEvent]
   handleRelease: [event: MouseEvent]
@@ -105,6 +106,7 @@ function handleClick(event: MouseEvent) {
         :variables="variables"
         :get-options="getOptions ? (key, query) => getOptions!(socket.key, query) : undefined"
         @set-value="(value) => emit('setInputValue', socket.key, value)"
+        @set-visibility="(visible) => emit('setSocketVisibility', socket.key, visible)"
         @search-options="(key, query) => emit('getInputOptions', key, query)"
         @link-grab="(path) => emit('linkGrab', { id, name: socket.key, path })"
         @link-assign="(path) => emit('linkAssign', { id, name: socket.key, path })"
@@ -119,6 +121,7 @@ function handleClick(event: MouseEvent) {
         :port-id="socket.key"
         :value="output[socket.key]"
         :is-output="true"
+        @set-visibility="(visible) => emit('setSocketVisibility', socket.key, visible)"
         @link-grab="(path) => emit('linkGrab', { id, name: socket.key, path, isOutput: true })"
         @link-assign="(path) => emit('linkAssign', { id, name: socket.key, path, isOutput: true })"
         @link-unassign="() => emit('linkUnassign')"

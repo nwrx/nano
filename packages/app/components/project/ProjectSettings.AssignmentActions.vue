@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { WorkspaceProjectPermission } from '@nwrx/nano-api'
+import type { ProjectPermission } from '@nwrx/nano-api'
 
 defineProps<{
   workspace?: string
@@ -10,7 +10,7 @@ defineProps<{
 }>()
 
 const emit = defineEmits<{
-  submitSetPermissions: [permissions: WorkspaceProjectPermission[]]
+  submitSetPermissions: [permissions: ProjectPermission[]]
   submitUnassign: []
 }>()
 

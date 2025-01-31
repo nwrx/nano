@@ -1,8 +1,9 @@
-import { BaseEntity } from '@unserved/server'
+import { BaseEntity, transformerDate } from '@unserved/server'
 import { Column, Entity, OneToMany } from 'typeorm'
-import { User, UserObject } from '../../user'
+import { Project, ProjectObject } from '../../project'
+import { UserObject } from '../../user'
+import { getWorkspaceUserAssignments } from '../utils'
 import { WorkspaceAssignment } from './WorkspaceAssignment'
-import { WorkspaceProject, WorkspaceProjectObject } from './WorkspaceProject'
 
 /**
  * A `Workspace` is a collection of projects and flows that are grouped together. It allows
@@ -32,12 +33,31 @@ export class Workspace extends BaseEntity {
   isPublic: boolean
 
   /**
+   * Flag to indicate the workspace is the main workspace of a user and therefore can not be
+   * deleted unless the user is deleted.
+   *
+   * @example false
+   */
+  @Column('boolean', { default: false })
+  isUserWorkspace: boolean
+
+  /**
+   * Date at which the workspace was archived. If the workspace is archived, it can no longer
+   * be edited or viewed by the users. The workspace can be restored by the administrators or
+   * owners of the workspace.
+   *
+   * @example Date { ... }
+   */
+  @Column('varchar', { length: 255, nullable: true, transformer: transformerDate })
+  archivedAt?: Date | null
+
+  /**
    * The projects that are part of the workspace.
    *
    * @example [Project, Project, Project]
    */
-  @OneToMany(() => WorkspaceProject, project => project.workspace, { cascade: true, onDelete: 'CASCADE' })
-  projects: WorkspaceProject[]
+  @OneToMany(() => Project, project => project.workspace, { cascade: true, onDelete: 'CASCADE' })
+  projects: Project[]
 
   /**
    * The assignments of the workspace to the users.
@@ -48,30 +68,6 @@ export class Workspace extends BaseEntity {
   assignments: WorkspaceAssignment[]
 
   /**
-   * Get the assignments grouped by users. The function will return an array of objects
-   * where each object contains the user and a list of permissions assigned to the user.
-   *
-   * @returns The assignments grouped by users.
-   */
-  get assignmentsByUser(): WorkspaceAssignmentsByUser[] | undefined {
-    if (!this.assignments) return
-
-    // --- Group the assignments by user.
-    const result: WorkspaceAssignmentsByUser[] = []
-    for (const assignment of this.assignments) {
-      if (!assignment.user) continue
-      const user = assignment.user
-      const permissions = assignment.permission
-      const index = result.findIndex(item => item.user.username === user.username)
-      if (index === -1) result.push({ user, permissions: [permissions] })
-      else result[index].permissions.push(permissions)
-    }
-
-    // --- Return the assignments.
-    return result
-  }
-
-  /**
    * @returns The object representation of the workspace.
    */
   serialize(): WorkspaceObject {
@@ -79,18 +75,14 @@ export class Workspace extends BaseEntity {
       id: this.id,
       name: this.name,
       isPublic: this.isPublic,
+      isUserWorkspace: this.isUserWorkspace,
       projects: this.projects?.map(project => project.serialize()),
-      assignments: this.assignmentsByUser?.map(({ user, permissions }) => ({
-        user: user.serialize(),
-        permissions,
+      assignments: getWorkspaceUserAssignments(this)?.map(assignment => ({
+        user: assignment.user.serialize(),
+        permissions: assignment.permissions,
       })),
     }
   }
-}
-
-export interface WorkspaceAssignmentsByUser {
-  user: User
-  permissions: string[]
 }
 
 export interface WorkspaceAssignmentsByUserObject {
@@ -102,6 +94,7 @@ export interface WorkspaceObject {
   id: string
   name: string
   isPublic: boolean
-  projects?: WorkspaceProjectObject[]
+  isUserWorkspace: boolean
+  projects?: ProjectObject[]
   assignments?: WorkspaceAssignmentsByUserObject[]
 }

@@ -1,0 +1,157 @@
+- Script
+  + language (TypeScript / JavaScript / Python)
+  +? code
+  +? name
+  +? description
+  +? tools
+  - Result
+  - Tool=>Run
+
+- Request (OpenAPI)
+  +? OpenAPI (v2 / v3)
+  +? Operation
+  +? Base URL
+  +? Path
+  +? Method
+  +? Headers
+  +? Query
+  +? Body
+  - Tool=>Send request
+
+- Credentials (Oauth Implicit) + UI integration
+- Credentials (Oauth Authorization Code)
+- Credentials (Oauth Client Credentials)
+- Credentials (Oauth Resource Owner Password Credentials)
+- Credentials (Oauth Refresh Token)
+- Credentials (Basic)
+- Credentials (Bearer)
+- Credentials (API Key)
+- Credentials (Custom)
+
+- Canvas (Slidev-like document) + UI integration
+  +? name
+  +? description
+  +? theme (dark / light)
+  +? layout (horizontal / vertical)
+  - Tool=>Add slide
+  - Tool=>Get slide
+  - Tool=>Edit selected text
+  - Tool=>Select text
+  - Tool=>Select all text
+  - Tool=>Copy text
+  - Tool=>Paste text
+  - Tool=>Delete text
+  - Tool=>Set text
+
+- notion
+  +? API key
+  +? database id
+  +? page id
+  - Tool=>Get page
+  - Tool=>Get database
+  - Tool=>Get block
+  - Tool=>Get block children
+  - Tool=>Get block content
+  - Tool=>Get block properties
+  - Tool=>Get block title
+  - Tool=>Get block type
+
+- Memory
+  + location (ChromaDB / Memory / Project Memory / ...)
+  +? initial memory records ({ key: value, ... })
+  +? name (Facts / Notes / Tasks / ...)
+  +? description (Stores facts, notes, tasks, ...)
+  - Add memory record
+    + key
+    + value (object)
+  - Edit memory record
+    + key
+    + path
+    + value
+  - Remove memory record
+  - Search memory record
+  - Get memory record
+  - List memory records
+
+- Storage (Filesystem|Memory|Project Storage|S3|Azure|AWS|GCP|...)
+  +? name (Files / Directories / ...)
+  +? description (Stores files, directories, ...)
+  - Add file
+  - Edit file
+  - Remove file
+  - Search file
+  - Get file
+  - List files
+  - Add directory
+  - Edit directory
+  - Remove directory
+  - Search directory
+
+- WebContainer + UI integration
+  +? name
+  +? description
+  +? storage
+  - Tool=>Read file
+  - Tool=>Write file
+  - Tool=>Append file
+  - Tool=>Shell command
+  - Tool=>Execute script
+  - Tool=>Run request
+  - Tool=>Send message
+  - Tool=>Post message
+
+- shell (Only when running in CLI) + UI/CLI integration
+  + shell (bash / zsh / fish / ...)
+  + executable (/bin/
+  - History
+  - Tool=>Execute shell command
+  - Tool=>Change directory
+  - Tool=>Read file
+  - Tool=>Write file
+  - Tool=>Append file
+  - Tool=>List files
+  - Tool=>Remove file
+  - Tool=>Move file
+  - Tool=>Copy file
+  - Tool=>Create directory
+  - Tool=>Remove directory
+  - Tool=>Move directory
+  - Tool=>Copy directory
+  - Tool=>List directories
+  - Tool=>Get file
+  - Tool=>Set file
+
+- SSH + UI integration
+  +? host
+  +? port
+  +? username
+  +? password
+  +? private key
+  +? public key
+  - History
+  - Tool=>Connect
+  - Tool=>Disconnect
+  - Tool=>Execute command
+  - Tool=>Upload file
+  - Tool=>Download file
+  - Tool=>List files
+  - Tool=>Remove file
+  - Tool=>Move file
+  - Tool=>Copy file
+  - Tool=>Create directory
+  - Tool=>Remove directory
+  - Tool=>Move directory
+  - Tool=>Copy directory
+  - Tool=>List directories
+  - Tool=>Get file
+  - Tool=>Set file
+
+- Telnet + UI integration
+  +? host
+  +? port
+  +? username
+  +? password
+  - History
+  - Tool=>Connect
+  - Tool=>Disconnect
+  - Tool=>Execute command

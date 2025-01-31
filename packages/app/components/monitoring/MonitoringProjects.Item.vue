@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { WorkspaceProjectObject } from '@nwrx/nano-api'
+import type { ProjectObject } from '@nwrx/nano-api'
 
 defineProps<{
-  project: WorkspaceProjectObject
+  project: ProjectObject
   selectedFlow?: string
   isSelected?: boolean
 }>()

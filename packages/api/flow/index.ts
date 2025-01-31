@@ -1,7 +1,7 @@
 import type { EditorSession } from './utils'
 import { ModuleBase } from '@unserved/server'
+import { ModuleProject } from '../project'
 import { ModuleUser } from '../user'
-import { ModuleWorkspace } from '../workspace'
 import * as ENTITIES from './entities'
 import * as ROUTES from './routes'
 import * as UTILS from './utils'
@@ -28,7 +28,7 @@ export class ModuleFlow extends ModuleBase implements ModuleFlowOptions {
   errors = UTILS.ERRORS
   routes = ROUTES
   entities = ENTITIES
-  dependencies = [ModuleUser, ModuleWorkspace]
+  dependencies = [ModuleUser, ModuleProject]
 
   /** A map of flow editor sessions. */
   flowEditorSessions = new Map<string, EditorSession>()

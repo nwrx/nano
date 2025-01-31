@@ -4,11 +4,12 @@
     "target": "ESNext",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "rootDir": ".",
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "types": [
-      "@types/node",
-      "vitest/globals",
+      "@types/node", 
+      "vitest/globals", 
       "vitest/importMeta"
     ],
     "allowJs": true,
@@ -28,7 +29,7 @@
     "eslint.config.mjs"
   ],
   "exclude": [
-    "**/node_modules",
+    "**/node_modules", 
     "**/dist"
   ]
 }

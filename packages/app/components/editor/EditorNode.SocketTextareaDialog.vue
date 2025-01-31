@@ -13,13 +13,23 @@ const emit = defineEmits<{
   'update:isOpen': [value: boolean]
 }>()
 
+const { t } = useI18n()
 const settings = useLocalSettings()
 const isOpen = useVModel(props, 'isOpen', emit, { passive: true })
-const model = useVModel(props, 'modelValue', emit, { passive: true })
+const model = ref('')
+
+watch(() => props.isOpen, () => {
+  model.value = props.modelValue ?? ''
+})
 
 function onTextAreaInput(event: Event) {
   const target = event.target as HTMLTextAreaElement
   model.value = target.value
+}
+
+function confirm() {
+  isOpen.value = false
+  emit('update:modelValue', model.value)
 }
 </script>
 
@@ -75,7 +85,7 @@ function onTextAreaInput(event: Event) {
             <!-- Preview -->
             <EditorNodeSocketTextareaDialogButton
               icon="i-carbon:text-long-paragraph"
-              label="Preview"
+              :label="t('preview')"
               :is-active="settings.editorNodeTextareaShowPreview"
               @click="() => settings.editorNodeTextareaShowPreview = !settings.editorNodeTextareaShowPreview"
             />
@@ -108,8 +118,48 @@ function onTextAreaInput(event: Event) {
               />
             </div>
           </div>
+
+          <!-- Confirm -->
+          <div class="flex items-center justify-end b-t b-editor p-sm space-x-sm">
+            <Hyperlink
+              :label="t('cancel')"
+              icon-append="i-carbon:close"
+              class="text-sm ml-sm"
+              @click="() => isOpen = false"
+            />
+            <div class="grow" />
+            <Button
+              :label="t('confirm')"
+              class="button-success"
+              icon-append="i-carbon:checkmark"
+              @click="() => confirm()"
+            />
+          </div>
         </div>
       </LazyBaseDialog>
     </Transition>
   </Teleport>
 </template>
+
+<i18n lang="yaml">
+en:
+  preview: Preview
+  confirm: Confirm changes
+  cancel: Cancel changes
+fr:
+  preview: Aperçu
+  confirm: Confirmer les modifications
+  cancel: Annuler les modifications
+de:
+  preview: Vorschau
+  confirm: Änderungen bestätigen
+  cancel: Änderungen abbrechen
+es:
+  preview: Vista previa
+  confirm: Confirmar cambios
+  cancel: Cancelar cambios
+zh:
+  preview: 预览
+  confirm: 确认更改
+  cancel: 取消更改
+</i18n>

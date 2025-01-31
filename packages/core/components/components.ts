@@ -2,6 +2,7 @@ import * as core from './core'
 import * as inference from './inference'
 import * as models from './models'
 import * as services from './services'
+import * as shell from './shell'
 
 export const components = {
 
@@ -31,4 +32,7 @@ export const components = {
 
   // Services
   weather: services.weather,
+
+  // Shell
+  execute: shell.execute,
 }

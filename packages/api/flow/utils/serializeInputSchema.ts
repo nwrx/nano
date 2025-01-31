@@ -1,9 +1,9 @@
-import type { InputSchema, SocketControl, SocketListOption } from '@nwrx/nano'
+import type { InputControl, InputSocket, SocketListOption } from '@nwrx/nano'
 import type { MaybeLiteral } from '@unshared/types'
 import type { OutputJSON } from './serializeOutputSchema'
 
 export interface InputJSON extends OutputJSON {
-  control?: MaybeLiteral<SocketControl>
+  control?: MaybeLiteral<InputControl>
   options?: SocketListOption[]
   sliderMax?: number
   sliderMin?: number
@@ -16,7 +16,7 @@ export interface InputJSON extends OutputJSON {
 export function serializeInputSchema(schema?: unknown): InputJSON[] {
   if (!schema) return []
   return Object
-    .entries(schema as InputSchema)
+    .entries(schema as InputSocket)
     .filter(([, socket]) => !socket.isInternal)
     .map(([key, socket]) => ({
       key,

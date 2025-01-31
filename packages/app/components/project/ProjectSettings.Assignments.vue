@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import type { UserObject, WorkspaceProjectPermission, WorkspaceProjectUserPermissionsObject } from '@nwrx/nano-api'
+import type { ProjectPermission, ProjectUserPermissionsObject, UserObject } from '@nwrx/nano-api'
 import ProjectSettingsAssignmentsPermissions from './ProjectSettings.AssignmentsPermissions.vue'
 
 const props = defineProps<{
   workspace?: string
   project?: string
   title?: string
-  assignments?: WorkspaceProjectUserPermissionsObject[]
+  assignments?: ProjectUserPermissionsObject[]
   searchUsers?: (search: string) => Promise<UserObject[]>
 }>()
 
 const emit = defineEmits<{
   submitAssign: [username: string]
   submitUnassign: [username: string]
-  submitSetPermissions: [username: string, permissions: WorkspaceProjectPermission[]]
+  submitSetPermissions: [username: string, permissions: ProjectPermission[]]
 }>()
 
 const { t } = useI18n()

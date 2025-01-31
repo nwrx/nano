@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FlowObject } from '@nwrx/api'
+import type { FlowObject } from '@nwrx/nano-api'
 
 defineProps<FlowObject>()
 

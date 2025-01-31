@@ -1,7 +1,7 @@
 import type { ModuleFlow, User } from '../../index'
 import { EditorSession } from './createSession'
+import { resolveFlow } from './getFlow'
 import { loadThreadFromJson } from './loadThreadFromJson'
-import { resolveFlow } from './resolveFlow'
 
 export interface ResolveEditorSessionOptions {
   workspace: string

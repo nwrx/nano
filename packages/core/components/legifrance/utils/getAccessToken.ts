@@ -1,4 +1,4 @@
-import { createError } from '@nwrx/core'
+import { createError } from '@nwrx/nano'
 
 export interface PisteCredentials {
   clientId: string

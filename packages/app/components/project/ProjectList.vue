@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { WorkspaceProjectObject } from '@nwrx/nano-api'
+import type { ProjectObject } from '@nwrx/nano-api'
 
 const props = defineProps<{
   workspace?: string
-  projects?: WorkspaceProjectObject[]
+  projects?: ProjectObject[]
   modelValue?: Record<string, boolean>
 }>()
 

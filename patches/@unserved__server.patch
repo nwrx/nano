@@ -1,0 +1,1658 @@
+diff --git a/dist/BaseEntity.cjs b/dist/BaseEntity.cjs
+index 15f79e4cf1245d3585dc81e8cc50d5be251e6bbe..65bc3795bdff39fda8f0d899a5c6e57b85330eb4 100644
+--- a/dist/BaseEntity.cjs
++++ b/dist/BaseEntity.cjs
+@@ -1,7 +1,7 @@
+ "use strict";
+ var node_crypto = require("node:crypto");
+ require("reflect-metadata");
+-var typeorm = require("typeorm"), createApplication = require("./chunks/BgZJfEXs.cjs");
++var typeorm = require("typeorm"), createApplication = require("./chunks/DaBTSnuJ.cjs");
+ require("h3");
+ require("./createHttpRoute.cjs");
+ require("./createWebSocketRoute.cjs");
+diff --git a/dist/BaseEntity.js b/dist/BaseEntity.js
+index 5fa978148b87d1e5925f278d152cba1e31749a76..6c1fc6d0163f6abb08af3e38c4814ecd6b6cb4e0 100644
+--- a/dist/BaseEntity.js
++++ b/dist/BaseEntity.js
+@@ -1,7 +1,7 @@
+ import { randomUUID } from "node:crypto";
+ import "reflect-metadata";
+ import { PrimaryGeneratedColumn, Column, DeleteDateColumn, BeforeSoftRemove, BeforeUpdate, Entity } from "typeorm";
+-import { t as transformerDate } from "./chunks/2P9mXshK.js";
++import { t as transformerDate } from "./chunks/BR0f-Cns.js";
+ import "h3";
+ import "./createHttpRoute.js";
+ import "./createWebSocketRoute.js";
+diff --git a/dist/__fixtures__.cjs b/dist/__fixtures__.cjs
+index 59697357191a89c3aaebccdda9fe6232544e660b..3e33ec691b520f29cc9eda9f5618af8637495431 100644
+--- a/dist/__fixtures__.cjs
++++ b/dist/__fixtures__.cjs
+@@ -2,7 +2,7 @@
+ var typeorm = require("typeorm"), BaseEntity = require("./BaseEntity.cjs");
+ require("node:crypto");
+ require("reflect-metadata");
+-require("./chunks/BgZJfEXs.cjs");
++require("./chunks/DaBTSnuJ.cjs");
+ require("h3");
+ require("./createHttpRoute.cjs");
+ require("./createWebSocketRoute.cjs");
+diff --git a/dist/__fixtures__.js b/dist/__fixtures__.js
+index a529ff6988e5b3f82c43ef0a5ba90f218edcbb49..c5cdaedbd417c30bc1af27c2fa3e04f167c5d2fb 100644
+--- a/dist/__fixtures__.js
++++ b/dist/__fixtures__.js
+@@ -2,7 +2,7 @@ import { Column, Entity } from "typeorm";
+ import { BaseEntity } from "./BaseEntity.js";
+ import "node:crypto";
+ import "reflect-metadata";
+-import "./chunks/2P9mXshK.js";
++import "./chunks/BR0f-Cns.js";
+ import "h3";
+ import "./createHttpRoute.js";
+ import "./createWebSocketRoute.js";
+diff --git a/dist/chunks/BR0f-Cns.js b/dist/chunks/BR0f-Cns.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..afb194cf2e743ad8efbeda0441050e413d00c519
+--- /dev/null
++++ b/dist/chunks/BR0f-Cns.js
+@@ -0,0 +1,478 @@
++import { defineEventHandler, readValidatedBody, getValidatedQuery, readFormData, getValidatedRouterParams, setResponseStatus, defineWebSocketHandler, createEventStream as createEventStream$1, createRouter, createApp, toNodeListener, H3Event } from "h3";
++import { SYMBOL_HTTP_ROUTE } from "../createHttpRoute.js";
++import { SYMBOL_WS_ROUTE } from "../createWebSocketRoute.js";
++import { randomUUID } from "node:crypto";
++import { isConstructor, createResolvable, awaitable } from "@unshared/functions";
++import { rm } from "node:fs/promises";
++import { createServer, request, IncomingMessage, ServerResponse } from "node:http";
++import { DataSource } from "typeorm";
++import { WebSocket } from "ws";
++import { Once } from "@unshared/decorators";
++import { parseEnvironments } from "@unshared/process";
++import { dedent } from "@unshared/string";
++import wsAdapter from "crossws/adapters/node";
++import { Socket } from "node:net";
++import { createParser } from "@unshared/validation";
++import { Semver, createSemver } from "@unshared/string/createSemver";
++function createHttpEventHandler(route) {
++  return defineEventHandler(async (event) => {
++    let body, query, formData, parameters;
++    typeof route.parseBody == "function" && (body = await readValidatedBody(event, route.parseBody)), typeof route.parseQuery == "function" && (query = await getValidatedQuery(event, route.parseQuery)), typeof route.parseFormData == "function" && (formData = route.parseFormData(await readFormData(event)));
++    try {
++      typeof route.parseParameters == "function" && (parameters = await getValidatedRouterParams(event, route.parseParameters));
++    } catch {
++      setResponseStatus(event, 400);
++      return;
++    }
++    const response = await route.handler({ event, body, parameters, query, formData });
++    return response === void 0 ? null : response;
++  });
++}
++function createWebSocketEventHandler(route) {
++  const peerContext = /* @__PURE__ */ new Map();
++  return defineWebSocketHandler({
++    async open(peer) {
++      try {
++        let query, parameters;
++        const wsUrl = peer.websocket.url;
++        if (!wsUrl) return;
++        const url = new URL(wsUrl);
++        if (route.parseParameters) {
++          const partsRoute = route.name.split(" ")[1].split("/").filter(Boolean), partsPeer = url.pathname.split("/").filter(Boolean), peerParameters = {};
++          for (const partRoute of partsRoute) {
++            const value = partsPeer.shift();
++            if (!partRoute.startsWith(":")) continue;
++            const key = partRoute.slice(1);
++            if (!value) break;
++            peerParameters[key] = value;
++          }
++          parameters = await route.parseParameters(peerParameters);
++        }
++        if (route.parseQuery) {
++          const queryParameters = Object.fromEntries(url.searchParams);
++          query = await route.parseQuery(queryParameters);
++        }
++        return peerContext.set(peer, { parameters, query }), route.onOpen ? route.onOpen({ peer, parameters, query }) : void 0;
++      } catch (error) {
++        if (!route.onError) throw error;
++        await route.onError({ peer, error });
++      }
++    },
++    async message(peer, message) {
++      try {
++        let messageData;
++        if (route.parseClientMessage) {
++          const messageJson = message.toString(), messageObject = JSON.parse(messageJson);
++          messageData = await route.parseClientMessage(messageObject);
++        }
++        return route.onMessage ? await route.onMessage({
++          peer,
++          message: messageData,
++          query: peerContext.get(peer)?.query,
++          parameters: peerContext.get(peer)?.parameters
++        }) : void 0;
++      } catch (error) {
++        if (!route.onError) throw error;
++        await route.onError({ peer, error });
++      }
++    },
++    async close(peer, details) {
++      try {
++        if (!route.onClose) return;
++        const context = peerContext.get(peer), query = context?.query, parameters = context?.parameters;
++        return peerContext.delete(peer), route.onClose({ peer, details, parameters, query });
++      } catch (error) {
++        if (!route.onError) throw error;
++        await route.onError({ peer, error });
++      }
++    },
++    async error(peer, error) {
++      if (!route.onError) throw error;
++      await route.onError({ peer, error });
++    }
++  });
++}
++function isHttpRoute(value) {
++  return typeof value == "object" && value !== null && SYMBOL_HTTP_ROUTE in value && value[SYMBOL_HTTP_ROUTE] === !0;
++}
++function isWebSocketRoute(value) {
++  return typeof value == "object" && value !== null && SYMBOL_WS_ROUTE in value && value[SYMBOL_WS_ROUTE] === !0;
++}
++function createEventHandler(route) {
++  if (isHttpRoute(route)) return createHttpEventHandler(route);
++  if (isWebSocketRoute(route)) return createWebSocketEventHandler(route);
++  throw new Error("Invalid route");
++}
++class EventStream {
++  constructor(event) {
++    this.event = event, this.stream = createEventStream$1(event);
++  }
++  /** The H3 `EventStream` instance that will be used to send updates to the client. */
++  stream;
++  /** The unique ID of the task. */
++  id = randomUUID();
++  /**
++   * Send some data to the client and await for it to be sent. This will
++   * prevent the client from receiving 2 messages at the same time and will
++   * ensure that the messages are sent in the correct order.
++   *
++   * @param data The data to send to the client.
++   * @example
++   * // Create a task.
++   * const task = new Task('123', 'My Task')
++   */
++  async send(data) {
++    const message = JSON.stringify({ id: this.id, data });
++    await this.stream.push(message);
++  }
++  /**
++   * Abort a task. This will send an error to the client and close the stream.
++   * This will allow the client to know that the task was cancelled and will
++   * allow the server to clean up any resources that the task was using.
++   *
++   * @param error The error message to send to the client.
++   */
++  async sendError(error) {
++    typeof error == "string" && (error = new Error(error));
++    const message = JSON.stringify({
++      id: this.id,
++      error: {
++        name: error.name,
++        code: error.name,
++        message: error.message,
++        stack: process.env.NODE_ENV === "production" ? void 0 : error.stack
++      }
++    });
++    await this.stream.push(message);
++  }
++  /**
++   * Run a function with whithin a task and in the context of a `Task`. This
++   * will provide the function with the ability to send updates to the client
++   * and end once the function has completed or if an error occurs.
++   *
++   * @param event The event that triggered the task.
++   * @param callback The function that will run the task.
++   * @returns The stream of the task.
++   */
++  static create(event, callback) {
++    const instance = new EventStream(event), promise = callback(instance).catch(async (error) => {
++      throw await instance.sendError(error), error;
++    }).finally(() => {
++      instance.stream.close();
++    });
++    return { eventStream: instance, promise };
++  }
++}
++function createEventStream(event, fn) {
++  return EventStream.create(event, fn);
++}
++var __defProp = Object.defineProperty, __getOwnPropDesc = Object.getOwnPropertyDescriptor, __decorateClass = (decorators, target, key, kind) => {
++  for (var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target, i = decorators.length - 1, decorator; i >= 0; i--)
++    (decorator = decorators[i]) && (result = (kind ? decorator(target, key, result) : decorator(result)) || result);
++  return kind && result && __defProp(target, key, result), result;
++};
++const DEFAULT_DATA_SOURCE_OPTIONS = {
++  type: "sqlite",
++  database: ":memory:",
++  synchronize: !0
++}, _Application = class _Application2 {
++  /**
++   * Instantiate a new application with the given modules and options.
++   *
++   * @param modules The modules of the application.
++   * @param options The options of the application.
++   */
++  constructor(modules, options = {}) {
++    this.options = options, options.logger && (this.logger = options.logger);
++    const { prefix = "APP", dataSource } = options;
++    this.options = {
++      ...this.options,
++      ...parseEnvironments(prefix),
++      dataSource: dataSource instanceof DataSource ? dataSource : {
++        ...DEFAULT_DATA_SOURCE_OPTIONS,
++        ...parseEnvironments(`${prefix}_DATABASE`),
++        ...dataSource
++      }
++    }, this.modules = modules.map((module) => isConstructor(module) ? new module(this.options) : module);
++    for (const module of this.modules)
++      if (module.dependencies)
++        for (const dependency of module.dependencies)
++          this.modules.find((m) => m instanceof dependency) || this.logger.warn(dedent(`
++            [Application] Missing dependency.
++
++            There has been an error initializing the application. The module "${module.constructor.name}" expects the module "${dependency.name}" to be registered in the application. Please make sure that the module is registered in the application before initializing it.
++          `));
++    for (const module of this.modules) module.application = this;
++  }
++  /**
++   * Is the application initialized.
++   *
++   * @default false
++   */
++  isInitialized = !1;
++  /**
++   * The `DataSource` of the application. It is used to connect to the database and perform
++   * operations on the database. The `DataSource` is used to create repositories and entities
++   * that are used in the application.
++   */
++  dataSource;
++  /**
++   * The modules of the application. These are the modules that are used in the application
++   * to perform operations such as sign-in, sign-up, sign-out, as well as other user operations.
++   */
++  modules = [];
++  /**
++   * The logger instance of the application. It is used to log messages and errors in the
++   * application. The logger is used to log messages to the console, file, or other logging
++   * services.
++   *
++   * @default globalThis.console
++   */
++  logger = globalThis.console;
++  /**
++   * Instantiate and initialize a new application with the given modules and options.
++   *
++   * @param modules The modules of the application.
++   * @param options The options of the application.
++   * @returns The initialized application.
++   * @example
++   * const application = await Application.initialize([
++   *   new ModuleUser(),
++   *   new ModuleEmail(),
++   *   new ModuleSettings(),
++   *   new ModuleHealth(),
++   * ])
++   */
++  static async initialize(modules, options) {
++    return new _Application2(modules, options).initialize();
++  }
++  /**
++   * Get the given module from the application. This is used to get the module instance
++   * from the application context. It will throw an error if the module is not found.
++   *
++   * @param module The constructor of the module to get.
++   * @returns The module instance.
++   */
++  getModule(module) {
++    const result = this.modules.find((m) => m instanceof module);
++    if (!result) throw new Error(`Module with constructor "${module.name}" not found`);
++    if (result.isInitialized === !1) throw new Error(`Module "${module.name}" was found but not initialized`);
++    return result;
++  }
++  createRouter() {
++    const router = createRouter(), eventHandlers = [];
++    for (const module of this.modules)
++      if (module.routes)
++        for (let route of Object.values(module.routes))
++          try {
++            route = typeof route == "function" ? route.call(module) : route;
++            const [method, path] = route.name.split(" "), eventHandler = createEventHandler(route);
++            eventHandlers.push([method, path, eventHandler]);
++          } catch (error) {
++            this.logger.error("Error creating route:", route), this.logger.error(error);
++          }
++    eventHandlers.sort(([, a], [, b]) => b.length - a.length);
++    for (const [method, path, eventHandler] of eventHandlers) {
++      const routeMethod = method === "WS" ? void 0 : method.toLowerCase();
++      router.use(path, eventHandler, routeMethod);
++    }
++    return router;
++  }
++  createApp(options) {
++    const router = this.createRouter();
++    return createApp(options).use(router);
++  }
++  createServer(options) {
++    const app = this.createApp(options), listener = toNodeListener(app), server = createServer(listener), { handleUpgrade } = wsAdapter(app.websocket);
++    return server.on("upgrade", handleUpgrade), server;
++  }
++  async initialize() {
++    if (this.isInitialized) return this;
++    const entities = this.modules.flatMap((module) => Object.values(module.entities)), { dataSource = DEFAULT_DATA_SOURCE_OPTIONS } = this.options;
++    this.dataSource = isDataSource(dataSource) ? dataSource : new DataSource(dataSource), this.dataSource.setOptions({ ...this.dataSource.options, entities }), this.dataSource.isInitialized || await this.dataSource.initialize();
++    for (const module of this.modules)
++      module.isInitialized || await module.initialize().catch((error) => {
++        this.logger.error("Error initializing module:", module.constructor.name), this.logger.error(error.message), this.logger.error(error.stack);
++      }).then(() => {
++        module.isInitialized = !0;
++      });
++    return this.isInitialized = !0, this;
++  }
++};
++__decorateClass([
++  Once()
++], _Application.prototype, "createRouter", 1), __decorateClass([
++  Once()
++], _Application.prototype, "createApp", 1), __decorateClass([
++  Once()
++], _Application.prototype, "createServer", 1), __decorateClass([
++  Once()
++], _Application.prototype, "initialize", 1);
++let Application = _Application;
++async function createTestApplication(modules = [], options) {
++  const id = randomUUID(), socketPath = `/tmp/${id}.sock`, dataSource = new DataSource({ name: id, type: "sqlite", synchronize: !0, database: ":memory:" }), application = await Application.initialize(modules, { ...options, dataSource });
++  let server;
++  const context = {
++    get server() {
++      return server;
++    },
++    get socketPath() {
++      return socketPath;
++    },
++    /************************************************/
++    /* Module instances.                            */
++    /************************************************/
++    async createTestServer() {
++      server = application.createServer({
++        onRequest(event) {
++          event.context.clientAddress = "127.0.0.1";
++        }
++      }), await new Promise((resolve, reject) => {
++        server.on("error", reject), server.on("listening", resolve), server.listen(socketPath);
++      });
++    },
++    async fetch(path, options2 = {}) {
++      const { method = "GET", headers = {}, body } = options2, resolvable = createResolvable(), clientRequest = request(
++        {
++          path,
++          method,
++          socketPath,
++          headers
++        },
++        // --- Handle incoming response.
++        (response) => {
++          const body2 = new ReadableStream({
++            start(controller) {
++              response.on("data", (chunk) => controller.enqueue(chunk)), response.on("error", (error) => controller.error(error)), response.on("end", () => controller.close());
++            }
++          }), bytes = async () => {
++            const reader = body2.getReader(), chunks = [];
++            for (; ; ) {
++              const { done, value } = await reader.read();
++              if (done || !value) break;
++              chunks.push(value);
++            }
++            const buffer = Buffer.concat(chunks);
++            return Uint8Array.from(buffer);
++          }, text = async () => [...await bytes()].map((x) => String.fromCodePoint(x)).join("");
++          resolvable.resolve({
++            ok: response.statusCode >= 200 && response.statusCode < 300,
++            url: response.url,
++            status: response.statusCode,
++            statusText: response.statusMessage,
++            headers: new Headers(response.headers),
++            body: body2,
++            get bodyUsed() {
++              return body2.locked;
++            },
++            bytes,
++            text,
++            json: () => text().then(JSON.parse),
++            arrayBuffer: () => bytes().then((buffer) => buffer.buffer)
++          });
++        }
++      );
++      return body && clientRequest.write(body), clientRequest.on("error", resolvable.reject), clientRequest.end(), resolvable.promise;
++    },
++    connect(path, options2) {
++      const ws = new WebSocket(`ws+unix:${socketPath}:${path}`, options2);
++      return awaitable(ws, () => new Promise((resolve, reject) => {
++        const callbackOpen = () => {
++          resolve(ws), ws.removeEventListener("open", callbackOpen), ws.removeEventListener("error", reject);
++        };
++        ws.on("open", callbackOpen), ws.on("error", reject);
++      }));
++    },
++    async destroy() {
++      server && (server.closeAllConnections(), server.close(), server = void 0, await rm(socketPath, { force: !0 })), application.dataSource?.isInitialized && await application.dataSource.destroy();
++    },
++    [Symbol.dispose]() {
++      return this.destroy();
++    }
++  };
++  return new Proxy(application, {
++    get: (_, name) => {
++      if (name in context) return context[name];
++      if (name in application) return application[name];
++    }
++  });
++}
++function createTestEvent(options = {}) {
++  const { headers = {}, method = "GET", remoteAddress = "127.0.0.1" } = options, socket = new Socket(), request2 = new IncomingMessage(socket), response = new ServerResponse(request2);
++  request2.method = method;
++  for (const key in headers) {
++    const lower = key.toLowerCase();
++    request2.headers[lower] = headers[key];
++  }
++  const event = new H3Event(request2, response);
++  return event.context.clientAddress = remoteAddress, event;
++}
++function createTestPeer(options = {}) {
++  const { url = "http://localhost", headers = {}, remoteAddress = "127.0.0.1" } = options;
++  return { request: new Request(url, { headers }), remoteAddress };
++}
++function isDataSource(value) {
++  return value instanceof DataSource || typeof value == "object" && value !== null && "@instanceOf" in value && value["@instanceOf"] === Symbol.for("DataSource");
++}
++const transformerDate = {
++  to(value) {
++    return value instanceof Date ? value.toISOString() : null;
++  },
++  from(value) {
++    if (typeof value == "string")
++      return new Date(value);
++  }
++};
++function transformerFromParser(...rules) {
++  const parse = createParser(...rules);
++  return {
++    to(value) {
++      if (value != null)
++        return parse(value);
++    },
++    from(value) {
++      return value;
++    }
++  };
++}
++const transformerJson = {
++  to(value) {
++    if (typeof value == "object" && value !== null)
++      return JSON.stringify(value);
++  },
++  from(value) {
++    if (typeof value == "string")
++      try {
++        return JSON.parse(value);
++      } catch {
++        return;
++      }
++  }
++}, transformerSemver = {
++  to(value) {
++    if (value instanceof Semver) return value.toString();
++  },
++  from(value) {
++    if (typeof value == "string") return createSemver(value);
++  }
++};
++export {
++  Application as A,
++  DEFAULT_DATA_SOURCE_OPTIONS as D,
++  EventStream as E,
++  createEventStream as a,
++  createHttpEventHandler as b,
++  createEventHandler as c,
++  createTestApplication as d,
++  createTestEvent as e,
++  createTestPeer as f,
++  createWebSocketEventHandler as g,
++  isHttpRoute as h,
++  isDataSource as i,
++  isWebSocketRoute as j,
++  transformerFromParser as k,
++  transformerJson as l,
++  transformerSemver as m,
++  transformerDate as t
++};
++//# sourceMappingURL=BR0f-Cns.js.map
+diff --git a/dist/chunks/BR0f-Cns.js.map b/dist/chunks/BR0f-Cns.js.map
+new file mode 100644
+index 0000000000000000000000000000000000000000..98b8ff5a015bf949edd9f37675d6a69a411c879a
+--- /dev/null
++++ b/dist/chunks/BR0f-Cns.js.map
+@@ -0,0 +1 @@
++{"version":3,"file":"BR0f-Cns.js","sources":["../../utils/createHttpEventHandler.ts","../../utils/createWebSocketEventHandler.ts","../../utils/isHttpRoute.ts","../../utils/isWebSocketRoute.ts","../../utils/createEventHandler.ts","../../utils/createEventStream.ts","../../createApplication.ts","../../utils/createTestApplication.ts","../../utils/createTestEvent.ts","../../utils/createTestPeer.ts","../../utils/isDataSource.ts","../../utils/transformerDate.ts","../../utils/transformerFromParser.ts","../../utils/transformerJson.ts","../../utils/transformerSemver.ts"],"sourcesContent":["import type { EventHandler } from 'h3'\nimport type { HttpRoute, HttpRouteOptions } from '../createHttpRoute'\nimport { defineEventHandler, getValidatedQuery, getValidatedRouterParams, readFormData, readValidatedBody, setResponseStatus } from 'h3'\n\n/**\n * Given a route, create an event handler that can be used to handle a specific\n * HTTP request. The event handler reads the body, query, and parameters of the\n * request, validates them, and then calls the handler with the context.\n *\n * @param route The route to create the event handler for.\n * @returns The event handler that can be used to handle the request.\n */\nexport function createHttpEventHandler<T extends HttpRoute<HttpRouteOptions, unknown>>(route: T): EventHandler {\n  return defineEventHandler(async(event) => {\n\n    // --- Initialize the context variables.\n    let body: unknown\n    let query: unknown\n    let formData: unknown\n    let parameters: unknown\n\n    // --- Validate and parse the body, query, and parameters.\n    if (typeof route.parseBody === 'function') body = await readValidatedBody(event, route.parseBody)\n    if (typeof route.parseQuery === 'function') query = await getValidatedQuery(event, route.parseQuery)\n    if (typeof route.parseFormData === 'function') formData = route.parseFormData(await readFormData(event))\n\n    // --- If the route has parameters, validate and parse them. If the\n    // --- parameters are invalid, skip to the next event handler.\n    try {\n      if (typeof route.parseParameters === 'function')\n        parameters = await getValidatedRouterParams(event, route.parseParameters)\n    }\n    catch {\n      setResponseStatus(event, 400)\n      return\n    }\n\n    // --- Call the handler with the context and return the data.\n    const response = await route.handler({ event, body, parameters, query, formData })\n    // eslint-disable-next-line unicorn/no-null\n    if (response === undefined) return null\n    return response\n  })\n}\n","import type { Message, Peer } from 'crossws'\nimport type { EventHandler } from 'h3'\nimport type { WebSocketRoute } from '../createWebSocketRoute'\nimport { defineWebSocketHandler } from 'h3'\n\n/**\n * Given a route, create an event handler that can be used to handle a specific\n * WebSocket request. The event handler reads the message, and then calls the\n * handler with the context.\n *\n * @param route The route to create the event handler for.\n * @returns The event handler that can be used to handle the request.\n */\nexport function createWebSocketEventHandler<T extends WebSocketRoute>(route: T): EventHandler {\n  const peerContext = new Map<Peer, { parameters: unknown; query: unknown }>()\n  return defineWebSocketHandler({\n    async open(peer: Peer) {\n      try {\n        let query: unknown\n        let parameters: unknown\n        const wsUrl = peer.websocket.url\n        if (!wsUrl) return\n        const url = new URL(wsUrl)\n\n        // --- If the route has parameters, parse them.\n        if (route.parseParameters) {\n          const partsRoute = route.name.split(' ')[1].split('/').filter(Boolean)\n          const partsPeer = url.pathname.split('/').filter(Boolean)\n\n          // --- Build the request parameters from the route and peer.\n          const peerParameters: Record<string, string> = {}\n          for (const partRoute of partsRoute) {\n            const value = partsPeer.shift()\n            if (!partRoute.startsWith(':')) continue\n            const key = partRoute.slice(1)\n            if (!value) break\n            peerParameters[key] = value\n          }\n\n          // --- Parse the parameters using the user-defined parser.\n          parameters = await route.parseParameters(peerParameters)\n        }\n\n        // --- If the route has query parameters, parse them.\n        if (route.parseQuery) {\n          const queryParameters = Object.fromEntries(url.searchParams)\n          query = await route.parseQuery(queryParameters)\n        }\n\n        // --- Call the handler with the context and return the data.\n        peerContext.set(peer, { parameters, query })\n        if (!route.onOpen) return\n        return route.onOpen({ peer, parameters, query })\n      }\n      catch (error) {\n        if (!route.onError) throw error\n        await route.onError({ peer, error: error as Error })\n      }\n    },\n\n    async message(peer: Peer, message: Message) {\n      try {\n\n        // --- Parse the message.\n        let messageData: unknown\n        if (route.parseClientMessage) {\n          const messageJson = message.toString()\n          const messageObject: unknown = JSON.parse(messageJson)\n          messageData = await route.parseClientMessage(messageObject)\n        }\n\n        // --- Call the handler with the context.\n        if (!route.onMessage) return\n        return await route.onMessage({\n          peer,\n          message: messageData,\n          query: peerContext.get(peer)?.query,\n          parameters: peerContext.get(peer)?.parameters,\n        })\n      }\n      catch (error) {\n        if (!route.onError) throw error\n        await route.onError({ peer, error: error as Error })\n      }\n    },\n\n    async close(peer: Peer, details: { code?: number; reason?: string }) {\n      try {\n        if (!route.onClose) return\n        const context = peerContext.get(peer)\n        const query = context?.query\n        const parameters = context?.parameters\n        peerContext.delete(peer)\n        return route.onClose({ peer, details, parameters, query })\n      }\n      catch (error) {\n        if (!route.onError) throw error\n        await route.onError({ peer, error: error as Error })\n      }\n    },\n\n    async error(peer: Peer, error: Error) {\n      if (!route.onError) throw error\n      await route.onError({ peer, error })\n    },\n  })\n}\n","import type { HttpRouteOptions } from '../createHttpRoute'\nimport { SYMBOL_HTTP_ROUTE } from '../createHttpRoute'\n\n/**\n * Check if the value is an HTTP route.\n *\n * @param value The value to check.\n * @returns `true` if the value is an HTTP route, `false` otherwise.\n * @example isHttpRoute({ name: 'GET /users', handler: () => [] }) // => true\n */\nexport function isHttpRoute(value: unknown): value is HttpRouteOptions {\n  return typeof value === 'object'\n    && value !== null\n    && SYMBOL_HTTP_ROUTE in value\n    && value[SYMBOL_HTTP_ROUTE] === true\n}\n","import type { WebSocketRouteOptions } from '../createWebSocketRoute'\nimport { SYMBOL_WS_ROUTE } from '../createWebSocketRoute'\n\n/**\n * Check if the value is a WebSocket route.\n *\n * @param value The value to check.\n * @returns `true` if the value is a WebSocket route, `false` otherwise.\n * @example isWebSocketRoute({ name: 'WS /chat', onMessage: () => {} }) // => true\n */\nexport function isWebSocketRoute(value: unknown): value is WebSocketRouteOptions {\n  return typeof value === 'object'\n    && value !== null\n    && SYMBOL_WS_ROUTE in value\n    && value[SYMBOL_WS_ROUTE] === true\n}\n","import type { EventHandler } from 'h3'\nimport type { Route } from '../types'\nimport { createHttpEventHandler } from './createHttpEventHandler'\nimport { createWebSocketEventHandler } from './createWebSocketEventHandler'\nimport { isHttpRoute } from './isHttpRoute'\nimport { isWebSocketRoute } from './isWebSocketRoute'\n\n/**\n * Given a route, create an event handler that can be used to handle a specific\n * HTTP request. The event handler reads the body, query, and parameters of the\n * request, validates them, and then calls the handler with the context.\n *\n * @param route The route to create the event handler for.\n * @returns The event handler that can be used to handle the request.\n * @example createEventHandler({ method: 'GET', path: '/users', callback: () => [] })\n */\nexport function createEventHandler<T extends Route>(route: T): EventHandler {\n  if (isHttpRoute(route)) return createHttpEventHandler(route)\n  if (isWebSocketRoute(route)) return createWebSocketEventHandler(route)\n  throw new Error('Invalid route')\n}\n","import type { H3Event, EventStream as H3EventStream } from 'h3'\nimport { createEventStream as createH3EventStream } from 'h3'\nimport { randomUUID } from 'node:crypto'\n\n/** The data that a task can send to the client. */\nexport type EventStreamPayload<T = unknown> =\n  { data: T; error: undefined } |\n  { data: undefined; error: Error }\n\n/** The function that will run the task. */\nexport type EventStreamFunction<T = unknown> = (task: EventStream<T>) => Promise<void>\n\n/**\n * The \"Task\" module is responsible for managing the tasks that are executed on the server\n * but needs to communicate with the client. This allows the server to send updates on\n * long-running tasks to the client and allows the client to cancel a task if needed.\n *\n * @template T The type of data that the task will send.\n */\nexport class EventStream<T = unknown> {\n\n  constructor(public event: H3Event) {\n    this.stream = createH3EventStream(event)\n  }\n\n  /** The H3 `EventStream` instance that will be used to send updates to the client. */\n  public stream: H3EventStream\n\n  /** The unique ID of the task. */\n  public id = randomUUID() as string\n\n  /**\n   * Send some data to the client and await for it to be sent. This will\n   * prevent the client from receiving 2 messages at the same time and will\n   * ensure that the messages are sent in the correct order.\n   *\n   * @param data The data to send to the client.\n   * @example\n   * // Create a task.\n   * const task = new Task('123', 'My Task')\n   */\n  public async send(data: T): Promise<void> {\n    const message = JSON.stringify({ id: this.id, data })\n    await this.stream.push(message)\n  }\n\n  /**\n   * Abort a task. This will send an error to the client and close the stream.\n   * This will allow the client to know that the task was cancelled and will\n   * allow the server to clean up any resources that the task was using.\n   *\n   * @param error The error message to send to the client.\n   */\n  public async sendError(error: Error | string): Promise<void> {\n    if (typeof error === 'string') error = new Error(error)\n    const message = JSON.stringify({\n      id: this.id,\n      error: {\n        name: error.name,\n        code: error.name,\n        message: error.message,\n        stack: process.env.NODE_ENV === 'production' ? undefined : error.stack,\n      },\n    })\n    await this.stream.push(message)\n  }\n\n  /**\n   * Run a function with whithin a task and in the context of a `Task`. This\n   * will provide the function with the ability to send updates to the client\n   * and end once the function has completed or if an error occurs.\n   *\n   * @param event The event that triggered the task.\n   * @param callback The function that will run the task.\n   * @returns The stream of the task.\n   */\n  public static create<T>(event: H3Event, callback: EventStreamFunction<T>): { eventStream: EventStream<T>; promise: Promise<void> } {\n    const instance = new EventStream(event)\n\n    // --- Run the function and send the result to the client if it is not `undefined`.\n    // --- Then, close the stream to signal the end of the task. If an error occurs,\n    // --- send the error to the client and close the stream.\n    const promise = callback(instance)\n\n      // --- Catch any errors that occur and send them to the client.\n      .catch(async(error: Error) => {\n        await instance.sendError(error)\n        throw error\n      })\n\n      // --- Finally, close the stream to signal the end of the task.\n      .finally(() => {\n        void instance.stream.close()\n      })\n\n    // --- Return the task and the promise of the task.\n    return { eventStream: instance, promise }\n  }\n}\n\n/**\n * Run a function with whithin a task and in the context of a `Task`. This\n * will provide the function with the ability to send updates to the client\n * and end once the function has completed or if an error occurs.\n *\n * @param event The event that triggered the task.\n * @param fn The function that will run the task.\n * @returns The stream of the task.\n */\nexport function createEventStream<T>(event: H3Event, fn: EventStreamFunction<T>) {\n  return EventStream.create<T>(event, fn)\n}\n","import { Once } from '@unshared/decorators'\nimport { isConstructor } from '@unshared/functions'\nimport { parseEnvironments } from '@unshared/process'\nimport { dedent } from '@unshared/string'\nimport { Constructor } from '@unshared/types'\nimport wsAdapter from 'crossws/adapters/node'\nimport { AppOptions, createApp, createRouter, EventHandler, RouterMethod, toNodeListener } from 'h3'\nimport { createServer } from 'node:http'\nimport { DataSource, DataSourceOptions } from 'typeorm'\nimport { ModuleInstance, ModuleLike, ModuleOptions } from './types'\nimport { isDataSource } from './utils'\nimport { createEventHandler } from './utils'\n\nexport type ApplicationOptions<T extends ModuleLike = ModuleLike> = Partial<ModuleOptions<T>> & {\n\n  /**\n   * The environment variable prefix used to parse the application options. When the application\n   * is initialized, it will parse the environment variables with the given prefix and merge them\n   * with the options of the application. This allows you to configure the application using\n   * environment variables.\n   *\n   * @default 'APP'\n   */\n  prefix?: string\n\n  /**\n   * The logger instance of the application. It is used to log messages and errors in the\n   * application. The logger is used to log messages to the console, file, or other logging\n   * services.\n   *\n   * @default globalThis.console\n   */\n  logger?: Pick<Console, 'debug' | 'error' | 'log' | 'warn'>\n\n  /**\n   * The data source of the application. It is used to connect to the database and perform\n   * operations on the database. The data source is used to create repositories and entities\n   * that are used in the application.\n   *\n   * @default { type: 'sqlite', database: ':memory:', synchronize: true }\n   */\n  dataSource?: DataSource | DataSourceOptions\n}\n\nexport const DEFAULT_DATA_SOURCE_OPTIONS: DataSourceOptions = {\n  type: 'sqlite',\n  database: ':memory:',\n  synchronize: true,\n}\n\n/**\n * An `Application` is, in itself, a container for modules. It is used to group modules together\n * and provide a common context for them. Allowing you to expose all routes, entities, and services\n * of the application in a single place.\n *\n * @template T The modules of the application.\n * @example\n * const application = new Application([\n *   new ModuleUser(),\n *   new ModuleEmail(),\n *   new ModuleSettings(),\n *   new ModuleHealth(),\n * )]\n *\n * // Initialize the application.\n * await application.initialize()\n *\n * // Start the application server.\n * application.createServer().listen(3000)\n */\nexport class Application<T extends ModuleLike = ModuleLike> {\n\n  /**\n   * Is the application initialized.\n   *\n   * @default false\n   */\n  isInitialized = false\n\n  /**\n   * The `DataSource` of the application. It is used to connect to the database and perform\n   * operations on the database. The `DataSource` is used to create repositories and entities\n   * that are used in the application.\n   */\n  dataSource?: DataSource\n\n  /**\n   * The modules of the application. These are the modules that are used in the application\n   * to perform operations such as sign-in, sign-up, sign-out, as well as other user operations.\n   */\n  modules = [] as Array<ModuleInstance<T>>\n\n  /**\n   * The logger instance of the application. It is used to log messages and errors in the\n   * application. The logger is used to log messages to the console, file, or other logging\n   * services.\n   *\n   * @default globalThis.console\n   */\n  logger: Pick<Console, 'debug' | 'error' | 'log' | 'warn'> = globalThis.console\n\n  /**\n   * Instantiate a new application with the given modules and options.\n   *\n   * @param modules The modules of the application.\n   * @param options The options of the application.\n   */\n  constructor(modules: T[], public options = {} as ApplicationOptions<T>) {\n\n    // --- Set the logger of the application.\n    if (options.logger) this.logger = options.logger\n    const { prefix = 'APP', dataSource } = options\n\n    // --- Merge the options of the application with the options from\n    // --- the environment variables.\n    this.options = {\n      ...this.options,\n      ...parseEnvironments(prefix),\n      dataSource: dataSource instanceof DataSource\n        ? dataSource\n        : {\n          ...DEFAULT_DATA_SOURCE_OPTIONS,\n          ...parseEnvironments(`${prefix}_DATABASE`),\n          ...dataSource,\n        } as DataSourceOptions,\n    }\n\n    // --- Instantiate all the modules and store them in the application.\n    this.modules = modules.map((module) => {\n      const isCtor = isConstructor(module)\n      const instance = isCtor ? new (module as Constructor)(this.options) : module\n      return instance as ModuleInstance<T>\n    })\n\n    // --- For each module, check if the dependencies are registered in the application.\n    for (const module of this.modules) {\n      if (!module.dependencies) continue\n      for (const dependency of module.dependencies) {\n        const found = this.modules.find(m => m instanceof dependency)\n        if (!found) {\n          this.logger.warn(dedent(`\n            [Application] Missing dependency.\n\n            There has been an error initializing the application. The module \"${module.constructor.name}\" expects the module \"${dependency.name}\" to be registered in the application. Please make sure that the module is registered in the application before initializing it.\n          `))\n        }\n      }\n    }\n\n    // --- Attach the application reference in the module.\n    for (const module of this.modules) module.application = this\n  }\n\n  /**\n   * Instantiate and initialize a new application with the given modules and options.\n   *\n   * @param modules The modules of the application.\n   * @param options The options of the application.\n   * @returns The initialized application.\n   * @example\n   * const application = await Application.initialize([\n   *   new ModuleUser(),\n   *   new ModuleEmail(),\n   *   new ModuleSettings(),\n   *   new ModuleHealth(),\n   * ])\n   */\n  static async initialize<T extends ModuleLike>(modules: T[], options?: ApplicationOptions<T>): Promise<Application<T>> {\n    return new Application(modules, options).initialize()\n  }\n\n  /**\n   * Get the given module from the application. This is used to get the module instance\n   * from the application context. It will throw an error if the module is not found.\n   *\n   * @param module The constructor of the module to get.\n   * @returns The module instance.\n   */\n  getModule<T extends Constructor>(module: T): InstanceType<T> {\n    const result = this.modules.find(m => m instanceof module)\n    if (!result) throw new Error(`Module with constructor \"${module.name}\" not found`)\n    if (result.isInitialized === false) throw new Error(`Module \"${module.name}\" was found but not initialized`)\n    return result as InstanceType<T>\n  }\n\n  /**\n   * Instantiate the router of the application. The router is used to handle HTTP requests\n   * and route them to the appropriate event handler. This function will collect all routes\n   * from the registered modules and generate the event handlers for each route.\n   *\n   * @returns The router of the application.\n   */\n  @Once()\n  createRouter() {\n    const router = createRouter()\n    const eventHandlers = [] as Array<[string, string, EventHandler]>\n\n    // --- 1. Traverse all registered modules and collect all the routes.\n    // --- 2. If the route is a factory function, bind it to the module instance and call it.\n    // --- 3. Generate the event handler for each route.\n    for (const module of this.modules) {\n      if (!module.routes) continue\n      for (let route of Object.values(module.routes)) {\n        try {\n          // eslint-disable-next-line sonarjs/updated-loop-counter\n          route = typeof route === 'function' ? route.call(module) : route\n          const [method, path] = route.name.split(' ')\n          const eventHandler = createEventHandler(route)\n          eventHandlers.push([method, path, eventHandler])\n        }\n        catch (error) {\n          this.logger.error('Error creating route:', route)\n          this.logger.error(error)\n        }\n      }\n    }\n\n    // --- Sort by path as to avoid conflicts with overlapping paths.\n    eventHandlers.sort(([,a], [,b]) => b.length - a.length)\n    for (const [method, path, eventHandler] of eventHandlers) {\n      // this.logger.debug('Registering route:', method, path)\n      const routeMethod = method === 'WS' ? undefined : method.toLowerCase() as RouterMethod\n      router.use(path, eventHandler, routeMethod)\n    }\n    return router\n  }\n\n  /**\n   * Instantiate the H3 application of the application with the router handler.\n   *\n   * @param options The options to pass to the application.\n   * @returns The H3 application of the application.\n   */\n  @Once()\n  createApp(options?: AppOptions) {\n    const router = this.createRouter()\n    return createApp(options).use(router)\n  }\n\n  /**\n   * Create a Node.js server with the application handler.\n   *\n   * @param options The options to pass to the application.\n   * @returns The Node.js server with the application handler.\n   */\n  @Once()\n  createServer(options?: AppOptions) {\n    const app = this.createApp(options)\n    const listener = toNodeListener(app)\n    const server = createServer(listener)\n    // eslint-disable-next-line @typescript-eslint/unbound-method\n    const { handleUpgrade } = wsAdapter(app.websocket)\n    server.on('upgrade', handleUpgrade)\n    return server\n  }\n\n  /**\n   * Initialize the application with the given options.\n   *\n   * @returns The initialized application.\n   */\n  @Once()\n  async initialize(): Promise<this> {\n    if (this.isInitialized) return this\n\n    // --- Collect all entities from the modules.\n    const entities = this.modules.flatMap(module => Object.values(module.entities))\n\n    // --- Initialize the data source and inject the entities from the modules.\n    const { dataSource = DEFAULT_DATA_SOURCE_OPTIONS } = this.options\n    this.dataSource = isDataSource(dataSource) ? dataSource : new DataSource(dataSource)\n    this.dataSource.setOptions({ ...this.dataSource.options, entities })\n    if (!this.dataSource.isInitialized) await this.dataSource.initialize()\n\n    // --- Initialize all the modules.\n    for (const module of this.modules) {\n      if (module.isInitialized) continue\n      await module.initialize()\n        .catch((error: Error) => {\n          this.logger.error('Error initializing module:', module.constructor.name)\n          this.logger.error(error.message)\n          this.logger.error(error.stack)\n        })\n        .then(() => {\n          module.isInitialized = true\n        })\n    }\n\n    // --- Set the application as initialized.\n    this.isInitialized = true\n    return this\n  }\n}\n","import type { Awaitable } from '@unshared/functions'\nimport type { Server } from 'node:http'\nimport type { ClientOptions } from 'ws'\nimport type { ApplicationOptions } from '../createApplication'\nimport type { ModuleLike } from '../types'\nimport { awaitable, createResolvable } from '@unshared/functions'\nimport { randomUUID } from 'node:crypto'\nimport { rm } from 'node:fs/promises'\nimport { request } from 'node:http'\nimport { DataSource } from 'typeorm'\nimport { WebSocket } from 'ws'\nimport { Application } from '../createApplication'\n\nexport interface TestApplicationContext {\n  server: Server | undefined\n  socketPath: string\n  createTestServer(): Promise<void>\n  fetch(path: string, options?: RequestInit): Promise<Response>\n  connect(path: string): Awaitable<WebSocket, WebSocket>\n  destroy(): Promise<void>\n  [Symbol.dispose](): Promise<void>\n}\n\nexport type TestApplication<T extends ModuleLike> = Application<T> & TestApplicationContext\n\nexport async function createTestApplication<T extends ModuleLike>(modules: T[] = [], options?: ApplicationOptions<T>): Promise<TestApplication<T>> {\n  const id = randomUUID()\n  const socketPath = `/tmp/${id}.sock`\n  const dataSource = new DataSource({ name: id, type: 'sqlite', synchronize: true, database: ':memory:' })\n  const application = await Application.initialize(modules, { ...options, dataSource } as ApplicationOptions<T>)\n  let server: Server | undefined\n\n  const context: TestApplicationContext = {\n    get server() { return server },\n    get socketPath() { return socketPath },\n\n    /************************************************/\n    /* Module instances.                            */\n    /************************************************/\n\n    async createTestServer(): Promise<void> {\n      server = application.createServer({\n        onRequest(event) { event.context.clientAddress = '127.0.0.1' },\n      })\n      await new Promise((resolve, reject) => {\n        server!.on('error', reject)\n        server!.on('listening', resolve)\n        server!.listen(socketPath)\n      })\n    },\n\n    async fetch(path: string, options: RequestInit = {}): Promise<Response> {\n      const { method = 'GET', headers = {}, body } = options\n      const resolvable = createResolvable<Response>()\n      const clientRequest = request({\n        path,\n        method,\n        socketPath,\n        headers: headers as Record<string, string>,\n      },\n\n      // --- Handle incoming response.\n      (response) => {\n        const body = new ReadableStream<Uint8Array>({\n          start(controller) {\n            response.on('data', (chunk: Uint8Array) => controller.enqueue(chunk))\n            response.on('error', error => controller.error(error))\n            response.on('end', () => controller.close())\n          },\n        })\n\n        const bytes = async() => {\n          const reader = body.getReader()\n          const chunks: Uint8Array[] = []\n          while (true) {\n            const { done, value } = await reader.read()\n            if (done || !value) break\n            chunks.push(value)\n          }\n          const buffer = Buffer.concat(chunks)\n          return Uint8Array.from(buffer)\n        }\n\n        const text = async() => {\n          const buffer = await bytes()\n          return [...buffer].map(x => String.fromCodePoint(x)).join('')\n        }\n\n        resolvable.resolve({\n          ok: response.statusCode! >= 200 && response.statusCode! < 300,\n          url: response.url,\n          status: response.statusCode!,\n          statusText: response.statusMessage!,\n          headers: new Headers(response.headers as Record<string, string>),\n          body,\n          get bodyUsed() { return body.locked },\n          bytes,\n          text,\n          json: () => text().then(JSON.parse),\n          arrayBuffer: () => bytes().then(buffer => buffer.buffer),\n        } as Response)\n      })\n\n      // --- Write the request body.\n      if (body) clientRequest.write(body)\n      clientRequest.on('error', resolvable.reject)\n      clientRequest.end()\n      return resolvable.promise\n    },\n\n    connect(path: string, options?: ClientOptions): Awaitable<WebSocket, WebSocket> {\n      const ws = new WebSocket(`ws+unix:${socketPath}:${path}`, options)\n      const ready = () => new Promise<WebSocket>((resolve, reject) => {\n        const callbackOpen = () => {\n          resolve(ws)\n          ws.removeEventListener('open', callbackOpen)\n          ws.removeEventListener('error', reject)\n        }\n        ws.on('open', callbackOpen)\n        ws.on('error', reject)\n      })\n      return awaitable(ws, ready)\n    },\n\n    async destroy() {\n      if (server) {\n        server.closeAllConnections()\n        server.close()\n        server = undefined\n        await rm(socketPath, { force: true })\n      }\n      if (application.dataSource?.isInitialized)\n        await application.dataSource.destroy()\n    },\n\n    [Symbol.dispose]() {\n      return this.destroy()\n    },\n  }\n\n  return new Proxy(application, {\n    get: (_, name: string) => {\n      if (name in context) return context[name as keyof typeof context]\n      if (name in application) return application[name as keyof typeof application]\n    },\n  }) as TestApplication<T>\n}\n","import { H3Event } from 'h3'\nimport { IncomingMessage, ServerResponse } from 'node:http'\nimport { Socket } from 'node:net'\n\ninterface Options {\n  method?: string\n  headers?: Record<string, string>\n  remoteAddress?: string\n}\n\n/**\n * Create a mock H3 event for testing.\n *\n * @param options The options to create the event with.\n * @returns The created H3 event.\n */\nexport function createTestEvent(options: Options = {}) {\n  const { headers = {}, method = 'GET', remoteAddress = '127.0.0.1' } = options\n\n  // --- Override the read-only `remoteAddress` property of the socket.\n  const socket = new Socket()\n  const request = new IncomingMessage(socket)\n  const response = new ServerResponse(request)\n  request.method = method\n\n  // --- To avoid casing issues, force all headers to lower case.\n  for (const key in headers) {\n    const lower = key.toLowerCase()\n    request.headers[lower] = headers[key]\n  }\n\n  // --- Return the created event.\n  const event = new H3Event(request, response)\n  event.context.clientAddress = remoteAddress\n  return event\n}\n","import type { Peer } from 'crossws'\n\ninterface Options {\n  url?: string\n  headers?: Record<string, string>\n  remoteAddress?: string\n}\n\n/**\n * Create a mock `crossws` Peer for testing.\n *\n * @param options The options to create the event with.\n * @returns The created H3 event.\n */\nexport function createTestPeer(options: Options = {}): Peer {\n  const { url = 'http://localhost', headers = {}, remoteAddress = '127.0.0.1' } = options\n  const request = new Request(url, { headers })\n  return { request, remoteAddress } as Peer\n}\n","import { DataSource } from 'typeorm'\n\nexport function isDataSource(value: unknown): value is DataSource {\n  return value instanceof DataSource\n    || typeof value === 'object'\n    && value !== null\n    && '@instanceOf' in value\n    && value['@instanceOf'] === Symbol.for('DataSource')\n}\n","/* eslint-disable unicorn/no-null */\nimport type { ValueTransformer } from 'typeorm'\n\n/**\n * Transform the field value to a date when saving it to the database\n * and from a date when reading it from the database. This is used to\n * store dates in the database as strings and read them as dates.\n *\n * @example\n * export class Entity extends BaseEntity {\n * **@Column('varchar', { transformer: transformerDate, length: 255 })\n *     createdAt: Date\n * }\n */\nexport const transformerDate = {\n  to(value?: Date | null): null | string {\n    if (value instanceof Date === false) return null\n    return value.toISOString()\n  },\n  from(value?: null | string): Date | undefined {\n    if (typeof value !== 'string') return undefined\n    return new Date(value)\n  },\n} satisfies ValueTransformer\n","import type { ParserLike, ParserResult } from '@unshared/validation'\nimport { createParser } from '@unshared/validation'\n\nexport interface ValueTransformerTyped<T> {\n  to(value?: unknown): T | undefined\n  from(value?: unknown): unknown\n}\n\n/**\n * Create a TypeORM transformer from a set of parser rules. This is used to\n * transform and validate values when saving them to the database. It does not\n * transform the value when reading it from the database.\n *\n * @param rules The parser rules to use.\n * @returns The TypeORM transformer.\n * @example\n *\n * // Create a transformer from a single parser rule\n * const transformer = transformerFromParser(assertStringEmail)\n *\n * // Apply the transformer to a field in a TypeORM entity\n * export class User {\n *   \\@Column('varchar', { transformer })\n *   email: string\n * }\n */\nexport function transformerFromParser<T extends ParserLike>(...rules: T): ValueTransformerTyped<ParserResult<T>> {\n  const parse = createParser(...rules)\n  return {\n    to(value?: unknown) {\n      if (value !== null && value !== undefined)\n        return parse(value)\n    },\n    from(value?: unknown) {\n      return value\n    },\n  } as ValueTransformerTyped<ParserResult<T>>\n}\n","import type { ValueTransformer } from 'typeorm'\n\n/**\n * Transforms a JSON object to a string when saving it to the database\n * and from a string to a JSON object when reading it from the database.\n * This is used to store JSON objects in the database as strings and read them as JSON objects.\n *\n * @example\n * export class Entity extends BaseEntity {\n * **@Column('json', { transformer: transformerJson, nullable: true })\n *    passwordOptions: PasswordOptions\n * }\n */\nexport const transformerJson = {\n  to(value?: unknown): string | undefined {\n    if (typeof value === 'object' && value !== null)\n      return JSON.stringify(value)\n  },\n  from(value?: unknown): unknown {\n    if (typeof value !== 'string') return\n    try { return JSON.parse(value) as unknown }\n    catch { return }\n  },\n} satisfies ValueTransformer\n","import type { ValueTransformer } from 'typeorm'\nimport { createSemver, Semver } from '@unshared/string/createSemver'\n\n/**\n * Transform the field value to a sementic version string when saving it to the database\n * and into a `Semver` instance when reading it from the database. This is used to\n * store sementic versions in the database as strings and read them as `Semver` instances.\n *\n * @example\n * export class Entity extends BaseEntity {\n * **@Column('varchar', { transformer: transformerSemver, length: 255 })\n *     version: Semver\n * }\n */\nexport const transformerSemver: ValueTransformer = {\n  to(value?: unknown): string | undefined {\n    if (value instanceof Semver) return value.toString()\n  },\n  from(value?: unknown): Semver | undefined {\n    if (typeof value === 'string') return createSemver(value)\n  },\n}\n"],"names":["createH3EventStream","_Application","options","body","request"],"mappings":"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"}
+\ No newline at end of file
+diff --git a/dist/chunks/Cobpaxn_.d.ts b/dist/chunks/Cobpaxn_.d.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..954344fe505e3e9d478a9eca6c9f765b7356a347
+--- /dev/null
++++ b/dist/chunks/Cobpaxn_.d.ts
+@@ -0,0 +1,438 @@
++import * as http from 'http';
++import * as h3 from 'h3';
++import { RouterMethod, H3Event, EventStream as EventStream$1, AppOptions } from 'h3';
++import { MaybePromise, Constructor, MaybeFunction } from '@unshared/types';
++import { EntityTarget, Repository, DataSource, DataSourceOptions } from 'typeorm';
++import { BaseEntity } from '../BaseEntity.js';
++import { Peer, WSError } from 'crossws';
++
++declare const SYMBOL_HTTP_ROUTE: unique symbol;
++type HttpRouteName = `${Uppercase<RouterMethod>} /${string}`;
++interface HttpRouteContext<T extends HttpRouteOptions> {
++    event: H3Event;
++    body: T extends HttpRouteOptions<any, infer U> ? U : never;
++    query: T extends HttpRouteOptions<any, any, infer U> ? U : never;
++    formData: T extends HttpRouteOptions<any, any, any, infer U> ? U : never;
++    parameters: T extends HttpRouteOptions<any, any, any, any, infer U> ? U : never;
++}
++interface HttpRouteOptions<Name extends HttpRouteName = HttpRouteName, Body = unknown, Query = unknown, FormData = unknown, Parameters = unknown> {
++    name: Name;
++    parseBody?: Parser<Body>;
++    parseQuery?: Parser<Query>;
++    parseFormData?: Parser<FormData>;
++    parseParameters?: Parser<Parameters>;
++}
++type HttpRouteHandler<T extends HttpRouteOptions, R> = (context: HttpRouteContext<T>) => MaybePromise<R>;
++type HttpRoute<T extends HttpRouteOptions, R> = T & {
++    handler: HttpRouteHandler<T, R>;
++    [SYMBOL_HTTP_ROUTE]: true;
++};
++/**
++ * Create a route that can be used to handle an HTTP request. The route includes the method,
++ * path, body, query, parameters, and the callback that is called when the route is matched.
++ *
++ * @param options The options used to define the route.
++ * @param handler The callback that is called when the route is matched.
++ * @returns The route that can be used to handle the request.
++ * @example
++ *
++ * const route = createHttpRoute({
++ *   name: 'GET /users/:id',
++ *   parseParameters: (parameters) => ({ id: asNumber(parameters.id) })
++ *   handler: ({ parameters }) => { ... }
++ * })
++ */
++declare function createHttpRoute<T extends HttpRouteOptions, R>(options: Readonly<T>, handler: HttpRouteHandler<T, R>): HttpRoute<T, R>;
++
++/** The data that a task can send to the client. */
++type EventStreamPayload<T = unknown> = {
++    data: T;
++    error: undefined;
++} | {
++    data: undefined;
++    error: Error;
++};
++/** The function that will run the task. */
++type EventStreamFunction<T = unknown> = (task: EventStream<T>) => Promise<void>;
++/**
++ * The "Task" module is responsible for managing the tasks that are executed on the server
++ * but needs to communicate with the client. This allows the server to send updates on
++ * long-running tasks to the client and allows the client to cancel a task if needed.
++ *
++ * @template T The type of data that the task will send.
++ */
++declare class EventStream<T = unknown> {
++    event: H3Event;
++    constructor(event: H3Event);
++    /** The H3 `EventStream` instance that will be used to send updates to the client. */
++    stream: EventStream$1;
++    /** The unique ID of the task. */
++    id: string;
++    /**
++     * Send some data to the client and await for it to be sent. This will
++     * prevent the client from receiving 2 messages at the same time and will
++     * ensure that the messages are sent in the correct order.
++     *
++     * @param data The data to send to the client.
++     * @example
++     * // Create a task.
++     * const task = new Task('123', 'My Task')
++     */
++    send(data: T): Promise<void>;
++    /**
++     * Abort a task. This will send an error to the client and close the stream.
++     * This will allow the client to know that the task was cancelled and will
++     * allow the server to clean up any resources that the task was using.
++     *
++     * @param error The error message to send to the client.
++     */
++    sendError(error: Error | string): Promise<void>;
++    /**
++     * Run a function with whithin a task and in the context of a `Task`. This
++     * will provide the function with the ability to send updates to the client
++     * and end once the function has completed or if an error occurs.
++     *
++     * @param event The event that triggered the task.
++     * @param callback The function that will run the task.
++     * @returns The stream of the task.
++     */
++    static create<T>(event: H3Event, callback: EventStreamFunction<T>): {
++        eventStream: EventStream<T>;
++        promise: Promise<void>;
++    };
++}
++/**
++ * Run a function with whithin a task and in the context of a `Task`. This
++ * will provide the function with the ability to send updates to the client
++ * and end once the function has completed or if an error occurs.
++ *
++ * @param event The event that triggered the task.
++ * @param fn The function that will run the task.
++ * @returns The stream of the task.
++ */
++declare function createEventStream<T>(event: H3Event, fn: EventStreamFunction<T>): {
++    eventStream: EventStream<T>;
++    promise: Promise<void>;
++};
++
++/** Symbol to identify a route object. */
++declare const SYMBOL_WS_ROUTE: unique symbol;
++/** The name of the route. It includes the method and the path. */
++type WebSocketRouteName = `WS /${string}`;
++/** The context passed to the route handler. */
++interface Context<T extends WebSocketRouteOptions> {
++    peer: Peer;
++    error: WSError;
++    details: {
++        code?: number;
++        reason?: string;
++    };
++    query: T extends WebSocketRouteOptions<any, any, any, any, infer U> ? U : never;
++    message: T extends WebSocketRouteOptions<any, infer U, any, any, any> ? U : never;
++    parameters: T extends WebSocketRouteOptions<any, any, any, infer U, any> ? U : never;
++}
++/** The WebSocket route options. */
++interface WebSocketRouteOptions<Name extends WebSocketRouteName = WebSocketRouteName, ClientMessage = unknown, ServerMessage = unknown, Parameters = unknown, Query = unknown> {
++    name: Name;
++    parseQuery?: Parser<Query>;
++    parseParameters?: Parser<Parameters>;
++    parseClientMessage?: Parser<ClientMessage>;
++    parseServerMessage?: Parser<ServerMessage>;
++}
++/** The WebSocket route handlers. */
++interface WebSocketRouteHandlers<T extends WebSocketRouteOptions> {
++    onOpen?: (context: Pick<Context<T>, 'parameters' | 'peer' | 'query'>) => MaybePromise<void>;
++    onMessage?: (context: Pick<Context<T>, 'message' | 'parameters' | 'peer' | 'query'>) => MaybePromise<void>;
++    onClose?: (context: Pick<Context<T>, 'details' | 'parameters' | 'peer' | 'query'>) => MaybePromise<void>;
++    onError?: (context: Pick<Context<T>, 'error' | 'peer'>) => MaybePromise<void>;
++}
++/** A WebSocket route object. */
++type WebSocketRoute<T extends WebSocketRouteOptions = WebSocketRouteOptions, U extends WebSocketRouteHandlers<T> = WebSocketRouteHandlers<T>> = T & U & {
++    [SYMBOL_WS_ROUTE]: true;
++};
++/**
++ * Create a route that can be used to handle a WebSocket request. The route includes the path,
++ * message, and the callback that is called when the route is matched.
++ *
++ * @param options The options used to define the route.
++ * @param handlers The callback that is called when the route is matched.
++ * @returns The route that can be used to handle the request.
++ */
++declare function createWebSocketRoute<T extends WebSocketRouteOptions, U extends WebSocketRouteHandlers<T>>(options: Readonly<T>, handlers: Readonly<U>): WebSocketRoute<T, U>;
++
++/**
++ * A module is an isolated context that contains the entities, repositories as well as
++ * methods and handlers for the module. It is used to create a module that can be registered
++ * with the application.
++ */
++declare class ModuleBase {
++    /**
++     * If the module is initialized or not. This is used to check if this module
++     * and all its dependencies are initialized.
++     */
++    isInitialized?: boolean;
++    /**
++     * Initialize this module. This is used to perform any initialization steps that are required
++     * before the module can be used. This can include connecting to the database, setting up
++     * HTTP clients, etc.
++     */
++    initialize(): Promise<void>;
++    /**
++     * The parent application of the module. This is used to access the application context
++     * and the other modules that are registered within the application.
++     *
++     * @example application.getModule(ModuleUser)
++     */
++    application?: Application;
++    /**
++     * Register the modules' constructors this module depends on. At runtime, the application
++     * checks if the dependencies are registered withing the application and throws an error
++     * if they are not.
++     */
++    dependencies: Constructor[];
++    /**
++     * The entities of the module. These are the entities that are used in the service to perform
++     * operations on the database. Each entity is associated with a table in the database.
++     */
++    entities: Record<string, typeof BaseEntity>;
++    /**
++     * The routes associated with the module. These are the routes that are used to handle
++     * HTTP requests for the module.
++     */
++    routes: Record<string, MaybeFunction<Route>>;
++    /**
++     * The errors associated with the module. These are the errors that are used to handle
++     * exceptions that are thrown by the module. Each error is associated with a status code,
++     * a message, and a name.
++     */
++    errors: Record<string, MaybeFunction<MaybePromise<Error>, any[]>>;
++    /**
++     * Get the application context of the module. This is used to access the application context
++     * and the other modules that are registered within the application.
++     *
++     * @returns The application context.
++     */
++    getApplication(): Application<ModuleLike>;
++    /**
++     * Get a map of repositories for the entities in the module. This is used to get the
++     * repositories for the entities in the module. It will throw an error if the repository
++     * is not found.
++     *
++     * @returns A map of repositories for the entities in the module.
++     */
++    getRepositories(): ModuleRepositories<this>;
++    /**
++     * Get the given module from the application. This is used to get the module instance
++     * from the application context. It will throw an error if the module is not found.
++     *
++     * @param module The constructor of the module to get.
++     * @returns The module instance.
++     */
++    getModule<T extends Constructor>(module: T): InstanceType<T>;
++    /**
++     * Run a function in a transaction. This ensures that if the function fails, the transaction
++     * is rolled back and the database is left in a consistent state.
++     *
++     * @param fn The function to run in the transaction.
++     * @returns The result of the function.
++     */
++    withTransaction<T>(fn: () => Promise<T>): Promise<T>;
++    /**
++     * Run a function with whithin a task and in the context of an `H3Event`. This
++     * will allow the function to send updates to the client and to be cancelled
++     * if needed. This will also set the headers of the event to allow the client
++     * to identify the response as a task and handle it accordingly.
++     *
++     * @param event The event that triggered the task.
++     * @param fn The function that will run the task.
++     * @returns The task that was created.
++     */
++    withEventStream<T extends object>(event: H3Event, fn: EventStreamFunction<T>): EventStream<T>;
++    /**
++     * Get the logger instance of the application. If the logger is not found, it will throw an error.
++     *
++     * @returns The logger instance.
++     */
++    get logger(): Pick<Console, "debug" | "error" | "log" | "warn">;
++}
++
++/** A parser for the body, query, and parameters of the route. */
++type Parser<T = any, V = any> = (value: V) => T;
++/** A route that is either an `HttpRoute` or a `WebSocketRoute`. */
++type Route = HttpRoute<HttpRouteOptions, any> | WebSocketRoute;
++/** A constructor of instance of a module. */
++type ModuleLike = ModuleBase | typeof ModuleBase;
++/** Inferable types of an application or module. */
++type ApplicationOrModule = Application | ModuleLike | typeof Application;
++/**
++ * Get a union of all the instances of the given module classes. If
++ * the module class is a constructor, it will return the instance type.
++ *
++ * @template T The module class or constructor.
++ * @example type Modules<typeof ModuleUser | ModuleStorage> // => ModuleUser | ModuleStorage
++ */
++type ModuleInstance<T> = T extends Application<infer R> ? ModuleInstance<R> : T extends typeof ModuleBase ? InstanceType<T> : T;
++/**
++ * Infer the the module of the application.
++ *
++ * @template T The application to infer the routes from.
++ * @returns A union of the modules in the application.
++ * @example type AppModule = ApplicationModule<App> // ModuleHealth | ModuleUser
++ */
++type ModuleConstructor<T> = T extends Application<infer R> ? R : T extends typeof ModuleBase ? T : never;
++/**
++ * Infer the options of an application or module instance.
++ *
++ * @template T The module class or constructor.
++ */
++type ModuleOptions<T> = ModuleConstructor<T> extends Constructor<ModuleBase, [infer U | undefined]> ? {
++    [K in keyof U]: U[K];
++} : object;
++/**
++ * Given an application or module, infer the map of repositories in the module or application.
++ *
++ * @template T The application or module to infer the repositories from.
++ * @example InferRepositories<typeof ModuleUser | ModuleStorage> // => Repository<User> | Repository<UserRole> | ...
++ */
++type ModuleRepositories<T> = ModuleInstance<T> extends {
++    entities: infer Entities;
++} ? {
++    [K in keyof Entities]: Entities[K] extends EntityTarget<infer U extends object> ? Repository<U> : never;
++} : [];
++
++type ApplicationOptions<T extends ModuleLike = ModuleLike> = Partial<ModuleOptions<T>> & {
++    /**
++     * The environment variable prefix used to parse the application options. When the application
++     * is initialized, it will parse the environment variables with the given prefix and merge them
++     * with the options of the application. This allows you to configure the application using
++     * environment variables.
++     *
++     * @default 'APP'
++     */
++    prefix?: string;
++    /**
++     * The logger instance of the application. It is used to log messages and errors in the
++     * application. The logger is used to log messages to the console, file, or other logging
++     * services.
++     *
++     * @default globalThis.console
++     */
++    logger?: Pick<Console, 'debug' | 'error' | 'log' | 'warn'>;
++    /**
++     * The data source of the application. It is used to connect to the database and perform
++     * operations on the database. The data source is used to create repositories and entities
++     * that are used in the application.
++     *
++     * @default { type: 'sqlite', database: ':memory:', synchronize: true }
++     */
++    dataSource?: DataSource | DataSourceOptions;
++};
++declare const DEFAULT_DATA_SOURCE_OPTIONS: DataSourceOptions;
++/**
++ * An `Application` is, in itself, a container for modules. It is used to group modules together
++ * and provide a common context for them. Allowing you to expose all routes, entities, and services
++ * of the application in a single place.
++ *
++ * @template T The modules of the application.
++ * @example
++ * const application = new Application([
++ *   new ModuleUser(),
++ *   new ModuleEmail(),
++ *   new ModuleSettings(),
++ *   new ModuleHealth(),
++ * )]
++ *
++ * // Initialize the application.
++ * await application.initialize()
++ *
++ * // Start the application server.
++ * application.createServer().listen(3000)
++ */
++declare class Application<T extends ModuleLike = ModuleLike> {
++    options: ApplicationOptions<T>;
++    /**
++     * Is the application initialized.
++     *
++     * @default false
++     */
++    isInitialized: boolean;
++    /**
++     * The `DataSource` of the application. It is used to connect to the database and perform
++     * operations on the database. The `DataSource` is used to create repositories and entities
++     * that are used in the application.
++     */
++    dataSource?: DataSource;
++    /**
++     * The modules of the application. These are the modules that are used in the application
++     * to perform operations such as sign-in, sign-up, sign-out, as well as other user operations.
++     */
++    modules: Array<ModuleInstance<T>>;
++    /**
++     * The logger instance of the application. It is used to log messages and errors in the
++     * application. The logger is used to log messages to the console, file, or other logging
++     * services.
++     *
++     * @default globalThis.console
++     */
++    logger: Pick<Console, 'debug' | 'error' | 'log' | 'warn'>;
++    /**
++     * Instantiate a new application with the given modules and options.
++     *
++     * @param modules The modules of the application.
++     * @param options The options of the application.
++     */
++    constructor(modules: T[], options?: ApplicationOptions<T>);
++    /**
++     * Instantiate and initialize a new application with the given modules and options.
++     *
++     * @param modules The modules of the application.
++     * @param options The options of the application.
++     * @returns The initialized application.
++     * @example
++     * const application = await Application.initialize([
++     *   new ModuleUser(),
++     *   new ModuleEmail(),
++     *   new ModuleSettings(),
++     *   new ModuleHealth(),
++     * ])
++     */
++    static initialize<T extends ModuleLike>(modules: T[], options?: ApplicationOptions<T>): Promise<Application<T>>;
++    /**
++     * Get the given module from the application. This is used to get the module instance
++     * from the application context. It will throw an error if the module is not found.
++     *
++     * @param module The constructor of the module to get.
++     * @returns The module instance.
++     */
++    getModule<T extends Constructor>(module: T): InstanceType<T>;
++    /**
++     * Instantiate the router of the application. The router is used to handle HTTP requests
++     * and route them to the appropriate event handler. This function will collect all routes
++     * from the registered modules and generate the event handlers for each route.
++     *
++     * @returns The router of the application.
++     */
++    createRouter(): h3.Router;
++    /**
++     * Instantiate the H3 application of the application with the router handler.
++     *
++     * @param options The options to pass to the application.
++     * @returns The H3 application of the application.
++     */
++    createApp(options?: AppOptions): h3.App;
++    /**
++     * Create a Node.js server with the application handler.
++     *
++     * @param options The options to pass to the application.
++     * @returns The Node.js server with the application handler.
++     */
++    createServer(options?: AppOptions): http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>;
++    /**
++     * Initialize the application with the given options.
++     *
++     * @returns The initialized application.
++     */
++    initialize(): Promise<this>;
++}
++
++export { type ApplicationOptions as A, DEFAULT_DATA_SOURCE_OPTIONS as D, type EventStreamPayload as E, type HttpRouteName as H, ModuleBase as M, type Parser as P, type Route as R, SYMBOL_HTTP_ROUTE as S, type WebSocketRouteName as W, Application as a, type HttpRouteContext as b, type HttpRouteOptions as c, type HttpRouteHandler as d, type HttpRoute as e, createHttpRoute as f, SYMBOL_WS_ROUTE as g, type WebSocketRouteOptions as h, type WebSocketRouteHandlers as i, type WebSocketRoute as j, createWebSocketRoute as k, type ModuleLike as l, type ApplicationOrModule as m, type ModuleInstance as n, type ModuleConstructor as o, type ModuleOptions as p, type ModuleRepositories as q, type EventStreamFunction as r, EventStream as s, createEventStream as t };
+diff --git a/dist/chunks/DaBTSnuJ.cjs b/dist/chunks/DaBTSnuJ.cjs
+new file mode 100644
+index 0000000000000000000000000000000000000000..02ba203b5abd234c489a6ec97a44cf9ac464a454
+--- /dev/null
++++ b/dist/chunks/DaBTSnuJ.cjs
+@@ -0,0 +1,462 @@
++"use strict";
++var h3 = require("h3"), createHttpRoute = require("../createHttpRoute.cjs"), createWebSocketRoute = require("../createWebSocketRoute.cjs"), node_crypto = require("node:crypto"), functions = require("@unshared/functions"), promises = require("node:fs/promises"), node_http = require("node:http"), typeorm = require("typeorm"), ws = require("ws"), decorators = require("@unshared/decorators"), process$1 = require("@unshared/process"), string = require("@unshared/string"), wsAdapter = require("crossws/adapters/node"), node_net = require("node:net"), validation = require("@unshared/validation"), createSemver = require("@unshared/string/createSemver");
++function createHttpEventHandler(route) {
++  return h3.defineEventHandler(async (event) => {
++    let body, query, formData, parameters;
++    typeof route.parseBody == "function" && (body = await h3.readValidatedBody(event, route.parseBody)), typeof route.parseQuery == "function" && (query = await h3.getValidatedQuery(event, route.parseQuery)), typeof route.parseFormData == "function" && (formData = route.parseFormData(await h3.readFormData(event)));
++    try {
++      typeof route.parseParameters == "function" && (parameters = await h3.getValidatedRouterParams(event, route.parseParameters));
++    } catch {
++      h3.setResponseStatus(event, 400);
++      return;
++    }
++    const response = await route.handler({ event, body, parameters, query, formData });
++    return response === void 0 ? null : response;
++  });
++}
++function createWebSocketEventHandler(route) {
++  const peerContext = /* @__PURE__ */ new Map();
++  return h3.defineWebSocketHandler({
++    async open(peer) {
++      try {
++        let query, parameters;
++        const wsUrl = peer.websocket.url;
++        if (!wsUrl) return;
++        const url = new URL(wsUrl);
++        if (route.parseParameters) {
++          const partsRoute = route.name.split(" ")[1].split("/").filter(Boolean), partsPeer = url.pathname.split("/").filter(Boolean), peerParameters = {};
++          for (const partRoute of partsRoute) {
++            const value = partsPeer.shift();
++            if (!partRoute.startsWith(":")) continue;
++            const key = partRoute.slice(1);
++            if (!value) break;
++            peerParameters[key] = value;
++          }
++          parameters = await route.parseParameters(peerParameters);
++        }
++        if (route.parseQuery) {
++          const queryParameters = Object.fromEntries(url.searchParams);
++          query = await route.parseQuery(queryParameters);
++        }
++        return peerContext.set(peer, { parameters, query }), route.onOpen ? route.onOpen({ peer, parameters, query }) : void 0;
++      } catch (error) {
++        if (!route.onError) throw error;
++        await route.onError({ peer, error });
++      }
++    },
++    async message(peer, message) {
++      try {
++        let messageData;
++        if (route.parseClientMessage) {
++          const messageJson = message.toString(), messageObject = JSON.parse(messageJson);
++          messageData = await route.parseClientMessage(messageObject);
++        }
++        return route.onMessage ? await route.onMessage({
++          peer,
++          message: messageData,
++          query: peerContext.get(peer)?.query,
++          parameters: peerContext.get(peer)?.parameters
++        }) : void 0;
++      } catch (error) {
++        if (!route.onError) throw error;
++        await route.onError({ peer, error });
++      }
++    },
++    async close(peer, details) {
++      try {
++        if (!route.onClose) return;
++        const context = peerContext.get(peer), query = context?.query, parameters = context?.parameters;
++        return peerContext.delete(peer), route.onClose({ peer, details, parameters, query });
++      } catch (error) {
++        if (!route.onError) throw error;
++        await route.onError({ peer, error });
++      }
++    },
++    async error(peer, error) {
++      if (!route.onError) throw error;
++      await route.onError({ peer, error });
++    }
++  });
++}
++function isHttpRoute(value) {
++  return typeof value == "object" && value !== null && createHttpRoute.SYMBOL_HTTP_ROUTE in value && value[createHttpRoute.SYMBOL_HTTP_ROUTE] === !0;
++}
++function isWebSocketRoute(value) {
++  return typeof value == "object" && value !== null && createWebSocketRoute.SYMBOL_WS_ROUTE in value && value[createWebSocketRoute.SYMBOL_WS_ROUTE] === !0;
++}
++function createEventHandler(route) {
++  if (isHttpRoute(route)) return createHttpEventHandler(route);
++  if (isWebSocketRoute(route)) return createWebSocketEventHandler(route);
++  throw new Error("Invalid route");
++}
++class EventStream {
++  constructor(event) {
++    this.event = event, this.stream = h3.createEventStream(event);
++  }
++  /** The H3 `EventStream` instance that will be used to send updates to the client. */
++  stream;
++  /** The unique ID of the task. */
++  id = node_crypto.randomUUID();
++  /**
++   * Send some data to the client and await for it to be sent. This will
++   * prevent the client from receiving 2 messages at the same time and will
++   * ensure that the messages are sent in the correct order.
++   *
++   * @param data The data to send to the client.
++   * @example
++   * // Create a task.
++   * const task = new Task('123', 'My Task')
++   */
++  async send(data) {
++    const message = JSON.stringify({ id: this.id, data });
++    await this.stream.push(message);
++  }
++  /**
++   * Abort a task. This will send an error to the client and close the stream.
++   * This will allow the client to know that the task was cancelled and will
++   * allow the server to clean up any resources that the task was using.
++   *
++   * @param error The error message to send to the client.
++   */
++  async sendError(error) {
++    typeof error == "string" && (error = new Error(error));
++    const message = JSON.stringify({
++      id: this.id,
++      error: {
++        name: error.name,
++        code: error.name,
++        message: error.message,
++        stack: process.env.NODE_ENV === "production" ? void 0 : error.stack
++      }
++    });
++    await this.stream.push(message);
++  }
++  /**
++   * Run a function with whithin a task and in the context of a `Task`. This
++   * will provide the function with the ability to send updates to the client
++   * and end once the function has completed or if an error occurs.
++   *
++   * @param event The event that triggered the task.
++   * @param callback The function that will run the task.
++   * @returns The stream of the task.
++   */
++  static create(event, callback) {
++    const instance = new EventStream(event), promise = callback(instance).catch(async (error) => {
++      throw await instance.sendError(error), error;
++    }).finally(() => {
++      instance.stream.close();
++    });
++    return { eventStream: instance, promise };
++  }
++}
++function createEventStream(event, fn) {
++  return EventStream.create(event, fn);
++}
++var __defProp = Object.defineProperty, __getOwnPropDesc = Object.getOwnPropertyDescriptor, __decorateClass = (decorators2, target, key, kind) => {
++  for (var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target, i = decorators2.length - 1, decorator; i >= 0; i--)
++    (decorator = decorators2[i]) && (result = (kind ? decorator(target, key, result) : decorator(result)) || result);
++  return kind && result && __defProp(target, key, result), result;
++};
++const DEFAULT_DATA_SOURCE_OPTIONS = {
++  type: "sqlite",
++  database: ":memory:",
++  synchronize: !0
++}, _Application = class _Application2 {
++  /**
++   * Instantiate a new application with the given modules and options.
++   *
++   * @param modules The modules of the application.
++   * @param options The options of the application.
++   */
++  constructor(modules, options = {}) {
++    this.options = options, options.logger && (this.logger = options.logger);
++    const { prefix = "APP", dataSource } = options;
++    this.options = {
++      ...this.options,
++      ...process$1.parseEnvironments(prefix),
++      dataSource: dataSource instanceof typeorm.DataSource ? dataSource : {
++        ...DEFAULT_DATA_SOURCE_OPTIONS,
++        ...process$1.parseEnvironments(`${prefix}_DATABASE`),
++        ...dataSource
++      }
++    }, this.modules = modules.map((module2) => functions.isConstructor(module2) ? new module2(this.options) : module2);
++    for (const module2 of this.modules)
++      if (module2.dependencies)
++        for (const dependency of module2.dependencies)
++          this.modules.find((m) => m instanceof dependency) || this.logger.warn(string.dedent(`
++            [Application] Missing dependency.
++
++            There has been an error initializing the application. The module "${module2.constructor.name}" expects the module "${dependency.name}" to be registered in the application. Please make sure that the module is registered in the application before initializing it.
++          `));
++    for (const module2 of this.modules) module2.application = this;
++  }
++  /**
++   * Is the application initialized.
++   *
++   * @default false
++   */
++  isInitialized = !1;
++  /**
++   * The `DataSource` of the application. It is used to connect to the database and perform
++   * operations on the database. The `DataSource` is used to create repositories and entities
++   * that are used in the application.
++   */
++  dataSource;
++  /**
++   * The modules of the application. These are the modules that are used in the application
++   * to perform operations such as sign-in, sign-up, sign-out, as well as other user operations.
++   */
++  modules = [];
++  /**
++   * The logger instance of the application. It is used to log messages and errors in the
++   * application. The logger is used to log messages to the console, file, or other logging
++   * services.
++   *
++   * @default globalThis.console
++   */
++  logger = globalThis.console;
++  /**
++   * Instantiate and initialize a new application with the given modules and options.
++   *
++   * @param modules The modules of the application.
++   * @param options The options of the application.
++   * @returns The initialized application.
++   * @example
++   * const application = await Application.initialize([
++   *   new ModuleUser(),
++   *   new ModuleEmail(),
++   *   new ModuleSettings(),
++   *   new ModuleHealth(),
++   * ])
++   */
++  static async initialize(modules, options) {
++    return new _Application2(modules, options).initialize();
++  }
++  /**
++   * Get the given module from the application. This is used to get the module instance
++   * from the application context. It will throw an error if the module is not found.
++   *
++   * @param module The constructor of the module to get.
++   * @returns The module instance.
++   */
++  getModule(module2) {
++    const result = this.modules.find((m) => m instanceof module2);
++    if (!result) throw new Error(`Module with constructor "${module2.name}" not found`);
++    if (result.isInitialized === !1) throw new Error(`Module "${module2.name}" was found but not initialized`);
++    return result;
++  }
++  createRouter() {
++    const router = h3.createRouter(), eventHandlers = [];
++    for (const module2 of this.modules)
++      if (module2.routes)
++        for (let route of Object.values(module2.routes))
++          try {
++            route = typeof route == "function" ? route.call(module2) : route;
++            const [method, path] = route.name.split(" "), eventHandler = createEventHandler(route);
++            eventHandlers.push([method, path, eventHandler]);
++          } catch (error) {
++            this.logger.error("Error creating route:", route), this.logger.error(error);
++          }
++    eventHandlers.sort(([, a], [, b]) => b.length - a.length);
++    for (const [method, path, eventHandler] of eventHandlers) {
++      const routeMethod = method === "WS" ? void 0 : method.toLowerCase();
++      router.use(path, eventHandler, routeMethod);
++    }
++    return router;
++  }
++  createApp(options) {
++    const router = this.createRouter();
++    return h3.createApp(options).use(router);
++  }
++  createServer(options) {
++    const app = this.createApp(options), listener = h3.toNodeListener(app), server = node_http.createServer(listener), { handleUpgrade } = wsAdapter(app.websocket);
++    return server.on("upgrade", handleUpgrade), server;
++  }
++  async initialize() {
++    if (this.isInitialized) return this;
++    const entities = this.modules.flatMap((module2) => Object.values(module2.entities)), { dataSource = DEFAULT_DATA_SOURCE_OPTIONS } = this.options;
++    this.dataSource = isDataSource(dataSource) ? dataSource : new typeorm.DataSource(dataSource), this.dataSource.setOptions({ ...this.dataSource.options, entities }), this.dataSource.isInitialized || await this.dataSource.initialize();
++    for (const module2 of this.modules)
++      module2.isInitialized || await module2.initialize().catch((error) => {
++        this.logger.error("Error initializing module:", module2.constructor.name), this.logger.error(error.message), this.logger.error(error.stack);
++      }).then(() => {
++        module2.isInitialized = !0;
++      });
++    return this.isInitialized = !0, this;
++  }
++};
++__decorateClass([
++  decorators.Once()
++], _Application.prototype, "createRouter", 1), __decorateClass([
++  decorators.Once()
++], _Application.prototype, "createApp", 1), __decorateClass([
++  decorators.Once()
++], _Application.prototype, "createServer", 1), __decorateClass([
++  decorators.Once()
++], _Application.prototype, "initialize", 1);
++let Application = _Application;
++async function createTestApplication(modules = [], options) {
++  const id = node_crypto.randomUUID(), socketPath = `/tmp/${id}.sock`, dataSource = new typeorm.DataSource({ name: id, type: "sqlite", synchronize: !0, database: ":memory:" }), application = await Application.initialize(modules, { ...options, dataSource });
++  let server;
++  const context = {
++    get server() {
++      return server;
++    },
++    get socketPath() {
++      return socketPath;
++    },
++    /************************************************/
++    /* Module instances.                            */
++    /************************************************/
++    async createTestServer() {
++      server = application.createServer({
++        onRequest(event) {
++          event.context.clientAddress = "127.0.0.1";
++        }
++      }), await new Promise((resolve, reject) => {
++        server.on("error", reject), server.on("listening", resolve), server.listen(socketPath);
++      });
++    },
++    async fetch(path, options2 = {}) {
++      const { method = "GET", headers = {}, body } = options2, resolvable = functions.createResolvable(), clientRequest = node_http.request(
++        {
++          path,
++          method,
++          socketPath,
++          headers
++        },
++        // --- Handle incoming response.
++        (response) => {
++          const body2 = new ReadableStream({
++            start(controller) {
++              response.on("data", (chunk) => controller.enqueue(chunk)), response.on("error", (error) => controller.error(error)), response.on("end", () => controller.close());
++            }
++          }), bytes = async () => {
++            const reader = body2.getReader(), chunks = [];
++            for (; ; ) {
++              const { done, value } = await reader.read();
++              if (done || !value) break;
++              chunks.push(value);
++            }
++            const buffer = Buffer.concat(chunks);
++            return Uint8Array.from(buffer);
++          }, text = async () => [...await bytes()].map((x) => String.fromCodePoint(x)).join("");
++          resolvable.resolve({
++            ok: response.statusCode >= 200 && response.statusCode < 300,
++            url: response.url,
++            status: response.statusCode,
++            statusText: response.statusMessage,
++            headers: new Headers(response.headers),
++            body: body2,
++            get bodyUsed() {
++              return body2.locked;
++            },
++            bytes,
++            text,
++            json: () => text().then(JSON.parse),
++            arrayBuffer: () => bytes().then((buffer) => buffer.buffer)
++          });
++        }
++      );
++      return body && clientRequest.write(body), clientRequest.on("error", resolvable.reject), clientRequest.end(), resolvable.promise;
++    },
++    connect(path, options2) {
++      const ws$1 = new ws.WebSocket(`ws+unix:${socketPath}:${path}`, options2);
++      return functions.awaitable(ws$1, () => new Promise((resolve, reject) => {
++        const callbackOpen = () => {
++          resolve(ws$1), ws$1.removeEventListener("open", callbackOpen), ws$1.removeEventListener("error", reject);
++        };
++        ws$1.on("open", callbackOpen), ws$1.on("error", reject);
++      }));
++    },
++    async destroy() {
++      server && (server.closeAllConnections(), server.close(), server = void 0, await promises.rm(socketPath, { force: !0 })), application.dataSource?.isInitialized && await application.dataSource.destroy();
++    },
++    [Symbol.dispose]() {
++      return this.destroy();
++    }
++  };
++  return new Proxy(application, {
++    get: (_, name) => {
++      if (name in context) return context[name];
++      if (name in application) return application[name];
++    }
++  });
++}
++function createTestEvent(options = {}) {
++  const { headers = {}, method = "GET", remoteAddress = "127.0.0.1" } = options, socket = new node_net.Socket(), request = new node_http.IncomingMessage(socket), response = new node_http.ServerResponse(request);
++  request.method = method;
++  for (const key in headers) {
++    const lower = key.toLowerCase();
++    request.headers[lower] = headers[key];
++  }
++  const event = new h3.H3Event(request, response);
++  return event.context.clientAddress = remoteAddress, event;
++}
++function createTestPeer(options = {}) {
++  const { url = "http://localhost", headers = {}, remoteAddress = "127.0.0.1" } = options;
++  return { request: new Request(url, { headers }), remoteAddress };
++}
++function isDataSource(value) {
++  return value instanceof typeorm.DataSource || typeof value == "object" && value !== null && "@instanceOf" in value && value["@instanceOf"] === Symbol.for("DataSource");
++}
++const transformerDate = {
++  to(value) {
++    return value instanceof Date ? value.toISOString() : null;
++  },
++  from(value) {
++    if (typeof value == "string")
++      return new Date(value);
++  }
++};
++function transformerFromParser(...rules) {
++  const parse = validation.createParser(...rules);
++  return {
++    to(value) {
++      if (value != null)
++        return parse(value);
++    },
++    from(value) {
++      return value;
++    }
++  };
++}
++const transformerJson = {
++  to(value) {
++    if (typeof value == "object" && value !== null)
++      return JSON.stringify(value);
++  },
++  from(value) {
++    if (typeof value == "string")
++      try {
++        return JSON.parse(value);
++      } catch {
++        return;
++      }
++  }
++}, transformerSemver = {
++  to(value) {
++    if (value instanceof createSemver.Semver) return value.toString();
++  },
++  from(value) {
++    if (typeof value == "string") return createSemver.createSemver(value);
++  }
++};
++exports.Application = Application;
++exports.DEFAULT_DATA_SOURCE_OPTIONS = DEFAULT_DATA_SOURCE_OPTIONS;
++exports.EventStream = EventStream;
++exports.createEventHandler = createEventHandler;
++exports.createEventStream = createEventStream;
++exports.createHttpEventHandler = createHttpEventHandler;
++exports.createTestApplication = createTestApplication;
++exports.createTestEvent = createTestEvent;
++exports.createTestPeer = createTestPeer;
++exports.createWebSocketEventHandler = createWebSocketEventHandler;
++exports.isDataSource = isDataSource;
++exports.isHttpRoute = isHttpRoute;
++exports.isWebSocketRoute = isWebSocketRoute;
++exports.transformerDate = transformerDate;
++exports.transformerFromParser = transformerFromParser;
++exports.transformerJson = transformerJson;
++exports.transformerSemver = transformerSemver;
++//# sourceMappingURL=DaBTSnuJ.cjs.map
+diff --git a/dist/chunks/DaBTSnuJ.cjs.map b/dist/chunks/DaBTSnuJ.cjs.map
+new file mode 100644
+index 0000000000000000000000000000000000000000..be3f9575652dfb6987e73a52c675c59947704d02
+--- /dev/null
++++ b/dist/chunks/DaBTSnuJ.cjs.map
+@@ -0,0 +1 @@
++{"version":3,"file":"DaBTSnuJ.cjs","sources":["../../utils/createHttpEventHandler.ts","../../utils/createWebSocketEventHandler.ts","../../utils/isHttpRoute.ts","../../utils/isWebSocketRoute.ts","../../utils/createEventHandler.ts","../../utils/createEventStream.ts","../../createApplication.ts","../../utils/createTestApplication.ts","../../utils/createTestEvent.ts","../../utils/createTestPeer.ts","../../utils/isDataSource.ts","../../utils/transformerDate.ts","../../utils/transformerFromParser.ts","../../utils/transformerJson.ts","../../utils/transformerSemver.ts"],"sourcesContent":["import type { EventHandler } from 'h3'\nimport type { HttpRoute, HttpRouteOptions } from '../createHttpRoute'\nimport { defineEventHandler, getValidatedQuery, getValidatedRouterParams, readFormData, readValidatedBody, setResponseStatus } from 'h3'\n\n/**\n * Given a route, create an event handler that can be used to handle a specific\n * HTTP request. The event handler reads the body, query, and parameters of the\n * request, validates them, and then calls the handler with the context.\n *\n * @param route The route to create the event handler for.\n * @returns The event handler that can be used to handle the request.\n */\nexport function createHttpEventHandler<T extends HttpRoute<HttpRouteOptions, unknown>>(route: T): EventHandler {\n  return defineEventHandler(async(event) => {\n\n    // --- Initialize the context variables.\n    let body: unknown\n    let query: unknown\n    let formData: unknown\n    let parameters: unknown\n\n    // --- Validate and parse the body, query, and parameters.\n    if (typeof route.parseBody === 'function') body = await readValidatedBody(event, route.parseBody)\n    if (typeof route.parseQuery === 'function') query = await getValidatedQuery(event, route.parseQuery)\n    if (typeof route.parseFormData === 'function') formData = route.parseFormData(await readFormData(event))\n\n    // --- If the route has parameters, validate and parse them. If the\n    // --- parameters are invalid, skip to the next event handler.\n    try {\n      if (typeof route.parseParameters === 'function')\n        parameters = await getValidatedRouterParams(event, route.parseParameters)\n    }\n    catch {\n      setResponseStatus(event, 400)\n      return\n    }\n\n    // --- Call the handler with the context and return the data.\n    const response = await route.handler({ event, body, parameters, query, formData })\n    // eslint-disable-next-line unicorn/no-null\n    if (response === undefined) return null\n    return response\n  })\n}\n","import type { Message, Peer } from 'crossws'\nimport type { EventHandler } from 'h3'\nimport type { WebSocketRoute } from '../createWebSocketRoute'\nimport { defineWebSocketHandler } from 'h3'\n\n/**\n * Given a route, create an event handler that can be used to handle a specific\n * WebSocket request. The event handler reads the message, and then calls the\n * handler with the context.\n *\n * @param route The route to create the event handler for.\n * @returns The event handler that can be used to handle the request.\n */\nexport function createWebSocketEventHandler<T extends WebSocketRoute>(route: T): EventHandler {\n  const peerContext = new Map<Peer, { parameters: unknown; query: unknown }>()\n  return defineWebSocketHandler({\n    async open(peer: Peer) {\n      try {\n        let query: unknown\n        let parameters: unknown\n        const wsUrl = peer.websocket.url\n        if (!wsUrl) return\n        const url = new URL(wsUrl)\n\n        // --- If the route has parameters, parse them.\n        if (route.parseParameters) {\n          const partsRoute = route.name.split(' ')[1].split('/').filter(Boolean)\n          const partsPeer = url.pathname.split('/').filter(Boolean)\n\n          // --- Build the request parameters from the route and peer.\n          const peerParameters: Record<string, string> = {}\n          for (const partRoute of partsRoute) {\n            const value = partsPeer.shift()\n            if (!partRoute.startsWith(':')) continue\n            const key = partRoute.slice(1)\n            if (!value) break\n            peerParameters[key] = value\n          }\n\n          // --- Parse the parameters using the user-defined parser.\n          parameters = await route.parseParameters(peerParameters)\n        }\n\n        // --- If the route has query parameters, parse them.\n        if (route.parseQuery) {\n          const queryParameters = Object.fromEntries(url.searchParams)\n          query = await route.parseQuery(queryParameters)\n        }\n\n        // --- Call the handler with the context and return the data.\n        peerContext.set(peer, { parameters, query })\n        if (!route.onOpen) return\n        return route.onOpen({ peer, parameters, query })\n      }\n      catch (error) {\n        if (!route.onError) throw error\n        await route.onError({ peer, error: error as Error })\n      }\n    },\n\n    async message(peer: Peer, message: Message) {\n      try {\n\n        // --- Parse the message.\n        let messageData: unknown\n        if (route.parseClientMessage) {\n          const messageJson = message.toString()\n          const messageObject: unknown = JSON.parse(messageJson)\n          messageData = await route.parseClientMessage(messageObject)\n        }\n\n        // --- Call the handler with the context.\n        if (!route.onMessage) return\n        return await route.onMessage({\n          peer,\n          message: messageData,\n          query: peerContext.get(peer)?.query,\n          parameters: peerContext.get(peer)?.parameters,\n        })\n      }\n      catch (error) {\n        if (!route.onError) throw error\n        await route.onError({ peer, error: error as Error })\n      }\n    },\n\n    async close(peer: Peer, details: { code?: number; reason?: string }) {\n      try {\n        if (!route.onClose) return\n        const context = peerContext.get(peer)\n        const query = context?.query\n        const parameters = context?.parameters\n        peerContext.delete(peer)\n        return route.onClose({ peer, details, parameters, query })\n      }\n      catch (error) {\n        if (!route.onError) throw error\n        await route.onError({ peer, error: error as Error })\n      }\n    },\n\n    async error(peer: Peer, error: Error) {\n      if (!route.onError) throw error\n      await route.onError({ peer, error })\n    },\n  })\n}\n","import type { HttpRouteOptions } from '../createHttpRoute'\nimport { SYMBOL_HTTP_ROUTE } from '../createHttpRoute'\n\n/**\n * Check if the value is an HTTP route.\n *\n * @param value The value to check.\n * @returns `true` if the value is an HTTP route, `false` otherwise.\n * @example isHttpRoute({ name: 'GET /users', handler: () => [] }) // => true\n */\nexport function isHttpRoute(value: unknown): value is HttpRouteOptions {\n  return typeof value === 'object'\n    && value !== null\n    && SYMBOL_HTTP_ROUTE in value\n    && value[SYMBOL_HTTP_ROUTE] === true\n}\n","import type { WebSocketRouteOptions } from '../createWebSocketRoute'\nimport { SYMBOL_WS_ROUTE } from '../createWebSocketRoute'\n\n/**\n * Check if the value is a WebSocket route.\n *\n * @param value The value to check.\n * @returns `true` if the value is a WebSocket route, `false` otherwise.\n * @example isWebSocketRoute({ name: 'WS /chat', onMessage: () => {} }) // => true\n */\nexport function isWebSocketRoute(value: unknown): value is WebSocketRouteOptions {\n  return typeof value === 'object'\n    && value !== null\n    && SYMBOL_WS_ROUTE in value\n    && value[SYMBOL_WS_ROUTE] === true\n}\n","import type { EventHandler } from 'h3'\nimport type { Route } from '../types'\nimport { createHttpEventHandler } from './createHttpEventHandler'\nimport { createWebSocketEventHandler } from './createWebSocketEventHandler'\nimport { isHttpRoute } from './isHttpRoute'\nimport { isWebSocketRoute } from './isWebSocketRoute'\n\n/**\n * Given a route, create an event handler that can be used to handle a specific\n * HTTP request. The event handler reads the body, query, and parameters of the\n * request, validates them, and then calls the handler with the context.\n *\n * @param route The route to create the event handler for.\n * @returns The event handler that can be used to handle the request.\n * @example createEventHandler({ method: 'GET', path: '/users', callback: () => [] })\n */\nexport function createEventHandler<T extends Route>(route: T): EventHandler {\n  if (isHttpRoute(route)) return createHttpEventHandler(route)\n  if (isWebSocketRoute(route)) return createWebSocketEventHandler(route)\n  throw new Error('Invalid route')\n}\n","import type { H3Event, EventStream as H3EventStream } from 'h3'\nimport { createEventStream as createH3EventStream } from 'h3'\nimport { randomUUID } from 'node:crypto'\n\n/** The data that a task can send to the client. */\nexport type EventStreamPayload<T = unknown> =\n  { data: T; error: undefined } |\n  { data: undefined; error: Error }\n\n/** The function that will run the task. */\nexport type EventStreamFunction<T = unknown> = (task: EventStream<T>) => Promise<void>\n\n/**\n * The \"Task\" module is responsible for managing the tasks that are executed on the server\n * but needs to communicate with the client. This allows the server to send updates on\n * long-running tasks to the client and allows the client to cancel a task if needed.\n *\n * @template T The type of data that the task will send.\n */\nexport class EventStream<T = unknown> {\n\n  constructor(public event: H3Event) {\n    this.stream = createH3EventStream(event)\n  }\n\n  /** The H3 `EventStream` instance that will be used to send updates to the client. */\n  public stream: H3EventStream\n\n  /** The unique ID of the task. */\n  public id = randomUUID() as string\n\n  /**\n   * Send some data to the client and await for it to be sent. This will\n   * prevent the client from receiving 2 messages at the same time and will\n   * ensure that the messages are sent in the correct order.\n   *\n   * @param data The data to send to the client.\n   * @example\n   * // Create a task.\n   * const task = new Task('123', 'My Task')\n   */\n  public async send(data: T): Promise<void> {\n    const message = JSON.stringify({ id: this.id, data })\n    await this.stream.push(message)\n  }\n\n  /**\n   * Abort a task. This will send an error to the client and close the stream.\n   * This will allow the client to know that the task was cancelled and will\n   * allow the server to clean up any resources that the task was using.\n   *\n   * @param error The error message to send to the client.\n   */\n  public async sendError(error: Error | string): Promise<void> {\n    if (typeof error === 'string') error = new Error(error)\n    const message = JSON.stringify({\n      id: this.id,\n      error: {\n        name: error.name,\n        code: error.name,\n        message: error.message,\n        stack: process.env.NODE_ENV === 'production' ? undefined : error.stack,\n      },\n    })\n    await this.stream.push(message)\n  }\n\n  /**\n   * Run a function with whithin a task and in the context of a `Task`. This\n   * will provide the function with the ability to send updates to the client\n   * and end once the function has completed or if an error occurs.\n   *\n   * @param event The event that triggered the task.\n   * @param callback The function that will run the task.\n   * @returns The stream of the task.\n   */\n  public static create<T>(event: H3Event, callback: EventStreamFunction<T>): { eventStream: EventStream<T>; promise: Promise<void> } {\n    const instance = new EventStream(event)\n\n    // --- Run the function and send the result to the client if it is not `undefined`.\n    // --- Then, close the stream to signal the end of the task. If an error occurs,\n    // --- send the error to the client and close the stream.\n    const promise = callback(instance)\n\n      // --- Catch any errors that occur and send them to the client.\n      .catch(async(error: Error) => {\n        await instance.sendError(error)\n        throw error\n      })\n\n      // --- Finally, close the stream to signal the end of the task.\n      .finally(() => {\n        void instance.stream.close()\n      })\n\n    // --- Return the task and the promise of the task.\n    return { eventStream: instance, promise }\n  }\n}\n\n/**\n * Run a function with whithin a task and in the context of a `Task`. This\n * will provide the function with the ability to send updates to the client\n * and end once the function has completed or if an error occurs.\n *\n * @param event The event that triggered the task.\n * @param fn The function that will run the task.\n * @returns The stream of the task.\n */\nexport function createEventStream<T>(event: H3Event, fn: EventStreamFunction<T>) {\n  return EventStream.create<T>(event, fn)\n}\n","import { Once } from '@unshared/decorators'\nimport { isConstructor } from '@unshared/functions'\nimport { parseEnvironments } from '@unshared/process'\nimport { dedent } from '@unshared/string'\nimport { Constructor } from '@unshared/types'\nimport wsAdapter from 'crossws/adapters/node'\nimport { AppOptions, createApp, createRouter, EventHandler, RouterMethod, toNodeListener } from 'h3'\nimport { createServer } from 'node:http'\nimport { DataSource, DataSourceOptions } from 'typeorm'\nimport { ModuleInstance, ModuleLike, ModuleOptions } from './types'\nimport { isDataSource } from './utils'\nimport { createEventHandler } from './utils'\n\nexport type ApplicationOptions<T extends ModuleLike = ModuleLike> = Partial<ModuleOptions<T>> & {\n\n  /**\n   * The environment variable prefix used to parse the application options. When the application\n   * is initialized, it will parse the environment variables with the given prefix and merge them\n   * with the options of the application. This allows you to configure the application using\n   * environment variables.\n   *\n   * @default 'APP'\n   */\n  prefix?: string\n\n  /**\n   * The logger instance of the application. It is used to log messages and errors in the\n   * application. The logger is used to log messages to the console, file, or other logging\n   * services.\n   *\n   * @default globalThis.console\n   */\n  logger?: Pick<Console, 'debug' | 'error' | 'log' | 'warn'>\n\n  /**\n   * The data source of the application. It is used to connect to the database and perform\n   * operations on the database. The data source is used to create repositories and entities\n   * that are used in the application.\n   *\n   * @default { type: 'sqlite', database: ':memory:', synchronize: true }\n   */\n  dataSource?: DataSource | DataSourceOptions\n}\n\nexport const DEFAULT_DATA_SOURCE_OPTIONS: DataSourceOptions = {\n  type: 'sqlite',\n  database: ':memory:',\n  synchronize: true,\n}\n\n/**\n * An `Application` is, in itself, a container for modules. It is used to group modules together\n * and provide a common context for them. Allowing you to expose all routes, entities, and services\n * of the application in a single place.\n *\n * @template T The modules of the application.\n * @example\n * const application = new Application([\n *   new ModuleUser(),\n *   new ModuleEmail(),\n *   new ModuleSettings(),\n *   new ModuleHealth(),\n * )]\n *\n * // Initialize the application.\n * await application.initialize()\n *\n * // Start the application server.\n * application.createServer().listen(3000)\n */\nexport class Application<T extends ModuleLike = ModuleLike> {\n\n  /**\n   * Is the application initialized.\n   *\n   * @default false\n   */\n  isInitialized = false\n\n  /**\n   * The `DataSource` of the application. It is used to connect to the database and perform\n   * operations on the database. The `DataSource` is used to create repositories and entities\n   * that are used in the application.\n   */\n  dataSource?: DataSource\n\n  /**\n   * The modules of the application. These are the modules that are used in the application\n   * to perform operations such as sign-in, sign-up, sign-out, as well as other user operations.\n   */\n  modules = [] as Array<ModuleInstance<T>>\n\n  /**\n   * The logger instance of the application. It is used to log messages and errors in the\n   * application. The logger is used to log messages to the console, file, or other logging\n   * services.\n   *\n   * @default globalThis.console\n   */\n  logger: Pick<Console, 'debug' | 'error' | 'log' | 'warn'> = globalThis.console\n\n  /**\n   * Instantiate a new application with the given modules and options.\n   *\n   * @param modules The modules of the application.\n   * @param options The options of the application.\n   */\n  constructor(modules: T[], public options = {} as ApplicationOptions<T>) {\n\n    // --- Set the logger of the application.\n    if (options.logger) this.logger = options.logger\n    const { prefix = 'APP', dataSource } = options\n\n    // --- Merge the options of the application with the options from\n    // --- the environment variables.\n    this.options = {\n      ...this.options,\n      ...parseEnvironments(prefix),\n      dataSource: dataSource instanceof DataSource\n        ? dataSource\n        : {\n          ...DEFAULT_DATA_SOURCE_OPTIONS,\n          ...parseEnvironments(`${prefix}_DATABASE`),\n          ...dataSource,\n        } as DataSourceOptions,\n    }\n\n    // --- Instantiate all the modules and store them in the application.\n    this.modules = modules.map((module) => {\n      const isCtor = isConstructor(module)\n      const instance = isCtor ? new (module as Constructor)(this.options) : module\n      return instance as ModuleInstance<T>\n    })\n\n    // --- For each module, check if the dependencies are registered in the application.\n    for (const module of this.modules) {\n      if (!module.dependencies) continue\n      for (const dependency of module.dependencies) {\n        const found = this.modules.find(m => m instanceof dependency)\n        if (!found) {\n          this.logger.warn(dedent(`\n            [Application] Missing dependency.\n\n            There has been an error initializing the application. The module \"${module.constructor.name}\" expects the module \"${dependency.name}\" to be registered in the application. Please make sure that the module is registered in the application before initializing it.\n          `))\n        }\n      }\n    }\n\n    // --- Attach the application reference in the module.\n    for (const module of this.modules) module.application = this\n  }\n\n  /**\n   * Instantiate and initialize a new application with the given modules and options.\n   *\n   * @param modules The modules of the application.\n   * @param options The options of the application.\n   * @returns The initialized application.\n   * @example\n   * const application = await Application.initialize([\n   *   new ModuleUser(),\n   *   new ModuleEmail(),\n   *   new ModuleSettings(),\n   *   new ModuleHealth(),\n   * ])\n   */\n  static async initialize<T extends ModuleLike>(modules: T[], options?: ApplicationOptions<T>): Promise<Application<T>> {\n    return new Application(modules, options).initialize()\n  }\n\n  /**\n   * Get the given module from the application. This is used to get the module instance\n   * from the application context. It will throw an error if the module is not found.\n   *\n   * @param module The constructor of the module to get.\n   * @returns The module instance.\n   */\n  getModule<T extends Constructor>(module: T): InstanceType<T> {\n    const result = this.modules.find(m => m instanceof module)\n    if (!result) throw new Error(`Module with constructor \"${module.name}\" not found`)\n    if (result.isInitialized === false) throw new Error(`Module \"${module.name}\" was found but not initialized`)\n    return result as InstanceType<T>\n  }\n\n  /**\n   * Instantiate the router of the application. The router is used to handle HTTP requests\n   * and route them to the appropriate event handler. This function will collect all routes\n   * from the registered modules and generate the event handlers for each route.\n   *\n   * @returns The router of the application.\n   */\n  @Once()\n  createRouter() {\n    const router = createRouter()\n    const eventHandlers = [] as Array<[string, string, EventHandler]>\n\n    // --- 1. Traverse all registered modules and collect all the routes.\n    // --- 2. If the route is a factory function, bind it to the module instance and call it.\n    // --- 3. Generate the event handler for each route.\n    for (const module of this.modules) {\n      if (!module.routes) continue\n      for (let route of Object.values(module.routes)) {\n        try {\n          // eslint-disable-next-line sonarjs/updated-loop-counter\n          route = typeof route === 'function' ? route.call(module) : route\n          const [method, path] = route.name.split(' ')\n          const eventHandler = createEventHandler(route)\n          eventHandlers.push([method, path, eventHandler])\n        }\n        catch (error) {\n          this.logger.error('Error creating route:', route)\n          this.logger.error(error)\n        }\n      }\n    }\n\n    // --- Sort by path as to avoid conflicts with overlapping paths.\n    eventHandlers.sort(([,a], [,b]) => b.length - a.length)\n    for (const [method, path, eventHandler] of eventHandlers) {\n      // this.logger.debug('Registering route:', method, path)\n      const routeMethod = method === 'WS' ? undefined : method.toLowerCase() as RouterMethod\n      router.use(path, eventHandler, routeMethod)\n    }\n    return router\n  }\n\n  /**\n   * Instantiate the H3 application of the application with the router handler.\n   *\n   * @param options The options to pass to the application.\n   * @returns The H3 application of the application.\n   */\n  @Once()\n  createApp(options?: AppOptions) {\n    const router = this.createRouter()\n    return createApp(options).use(router)\n  }\n\n  /**\n   * Create a Node.js server with the application handler.\n   *\n   * @param options The options to pass to the application.\n   * @returns The Node.js server with the application handler.\n   */\n  @Once()\n  createServer(options?: AppOptions) {\n    const app = this.createApp(options)\n    const listener = toNodeListener(app)\n    const server = createServer(listener)\n    // eslint-disable-next-line @typescript-eslint/unbound-method\n    const { handleUpgrade } = wsAdapter(app.websocket)\n    server.on('upgrade', handleUpgrade)\n    return server\n  }\n\n  /**\n   * Initialize the application with the given options.\n   *\n   * @returns The initialized application.\n   */\n  @Once()\n  async initialize(): Promise<this> {\n    if (this.isInitialized) return this\n\n    // --- Collect all entities from the modules.\n    const entities = this.modules.flatMap(module => Object.values(module.entities))\n\n    // --- Initialize the data source and inject the entities from the modules.\n    const { dataSource = DEFAULT_DATA_SOURCE_OPTIONS } = this.options\n    this.dataSource = isDataSource(dataSource) ? dataSource : new DataSource(dataSource)\n    this.dataSource.setOptions({ ...this.dataSource.options, entities })\n    if (!this.dataSource.isInitialized) await this.dataSource.initialize()\n\n    // --- Initialize all the modules.\n    for (const module of this.modules) {\n      if (module.isInitialized) continue\n      await module.initialize()\n        .catch((error: Error) => {\n          this.logger.error('Error initializing module:', module.constructor.name)\n          this.logger.error(error.message)\n          this.logger.error(error.stack)\n        })\n        .then(() => {\n          module.isInitialized = true\n        })\n    }\n\n    // --- Set the application as initialized.\n    this.isInitialized = true\n    return this\n  }\n}\n","import type { Awaitable } from '@unshared/functions'\nimport type { Server } from 'node:http'\nimport type { ClientOptions } from 'ws'\nimport type { ApplicationOptions } from '../createApplication'\nimport type { ModuleLike } from '../types'\nimport { awaitable, createResolvable } from '@unshared/functions'\nimport { randomUUID } from 'node:crypto'\nimport { rm } from 'node:fs/promises'\nimport { request } from 'node:http'\nimport { DataSource } from 'typeorm'\nimport { WebSocket } from 'ws'\nimport { Application } from '../createApplication'\n\nexport interface TestApplicationContext {\n  server: Server | undefined\n  socketPath: string\n  createTestServer(): Promise<void>\n  fetch(path: string, options?: RequestInit): Promise<Response>\n  connect(path: string): Awaitable<WebSocket, WebSocket>\n  destroy(): Promise<void>\n  [Symbol.dispose](): Promise<void>\n}\n\nexport type TestApplication<T extends ModuleLike> = Application<T> & TestApplicationContext\n\nexport async function createTestApplication<T extends ModuleLike>(modules: T[] = [], options?: ApplicationOptions<T>): Promise<TestApplication<T>> {\n  const id = randomUUID()\n  const socketPath = `/tmp/${id}.sock`\n  const dataSource = new DataSource({ name: id, type: 'sqlite', synchronize: true, database: ':memory:' })\n  const application = await Application.initialize(modules, { ...options, dataSource } as ApplicationOptions<T>)\n  let server: Server | undefined\n\n  const context: TestApplicationContext = {\n    get server() { return server },\n    get socketPath() { return socketPath },\n\n    /************************************************/\n    /* Module instances.                            */\n    /************************************************/\n\n    async createTestServer(): Promise<void> {\n      server = application.createServer({\n        onRequest(event) { event.context.clientAddress = '127.0.0.1' },\n      })\n      await new Promise((resolve, reject) => {\n        server!.on('error', reject)\n        server!.on('listening', resolve)\n        server!.listen(socketPath)\n      })\n    },\n\n    async fetch(path: string, options: RequestInit = {}): Promise<Response> {\n      const { method = 'GET', headers = {}, body } = options\n      const resolvable = createResolvable<Response>()\n      const clientRequest = request({\n        path,\n        method,\n        socketPath,\n        headers: headers as Record<string, string>,\n      },\n\n      // --- Handle incoming response.\n      (response) => {\n        const body = new ReadableStream<Uint8Array>({\n          start(controller) {\n            response.on('data', (chunk: Uint8Array) => controller.enqueue(chunk))\n            response.on('error', error => controller.error(error))\n            response.on('end', () => controller.close())\n          },\n        })\n\n        const bytes = async() => {\n          const reader = body.getReader()\n          const chunks: Uint8Array[] = []\n          while (true) {\n            const { done, value } = await reader.read()\n            if (done || !value) break\n            chunks.push(value)\n          }\n          const buffer = Buffer.concat(chunks)\n          return Uint8Array.from(buffer)\n        }\n\n        const text = async() => {\n          const buffer = await bytes()\n          return [...buffer].map(x => String.fromCodePoint(x)).join('')\n        }\n\n        resolvable.resolve({\n          ok: response.statusCode! >= 200 && response.statusCode! < 300,\n          url: response.url,\n          status: response.statusCode!,\n          statusText: response.statusMessage!,\n          headers: new Headers(response.headers as Record<string, string>),\n          body,\n          get bodyUsed() { return body.locked },\n          bytes,\n          text,\n          json: () => text().then(JSON.parse),\n          arrayBuffer: () => bytes().then(buffer => buffer.buffer),\n        } as Response)\n      })\n\n      // --- Write the request body.\n      if (body) clientRequest.write(body)\n      clientRequest.on('error', resolvable.reject)\n      clientRequest.end()\n      return resolvable.promise\n    },\n\n    connect(path: string, options?: ClientOptions): Awaitable<WebSocket, WebSocket> {\n      const ws = new WebSocket(`ws+unix:${socketPath}:${path}`, options)\n      const ready = () => new Promise<WebSocket>((resolve, reject) => {\n        const callbackOpen = () => {\n          resolve(ws)\n          ws.removeEventListener('open', callbackOpen)\n          ws.removeEventListener('error', reject)\n        }\n        ws.on('open', callbackOpen)\n        ws.on('error', reject)\n      })\n      return awaitable(ws, ready)\n    },\n\n    async destroy() {\n      if (server) {\n        server.closeAllConnections()\n        server.close()\n        server = undefined\n        await rm(socketPath, { force: true })\n      }\n      if (application.dataSource?.isInitialized)\n        await application.dataSource.destroy()\n    },\n\n    [Symbol.dispose]() {\n      return this.destroy()\n    },\n  }\n\n  return new Proxy(application, {\n    get: (_, name: string) => {\n      if (name in context) return context[name as keyof typeof context]\n      if (name in application) return application[name as keyof typeof application]\n    },\n  }) as TestApplication<T>\n}\n","import { H3Event } from 'h3'\nimport { IncomingMessage, ServerResponse } from 'node:http'\nimport { Socket } from 'node:net'\n\ninterface Options {\n  method?: string\n  headers?: Record<string, string>\n  remoteAddress?: string\n}\n\n/**\n * Create a mock H3 event for testing.\n *\n * @param options The options to create the event with.\n * @returns The created H3 event.\n */\nexport function createTestEvent(options: Options = {}) {\n  const { headers = {}, method = 'GET', remoteAddress = '127.0.0.1' } = options\n\n  // --- Override the read-only `remoteAddress` property of the socket.\n  const socket = new Socket()\n  const request = new IncomingMessage(socket)\n  const response = new ServerResponse(request)\n  request.method = method\n\n  // --- To avoid casing issues, force all headers to lower case.\n  for (const key in headers) {\n    const lower = key.toLowerCase()\n    request.headers[lower] = headers[key]\n  }\n\n  // --- Return the created event.\n  const event = new H3Event(request, response)\n  event.context.clientAddress = remoteAddress\n  return event\n}\n","import type { Peer } from 'crossws'\n\ninterface Options {\n  url?: string\n  headers?: Record<string, string>\n  remoteAddress?: string\n}\n\n/**\n * Create a mock `crossws` Peer for testing.\n *\n * @param options The options to create the event with.\n * @returns The created H3 event.\n */\nexport function createTestPeer(options: Options = {}): Peer {\n  const { url = 'http://localhost', headers = {}, remoteAddress = '127.0.0.1' } = options\n  const request = new Request(url, { headers })\n  return { request, remoteAddress } as Peer\n}\n","import { DataSource } from 'typeorm'\n\nexport function isDataSource(value: unknown): value is DataSource {\n  return value instanceof DataSource\n    || typeof value === 'object'\n    && value !== null\n    && '@instanceOf' in value\n    && value['@instanceOf'] === Symbol.for('DataSource')\n}\n","/* eslint-disable unicorn/no-null */\nimport type { ValueTransformer } from 'typeorm'\n\n/**\n * Transform the field value to a date when saving it to the database\n * and from a date when reading it from the database. This is used to\n * store dates in the database as strings and read them as dates.\n *\n * @example\n * export class Entity extends BaseEntity {\n * **@Column('varchar', { transformer: transformerDate, length: 255 })\n *     createdAt: Date\n * }\n */\nexport const transformerDate = {\n  to(value?: Date | null): null | string {\n    if (value instanceof Date === false) return null\n    return value.toISOString()\n  },\n  from(value?: null | string): Date | undefined {\n    if (typeof value !== 'string') return undefined\n    return new Date(value)\n  },\n} satisfies ValueTransformer\n","import type { ParserLike, ParserResult } from '@unshared/validation'\nimport { createParser } from '@unshared/validation'\n\nexport interface ValueTransformerTyped<T> {\n  to(value?: unknown): T | undefined\n  from(value?: unknown): unknown\n}\n\n/**\n * Create a TypeORM transformer from a set of parser rules. This is used to\n * transform and validate values when saving them to the database. It does not\n * transform the value when reading it from the database.\n *\n * @param rules The parser rules to use.\n * @returns The TypeORM transformer.\n * @example\n *\n * // Create a transformer from a single parser rule\n * const transformer = transformerFromParser(assertStringEmail)\n *\n * // Apply the transformer to a field in a TypeORM entity\n * export class User {\n *   \\@Column('varchar', { transformer })\n *   email: string\n * }\n */\nexport function transformerFromParser<T extends ParserLike>(...rules: T): ValueTransformerTyped<ParserResult<T>> {\n  const parse = createParser(...rules)\n  return {\n    to(value?: unknown) {\n      if (value !== null && value !== undefined)\n        return parse(value)\n    },\n    from(value?: unknown) {\n      return value\n    },\n  } as ValueTransformerTyped<ParserResult<T>>\n}\n","import type { ValueTransformer } from 'typeorm'\n\n/**\n * Transforms a JSON object to a string when saving it to the database\n * and from a string to a JSON object when reading it from the database.\n * This is used to store JSON objects in the database as strings and read them as JSON objects.\n *\n * @example\n * export class Entity extends BaseEntity {\n * **@Column('json', { transformer: transformerJson, nullable: true })\n *    passwordOptions: PasswordOptions\n * }\n */\nexport const transformerJson = {\n  to(value?: unknown): string | undefined {\n    if (typeof value === 'object' && value !== null)\n      return JSON.stringify(value)\n  },\n  from(value?: unknown): unknown {\n    if (typeof value !== 'string') return\n    try { return JSON.parse(value) as unknown }\n    catch { return }\n  },\n} satisfies ValueTransformer\n","import type { ValueTransformer } from 'typeorm'\nimport { createSemver, Semver } from '@unshared/string/createSemver'\n\n/**\n * Transform the field value to a sementic version string when saving it to the database\n * and into a `Semver` instance when reading it from the database. This is used to\n * store sementic versions in the database as strings and read them as `Semver` instances.\n *\n * @example\n * export class Entity extends BaseEntity {\n * **@Column('varchar', { transformer: transformerSemver, length: 255 })\n *     version: Semver\n * }\n */\nexport const transformerSemver: ValueTransformer = {\n  to(value?: unknown): string | undefined {\n    if (value instanceof Semver) return value.toString()\n  },\n  from(value?: unknown): Semver | undefined {\n    if (typeof value === 'string') return createSemver(value)\n  },\n}\n"],"names":["defineEventHandler","readValidatedBody","getValidatedQuery","readFormData","getValidatedRouterParams","setResponseStatus","defineWebSocketHandler","SYMBOL_HTTP_ROUTE","SYMBOL_WS_ROUTE","createH3EventStream","randomUUID","_Application","parseEnvironments","DataSource","module","isConstructor","dedent","createRouter","createApp","toNodeListener","createServer","Once","options","createResolvable","request","body","ws","WebSocket","awaitable","rm","Socket","IncomingMessage","ServerResponse","H3Event","createParser","Semver","createSemver"],"mappings":"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"}
+\ No newline at end of file
+diff --git a/dist/createApplication.cjs b/dist/createApplication.cjs
+index b62af4e6bb6fc16de64b9894af3aa188bf90c07b..4224cefa70da9621507acc4061b2613e96e4ec34 100644
+--- a/dist/createApplication.cjs
++++ b/dist/createApplication.cjs
+@@ -7,7 +7,7 @@ require("crossws/adapters/node");
+ require("h3");
+ require("node:http");
+ require("typeorm");
+-var createApplication = require("./chunks/BgZJfEXs.cjs");
++var createApplication = require("./chunks/DaBTSnuJ.cjs");
+ require("./createHttpRoute.cjs");
+ require("./createWebSocketRoute.cjs");
+ require("node:crypto");
+diff --git a/dist/createApplication.d.ts b/dist/createApplication.d.ts
+index 05ba9a37d0760989aff3446fcff5481aedec1018..1d52c814d94d8576ceae9a0794b63843debad256 100644
+--- a/dist/createApplication.d.ts
++++ b/dist/createApplication.d.ts
+@@ -2,7 +2,7 @@ import 'http';
+ import 'h3';
+ import '@unshared/types';
+ import 'typeorm';
+-export { a as Application, A as ApplicationOptions, D as DEFAULT_DATA_SOURCE_OPTIONS } from './chunks/BVXIWbYQ.js';
++export { a as Application, A as ApplicationOptions, D as DEFAULT_DATA_SOURCE_OPTIONS } from './chunks/Cobpaxn_.js';
+ import './BaseEntity.js';
+ import 'node:crypto';
+ import 'crossws';
+diff --git a/dist/createApplication.js b/dist/createApplication.js
+index 612b786045640161cc7db15533ce1913601c5503..527180f7f4608db83c9f3062056c4fef6d8a51cf 100644
+--- a/dist/createApplication.js
++++ b/dist/createApplication.js
+@@ -6,7 +6,7 @@ import "crossws/adapters/node";
+ import "h3";
+ import "node:http";
+ import "typeorm";
+-import { A, D } from "./chunks/2P9mXshK.js";
++import { A, D } from "./chunks/BR0f-Cns.js";
+ import "./createHttpRoute.js";
+ import "./createWebSocketRoute.js";
+ import "node:crypto";
+diff --git a/dist/createHttpRoute.d.ts b/dist/createHttpRoute.d.ts
+index 994d888aa34547b5155295cd5cc8c2932dec272d..15caaabdf5b7755f81541b6ebf97141521474b8b 100644
+--- a/dist/createHttpRoute.d.ts
++++ b/dist/createHttpRoute.d.ts
+@@ -1,6 +1,6 @@
+ import '@unshared/types';
+ import 'h3';
+-export { e as HttpRoute, b as HttpRouteContext, d as HttpRouteHandler, H as HttpRouteName, c as HttpRouteOptions, S as SYMBOL_HTTP_ROUTE, f as createHttpRoute } from './chunks/BVXIWbYQ.js';
++export { e as HttpRoute, b as HttpRouteContext, d as HttpRouteHandler, H as HttpRouteName, c as HttpRouteOptions, S as SYMBOL_HTTP_ROUTE, f as createHttpRoute } from './chunks/Cobpaxn_.js';
+ import 'http';
+ import 'typeorm';
+ import './BaseEntity.js';
+diff --git a/dist/createModule.cjs b/dist/createModule.cjs
+index 65f70e62ea50650990441504fd7598555e132c23..a5356ef904914c6b4bc1a8ed5a87d0537b68fe81 100644
+--- a/dist/createModule.cjs
++++ b/dist/createModule.cjs
+@@ -1,5 +1,5 @@
+ "use strict";
+-var h3 = require("h3"), createApplication = require("./chunks/BgZJfEXs.cjs");
++var h3 = require("h3"), createApplication = require("./chunks/DaBTSnuJ.cjs");
+ require("./createHttpRoute.cjs");
+ require("./createWebSocketRoute.cjs");
+ require("node:crypto");
+diff --git a/dist/createModule.d.ts b/dist/createModule.d.ts
+index d3b41d104a818d7dbe43e1c25b56263080eed617..3df2880b2d93651cb50612305807058fffe242d8 100644
+--- a/dist/createModule.d.ts
++++ b/dist/createModule.d.ts
+@@ -1,5 +1,5 @@
+ import 'h3';
+-export { M as ModuleBase } from './chunks/BVXIWbYQ.js';
++export { M as ModuleBase } from './chunks/Cobpaxn_.js';
+ import '@unshared/types';
+ import './BaseEntity.js';
+ import 'http';
+diff --git a/dist/createModule.js b/dist/createModule.js
+index aef2e7643c732e12937570b97bb451484b0de17b..09b3f15b4e0eeed1b98e27930106103159d8571c 100644
+--- a/dist/createModule.js
++++ b/dist/createModule.js
+@@ -1,5 +1,5 @@
+ import { setHeader } from "h3";
+-import { a as createEventStream } from "./chunks/2P9mXshK.js";
++import { a as createEventStream } from "./chunks/BR0f-Cns.js";
+ import "./createHttpRoute.js";
+ import "./createWebSocketRoute.js";
+ import "node:crypto";
+diff --git a/dist/createWebSocketRoute.cjs.map b/dist/createWebSocketRoute.cjs.map
+index d79d86fbfae1e966f5e3211c08c31a1e5dbc2d03..c7ced0793abddcd3c8e85a176386c3b310e4647c 100644
+--- a/dist/createWebSocketRoute.cjs.map
++++ b/dist/createWebSocketRoute.cjs.map
+@@ -1 +1 @@
+-{"version":3,"file":"createWebSocketRoute.cjs","sources":["../createWebSocketRoute.ts"],"sourcesContent":["import type { MaybePromise } from '@unshared/types'\nimport type { Peer, WSError } from 'crossws'\nimport type { Parser } from './types'\n\n/** Symbol to identify a route object. */\nexport const SYMBOL_WS_ROUTE = Symbol.for('WebSocketRoute')\n\n/** The name of the route. It includes the method and the path. */\nexport type WebSocketRouteName = `WS /${string}`\n\n/** The context passed to the route handler. */\ninterface Context<T extends WebSocketRouteOptions> {\n  peer: Peer\n  error: WSError\n  details: { code?: number; reason?: string }\n  message: T extends WebSocketRouteOptions<any, infer U, any, any> ? U : never\n  parameters: T extends WebSocketRouteOptions<any, any, any, infer U> ? U : never\n}\n\n/** The WebSocket route options. */\nexport interface WebSocketRouteOptions<\n  Name extends WebSocketRouteName = WebSocketRouteName,\n  ClientMessage = unknown,\n  ServerMessage = unknown,\n  Parameters = unknown,\n> {\n  name: Name\n  parseParameters?: Parser<Parameters>\n  parseClientMessage?: Parser<ClientMessage>\n  parseServerMessage?: Parser<ServerMessage>\n}\n\n/** The WebSocket route handlers. */\nexport interface WebSocketRouteHandlers<T extends WebSocketRouteOptions> {\n  onOpen?: (context: Pick<Context<T>, 'parameters' | 'peer'>) => MaybePromise<void>\n  onMessage?: (context: Pick<Context<T>, 'message' | 'parameters' | 'peer'>) => MaybePromise<void>\n  onClose?: (context: Pick<Context<T>, 'details' | 'parameters' | 'peer'>) => MaybePromise<void>\n  onError?: (context: Pick<Context<T>, 'error' | 'peer'>) => MaybePromise<void>\n}\n\n/** A WebSocket route object. */\nexport type WebSocketRoute<\n  T extends WebSocketRouteOptions = WebSocketRouteOptions,\n  U extends WebSocketRouteHandlers<T> = WebSocketRouteHandlers<T>,\n> = T & U & { [SYMBOL_WS_ROUTE]: true }\n\n/**\n * Create a route that can be used to handle a WebSocket request. The route includes the path,\n * message, and the callback that is called when the route is matched.\n *\n * @param options The options used to define the route.\n * @param handlers The callback that is called when the route is matched.\n * @returns The route that can be used to handle the request.\n */\nexport function createWebSocketRoute<\n  T extends WebSocketRouteOptions,\n  U extends WebSocketRouteHandlers<T>,\n>(\n  options: Readonly<T>,\n  handlers: Readonly<U>,\n): WebSocketRoute<T, U> {\n  return { [SYMBOL_WS_ROUTE]: true, ...options, ...handlers } as WebSocketRoute<T, U>\n}\n"],"names":[],"mappings":";AAKa,MAAA,kBAAkB,OAAO,IAAI,gBAAgB;AAiD1C,SAAA,qBAId,SACA,UACsB;AACf,SAAA,EAAE,CAAC,eAAe,GAAG,IAAM,GAAG,SAAS,GAAG,SAAS;AAC5D;;;"}
+\ No newline at end of file
++{"version":3,"file":"createWebSocketRoute.cjs","sources":["../createWebSocketRoute.ts"],"sourcesContent":["import type { MaybePromise } from '@unshared/types'\nimport type { Peer, WSError } from 'crossws'\nimport type { Parser } from './types'\n\n/** Symbol to identify a route object. */\nexport const SYMBOL_WS_ROUTE = Symbol.for('WebSocketRoute')\n\n/** The name of the route. It includes the method and the path. */\nexport type WebSocketRouteName = `WS /${string}`\n\n/** The context passed to the route handler. */\ninterface Context<T extends WebSocketRouteOptions> {\n  peer: Peer\n  error: WSError\n  details: { code?: number; reason?: string }\n  query: T extends WebSocketRouteOptions<any, any, any, any, infer U> ? U : never\n  message: T extends WebSocketRouteOptions<any, infer U, any, any, any> ? U : never\n  parameters: T extends WebSocketRouteOptions<any, any, any, infer U, any> ? U : never\n}\n\n/** The WebSocket route options. */\nexport interface WebSocketRouteOptions<\n  Name extends WebSocketRouteName = WebSocketRouteName,\n  ClientMessage = unknown,\n  ServerMessage = unknown,\n  Parameters = unknown,\n  Query = unknown,\n> {\n  name: Name\n  parseQuery?: Parser<Query>\n  parseParameters?: Parser<Parameters>\n  parseClientMessage?: Parser<ClientMessage>\n  parseServerMessage?: Parser<ServerMessage>\n}\n\n/** The WebSocket route handlers. */\nexport interface WebSocketRouteHandlers<T extends WebSocketRouteOptions> {\n  onOpen?: (context: Pick<Context<T>, 'parameters' | 'peer' | 'query'>) => MaybePromise<void>\n  onMessage?: (context: Pick<Context<T>, 'message' | 'parameters' | 'peer' | 'query'>) => MaybePromise<void>\n  onClose?: (context: Pick<Context<T>, 'details' | 'parameters' | 'peer' | 'query'>) => MaybePromise<void>\n  onError?: (context: Pick<Context<T>, 'error' | 'peer'>) => MaybePromise<void>\n}\n\n/** A WebSocket route object. */\nexport type WebSocketRoute<\n  T extends WebSocketRouteOptions = WebSocketRouteOptions,\n  U extends WebSocketRouteHandlers<T> = WebSocketRouteHandlers<T>,\n> = T & U & { [SYMBOL_WS_ROUTE]: true }\n\n/**\n * Create a route that can be used to handle a WebSocket request. The route includes the path,\n * message, and the callback that is called when the route is matched.\n *\n * @param options The options used to define the route.\n * @param handlers The callback that is called when the route is matched.\n * @returns The route that can be used to handle the request.\n */\nexport function createWebSocketRoute<\n  T extends WebSocketRouteOptions,\n  U extends WebSocketRouteHandlers<T>,\n>(\n  options: Readonly<T>,\n  handlers: Readonly<U>,\n): WebSocketRoute<T, U> {\n  return { [SYMBOL_WS_ROUTE]: true, ...options, ...handlers } as WebSocketRoute<T, U>\n}\n"],"names":[],"mappings":";AAKa,MAAA,kBAAkB,OAAO,IAAI,gBAAgB;AAoD1C,SAAA,qBAId,SACA,UACsB;AACf,SAAA,EAAE,CAAC,eAAe,GAAG,IAAM,GAAG,SAAS,GAAG,SAAS;AAC5D;;;"}
+\ No newline at end of file
+diff --git a/dist/createWebSocketRoute.d.ts b/dist/createWebSocketRoute.d.ts
+index 088aa69777ac197d50f8c7e5a49f8fde83d9f859..4b2f52a41e7d8e2b2d46857a694a387c0100e4ca 100644
+--- a/dist/createWebSocketRoute.d.ts
++++ b/dist/createWebSocketRoute.d.ts
+@@ -1,6 +1,6 @@
+ import '@unshared/types';
+ import 'crossws';
+-export { g as SYMBOL_WS_ROUTE, j as WebSocketRoute, i as WebSocketRouteHandlers, W as WebSocketRouteName, h as WebSocketRouteOptions, k as createWebSocketRoute } from './chunks/BVXIWbYQ.js';
++export { g as SYMBOL_WS_ROUTE, j as WebSocketRoute, i as WebSocketRouteHandlers, W as WebSocketRouteName, h as WebSocketRouteOptions, k as createWebSocketRoute } from './chunks/Cobpaxn_.js';
+ import 'http';
+ import 'h3';
+ import 'typeorm';
+diff --git a/dist/createWebSocketRoute.js.map b/dist/createWebSocketRoute.js.map
+index 7a4a7361452bb90df1e7f9e8196fb4ba2a5791b6..b3f9c9d6b9818e65e7ba4e045cf17e2e1eb98cff 100644
+--- a/dist/createWebSocketRoute.js.map
++++ b/dist/createWebSocketRoute.js.map
+@@ -1 +1 @@
+-{"version":3,"file":"createWebSocketRoute.js","sources":["../createWebSocketRoute.ts"],"sourcesContent":["import type { MaybePromise } from '@unshared/types'\nimport type { Peer, WSError } from 'crossws'\nimport type { Parser } from './types'\n\n/** Symbol to identify a route object. */\nexport const SYMBOL_WS_ROUTE = Symbol.for('WebSocketRoute')\n\n/** The name of the route. It includes the method and the path. */\nexport type WebSocketRouteName = `WS /${string}`\n\n/** The context passed to the route handler. */\ninterface Context<T extends WebSocketRouteOptions> {\n  peer: Peer\n  error: WSError\n  details: { code?: number; reason?: string }\n  message: T extends WebSocketRouteOptions<any, infer U, any, any> ? U : never\n  parameters: T extends WebSocketRouteOptions<any, any, any, infer U> ? U : never\n}\n\n/** The WebSocket route options. */\nexport interface WebSocketRouteOptions<\n  Name extends WebSocketRouteName = WebSocketRouteName,\n  ClientMessage = unknown,\n  ServerMessage = unknown,\n  Parameters = unknown,\n> {\n  name: Name\n  parseParameters?: Parser<Parameters>\n  parseClientMessage?: Parser<ClientMessage>\n  parseServerMessage?: Parser<ServerMessage>\n}\n\n/** The WebSocket route handlers. */\nexport interface WebSocketRouteHandlers<T extends WebSocketRouteOptions> {\n  onOpen?: (context: Pick<Context<T>, 'parameters' | 'peer'>) => MaybePromise<void>\n  onMessage?: (context: Pick<Context<T>, 'message' | 'parameters' | 'peer'>) => MaybePromise<void>\n  onClose?: (context: Pick<Context<T>, 'details' | 'parameters' | 'peer'>) => MaybePromise<void>\n  onError?: (context: Pick<Context<T>, 'error' | 'peer'>) => MaybePromise<void>\n}\n\n/** A WebSocket route object. */\nexport type WebSocketRoute<\n  T extends WebSocketRouteOptions = WebSocketRouteOptions,\n  U extends WebSocketRouteHandlers<T> = WebSocketRouteHandlers<T>,\n> = T & U & { [SYMBOL_WS_ROUTE]: true }\n\n/**\n * Create a route that can be used to handle a WebSocket request. The route includes the path,\n * message, and the callback that is called when the route is matched.\n *\n * @param options The options used to define the route.\n * @param handlers The callback that is called when the route is matched.\n * @returns The route that can be used to handle the request.\n */\nexport function createWebSocketRoute<\n  T extends WebSocketRouteOptions,\n  U extends WebSocketRouteHandlers<T>,\n>(\n  options: Readonly<T>,\n  handlers: Readonly<U>,\n): WebSocketRoute<T, U> {\n  return { [SYMBOL_WS_ROUTE]: true, ...options, ...handlers } as WebSocketRoute<T, U>\n}\n"],"names":[],"mappings":"AAKa,MAAA,kBAAkB,OAAO,IAAI,gBAAgB;AAiD1C,SAAA,qBAId,SACA,UACsB;AACf,SAAA,EAAE,CAAC,eAAe,GAAG,IAAM,GAAG,SAAS,GAAG,SAAS;AAC5D;"}
+\ No newline at end of file
++{"version":3,"file":"createWebSocketRoute.js","sources":["../createWebSocketRoute.ts"],"sourcesContent":["import type { MaybePromise } from '@unshared/types'\nimport type { Peer, WSError } from 'crossws'\nimport type { Parser } from './types'\n\n/** Symbol to identify a route object. */\nexport const SYMBOL_WS_ROUTE = Symbol.for('WebSocketRoute')\n\n/** The name of the route. It includes the method and the path. */\nexport type WebSocketRouteName = `WS /${string}`\n\n/** The context passed to the route handler. */\ninterface Context<T extends WebSocketRouteOptions> {\n  peer: Peer\n  error: WSError\n  details: { code?: number; reason?: string }\n  query: T extends WebSocketRouteOptions<any, any, any, any, infer U> ? U : never\n  message: T extends WebSocketRouteOptions<any, infer U, any, any, any> ? U : never\n  parameters: T extends WebSocketRouteOptions<any, any, any, infer U, any> ? U : never\n}\n\n/** The WebSocket route options. */\nexport interface WebSocketRouteOptions<\n  Name extends WebSocketRouteName = WebSocketRouteName,\n  ClientMessage = unknown,\n  ServerMessage = unknown,\n  Parameters = unknown,\n  Query = unknown,\n> {\n  name: Name\n  parseQuery?: Parser<Query>\n  parseParameters?: Parser<Parameters>\n  parseClientMessage?: Parser<ClientMessage>\n  parseServerMessage?: Parser<ServerMessage>\n}\n\n/** The WebSocket route handlers. */\nexport interface WebSocketRouteHandlers<T extends WebSocketRouteOptions> {\n  onOpen?: (context: Pick<Context<T>, 'parameters' | 'peer' | 'query'>) => MaybePromise<void>\n  onMessage?: (context: Pick<Context<T>, 'message' | 'parameters' | 'peer' | 'query'>) => MaybePromise<void>\n  onClose?: (context: Pick<Context<T>, 'details' | 'parameters' | 'peer' | 'query'>) => MaybePromise<void>\n  onError?: (context: Pick<Context<T>, 'error' | 'peer'>) => MaybePromise<void>\n}\n\n/** A WebSocket route object. */\nexport type WebSocketRoute<\n  T extends WebSocketRouteOptions = WebSocketRouteOptions,\n  U extends WebSocketRouteHandlers<T> = WebSocketRouteHandlers<T>,\n> = T & U & { [SYMBOL_WS_ROUTE]: true }\n\n/**\n * Create a route that can be used to handle a WebSocket request. The route includes the path,\n * message, and the callback that is called when the route is matched.\n *\n * @param options The options used to define the route.\n * @param handlers The callback that is called when the route is matched.\n * @returns The route that can be used to handle the request.\n */\nexport function createWebSocketRoute<\n  T extends WebSocketRouteOptions,\n  U extends WebSocketRouteHandlers<T>,\n>(\n  options: Readonly<T>,\n  handlers: Readonly<U>,\n): WebSocketRoute<T, U> {\n  return { [SYMBOL_WS_ROUTE]: true, ...options, ...handlers } as WebSocketRoute<T, U>\n}\n"],"names":[],"mappings":"AAKa,MAAA,kBAAkB,OAAO,IAAI,gBAAgB;AAoD1C,SAAA,qBAId,SACA,UACsB;AACf,SAAA,EAAE,CAAC,eAAe,GAAG,IAAM,GAAG,SAAS,GAAG,SAAS;AAC5D;"}
+\ No newline at end of file
+diff --git a/dist/index.cjs b/dist/index.cjs
+index a922eb1227f443de0319e0379e8bf223f03778be..8127272e2aac4084c50f95a27ea802aacc20fc10 100644
+--- a/dist/index.cjs
++++ b/dist/index.cjs
+@@ -1,5 +1,5 @@
+ "use strict";
+-var BaseEntity = require("./BaseEntity.cjs"), createApplication = require("./chunks/BgZJfEXs.cjs"), createError = require("./createError.cjs"), createHttpRoute = require("./createHttpRoute.cjs"), createModule = require("./createModule.cjs"), createWebSocketRoute = require("./createWebSocketRoute.cjs");
++var BaseEntity = require("./BaseEntity.cjs"), createApplication = require("./chunks/DaBTSnuJ.cjs"), createError = require("./createError.cjs"), createHttpRoute = require("./createHttpRoute.cjs"), createModule = require("./createModule.cjs"), createWebSocketRoute = require("./createWebSocketRoute.cjs");
+ require("./types.cjs");
+ require("node:crypto");
+ require("reflect-metadata");
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+index 9a0ee414eb94f359cd7acc253bf627051a4a6fcc..4b622e475b933a6e2d1127242a4a3f4eb81ad0a1 100644
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -1,5 +1,5 @@
+ export { BaseEntity } from './BaseEntity.js';
+-export { a as Application, A as ApplicationOptions, m as ApplicationOrModule, D as DEFAULT_DATA_SOURCE_OPTIONS, s as EventStream, r as EventStreamFunction, E as EventStreamPayload, e as HttpRoute, b as HttpRouteContext, d as HttpRouteHandler, H as HttpRouteName, c as HttpRouteOptions, M as ModuleBase, o as ModuleConstructor, n as ModuleInstance, l as ModuleLike, p as ModuleOptions, q as ModuleRepositories, P as Parser, R as Route, S as SYMBOL_HTTP_ROUTE, g as SYMBOL_WS_ROUTE, j as WebSocketRoute, i as WebSocketRouteHandlers, W as WebSocketRouteName, h as WebSocketRouteOptions, t as createEventStream, f as createHttpRoute, k as createWebSocketRoute } from './chunks/BVXIWbYQ.js';
++export { a as Application, A as ApplicationOptions, m as ApplicationOrModule, D as DEFAULT_DATA_SOURCE_OPTIONS, s as EventStream, r as EventStreamFunction, E as EventStreamPayload, e as HttpRoute, b as HttpRouteContext, d as HttpRouteHandler, H as HttpRouteName, c as HttpRouteOptions, M as ModuleBase, o as ModuleConstructor, n as ModuleInstance, l as ModuleLike, p as ModuleOptions, q as ModuleRepositories, P as Parser, R as Route, S as SYMBOL_HTTP_ROUTE, g as SYMBOL_WS_ROUTE, j as WebSocketRoute, i as WebSocketRouteHandlers, W as WebSocketRouteName, h as WebSocketRouteOptions, t as createEventStream, f as createHttpRoute, k as createWebSocketRoute } from './chunks/Cobpaxn_.js';
+ export { CreateErrorOptions, ServerError, ServerErrorData, ServerErrorName, createError } from './createError.js';
+ export { TestApplication, TestApplicationContext, ValueTransformerTyped, createEventHandler, createHttpEventHandler, createTestApplication, createTestEvent, createTestPeer, createWebSocketEventHandler, isDataSource, isHttpRoute, isWebSocketRoute, transformerDate, transformerFromParser, transformerJson, transformerSemver } from './utils.js';
+ import '@unshared/types';
+diff --git a/dist/index.js b/dist/index.js
+index d236780ab20e81d5bfc47b12d0cf09e34c008d68..9d7a257e164ab7b3306ae8dbd3ba51c27cfed062 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -1,5 +1,5 @@
+ import { BaseEntity } from "./BaseEntity.js";
+-import { A, D, E, c, a, b, d, e, f, g, i, h, j, t, k, l, m } from "./chunks/2P9mXshK.js";
++import { A, D, E, c, a, b, d, e, f, g, i, h, j, t, k, l, m } from "./chunks/BR0f-Cns.js";
+ import { createError } from "./createError.js";
+ import { SYMBOL_HTTP_ROUTE, createHttpRoute } from "./createHttpRoute.js";
+ import { ModuleBase } from "./createModule.js";
+diff --git a/dist/types.d.ts b/dist/types.d.ts
+index 41eae8c16ea56421f14683c501f8de10e0cee499..da170e7b6cf1127bb0ccaf5df3804dc3630aaddb 100644
+--- a/dist/types.d.ts
++++ b/dist/types.d.ts
+@@ -1,6 +1,6 @@
+ import '@unshared/types';
+ import 'typeorm';
+-export { m as ApplicationOrModule, o as ModuleConstructor, n as ModuleInstance, l as ModuleLike, p as ModuleOptions, q as ModuleRepositories, P as Parser, R as Route } from './chunks/BVXIWbYQ.js';
++export { m as ApplicationOrModule, o as ModuleConstructor, n as ModuleInstance, l as ModuleLike, p as ModuleOptions, q as ModuleRepositories, P as Parser, R as Route } from './chunks/Cobpaxn_.js';
+ import 'http';
+ import 'h3';
+ import './BaseEntity.js';
+diff --git a/dist/utils.cjs b/dist/utils.cjs
+index fc0cb4a1a6647fe4f2f0d3d29d55c26355283273..25b5b8ce993239566261534380869402c0db5d54 100644
+--- a/dist/utils.cjs
++++ b/dist/utils.cjs
+@@ -1,5 +1,5 @@
+ "use strict";
+-var createApplication = require("./chunks/BgZJfEXs.cjs");
++var createApplication = require("./chunks/DaBTSnuJ.cjs");
+ require("h3");
+ require("./createHttpRoute.cjs");
+ require("./createWebSocketRoute.cjs");
+diff --git a/dist/utils.d.ts b/dist/utils.d.ts
+index cae88ee047ebaec77702333d928f63eb588203c3..3247f6398ed4596c1d05515f45405dcef0fa1cf9 100644
+--- a/dist/utils.d.ts
++++ b/dist/utils.d.ts
+@@ -1,7 +1,7 @@
+ import * as h3 from 'h3';
+ import { EventHandler, H3Event } from 'h3';
+-import { R as Route, e as HttpRoute, c as HttpRouteOptions, l as ModuleLike, a as Application, A as ApplicationOptions, j as WebSocketRoute, h as WebSocketRouteOptions } from './chunks/BVXIWbYQ.js';
+-export { s as EventStream, r as EventStreamFunction, E as EventStreamPayload, t as createEventStream } from './chunks/BVXIWbYQ.js';
++import { R as Route, e as HttpRoute, c as HttpRouteOptions, l as ModuleLike, a as Application, A as ApplicationOptions, j as WebSocketRoute, h as WebSocketRouteOptions } from './chunks/Cobpaxn_.js';
++export { s as EventStream, r as EventStreamFunction, E as EventStreamPayload, t as createEventStream } from './chunks/Cobpaxn_.js';
+ import { Awaitable } from '@unshared/functions';
+ import { Server } from 'node:http';
+ import { WebSocket } from 'ws';
+diff --git a/dist/utils.js b/dist/utils.js
+index 2878fd2e86f5e05b77d10d18abf9d87abd86160c..a0ea04c11985f60691ddae6949e1e062aa18931f 100644
+--- a/dist/utils.js
++++ b/dist/utils.js
+@@ -1,4 +1,4 @@
+-import { E, c, a, b, d, e, f, g, i, h, j, t, k, l, m } from "./chunks/2P9mXshK.js";
++import { E, c, a, b, d, e, f, g, i, h, j, t, k, l, m } from "./chunks/BR0f-Cns.js";
+ import "h3";
+ import "./createHttpRoute.js";
+ import "./createWebSocketRoute.js";

@@ -1,4 +1,4 @@
-import { ThreadError } from '@nwrx/core'
+import { ThreadError } from '@nwrx/nano'
 import { client } from './client'
 
 export interface SearchOptions {

@@ -1,6 +1,5 @@
 import type { ComponentJSON } from './serializeComponent'
 import { getModuleNodes } from '@nwrx/nano'
-import { MODULES } from './constants'
 import { serializeComponent } from './serializeComponent'
 
 export interface CategoryJSON {

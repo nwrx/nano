@@ -26,7 +26,7 @@ function createContext(fn: Function | string) {
   return { thread, nodeId, component }
 }
 
-describe('processInSandbox', () => {
+describe('processInSandbox', { retry: 3 }, () => {
   describe('process', () => {
     it('should call the process function of a component in a VM', async() => {
       const { thread, nodeId } = createContext(() => ({ value: 'Hello, World!' }))

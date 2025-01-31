@@ -15,6 +15,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   setValue: [unknown]
+  setVisibility: [boolean]
   searchOptions: [string, string]
   linkGrab: [path?: string]
   linkAssign: [path?: string]
@@ -43,10 +44,10 @@ const isLinkeable = computed(() =>
 
 <template>
   <div
-    class="flex items-center w-full relative"
+    class="flex items-center w-full relative group"
     :class="{
-      'pr-5 flex-row': !isOutput,
-      'pl-5 flex-row-reverse': isOutput,
+      'flex-row': !isOutput,
+      'flex-row-reverse': isOutput,
       'hover:bg-emphasized cursor-pointer': isLinkeable,
     }"
     @mousedown.left="() => { if (isLinkeable) emit('linkGrab') }"
@@ -146,6 +147,15 @@ const isLinkeable = computed(() =>
       :label="socket.name"
       :is-linked="isLinked"
       :default-value="socket.defaultValue"
+    />
+
+    <!-- Spacer -->
+    <div class="flex-grow" />
+
+    <!-- Hide socket button -->
+    <EditorNodeSocketHideFab
+      :is-output="isOutput"
+      @click="() => emit('setVisibility', false)"
     />
   </div>
 </template>

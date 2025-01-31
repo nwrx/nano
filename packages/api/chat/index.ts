@@ -1,6 +1,6 @@
 import { ModuleBase } from '@unserved/server'
 import { ModuleUser } from '../user'
-import { ModuleWorkspace } from '../workspace'
+import { ModuleProject } from '../project'
 import * as ENTITIES from './entities'
 import * as ROUTES from './routes'
 import * as UTILS from './utils'
@@ -14,6 +14,6 @@ export class ModuleChat extends ModuleBase {
   errors = UTILS.ERRORS
   routes = ROUTES
   entities = ENTITIES
-  dependencies = [ModuleUser, ModuleWorkspace]
+  dependencies = [ModuleUser, ModuleProject]
   chatSessions = new Map<string, UTILS.ChatSession>()
 }

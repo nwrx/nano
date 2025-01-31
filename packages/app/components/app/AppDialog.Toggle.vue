@@ -1,15 +1,15 @@
 <!-- eslint-disable vue/prop-name-casing -->
 <script setup lang="ts" generic="U extends ToggleType">
-import type { WorkspaceProjectPermission } from '@nwrx/nano-api'
+import type { ProjectPermission } from '@nwrx/nano-api'
 import type { BaseInputToggleProps, ToggleType } from '@unshared/vue'
 
-const props = defineProps<BaseInputToggleProps<WorkspaceProjectPermission, U> & {
+const props = defineProps<BaseInputToggleProps<ProjectPermission, U> & {
   label: string
   text: string
 }>()
 
 const emit = defineEmits<{
-  'update:modelValue': [value: WorkspaceProjectPermission]
+  'update:modelValue': [value: ProjectPermission]
 }>()
 
 const model = useVModel(props, 'modelValue', emit, { passive: true })

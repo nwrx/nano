@@ -1,4 +1,4 @@
-import type { application, WorkspaceProjectObject } from '@nwrx/nano-api'
+import type { ProjectObject } from '@nwrx/nano-api'
 import type { RouteRequestData } from '@unserved/client'
 import { useAlerts, useClient } from '#imports'
 
@@ -15,7 +15,7 @@ export type CreateProjectOptions = Omit<RouteRequestData<typeof application, 'PO
 export function useWorkspace(workspace: MaybeRef<string>, options: UseProjectOptions = {}) {
   const client = useClient()
   const alerts = useAlerts()
-  const data = ref<WorkspaceProjectObject[]>([])
+  const data = ref<ProjectObject[]>([])
 
   const refresh = async() => {
     await client.request('GET /api/projects', {

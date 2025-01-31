@@ -48,7 +48,7 @@ export async function createTestContext(testContext: TestContext) {
       const userModule = application.getModule(ModuleUser)
       const workspaceModule = application.getModule(ModuleWorkspace)
       const password = randomBytes(16).toString('hex')
-      const { user, workspace } = await createUser.call(userModule, {
+      let { user, workspace } = await createUser.call(userModule, {
         email: `${name}@acme.com`,
         username: name,
         password,
@@ -80,12 +80,12 @@ export async function createTestContext(testContext: TestContext) {
       // --- Save the user and workspace.
       const { User } = userModule.getRepositories()
       const { Workspace } = workspaceModule.getRepositories()
-      await User.save(user)
+      user = await User.save(user)
       await UserSession.save(session)
-      await Workspace.save(workspace)
+      workspace = await Workspace.save(workspace)
 
       // --- Return all the created entities and the headers to use in requests.
-      return { user, session, headers, password }
+      return { user, session, headers, password, workspace }
     },
 
     /************************************************/
@@ -98,7 +98,8 @@ export async function createTestContext(testContext: TestContext) {
       return { workspace: await Workspace.save(workspace) }
     },
 
-    assignWorkspace: async(workspace: Workspace, user: User, permission: WorkspacePermission) => {
+    assignWorkspace: async(workspace: Workspace, user: User, permission?: WorkspacePermission) => {
+      if (!permission) return { assignment: undefined }
       const { WorkspaceAssignment } = application.getModule(ModuleWorkspace).getRepositories()
       const assignment = WorkspaceAssignment.create({ workspace, user, permission })
       return { assignment: await WorkspaceAssignment.save(assignment) }
@@ -115,6 +116,7 @@ export async function createTestContext(testContext: TestContext) {
     },
 
     assignProject: async(project: Project, user: User, permission?: ProjectPermission) => {
+      if (!permission) return { assignment: undefined }
       const { ProjectAssignment } = application.getModule(ModuleProject).getRepositories()
       const assignment = ProjectAssignment.create({ project, user, permission })
       return { assignment: await ProjectAssignment.save(assignment) }

@@ -1,20 +1,21 @@
 <script setup lang="ts">
 import type {
-  MonitoringFlowThreadEventObject,
-  MonitoringFlowThreadNodeEventObject,
-  MonitoringFlowThreadObject,
-  WorkspaceProjectObject,
+  ProjectObject,
+  ThreadEventObject,
+  ThreadNodeEventObject,
+  ThreadObject,
 } from '@nwrx/nano-api'
+import { COLORS } from '~/uno.config'
 
 const props = defineProps<{
   selectedProject?: string
   selectedFlow?: string
   selectedThread?: string
   selectedEvent?: string
-  projects?: WorkspaceProjectObject[]
-  threads?: MonitoringFlowThreadObject[]
-  events?: MonitoringFlowThreadEventObject[]
-  nodeEvents?: MonitoringFlowThreadNodeEventObject[]
+  projects?: ProjectObject[]
+  threads?: ThreadObject[]
+  events?: ThreadEventObject[]
+  nodeEvents?: ThreadNodeEventObject[]
   eventNames?: string[]
   eventTypes?: string[]
 }>()

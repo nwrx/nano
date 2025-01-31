@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/cognitive-complexity */
 /* eslint-disable sonarjs/todo-tag */
 import type { Thread } from '@nwrx/nano'
 import type { Peer } from 'crossws'
@@ -9,10 +10,10 @@ import type { EditorSessionClientMessage } from './editorSessionClientMessage'
 import type { EditorSessionServerMessage } from './editorSessionServerMessage'
 import { getComponentInstanceValueOptions, serializeThread } from '@nwrx/nano'
 import { removeLink } from '@nwrx/nano'
-import { addComponentInstance, removeComponentInstances } from '@nwrx/nano'
-import { getComponentInstance } from '@nwrx/nano'
-import { setComponentInstanceInputValue } from '@nwrx/nano'
-import { setComponentInstanceMetaValue } from '@nwrx/nano'
+import { add, remove } from '@nwrx/nano'
+import { getInstance } from '@nwrx/nano'
+import { setInputValue } from '@nwrx/nano'
+import { setMetadataValue } from '@nwrx/nano'
 import { createLink } from '@nwrx/nano'
 import { serializeComponentInstance } from './serializeComponentInstance'
 import { serializeSession } from './serializeSession'
@@ -165,7 +166,7 @@ export class EditorSession {
 
       if (message.event === 'createNode') {
         const { kind, x, y } = message
-        const id = addComponentInstance(this.thread, { kind, meta: { position: { x, y } } })
+        const id = add(this.thread, { specifier: kind, metadata: { position: { x, y } } })
         const component = await serializeComponentInstance(this.thread, id)
         await this.save()
         this.broadcast({ event: 'node:created', id, component, x, y })
@@ -173,8 +174,8 @@ export class EditorSession {
 
       if (message.event === 'cloneNodes') {
         const { id, x, y } = message
-        const { kind, input } = getComponentInstance(this.thread, id)
-        const newId = addComponentInstance(this.thread, { kind, input, meta: { position: { x, y } } })
+        const { specifier: kind, input } = getInstance(this.thread, id)
+        const newId = add(this.thread, { specifier: kind, input, metadata: { position: { x, y } } })
         const component = await serializeComponentInstance(this.thread, newId)
         await this.save()
         this.broadcast({ event: 'node:created', id: newId, component, x, y })
@@ -182,21 +183,31 @@ export class EditorSession {
 
       if (message.event === 'removeNodes') {
         const { ids } = message
-        removeComponentInstances(this.thread, ...ids)
+        remove(this.thread, ...ids)
         this.broadcast({ event: 'node:removed', ids })
         await this.save()
       }
 
       if (message.event === 'setNodeInputValue') {
         const { id, name, value } = message
-        setComponentInstanceInputValue(this.thread, id, name, value)
+        setInputValue(this.thread, id, name, value)
         this.broadcast({ event: 'node:inputValueChanged', id, name, value })
+        await this.save()
+      }
+
+      if (message.event === 'setNodeInputVisibility') {
+        const { id, name, visible } = message
+        const { metadata: meta = {} } = getInstance(this.thread, id)
+        const visibility = meta.visibility ?? {}
+        const newValue = { ...visibility, [name]: visible }
+        setMetadataValue(this.thread, id, 'visibility', newValue)
+        this.broadcast({ event: 'node:metaValueChanged', id, name: 'visibility', value: newValue })
         await this.save()
       }
 
       if (message.event === 'setNodesPosition') {
         for (const { id, x, y } of message.positions) {
-          setComponentInstanceMetaValue(this.thread, id, 'position', { x, y })
+          setMetadataValue(this.thread, id, 'position', { x, y })
           this.broadcast({ event: 'node:metaValueChanged', id, name: 'position', value: { x, y } })
         }
         await this.save()
@@ -205,7 +216,7 @@ export class EditorSession {
       if (message.event === 'setNodeLabel') {
         const { id, label } = message
         const value = label.trim() === '' ? undefined : label
-        setComponentInstanceMetaValue(this.thread, id, 'label', value)
+        setMetadataValue(this.thread, id, 'label', value)
         this.broadcast({ event: 'node:metaValueChanged', id, name: 'label', value })
         await this.save()
       }
@@ -213,7 +224,7 @@ export class EditorSession {
       if (message.event === 'setNodeComment') {
         const { id, comment } = message
         const value = comment.trim() === '' ? undefined : comment
-        setComponentInstanceMetaValue(this.thread, id, 'comment', value)
+        setMetadataValue(this.thread, id, 'comment', value)
         this.broadcast({ event: 'node:metaValueChanged', id, name: 'comment', value })
         await this.save()
       }

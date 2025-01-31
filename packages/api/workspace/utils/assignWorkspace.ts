@@ -7,11 +7,17 @@ import { assertWorkspacePermission } from './assertWorkspacePermission'
 /** The parsed options to assign the user to the workspace with. */
 const ASSIGN_USER_TO_WORKSPACE_OPTIONS = createSchema({
 
-  /** The `User` responsible for the request. */
-  user: createSchema({ id: assertStringUuid, username: assertStringNotEmpty }),
+  /** The `User` instance of the user responsible for the request. */
+  user: createSchema({
+    id: assertStringUuid,
+    username: assertStringNotEmpty,
+  }),
 
   /** The `name` of the `Workspace` to assign the user to. */
-  workspace: createSchema({ id: assertStringUuid, name: assertStringNotEmpty }),
+  workspace: createSchema({
+    id: assertStringUuid,
+    name: assertStringNotEmpty,
+  }),
 
   /** The permission to assign to the user. */
   permission: assertWorkspacePermission,
@@ -33,7 +39,7 @@ export async function assignWorkspace(this: ModuleWorkspace, options: AssignUser
 
   // --- Assert the user is not already assigned to the workspace.
   const { WorkspaceAssignment } = this.getRepositories()
-  const existing = await WorkspaceAssignment.findOneBy({ user, workspace })
+  const existing = await WorkspaceAssignment.findOneBy({ user, workspace, permission })
   if (existing) throw this.errors.WORKSPACE_ALREADY_ASSIGNED(user.username, workspace.name, permission)
 
   // --- Also create the `Read` permission if the user does not have it.

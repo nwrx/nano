@@ -1,4 +1,4 @@
-import { defineComponent } from '@nwrx/core'
+import { defineComponent } from '@nwrx/nano'
 import { object, string } from '@nwrx/module-core/types'
 import { categoryLegifrance } from '../categories'
 import { getAccessToken } from '../utils/getAccessToken'

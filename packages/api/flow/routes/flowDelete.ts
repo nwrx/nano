@@ -3,7 +3,7 @@ import { createHttpRoute } from '@unserved/server'
 import { assertStringUuid, createParser } from '@unshared/validation'
 import { setResponseStatus } from 'h3'
 import { ModuleUser } from '../../user'
-import { ModuleWorkspace } from '../../workspace'
+import { ModuleProject } from '../../project'
 
 export function flowDelete(this: ModuleFlow) {
   return createHttpRoute(
@@ -15,7 +15,7 @@ export function flowDelete(this: ModuleFlow) {
     },
     async({ event, parameters }) => {
       const userModule = this.getModule(ModuleUser)
-      const workspaceModule = this.getModule(ModuleWorkspace)
+      const workspaceModule = this.getModule(ModuleProject)
       const { Flow } = this.getRepositories()
       const { user } = await userModule.authenticate(event)
       const { id } = parameters

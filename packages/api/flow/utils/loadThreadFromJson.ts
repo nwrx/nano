@@ -2,11 +2,10 @@ import type { Flow } from '../entities'
 import type { ModuleFlow } from '../index'
 import { getModuleNode } from '@nwrx/nano'
 import { defineComponent } from '@nwrx/nano'
-import { createThreadFromJson } from '@nwrx/nano'
+import { createThreadFromFlow } from '@nwrx/nano'
 import { memoize } from '@unshared/functions'
-import { ModuleMonitoring } from '../../monitoring'
-import { ModuleWorkspace } from '../../workspace'
-import { MODULES } from './constants'
+import { ModuleProject } from '../../project'
+import { ModuleMonitoring } from '../../thread'
 
 function FALLBACK_NODE(kind: string) {
   return defineComponent({
@@ -23,11 +22,11 @@ function FALLBACK_NODE(kind: string) {
  * @returns The resolved flow instance.
  */
 export function loadThreadFromJson(this: ModuleFlow, flow: Flow) {
-  const workspaceModule = this.getModule(ModuleWorkspace)
+  const workspaceModule = this.getModule(ModuleProject)
   const monitoringModule = this.getModule(ModuleMonitoring)
 
   // --- Load the `Thread` instance based on the flow specification.
-  const thread = createThreadFromJson(flow.data, {
+  const thread = createThreadFromFlow(flow.data, {
     componentResolvers: [
       memoize(async(kind) => {
         if (kind.startsWith('nwrx/')) kind = kind.slice(5)
@@ -43,16 +42,16 @@ export function loadThreadFromJson(this: ModuleFlow, flow: Flow) {
         if ('$fromVariable' in reference) {
           const { name } = reference.$fromVariable
           const { project } = flow
-          const { WorkspaceProjectVariable } = workspaceModule.getRepositories()
-          const variable = await WorkspaceProjectVariable.findOne({ where: { project, name } })
+          const { ProjectVariable } = workspaceModule.getRepositories()
+          const variable = await ProjectVariable.findOne({ where: { project, name } })
           if (!variable) throw new Error(`Variable not found: ${name}`)
           return variable.value
         }
         if ('$fromSecret' in reference) {
           const { name } = reference.$fromSecret
           const { project } = flow
-          const { WorkspaceProjectSecret } = workspaceModule.getRepositories()
-          const secret = await WorkspaceProjectSecret.findOne({ where: { project, name } })
+          const { ProjectSecret } = workspaceModule.getRepositories()
+          const secret = await ProjectSecret.findOne({ where: { project, name } })
           if (!secret) throw new Error(`Secret not found: ${name}`)
           return secret.cipher
         }

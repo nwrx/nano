@@ -126,6 +126,13 @@ export const EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA = createRuleSet(
   })],
 
   [createSchema({
+    event: assert.stringEquals('setNodeInputVisibility'),
+    id: assert.stringNotEmpty,
+    name: assert.stringNotEmpty,
+    visible: assert.boolean,
+  })],
+
+  [createSchema({
     event: assert.stringEquals('getInputValueOptions'),
     id: assert.stringNotEmpty,
     name: assert.stringNotEmpty,

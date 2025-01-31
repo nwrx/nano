@@ -1,4 +1,4 @@
-import type { Component } from '@nwrx/nano'
+import type { ComponentOptions } from '@nwrx/nano'
 import type { InputJSON } from './serializeInputSchema'
 import type { OutputJSON } from './serializeOutputSchema'
 import { serializeInputSchema } from './serializeInputSchema'
@@ -18,7 +18,7 @@ export interface ComponentJSON {
   outputSchema: OutputJSON[]
 }
 
-export function serializeComponent(component: Component): ComponentJSON {
+export function serializeComponent(component: ComponentOptions): ComponentJSON {
   return {
     kind: component.kind,
     icon: component.icon ?? 'https://api.iconify.design/carbon:unknown.svg',
@@ -29,7 +29,7 @@ export function serializeComponent(component: Component): ComponentJSON {
     categoryIcon: component.category?.icon ?? 'https://api.iconify.design/carbon:unknown.svg',
     categoryColor: component.category?.color ?? '#000000',
     categoryDescription: component.category?.description ?? 'No description available.',
-    inputSchema: serializeInputSchema(component.inputSchema),
-    outputSchema: serializeOutputSchema(component.outputSchema),
+    inputSchema: serializeInputSchema(component.inputs),
+    outputSchema: serializeOutputSchema(component.outputs),
   }
 }

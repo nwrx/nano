@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "rootDir": "."
+  },
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "../../tsconfig.json",
+  "include": ["./**/*.ts"],
+  "exclude": ["./**/node_modules", "./**/dist"]
+}

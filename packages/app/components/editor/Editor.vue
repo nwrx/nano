@@ -29,6 +29,7 @@ const emit = defineEmits<{
   setNodeComment: [string, string]
   setNodeInputValue: [string, string, unknown]
   getNodeInputOptions: [string, string, string | undefined]
+  setNodeSocketVisibility: [string, string, boolean]
   removeNodes: [string[]]
   createLink: [LinkJSON, LinkJSON]
   removeLink: [LinkJSON]
@@ -126,6 +127,7 @@ const editor = useFlowEditorView({
         @click="(event) => editor.onNodeClick(event, node.id)"
         @set-input-value="(key, value) => emit('setNodeInputValue', node.id, key, value)"
         @get-input-options="(key, query) => emit('getNodeInputOptions', node.id, key, query)"
+        @set-socket-visibility="(key, visible) => emit('setNodeSocketVisibility', node.id, key, visible)"
         @handle-grab="(event) => editor.onNodeHandleGrab(event, node.id)"
         @handle-release="() => editor.onNodeHandleRelease()"
         @link-grab="(link) => editor.onLinkGrab(link)"

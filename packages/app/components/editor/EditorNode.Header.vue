@@ -72,12 +72,11 @@ function handleGrab(event: MouseEvent) {
     <div class="flex-1" />
 
     <!-- Debug ID -->
-    <p v-if="text" class="text-sm truncate shrink text-white" v-text="text" />
+    <!-- <p v-if="text" class="text-sm truncate shrink text-white" v-text="text" /> -->
 
     <!-- Run button / play icon -->
     <BaseButton
       eager
-      class="flex items-center justify-center rounded size-5"
       @mousedown.stop
       @click="() => isRunning ? emit('abort') : emit('start')">
       <BaseIcon
@@ -87,3 +86,9 @@ function handleGrab(event: MouseEvent) {
     </BaseButton>
   </div>
 </template>
+
+<i18n lang="yaml">
+en:
+  menu.delete: Delete
+  menu.duplicate: Duplicate
+</i18n>

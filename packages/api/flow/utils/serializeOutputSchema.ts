@@ -1,4 +1,4 @@
-import type { OutputSchema } from '@nwrx/nano'
+import type { OutputSocket } from '@nwrx/nano'
 
 export interface OutputJSON {
   key: string
@@ -10,7 +10,7 @@ export interface OutputJSON {
   description?: string
 }
 
-export function serializeOutputSchema(schema?: OutputSchema): OutputJSON[] {
+export function serializeOutputSchema(schema?: OutputSocket): OutputJSON[] {
   if (!schema) return []
   return Object
     .entries(schema)

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { NodeEventMeta, ThreadEventMeta } from '@nwrx/nano'
+import type { ThreadEventMetadata } from '@nwrx/nano'
 import type { EditorSessionServerMessage } from '@nwrx/nano-api'
 
 defineProps<{
-  event: EditorSessionServerMessage & Partial<NodeEventMeta & ThreadEventMeta>
+  event: EditorSessionServerMessage & Partial<ThreadEventMetadata>
 }>()
 
 const { t } = useI18n()

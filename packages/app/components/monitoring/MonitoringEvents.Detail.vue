@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import type {
-  MonitoringFlowThreadEventObject,
-  MonitoringFlowThreadNodeEventObject,
+  ThreadEventObject,
+  ThreadNodeEventObject,
 } from '@nwrx/nano-api'
 
 defineProps<{
   type: string
-  event: MonitoringFlowThreadEventObject | MonitoringFlowThreadNodeEventObject
+  event: ThreadEventObject | ThreadNodeEventObject
 }>()
 
 const isOpen = ref(false)

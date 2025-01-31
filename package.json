@@ -16,6 +16,10 @@
         "meow",
         "@typescript-eslint/parser"
       ]
+    },
+    "patchedDependencies": {
+      "@unserved/server": "patches/@unserved__server.patch",
+      "@unserved/client": "patches/@unserved__client.patch"
     }
   },
   "scripts": {
