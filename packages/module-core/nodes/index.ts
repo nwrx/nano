@@ -1,4 +1,5 @@
 export * from './nodeFetch'
+export * from './nodeFetchTool'
 export * from './nodeGate'
 export * from './nodeInference'
 export * from './nodeInput'
