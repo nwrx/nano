@@ -1,5 +1,5 @@
 import type { MaybePromise } from '@unshared/types'
-import type { Component } from './defineComponent'
+import type { Component } from '../utils/defineComponent'
 import { assertNotNil, assertStringNotEmpty } from '@unshared/validation'
 
 /** The resolver for a flow node. */
