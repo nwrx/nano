@@ -18,28 +18,28 @@ const { t } = useI18n({ useScope: 'local' })
 </script>
 
 <template>
-  <div class="w-full border border-app rounded bg-app-foreground">
+  <div class="w-full border border-app rounded">
 
     <!-- Table -->
     <BaseTable
       class="w-full"
       :columns="['name', 'email', 'status']"
       class-cell="px-8 py-2"
-      class-row="border-t border-black/10 hover:bg-primary-500/5"
+      class-row="border-t border-app hover:bg-subtle"
       :rows="users">
 
       <!-- Header -->
       <template #header="label">
-        <div class="w-full font-medium px-8 py-1 text-sm text-start">
+        <div class="w-full font-medium px-lg py-sm text-sm text-start">
           {{ t(`header.${label}`) }}
         </div>
       </template>
 
       <!-- Cell / Name -->
       <template #cell.name="{ displayName, username, avatarUrl }">
-        <div class="flex items-center justify-start space-x-4 font-normal">
+        <div class="flex items-center justify-start space-x-md font-normal">
           <div
-            class="w-10 h-10 bg-cover bg-center rounded-full"
+            class="size-10 bg-cover bg-center rounded-full"
             :style="{ backgroundImage: `url(${avatarUrl})` }"
           />
           <div class="text-start">
@@ -51,26 +51,25 @@ const { t } = useI18n({ useScope: 'local' })
 
       <!-- Cell / Email -->
       <template #cell.email="{ email, verifiedAt, disabledAt }">
-        <div class="flex items-center justify-start space-x-4 font-normal">
+        <div class="flex items-center justify-start space-x-md font-normal">
           <Badge
             size="small"
-            class="font-normal"
             :label="email"
-            filled
-            :variant="verifiedAt ? 'primary' : 'danger'"
+            class="font-normal badge-soft"
+            :class="verifiedAt ? 'badge-primary' : 'badge-danger'"
           />
           <Badge
             size="small"
-            class="font-normal"
+            class="font-normal badge-soft"
+            :class="disabledAt ? 'badge-danger' : 'badge-success'"
             :icon="verifiedAt ? 'i-carbon:checkmark' : 'i-carbon:close'"
-            :variant="verifiedAt ? 'success' : 'danger'"
             :label="verifiedAt ? t('verified') : t('unverified')"
           />
           <Badge
             size="small"
-            class="font-normal"
+            class="font-normal badge-outlined"
+            :class="disabledAt ? 'badge-danger' : 'badge-success'"
             :icon="disabledAt ? 'i-carbon:close' : 'i-carbon:checkmark'"
-            :variant="disabledAt ? 'danger' : 'success'"
             :label="disabledAt ? t('disabled') : t('enabled')"
           />
         </div>

@@ -17,7 +17,7 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
 <template>
   <AppDialog
     v-model="model"
-    variant="success"
+    class-hint="hint-success"
     icon="i-carbon:checkmark"
     :title="t('title', { username: props.username })"
     :text="t('hint')"
