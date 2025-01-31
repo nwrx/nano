@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import type { Alert } from '@unshared/vue'
+import { useAlerts } from '#imports'
+
+const { alerts } = useAlerts()
 
 function getAlertIcon(alert: Alert) {
   if (alert.type === 'error') return 'i-carbon:error'
@@ -19,9 +22,7 @@ function getAlertIconColor(alert: Alert) {
 <template>
   <BaseAlerts
     id="alerts"
-    v-slot="{ alerts }"
     class="
-      fixed top-0 z-100 w-full
       p-12 flex items-end justify-start flex-col-reverse
       right-0 bottom-0 pointer-events-none gap-4
     ">

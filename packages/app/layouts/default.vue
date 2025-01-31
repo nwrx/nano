@@ -41,7 +41,7 @@ const isAuthenticationRoute = computed(() => {
         <main class="relative w-full h-full overflow-hidden rounded-lg">
 
           <!-- Alerts -->
-          <AppAlerts />
+          <AppAlerts class="fixed top-0 z-100 w-full" />
 
           <!-- On error, show error boundary -->
           <NuxtErrorBoundary>
