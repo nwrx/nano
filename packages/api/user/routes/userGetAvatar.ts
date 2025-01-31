@@ -1,6 +1,8 @@
 import type { ModuleUser } from '..'
 import { createRoute } from '@unserved/server'
+import { dedent } from '@unshared/string'
 import { assertStringNotEmpty, createSchema } from '@unshared/validation'
+import { setResponseHeader } from 'h3'
 import { ModuleStorage } from '../../storage'
 
 export function userGetAvatar(this: ModuleUser) {
@@ -13,16 +15,34 @@ export function userGetAvatar(this: ModuleUser) {
     },
     async({ event, parameters }) => {
       const storageModule = this.getModule(ModuleStorage)
+      const { user } = await this.authenticate(event, { optional: true }) ?? {}
       const { username } = parameters
-      const user = await this.resolveUser(username, { profile: { avatar: true } })
 
-      // --- If the user does not have an avatar, return a default image.
-      if (!user.profile) throw new Error('Profile not found.')
-      if (!user.profile.avatar)
-        return `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-6h4v2h-4v-2zm0-4h4v3h-2v-1h-2v-2zm1-7c-3.31 0-6 2.69-6 6h2c0-2.21 1.79-4 4-4v-2z"/></svg>')}`
+      // --- Resolve the user to get the avatar of.
+      const userToGet = await this.resolveUser({
+        user,
+        username,
+        withProfile: true,
+        withDeleted: true,
+        withDisabled: true,
+      })
+
+      // --- If the user does not have an avatar, return a simple SVG.
+      if (!userToGet.profile!.avatar) {
+        setResponseHeader(event, 'Cache-Control', 'no-cache')
+        setResponseHeader(event, 'Content-Type', 'image/svg+xml')
+        return dedent(`
+          <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+            <circle cx="50" cy="50" r="50" fill="#f0f0f0"/>
+            <text x="50" y="50" text-anchor="middle" dominant-baseline="central" font-size="40" fill="#000000">
+              ${userToGet.username.split(' ').map(word => word[0].toUpperCase()).join('')}
+            </text>
+          </svg>
+        `)
+      }
 
       // --- Return the avatar URL of the user.
-      return storageModule.respondWith(event, user.profile.avatar)
+      return storageModule.respondWith(event, userToGet.profile!.avatar)
     },
   )
 }

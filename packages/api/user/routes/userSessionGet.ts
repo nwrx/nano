@@ -1,30 +1,20 @@
-import type { ModuleUser } from '../index'
+import type { ModuleUser, UserObject } from '..'
 import { createRoute } from '@unserved/server'
-
-interface UserSessionGetResponse {
-  email?: string
-  username?: string
-  avatarUrl?: string
-  displayName?: string
-}
 
 export function userSessionGet(this: ModuleUser) {
   return createRoute(
     {
       name: 'GET /api/session',
     },
-    async({ event }): Promise<UserSessionGetResponse> => {
+    async({ event }): Promise<UserObject | object> => {
       const session = await this.authenticate(event, { optional: true })
       if (!session) return {}
 
-      const user = await this.resolveUser(session.user.username, { profile: true })
+      const user = await this.resolveUser({ username: session.user.username, withProfile: true })
       if (!user.profile) throw new Error('User profile not found')
-      return {
-        email: user.email,
-        username: user.username,
-        displayName: user.profile.displayName,
-        avatarUrl: `/api/users/${user.username}/avatar`,
-      }
+      return user.serialize({
+        withProtected: true,
+      })
     },
   )
 }

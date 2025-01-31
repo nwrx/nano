@@ -31,7 +31,7 @@ export function userSetPassword(this: ModuleUser) {
 
       // --- Expire the old password.
       const { User } = this.getRepositories()
-      const userToSave = await this.resolveUser(username, { passwords: true })
+      const userToSave = await this.resolveUser({ user, username })
       for (const password of userToSave.passwords!) {
         if (password.expiredAt) continue
         password.expiredAt = new Date()

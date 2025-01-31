@@ -24,7 +24,7 @@ export class User extends BaseEntity {
    * being disabled or deleted.
    */
   @Column('boolean', { nullable: true, unique: true })
-  isSuperAdministrator?: boolean
+  isSuperAdministrator: boolean | null
 
   /**
    * The email address of the user. It is unique and used to send notifications and

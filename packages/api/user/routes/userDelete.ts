@@ -24,7 +24,7 @@ export function userDelete(this: ModuleUser) {
       // --- Resolve the user and workspace to remove.
       const { User } = this.getRepositories()
       const { Workspace } = workspaceModule.getRepositories()
-      const userToRemove = await this.resolveUser(username)
+      const userToRemove = await this.resolveUser({ user, username })
       const workspaceToRemove = await Workspace.findOneByOrFail({ name: username })
 
       // --- Soft-remove the user and workspace.
