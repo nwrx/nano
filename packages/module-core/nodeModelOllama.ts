@@ -1,5 +1,6 @@
-import { defineFlowNode } from '@nanoworks/core'
+import { defineFlowNode } from '@nwrx/core'
 import { assertStringNotEmpty } from '@unshared/validation'
+import { categoryLm } from './categoryLmModels'
 import { typeModel } from './typeModel'
 import { typeString } from './typeString'
 
@@ -8,6 +9,7 @@ export const nodeModelOllama = defineFlowNode({
   name: 'Ollama API',
   icon: 'https://api.iconify.design/simple-icons:ollama.svg',
   description: 'Generates a completion from an Ollama API instance.',
+  category: categoryLm,
 
   // --- Define the inputs of the node.
   defineDataSchema: {
@@ -19,13 +21,6 @@ export const nodeModelOllama = defineFlowNode({
       disallowDynamic: true,
       description: 'The API key for the Ollama API.',
     },
-    modelName: {
-      name: 'Model Name',
-      display: 'text',
-      type: typeString,
-      disallowDynamic: true,
-      description: 'The name of the model to use for generating completions.',
-    },
     endpoint: {
       name: 'Endpoint',
       display: 'text',
@@ -33,6 +28,13 @@ export const nodeModelOllama = defineFlowNode({
       disallowStatic: true,
       disallowDynamic: true,
       description: 'The endpoint for the Ollama API.',
+    },
+    modelName: {
+      name: 'Model Name',
+      display: 'text',
+      type: typeString,
+      disallowDynamic: true,
+      description: 'The name of the model to use for generating completions.',
     },
   },
 

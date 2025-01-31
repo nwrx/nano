@@ -1,4 +1,6 @@
-import { defineFlowNode } from '@nanoworks/core'
+import type { FlowNodeContext } from '@nwrx/core'
+import { defineFlowNode } from '@nwrx/core'
+import { categoryLm } from './categoryLmModels'
 import { typeModel } from './typeModel'
 import { typeString } from './typeString'
 
@@ -19,12 +21,13 @@ export const nodeModelOpenai = defineFlowNode({
   name: 'OpenAI API',
   icon: 'https://api.iconify.design/simple-icons:openai.svg',
   description: 'Generates a completion based on the OpenAI language model.',
+  category: categoryLm,
 
   // --- Define the inputs of the node.
-  defineDataSchema: async({ data }) => {
+  defineDataSchema: async({ data }: FlowNodeContext) => {
 
     // --- Fetch the list of models from the OpenAI API.
-    let modelIds: string[] = ['gpt-4o']
+    let modelIds: string[] = []
     const apiKey = (data as { apiKey: string }).apiKey
     if (apiKey) {
       const response = await fetch('https://api.openai.com/v1/models', { headers: { Authorization: `Bearer ${apiKey}` } })
@@ -37,6 +40,7 @@ export const nodeModelOpenai = defineFlowNode({
         name: 'API Key',
         type: typeString,
         display: 'text',
+        disallowStatic: true,
         disallowDynamic: true,
         description: 'The API key for the OpenAI API.',
       },
