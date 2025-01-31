@@ -11,7 +11,7 @@ const isAuthenticationRoute = computed(() => {
 </script>
 
 <template>
-  <div id="layout" class="flex flex-col w-full h-screen bg-primary-900 text-white overflow-hidden">
+  <div id="layout" class="font-sans flex flex-col w-full h-screen bg-primary-900 text-white overflow-hidden">
 
     <!-- Header -->
     <AppNavBar

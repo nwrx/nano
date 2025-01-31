@@ -22,7 +22,7 @@ useSeoMeta({
 
 <template>
   <Suspense>
-    <div id="app" class="font-sans overflow-x-clip">
+    <div id="app" class="overflow-x-clip">
       <NuxtLoadingIndicator />
       <NuxtLayout>
         <NuxtPage />
