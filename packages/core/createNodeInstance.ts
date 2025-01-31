@@ -5,13 +5,22 @@ import type { Node, NodeInstanceContext } from './defineNode'
 import type { ResultFromSchema, ResultSchema } from './defineResultSchema'
 import { randomUUID } from 'node:crypto'
 
-export interface NodeRunEvent<T extends DataSchema = DataSchema, U extends ResultSchema = ResultSchema> {
-  run: string
-  kind: string
+export interface NodeEventMeta {
+
+  /** The ID of the node execution. */
+  executionId: string
+
+  /** The ID of the flow execution. */
+  threadId: string
+
+  /** The time from the start of the flow execution to the dispatch of the event. */
+  delta: number
+
+  /** The amount of time since the start of the node execution. */
   duration: number
+
+  /** The timestamp of the node execution. */
   timestamp: number
-  data: DataFromSchema<T>
-  result: ResultFromSchema<U>
 }
 
 /**
@@ -26,11 +35,11 @@ export interface NodeEvents<T extends DataSchema, U extends ResultSchema> {
   result: [result: ResultFromSchema<U>]
   dataSchema: [schema: T]
   resultSchema: [schema: U]
-  reset: []
-  error: [error: Error]
-  start: [NodeRunEvent<T, U>]
-  abort: [NodeRunEvent<T, U>]
-  end: [NodeRunEvent<T, U>]
+  reset: [meta: NodeInstanceMeta]
+  start: [data: DataFromSchema<T>, meta: NodeEventMeta]
+  end: [data: DataFromSchema<T>, result: ResultFromSchema<U>, meta: NodeEventMeta]
+  error: [error: Error, meta: NodeEventMeta]
+  abort: [meta: NodeEventMeta]
 }
 
 /**
@@ -98,18 +107,21 @@ export class NodeInstance<
   public meta: NodeInstanceMeta = {}
   public id = randomUUID() as string
 
+  public isDone = false
+  public isRunning = false
+  public executionId = randomUUID() as string
+  public executionStart = Date.now()
+  public executionIndex = 0
+
   public error: Error | undefined
   public dataRaw = {} as Record<string, unknown>
   public result = {} as DataFromSchema<U>
   public dataSchema: T
   public resultSchema: U
 
-  public isDone = false
-  public isRunning = false
   public eventTarget = new EventTarget()
   public eventHandlers = new Map<string, EventListener>()
   public abortController = new AbortController()
-  public runStart = 0
 
   /**
    * Dispatch an event to the node. The event is dispatched to all nodes in
@@ -180,7 +192,13 @@ export class NodeInstance<
       return this.dataSchema
     }
     catch (error) {
-      this.dispatch('error', error as Error)
+      this.dispatch('error', error as Error, {
+        executionId: this.executionId,
+        threadId: this.flow.threadId,
+        delta: Date.now() - this.executionStart,
+        duration: Date.now() - this.executionStart,
+        timestamp: Date.now(),
+      })
       return this.dataSchema
     }
   }
@@ -201,7 +219,13 @@ export class NodeInstance<
       return this.resultSchema
     }
     catch (error) {
-      this.dispatch('error', error as Error)
+      this.dispatch('error', error as Error, {
+        executionId: this.executionId,
+        threadId: this.flow.threadId,
+        delta: Date.now() - this.executionStart,
+        duration: Date.now() - this.executionStart,
+        timestamp: Date.now(),
+      })
       return this.resultSchema
     }
   }
@@ -225,7 +249,6 @@ export class NodeInstance<
    * @param value The value of the data property.
    */
   public setDataValue<K extends keyof T>(key: K, value: DataFromSchema<T>[K]): void {
-    this.getDataSocket(key)
     this.dataRaw[key as string] = value
     this.dispatch('data', this.data)
     this.dispatch('dataRaw', this.dataRaw)
@@ -237,7 +260,6 @@ export class NodeInstance<
    * @param data The data to set.
    */
   public setData(data: DataFromSchema<T>): void {
-    for (const key in data) this.getDataSocket(key)
     this.dataRaw = data
     this.dispatch('data', this.data)
     this.dispatch('dataRaw', this.dataRaw)
@@ -279,7 +301,7 @@ export class NodeInstance<
       try {
         const value = result[key]
         const socket = this.resultSchema[key]
-        if (!value && socket.isOptional) continue
+        if (value === undefined && socket.isOptional) continue
         const parse = this.resultSchema[key].type.parse
         newResult[key] = parse(value)
       }
@@ -287,7 +309,7 @@ export class NodeInstance<
         const error = _error instanceof Error ? _error : new Error(_error as string)
         const message = `Failed to parse the result of the node "${this.id}" for the key "${key}"`
         error.message = `${message}: ${error.message}`
-        this.dispatch('error', error)
+        this.dispatch('error', error, this.eventMeta)
         console.warn(error)
         newResult[key] = undefined
       }
@@ -311,12 +333,15 @@ export class NodeInstance<
       const raw = this.dataRaw[key]
       const socket = this.dataSchema[key]
       if (!socket) return
+      const isOptional = socket.isOptional
+      const defaultValue = socket.defaultValue as DataFromSchema<T>[K] | undefined
       const parse = socket.type.parse as (value: unknown) => DataFromSchema<T>[K]
 
       // --- If the value is a variable, get the value of the variable.
       if (typeof raw === 'string' && raw.startsWith('$VARIABLE.')) {
         const name = raw.slice(10)
         const value = this.flow.variables[name]
+        if (!value) throw new Error(`The variable "${name}" does not exist`)
         return parse(value)
       }
 
@@ -324,6 +349,7 @@ export class NodeInstance<
       else if (typeof raw === 'string' && raw.startsWith('$SECRET.')) {
         const name = raw.slice(8)
         const value = this.flow.secrets[name]
+        if (!value) throw new Error(`The secret "${name}" does not exist`)
         return parse(value)
       }
 
@@ -337,10 +363,13 @@ export class NodeInstance<
       }
 
       // --- Otherwise, parse and return the value as is.
-      return parse(raw)
+      if (raw !== undefined) return parse(raw)
+      if (defaultValue !== undefined) return defaultValue
+      if (!isOptional) throw new Error(`The data property "${key}" is required but missing`)
     }
     catch (error) {
-      this.dispatch('error', error as Error)
+      (error as Error).message = `Failed to resolve the data value of the node "${this.id}" for the key "${key}": ${(error as Error).message}`
+      this.dispatch('error', error as Error, this.eventMeta)
       console.warn(error)
       return
     }
@@ -370,6 +399,23 @@ export class NodeInstance<
     return new Proxy(this.dataRaw, {
       get(_, key: keyof T & string) { return that.resolveDataValue(key) },
     }) as DataFromSchema<T>
+  }
+
+  /**
+   * Compute the current event meta data for the node. The event meta data
+   * contains the execution ID, the thread ID, the delta time, the duration,
+   * and the timestamp of the event.
+   *
+   * @returns The current event meta data for the node.
+   */
+  private get eventMeta(): NodeEventMeta {
+    return {
+      executionId: this.executionId,
+      threadId: this.flow.threadId,
+      delta: Date.now() - this.flow.threadStart,
+      duration: Date.now() - this.executionStart,
+      timestamp: Date.now(),
+    }
   }
 
   /**
@@ -404,14 +450,7 @@ export class NodeInstance<
     if (!error) error = new Error('Node execution was aborted')
     this.abortController.abort(error)
     this.abortController = new AbortController()
-    this.dispatch('abort', {
-      run: this.flow.run,
-      kind: this.kind,
-      duration: Date.now() - this.runStart,
-      timestamp: Date.now(),
-      data: this.data,
-      result: this.result,
-    })
+    this.dispatch('abort', this.eventMeta)
   }
 
   /**
@@ -432,7 +471,6 @@ export class NodeInstance<
     if (!this.node.process) return
     try {
       this.isRunning = true
-      this.runStart = Date.now()
       await this.resolveDataSchema()
       await this.resolveResultSchema()
 
@@ -444,22 +482,11 @@ export class NodeInstance<
         if (value === undefined && !isOptional) return
       }
 
-      // --- Dispatch the start event to notify listeners that the node
-      // --- has started processing and is running. The run ID is generated
-      // --- to identify the current run of the node and the start timestamp
-      // --- is stored to calculate the duration of the run.
-      this.dispatch('start', {
-        run: this.flow.run,
-        kind: this.kind,
-        duration: 0,
-        timestamp: this.runStart,
-        data: this.data,
-        result: this.result,
-      })
-
-      // --- Process the node with the context of the node.
+      // --- Process the node by calling the process function of the node.
+      this.dispatch('start', this.data, this.eventMeta)
       const result = await this.node.process(this.context)
       this.setResult(result)
+      this.dispatch('end', this.data, this.result, this.eventMeta)
       this.isDone = true
     }
 
@@ -467,21 +494,16 @@ export class NodeInstance<
     // --- can handle the error and take appropriate action.
     catch (error) {
       console.warn(error)
-      this.dispatch('error', error as Error)
+      this.dispatch('error', error as Error, this.eventMeta)
     }
 
     // --- Finally, dispatch the end event to notify listeners that the
     // --- node has finished processing and is no longer running.
     finally {
       this.isRunning = false
-      this.dispatch('end', {
-        run: this.flow.run,
-        kind: this.kind,
-        duration: Date.now() - this.runStart,
-        timestamp: Date.now(),
-        data: this.data,
-        result: this.result,
-      })
+      this.executionId = randomUUID() as string
+      this.executionStart = Date.now()
+      this.executionIndex++
     }
   }
 

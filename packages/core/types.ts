@@ -1,7 +1,7 @@
 import type { Flow } from './createFlow'
 import type { Module } from './defineModule'
 
-export type ObjectLike = Record<string, unknown>
+export type ObjectLike = Record<string, any>
 export type MaybePromise<T> = Promise<T> | T
 
 /**
