@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import type { FlowCategoryNodesJSON, FlowNodeInstanceJSON, FlowSessionParticipantJSON } from '@nwrx/api'
-import type { FlowLink } from '@nwrx/core'
+import type { FlowCategoryNodesJSON, FlowNodeInstanceJSON, FlowSessionParticipantJSON, FlowSessionSecretJSON, FlowSessionVariableJSON } from '@nwrx/api'
 import { throttle } from '@unshared/functions/throttle'
 
 const props = defineProps<{
@@ -9,26 +8,37 @@ const props = defineProps<{
   name: string
   icon: string
   description: string
-  links: FlowLink[]
   nodes: FlowNodeInstanceJSON[]
   categories: FlowCategoryNodesJSON[]
   methods: string[]
-  secrets: string[]
-  variables: Array<{ name: string; value: string }>
-  projectSecrets: string[]
-  projectVariables: Array<{ name: string; value: string }>
+  secrets: FlowSessionSecretJSON[]
+  variables: FlowSessionVariableJSON[]
   isLocked: boolean
   isRunning: boolean
   isBookmarked: boolean
-  isPanelOpen: boolean
-  isPanelFlowMethodsOpen: boolean
-  isPanelFlowSecretsOpen: boolean
-  isPanelFlowEnvironmentsOpen: boolean
+  isPanelOpen?: boolean
+  isPanelFlowMethodsOpen?: boolean
+  isPanelFlowSecretsOpen?: boolean
+  isPanelFlowEnvironmentsOpen?: boolean
+  isPanelNodeDataOpen?: boolean
+  isPanelNodeResultOpen?: boolean
 }>()
 
 const emit = defineEmits<{
+
+  // --- Flow.
   run: []
   abort: []
+  setName: [name: string]
+  setMethods: [methods: string[]]
+  setDescription: [description: string]
+  secretCreate: [name: string, value: string]
+  secretRemove: [name: string]
+  variableCreate: [name: string, value: string]
+  variableUpdate: [name: string, value: string]
+  variableRemove: [name: string]
+
+  // --- Nodes.
   nodeStart: [id: string]
   nodeAbort: [id: string]
   nodeCreate: [kind: string, x: number, y: number]
@@ -36,25 +46,29 @@ const emit = defineEmits<{
   nodeSetDataValue: [nodeId: string, key: string, value: unknown]
   nodesMove: [payload: FlowNodePosition[]]
   nodesRemove: [nodeIds: string[]]
+
+  // --- Links.
   linkCreate: [source: string, target: string]
   linkRemove: [source: string]
+
+  // --- User.
   userSetPosition: [x: number, y: number]
-  'update:name': [name: string]
-  'update:description': [description: string]
-  'update:isPanelOpen': [isOpen: boolean]
+
+  // --- UI state.
   'update:isPanelFlowMethodsOpen': [isOpen: boolean]
   'update:isPanelFlowSecretsOpen': [isOpen: boolean]
   'update:isPanelFlowEnvironmentsOpen': [isOpen: boolean]
+  'update:isPanelNodeDataOpen': [isOpen: boolean]
+  'update:isPanelNodeResultOpen': [isOpen: boolean]
 }>()
 
 // --- Two-way binding.
-const title = useVModel(props, 'name', emit, { passive: true })
-const methods = useVModel(props, 'methods', emit, { passive: true })
-const description = useVModel(props, 'description', emit, { passive: true })
 const isPanelOpen = useVModel(props, 'isPanelOpen', emit, { passive: true })
 const isPanelFlowMethodsOpen = useVModel(props, 'isPanelFlowMethodsOpen', emit, { passive: true })
 const isPanelFlowSecretsOpen = useVModel(props, 'isPanelFlowSecretsOpen', emit, { passive: true })
 const isPanelFlowEnvironmentsOpen = useVModel(props, 'isPanelFlowEnvironmentsOpen', emit, { passive: true })
+const isPanelNodeDataOpen = useVModel(props, 'isPanelNodeDataOpen', emit, { passive: true })
+const isPanelNodeResultOpen = useVModel(props, 'isPanelNodeResultOpen', emit, { passive: true })
 
 // --- Instanciate all composition functions from the FlowEditor component.
 // --- The entire view logic is encapsulated in this composition function.
@@ -63,7 +77,6 @@ const editor = useFlowEditor({
 
   // Data
   nodes: computed(() => props.nodes),
-  links: computed(() => props.links),
   peers: computed(() => props.peers),
   peerId: computed(() => props.peerId),
 
@@ -126,13 +139,15 @@ const editor = useFlowEditor({
         :data="node.data"
         :result="node.result"
         :name="node.name ?? node.kind"
+        :secrets="secrets"
+        :variables="variables"
         :icon="node.icon"
         :color="node.categoryColor"
         :dataSchema="node.dataSchema"
         :resultSchema="node.resultSchema"
         :position="node.position"
+        :error="node.error"
         :style="editor.getNodeStyle(node)"
-        :links="links"
         :zoom="editor.viewZoom"
         :isRunning="node.isRunning"
         :isCollapsed="node.isCollapsed"
@@ -167,7 +182,10 @@ const editor = useFlowEditor({
     </div>
 
     <!-- Overlay -->
-    <div class="absolute top-4 left-4 bottom-4 right-4 z-9999 pointer-events-none children:pointer-events-auto">
+    <div
+      class="absolute top-4 left-4 bottom-4 right-4 z-9999 pointer-events-none children:pointer-events-auto"
+      @wheel.stop
+    >
 
       <!-- Toolbar -->
       <FlowEditorToolbar
@@ -181,17 +199,27 @@ const editor = useFlowEditor({
       <!-- Edit panel -->
       <div class="absolute top-0 right-0 bottom-0 pointer-events-none">
         <FlowEditorPanel
-          v-model:name="name"
-          v-model:description="description"
-          v-model:methods="methods"
           v-model:isOpen="isPanelOpen"
           v-model:isFlowMethodsOpen="isPanelFlowMethodsOpen"
           v-model:isFlowSecretsOpen="isPanelFlowSecretsOpen"
           v-model:isFlowVariablesOpen="isPanelFlowEnvironmentsOpen"
-          class="pointer-events-auto"
+          v-model:isNodeDataOpen="isPanelNodeDataOpen"
+          v-model:isNodeResultOpen="isPanelNodeResultOpen"
+          :name="name"
+          :methods="methods"
           :secrets="secrets"
           :variables="variables"
+          :description="description"
           :nodeSelected="editor.nodeSelected"
+          class="pointer-events-auto"
+          @setName="(name) => emit('setName', name)"
+          @setMethods="(methods) => emit('setMethods', methods)"
+          @setDescription="(description) => emit('setDescription', description)"
+          @secretCreate="(name, value) => emit('secretCreate', name, value)"
+          @secretRemove="(name) => emit('secretRemove', name)"
+          @variableCreate="(name, value) => emit('variableCreate', name, value)"
+          @variableUpdate="(name, value) => emit('variableUpdate', name, value)"
+          @variableRemove="(name) => emit('variableRemove', name)"
         />
       </div>
 

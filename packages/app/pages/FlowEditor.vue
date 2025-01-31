@@ -5,10 +5,14 @@ definePageMeta({
   middleware: ['redirect-when-guest', 'abort-reserved'],
 })
 
-// --- Start the WebSocket connection with the server and
-// --- subscribe to the flow session with the given ID.
-const idOrSlug = getRouteId()!
-const session = useFlowSession(idOrSlug)
+// --- Extract route parameters.
+const route = useRoute()
+const flow = computed(() => route.params.flow as string)
+const project = computed(() => route.params.project as string)
+const workspace = computed(() => route.params.workspace as string)
+
+// --- Start the flow editor session.
+const session = useFlowSession(workspace, project, flow)
 
 // --- Set the page title and description.
 useHead(() => ({
@@ -32,6 +36,8 @@ const isPanelOpen = useLocalStorage<boolean>('__FlowEditorPanel_FlowOpen', true)
 const isPanelFlowMethodsOpen = useLocalStorage<boolean>('__FlowEditorPanel_FlowMethodsOpen', true)
 const isPanelFlowSecretsOpen = useLocalStorage<boolean>('__FlowEditorPanel_FlowSecretsOpen', true)
 const isPanelFlowEnvironmentsOpen = useLocalStorage<boolean>('__FlowEditorPanel_FlowEnvironmentsOpen', true)
+const isPanelNodeDataOpen = useLocalStorage<boolean>('__FlowEditorPanel_NodeDataOpen', true)
+const isPanelNodeResultOpen = useLocalStorage<boolean>('__FlowEditorPanel_NodeResultOpen', true)
 </script>
 
 <template>
@@ -41,24 +47,37 @@ const isPanelFlowEnvironmentsOpen = useLocalStorage<boolean>('__FlowEditorPanel_
       v-model:isPanelFlowMethodsOpen="isPanelFlowMethodsOpen"
       v-model:isPanelFlowSecretsOpen="isPanelFlowSecretsOpen"
       v-model:isPanelFlowEnvironmentsOpen="isPanelFlowEnvironmentsOpen"
+      v-model:isPanelNodeDataOpen="isPanelNodeDataOpen"
+      v-model:isPanelNodeResultOpen="isPanelNodeResultOpen"
+
+      :name="session.flow.name"
+      :icon="session.flow.icon"
       :description="session.flow.description"
       :nodes="session.flow.nodes"
       :links="session.flow.links"
+      :methods="[]"
       :categories="session.flow.categories"
+      :secrets="session.flow.secrets"
+      :variables="session.flow.variables"
       :peers="session.flow.peers"
       :peerId="session.flow.peerId"
-      :name="session.flow.name"
-      :icon="session.flow.icon"
+
       :isLocked="isLocked"
       :isRunning="session.flow.isRunning"
       :isBookmarked="isBookmarked"
-      :methods="[]"
-      :secrets="[]"
-      :variables="[]"
-      :projectSecrets="[]"
-      :projectVariables="[]"
+
       @run="() => session.flowRun()"
       @abort="() => session.flowAbort()"
+      @setName="(name) => session.flowSetMetaValue('name', name)"
+      @setMethods="(methods) => session.flowSetMetaValue('methods', methods)"
+      @setDescription="(description) => session.flowSetMetaValue('description', description)"
+      @variableCreate="(name, value) => session.flowVariableCreate(name, value)"
+      @variableUpdate="(name, value) => session.flowVariableUpdate(name, value)"
+      @variableRemove="(name) => session.flowVariableRemove(name)"
+      @secretCreate="(name, value) => session.flowSecretCreate(name, value)"
+      @secretUpdate="(name, value) => session.flowSecretUpdate(name, value)"
+      @secretRemove="(name) => session.flowSecretRemove(name)"
+
       @nodeStart="(id) => session.nodeStart(id)"
       @nodeAbort="(id) => session.nodeAbort(id)"
       @nodeCreate="(kind, x, y) => session.nodeCreate(kind, x, y)"
@@ -66,11 +85,11 @@ const isPanelFlowEnvironmentsOpen = useLocalStorage<boolean>('__FlowEditorPanel_
       @nodesMove="(nodes) => session.nodeSetPosition(...nodes)"
       @nodeSetDataValue="(id, portId, value) => session.nodeSetDataValue(id, portId, value)"
       @nodesRemove="(ids) => session.nodeRemove(ids)"
+
       @linkRemove="(id) => session.linkRemove(id)"
       @linkCreate="(source, target) => session.linkCreate(source, target)"
+
       @userSetPosition="(x, y) => session.userSetPosition(x, y)"
-      @update:name="(name) => session.flowSetMetaValue('name', name)"
-      @update:description="(description) => session.flowSetMetaValue('description', description)"
     />
   </AppPage>
 </template>
