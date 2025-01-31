@@ -74,9 +74,6 @@ export function serializeFlowSession(session: FlowSession, peer: Peer): FlowSess
     isRunning: session.flow.isRunning,
     secrets: Object.keys(session.flow.secrets).map(name => ({ name, from: 'project' })),
     variables: Object.entries(session.flow.variables).map(([name, value]) => ({ name, value, from: 'project' })),
-    // isLocked: session.entity.isLocked,
-    // isTouched: session.entity.isTouched,
-    // isPublished: session.entity.isPublished,
     peerId: peer.id,
     peers: session.participants.map(peer => ({
       id: peer.peer.id,
