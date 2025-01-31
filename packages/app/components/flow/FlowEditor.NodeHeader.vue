@@ -54,22 +54,24 @@ function handleGrab(event: MouseEvent) {
       </div>
 
       <!-- Title -->
-      <p class="font-medium text-white" v-text="name"/>
+      <p class="font-medium text-white" v-text="name" />
 
       <!-- Tooltip content -->
       <template #tooltip>
         <div class="w-99 divide-y divide-editor">
-          <p v-markdown="description" class="px-md py-0 text-app prose"/>
-          <p class="px-md py-sm font-medium text-app">(node): {{ kind }}</p>
+          <p v-markdown="description" class="px-md py-0 text-app prose" />
+          <p class="px-md py-sm font-medium text-app">
+            (node): {{ kind }}
+          </p>
         </div>
       </template>
     </FlowEditorTooltip>
 
     <!-- Spacer -->
-    <div class="flex-1"/>
+    <div class="flex-1" />
 
     <!-- Debug ID -->
-    <p v-if="id" class="text-sm truncate shrink text-white" v-text="id.slice(0, 8)"/>
+    <p v-if="id" class="text-sm truncate shrink text-white" v-text="id.slice(0, 8)" />
 
     <!-- Run button / play icon -->
     <BaseButton
