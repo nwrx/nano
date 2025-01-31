@@ -2,6 +2,8 @@
 const props = defineProps<{
   name?: string
   description?: string
+  placeholderName?: string
+  placeholderDescription?: string
 }>()
 
 const emit = defineEmits<{
@@ -9,7 +11,7 @@ const emit = defineEmits<{
   'update:description': [description: string]
 }>()
 
-const title = useVModel(props, 'name', emit, { passive: true })
+const name = useVModel(props, 'name', emit, { passive: true })
 const description = useVModel(props, 'description', emit, { passive: true })
 
 /**
@@ -29,12 +31,12 @@ function onTextareaInput(event: Event) {
   <div class="pb-4 px-4">
     <input
       v-model="name"
-      placeholder="Give your flow a name..."
+      :placeholder="placeholderName"
       class="text-xl font-medium outline-none bg-transparent w-full"
     />
     <textarea
       v-model="description"
-      placeholder="Describe your flow..."
+      :placeholder="placeholderDescription"
       class="text-sm outline-none bg-transparent w-full resize-none opacity-70"
       @input="(event) => onTextareaInput(event)"
     />
