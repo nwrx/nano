@@ -80,7 +80,7 @@ export async function resolveSchema(options: ResolveSchemaOptions): Promise<Obje
         const promises = value.map(x => resolveSchemaValue(x, socket, resolvers))
         resolved[key] = await Promise.all(promises)
       }
-      if (socket.isMap) {
+      else if (socket.isMap) {
         if (socket.isOptional && value === undefined) { resolved[key] = {}; continue }
         assertObjectStrict(value)
         const promises = Object.entries(value).map(async([path, value]) => [path, await resolveSchemaValue(value, socket, resolvers)])
@@ -98,7 +98,7 @@ export async function resolveSchema(options: ResolveSchemaOptions): Promise<Obje
   }
 
   // --- If there are any errors, throw an error with the list of errors.
-  if (Object.keys(errors).length > 0) {
+  if (!skipErrors && Object.keys(errors).length > 0) {
     throw new FlowError({
       name: 'SCHEMA_RESOLVE_ERROR',
       message: 'Failed to resolve the schema.',
