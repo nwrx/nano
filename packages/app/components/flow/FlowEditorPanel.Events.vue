@@ -11,21 +11,15 @@ const emit = defineEmits<{
 }>()
 
 // --- State
-const container = ref<HTMLElement>()
 const filter = ref<string>('')
-
-// --- Scroll to bottom if the container is already at the bottom.
-async function scrollToBottom() {
-  if (!container.value) return
-  const { scrollHeight, scrollTop, clientHeight } = container.value
-  const stickyHeight = 250
-  if (scrollHeight - scrollTop > clientHeight + stickyHeight) return
-  await nextTick()
-  container.value.scrollTo({ top: scrollHeight, behavior: 'smooth' })
-}
-
-// --- When a new event is added, scroll to the bottom if the container is already at the bottom.
-watch(() => props.events, scrollToBottom, { deep: true })
+const events = computed(() => {
+  if (!filter.value) return props.events
+  const filterLower = filter.value.toLowerCase()
+  return props.events.filter((event) => {
+    if (event.event.toLowerCase().includes(filterLower)) return true
+    return 'id' in event && event.id.toLowerCase().includes(filterLower)
+  })
+})
 </script>
 
 <template>
@@ -52,7 +46,6 @@ watch(() => props.events, scrollToBottom, { deep: true })
       :key="index"
       :event="event"
       :nodes="nodes"
-      @click="() => scrollToBottom()"
     />
   </div>
 </template>
