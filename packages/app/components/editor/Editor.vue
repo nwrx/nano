@@ -10,26 +10,18 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   clearEvents: []
-
-  // Run
   start: [Record<string, string>]
   abort: []
   startNode: [string]
   abortNode: [string]
-
-  // Flow
   setName: [string]
   setDescription: [string]
-
-  // Secrets & Variables
   createSecret: [string, string]
   // updateSecret: [string, string]
   removeSecret: [string]
   createVariable: [string, string]
   updateVariable: [string, string]
   removeVariable: [string]
-
-  // Nodes
   createNode: [string, number, number]
   cloneNodes: [string, number, number]
   setNodesPosition: [FlowNodePosition[]]
@@ -38,12 +30,8 @@ const emit = defineEmits<{
   setNodeInputValue: [string, string, unknown]
   getNodeInputOptions: [string, string, string | undefined]
   removeNodes: [string[]]
-
-  // Links
   createLink: [string, string]
   removeLink: [string]
-
-  // User
   setUserPosition: [number, number]
 }>()
 
@@ -202,7 +190,7 @@ const editor = useFlowEditor({
           @variable-create="(name, value) => emit('createVariable', name, value)"
           @variable-update="(name, value) => emit('updateVariable', name, value)"
           @variable-remove="(name) => emit('removeVariable', name)"
-          @events-clear="() => emit('clearEvents')"
+          @clear-events="() => emit('clearEvents')"
           @mousedown.stop
         />
 
