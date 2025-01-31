@@ -1,4 +1,5 @@
 import type { Reference } from './createReference'
+import { parseReference } from './parseReference'
 
 export interface LinkSourceObject {
   sourceId: string
@@ -14,9 +15,8 @@ export interface LinkSourceObject {
  * @example parseReferenceLink({ $ref: '#Node/NODE_ID/foo.bar' }) // { id: 'NODE_ID', path: 'foo.bar' }
  */
 export function parseReferenceLink(value: Reference): LinkSourceObject {
-  const [tag, kind, sourceId, sourceName, sourcePath] = value.$ref.split('/')
-  if (tag !== '#') throw new Error('Invalid reference tag')
-  if (kind !== 'Nodes') throw new Error(`Invalid reference kind: ${kind}`)
+  const [type, sourceId, sourceName, sourcePath] = parseReference(value)
+  if (type !== 'Nodes') throw new Error(`Invalid reference type: ${type}`)
   if (!sourceId) throw new Error('The reference does not contain a node ID')
   if (!sourceName) throw new Error('The reference does not contain a name')
   return { sourceId, sourceName, sourcePath }
