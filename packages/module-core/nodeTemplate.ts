@@ -1,6 +1,9 @@
-import type { FlowNodePort, FlowSchema } from '@nanoworks/core'
-import { defineFlowNode } from '@nanoworks/core'
+import type { FlowNodePort, FlowSchema } from '@nwrx/core'
+import { defineFlowNode } from '@nwrx/core'
 import { typeString } from './typeString'
+
+/** The regular expression for extracting variables from the template. */
+const EXP_VAR_REGEX = /{{\s*(\w+)\s*}}/g
 
 export const nodeTemplate = defineFlowNode({
   kind: 'template',
@@ -24,7 +27,7 @@ export const nodeTemplate = defineFlowNode({
     } satisfies FlowSchema
 
     // --- Extract the variables from the template.
-    const matches = template.match(/{{\s*(\w+)\s*}}/g) ?? []
+    const matches = template.match(EXP_VAR_REGEX) ?? []
     for (const match of matches) {
       const key = match.slice(2, -2).trim()
       if (key === '') continue
@@ -56,12 +59,15 @@ export const nodeTemplate = defineFlowNode({
     const { template = '', ...values } = data as Record<string, string>
 
     // --- Replace the variables in the template with the values.
-    let compiled = template
-    const matches = template.match(/{{(\w+)}}/g) ?? []
-    matches.forEach((match) => {
-      const key = match.slice(2, -2)
-      compiled = compiled.replace(match, values[key] ?? '')
-    })
+    // let compiled = template
+    // const matches = template.match(/{{(\w+)}}/g) ?? []
+    // matches.forEach((match) => {
+    //   const key = match.slice(2, -2)
+    //   compiled = compiled.replace(match, values[key] ?? '')
+    // })
+
+    // Replace template.match() with template.replace()
+    const compiled = template.replaceAll(EXP_VAR_REGEX, (match, key: string) => values[key] ?? '')
 
     // --- Return the compiled string.
     return { compiled }
