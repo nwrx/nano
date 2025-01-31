@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import type { TestApplication } from '@unserved/server'
 import { createTestApplication } from '@unserved/server'
-import { ModuleRunner } from '../module'
+import { ModuleRunner } from '../application'
 
 interface Context {
   application: TestApplication<ModuleRunner>

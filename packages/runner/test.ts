@@ -1,5 +1,5 @@
 /* eslint-disable unicorn/prefer-top-level-await */
-import type { ModuleRunner } from './module'
+import type { ModuleRunner } from './application'
 import type { ThreadWorkerMessage } from './worker'
 import { createClient } from '@unserved/client'
 
@@ -7,7 +7,7 @@ async function main() {
   let once = false
   let id: string | undefined
 
-  const client = createClient<ModuleRunner>({ baseUrl: 'http://localhost:3300' })
+  const client = createClient<ModuleRunner>({ baseUrl: 'http://localhost:3010' })
   const socket = await client.connect('WS /thread', {
     autoReconnect: true,
     reconnectDelay: 1000,

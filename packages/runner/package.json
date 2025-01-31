@@ -18,6 +18,7 @@
     "@unshared/process": "0.4.1",
     "@unshared/types": "0.4.1",
     "@unshared/validation": "0.4.1",
+    "consola": "3.4.0",
     "crossws": "0.3.3",
     "h3": "1.14.0",
     "isolated-vm": "5.0.3",

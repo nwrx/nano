@@ -1,13 +1,25 @@
-/* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
-import { Application } from '@unserved/server'
-import { ModuleRunner } from './module'
+/* eslint-disable unicorn/prefer-top-level-await */
+import Consola from 'consola'
+import { application } from './application'
 
-const HOST = process.env.HOST || '0.0.0.0'
-const PORT = Number.parseInt(process.env.PORT || '3300')
+const PORT = Number.parseInt(process.env.PORT || '3010', 10)
+const HOST = process.env.HOST ?? '0.0.0.0'
 
-const application = new Application([ModuleRunner])
+application.initialize()
+  .then(() => application.createServer().listen(PORT, HOST, () => {
+    Consola.success('Server listening on %s:%d', HOST, PORT)
+  }))
+  .catch((error) => {
+    Consola.error(error)
+  })
 
-application.createServer().listen(PORT, () => {
-  console.log(`Server is running on http://${HOST}:${PORT}`)
+// handle unhandled rejections
+process.on('unhandledRejection', (error) => {
+  Consola.error(error)
+})
+
+// handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+  Consola.error(error)
 })

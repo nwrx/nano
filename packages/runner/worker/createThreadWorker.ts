@@ -1,14 +1,14 @@
 import type { FlowV1, ThreadEventMap, ThreadInputObject } from '@nwrx/nano'
 import type { ObjectLike } from '@unshared/types'
 import type { MessagePort } from 'node:worker_threads'
-import type { ModuleRunner } from '../module'
+import type { ModuleRunner } from '../application'
 import type { ThreadClientMessage } from './threadClientMessage'
 import { MessageChannel } from 'node:worker_threads'
 
 export type ThreadWorkerMessage =
   | { [K in keyof ThreadEventMap]: { event: K; data: ThreadEventMap[K] } }[keyof ThreadEventMap]
-  | { event: 'worker:created'; data: [id: string] }
   | { event: 'worker:outputValue'; data: [name: string, value: unknown] }
+  | { event: 'worker:ready'; data: [id: string] }
 
 export type ThreadSessionMessage =
   | { event: 'done'; data: [ObjectLike] }
@@ -20,7 +20,7 @@ export class ThreadWorker {
     this.port.postMessage({ event: 'create', data } as ThreadClientMessage)
     return new Promise<void>((resolve, reject) => {
       const callback = (message: ThreadWorkerMessage) => {
-        if (message.event === 'worker:created') {
+        if (message.event === 'worker:ready') {
           this.port.off('message', callback)
           resolve()
         }

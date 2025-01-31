@@ -1,4 +1,4 @@
-import type { ModuleRunner } from '../module'
+import type { ModuleRunner } from '../application'
 import type { ThreadWorkerMessage } from '../worker'
 import { createWebSocketRoute } from '@unserved/server'
 import { assertObjectStrict, createParser } from '@unshared/validation'
@@ -32,7 +32,7 @@ export function threadSession(this: ModuleRunner) {
         // --- Create the Thread instance in the worker.
         if (message.event === 'create') {
           await thread.create(message.data)
-          peer.send({ event: 'worker:created', data: [peer.id] } as ThreadWorkerMessage)
+          peer.send({ event: 'worker:ready', data: [peer.id] } as ThreadWorkerMessage)
         }
 
         // --- Interact with the Thread instance.

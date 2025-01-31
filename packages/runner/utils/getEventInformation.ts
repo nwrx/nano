@@ -1,6 +1,6 @@
 import type { Peer } from 'crossws'
 import type { H3Event } from 'h3'
-import type { ModuleRunner } from '../module'
+import type { ModuleRunner } from '../application'
 import { getHeader, getRequestHeader, getRequestIP, isEvent } from 'h3'
 
 export interface EventInformation {

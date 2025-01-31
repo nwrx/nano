@@ -1,7 +1,8 @@
 import type { WorkerPool } from '@unshared/process'
 import type { ThreadWorker } from './worker'
-import { ModuleBase } from '@unserved/server'
+import { Application, ModuleBase } from '@unserved/server'
 import { createWorkerPool } from '@unshared/process'
+import Consola from 'consola'
 import { randomUUID } from 'node:crypto'
 import { cpus } from 'node:os'
 import * as ROUTES from './routes'
@@ -30,3 +31,6 @@ export class ModuleRunner extends ModuleBase {
     })
   }
 }
+
+// --- Expose the application for type inference.
+export const application = new Application([ModuleRunner], { logger: Consola })

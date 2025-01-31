@@ -1,4 +1,4 @@
-import type { ModuleRunner } from '../module'
+import type { ModuleRunner } from '../application'
 import { createHttpRoute } from '@unserved/server'
 import { authorize } from '../utils'
 import { getWorkerPoolStatus } from '../worker'
