@@ -24,7 +24,7 @@ export class WorkspaceProjectSecret extends BaseEntity {
    * @example '<encrypted-value-base64>'
    */
   @Column('text')
-  value: string
+  cipher: string
 
   /**
    * The encryption parameters used to encrypt the secret.
@@ -33,7 +33,7 @@ export class WorkspaceProjectSecret extends BaseEntity {
    * @example { algorithm: 'aes-256-cbc', iv: '<iv-base64>' }
    */
   @Column('text', { transformer: transformerJson, default: '{}' })
-  encryptionOptions: unknown
+  options: { algorithm: string; iv: string }
 
   /**
    * The project to which the secret belongs.
