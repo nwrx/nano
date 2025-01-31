@@ -1,4 +1,5 @@
 import type { Directive } from 'vue'
+import { escapeHtml } from '@unshared/string/escapeHtml'
 import DOMPurify from 'dompurify'
 import { marked } from 'marked'
 
@@ -16,8 +17,9 @@ import { marked } from 'marked'
 export const vMarkdown: Directive<HTMLElement, string | undefined> = {
   mounted(element, binding) {
     if (!binding.value) return
-    const html = marked(binding.value, { gfm: true, breaks: true }) as string
-    const htmlSafe= DOMPurify.sanitize(html)
+    const markdownSafe = escapeHtml(binding.value)
+    const html = marked(markdownSafe, { gfm: true, breaks: true }) as string
+    const htmlSafe = DOMPurify.sanitize(html)
     element.setHTMLUnsafe(htmlSafe)
   },
 }
