@@ -1,3 +1,4 @@
+<!-- eslint-disable sonarjs/no-nested-assignment -->
 <script setup lang="ts">
 import type { FlowSessionEventPayload, NodeInstanceJSON } from '@nwrx/api'
 import { vMarkdown } from '#imports'
@@ -20,8 +21,8 @@ const messages = computed(() => props.events.filter(event => EVENT_WHITELIST.has
 
 // --- Resolve the imputs of the flow.
 const inputData = ref<Record<string, string>>({})
-const inputNodes = computed(() => props.nodes.filter(node => node.kind === 'nwrx/core:input'))
-const outputNodes = computed(() => props.nodes.filter(node => node.kind === 'nwrx/core:output'))
+const inputNodes = computed(() => props.nodes.filter(node => node.kind === 'core/input'))
+const outputNodes = computed(() => props.nodes.filter(node => node.kind === 'core/output'))
 const isDisabled = computed(() => inputNodes.value.length === 0 || outputNodes.value.length === 0)
 
 function setInputValue(name: string, value: string) {
