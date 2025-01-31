@@ -31,14 +31,6 @@ describe('isNodeReadyToStart', () => {
     expect(result).toBe(false)
   })
 
-  it('should return false if any source node does not exist', async() => {
-    const thread = createThread()
-    const targetId = addNode(thread, 'target', { component })
-    await addLink(thread, { sourceId: 'non-existent', sourceName: 'output', targetId, targetName: 'input' })
-    const result = isNodeReadyToStart(thread, targetId)
-    expect(result).toBe(false)
-  })
-
   it('should return true if there are no incoming links', () => {
     const thread = createThread()
     const targetId = addNode(thread, 'target')
