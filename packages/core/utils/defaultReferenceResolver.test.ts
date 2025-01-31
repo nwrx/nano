@@ -1,22 +1,43 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { defineComponent } from '.'
 import { addNode, createThread } from '../thread'
 import { DEFAULT_REFERENCE_RESOLVER } from './defaultReferenceResolver'
+import { defineComponent } from './defineComponent'
+import { ERRORS as E } from './errors'
 
 describe('DEFAULT_REFERENCE_RESOLVER', () => {
   describe('Nodes', () => {
+    const component = defineComponent({
+      inputs: { value: { type: 'string' } },
+      outputs: { output: { type: 'string' } },
+    })
+
     it('should resolve a reference to the result of a node', async() => {
       const thread = createThread()
-      const id = addNode(thread, 'example')
+      const id = addNode(thread, 'example', { component })
       const node = thread.nodes.get(id)!
-      node.result.output = 'test-result'
+      node.result = { output: 'test-result' }
       const result = await DEFAULT_REFERENCE_RESOLVER.call(thread, 'Nodes', id, 'output')
       expect(result).toBe('test-result')
     })
 
+    it('should throw if the node is not found', async() => {
+      const thread = createThread()
+      const shouldReject = DEFAULT_REFERENCE_RESOLVER.call(thread, 'Nodes', 'invalid-id', 'output')
+      const error = E.NODE_NOT_FOUND('invalid-id')
+      await expect(shouldReject).rejects.toThrow(error)
+    })
+
+    it('should throw if the node output socket does not exist', async() => {
+      const thread = createThread()
+      const id = addNode(thread, 'example', { component })
+      const shouldReject = DEFAULT_REFERENCE_RESOLVER.call(thread, 'Nodes', id, 'invalid-socket')
+      const error = E.NODE_OUTPUT_SOCKET_NOT_FOUND(id, 'invalid-socket')
+      await expect(shouldReject).rejects.toThrow(error)
+    })
+
     it('should return undefined if the result is undefined', async() => {
       const thread = createThread()
-      const id = addNode(thread, 'example')
+      const id = addNode(thread, 'example', { component })
       const result = await DEFAULT_REFERENCE_RESOLVER.call(thread, 'Nodes', id, 'output')
       expect(result).toBeUndefined()
     })
@@ -51,10 +72,16 @@ describe('DEFAULT_REFERENCE_RESOLVER', () => {
         call: expect.any(Function),
         description: '',
         name: 'core/example',
-        schema: {
-          type: 'object',
-          required: ['valueRequired'],
+        parameters: {
           properties: {
+            __toolMessage: {
+              type: 'string',
+              description: expect.any(String),
+            },
+            __toolName: {
+              type: 'string',
+              description: expect.any(String),
+            },
             valueOptional: {
               'type': 'string',
               'x-optional': true,
@@ -64,6 +91,10 @@ describe('DEFAULT_REFERENCE_RESOLVER', () => {
               properties: { key: { type: 'string' } },
             },
           },
+          required: [
+            'valueRequired',
+          ],
+          type: 'object',
         },
       })
     })

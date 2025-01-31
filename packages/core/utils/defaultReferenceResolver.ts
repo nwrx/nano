@@ -1,6 +1,7 @@
+import type { ObjectLike } from '@unshared/types'
 import type { Thread } from '../thread'
 import type { ReferenceType } from './createReference'
-import { getNode, getNodeComponent } from '../thread'
+import { getNode, getNodeComponent, getNodeOutputSocket, startNode } from '../thread'
 import { createTool } from './createTool'
 import { serializeSpecifier } from './serializeSpecifier'
 
@@ -9,6 +10,7 @@ export async function DEFAULT_REFERENCE_RESOLVER(this: Thread, type: ReferenceTy
   // --- Resolve a reference to the result of a node.
   if (type === 'Nodes') {
     const [id, name] = values
+    await getNodeOutputSocket(this, id, name)
     return getNode(this, id).result[name]
   }
 
@@ -21,19 +23,11 @@ export async function DEFAULT_REFERENCE_RESOLVER(this: Thread, type: ReferenceTy
     // --- Assert the component has `input` and `process` methods.
     if (typeof component.process !== 'function') return
     if (typeof component.inputs !== 'object') return
-
     return createTool({
       name: component.title ?? serializeSpecifier(node),
       description: component.description ?? '',
-      schema: {
-        type: 'object',
-        properties: component.inputs,
-        required: Object.entries(component.inputs)
-          .filter(([,property]) => property['x-optional'] !== true)
-          .map(([name]) => name),
-      },
-      // @ts-expect-error: Ignore deep inference issue.
-      call: context => component.process(context),
+      properties: component.inputs,
+      call: (data: ObjectLike) => startNode(this, id, data),
     })
   }
 }

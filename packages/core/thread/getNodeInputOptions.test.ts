@@ -108,7 +108,7 @@ describe('getNodeInputOptions', () => {
     const thread = createThread({ componentResolvers })
     const nodeId = addNode(thread, 'example')
     const shouldReject = getNodeInputOptions(thread, nodeId, 'nonExistentInput')
-    const error = ERRORS.NODE_SOCKET_NOT_FOUND(nodeId, 'nonExistentInput')
+    const error = ERRORS.NODE_INPUT_SOCKET_NOT_FOUND(nodeId, 'nonExistentInput')
     await expect(shouldReject).rejects.toThrow(error)
   })
 })
