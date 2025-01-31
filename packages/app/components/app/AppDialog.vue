@@ -31,7 +31,7 @@ const { t, locale } = useI18n({ useScope: 'local' })
         'pointer-events-none': !modelValue,
       }"
       class="
-        fixed left-0 top-0 z-9999 w-screen h-screen scale-105 bg-transparent
+        fixed left-0 top-0 w-screen h-screen bg-transparent
         inline-flex items-center justify-center backdrop:bg-transparent
         transition dark
       "
@@ -75,7 +75,7 @@ const { t, locale } = useI18n({ useScope: 'local' })
           </div>
 
           <!-- CTA -->
-          <div class="p-md w-full bg-layout-prominent">
+          <div class="p-md w-full bg-emphasized">
             <slot name="actions" v-bind="slots">
               <div class="flex items-center justify-between w-full">
                 <Button
