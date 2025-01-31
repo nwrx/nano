@@ -1,6 +1,7 @@
 <!-- eslint-disable vue/no-setup-props-reactivity-loss -->
 <script setup lang="ts">
 import type { NodeInstanceJSON } from '@nwrx/api'
+import type { SocketListOption } from '@nwrx/core'
 
 const props = defineProps<{
   name: string
@@ -9,6 +10,7 @@ const props = defineProps<{
   nodes: NodeInstanceJSON[]
   isDataOpen: boolean
   isResultOpen: boolean
+  getOptions?: (search: string) => Promise<Array<SocketListOption<unknown>>>
 }>()
 
 const emit = defineEmits<{

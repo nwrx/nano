@@ -1,13 +1,15 @@
+<!-- eslint-disable vue/prop-name-casing -->
 <script setup lang="ts">
 import type { SocketListOption } from '@nwrx/core'
-import type { BaseInputListProps } from '@unshared/vue'
 
 const props = defineProps<{
   name?: string
   badge?: boolean
   modelValue: unknown
   defaultValue?: unknown
-} & BaseInputListProps<SocketListOption<unknown>, unknown, false>>()
+  options?: Array<SocketListOption<unknown>>
+  getOptions?: (search: string) => Promise<Array<SocketListOption<unknown>>>
+}>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
