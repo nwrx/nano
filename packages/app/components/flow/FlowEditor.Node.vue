@@ -110,7 +110,7 @@ defineExpose({ portsData, portsResult })
       <FlowEditorPort
         v-for="port in dataSchema"
         v-bind="port"
-        :ref="(component) => portsData[port.key] = component as ComponentPublicInstance"
+        :ref="(component) => portsData[port.key] = (component as ComponentPublicInstance)"
         :portId="port.key"
         :nodeId="id"
         :value="data?.[port.key]"
@@ -126,7 +126,7 @@ defineExpose({ portsData, portsResult })
       <FlowEditorPort
         v-for="port in resultSchema"
         v-bind="port"
-        :ref="(component) => portsResult[port.key] = component as ComponentPublicInstance"
+        :ref="(component) => portsResult[port.key] = (component as ComponentPublicInstance)"
         :portId="port.key"
         :nodeId="id"
         :value="result?.[port.key]"
