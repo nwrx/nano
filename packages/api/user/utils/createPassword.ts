@@ -15,7 +15,7 @@ export interface PasswordOptions extends ScryptOptions {
    *
    * @default 512
    */
-  keylen?: number
+  keylen: number
 
   /**
    * Encoding of the hash when stored in the database. It can be any
@@ -23,7 +23,7 @@ export interface PasswordOptions extends ScryptOptions {
    *
    * @default 'hex'
    */
-  encoding?: BufferEncoding
+  encoding: BufferEncoding
 
   /**
    * The salt to hash the password. By default, a random salt is generated
@@ -32,7 +32,7 @@ export interface PasswordOptions extends ScryptOptions {
    *
    * @default randomBytes(32).toString(encoding)
    */
-  salt?: string
+  salt: string
 }
 
 /**
@@ -47,9 +47,9 @@ export interface PasswordOptions extends ScryptOptions {
  * @see https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#scrypt
  * @example await createPassword('password', USER_HASH_OPTIONS) // => { salt, hash, options }
  */
-export async function createPassword(this: ModuleUser, user: User, password: string, options: PasswordOptions = {}) {
+export async function createPassword(this: ModuleUser, user: User, password: string, options: Partial<PasswordOptions> = {}) {
   const {
-    keylen = 32,
+    keylen = 512,
     encoding = 'hex',
     N = 16384,
     r = 8,
