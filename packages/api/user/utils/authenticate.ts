@@ -5,7 +5,7 @@ import { EXP_UUID } from '@unshared/validation'
 import { getCookie, getHeader, getRequestIP } from 'h3'
 import { createDecipheriv, createHash, type UUID } from 'node:crypto'
 
-export interface AuthorizeOptions<U extends boolean = boolean> {
+export interface AuthenticateOptions<U extends boolean = boolean> {
 
   /**
    * If `true`, it won't throw an error if the user session was not found or
@@ -14,18 +14,7 @@ export interface AuthorizeOptions<U extends boolean = boolean> {
   optional?: U
 }
 
-export interface AuthorizeResult {
-
-  /**
-   * The user associated with the user session.
-   */
-  user: User
-
-  /**
-   * The user session associated with the user.
-   */
-  userSession: UserSession
-}
+export type AuthenticateResult = { user: User } & UserSession
 
 /**
  * Authenticate the user by the token contained in the request's cookie payload
@@ -36,10 +25,10 @@ export interface AuthorizeResult {
  * @param event The H3 event to authenticate the user from.
  * @returns The user associated with the user session.
  */
-export async function authenticate(this: ModuleUser, event: H3Event): Promise<User>
-export async function authenticate(this: ModuleUser, event: H3Event, options: AuthorizeOptions<false>): Promise<User>
-export async function authenticate(this: ModuleUser, event: H3Event, options: AuthorizeOptions<true>): Promise<User | undefined>
-export async function authenticate(this: ModuleUser, event: H3Event, options: AuthorizeOptions = {}): Promise<User | undefined> {
+export async function authenticate(this: ModuleUser, event: H3Event): Promise<AuthenticateResult>
+export async function authenticate(this: ModuleUser, event: H3Event, options: AuthenticateOptions<false>): Promise<AuthenticateResult>
+export async function authenticate(this: ModuleUser, event: H3Event, options: AuthenticateOptions<true>): Promise<AuthenticateResult | undefined>
+export async function authenticate(this: ModuleUser, event: H3Event, options: AuthenticateOptions = {}): Promise<AuthenticateResult | undefined> {
   const { UserSession } = this.getRepositories()
   const { optional = false } = options
 
@@ -72,10 +61,10 @@ export async function authenticate(this: ModuleUser, event: H3Event, options: Au
   if (!userSession) throw this.errors.USER_SESSION_NOT_FOUND()
   if (!userSession.user) throw this.errors.USER_SESSION_NOT_FOUND()
   if (userSession.user.deletedAt) throw this.errors.USER_SESSION_NOT_FOUND()
-  if (userSession.expiresAt < now) throw this.errors.USER_SESSION_NOT_FOUND()
   if (userSession.address !== address) throw this.errors.USER_SESSION_NOT_FOUND()
   if (userSession.userAgent !== userAgent) throw this.errors.USER_SESSION_NOT_FOUND()
+  if (userSession.expiresAt < now) throw this.errors.USER_SESSION_EXPIRED()
 
   // --- Return the user associated with the session.
-  return userSession.user
+  return userSession as AuthenticateResult
 }
