@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SocketOption } from '@nwrx/core'
+import type { SocketListOption } from '@nwrx/core'
 import type { BaseInputListProps } from '@unshared/vue'
 import type { BaseInputList } from '#components'
 import type { ComponentInstance } from 'vue'
@@ -8,7 +8,7 @@ const props = defineProps<{
   name: string
   modelValue: unknown
   badge?: boolean
-} & BaseInputListProps<SocketOption, unknown, false>>()
+} & BaseInputListProps<SocketListOption, unknown, false>>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
