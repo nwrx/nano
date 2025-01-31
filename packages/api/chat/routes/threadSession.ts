@@ -9,7 +9,7 @@ export function threadSessionById(this: ModuleChat) {
     {
       name: 'WS /ws/chat/:workspace',
       parseParameters: createSchema({ workspace: assertStringNotEmpty }),
-      parseMessage: CHAT_CLIENT_MESSAGE_SCHEMA,
+      parseClientMessage: CHAT_CLIENT_MESSAGE_SCHEMA,
     },
     {
       onOpen: async({ peer, parameters }) => {

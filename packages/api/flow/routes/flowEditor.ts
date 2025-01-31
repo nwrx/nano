@@ -13,7 +13,7 @@ export function flowEditor(this: ModuleFlow) {
         project: assert.stringNotEmpty.with('Project name is required.'),
         name: assert.stringNotEmpty.with('Flow name is required.'),
       }),
-      parseMessage: EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA,
+      parseClientMessage: EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA,
     },
     {
       onOpen: async({ peer, parameters }) => {

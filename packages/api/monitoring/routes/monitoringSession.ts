@@ -10,7 +10,7 @@ export function monitoringSession(this: ModuleMonitoring) {
     {
       name: 'WS /ws/workspaces/:workspace/monitoring',
       parseParameters: createSchema({ workspace: assert.stringNotEmpty }),
-      parseMessage: createRuleSet(
+      parseClientMessage: createRuleSet(
 
         /***************************************************************************/
         /* Select                                                                  */
