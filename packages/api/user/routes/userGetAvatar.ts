@@ -23,8 +23,8 @@ export function userGetAvatar(this: ModuleUser) {
         user,
         username,
         withProfile: true,
-        withDeleted: true,
-        withDisabled: true,
+        withDeleted: user?.isSuperAdministrator,
+        withDisabled: user?.isSuperAdministrator,
       })
 
       // --- If the user does not have an avatar, return a simple SVG.
