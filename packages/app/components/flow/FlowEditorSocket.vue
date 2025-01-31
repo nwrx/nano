@@ -94,7 +94,7 @@ function onRelease() {
     @mousedown="(event: MouseEvent) => onGrab(event)"
     @mouseover="() => onAssign()"
     @mouseout="() => onUnassign()"
-    @mouseup.capture="() => onRelease()">
+    @mouseup="() => onRelease()">
 
     <!-- Node pin, used to connect to other nodes. -->
     <div
@@ -147,6 +147,17 @@ function onRelease() {
       v-else-if="control === 'textarea'"
       v-model="(model as string)"
       :name="name"
+      @mousedown.stop
+    />
+
+    <!-- Slider -->
+    <FlowEditorSocketSlider
+      v-else-if="control === 'slider'"
+      v-model="(model as number)"
+      :name="name"
+      :min="sliderMin"
+      :max="sliderMax"
+      :step="sliderStep"
       @mousedown.stop
     />
   </div>
