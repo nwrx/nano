@@ -24,9 +24,9 @@
       "require": "./dist/components/index.cjs"
     },
     "./sandbox": {
-      "types": "./dist/sandbox/index.d.ts",
-      "require": "./dist/sandbox/index.cjs",
-      "import": "./dist/sandbox/index.js"
+      "types": "./dist/sandbox.d.ts",
+      "require": "./dist/sandbox.cjs",
+      "import": "./dist/sandbox.js"
     },
     "./utils": {
       "types": "./dist/utils/index.d.ts",
