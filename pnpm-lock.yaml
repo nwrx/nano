@@ -322,6 +322,9 @@ importers:
       '@nwrx/core':
         specifier: workspace:*
         version: link:../core
+      '@types/json-schema':
+        specifier: 7.0.15
+        version: 7.0.15
       '@unshared/string':
         specifier: 0.0.20
         version: 0.0.20(@types/node@22.7.5)
