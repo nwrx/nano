@@ -53,8 +53,17 @@ export class StorageFile extends BaseEntity {
    * file. It is used to determine the source of the asset and the ability to download the
    * asset from the remote URL.
    */
-  @Column('text')
+  @Column('text', { nullable: true })
   source?: string
+
+  /**
+   * The name of the pool in which the asset is stored. It allows us to determine the
+   * storage pool of the file if we have multiple storage pools.
+   *
+   * @default 'Default'
+   */
+  @Column('varchar', { length: 255, default: 'Default' })
+  pool: string
 
   /**
    * A reference to the owner of the entity. It is used to determine who has the permission to
