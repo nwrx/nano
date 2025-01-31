@@ -1,9 +1,10 @@
 import type { UserObject } from '@nwrx/api'
 import type { InferInput } from '@unserved/client'
 import type { application } from '~/server'
-import { useClient } from '#imports'
+import { useAlerts, useClient } from '#imports'
 
 type UseUserOptions = Omit<InferInput<typeof application, 'GET /api/users/:username'>, 'username'>
+export type UserSetProfileOptions = Omit<InferInput<typeof application, 'PUT /api/users/:username/profile'>, 'username'>
 
 /**
  * Fetch the current user data from the API and provide methods to interact with it.
@@ -16,8 +17,8 @@ export function useUser(username: MaybeRef<string>, options: UseUserOptions = {}
   const data = ref<UserObject>({} as UserObject)
   const refresh = async() => {
     await useClient().requestAttempt('GET /api/users/:username', {
-      onError: error => showError(error),
       onData: user => data.value = user,
+      onError: error => showError(error),
       data: {
         username: unref(username),
         ...options,
@@ -28,5 +29,25 @@ export function useUser(username: MaybeRef<string>, options: UseUserOptions = {}
   return {
     data: toReactive(data) as UserObject,
     refresh,
+
+    /**
+     * Set the user profile data to the given value.
+     *
+     * @param options The options to pass to the request.
+     * @returns A promise that resolves when the request is complete.
+     */
+    async setProfile(options: UserSetProfileOptions) {
+      await useClient().requestAttempt('PUT /api/users/:username/profile', {
+        onError: error => showError(error),
+        onSuccess: () => {
+          useAlerts().success('Profile updated successfully.')
+          void refresh()
+        },
+        data: {
+          username: unref(username),
+          ...options,
+        },
+      })
+    },
   }
 }
