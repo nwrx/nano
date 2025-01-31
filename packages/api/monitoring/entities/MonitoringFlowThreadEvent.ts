@@ -1,4 +1,4 @@
-import { FlowThreadEvents } from '@nwrx/core'
+import { ThreadEvents } from '@nwrx/core'
 import { BaseEntity, transformerJson } from '@unserved/server'
 import { ObjectLike } from '@unshared/types'
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
@@ -19,7 +19,7 @@ export class MonitoringFlowThreadEvent extends BaseEntity {
    * @example 'start'
    */
   @Column('varchar', { length: 255 })
-  event: keyof FlowThreadEvents
+  event: keyof ThreadEvents
 
   /**
    * The timestamp when the event occurred. It is used to determine the time when
@@ -70,7 +70,7 @@ export class MonitoringFlowThreadEvent extends BaseEntity {
 
 export interface MonitoringFlowThreadEventObject {
   id: string
-  event: keyof FlowThreadEvents
+  event: keyof ThreadEvents
   data: ObjectLike
   delta: number
   timestamp: number
