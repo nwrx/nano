@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
-import type { ObjectLike } from '@unshared/types'
 import type { Thread } from '../../../thread'
 import { randomUUID } from 'node:crypto'
 import { createEventMetadata } from '../../../utils/createEventMetadata'
 
-export type QuestionChoiceValue = boolean | number | ObjectLike | string | unknown[]
+export type QuestionChoiceValue = boolean | number | string
 
 export interface QuestionOptions {
   question: string
