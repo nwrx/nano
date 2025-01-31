@@ -4,12 +4,12 @@ export const NAV_USER_SETTINGS: NavItem[] = [
       {
         label: 'Profile',
         icon: 'i-carbon:user',
-        to: { name: 'SettingsProfile' },
+        to: { name: 'UserSettingsProfile' },
       },
       {
         label: 'Account',
         icon: 'i-carbon:settings',
-        to: { name: 'SettingsAccount' },
+        to: { name: 'UserSettingsAccount' },
       },
       {
         label: 'Notifications',
@@ -28,8 +28,8 @@ export const NAV_USER_SETTINGS: NavItem[] = [
     items: [
       {
         label: 'Password & MFA',
-        to: '/settings/security/password',
         icon: 'i-carbon:security',
+        to: { name: 'UserSettingsPassword' },
       },
       {
         label: 'Single sign-on',
@@ -43,8 +43,8 @@ export const NAV_USER_SETTINGS: NavItem[] = [
       },
       {
         label: 'Sessions',
-        to: '/settings/security/sessions',
         icon: 'i-carbon:mobile-session',
+        to: { name: 'UserSettingsSessions' },
       },
     ],
   },
