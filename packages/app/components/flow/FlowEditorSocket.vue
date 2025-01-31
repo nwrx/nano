@@ -6,6 +6,7 @@ const props = defineProps<{
   portId: string
   kind: 'source' | 'target'
   value: unknown
+  error?: string
   secrets?: FlowSessionSecretJSON[]
   variables?: FlowSessionVariableJSON[]
 } & Omit<DataSocketJSON, 'key'>>()
@@ -90,6 +91,7 @@ function onRelease() {
       'pr-5 flex-row': kind === 'target',
       'pl-5 flex-row-reverse': kind === 'source',
       'hover:bg-emphasized cursor-pointer': isLinkeable,
+      'bg-diagonallines-danger-500/80': error,
     }"
     @mousedown="(event: MouseEvent) => onGrab(event)"
     @mouseover="() => onAssign()"
@@ -125,7 +127,6 @@ function onRelease() {
       :secrets="secrets"
       :variables="variables"
       :default-value="defaultValue"
-      @mousedown.stop
     />
 
     <!-- Text input -->
@@ -134,7 +135,6 @@ function onRelease() {
       v-model="(model as string)"
       :name="name"
       :default-value="defaultValue"
-      @mousedown.stop
     />
 
     <!-- Select input -->
@@ -144,7 +144,6 @@ function onRelease() {
       :name="name"
       :default-value="defaultValue"
       :options="options"
-      @mousedown.stop
     />
 
     <!-- Radio -->
@@ -154,7 +153,6 @@ function onRelease() {
       :name="name"
       :default-value="defaultValue"
       :options="options"
-      @mousedown.stop
     />
 
     <!-- Textarea input -->
@@ -163,7 +161,6 @@ function onRelease() {
       v-model="(model as string)"
       :name="name"
       :default-value="defaultValue"
-      @mousedown.stop
     />
 
     <!-- Slider -->
@@ -175,7 +172,6 @@ function onRelease() {
       :max="sliderMax"
       :step="sliderStep"
       :default-value="defaultValue"
-      @mousedown.stop
     />
   </div>
 </template>
