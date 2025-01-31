@@ -55,10 +55,10 @@ export interface FlowNode {
 /** The object representation of a link between two nodes in the flow. */
 export interface FlowLink {
   sourceId: string
-  sourceKey: string
+  sourceName: string
   sourcePath?: string
   targetId: string
-  targetKey: string
+  targetName: string
   targetPath?: string
 }
 
