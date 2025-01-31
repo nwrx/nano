@@ -19,11 +19,12 @@ const name = ref('')
   <AppDialog
     v-model="model"
     icon="i-carbon:label"
-    variant="warning"
+    class-hint="hint-warning"
     :title="t('title', { title })"
     :text="t('text', { workspace, project })"
     :label-cancel="t('button.cancel')"
-    :label-confirm="t('button.confirm')">
+    :label-confirm="t('button.confirm')"
+    @confirm="() => emit('submit', name)">
 
     <!-- Confirmation input -->
     <InputText

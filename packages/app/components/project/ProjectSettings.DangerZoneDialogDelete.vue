@@ -19,8 +19,8 @@ const confirm = ref('')
 <template>
   <AppDialog
     v-model="model"
-    variant="danger"
     icon="i-carbon:trash-can"
+    class-hint="hint-danger"
     :title="t('title', { title: title || project, slug })"
     :text="t('hint', { slug })"
     :labelCancel="t('cancel')"
