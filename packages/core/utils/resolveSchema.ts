@@ -42,5 +42,7 @@ export async function resolveSchema(
     return resolveSchemaObject(path, value, schema, resolvers)
   else if (schema['x-type'] === 'stream')
     return resolveSchemaStream(path, value)
+  else if (schema['x-type'] === 'file' && value instanceof File !== true)
+    throw E.INPUT_NOT_FILE(path)
   return value
 }
