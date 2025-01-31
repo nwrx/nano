@@ -455,6 +455,7 @@ export class Flow implements Disposable, FlowOptions {
       // --- Start nodes that don't have any incoming links.
       this.dispatch('flow:start', input, this.eventMeta)
       for (const node of this.nodes) {
+        node.reset()
 
         // --- Skip the node if it has incoming links.
         const hasIncomingLinks = this.links.some(link => link.targetId === node.id)
