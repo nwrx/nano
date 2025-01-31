@@ -77,7 +77,7 @@ export function flowFromJsonV1<T extends Module = Module>(json: FlowExportV1, mo
     }
 
     // --- Create the node instance.
-    flow.nodeCreate(kind, { id, meta, initialData })
+    flow.createNode(kind, { id, meta, initialData })
   }
 
   // --- Return the flow instance.

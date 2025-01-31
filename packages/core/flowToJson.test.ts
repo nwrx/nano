@@ -16,9 +16,9 @@ describe('flowToJson', () => {
     })
   })
 
-  it('should export the flow and store the nodes and modules', async() => {
+  it('should export the flow and store the nodes and modules', () => {
     const flow = createFlow({ modules: [moduleCore] })
-    const node1 = await flow.nodeCreate('nwrx/core:parse-json')
+    const node1 = flow.createNode('nwrx/core:parse-json')
     const json = flowToJson(flow)
     expect(json).toStrictEqual({
       version: '1',
@@ -34,9 +34,9 @@ describe('flowToJson', () => {
     })
   })
 
-  it('should store the metadata of the nodes', async() => {
+  it('should store the metadata of the nodes', () => {
     const flow = createFlow({ modules: [moduleCore] })
-    const node1 = await flow.nodeCreate('nwrx/core:parse-json', {
+    const node1 = flow.createNode('nwrx/core:parse-json', {
       meta: {
         isCollapsed: true,
         position: { x: 100, y: 200 },
@@ -73,9 +73,9 @@ describe('flowToJson', () => {
     })
   })
 
-  it('should store the node raw data as strings', async() => {
+  it('should store the node raw data as strings', () => {
     const flow = createFlow({ modules: [moduleCore] })
-    const node1 = await flow.nodeCreate('nwrx/core:parse-json')
+    const node1 = flow.createNode('nwrx/core:parse-json')
     node1.dataRaw.json = '{"message":"Hello, world!"}'
 
     const json = flowToJson(flow)
@@ -94,11 +94,11 @@ describe('flowToJson', () => {
     })
   })
 
-  it('should store the node data as references to other nodes', async() => {
+  it('should store the node data as references to other nodes', () => {
     const flow = createFlow({ modules: [moduleCore] })
-    const node1 = await flow.nodeCreate('nwrx/core:input')
-    const node2 = await flow.nodeCreate('nwrx/core:output')
-    flow.linkCreate(`${node1.id}:value`, `${node2.id}:value`)
+    const node1 = flow.createNode('nwrx/core:input')
+    const node2 = flow.createNode('nwrx/core:output')
+    flow.createLink(`${node1.id}:value`, `${node2.id}:value`)
 
     const json = flowToJson(flow)
     expect(json).toStrictEqual({
@@ -119,10 +119,10 @@ describe('flowToJson', () => {
     })
   })
 
-  it('should store the position of the nodes', async() => {
+  it('should store the position of the nodes', () => {
     const flow = createFlow({ modules: [moduleCore] })
-    const node1 = await flow.nodeCreate('nwrx/core:input', { meta: { position: { x: 10, y: 20 } } })
-    const node2 = await flow.nodeCreate('nwrx/core:output', { meta: { position: { x: 30, y: 40 } } })
+    const node1 = flow.createNode('nwrx/core:input', { meta: { position: { x: 10, y: 20 } } })
+    const node2 = flow.createNode('nwrx/core:output', { meta: { position: { x: 30, y: 40 } } })
 
     const json = flowToJson(flow)
     expect(json).toStrictEqual({
