@@ -148,9 +148,10 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
   // --- Handle the z-index of the nodes. Each time a node is clicked, the z-index
   // --- is increased to bring the node to the front. This is done by incrementing
   // --- the `zIndexCounter` and storing the z-index in the `zIndexMap`.
-  const zIndexCounter = ref(0)
+  const zIndexCounter = ref(-1)
   const zIndexMap = reactive<Record<string, number>>({})
   watch(nodeSelectedIds, () => {
+    if (zIndexCounter.value === -1) zIndexCounter.value = nodes.value.length
     for (const id of nodeSelectedIds.value)
       zIndexMap[id] = zIndexCounter.value++
   }, { deep: true })
