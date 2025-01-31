@@ -4,7 +4,7 @@ import { randomName } from '@nwrx/api/utils'
 import { ModuleWorkspace } from '@nwrx/api/workspace'
 import { createRoute } from '@unserved/server'
 import { toSlug } from '@unshared/string'
-import { assertString, assertStringNotEmpty, assertUndefined, createAssertInstance, createSchema } from '@unshared/validation'
+import { assert, assertString, assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
 import * as YAML from 'yaml'
 
 export function flowImport(this: ModuleFlow) {
@@ -16,7 +16,7 @@ export function flowImport(this: ModuleFlow) {
         project: assertStringNotEmpty,
       }),
       formData: createSchema({
-        file: createAssertInstance(File),
+        file: assert.instance(File),
       }),
     },
     async({ event, formData, parameters }) => {
