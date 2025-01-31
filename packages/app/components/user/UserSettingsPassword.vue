@@ -3,7 +3,7 @@ const emit = defineEmits<{
   submit: [UserSetPasswordOptions]
 }>()
 
-const { t } = useI18n({ useScope: 'local' })
+const { t } = useI18n()
 const oldPassword = ref('')
 const newPassword = ref('')
 const newPasswordConfirm = ref('')
