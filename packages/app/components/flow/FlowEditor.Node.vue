@@ -13,6 +13,7 @@ const props = defineProps<{
   position: { x: number; y: number }
   zoom: number
   isRunning: boolean
+  isDragging: boolean
   isSelected: boolean
   isCollapsed: boolean
   secrets: FlowSessionSecretJSON[]
@@ -79,18 +80,13 @@ defineExpose({ portsData, portsResult })
 
 <template>
   <div
-    :class="{
-      'bg-primary-50/70': isSelected,
-      'bg-primary-50/70 ring-transparent': !isSelected,
-    }"
     :style="{
       '--un-ring-color': isSelected && color ? color : `${color}D0`,
       '--un-ring-width': isSelected ? `${3 / zoom}px` : `${1.25 / zoom}px`,
     }"
     class="
-      absolute min-h-24 w-96
-      backdrop-blur-md rounded ring
-      transition-all duration-100
+      absolute min-h-24 w-96 bg-editor-node
+      backdrop-blur-md rounded ring transition
     "
     @mousedown.stop="(event) => emit('click', event)">
 
@@ -100,6 +96,8 @@ defineExpose({ portsData, portsResult })
       :icon="icon"
       :color="isSelected ? color : `${color}D0`"
       :isRunning="isRunning"
+      :isDragging="isDragging"
+      :isSelected="isSelected"
       @run="() => emit('run')"
       @abort="() => emit('abort')"
       @handleGrab="(event) => emit('handleGrab', event)"
@@ -108,7 +106,7 @@ defineExpose({ portsData, portsResult })
     />
 
     <!-- Graphflow Node Body -->
-    <div class="flex flex-col py-2">
+    <div class="flex flex-col py-sm space-y-sm">
       <FlowEditorPort
         v-for="port in dataSchema"
         v-bind="port"
@@ -148,7 +146,7 @@ defineExpose({ portsData, portsResult })
         h-8 w-full cursor-pointer
         opacity-0 hover:opacity-100
         bg-primary-500/5
-        transition-all duration-100
+        transition
         rounded-b-md
       "
       @mousedown.stop="() => isCollapsed = !isCollapsed">
