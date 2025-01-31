@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FlowNodeInstanceJSON, FlowSessionSecretJSON, FlowSessionVariableJSON } from '@nwrx/api'
+import type { FlowNodeInstanceJSON, FlowSessionEventPayload, FlowSessionSecretJSON, FlowSessionVariableJSON } from '@nwrx/api'
 
 const props = defineProps<{
   name: string
@@ -8,12 +8,14 @@ const props = defineProps<{
   secrets: FlowSessionSecretJSON[]
   variables: FlowSessionVariableJSON[]
   nodeSelected: FlowNodeInstanceJSON[]
+  events: FlowSessionEventPayload[]
   isOpen: boolean
   isFlowMethodsOpen?: boolean
   isFlowSecretsOpen?: boolean
   isFlowVariablesOpen?: boolean
   isNodeDataOpen?: boolean
   isNodeResultOpen?: boolean
+  isEventsOpen?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -23,6 +25,7 @@ const emit = defineEmits<{
   'update:isFlowVariablesOpen': [isOpen: boolean]
   'update:isNodeDataOpen': [isOpen: boolean]
   'update:isNodeResultOpen': [isOpen: boolean]
+  'update:isEventsOpen': [isOpen: boolean]
   setName: [name: string]
   setMethods: [methods: string[]]
   setDescription: [description: string]
@@ -32,6 +35,7 @@ const emit = defineEmits<{
   secretCreate: [name: string, value: string]
   secretUpdate: [name: string, value: string]
   secretRemove: [name: string]
+  eventsClear: []
 }>()
 
 // --- Data.
@@ -46,6 +50,7 @@ const isFlowSecretsOpen = useVModel(props, 'isFlowSecretsOpen', emit, { passive:
 const isFlowVariablesOpen = useVModel(props, 'isFlowVariablesOpen', emit, { passive: true })
 const isNodeDataOpen = useVModel(props, 'isNodeDataOpen', emit, { passive: true })
 const isNodeResultOpen = useVModel(props, 'isNodeResultOpen', emit, { passive: true })
+const isEventsOpen = useVModel(props, 'isEventsOpen', emit, { passive: true })
 
 // --- Compute tabs based on selected node.
 const selectedTab = ref('flow')
@@ -73,11 +78,8 @@ watch(() => props.nodeSelected, () => {
 <template>
   <div
     class="
-      flex flex-col max-h-full
-      bg-primary-50/80 rounded
-      border border-black/10
-      backdrop-blur-md
-      overflow-hidden relative
+      flex flex-col max-h-full rd overflow-hidden relative
+      bg-editor-panel border border-editor backdrop-blur-2xl
     "
     :class="{
       'w-16': !isOpen,
@@ -89,12 +91,12 @@ watch(() => props.nodeSelected, () => {
       filled
       variant="secondary"
       icon="i-carbon:close"
-      class="!absolute right-2 top-2 z-10"
+      class="!absolute right-md top-md z-10"
       @click="() => isOpen = !isOpen"
     />
 
     <!-- Tab selector -->
-    <div class="flex gap-4 p-4" :class="{ 'opacity-0': !isOpen }">
+    <div class="flex gap-md p-md" :class="{ 'opacity-0': !isOpen }">
       <BaseInputToggle
         v-for="tab in tabs"
         :key="tab.id"
@@ -104,16 +106,10 @@ watch(() => props.nodeSelected, () => {
         as="div"
         type="radio"
         class="
-          cursor-pointer
-          px-4 py-2 rounded font-medium
-          transition-all duration-100
-          bg-primary-500
+          cursor-pointer px-md py-sm rd font-medium transition
+          !selected:bg-primary-500
           selected:text-white
-
-          bg-opacity-0
-          hover:bg-opacity-10
-          selected:bg-opacity-80
-          hover:selected:bg-opacity-100
+          hover:bg-prominent
         ">
         {{ tab.label }}
       </BaseInputToggle>
@@ -152,6 +148,14 @@ watch(() => props.nodeSelected, () => {
         :description="node.description"
         @update:isDataOpen="(isOpen) => emit('update:isNodeDataOpen', isOpen)"
         @update:isResultOpen="(isOpen) => emit('update:isNodeResultOpen', isOpen)"
+      />
+
+      <!-- Events -->
+      <FlowEditorPanelEvents
+        v-else-if="selectedTab === 'logs'"
+        v-model:isEventsOpen="isEventsOpen"
+        :events="events"
+        @clear="() => emit('eventsClear')"
       />
     </div>
   </div>
