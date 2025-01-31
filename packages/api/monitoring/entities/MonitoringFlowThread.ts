@@ -44,7 +44,7 @@ export class MonitoringFlowThread extends BaseEntity {
    */
   @JoinColumn()
   @ManyToOne(() => User, { nullable: true, onDelete: 'CASCADE' })
-  createdBy?: User | null
+  createdBy?: null | User
 
   /**
    * @returns The object representation of the flow run.
