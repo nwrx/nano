@@ -30,7 +30,12 @@ const isDialogTransferOpen = ref(false)
           <br><br>
         </template>
         <template #guide>
-          <Button link variant="primary" :label="t('text.guide')" :href="CONSTANTS.appCanonicalUrl" />
+          <Button
+            link
+            variant="primary"
+            :to="CONSTANTS.appCanonicalUrl"
+            :label="t('text.guide')"
+          />
         </template>
       </I18nT>
     </template>
