@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "@nwrx/core": "workspace:*",
-    "@unshared/string": "0.0.19",
-    "@unshared/validation": "0.0.19"
+    "@unshared/string": "0.0.20",
+    "@unshared/validation": "0.0.20"
   }
 }
