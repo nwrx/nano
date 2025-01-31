@@ -1,13 +1,15 @@
 import type { User } from '@nwrx/api'
-import type { Flow as FlowInstance } from '@nwrx/core'
+import type { FlowEvents, Flow as FlowInstance } from '@nwrx/core'
 import type { Peer } from 'crossws'
+import type { Repository } from 'typeorm'
 import type { Flow } from '../entities'
 import type { FlowNodeInstanceJSON } from './serializeFlowNodeInstance'
 import type { FlowNodePortJSON } from './serializeFlowSchema'
-import { type FlowEvents, flowToJson } from '@nwrx/core'
+import type { FlowSessionJSON } from './serializeFlowSession'
+import { flowToJson } from '@nwrx/core'
 import { serializeFlowNodeInstance } from './serializeFlowNodeInstance'
 import { serializeFlowSchema } from './serializeFlowSchema'
-import { type FlowSessionJSON, serializeFlowSession } from './serializeFlowSession'
+import { serializeFlowSession } from './serializeFlowSession'
 
 /**
  * A `FlowSessionParticipant` represents a peer that is subscribed to a flow session.
@@ -38,6 +40,16 @@ export interface FlowSessionEvents extends Record<keyof FlowEvents, unknown> {
   'flow:start': object
   'flow:end': object
 
+  // Variables
+  'variables:create': { name: string; value: string }
+  'variables:update': { name: string; value: string }
+  'variables:remove': { name: string }
+
+  // Secrets
+  'secrets:create': { name: string; value: string }
+  'secrets:update': { name: string; value: string }
+  'secrets:remove': { name: string }
+
   // Node
   'node:create': FlowNodeInstanceJSON
   'node:remove': { id: string }
@@ -50,10 +62,6 @@ export interface FlowSessionEvents extends Record<keyof FlowEvents, unknown> {
   'node:abort': { id: string }
   'node:error': { id: string; message: string }
   'node:end': { id: string }
-
-  // Link
-  'link:create': { source: string; target: string }
-  'link:remove': { source: string; target: string }
 
   // User
   'user:join': { id: string; name: string; color: string }
@@ -75,10 +83,12 @@ export class FlowSession {
    *
    * @param flow The flow to create the session for.
    * @param entity The flow entity as stored in the database.
+   * @param repository The repository to save the flow entity to.
    */
   constructor(
     public flow: FlowInstance,
     public entity: Flow,
+    public repository: Repository<Flow>,
   ) {
 
     // --- Flow events.
@@ -101,10 +111,6 @@ export class FlowSession {
     this.flow.on('node:abort', id => this.broadcast({ event: 'node:abort', id }))
     this.flow.on('node:error', (id, error) => this.broadcast({ event: 'node:error', id, message: error.message }))
     this.flow.on('node:end', id => this.broadcast({ event: 'node:end', id }))
-
-    // --- Link events.
-    this.flow.on('link:create', ({ source, target }) => this.broadcast({ event: 'link:create', source, target }))
-    this.flow.on('link:remove', ({ source, target }) => this.broadcast({ event: 'link:remove', source, target }))
   }
 
   /** The peers that are subscribed to the flow session. */
@@ -183,13 +189,14 @@ export class FlowSession {
   }
 
   /**
-   * Save the current state of the flow to the database.
+   * Save the current state of the flow to the database. This will update the
+   * flow entity with the latest data and meta information.
    */
-  save() {
-    this.entity.title = this.flow.meta.name ?? 'Untitled Flow'
-    // this.entity.icon = this.flow.icon
-    this.entity.description = this.flow.meta.description ?? ''
+  async save() {
+    if (this.flow.meta.name) this.entity.title = this.flow.meta.name
+    if (this.flow.meta.description) this.entity.description = this.flow.meta.description
     this.entity.data = flowToJson(this.flow)
+    await this.repository.save(this.entity)
   }
 }
 
@@ -198,8 +205,9 @@ export class FlowSession {
  *
  * @param flow The flow to create the session for.
  * @param entity The flow entity as stored in the database.
+ * @param repository The repository to save the flow entity to.
  * @returns The new `FlowSession` instance.
  */
-export function createFlowSession(flow: FlowInstance, entity: Flow): FlowSession {
-  return new FlowSession(flow, entity)
+export function createFlowSession(flow: FlowInstance, entity: Flow, repository: Repository<Flow>): FlowSession {
+  return new FlowSession(flow, entity, repository)
 }

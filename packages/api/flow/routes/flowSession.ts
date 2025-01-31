@@ -1,7 +1,6 @@
 import type { ModuleFlow } from '..'
 import { createRoute } from '@unserved/server'
-import { assertNotNull, assertNumber, assertStringNotEmpty, createArrayParser, createAssertStringEquals, createParser, createRuleSet, createSchema } from '@unshared/validation'
-import { nextTick } from 'node:process'
+import { assertNotNull, assertNumber, assertStringConstantCase, assertStringNotEmpty, createArrayParser, createAssertStringEquals, createRuleSet, createSchema } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
 
@@ -41,6 +40,38 @@ export function flowSession(this: ModuleFlow) {
         })],
         [createSchema({
           event: createAssertStringEquals('flowAbort'),
+        })],
+
+        // --- Flow variable events.
+        [createSchema({
+          event: createAssertStringEquals('flowVariableCreate'),
+          name: [assertStringNotEmpty, assertStringConstantCase],
+          value: assertStringNotEmpty,
+        })],
+        [createSchema({
+          event: createAssertStringEquals('flowVariableUpdate'),
+          name: [assertStringNotEmpty, assertStringConstantCase],
+          value: assertStringNotEmpty,
+        })],
+        [createSchema({
+          event: createAssertStringEquals('flowVariableRemove'),
+          name: [assertStringNotEmpty, assertStringConstantCase],
+        })],
+
+        // --- Flow secret events.
+        [createSchema({
+          event: createAssertStringEquals('flowSecretCreate'),
+          name: [assertStringNotEmpty, assertStringConstantCase],
+          value: assertStringNotEmpty,
+        })],
+        [createSchema({
+          event: createAssertStringEquals('flowSecretUpdate'),
+          name: [assertStringNotEmpty, assertStringConstantCase],
+          value: assertStringNotEmpty,
+        })],
+        [createSchema({
+          event: createAssertStringEquals('flowSecretRemove'),
+          name: [assertStringNotEmpty, assertStringConstantCase],
         })],
 
         // --- Node events.
@@ -107,151 +138,279 @@ export function flowSession(this: ModuleFlow) {
        * @param context.parameters The parameters of the WebSocket connection.
        */
       onOpen: async({ peer, parameters }) => {
-        const userModule = this.getModule(ModuleUser)
-        const workspaceModule = this.getModule(ModuleWorkspace)
-        const { user } = await userModule.authenticate(peer)
-        const { workspace: ws, project, flow } = parameters
-
-        // --- Resolve the flow and check if the user has access to it.
-        const workspaceResolved = await workspaceModule.resolveWorkspace({ user, name: ws, permission: 'Read' })
-        const projectResolved = await workspaceModule.resolveProject({ workspace: workspaceResolved, name: project, permission: 'Read' })
-        const flowResolved = await this.resolveFlow({ name: flow, project: projectResolved, workspace: workspaceResolved })
-        if (!flowResolved) throw this.errors.FLOW_NOT_FOUND(ws, project, flow)
-
-        // --- Create or retrieve the flow session and subscribe the peer to it.
-        const session = await this.resolveFlowSession(flowResolved)
-        session.subscribe(peer, user)
-      },
-
-      onError: ({ peer, error }) => {
-        peer.send({ event: 'error', message: error.message })
-      },
-
-      onClose: ({ peer }) => {
-        const session = this.resolveFlowSessionByPeer(peer)
-        if (session) session.unsubscribe(peer)
-      },
-
-      onMessage: async({ peer, message }) => {
         try {
-          const { Flow } = this.getRepositories()
-          const session = this.resolveFlowSessionByPeer(peer)
-          if (!session) return
+          const userModule = this.getModule(ModuleUser)
+          const workspaceModule = this.getModule(ModuleWorkspace)
+          const { user } = await userModule.authenticate(peer)
+          const { workspace: workspaceName, project: projectName, flow: flowName } = parameters
 
-          switch (message.event) {
+          // --- Resolve the flow and check if the user has access to it.
+          const workspace = await workspaceModule.resolveWorkspace({ user, name: workspaceName, permission: 'Read' })
+          const project = await workspaceModule.resolveProject({ workspace, name: projectName, permission: 'Read' })
+          const flow = await this.resolveFlow({ name: flowName, project, workspace })
+          if (!flow) throw this.errors.FLOW_NOT_FOUND(workspaceName, projectName, flowName)
 
-            // --- User events.
-            case 'userLeave': {
-              session.unsubscribe(peer)
-              break
-            }
-            case 'userSetPosition': {
-              const { x, y } = message
-              session.broadcast({ event: 'user:position', id: peer.id, x, y })
-              break
-            }
-
-            // --- Flow events.
-            case 'flowSetMetaValue': {
-              const { key, value } = message
-              session.flow.setMetaValue(key, value)
-              if (session.flow.meta.name) session.entity.title = session.flow.meta.name
-              if (session.flow.meta.description) session.entity.description = session.flow.meta.description
-              await Flow.save(session.entity)
-              break
-            }
-            case 'flowRun': {
-              session.flow.run()
-              break
-            }
-            case 'flowAbort': {
-              session.flow.abort()
-              break
-            }
-
-            // --- Node events.
-            case 'nodeCreate': {
-              const { kind, x, y } = message
-              await session.flow.nodeCreate(kind, {
-                meta: { position: { x, y } },
-                initialData: {},
-                initialResult: {},
-              })
-              await Flow.save(session.entity)
-              break
-            }
-            case 'nodeDuplicate': {
-              const { nodeId, x, y } = message
-              const instance = session.flow.getNodeInstance(nodeId)
-              const kind = `${instance.flow.resolveNodeModule(instance).kind}:${instance.node.kind}`
-              await session.flow.nodeCreate(kind, {
-                meta: { position: { x, y } },
-                initialData: instance.data,
-                initialResult: instance.result,
-              })
-              await Flow.save(session.entity)
-              break
-            }
-            case 'nodeStart': {
-              const { nodeId } = message
-              const node = session.flow.getNodeInstance(nodeId)
-              session.flow.run()
-              nextTick(() => node.dispatch('data', node.data))
-              break
-            }
-            case 'nodeAbort': {
-              const { nodeId } = message
-              session.flow.getNodeInstance(nodeId).abort()
-              break
-            }
-            case 'nodeSetDataValue': {
-              const { nodeId, portId, value } = message
-              if (typeof value === 'string' && value.startsWith('$NODE.')) return
-              if (typeof value === 'string' && value.startsWith('$ENV.')) return
-              await session.flow.getNodeInstance(nodeId).setDataValue(portId, value)
-              await Flow.save(session.entity)
-              break
-            }
-            case 'nodeSetMetaValue': {
-              for (const { nodeId, key, value } of message.nodes) {
-                if (key === 'position') createParser({ x: assertNumber, y: assertNumber })(value)
-                session.flow.getNodeInstance(nodeId).setMetaValue(key, value)
-              }
-              await Flow.save(session.entity)
-              break
-            }
-            case 'nodesRemove': {
-              const { nodeIds } = message
-              for (const nodeId of nodeIds) {
-                session.flow.getNodeInstance(nodeId).abort()
-                session.flow.nodeRemove(nodeId)
-              }
-              await Flow.save(session.entity)
-              break
-            }
-
-            // --- Link events.
-            case 'linkCreate': {
-              const { source, target } = message
-              session.flow.linkCreate(source, target)
-              await Flow.save(session.entity)
-              break
-            }
-            case 'linkRemove': {
-              const { source } = message
-              session.flow.linkRemove(source)
-              await Flow.save(session.entity)
-              break
-            }
-          }
+          // --- Create or retrieve the flow session and subscribe the peer to it.
+          const session = await this.resolveFlowSession(flow)
+          session.subscribe(peer, user)
         }
 
         // --- When an error occurs, send an error message to the client
         // --- so it can be displayed in the UI to the user. This is useful
         // --- for debugging purposes and to inform the user of what went wrong.
         catch (error) {
-          const message = error instanceof Error ? error.message : 'An error occurred.'
-          peer.send({ event: 'error', message })
+          const message = error instanceof Error ? error.message : String(error)
+          peer.send({ event: 'error', message: `Error while opening WebSocket connection: ${message}` })
+        }
+      },
+
+      /**
+       * When an error occurs, send an error message to the client so it can be displayed
+       * in the UI to the user. This is useful for debugging purposes and to inform the user
+       * of what went wrong.
+       *
+       * @param context The context of the WebSocket connection.
+       * @param context.peer The peer that connected to the WebSocket.
+       * @param context.error The error that occurred.
+       */
+      onError: ({ peer, error }) => {
+        peer.send({ event: 'error', message: error.message })
+      },
+
+      /**
+       * When a WebSocket connection is closed, the peer information is removed from the
+       * flow session and the peer is unsubscribed from it. This ensures that the peer
+       * is no longer able to receive updates from the flow session.
+       *
+       * @param context The context of the WebSocket connection.
+       * @param context.peer The peer that connected to the WebSocket.
+       */
+      onClose: ({ peer }) => {
+        const session = this.resolveFlowSessionByPeer(peer)
+        if (session) session.unsubscribe(peer)
+      },
+
+      /**
+       * When a message is received from the client, the message is parsed and the event
+       * is triggered on the flow session. The flow session will then handle the event
+       * and update the flow accordingly. Once the flow has been updated, the changes
+       * are broadcasted to the peers so they can be updated in real-time.
+       *
+       * @param context The context of the WebSocket connection.
+       * @param context.peer The peer that connected to the WebSocket.
+       * @param context.message The message that was received from the client.
+       * @param context.parameters The parameters of the WebSocket connection
+       */
+      onMessage: async({ peer, message, parameters }) => {
+        const userModule = this.getModule(ModuleUser)
+        const workspaceModule = this.getModule(ModuleWorkspace)
+        const session = this.resolveFlowSessionByPeer(peer)
+        if (!session) return
+
+        // --- User events.
+        switch (message.event) {
+          case 'userLeave': {
+            session.unsubscribe(peer)
+            break
+          }
+          case 'userSetPosition': {
+            const { x, y } = message
+            session.broadcast({ event: 'user:position', id: peer.id, x, y })
+            break
+          }
+
+          // --- Flow events.
+          case 'flowSetMetaValue': {
+            const { key, value } = message
+            session.flow.setMetaValue(key, value)
+            if (session.flow.meta.name) session.entity.title = session.flow.meta.name
+            if (session.flow.meta.description) session.entity.description = session.flow.meta.description
+            await session.save()
+            break
+          }
+          case 'flowRun': {
+            session.flow.start()
+            break
+          }
+          case 'flowAbort': {
+            session.flow.abort()
+            break
+          }
+
+          // --- Flow variable events.
+          case 'flowVariableCreate': {
+            const { user } = await userModule.authenticate(peer)
+            const { workspace: workspaceName, project: projectName } = parameters
+
+            // --- Resolve the workspace and project and check if the user has access to it.
+            const workspace = await workspaceModule.resolveWorkspace({ user, name: workspaceName, permission: 'Read' })
+            const project = await workspaceModule.resolveProject({ workspace, name: projectName, permission: 'WriteVariables' })
+
+            // --- Create the flow variable and save it to the database.
+            const { name, value } = message
+            const { WorkspaceProjectVariable } = workspaceModule.getRepositories()
+            const variable = await workspaceModule.createProjectVariable({ workspace, project, name, value })
+            await WorkspaceProjectVariable.save(variable)
+
+            // --- Update the flow session and broadcast the change to the peers.
+            session.flow.variables[name] = value
+            session.broadcast({ event: 'variables:create', name, value })
+            break
+          }
+          case 'flowVariableUpdate': {
+            const { user } = await userModule.authenticate(peer)
+            const { workspace: workspaceName, project: projectName } = parameters
+
+            // --- Resolve the workspace and project and check if the user has access to it.
+            const workspace = await workspaceModule.resolveWorkspace({ user, name: workspaceName, permission: 'Read' })
+            const project = await workspaceModule.resolveProject({ workspace, name: projectName, permission: 'WriteVariables' })
+
+            // --- Update the flow variable and save it to the database.
+            const { name, value } = message
+            const { WorkspaceProjectVariable } = workspaceModule.getRepositories()
+            const variable = await WorkspaceProjectVariable.findOneBy({ project, name })
+            if (!variable) throw workspaceModule.errors.PROJECT_VARIABLE_NOT_FOUND(workspaceName, projectName, name)
+
+            // --- Update the flow variable and save it to the database.
+            variable.value = value
+            await WorkspaceProjectVariable.save(variable)
+
+            // --- Update the flow session and broadcast the change to the peers.
+            session.flow.variables[name] = value
+            session.broadcast({ event: 'variables:update', name, value })
+            break
+          }
+          case 'flowVariableRemove': {
+            const { user } = await userModule.authenticate(peer)
+            const { workspace: workspaceName, project: projectName } = parameters
+
+            // --- Resolve the workspace and project and check if the user has access to it.
+            const workspace = await workspaceModule.resolveWorkspace({ user, name: workspaceName, permission: 'Read' })
+            const project = await workspaceModule.resolveProject({ workspace, name: projectName, permission: 'WriteVariables' })
+
+            // --- Find the flow variable to remove.
+            const { name } = message
+            const { WorkspaceProjectVariable } = workspaceModule.getRepositories()
+            const variable = await WorkspaceProjectVariable.findOneBy({ project, name })
+            if (!variable) throw workspaceModule.errors.PROJECT_VARIABLE_NOT_FOUND(workspaceName, projectName, name)
+
+            // --- Save the changes to the database and update the flow session.
+            await WorkspaceProjectVariable.remove(variable)
+            delete session.flow.variables[name]
+            session.broadcast({ event: 'variables:remove', name })
+            break
+          }
+
+          // --- Flow secret events.
+          case 'flowSecretCreate': {
+            const { user } = await userModule.authenticate(peer)
+            const { workspace: workspaceName, project: projectName } = parameters
+
+            // --- Resolve the workspace and project and check if the user has access to it.
+            const workspace = await workspaceModule.resolveWorkspace({ user, name: workspaceName, permission: 'Read' })
+            const project = await workspaceModule.resolveProject({ workspace, name: projectName, permission: 'WriteSecrets' })
+
+            // --- Create the flow secret and save it to the database.
+            const { name, value } = message
+            const { WorkspaceProjectSecret } = workspaceModule.getRepositories()
+            const secret = await workspaceModule.createProjectSecret({ workspace, project, name, value })
+            await WorkspaceProjectSecret.save(secret)
+
+            // --- Update the flow session and broadcast the change to the peers.
+            session.flow.secrets[name] = value
+            session.broadcast({ event: 'secrets:create', name, value })
+            break
+          }
+          case 'flowSecretRemove': {
+            const { user } = await userModule.authenticate(peer)
+            const { workspace: workspaceName, project: projectName } = parameters
+
+            // --- Resolve the workspace and project and check if the user has access to it.
+            const workspace = await workspaceModule.resolveWorkspace({ user, name: workspaceName, permission: 'Read' })
+            const project = await workspaceModule.resolveProject({ workspace, name: projectName, permission: 'WriteSecrets' })
+
+            // --- Find the flow secret to remove.
+            const { name } = message
+            const { WorkspaceProjectSecret } = workspaceModule.getRepositories()
+            const secret = await WorkspaceProjectSecret.findOneBy({ project, name })
+            if (!secret) throw workspaceModule.errors.PROJECT_SECRET_NOT_FOUND(workspaceName, projectName, name)
+
+            // --- Save the changes to the database and update the flow session.
+            await WorkspaceProjectSecret.remove(secret)
+            delete session.flow.secrets[name]
+            session.broadcast({ event: 'secrets:remove', name })
+            break
+          }
+
+          // --- Node events.
+          case 'nodeCreate': {
+            const { kind, x, y } = message
+            await session.flow.nodeCreate(kind, {
+              meta: { position: { x, y } },
+              initialData: {},
+              initialResult: {},
+            })
+            await session.save()
+            break
+          }
+          case 'nodeDuplicate': {
+            const { nodeId, x, y } = message
+            const instance = session.flow.getNodeInstance(nodeId)
+            const kind = `${instance.flow.resolveNodeModule(instance).kind}:${instance.node.kind}`
+            await session.flow.nodeCreate(kind, {
+              meta: { position: { x, y } },
+              initialData: instance.dataRaw,
+            })
+            await session.save()
+            break
+          }
+          case 'nodeStart': {
+            const { nodeId } = message
+            await session.flow.getNodeInstance(nodeId).process()
+            break
+          }
+          case 'nodeAbort': {
+            const { nodeId } = message
+            session.flow.getNodeInstance(nodeId).abort()
+            break
+          }
+          case 'nodeSetDataValue': {
+            const { nodeId, portId, value } = message
+            const node = session.flow.getNodeInstance(nodeId)
+            node.setDataValue(portId, value)
+            await node.resolveDataSchema()
+            await session.save()
+            break
+          }
+          case 'nodeSetMetaValue': {
+            for (const { nodeId, key, value } of message.nodes)
+              session.flow.getNodeInstance(nodeId).setMetaValue(key, value)
+            await session.save()
+            break
+          }
+          case 'nodesRemove': {
+            const { nodeIds } = message
+            for (const nodeId of nodeIds) {
+              session.flow.getNodeInstance(nodeId).abort()
+              session.flow.nodeRemove(nodeId)
+            }
+            await session.save()
+            break
+          }
+
+          // --- Link events.
+          case 'linkCreate': {
+            const { source, target } = message
+            session.flow.linkCreate(source, target)
+            await session.save()
+            break
+          }
+          case 'linkRemove': {
+            const { source } = message
+            session.flow.linkRemove(source)
+            await session.save()
+            break
+          }
         }
       },
     },
