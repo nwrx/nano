@@ -27,9 +27,19 @@ export type ResolveFlowOptions = Loose<ReturnType<typeof RESOLVE_FLOW_OPTIONS>>
 export async function resolveFlow(this: ModuleFlow, options: ResolveFlowOptions) {
   const { name, project, workspace } = RESOLVE_FLOW_OPTIONS(options)
 
-  // --- Find the project in the workspace.
+  // --- Find the flow in the workspace.
   const { Flow } = this.getRepositories()
-  const result = await Flow.findOneBy({ name, project })
+  const result = await Flow.findOne({
+    where: { name, project },
+    relations: {
+      project: {
+        secrets: true,
+        variables: true,
+      },
+    },
+  })
+
+  // --- Throw an error if the flow was not found.
   if (!result) throw this.errors.FLOW_NOT_FOUND(workspace.name, project.name, name)
   return result
 }
