@@ -69,10 +69,8 @@ export function serializeFlowSession(session: FlowSessionInstance, peer: Peer): 
     nodes: session.flow.nodes.map(node => serializeNodeInstance(node)),
     categories: serializeCategories(),
     isRunning: session.flow.isRunning,
-    secrets: [],
-    variables: [],
-    // secrets: Object.keys(session.flow.secrets).map(name => ({ name, from: 'project' })),
-    // variables: Object.entries(session.flow.variables).map(([name, value]) => ({ name, value, from: 'project' })),
+    secrets: session.flow.meta.secrets.map(name => ({ name, from: 'project' })),
+    variables: session.flow.meta.variables.map(name => ({ name, value: '', from: 'project' })),
     peerId: peer.id,
     peers: session.participants.map(peer => ({
       id: peer.peer.id,
