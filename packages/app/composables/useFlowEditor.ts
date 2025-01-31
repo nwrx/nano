@@ -132,6 +132,7 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
   const viewSelectTo = ref({ x: 0, y: 0 })
 
   // --- Cursor state.
+  const cursorClient = ref({ x: 0, y: 0 })
   const cursorView = ref({ x: 0, y: 0 })
   const cursorWorld = ref({ x: 0, y: 0 })
   const cursorPeers = computed(() => peers.value.filter(peer => peer.id !== peerId.value))
@@ -148,7 +149,7 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
   const isPanelNodeOutputOpen = useLocalStorage('__FlowEditorPanel_NodeResultOpen', true)
   watch(isPanelResizing, (value) => {
     if (!value) return
-    panelResizeOrigin.value = cursorView.value.x
+    panelResizeOrigin.value = cursorClient.value.x
     panelResizeInitial.value = panelWidth.value
   })
 
@@ -419,6 +420,7 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
      * @param event The mouse move event that contains the new position.
      */
     onScreenMouseMove: (event: MouseEvent) => {
+      cursorClient.value = { x: event.clientX, y: event.clientY }
       cursorView.value = screenToView({ x: event.clientX, y: event.clientY })
       cursorWorld.value = screenToWorld({ x: event.clientX, y: event.clientY })
       const userPosition = screenToWorld({ x: event.clientX, y: event.clientY })
@@ -497,7 +499,7 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
 
       // --- If resizing the panel, update the panel width based on the mouse movement.
       else if (isPanelResizing.value) {
-        const offset = panelResizeOrigin.value - cursorView.value.x
+        const offset = panelResizeOrigin.value - cursorClient.value.x
         const width = panelResizeInitial.value + offset
         panelWidth.value = Math.max(256, Math.min(1024, width))
       }
