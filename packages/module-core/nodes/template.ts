@@ -1,5 +1,6 @@
 import type { FlowNodeContext, FlowNodePort, FlowSchema } from '@nwrx/core'
 import { defineFlowNode } from '@nwrx/core'
+import { basic } from '../categories'
 import { string } from '../types'
 
 /** The regular expression for extracting variables from the template. */
@@ -10,6 +11,7 @@ export const template = defineFlowNode({
   name: 'Template',
   icon: 'https://api.iconify.design/carbon:template.svg',
   description: 'A template for generating a string based on the input.',
+  category: basic,
 
   // --- Create the data schema that infers the variables from the template.
   defineDataSchema: ({ data }: FlowNodeContext) => {
