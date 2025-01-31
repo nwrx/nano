@@ -9,7 +9,7 @@ defineProps<{
 </script>
 
 <template>
-  <BaseBadge class="badge">
+  <BaseBadge class="badge space-x-sm">
 
     <!-- Prepend -->
     <BaseIcon
@@ -19,7 +19,7 @@ defineProps<{
     />
 
     <!-- Content -->
-    <slot>
+    <slot v-if="label">
       <span>{{ label }}</span>
     </slot>
 
