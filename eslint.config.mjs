@@ -6,6 +6,7 @@ export default [
     rules: {
       'sonarjs/new-cap': 'off',
       'sonarjs/void-use': 'off',
+      'sonarjs/sonar-no-unused-vars': 'off',
       'vitest/valid-describe-callback': 'off',
     },
   },
