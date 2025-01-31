@@ -1,0 +1,545 @@
+diff --git a/dist/BaseButton.d.ts b/dist/BaseButton.d.ts
+index ce069c686ce4e5c503b07cb1bd13d227478f693f..f13cdcee8eff34c6b93f9af538f0e4ce3fe2a883 100644
+--- a/dist/BaseButton.d.ts
++++ b/dist/BaseButton.d.ts
+@@ -10,10 +10,9 @@ import 'vue-router';
+ declare const BASE_BUTTON_PROPS: {
+     label: (StringConstructor | NumberConstructor)[];
+     as: Prop<unknown>;
+-    error: Prop<unknown>;
+-    onClick: Prop<unknown>;
+     disabled: Prop<unknown>;
+     "onUpdate:disabled": Prop<unknown>;
++    error: Prop<unknown>;
+     "onUpdate:error": Prop<unknown>;
+     loading: Prop<unknown>;
+     "onUpdate:loading": Prop<unknown>;
+@@ -24,6 +23,7 @@ declare const BASE_BUTTON_PROPS: {
+     classLoading: Prop<unknown>;
+     classReadonly: Prop<unknown>;
+     eager: Prop<unknown>;
++    onClick: Prop<unknown>;
+     classActive: {
+         type: StringConstructor;
+         default: string;
+diff --git a/dist/BaseCollapse.cjs b/dist/BaseCollapse.cjs
+index 001e9b4685c9258382fd01a4ab1f815bb4e00a4d..9a33bd69d31a56a34b3263af816886fc9f4ea916 100644
+--- a/dist/BaseCollapse.cjs
++++ b/dist/BaseCollapse.cjs
+@@ -5,28 +5,36 @@ const BASE_COLLAPSE_PROPS = {
+   ...useBaseRenderable.BASE_RENDERABLE_OPTIONS,
+   isOpen: Boolean,
+   vertical: Boolean,
+-  horizontal: Boolean
++  horizontal: Boolean,
++  duration: Number
+ }, BaseCollapse = /* @__PURE__ */ defineSetupComponent.defineSetupComponent(
+   (props, { attrs, slots }) => {
+-    const element = vue.ref(), renderable = useBaseRenderable.useBaseRenderable(props), style = vue.ref({});
+-    function setStyleContent() {
++    const element = vue.ref(), renderable = useBaseRenderable.useBaseRenderable(props), style = vue.ref({
++      maxHeight: props.vertical && !props.isOpen ? "0" : void 0,
++      maxWidth: props.horizontal && !props.isOpen ? "0" : void 0
++    });
++    async function setStyleContent() {
+       if (!element.value) return {};
+-      const { isOpen, vertical, horizontal } = props;
++      const { isOpen, vertical, horizontal, duration = 100 } = props;
+       style.value = {
+-        overflowY: vertical ? isOpen ? void 0 : "hidden" : void 0,
+-        overflowX: horizontal ? isOpen ? void 0 : "hidden" : void 0,
++        maxHeight: vertical ? `${element.value.scrollHeight}px` : void 0,
++        maxWidth: horizontal ? `${element.value.scrollWidth}px` : void 0
++      }, await new Promise((resolve) => setTimeout(resolve, 0)), style.value = {
+         maxHeight: vertical ? isOpen ? `${element.value.scrollHeight}px` : "0" : void 0,
+         maxWidth: horizontal ? isOpen ? `${element.value.scrollWidth}px` : "0" : void 0
++      }, await new Promise((resolve) => setTimeout(resolve, duration)), style.value = {
++        maxHeight: vertical && !isOpen ? "0" : void 0,
++        maxWidth: horizontal && !isOpen ? "0" : void 0
+       };
+     }
+     let observer;
+-    return globalThis.MutationObserver && (observer = new MutationObserver(setStyleContent)), vue.onScopeDispose(() => observer?.disconnect()), vue.watch(element, (element2) => {
++    return globalThis.MutationObserver && (observer = new MutationObserver(() => void setStyleContent())), vue.onScopeDispose(() => observer?.disconnect()), vue.watch(element, (element2) => {
+       element2 && observer && (observer.disconnect(), observer.observe(element2, {
+         subtree: !0,
+         childList: !0,
+         characterData: !0
+       }));
+-    }), vue.watch(() => props.isOpen, setStyleContent), vue.onMounted(setStyleContent), () => vue.h(
++    }), vue.watch(() => props.isOpen, setStyleContent), () => vue.h(
+       renderable.is ?? "div",
+       vue.mergeProps(attrs, { style: style.value, ref: element }),
+       slots.default?.()
+diff --git a/dist/BaseCollapse.cjs.map b/dist/BaseCollapse.cjs.map
+index a40f60f27de5be077626c532f3ef851db0bbc803..3c8b8e4823e83cf800af78fb6fafca846a639978 100644
+--- a/dist/BaseCollapse.cjs.map
++++ b/dist/BaseCollapse.cjs.map
+@@ -1 +1 @@
+-{"version":3,"file":"BaseCollapse.cjs","sources":["../BaseCollapse.ts"],"sourcesContent":["import type { Prop, VNode } from 'vue'\nimport type { DefineComponentContext } from './defineSetupComponent'\nimport type { BaseRenderableOptions } from './useBaseRenderable'\nimport { h, mergeProps, onMounted, onScopeDispose, ref, watch } from 'vue'\nimport { defineSetupComponent } from './defineSetupComponent'\nimport { BASE_RENDERABLE_OPTIONS, useBaseRenderable } from './useBaseRenderable'\n\n/** The base props for the `BaseCollapse` component. */\nexport const BASE_COLLAPSE_PROPS = {\n  ...BASE_RENDERABLE_OPTIONS,\n  isOpen: Boolean,\n  vertical: Boolean,\n  horizontal: Boolean,\n} satisfies Record<keyof BaseCollapseProps, Prop<unknown>>\n\n/** The properties & context of the `BaseCollapse` component. */\nexport interface BaseCollapseProps extends BaseRenderableOptions {\n\n  /**\n   * The value of the collapse. If `true`, the collapse is open. If `false`, the\n   * collapse is closed. This prop is used to control the state of the collapse.\n   */\n  isOpen?: boolean\n\n  /**\n   * Defines if the collapse should be vertical. Meaning that when open, the\n   * collapse will expand vertically and set the maximum height to `0` when\n   * closed.\n   *\n   * @default true\n   */\n  vertical?: boolean\n\n  /**\n   * Defines if the collapse should be horizontal. Meaning that when open, the\n   * collapse will expand horizontally and set the maximum width to `0` when\n   * closed.\n   *\n   * @default false\n   */\n  horizontal?: boolean\n}\n\n/** The context of the `BaseCollapse` component. */\n// eslint-disable-next-line @typescript-eslint/consistent-type-definitions\nexport type BaseCollapseSlots = {\n  default: () => VNode\n}\n\nexport const BaseCollapse = /* #__PURE__ */ defineSetupComponent(\n  (props: BaseCollapseProps, { attrs, slots }: DefineComponentContext<BaseCollapseSlots>) => {\n    const element = ref<HTMLElement>()\n    const renderable = useBaseRenderable(props)\n    const style = ref({})\n\n    function setStyleContent() {\n      if (!element.value) return {}\n      const { isOpen, vertical, horizontal } = props\n      style.value = {\n        overflowY: vertical ? (isOpen ? undefined : 'hidden') : undefined,\n        overflowX: horizontal ? (isOpen ? undefined : 'hidden') : undefined,\n        maxHeight: vertical ? (isOpen ? `${element.value.scrollHeight}px` : '0') : undefined,\n        maxWidth: horizontal ? (isOpen ? `${element.value.scrollWidth}px` : '0') : undefined,\n      }\n    }\n\n    let observer: MutationObserver | undefined\n    if (globalThis.MutationObserver) observer = new MutationObserver(setStyleContent)\n    onScopeDispose(() => observer?.disconnect())\n\n    // --- If the element VNode changes, re-observe the new element.\n    watch(element, (element) => {\n      if (!element) return\n      if (!observer) return\n      observer.disconnect()\n      observer.observe(element, {\n        subtree: true,\n        childList: true,\n        characterData: true,\n      })\n    })\n\n    // --- Watch the model value and update the style content.\n    watch(() => props.isOpen, setStyleContent)\n    onMounted(setStyleContent)\n\n    // --- Return virtual DOM node.\n    return () => h(\n      renderable.is ?? 'div',\n      mergeProps(attrs, { style: style.value, ref: element }),\n      slots.default?.(),\n    )\n  },\n  {\n    name: 'BaseCollapse',\n    props: BASE_COLLAPSE_PROPS,\n  },\n)\n"],"names":["BASE_RENDERABLE_OPTIONS","defineSetupComponent","ref","useBaseRenderable","onScopeDispose","watch","element","onMounted","h","mergeProps"],"mappings":";;;AAQO,MAAM,sBAAsB;AAAA,EACjC,GAAGA,kBAAA;AAAA,EACH,QAAQ;AAAA,EACR,UAAU;AAAA,EACV,YAAY;AACd,GAoCa,eAA+BC,qCAAA;AAAA,EAC1C,CAAC,OAA0B,EAAE,OAAO,YAAuD;AACnF,UAAA,UAAUC,QAAiB,GAC3B,aAAaC,kBAAAA,kBAAkB,KAAK,GACpC,QAAQD,QAAI,CAAA,CAAE;AAEpB,aAAS,kBAAkB;AACzB,UAAI,CAAC,QAAQ,MAAO,QAAO;AAC3B,YAAM,EAAE,QAAQ,UAAU,WAAA,IAAe;AACzC,YAAM,QAAQ;AAAA,QACZ,WAAW,WAAY,SAAS,SAAY,WAAY;AAAA,QACxD,WAAW,aAAc,SAAS,SAAY,WAAY;AAAA,QAC1D,WAAW,WAAY,SAAS,GAAG,QAAQ,MAAM,YAAY,OAAO,MAAO;AAAA,QAC3E,UAAU,aAAc,SAAS,GAAG,QAAQ,MAAM,WAAW,OAAO,MAAO;AAAA,MAAA;AAAA,IAE/E;AAEI,QAAA;AACJ,WAAI,WAAW,qBAAkB,WAAW,IAAI,iBAAiB,eAAe,IAChFE,IAAA,eAAe,MAAM,UAAU,WAAY,CAAA,GAG3CC,IAAAA,MAAM,SAAS,CAACC,aAAY;AACrBA,kBACA,aACL,SAAS,WACT,GAAA,SAAS,QAAQA,UAAS;AAAA,QACxB,SAAS;AAAA,QACT,WAAW;AAAA,QACX,eAAe;AAAA,MAChB,CAAA;AAAA,IAAA,CACF,GAGDD,IAAAA,MAAM,MAAM,MAAM,QAAQ,eAAe,GACzCE,IAAA,UAAU,eAAe,GAGlB,MAAMC,IAAA;AAAA,MACX,WAAW,MAAM;AAAA,MACjBC,IAAA,WAAW,OAAO,EAAE,OAAO,MAAM,OAAO,KAAK,SAAS;AAAA,MACtD,MAAM,UAAU;AAAA,IAAA;AAAA,EAEpB;AAAA,EACA;AAAA,IACE,MAAM;AAAA,IACN,OAAO;AAAA,EACT;AACF;;;"}
+\ No newline at end of file
++{"version":3,"file":"BaseCollapse.cjs","sources":["../BaseCollapse.ts"],"sourcesContent":["import type { Prop, VNode } from 'vue'\nimport type { DefineComponentContext } from './defineSetupComponent'\nimport type { BaseRenderableOptions } from './useBaseRenderable'\nimport { h, mergeProps, onScopeDispose, ref, watch } from 'vue'\nimport { defineSetupComponent } from './defineSetupComponent'\nimport { BASE_RENDERABLE_OPTIONS, useBaseRenderable } from './useBaseRenderable'\n\n/** The base props for the `BaseCollapse` component. */\nexport const BASE_COLLAPSE_PROPS = {\n  ...BASE_RENDERABLE_OPTIONS,\n  isOpen: Boolean,\n  vertical: Boolean,\n  horizontal: Boolean,\n  duration: Number,\n} satisfies Record<keyof BaseCollapseProps, Prop<unknown>>\n\n/** The properties & context of the `BaseCollapse` component. */\nexport interface BaseCollapseProps extends BaseRenderableOptions {\n\n  /**\n   * The value of the collapse. If `true`, the collapse is open. If `false`, the\n   * collapse is closed. This prop is used to control the state of the collapse.\n   */\n  isOpen?: boolean\n\n  /**\n   * Defines if the collapse should be vertical. Meaning that when open, the\n   * collapse will expand vertically and set the maximum height to `0` when\n   * closed.\n   *\n   * @default false\n   */\n  vertical?: boolean\n\n  /**\n   * Defines if the collapse should be horizontal. Meaning that when open, the\n   * collapse will expand horizontally and set the maximum width to `0` when\n   * closed.\n   *\n   * @default false\n   */\n  horizontal?: boolean\n\n  /**\n   * Defines after how many milliseconds the styles should be removed after the\n   * transition ends. This is used to remove the `max-height` and `max-width`\n   * styles after the state has changed and allow the transition to end.\n   *\n   * @default 100\n   */\n  duration?: number\n}\n\n/** The context of the `BaseCollapse` component. */\n// eslint-disable-next-line @typescript-eslint/consistent-type-definitions\nexport type BaseCollapseSlots = {\n  default: () => VNode\n}\n\nexport const BaseCollapse = /* #__PURE__ */ defineSetupComponent(\n  (props: BaseCollapseProps, { attrs, slots }: DefineComponentContext<BaseCollapseSlots>) => {\n    const element = ref<HTMLElement>()\n    const renderable = useBaseRenderable(props)\n    const style = ref({\n      maxHeight: props.vertical && !props.isOpen ? '0' : undefined,\n      maxWidth: props.horizontal && !props.isOpen ? '0' : undefined,\n    })\n\n    /**\n     * Set the style content of the collapse element in several steps. The first\n     * step is to set the initial size of the element so transitions can work. Then,\n     * wait for the next frame to set the final size. Finally, after the transition\n     * ends, let the original styles take over so automatic resizing can work.\n     *\n     * @returns A promise that resolves when the style content is set.\n     */\n    async function setStyleContent() {\n      if (!element.value) return {}\n      const { isOpen, vertical, horizontal, duration = 100 } = props\n\n      // --- Set the initial size so transitions can work.\n      style.value = {\n        maxHeight: vertical ? `${element.value.scrollHeight}px` : undefined,\n        maxWidth: horizontal ? `${element.value.scrollWidth}px` : undefined,\n      }\n\n      // --- Wait for the next frame to set the final size.\n      await new Promise(resolve => setTimeout(resolve, 0))\n      style.value = {\n        maxHeight: vertical ? (isOpen ? `${element.value.scrollHeight}px` : '0') : undefined,\n        maxWidth: horizontal ? (isOpen ? `${element.value.scrollWidth}px` : '0') : undefined,\n      }\n\n      // --- After the transition ends, let original styles take over.\n      await new Promise(resolve => setTimeout(resolve, duration))\n      style.value = {\n        maxHeight: vertical && !isOpen ? '0' : undefined,\n        maxWidth: horizontal && !isOpen ? '0' : undefined,\n      }\n    }\n\n    let observer: MutationObserver | undefined\n    if (globalThis.MutationObserver) observer = new MutationObserver(() => void setStyleContent())\n    onScopeDispose(() => observer?.disconnect())\n\n    // --- If the element VNode changes, re-observe the new element.\n    watch(element, (element) => {\n      if (!element) return\n      if (!observer) return\n      observer.disconnect()\n      observer.observe(element, {\n        subtree: true,\n        childList: true,\n        characterData: true,\n      })\n    })\n\n    // --- Watch the model value and update the style content.\n    watch(() => props.isOpen, setStyleContent)\n\n    // --- Return virtual DOM node.\n    return () => h(\n      renderable.is ?? 'div',\n      mergeProps(attrs, { style: style.value, ref: element }),\n      slots.default?.(),\n    )\n  },\n  {\n    name: 'BaseCollapse',\n    props: BASE_COLLAPSE_PROPS,\n  },\n)\n"],"names":["BASE_RENDERABLE_OPTIONS","defineSetupComponent","ref","useBaseRenderable","onScopeDispose","watch","element","h","mergeProps"],"mappings":";;;AAQO,MAAM,sBAAsB;AAAA,EACjC,GAAGA,kBAAA;AAAA,EACH,QAAQ;AAAA,EACR,UAAU;AAAA,EACV,YAAY;AAAA,EACZ,UAAU;AACZ,GA6Ca,eAA+BC,qCAAA;AAAA,EAC1C,CAAC,OAA0B,EAAE,OAAO,YAAuD;AACnF,UAAA,UAAUC,WACV,aAAaC,oCAAkB,KAAK,GACpC,QAAQD,QAAI;AAAA,MAChB,WAAW,MAAM,YAAY,CAAC,MAAM,SAAS,MAAM;AAAA,MACnD,UAAU,MAAM,cAAc,CAAC,MAAM,SAAS,MAAM;AAAA,IAAA,CACrD;AAUD,mBAAe,kBAAkB;AAC/B,UAAI,CAAC,QAAQ,MAAO,QAAO;AAC3B,YAAM,EAAE,QAAQ,UAAU,YAAY,WAAW,IAAQ,IAAA;AAGzD,YAAM,QAAQ;AAAA,QACZ,WAAW,WAAW,GAAG,QAAQ,MAAM,YAAY,OAAO;AAAA,QAC1D,UAAU,aAAa,GAAG,QAAQ,MAAM,WAAW,OAAO;AAAA,MAAA,GAI5D,MAAM,IAAI,QAAQ,CAAA,YAAW,WAAW,SAAS,CAAC,CAAC,GACnD,MAAM,QAAQ;AAAA,QACZ,WAAW,WAAY,SAAS,GAAG,QAAQ,MAAM,YAAY,OAAO,MAAO;AAAA,QAC3E,UAAU,aAAc,SAAS,GAAG,QAAQ,MAAM,WAAW,OAAO,MAAO;AAAA,MAAA,GAI7E,MAAM,IAAI,QAAQ,CAAA,YAAW,WAAW,SAAS,QAAQ,CAAC,GAC1D,MAAM,QAAQ;AAAA,QACZ,WAAW,YAAY,CAAC,SAAS,MAAM;AAAA,QACvC,UAAU,cAAc,CAAC,SAAS,MAAM;AAAA,MAAA;AAAA,IAE5C;AAEI,QAAA;AACJ,WAAI,WAAW,qBAAkB,WAAW,IAAI,iBAAiB,MAAM,KAAK,iBAAiB,IAC7FE,IAAAA,eAAe,MAAM,UAAU,WAAY,CAAA,GAG3CC,IAAAA,MAAM,SAAS,CAACC,aAAY;AACrBA,kBACA,aACL,SAAS,WACT,GAAA,SAAS,QAAQA,UAAS;AAAA,QACxB,SAAS;AAAA,QACT,WAAW;AAAA,QACX,eAAe;AAAA,MAChB,CAAA;AAAA,IAAA,CACF,GAGDD,IAAM,MAAA,MAAM,MAAM,QAAQ,eAAe,GAGlC,MAAME,IAAA;AAAA,MACX,WAAW,MAAM;AAAA,MACjBC,IAAA,WAAW,OAAO,EAAE,OAAO,MAAM,OAAO,KAAK,SAAS;AAAA,MACtD,MAAM,UAAU;AAAA,IAAA;AAAA,EAEpB;AAAA,EACA;AAAA,IACE,MAAM;AAAA,IACN,OAAO;AAAA,EACT;AACF;;;"}
+\ No newline at end of file
+diff --git a/dist/BaseCollapse.d.ts b/dist/BaseCollapse.d.ts
+index d1f082c1442e4e2197e13809022bc031281013a5..efff9b7eb6f8bb659f5e668411200ff7e463cdf2 100644
+--- a/dist/BaseCollapse.d.ts
++++ b/dist/BaseCollapse.d.ts
+@@ -7,6 +7,7 @@ declare const BASE_COLLAPSE_PROPS: {
+     isOpen: BooleanConstructor;
+     vertical: BooleanConstructor;
+     horizontal: BooleanConstructor;
++    duration: NumberConstructor;
+     as: Prop<unknown>;
+ };
+ /** The properties & context of the `BaseCollapse` component. */
+@@ -21,7 +22,7 @@ interface BaseCollapseProps extends BaseRenderableOptions {
+      * collapse will expand vertically and set the maximum height to `0` when
+      * closed.
+      *
+-     * @default true
++     * @default false
+      */
+     vertical?: boolean;
+     /**
+@@ -32,6 +33,14 @@ interface BaseCollapseProps extends BaseRenderableOptions {
+      * @default false
+      */
+     horizontal?: boolean;
++    /**
++     * Defines after how many milliseconds the styles should be removed after the
++     * transition ends. This is used to remove the `max-height` and `max-width`
++     * styles after the state has changed and allow the transition to end.
++     *
++     * @default 100
++     */
++    duration?: number;
+ }
+ /** The context of the `BaseCollapse` component. */
+ type BaseCollapseSlots = {
+diff --git a/dist/BaseCollapse.js b/dist/BaseCollapse.js
+index dc415942acec1d251ee296e25dab51f9e3491c75..e0d86b32c844b0ca2c4a50363c5df5cc15f59ab9 100644
+--- a/dist/BaseCollapse.js
++++ b/dist/BaseCollapse.js
+@@ -1,4 +1,4 @@
+-import { ref, onScopeDispose, watch, onMounted, h, mergeProps } from "vue";
++import { ref, onScopeDispose, watch, h, mergeProps } from "vue";
+ import { defineSetupComponent } from "./defineSetupComponent.js";
+ import { BASE_RENDERABLE_OPTIONS, useBaseRenderable } from "./useBaseRenderable.js";
+ import "@vueuse/core";
+@@ -6,28 +6,36 @@ const BASE_COLLAPSE_PROPS = {
+   ...BASE_RENDERABLE_OPTIONS,
+   isOpen: Boolean,
+   vertical: Boolean,
+-  horizontal: Boolean
++  horizontal: Boolean,
++  duration: Number
+ }, BaseCollapse = /* @__PURE__ */ defineSetupComponent(
+   (props, { attrs, slots }) => {
+-    const element = ref(), renderable = useBaseRenderable(props), style = ref({});
+-    function setStyleContent() {
++    const element = ref(), renderable = useBaseRenderable(props), style = ref({
++      maxHeight: props.vertical && !props.isOpen ? "0" : void 0,
++      maxWidth: props.horizontal && !props.isOpen ? "0" : void 0
++    });
++    async function setStyleContent() {
+       if (!element.value) return {};
+-      const { isOpen, vertical, horizontal } = props;
++      const { isOpen, vertical, horizontal, duration = 100 } = props;
+       style.value = {
+-        overflowY: vertical ? isOpen ? void 0 : "hidden" : void 0,
+-        overflowX: horizontal ? isOpen ? void 0 : "hidden" : void 0,
++        maxHeight: vertical ? `${element.value.scrollHeight}px` : void 0,
++        maxWidth: horizontal ? `${element.value.scrollWidth}px` : void 0
++      }, await new Promise((resolve) => setTimeout(resolve, 0)), style.value = {
+         maxHeight: vertical ? isOpen ? `${element.value.scrollHeight}px` : "0" : void 0,
+         maxWidth: horizontal ? isOpen ? `${element.value.scrollWidth}px` : "0" : void 0
++      }, await new Promise((resolve) => setTimeout(resolve, duration)), style.value = {
++        maxHeight: vertical && !isOpen ? "0" : void 0,
++        maxWidth: horizontal && !isOpen ? "0" : void 0
+       };
+     }
+     let observer;
+-    return globalThis.MutationObserver && (observer = new MutationObserver(setStyleContent)), onScopeDispose(() => observer?.disconnect()), watch(element, (element2) => {
++    return globalThis.MutationObserver && (observer = new MutationObserver(() => void setStyleContent())), onScopeDispose(() => observer?.disconnect()), watch(element, (element2) => {
+       element2 && observer && (observer.disconnect(), observer.observe(element2, {
+         subtree: !0,
+         childList: !0,
+         characterData: !0
+       }));
+-    }), watch(() => props.isOpen, setStyleContent), onMounted(setStyleContent), () => h(
++    }), watch(() => props.isOpen, setStyleContent), () => h(
+       renderable.is ?? "div",
+       mergeProps(attrs, { style: style.value, ref: element }),
+       slots.default?.()
+diff --git a/dist/BaseCollapse.js.map b/dist/BaseCollapse.js.map
+index 4c298baa2ab69a1af295f485d9b5aad5de5afcf2..098c77cf2122f51da2b5b4273883b2c0dcef0b2a 100644
+--- a/dist/BaseCollapse.js.map
++++ b/dist/BaseCollapse.js.map
+@@ -1 +1 @@
+-{"version":3,"file":"BaseCollapse.js","sources":["../BaseCollapse.ts"],"sourcesContent":["import type { Prop, VNode } from 'vue'\nimport type { DefineComponentContext } from './defineSetupComponent'\nimport type { BaseRenderableOptions } from './useBaseRenderable'\nimport { h, mergeProps, onMounted, onScopeDispose, ref, watch } from 'vue'\nimport { defineSetupComponent } from './defineSetupComponent'\nimport { BASE_RENDERABLE_OPTIONS, useBaseRenderable } from './useBaseRenderable'\n\n/** The base props for the `BaseCollapse` component. */\nexport const BASE_COLLAPSE_PROPS = {\n  ...BASE_RENDERABLE_OPTIONS,\n  isOpen: Boolean,\n  vertical: Boolean,\n  horizontal: Boolean,\n} satisfies Record<keyof BaseCollapseProps, Prop<unknown>>\n\n/** The properties & context of the `BaseCollapse` component. */\nexport interface BaseCollapseProps extends BaseRenderableOptions {\n\n  /**\n   * The value of the collapse. If `true`, the collapse is open. If `false`, the\n   * collapse is closed. This prop is used to control the state of the collapse.\n   */\n  isOpen?: boolean\n\n  /**\n   * Defines if the collapse should be vertical. Meaning that when open, the\n   * collapse will expand vertically and set the maximum height to `0` when\n   * closed.\n   *\n   * @default true\n   */\n  vertical?: boolean\n\n  /**\n   * Defines if the collapse should be horizontal. Meaning that when open, the\n   * collapse will expand horizontally and set the maximum width to `0` when\n   * closed.\n   *\n   * @default false\n   */\n  horizontal?: boolean\n}\n\n/** The context of the `BaseCollapse` component. */\n// eslint-disable-next-line @typescript-eslint/consistent-type-definitions\nexport type BaseCollapseSlots = {\n  default: () => VNode\n}\n\nexport const BaseCollapse = /* #__PURE__ */ defineSetupComponent(\n  (props: BaseCollapseProps, { attrs, slots }: DefineComponentContext<BaseCollapseSlots>) => {\n    const element = ref<HTMLElement>()\n    const renderable = useBaseRenderable(props)\n    const style = ref({})\n\n    function setStyleContent() {\n      if (!element.value) return {}\n      const { isOpen, vertical, horizontal } = props\n      style.value = {\n        overflowY: vertical ? (isOpen ? undefined : 'hidden') : undefined,\n        overflowX: horizontal ? (isOpen ? undefined : 'hidden') : undefined,\n        maxHeight: vertical ? (isOpen ? `${element.value.scrollHeight}px` : '0') : undefined,\n        maxWidth: horizontal ? (isOpen ? `${element.value.scrollWidth}px` : '0') : undefined,\n      }\n    }\n\n    let observer: MutationObserver | undefined\n    if (globalThis.MutationObserver) observer = new MutationObserver(setStyleContent)\n    onScopeDispose(() => observer?.disconnect())\n\n    // --- If the element VNode changes, re-observe the new element.\n    watch(element, (element) => {\n      if (!element) return\n      if (!observer) return\n      observer.disconnect()\n      observer.observe(element, {\n        subtree: true,\n        childList: true,\n        characterData: true,\n      })\n    })\n\n    // --- Watch the model value and update the style content.\n    watch(() => props.isOpen, setStyleContent)\n    onMounted(setStyleContent)\n\n    // --- Return virtual DOM node.\n    return () => h(\n      renderable.is ?? 'div',\n      mergeProps(attrs, { style: style.value, ref: element }),\n      slots.default?.(),\n    )\n  },\n  {\n    name: 'BaseCollapse',\n    props: BASE_COLLAPSE_PROPS,\n  },\n)\n"],"names":["element"],"mappings":";;;;AAQO,MAAM,sBAAsB;AAAA,EACjC,GAAG;AAAA,EACH,QAAQ;AAAA,EACR,UAAU;AAAA,EACV,YAAY;AACd,GAoCa,eAA+B;AAAA,EAC1C,CAAC,OAA0B,EAAE,OAAO,YAAuD;AACnF,UAAA,UAAU,IAAiB,GAC3B,aAAa,kBAAkB,KAAK,GACpC,QAAQ,IAAI,CAAA,CAAE;AAEpB,aAAS,kBAAkB;AACzB,UAAI,CAAC,QAAQ,MAAO,QAAO;AAC3B,YAAM,EAAE,QAAQ,UAAU,WAAA,IAAe;AACzC,YAAM,QAAQ;AAAA,QACZ,WAAW,WAAY,SAAS,SAAY,WAAY;AAAA,QACxD,WAAW,aAAc,SAAS,SAAY,WAAY;AAAA,QAC1D,WAAW,WAAY,SAAS,GAAG,QAAQ,MAAM,YAAY,OAAO,MAAO;AAAA,QAC3E,UAAU,aAAc,SAAS,GAAG,QAAQ,MAAM,WAAW,OAAO,MAAO;AAAA,MAAA;AAAA,IAE/E;AAEI,QAAA;AACJ,WAAI,WAAW,qBAAkB,WAAW,IAAI,iBAAiB,eAAe,IAChF,eAAe,MAAM,UAAU,WAAY,CAAA,GAG3C,MAAM,SAAS,CAACA,aAAY;AACrBA,kBACA,aACL,SAAS,WACT,GAAA,SAAS,QAAQA,UAAS;AAAA,QACxB,SAAS;AAAA,QACT,WAAW;AAAA,QACX,eAAe;AAAA,MAChB,CAAA;AAAA,IAAA,CACF,GAGD,MAAM,MAAM,MAAM,QAAQ,eAAe,GACzC,UAAU,eAAe,GAGlB,MAAM;AAAA,MACX,WAAW,MAAM;AAAA,MACjB,WAAW,OAAO,EAAE,OAAO,MAAM,OAAO,KAAK,SAAS;AAAA,MACtD,MAAM,UAAU;AAAA,IAAA;AAAA,EAEpB;AAAA,EACA;AAAA,IACE,MAAM;AAAA,IACN,OAAO;AAAA,EACT;AACF;"}
+\ No newline at end of file
++{"version":3,"file":"BaseCollapse.js","sources":["../BaseCollapse.ts"],"sourcesContent":["import type { Prop, VNode } from 'vue'\nimport type { DefineComponentContext } from './defineSetupComponent'\nimport type { BaseRenderableOptions } from './useBaseRenderable'\nimport { h, mergeProps, onScopeDispose, ref, watch } from 'vue'\nimport { defineSetupComponent } from './defineSetupComponent'\nimport { BASE_RENDERABLE_OPTIONS, useBaseRenderable } from './useBaseRenderable'\n\n/** The base props for the `BaseCollapse` component. */\nexport const BASE_COLLAPSE_PROPS = {\n  ...BASE_RENDERABLE_OPTIONS,\n  isOpen: Boolean,\n  vertical: Boolean,\n  horizontal: Boolean,\n  duration: Number,\n} satisfies Record<keyof BaseCollapseProps, Prop<unknown>>\n\n/** The properties & context of the `BaseCollapse` component. */\nexport interface BaseCollapseProps extends BaseRenderableOptions {\n\n  /**\n   * The value of the collapse. If `true`, the collapse is open. If `false`, the\n   * collapse is closed. This prop is used to control the state of the collapse.\n   */\n  isOpen?: boolean\n\n  /**\n   * Defines if the collapse should be vertical. Meaning that when open, the\n   * collapse will expand vertically and set the maximum height to `0` when\n   * closed.\n   *\n   * @default false\n   */\n  vertical?: boolean\n\n  /**\n   * Defines if the collapse should be horizontal. Meaning that when open, the\n   * collapse will expand horizontally and set the maximum width to `0` when\n   * closed.\n   *\n   * @default false\n   */\n  horizontal?: boolean\n\n  /**\n   * Defines after how many milliseconds the styles should be removed after the\n   * transition ends. This is used to remove the `max-height` and `max-width`\n   * styles after the state has changed and allow the transition to end.\n   *\n   * @default 100\n   */\n  duration?: number\n}\n\n/** The context of the `BaseCollapse` component. */\n// eslint-disable-next-line @typescript-eslint/consistent-type-definitions\nexport type BaseCollapseSlots = {\n  default: () => VNode\n}\n\nexport const BaseCollapse = /* #__PURE__ */ defineSetupComponent(\n  (props: BaseCollapseProps, { attrs, slots }: DefineComponentContext<BaseCollapseSlots>) => {\n    const element = ref<HTMLElement>()\n    const renderable = useBaseRenderable(props)\n    const style = ref({\n      maxHeight: props.vertical && !props.isOpen ? '0' : undefined,\n      maxWidth: props.horizontal && !props.isOpen ? '0' : undefined,\n    })\n\n    /**\n     * Set the style content of the collapse element in several steps. The first\n     * step is to set the initial size of the element so transitions can work. Then,\n     * wait for the next frame to set the final size. Finally, after the transition\n     * ends, let the original styles take over so automatic resizing can work.\n     *\n     * @returns A promise that resolves when the style content is set.\n     */\n    async function setStyleContent() {\n      if (!element.value) return {}\n      const { isOpen, vertical, horizontal, duration = 100 } = props\n\n      // --- Set the initial size so transitions can work.\n      style.value = {\n        maxHeight: vertical ? `${element.value.scrollHeight}px` : undefined,\n        maxWidth: horizontal ? `${element.value.scrollWidth}px` : undefined,\n      }\n\n      // --- Wait for the next frame to set the final size.\n      await new Promise(resolve => setTimeout(resolve, 0))\n      style.value = {\n        maxHeight: vertical ? (isOpen ? `${element.value.scrollHeight}px` : '0') : undefined,\n        maxWidth: horizontal ? (isOpen ? `${element.value.scrollWidth}px` : '0') : undefined,\n      }\n\n      // --- After the transition ends, let original styles take over.\n      await new Promise(resolve => setTimeout(resolve, duration))\n      style.value = {\n        maxHeight: vertical && !isOpen ? '0' : undefined,\n        maxWidth: horizontal && !isOpen ? '0' : undefined,\n      }\n    }\n\n    let observer: MutationObserver | undefined\n    if (globalThis.MutationObserver) observer = new MutationObserver(() => void setStyleContent())\n    onScopeDispose(() => observer?.disconnect())\n\n    // --- If the element VNode changes, re-observe the new element.\n    watch(element, (element) => {\n      if (!element) return\n      if (!observer) return\n      observer.disconnect()\n      observer.observe(element, {\n        subtree: true,\n        childList: true,\n        characterData: true,\n      })\n    })\n\n    // --- Watch the model value and update the style content.\n    watch(() => props.isOpen, setStyleContent)\n\n    // --- Return virtual DOM node.\n    return () => h(\n      renderable.is ?? 'div',\n      mergeProps(attrs, { style: style.value, ref: element }),\n      slots.default?.(),\n    )\n  },\n  {\n    name: 'BaseCollapse',\n    props: BASE_COLLAPSE_PROPS,\n  },\n)\n"],"names":["element"],"mappings":";;;;AAQO,MAAM,sBAAsB;AAAA,EACjC,GAAG;AAAA,EACH,QAAQ;AAAA,EACR,UAAU;AAAA,EACV,YAAY;AAAA,EACZ,UAAU;AACZ,GA6Ca,eAA+B;AAAA,EAC1C,CAAC,OAA0B,EAAE,OAAO,YAAuD;AACnF,UAAA,UAAU,OACV,aAAa,kBAAkB,KAAK,GACpC,QAAQ,IAAI;AAAA,MAChB,WAAW,MAAM,YAAY,CAAC,MAAM,SAAS,MAAM;AAAA,MACnD,UAAU,MAAM,cAAc,CAAC,MAAM,SAAS,MAAM;AAAA,IAAA,CACrD;AAUD,mBAAe,kBAAkB;AAC/B,UAAI,CAAC,QAAQ,MAAO,QAAO;AAC3B,YAAM,EAAE,QAAQ,UAAU,YAAY,WAAW,IAAQ,IAAA;AAGzD,YAAM,QAAQ;AAAA,QACZ,WAAW,WAAW,GAAG,QAAQ,MAAM,YAAY,OAAO;AAAA,QAC1D,UAAU,aAAa,GAAG,QAAQ,MAAM,WAAW,OAAO;AAAA,MAAA,GAI5D,MAAM,IAAI,QAAQ,CAAA,YAAW,WAAW,SAAS,CAAC,CAAC,GACnD,MAAM,QAAQ;AAAA,QACZ,WAAW,WAAY,SAAS,GAAG,QAAQ,MAAM,YAAY,OAAO,MAAO;AAAA,QAC3E,UAAU,aAAc,SAAS,GAAG,QAAQ,MAAM,WAAW,OAAO,MAAO;AAAA,MAAA,GAI7E,MAAM,IAAI,QAAQ,CAAA,YAAW,WAAW,SAAS,QAAQ,CAAC,GAC1D,MAAM,QAAQ;AAAA,QACZ,WAAW,YAAY,CAAC,SAAS,MAAM;AAAA,QACvC,UAAU,cAAc,CAAC,SAAS,MAAM;AAAA,MAAA;AAAA,IAE5C;AAEI,QAAA;AACJ,WAAI,WAAW,qBAAkB,WAAW,IAAI,iBAAiB,MAAM,KAAK,iBAAiB,IAC7F,eAAe,MAAM,UAAU,WAAY,CAAA,GAG3C,MAAM,SAAS,CAACA,aAAY;AACrBA,kBACA,aACL,SAAS,WACT,GAAA,SAAS,QAAQA,UAAS;AAAA,QACxB,SAAS;AAAA,QACT,WAAW;AAAA,QACX,eAAe;AAAA,MAChB,CAAA;AAAA,IAAA,CACF,GAGD,MAAM,MAAM,MAAM,QAAQ,eAAe,GAGlC,MAAM;AAAA,MACX,WAAW,MAAM;AAAA,MACjB,WAAW,OAAO,EAAE,OAAO,MAAM,OAAO,KAAK,SAAS;AAAA,MACtD,MAAM,UAAU;AAAA,IAAA;AAAA,EAEpB;AAAA,EACA;AAAA,IACE,MAAM;AAAA,IACN,OAAO;AAAA,EACT;AACF;"}
+\ No newline at end of file
+diff --git a/dist/BaseContentEditable.d.ts b/dist/BaseContentEditable.d.ts
+index 858e4e1ad9eebcdd9e9767c0c4885afd95086fac..8051494a217eb6ee5a6b8cdc78d8aab435b6bd24 100644
+--- a/dist/BaseContentEditable.d.ts
++++ b/dist/BaseContentEditable.d.ts
+@@ -10,17 +10,17 @@ declare const BASE_CONTENT_EDITABLE_PROPS: {
+     error: (ErrorConstructor | StringConstructor)[];
+     loading: BooleanConstructor[];
+     readonly: BooleanConstructor[];
+-    'onUpdate:disabled': (ArrayConstructor | FunctionConstructor)[];
+-    'onUpdate:error': (ArrayConstructor | FunctionConstructor)[];
+-    'onUpdate:loading': (ArrayConstructor | FunctionConstructor)[];
+-    'onUpdate:readonly': (ArrayConstructor | FunctionConstructor)[];
++    'onUpdate:disabled': (FunctionConstructor | ArrayConstructor)[];
++    'onUpdate:error': (FunctionConstructor | ArrayConstructor)[];
++    'onUpdate:loading': (FunctionConstructor | ArrayConstructor)[];
++    'onUpdate:readonly': (FunctionConstructor | ArrayConstructor)[];
+     classDisabled: StringConstructor;
+     classError: StringConstructor;
+     classLoading: StringConstructor;
+     classReadonly: StringConstructor;
+     as: Prop<unknown>;
+     modelValue: {};
+-    'onUpdate:modelValue': (ArrayConstructor | FunctionConstructor)[];
++    'onUpdate:modelValue': (FunctionConstructor | ArrayConstructor)[];
+     parse: FunctionConstructor;
+     serialize: FunctionConstructor;
+ };
+diff --git a/dist/BaseDialog.d.ts b/dist/BaseDialog.d.ts
+index 56b7838ff3d79bdfd83950a4344f4553306fca94..3ae59add657f4ee4eb734b2058cea0fd4cde0567 100644
+--- a/dist/BaseDialog.d.ts
++++ b/dist/BaseDialog.d.ts
+@@ -5,10 +5,10 @@ import { BaseRenderableOptions } from './useBaseRenderable.js';
+ /** The base props for the `BaseDialog` component. */
+ declare const BASE_DIALOG_PROPS: {
+     modelValue: BooleanConstructor;
+-    'onUpdate:modelValue': (ArrayConstructor | FunctionConstructor)[];
+-    onClose: (ArrayConstructor | FunctionConstructor)[];
+-    onOpen: (ArrayConstructor | FunctionConstructor)[];
+-    onReturn: (ArrayConstructor | FunctionConstructor)[];
++    'onUpdate:modelValue': (FunctionConstructor | ArrayConstructor)[];
++    onClose: (FunctionConstructor | ArrayConstructor)[];
++    onOpen: (FunctionConstructor | ArrayConstructor)[];
++    onReturn: (FunctionConstructor | ArrayConstructor)[];
+     as: Prop<unknown>;
+ };
+ /** The properties & context of the `BaseDialog` component. */
+diff --git a/dist/BaseInputFile.d.ts b/dist/BaseInputFile.d.ts
+index 25a6b8ca6d5fa0ec9a8d8d1af932a4fcf0c936a8..4a372bc47ca3c491bbf0b1cef78054565fd77d51 100644
+--- a/dist/BaseInputFile.d.ts
++++ b/dist/BaseInputFile.d.ts
+@@ -10,18 +10,18 @@ declare const BASE_INPUT_FILE_PROPS: {
+     error: (ErrorConstructor | StringConstructor)[];
+     loading: BooleanConstructor[];
+     readonly: BooleanConstructor[];
+-    'onUpdate:disabled': (ArrayConstructor | FunctionConstructor)[];
+-    'onUpdate:error': (ArrayConstructor | FunctionConstructor)[];
+-    'onUpdate:loading': (ArrayConstructor | FunctionConstructor)[];
+-    'onUpdate:readonly': (ArrayConstructor | FunctionConstructor)[];
++    'onUpdate:disabled': (FunctionConstructor | ArrayConstructor)[];
++    'onUpdate:error': (FunctionConstructor | ArrayConstructor)[];
++    'onUpdate:loading': (FunctionConstructor | ArrayConstructor)[];
++    'onUpdate:readonly': (FunctionConstructor | ArrayConstructor)[];
+     classDisabled: StringConstructor;
+     classError: StringConstructor;
+     classLoading: StringConstructor;
+     classReadonly: StringConstructor;
+     as: Prop<unknown>;
+     modelValue: {};
+-    'onUpdate:modelValue': (ArrayConstructor | FunctionConstructor)[];
+-    onInsert: (ArrayConstructor | FunctionConstructor)[];
++    'onUpdate:modelValue': (FunctionConstructor | ArrayConstructor)[];
++    onInsert: (FunctionConstructor | ArrayConstructor)[];
+     multiple: BooleanConstructor;
+     accept: StringConstructor;
+ };
+diff --git a/dist/BaseInputText.d.ts b/dist/BaseInputText.d.ts
+index 135e51bc3be6490d2b04d16ea975397ec61b0ec0..016071a45d38416addb4be3247a42cdafc8119c2 100644
+--- a/dist/BaseInputText.d.ts
++++ b/dist/BaseInputText.d.ts
+@@ -10,10 +10,10 @@ declare const BASE_INPUT_TEXT_PROPS: {
+     error: (ErrorConstructor | StringConstructor)[];
+     loading: BooleanConstructor[];
+     readonly: BooleanConstructor[];
+-    'onUpdate:disabled': (ArrayConstructor | FunctionConstructor)[];
+-    'onUpdate:error': (ArrayConstructor | FunctionConstructor)[];
+-    'onUpdate:loading': (ArrayConstructor | FunctionConstructor)[];
+-    'onUpdate:readonly': (ArrayConstructor | FunctionConstructor)[];
++    'onUpdate:disabled': (FunctionConstructor | ArrayConstructor)[];
++    'onUpdate:error': (FunctionConstructor | ArrayConstructor)[];
++    'onUpdate:loading': (FunctionConstructor | ArrayConstructor)[];
++    'onUpdate:readonly': (FunctionConstructor | ArrayConstructor)[];
+     classDisabled: StringConstructor;
+     classError: StringConstructor;
+     classLoading: StringConstructor;
+@@ -21,7 +21,7 @@ declare const BASE_INPUT_TEXT_PROPS: {
+     as: Prop<unknown>;
+     id: StringConstructor;
+     modelValue: {};
+-    'onUpdate:modelValue': (ArrayConstructor | FunctionConstructor)[];
++    'onUpdate:modelValue': (FunctionConstructor | ArrayConstructor)[];
+     type: {
+         type: StringConstructor;
+         default: string;
+diff --git a/dist/BaseInputToggle.d.ts b/dist/BaseInputToggle.d.ts
+index ac3ac394959aae4837c91c8fc3bb4c09e50b5549..2c6c0b204fa601e474832f16a64bb37f336d9c7c 100644
+--- a/dist/BaseInputToggle.d.ts
++++ b/dist/BaseInputToggle.d.ts
+@@ -12,10 +12,10 @@ declare const BASE_INPUT_TOGGLE_PROPS: {
+     error: (ErrorConstructor | StringConstructor)[];
+     loading: BooleanConstructor[];
+     readonly: BooleanConstructor[];
+-    'onUpdate:disabled': (ArrayConstructor | FunctionConstructor)[];
+-    'onUpdate:error': (ArrayConstructor | FunctionConstructor)[];
+-    'onUpdate:loading': (ArrayConstructor | FunctionConstructor)[];
+-    'onUpdate:readonly': (ArrayConstructor | FunctionConstructor)[];
++    'onUpdate:disabled': (FunctionConstructor | ArrayConstructor)[];
++    'onUpdate:error': (FunctionConstructor | ArrayConstructor)[];
++    'onUpdate:loading': (FunctionConstructor | ArrayConstructor)[];
++    'onUpdate:readonly': (FunctionConstructor | ArrayConstructor)[];
+     classDisabled: StringConstructor;
+     classError: StringConstructor;
+     classLoading: StringConstructor;
+@@ -24,12 +24,12 @@ declare const BASE_INPUT_TOGGLE_PROPS: {
+         type: StringConstructor;
+         default: string;
+     };
+-    modelValue: (ArrayConstructor | BooleanConstructor | StringConstructor | ObjectConstructor | NumberConstructor)[];
+-    'onUpdate:modelValue': (ArrayConstructor | FunctionConstructor)[];
+-    onOff: (ArrayConstructor | FunctionConstructor)[];
+-    onOn: (ArrayConstructor | FunctionConstructor)[];
+-    onToggle: (ArrayConstructor | FunctionConstructor)[];
+-    value: (ArrayConstructor | BooleanConstructor | StringConstructor | NumberConstructor)[];
++    modelValue: (BooleanConstructor | StringConstructor | ArrayConstructor | ObjectConstructor | NumberConstructor)[];
++    'onUpdate:modelValue': (FunctionConstructor | ArrayConstructor)[];
++    onOff: (FunctionConstructor | ArrayConstructor)[];
++    onOn: (FunctionConstructor | ArrayConstructor)[];
++    onToggle: (FunctionConstructor | ArrayConstructor)[];
++    value: (BooleanConstructor | StringConstructor | ArrayConstructor | NumberConstructor)[];
+     eager: BooleanConstructor;
+     classActive: {
+         type: StringConstructor;
+diff --git a/dist/BaseMenu.cjs b/dist/BaseMenu.cjs
+index dc5df55065938541cfa9482105b6a7793d4b39b8..5d923d7ed5d70da9e10072fb557f1893e68594a8 100644
+--- a/dist/BaseMenu.cjs
++++ b/dist/BaseMenu.cjs
+@@ -3,10 +3,10 @@ var core = require("@vueuse/core"), vue = require("vue"), defineSetupComponent =
+ const BASE_MENU_PROPS = {
+   ...useBaseRenderable.BASE_RENDERABLE_OPTIONS,
+   modelValue: Boolean,
+-  "onUpdate:modelValue": Function,
+-  onOpen: Function,
+-  onClose: Function,
+-  onToggle: Function,
++  "onUpdate:modelValue": [Function, Array],
++  onOpen: [Function, Array],
++  onClose: [Function, Array],
++  onToggle: [Function, Array],
+   persistent: Boolean,
+   x: String,
+   y: String,
+diff --git a/dist/BaseMenu.cjs.map b/dist/BaseMenu.cjs.map
+index f0f447427dea70d51f2f0ce2a539ad8089741da9..c26575b28bc4216e9ed304d690fb036ab380f42c 100644
+--- a/dist/BaseMenu.cjs.map
++++ b/dist/BaseMenu.cjs.map
+@@ -1 +1 @@
+-{"version":3,"file":"BaseMenu.cjs","sources":["../BaseMenu.ts"],"sourcesContent":["import type { CSSProperties, Prop } from 'vue'\nimport type { DefineComponentContext } from './defineSetupComponent'\nimport type { BaseRenderableOptions } from './useBaseRenderable'\nimport { useVModel } from '@vueuse/core'\nimport { computed, h, mergeProps, ref, type VNode, watch } from 'vue'\nimport { defineSetupComponent } from './defineSetupComponent'\nimport { exposeToDevtool } from './exposeToDevtool'\nimport { BASE_RENDERABLE_OPTIONS, useBaseRenderable } from './useBaseRenderable'\n\n/** The base props for the `BaseMenu` component. */\nexport const BASE_MENU_PROPS = {\n  ...BASE_RENDERABLE_OPTIONS,\n  'modelValue': Boolean,\n  'onUpdate:modelValue': Function,\n  'onOpen': Function,\n  'onClose': Function,\n  'onToggle': Function,\n  'persistent': Boolean,\n  'x': String,\n  'y': String,\n  'classMenu': {},\n} satisfies Record<keyof BaseMenuProps, Prop<unknown>>\n\n/** The properties & context of the `BaseMenu` component. */\nexport interface BaseMenuProps extends BaseRenderableOptions {\n\n  /**\n   * The state of the menu. If `true`, the menu is visible. If `false`, the\n   * menu is hidden.\n   */\n  modelValue?: boolean\n  'onUpdate:modelValue'?: (value: boolean) => void\n\n  /**\n   * The callback function to call when the menu is opened.\n   *\n   * @example () => console.log('Menu opened!')\n   */\n  onOpen?: () => void\n\n  /**\n   * The callback function to call when the menu is closed.\n   *\n   * @example () => console.log('Menu closed!')\n   */\n  onClose?: () => void\n\n  /**\n   * The callback function to call when the menu is toggled.\n   *\n   * @example () => console.log('Menu toggled!')\n   */\n  onToggle?: (isOpen: boolean) => void\n\n  /**\n   * By default, the menu will close when the user clicks outside of the menu,\n   * setting this prop to `true` will disable this behavior and the menu will\n   * remain open even when the user clicks outside of the menu.\n   *\n   * @default false\n   */\n  persistent?: boolean\n\n  /**\n   * The alignment of the menu relative to the trigger on the x-axis.\n   *\n   * @default 'center'\n   */\n  x?: 'after' | 'before' | 'center' | 'left' | 'right'\n\n  /**\n   * The alignment of the menu relative to the trigger on the y-axis.\n   *\n   * @default 'bottom'\n   */\n  y?: 'above' | 'below' | 'bottom' | 'center' | 'top'\n\n  /**\n   * The classes to assign to the menu element.\n   */\n  classMenu?: string\n}\n\n/** The slot properties of the `BaseMenu` component. */\nexport interface BaseMenuSlotProps {\n\n  /** Toggle the menu. */\n  toggle(): void\n\n  /** Close the menu. */\n  close(): void\n\n  /** Open the menu. */\n  open(): void\n\n  /** The state of the menu. */\n  isOpen: boolean\n}\n\n/** The context of the `BaseMenu` component. */\n// eslint-disable-next-line @typescript-eslint/consistent-type-definitions\nexport type BaseMenuSlots = {\n  default: (props: BaseMenuSlotProps) => VNode\n  menu: (props: BaseMenuSlotProps) => VNode\n}\n\nexport const BaseMenu = /* #__PURE__ */ defineSetupComponent(\n  (props: BaseMenuProps, { attrs, slots, emit }: DefineComponentContext<BaseMenuSlots>) => {\n    const renderable = useBaseRenderable(props)\n    const element = ref<HTMLElement>()\n    const is = computed(() => renderable.is ?? 'div')\n    const isOpen = useVModel(props, 'modelValue', emit, { passive: true, defaultValue: false })\n\n    const top = computed(() => {\n      if (props.y === 'top') return '0'\n      if (props.y === 'below') return '100%'\n      if (props.y === 'center') return '50%'\n    })\n\n    const bottom = computed(() => {\n      if (props.y === 'above') return '100%'\n      if (props.y === 'bottom') return '0'\n    })\n\n    const left = computed(() => {\n      if (props.x === 'after') return '100%'\n      if (props.x === 'left') return '0'\n      if (props.x === 'center') return '50%'\n    })\n\n    const right = computed(() => {\n      if (props.x === 'before') return '100%'\n      if (props.x === 'right') return '0'\n    })\n\n    const transform = computed(() => {\n      const translateX = props.x === 'center' ? '-50%' : 0\n      const translateY = props.y === 'center' ? '-50%' : 0\n      if (translateX === 0 && translateY === 0) return\n      return `translate(${translateX}, ${translateY})`\n    })\n\n    const menuStyle = computed<CSSProperties>(() => ({\n      position: (top.value || bottom.value || left.value || right.value) ? 'absolute' : undefined,\n      top: top.value,\n      bottom: bottom.value,\n      left: left.value,\n      right: right.value,\n      transform: transform.value,\n    }))\n\n    const menuAttributes = computed(() => ({\n      'aria-modal': 'true',\n      'aria-hidden': isOpen.value,\n      'role': 'menu',\n      'style': menuStyle.value,\n      'class': props.classMenu,\n    }))\n\n    const close = () => {\n      isOpen.value = false\n      emit('close')\n      emit('toggle', false)\n    }\n\n    const open = () => {\n      isOpen.value = true\n      emit('open')\n      emit('toggle', true)\n    }\n\n    const toggle = () => {\n      isOpen.value = !isOpen.value\n      emit(isOpen.value ? 'open' : 'close')\n      emit('toggle', isOpen.value)\n    }\n\n    const attributes = computed(() => mergeProps(attrs, ({\n      ref: element,\n      style: { position: 'relative' },\n    })))\n\n    const handleWindowClick = (event: MouseEvent) => {\n      if (!isOpen.value) return\n      if (!element.value) return\n      if (!element.value.contains(event.target as Node)) close()\n    }\n\n    // --- Watch the `closeOnClickOutside` property and add/remove the event listener.\n    watch(() => props.persistent, (value) => {\n      if (!document) return\n      if (value) document.removeEventListener('click', handleWindowClick)\n      else document.addEventListener('click', handleWindowClick)\n    }, { immediate: true })\n\n    // --- Build the slot properties.\n    const slotProps = computed(() => ({\n      isOpen: isOpen.value!,\n      toggle,\n      close,\n      open,\n    }) as BaseMenuSlotProps)\n\n    // --- Expose properties.\n    exposeToDevtool({\n      is,\n      isOpen,\n      element,\n      renderable,\n      menuStyle,\n      menuAttributes,\n      attributes,\n    })\n\n    // --- Return virtual DOM node.\n    return () => h(\n      is.value,\n      attributes.value,\n      [\n        slots.default?.(slotProps.value),\n        h('menu', menuAttributes.value, slots.menu?.(slotProps.value)),\n      ],\n    )\n  },\n  {\n    name: 'BaseMemu',\n    props: BASE_MENU_PROPS,\n  },\n)\n"],"names":["BASE_RENDERABLE_OPTIONS","defineSetupComponent","useBaseRenderable","ref","computed","useVModel","mergeProps","watch","exposeToDevtool","h"],"mappings":"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"}
+\ No newline at end of file
++{"version":3,"file":"BaseMenu.cjs","sources":["../BaseMenu.ts"],"sourcesContent":["import type { CSSProperties, Prop } from 'vue'\nimport type { DefineComponentContext } from './defineSetupComponent'\nimport type { BaseRenderableOptions } from './useBaseRenderable'\nimport { useVModel } from '@vueuse/core'\nimport { computed, h, mergeProps, ref, type VNode, watch } from 'vue'\nimport { defineSetupComponent } from './defineSetupComponent'\nimport { exposeToDevtool } from './exposeToDevtool'\nimport { BASE_RENDERABLE_OPTIONS, useBaseRenderable } from './useBaseRenderable'\n\n/** The base props for the `BaseMenu` component. */\nexport const BASE_MENU_PROPS = {\n  ...BASE_RENDERABLE_OPTIONS,\n  'modelValue': Boolean,\n  'onUpdate:modelValue': [Function, Array],\n  'onOpen': [Function, Array],\n  'onClose': [Function, Array],\n  'onToggle': [Function, Array],\n  'persistent': Boolean,\n  'x': String,\n  'y': String,\n  'classMenu': {},\n} satisfies Record<keyof BaseMenuProps, Prop<unknown>>\n\n/** The properties & context of the `BaseMenu` component. */\nexport interface BaseMenuProps extends BaseRenderableOptions {\n\n  /**\n   * The state of the menu. If `true`, the menu is visible. If `false`, the\n   * menu is hidden.\n   */\n  modelValue?: boolean\n  'onUpdate:modelValue'?: (value: boolean) => void\n\n  /**\n   * The callback function to call when the menu is opened.\n   *\n   * @example () => console.log('Menu opened!')\n   */\n  onOpen?: () => void\n\n  /**\n   * The callback function to call when the menu is closed.\n   *\n   * @example () => console.log('Menu closed!')\n   */\n  onClose?: () => void\n\n  /**\n   * The callback function to call when the menu is toggled.\n   *\n   * @example () => console.log('Menu toggled!')\n   */\n  onToggle?: (isOpen: boolean) => void\n\n  /**\n   * By default, the menu will close when the user clicks outside of the menu,\n   * setting this prop to `true` will disable this behavior and the menu will\n   * remain open even when the user clicks outside of the menu.\n   *\n   * @default false\n   */\n  persistent?: boolean\n\n  /**\n   * The alignment of the menu relative to the trigger on the x-axis.\n   *\n   * @default 'center'\n   */\n  x?: 'after' | 'before' | 'center' | 'left' | 'right'\n\n  /**\n   * The alignment of the menu relative to the trigger on the y-axis.\n   *\n   * @default 'bottom'\n   */\n  y?: 'above' | 'below' | 'bottom' | 'center' | 'top'\n\n  /**\n   * The classes to assign to the menu element.\n   */\n  classMenu?: string\n}\n\n/** The slot properties of the `BaseMenu` component. */\nexport interface BaseMenuSlotProps {\n\n  /** Toggle the menu. */\n  toggle(): void\n\n  /** Close the menu. */\n  close(): void\n\n  /** Open the menu. */\n  open(): void\n\n  /** The state of the menu. */\n  isOpen: boolean\n}\n\n/** The context of the `BaseMenu` component. */\n// eslint-disable-next-line @typescript-eslint/consistent-type-definitions\nexport type BaseMenuSlots = {\n  default: (props: BaseMenuSlotProps) => VNode\n  menu: (props: BaseMenuSlotProps) => VNode\n}\n\nexport const BaseMenu = /* #__PURE__ */ defineSetupComponent(\n  (props: BaseMenuProps, { attrs, slots, emit }: DefineComponentContext<BaseMenuSlots>) => {\n    const renderable = useBaseRenderable(props)\n    const element = ref<HTMLElement>()\n    const is = computed(() => renderable.is ?? 'div')\n    const isOpen = useVModel(props, 'modelValue', emit, { passive: true, defaultValue: false })\n\n    const top = computed(() => {\n      if (props.y === 'top') return '0'\n      if (props.y === 'below') return '100%'\n      if (props.y === 'center') return '50%'\n    })\n\n    const bottom = computed(() => {\n      if (props.y === 'above') return '100%'\n      if (props.y === 'bottom') return '0'\n    })\n\n    const left = computed(() => {\n      if (props.x === 'after') return '100%'\n      if (props.x === 'left') return '0'\n      if (props.x === 'center') return '50%'\n    })\n\n    const right = computed(() => {\n      if (props.x === 'before') return '100%'\n      if (props.x === 'right') return '0'\n    })\n\n    const transform = computed(() => {\n      const translateX = props.x === 'center' ? '-50%' : 0\n      const translateY = props.y === 'center' ? '-50%' : 0\n      if (translateX === 0 && translateY === 0) return\n      return `translate(${translateX}, ${translateY})`\n    })\n\n    const menuStyle = computed<CSSProperties>(() => ({\n      position: (top.value || bottom.value || left.value || right.value) ? 'absolute' : undefined,\n      top: top.value,\n      bottom: bottom.value,\n      left: left.value,\n      right: right.value,\n      transform: transform.value,\n    }))\n\n    const menuAttributes = computed(() => ({\n      'aria-modal': 'true',\n      'aria-hidden': isOpen.value,\n      'role': 'menu',\n      'style': menuStyle.value,\n      'class': props.classMenu,\n    }))\n\n    const close = () => {\n      isOpen.value = false\n      emit('close')\n      emit('toggle', false)\n    }\n\n    const open = () => {\n      isOpen.value = true\n      emit('open')\n      emit('toggle', true)\n    }\n\n    const toggle = () => {\n      isOpen.value = !isOpen.value\n      emit(isOpen.value ? 'open' : 'close')\n      emit('toggle', isOpen.value)\n    }\n\n    const attributes = computed(() => mergeProps(attrs, ({\n      ref: element,\n      style: { position: 'relative' },\n    })))\n\n    const handleWindowClick = (event: MouseEvent) => {\n      if (!isOpen.value) return\n      if (!element.value) return\n      if (!element.value.contains(event.target as Node)) close()\n    }\n\n    // --- Watch the `closeOnClickOutside` property and add/remove the event listener.\n    watch(() => props.persistent, (value) => {\n      if (!document) return\n      if (value) document.removeEventListener('click', handleWindowClick)\n      else document.addEventListener('click', handleWindowClick)\n    }, { immediate: true })\n\n    // --- Build the slot properties.\n    const slotProps = computed(() => ({\n      isOpen: isOpen.value!,\n      toggle,\n      close,\n      open,\n    }) as BaseMenuSlotProps)\n\n    // --- Expose properties.\n    exposeToDevtool({\n      is,\n      isOpen,\n      element,\n      renderable,\n      menuStyle,\n      menuAttributes,\n      attributes,\n    })\n\n    // --- Return virtual DOM node.\n    return () => h(\n      is.value,\n      attributes.value,\n      [\n        slots.default?.(slotProps.value),\n        h('menu', menuAttributes.value, slots.menu?.(slotProps.value)),\n      ],\n    )\n  },\n  {\n    name: 'BaseMemu',\n    props: BASE_MENU_PROPS,\n  },\n)\n"],"names":["BASE_RENDERABLE_OPTIONS","defineSetupComponent","useBaseRenderable","ref","computed","useVModel","mergeProps","watch","exposeToDevtool","h"],"mappings":"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"}
+\ No newline at end of file
+diff --git a/dist/BaseMenu.d.ts b/dist/BaseMenu.d.ts
+index 414c12c69c030d5d9ac71c397f540c2b577ad9ef..6373cbc931cf8c3b569b2c5bc0a25e6a53464dc5 100644
+--- a/dist/BaseMenu.d.ts
++++ b/dist/BaseMenu.d.ts
+@@ -5,10 +5,10 @@ import { BaseRenderableOptions } from './useBaseRenderable.js';
+ /** The base props for the `BaseMenu` component. */
+ declare const BASE_MENU_PROPS: {
+     modelValue: BooleanConstructor;
+-    'onUpdate:modelValue': FunctionConstructor;
+-    onOpen: FunctionConstructor;
+-    onClose: FunctionConstructor;
+-    onToggle: FunctionConstructor;
++    'onUpdate:modelValue': (FunctionConstructor | ArrayConstructor)[];
++    onOpen: (FunctionConstructor | ArrayConstructor)[];
++    onClose: (FunctionConstructor | ArrayConstructor)[];
++    onToggle: (FunctionConstructor | ArrayConstructor)[];
+     persistent: BooleanConstructor;
+     x: StringConstructor;
+     y: StringConstructor;
+diff --git a/dist/BaseMenu.js b/dist/BaseMenu.js
+index f467a71d9b4086192a11ae60841444f087f4cb81..cbc238ca5d4afc3e05806e562aa17d55e6c0e60c 100644
+--- a/dist/BaseMenu.js
++++ b/dist/BaseMenu.js
+@@ -6,10 +6,10 @@ import { BASE_RENDERABLE_OPTIONS, useBaseRenderable } from "./useBaseRenderable.
+ const BASE_MENU_PROPS = {
+   ...BASE_RENDERABLE_OPTIONS,
+   modelValue: Boolean,
+-  "onUpdate:modelValue": Function,
+-  onOpen: Function,
+-  onClose: Function,
+-  onToggle: Function,
++  "onUpdate:modelValue": [Function, Array],
++  onOpen: [Function, Array],
++  onClose: [Function, Array],
++  onToggle: [Function, Array],
+   persistent: Boolean,
+   x: String,
+   y: String,
+diff --git a/dist/BaseMenu.js.map b/dist/BaseMenu.js.map
+index c5ed9bd860ac8b215cb64a5f0f188cdea426737a..ffb7d1659004dd766c44a869d38c773a1f12d26c 100644
+--- a/dist/BaseMenu.js.map
++++ b/dist/BaseMenu.js.map
+@@ -1 +1 @@
+-{"version":3,"file":"BaseMenu.js","sources":["../BaseMenu.ts"],"sourcesContent":["import type { CSSProperties, Prop } from 'vue'\nimport type { DefineComponentContext } from './defineSetupComponent'\nimport type { BaseRenderableOptions } from './useBaseRenderable'\nimport { useVModel } from '@vueuse/core'\nimport { computed, h, mergeProps, ref, type VNode, watch } from 'vue'\nimport { defineSetupComponent } from './defineSetupComponent'\nimport { exposeToDevtool } from './exposeToDevtool'\nimport { BASE_RENDERABLE_OPTIONS, useBaseRenderable } from './useBaseRenderable'\n\n/** The base props for the `BaseMenu` component. */\nexport const BASE_MENU_PROPS = {\n  ...BASE_RENDERABLE_OPTIONS,\n  'modelValue': Boolean,\n  'onUpdate:modelValue': Function,\n  'onOpen': Function,\n  'onClose': Function,\n  'onToggle': Function,\n  'persistent': Boolean,\n  'x': String,\n  'y': String,\n  'classMenu': {},\n} satisfies Record<keyof BaseMenuProps, Prop<unknown>>\n\n/** The properties & context of the `BaseMenu` component. */\nexport interface BaseMenuProps extends BaseRenderableOptions {\n\n  /**\n   * The state of the menu. If `true`, the menu is visible. If `false`, the\n   * menu is hidden.\n   */\n  modelValue?: boolean\n  'onUpdate:modelValue'?: (value: boolean) => void\n\n  /**\n   * The callback function to call when the menu is opened.\n   *\n   * @example () => console.log('Menu opened!')\n   */\n  onOpen?: () => void\n\n  /**\n   * The callback function to call when the menu is closed.\n   *\n   * @example () => console.log('Menu closed!')\n   */\n  onClose?: () => void\n\n  /**\n   * The callback function to call when the menu is toggled.\n   *\n   * @example () => console.log('Menu toggled!')\n   */\n  onToggle?: (isOpen: boolean) => void\n\n  /**\n   * By default, the menu will close when the user clicks outside of the menu,\n   * setting this prop to `true` will disable this behavior and the menu will\n   * remain open even when the user clicks outside of the menu.\n   *\n   * @default false\n   */\n  persistent?: boolean\n\n  /**\n   * The alignment of the menu relative to the trigger on the x-axis.\n   *\n   * @default 'center'\n   */\n  x?: 'after' | 'before' | 'center' | 'left' | 'right'\n\n  /**\n   * The alignment of the menu relative to the trigger on the y-axis.\n   *\n   * @default 'bottom'\n   */\n  y?: 'above' | 'below' | 'bottom' | 'center' | 'top'\n\n  /**\n   * The classes to assign to the menu element.\n   */\n  classMenu?: string\n}\n\n/** The slot properties of the `BaseMenu` component. */\nexport interface BaseMenuSlotProps {\n\n  /** Toggle the menu. */\n  toggle(): void\n\n  /** Close the menu. */\n  close(): void\n\n  /** Open the menu. */\n  open(): void\n\n  /** The state of the menu. */\n  isOpen: boolean\n}\n\n/** The context of the `BaseMenu` component. */\n// eslint-disable-next-line @typescript-eslint/consistent-type-definitions\nexport type BaseMenuSlots = {\n  default: (props: BaseMenuSlotProps) => VNode\n  menu: (props: BaseMenuSlotProps) => VNode\n}\n\nexport const BaseMenu = /* #__PURE__ */ defineSetupComponent(\n  (props: BaseMenuProps, { attrs, slots, emit }: DefineComponentContext<BaseMenuSlots>) => {\n    const renderable = useBaseRenderable(props)\n    const element = ref<HTMLElement>()\n    const is = computed(() => renderable.is ?? 'div')\n    const isOpen = useVModel(props, 'modelValue', emit, { passive: true, defaultValue: false })\n\n    const top = computed(() => {\n      if (props.y === 'top') return '0'\n      if (props.y === 'below') return '100%'\n      if (props.y === 'center') return '50%'\n    })\n\n    const bottom = computed(() => {\n      if (props.y === 'above') return '100%'\n      if (props.y === 'bottom') return '0'\n    })\n\n    const left = computed(() => {\n      if (props.x === 'after') return '100%'\n      if (props.x === 'left') return '0'\n      if (props.x === 'center') return '50%'\n    })\n\n    const right = computed(() => {\n      if (props.x === 'before') return '100%'\n      if (props.x === 'right') return '0'\n    })\n\n    const transform = computed(() => {\n      const translateX = props.x === 'center' ? '-50%' : 0\n      const translateY = props.y === 'center' ? '-50%' : 0\n      if (translateX === 0 && translateY === 0) return\n      return `translate(${translateX}, ${translateY})`\n    })\n\n    const menuStyle = computed<CSSProperties>(() => ({\n      position: (top.value || bottom.value || left.value || right.value) ? 'absolute' : undefined,\n      top: top.value,\n      bottom: bottom.value,\n      left: left.value,\n      right: right.value,\n      transform: transform.value,\n    }))\n\n    const menuAttributes = computed(() => ({\n      'aria-modal': 'true',\n      'aria-hidden': isOpen.value,\n      'role': 'menu',\n      'style': menuStyle.value,\n      'class': props.classMenu,\n    }))\n\n    const close = () => {\n      isOpen.value = false\n      emit('close')\n      emit('toggle', false)\n    }\n\n    const open = () => {\n      isOpen.value = true\n      emit('open')\n      emit('toggle', true)\n    }\n\n    const toggle = () => {\n      isOpen.value = !isOpen.value\n      emit(isOpen.value ? 'open' : 'close')\n      emit('toggle', isOpen.value)\n    }\n\n    const attributes = computed(() => mergeProps(attrs, ({\n      ref: element,\n      style: { position: 'relative' },\n    })))\n\n    const handleWindowClick = (event: MouseEvent) => {\n      if (!isOpen.value) return\n      if (!element.value) return\n      if (!element.value.contains(event.target as Node)) close()\n    }\n\n    // --- Watch the `closeOnClickOutside` property and add/remove the event listener.\n    watch(() => props.persistent, (value) => {\n      if (!document) return\n      if (value) document.removeEventListener('click', handleWindowClick)\n      else document.addEventListener('click', handleWindowClick)\n    }, { immediate: true })\n\n    // --- Build the slot properties.\n    const slotProps = computed(() => ({\n      isOpen: isOpen.value!,\n      toggle,\n      close,\n      open,\n    }) as BaseMenuSlotProps)\n\n    // --- Expose properties.\n    exposeToDevtool({\n      is,\n      isOpen,\n      element,\n      renderable,\n      menuStyle,\n      menuAttributes,\n      attributes,\n    })\n\n    // --- Return virtual DOM node.\n    return () => h(\n      is.value,\n      attributes.value,\n      [\n        slots.default?.(slotProps.value),\n        h('menu', menuAttributes.value, slots.menu?.(slotProps.value)),\n      ],\n    )\n  },\n  {\n    name: 'BaseMemu',\n    props: BASE_MENU_PROPS,\n  },\n)\n"],"names":[],"mappings":"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"}
+\ No newline at end of file
++{"version":3,"file":"BaseMenu.js","sources":["../BaseMenu.ts"],"sourcesContent":["import type { CSSProperties, Prop } from 'vue'\nimport type { DefineComponentContext } from './defineSetupComponent'\nimport type { BaseRenderableOptions } from './useBaseRenderable'\nimport { useVModel } from '@vueuse/core'\nimport { computed, h, mergeProps, ref, type VNode, watch } from 'vue'\nimport { defineSetupComponent } from './defineSetupComponent'\nimport { exposeToDevtool } from './exposeToDevtool'\nimport { BASE_RENDERABLE_OPTIONS, useBaseRenderable } from './useBaseRenderable'\n\n/** The base props for the `BaseMenu` component. */\nexport const BASE_MENU_PROPS = {\n  ...BASE_RENDERABLE_OPTIONS,\n  'modelValue': Boolean,\n  'onUpdate:modelValue': [Function, Array],\n  'onOpen': [Function, Array],\n  'onClose': [Function, Array],\n  'onToggle': [Function, Array],\n  'persistent': Boolean,\n  'x': String,\n  'y': String,\n  'classMenu': {},\n} satisfies Record<keyof BaseMenuProps, Prop<unknown>>\n\n/** The properties & context of the `BaseMenu` component. */\nexport interface BaseMenuProps extends BaseRenderableOptions {\n\n  /**\n   * The state of the menu. If `true`, the menu is visible. If `false`, the\n   * menu is hidden.\n   */\n  modelValue?: boolean\n  'onUpdate:modelValue'?: (value: boolean) => void\n\n  /**\n   * The callback function to call when the menu is opened.\n   *\n   * @example () => console.log('Menu opened!')\n   */\n  onOpen?: () => void\n\n  /**\n   * The callback function to call when the menu is closed.\n   *\n   * @example () => console.log('Menu closed!')\n   */\n  onClose?: () => void\n\n  /**\n   * The callback function to call when the menu is toggled.\n   *\n   * @example () => console.log('Menu toggled!')\n   */\n  onToggle?: (isOpen: boolean) => void\n\n  /**\n   * By default, the menu will close when the user clicks outside of the menu,\n   * setting this prop to `true` will disable this behavior and the menu will\n   * remain open even when the user clicks outside of the menu.\n   *\n   * @default false\n   */\n  persistent?: boolean\n\n  /**\n   * The alignment of the menu relative to the trigger on the x-axis.\n   *\n   * @default 'center'\n   */\n  x?: 'after' | 'before' | 'center' | 'left' | 'right'\n\n  /**\n   * The alignment of the menu relative to the trigger on the y-axis.\n   *\n   * @default 'bottom'\n   */\n  y?: 'above' | 'below' | 'bottom' | 'center' | 'top'\n\n  /**\n   * The classes to assign to the menu element.\n   */\n  classMenu?: string\n}\n\n/** The slot properties of the `BaseMenu` component. */\nexport interface BaseMenuSlotProps {\n\n  /** Toggle the menu. */\n  toggle(): void\n\n  /** Close the menu. */\n  close(): void\n\n  /** Open the menu. */\n  open(): void\n\n  /** The state of the menu. */\n  isOpen: boolean\n}\n\n/** The context of the `BaseMenu` component. */\n// eslint-disable-next-line @typescript-eslint/consistent-type-definitions\nexport type BaseMenuSlots = {\n  default: (props: BaseMenuSlotProps) => VNode\n  menu: (props: BaseMenuSlotProps) => VNode\n}\n\nexport const BaseMenu = /* #__PURE__ */ defineSetupComponent(\n  (props: BaseMenuProps, { attrs, slots, emit }: DefineComponentContext<BaseMenuSlots>) => {\n    const renderable = useBaseRenderable(props)\n    const element = ref<HTMLElement>()\n    const is = computed(() => renderable.is ?? 'div')\n    const isOpen = useVModel(props, 'modelValue', emit, { passive: true, defaultValue: false })\n\n    const top = computed(() => {\n      if (props.y === 'top') return '0'\n      if (props.y === 'below') return '100%'\n      if (props.y === 'center') return '50%'\n    })\n\n    const bottom = computed(() => {\n      if (props.y === 'above') return '100%'\n      if (props.y === 'bottom') return '0'\n    })\n\n    const left = computed(() => {\n      if (props.x === 'after') return '100%'\n      if (props.x === 'left') return '0'\n      if (props.x === 'center') return '50%'\n    })\n\n    const right = computed(() => {\n      if (props.x === 'before') return '100%'\n      if (props.x === 'right') return '0'\n    })\n\n    const transform = computed(() => {\n      const translateX = props.x === 'center' ? '-50%' : 0\n      const translateY = props.y === 'center' ? '-50%' : 0\n      if (translateX === 0 && translateY === 0) return\n      return `translate(${translateX}, ${translateY})`\n    })\n\n    const menuStyle = computed<CSSProperties>(() => ({\n      position: (top.value || bottom.value || left.value || right.value) ? 'absolute' : undefined,\n      top: top.value,\n      bottom: bottom.value,\n      left: left.value,\n      right: right.value,\n      transform: transform.value,\n    }))\n\n    const menuAttributes = computed(() => ({\n      'aria-modal': 'true',\n      'aria-hidden': isOpen.value,\n      'role': 'menu',\n      'style': menuStyle.value,\n      'class': props.classMenu,\n    }))\n\n    const close = () => {\n      isOpen.value = false\n      emit('close')\n      emit('toggle', false)\n    }\n\n    const open = () => {\n      isOpen.value = true\n      emit('open')\n      emit('toggle', true)\n    }\n\n    const toggle = () => {\n      isOpen.value = !isOpen.value\n      emit(isOpen.value ? 'open' : 'close')\n      emit('toggle', isOpen.value)\n    }\n\n    const attributes = computed(() => mergeProps(attrs, ({\n      ref: element,\n      style: { position: 'relative' },\n    })))\n\n    const handleWindowClick = (event: MouseEvent) => {\n      if (!isOpen.value) return\n      if (!element.value) return\n      if (!element.value.contains(event.target as Node)) close()\n    }\n\n    // --- Watch the `closeOnClickOutside` property and add/remove the event listener.\n    watch(() => props.persistent, (value) => {\n      if (!document) return\n      if (value) document.removeEventListener('click', handleWindowClick)\n      else document.addEventListener('click', handleWindowClick)\n    }, { immediate: true })\n\n    // --- Build the slot properties.\n    const slotProps = computed(() => ({\n      isOpen: isOpen.value!,\n      toggle,\n      close,\n      open,\n    }) as BaseMenuSlotProps)\n\n    // --- Expose properties.\n    exposeToDevtool({\n      is,\n      isOpen,\n      element,\n      renderable,\n      menuStyle,\n      menuAttributes,\n      attributes,\n    })\n\n    // --- Return virtual DOM node.\n    return () => h(\n      is.value,\n      attributes.value,\n      [\n        slots.default?.(slotProps.value),\n        h('menu', menuAttributes.value, slots.menu?.(slotProps.value)),\n      ],\n    )\n  },\n  {\n    name: 'BaseMemu',\n    props: BASE_MENU_PROPS,\n  },\n)\n"],"names":[],"mappings":"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"}
+\ No newline at end of file
+diff --git a/dist/BaseTable.d.ts b/dist/BaseTable.d.ts
+index 255bfa6ba73d14ea78fa138ae9e760c2d234cc77..8c2d2b7421cef3e6882eb14cdfe62d81f3afa1b2 100644
+--- a/dist/BaseTable.d.ts
++++ b/dist/BaseTable.d.ts
+@@ -23,10 +23,10 @@ declare const BASE_TABLE_PROPS: {
+     error: (ErrorConstructor | StringConstructor)[];
+     loading: BooleanConstructor[];
+     readonly: BooleanConstructor[];
+-    'onUpdate:disabled': (ArrayConstructor | FunctionConstructor)[];
+-    'onUpdate:error': (ArrayConstructor | FunctionConstructor)[];
+-    'onUpdate:loading': (ArrayConstructor | FunctionConstructor)[];
+-    'onUpdate:readonly': (ArrayConstructor | FunctionConstructor)[];
++    'onUpdate:disabled': (FunctionConstructor | ArrayConstructor)[];
++    'onUpdate:error': (FunctionConstructor | ArrayConstructor)[];
++    'onUpdate:loading': (FunctionConstructor | ArrayConstructor)[];
++    'onUpdate:readonly': (FunctionConstructor | ArrayConstructor)[];
+     classDisabled: StringConstructor;
+     classError: StringConstructor;
+     classLoading: StringConstructor;
+diff --git a/dist/useBaseContentEditable.d.ts b/dist/useBaseContentEditable.d.ts
+index 3b1ad82f3383e83a6f29d379766b6331085b4e1f..151e30a23fcfd61a566e8eb0652d85c849cc153b 100644
+--- a/dist/useBaseContentEditable.d.ts
++++ b/dist/useBaseContentEditable.d.ts
+@@ -39,17 +39,17 @@ declare const BASE_CONTENT_EDITABLE_SYMBOL: unique symbol;
+ /** The options for the `useBaseContentEditable` composable. */
+ declare const BASE_CONTENT_EDITABLE_OPTIONS: {
+     modelValue: {};
+-    'onUpdate:modelValue': (ArrayConstructor | FunctionConstructor)[];
++    'onUpdate:modelValue': (FunctionConstructor | ArrayConstructor)[];
+     parse: FunctionConstructor;
+     serialize: FunctionConstructor;
+     disabled: BooleanConstructor;
+     error: (ErrorConstructor | StringConstructor)[];
+     loading: BooleanConstructor[];
+     readonly: BooleanConstructor[];
+-    'onUpdate:disabled': (ArrayConstructor | FunctionConstructor)[];
+-    'onUpdate:error': (ArrayConstructor | FunctionConstructor)[];
+-    'onUpdate:loading': (ArrayConstructor | FunctionConstructor)[];
+-    'onUpdate:readonly': (ArrayConstructor | FunctionConstructor)[];
++    'onUpdate:disabled': (FunctionConstructor | ArrayConstructor)[];
++    'onUpdate:error': (FunctionConstructor | ArrayConstructor)[];
++    'onUpdate:loading': (FunctionConstructor | ArrayConstructor)[];
++    'onUpdate:readonly': (FunctionConstructor | ArrayConstructor)[];
+     classDisabled: StringConstructor;
+     classError: StringConstructor;
+     classLoading: StringConstructor;
+diff --git a/dist/useBaseInputFile.d.ts b/dist/useBaseInputFile.d.ts
+index c0104d45d6f863426906a0fafe02e7e0feebe4a2..444e1887ed122e6f1d22757c9d583de26c4aeb99 100644
+--- a/dist/useBaseInputFile.d.ts
++++ b/dist/useBaseInputFile.d.ts
+@@ -5,8 +5,8 @@ declare const BASE_INPUT_FILE_SYMBOL: unique symbol;
+ /** The props when using the `useBaseInputFile` composable. */
+ declare const BASE_INPUT_FILE_OPTIONS: {
+     modelValue: {};
+-    'onUpdate:modelValue': (ArrayConstructor | FunctionConstructor)[];
+-    onInsert: (ArrayConstructor | FunctionConstructor)[];
++    'onUpdate:modelValue': (FunctionConstructor | ArrayConstructor)[];
++    onInsert: (FunctionConstructor | ArrayConstructor)[];
+     multiple: BooleanConstructor;
+     accept: StringConstructor;
+ };
+diff --git a/dist/useBaseInputList.d.ts b/dist/useBaseInputList.d.ts
+index 4f981abf11ec2c5f3d000d79ea23fbde758554e0..8933e32f9423e0f63d19af336e702e121975a66b 100644
+--- a/dist/useBaseInputList.d.ts
++++ b/dist/useBaseInputList.d.ts
+@@ -6,9 +6,9 @@ declare const BASE_INPUT_LIST_SYMBOL: unique symbol;
+ declare const BASE_INPUT_LIST_OPTIONS: {
+     options: {};
+     modelValue: {};
+-    'onUpdate:modelValue': (ArrayConstructor | FunctionConstructor)[];
++    'onUpdate:modelValue': (FunctionConstructor | ArrayConstructor)[];
+     search: StringConstructor;
+-    'onUpdate:search': (ArrayConstructor | FunctionConstructor)[];
++    'onUpdate:search': (FunctionConstructor | ArrayConstructor)[];
+     allowCustomValue: BooleanConstructor;
+     optionValue: FunctionConstructor;
+     optionLabel: FunctionConstructor;
+diff --git a/dist/useBaseInputText.d.ts b/dist/useBaseInputText.d.ts
+index 89f4cc6fc5d4e7263c8bbbfffd6f551d8d34846d..4dd7f6370ac8f4bd7ca72d356883d4270b292526 100644
+--- a/dist/useBaseInputText.d.ts
++++ b/dist/useBaseInputText.d.ts
+@@ -8,7 +8,7 @@ declare const BASE_INPUT_TEXT_SYMBOL: unique symbol;
+ declare const BASE_INPUT_TEXT_OPTIONS: {
+     id: StringConstructor;
+     modelValue: {};
+-    'onUpdate:modelValue': (ArrayConstructor | FunctionConstructor)[];
++    'onUpdate:modelValue': (FunctionConstructor | ArrayConstructor)[];
+     type: {
+         type: StringConstructor;
+         default: string;
+@@ -23,10 +23,10 @@ declare const BASE_INPUT_TEXT_OPTIONS: {
+     error: (ErrorConstructor | StringConstructor)[];
+     loading: BooleanConstructor[];
+     readonly: BooleanConstructor[];
+-    'onUpdate:disabled': (ArrayConstructor | FunctionConstructor)[];
+-    'onUpdate:error': (ArrayConstructor | FunctionConstructor)[];
+-    'onUpdate:loading': (ArrayConstructor | FunctionConstructor)[];
+-    'onUpdate:readonly': (ArrayConstructor | FunctionConstructor)[];
++    'onUpdate:disabled': (FunctionConstructor | ArrayConstructor)[];
++    'onUpdate:error': (FunctionConstructor | ArrayConstructor)[];
++    'onUpdate:loading': (FunctionConstructor | ArrayConstructor)[];
++    'onUpdate:readonly': (FunctionConstructor | ArrayConstructor)[];
+     classDisabled: StringConstructor;
+     classError: StringConstructor;
+     classLoading: StringConstructor;
+diff --git a/dist/useBaseInputToggle.d.ts b/dist/useBaseInputToggle.d.ts
+index 86af4d541d8b4abd0b804275767ed8412a2c9a1b..264927f39c53147c5a731a5c436f5690ef7341a0 100644
+--- a/dist/useBaseInputToggle.d.ts
++++ b/dist/useBaseInputToggle.d.ts
+@@ -88,12 +88,12 @@ declare const BASE_INPUT_TOGGLE_OPTIONS: {
+         type: StringConstructor;
+         default: string;
+     };
+-    modelValue: (ArrayConstructor | BooleanConstructor | StringConstructor | ObjectConstructor | NumberConstructor)[];
+-    'onUpdate:modelValue': (ArrayConstructor | FunctionConstructor)[];
+-    onOff: (ArrayConstructor | FunctionConstructor)[];
+-    onOn: (ArrayConstructor | FunctionConstructor)[];
+-    onToggle: (ArrayConstructor | FunctionConstructor)[];
+-    value: (ArrayConstructor | BooleanConstructor | StringConstructor | NumberConstructor)[];
++    modelValue: (BooleanConstructor | StringConstructor | ArrayConstructor | ObjectConstructor | NumberConstructor)[];
++    'onUpdate:modelValue': (FunctionConstructor | ArrayConstructor)[];
++    onOff: (FunctionConstructor | ArrayConstructor)[];
++    onOn: (FunctionConstructor | ArrayConstructor)[];
++    onToggle: (FunctionConstructor | ArrayConstructor)[];
++    value: (BooleanConstructor | StringConstructor | ArrayConstructor | NumberConstructor)[];
+     eager: BooleanConstructor;
+     classActive: {
+         type: StringConstructor;
+diff --git a/dist/useBaseState.d.ts b/dist/useBaseState.d.ts
+index 75a006613aa816237c4787e87afa8bb63d3859de..6b2f6a84ba2c68fdef7bdb6aef68217d42b477d4 100644
+--- a/dist/useBaseState.d.ts
++++ b/dist/useBaseState.d.ts
+@@ -98,10 +98,10 @@ declare const BASE_STATE_OPTIONS: {
+     error: (ErrorConstructor | StringConstructor)[];
+     loading: BooleanConstructor[];
+     readonly: BooleanConstructor[];
+-    'onUpdate:disabled': (ArrayConstructor | FunctionConstructor)[];
+-    'onUpdate:error': (ArrayConstructor | FunctionConstructor)[];
+-    'onUpdate:loading': (ArrayConstructor | FunctionConstructor)[];
+-    'onUpdate:readonly': (ArrayConstructor | FunctionConstructor)[];
++    'onUpdate:disabled': (FunctionConstructor | ArrayConstructor)[];
++    'onUpdate:error': (FunctionConstructor | ArrayConstructor)[];
++    'onUpdate:loading': (FunctionConstructor | ArrayConstructor)[];
++    'onUpdate:readonly': (FunctionConstructor | ArrayConstructor)[];
+     classDisabled: StringConstructor;
+     classError: StringConstructor;
+     classLoading: StringConstructor;

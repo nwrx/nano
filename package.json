@@ -19,7 +19,8 @@
     },
     "patchedDependencies": {
       "@unserved/client": "patches/@unserved__client.patch",
-      "@unshared/validation": "patches/@unshared__validation.patch"
+      "@unshared/validation": "patches/@unshared__validation.patch",
+      "@unshared/vue": "patches/@unshared__vue.patch"
     }
   },
   "scripts": {
