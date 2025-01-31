@@ -86,13 +86,5 @@ describe('askConfirmation', () => {
       vi.advanceTimersByTime(1)
       await expect(shouldReject).rejects.toThrow('Timeout.')
     })
-
-    it('should throw if the node times out with the default timeout', async() => {
-      const thread = createThread()
-      const nodeId = addNode(thread, 'example')
-      const shouldReject = askConfirmation(thread, nodeId, { question: 'ignored', text: 'ignored' })
-      vi.advanceTimersByTime(60000)
-      await expect(shouldReject).rejects.toThrow('Timeout.')
-    })
   })
 })

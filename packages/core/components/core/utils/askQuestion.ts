@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
-import type { Thread } from '../../../thread'
 import { randomUUID } from 'node:crypto'
+import { getNode, type Thread } from '../../../thread'
 
 export type QuestionChoiceValue = boolean | number | string
 
@@ -23,6 +23,7 @@ export interface EventQuestion extends QuestionOptions {
 }
 
 export async function askQuestion(thread: Thread, nodeId: string, options: QuestionOptions): Promise<QuestionChoiceValue> {
+  getNode(thread, nodeId)
   const { question, text, defaultValue, timeout = 60000, choices } = options
   const eventQuestion: EventQuestion = { id: randomUUID(), question, text, timeout, choices, defaultValue }
 
