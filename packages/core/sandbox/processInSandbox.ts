@@ -1,7 +1,5 @@
-import type { Function, ObjectLike } from '@unshared/types'
-import type { ConfirmOption } from '../utils'
-import type { ProcessContext } from '../utils/defineComponent'
-import ivm from 'isolated-vm'
+import type { ObjectLike } from '@unshared/types'
+import { getNodeComponent, type Thread } from '../thread'
 import { ERRORS as E } from '../utils'
 import { implementFetch } from './implementFetch'
 import { implementHeaders } from './implementHeaders'
@@ -12,12 +10,15 @@ import { wrapInSandbox } from './wrapInSandbox'
 /**
  * Process the given function in a sandbox.
  *
- * @param fn The function to wrap in a sandbox.
- * @param context The data and trace to pass to the function.
+ * @param thread The thread to process the function in.
+ * @param nodeId The ID of the node to process the function for.
+ * @param data The data to pass to the function.
  * @returns The result of the function call.
  */
-export async function processInSandbox(fn: Function | string, context: ProcessContext): Promise<ObjectLike> {
-  const fnWrapped = await wrapInSandbox(fn, { timeout: 10000 })
+export async function processInSandbox(thread: Thread, nodeId: string, data: ObjectLike = {}): Promise<ObjectLike> {
+  const component = await getNodeComponent(thread, nodeId)
+  if (!component.process) throw new Error('The component does not have a process function.')
+  const fnWrapped = await wrapInSandbox(component.process, { timeout: 10000 })
 
   // --- Implement some WebAPI functions.
   await implementFetch(fnWrapped.isolate, fnWrapped.context)
@@ -27,7 +28,7 @@ export async function processInSandbox(fn: Function | string, context: ProcessCo
 
   // --- Watch for the abort signal and dispose the context if it's aborted.
   return new Promise((resolve, reject) => {
-    context.abortSignal?.addEventListener('abort', () => {
+    thread.abortController.signal.addEventListener('abort', () => {
       fnWrapped.context.release()
       fnWrapped.isolate.dispose()
       const error = E.ISOLATED_VM_DISPOSED()
@@ -35,11 +36,7 @@ export async function processInSandbox(fn: Function | string, context: ProcessCo
     })
 
     // --- Call the function in the sandbox.
-    void fnWrapped({
-      data: context.data,
-      askQuestion: new ivm.Callback((options: ConfirmOption) => context.askQuestion(options)),
-      askConfirmation: new ivm.Callback((options: ConfirmOption) => context.askConfirmation(options)),
-    })
+    void fnWrapped({ data })
       .then(resolve)
       .catch(reject)
   })
