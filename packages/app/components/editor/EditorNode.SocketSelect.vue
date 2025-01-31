@@ -18,8 +18,14 @@ const { t } = useI18n()
 const isOpen = ref(false)
 const search = ref('')
 const searchOptions = ref<SocketListOption[]>([])
+const isLoading = ref(false)
 const input = ref<HTMLInputElement>()
 const model = useVModel(props, 'modelValue', emit, { passive: true })
+
+const options = computed(() => {
+  if (search.value.length > 0) return searchOptions.value
+  return props.options
+})
 
 // --- Resolve the label of the current value if it is set.
 const currentValue = computed(() => {
@@ -37,11 +43,17 @@ const defaultValue = computed(() => {
   return props.defaultValue
 })
 
-// --- Get the options from the server if the `getOptions` function is provided.
-watch(search, async() => {
+// --- Resolve the list of options based on the search query.
+async function startSearch() {
   if (!props.getOptions) return
-  searchOptions.value = await props.getOptions(search.value)
-})
+  isLoading.value = true
+  await props.getOptions(search.value)
+    .then(options => searchOptions.value = options)
+    .finally(() => isLoading.value = false)
+}
+
+// --- Get the options from the server if the `getOptions` function is provided.
+watch(search, startSearch)
 
 // --- Track the list position so we can auto-scale the height based on the viewport.
 const list = ref<HTMLDivElement>()
@@ -53,6 +65,7 @@ watch(listBounding, () => {
 
 function focus() {
   if (input.value) input.value.focus()
+  void startSearch()
 }
 
 function setOption(option: SocketListOption<unknown>) {
@@ -71,7 +84,7 @@ function setOption(option: SocketListOption<unknown>) {
     <p
       class="truncate shrink-0"
       :class="{ 'text-subtle': !model, 'italic font-light': !model && !defaultValue }"
-      v-text="currentValue?.label ?? model ?? defaultValue ?? t('empty')"
+      v-text="currentValue?.label ?? model ?? defaultValue ?? t('none')"
     />
 
     <!-- Search -->
@@ -99,11 +112,9 @@ function setOption(option: SocketListOption<unknown>) {
         @wheel.stop>
 
         <!-- When no options are available, show a message. -->
-        <template v-if="!options || options.length === 0">
-          <p class="text-xs text-subtle">
-            {{ t('list.empty') }}
-          </p>
-        </template>
+        <p v-if="!options || options.length === 0" class="text-xs text-subtle">
+          {{ isLoading ? t('loading') : t('empty') }}
+        </p>
 
         <!-- Otherwise, show the list of options. -->
         <template v-else>
@@ -119,23 +130,35 @@ function setOption(option: SocketListOption<unknown>) {
         </template>
       </div>
     </Transition>
+
+    <!-- Loading -->
+    <BaseIcon
+      :class="{ '!op-100': isLoading }"
+      class="size-8"
+      icon="i-line-md:loading-loop mx-sm transition op-0"
+    />
   </EditorNodeSocketGroup>
 </template>
 
 <i18n lang="yaml">
 en:
-  empty: No default value
-  list.empty: No items available, check your search query or node data.
+  none: No default value
+  empty: No items available, check your search query or node data.
+  loading: Loading options from the server...
 fr:
-  empty: Aucune valeur par défaut
-  list.empty: Aucun élément disponible, vérifiez votre requête de recherche ou les données du nœud.
+  none: Aucune valeur par défaut
+  empty: Aucun élément disponible, vérifiez votre requête de recherche ou les données du nœud.
+  loading: Chargement des options depuis le serveur...
 de:
-  empty: Kein Standardwert
-  list.empty: Keine Elemente verfügbar, überprüfen Sie Ihre Suchanfrage oder Knotendaten.
+  none: Kein Standardwert
+  empty: Keine Elemente verfügbar, überprüfen Sie Ihre Suchanfrage oder Knotendaten.
+  loading: Optionen vom Server laden...
 es:
-  empty: Sin valor predeterminado
-  list.empty: No hay elementos disponibles, verifique su consulta de búsqueda o los datos del nodo.
+  none: Sin valor predeterminado
+  empty: No hay elementos disponibles, verifique su consulta de búsqueda o los datos del nodo.
+  loading: Cargando opciones desde el servidor...
 zh:
-  empty: 无默认值
-  list.empty: 没有可用的项目，请检查您的搜索查询或节点数据。
+  none: 无默认值
+  empty: 没有可用的项目，请检查您的搜索查询或节点数据。
+  loading: 从服务器加载选项...
 </i18n>
