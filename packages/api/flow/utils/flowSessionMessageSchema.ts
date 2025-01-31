@@ -2,121 +2,150 @@ import { assert, createArrayParser, createRuleSet, createSchema } from '@unshare
 
 export const FLOW_SESSION_MESSAGE_SCHEMA = createRuleSet(
 
-  // --- User events.
+  /***************************************************************************/
+  /* Execute                                                                 */
+  /***************************************************************************/
+
   [createSchema({
-    event: assert.stringEquals('userJoin'),
-    token: assert.stringNotEmpty,
-  })],
-  [createSchema({
-    event: assert.stringEquals('userLeave'),
-  })],
-  [createSchema({
-    event: assert.stringEquals('userSetPosition'),
-    x: assert.number,
-    y: assert.number,
+    event: assert.stringEquals('start'),
+    input: assert.object,
   })],
 
-  // --- Flow events.
   [createSchema({
-    event: assert.stringEquals('flowSetMetaValue'),
+    event: assert.stringEquals('abort'),
+  })],
+
+  [createSchema({
+    event: assert.stringEquals('startNode'),
+    id: assert.stringNotEmpty,
+  })],
+
+  [createSchema({
+    event: assert.stringEquals('abortNode'),
+    id: assert.stringNotEmpty,
+  })],
+
+  /***************************************************************************/
+  /* Flow                                                                    */
+  /***************************************************************************/
+
+  [createSchema({
+    event: assert.stringEquals('setMetaValue'),
     key: assert.stringNotEmpty,
     value: assert.notNull,
   })],
+
+  /***************************************************************************/
+  /* Secrets & Variables                                                     */
+  /***************************************************************************/
+
   [createSchema({
-    event: assert.stringEquals('flowStart'),
-    input: assert.object,
-  })],
-  [createSchema({
-    event: assert.stringEquals('flowAbort'),
+    event: assert.stringEquals('createVariable'),
+    name: [assert.stringNotEmpty, assert.stringConstantCase],
+    value: assert.stringNotEmpty,
   })],
 
-  // --- Flow variable events.
   [createSchema({
-    event: assert.stringEquals('flowVariableCreate'),
+    event: assert.stringEquals('updateVariable'),
     name: [assert.stringNotEmpty, assert.stringConstantCase],
     value: assert.stringNotEmpty,
   })],
+
   [createSchema({
-    event: assert.stringEquals('flowVariableUpdate'),
-    name: [assert.stringNotEmpty, assert.stringConstantCase],
-    value: assert.stringNotEmpty,
-  })],
-  [createSchema({
-    event: assert.stringEquals('flowVariableRemove'),
+    event: assert.stringEquals('removeVariable'),
     name: [assert.stringNotEmpty, assert.stringConstantCase],
   })],
 
-  // --- Flow secret events.
   [createSchema({
-    event: assert.stringEquals('flowSecretCreate'),
+    event: assert.stringEquals('createSecret'),
     name: [assert.stringNotEmpty, assert.stringConstantCase],
     value: assert.stringNotEmpty,
   })],
+
   [createSchema({
-    event: assert.stringEquals('flowSecretUpdate'),
+    event: assert.stringEquals('updateSecret'),
     name: [assert.stringNotEmpty, assert.stringConstantCase],
     value: assert.stringNotEmpty,
   })],
+
   [createSchema({
-    event: assert.stringEquals('flowSecretRemove'),
+    event: assert.stringEquals('removeSecret'),
     name: [assert.stringNotEmpty, assert.stringConstantCase],
   })],
 
-  // --- Node events.
+  /***************************************************************************/
+  /* Nodes                                                                   */
+  /***************************************************************************/
+
   [createSchema({
-    event: assert.stringEquals('nodeCreate'),
+    event: assert.stringEquals('createNode'),
     kind: assert.stringNotEmpty,
     x: assert.number,
     y: assert.number,
   })],
+
   [createSchema({
-    event: assert.stringEquals('nodeDuplicate'),
-    nodeId: assert.stringNotEmpty,
+    event: assert.stringEquals('cloneNodes'),
+    id: assert.stringNotEmpty,
     x: assert.number,
     y: assert.number,
   })],
+
   [createSchema({
-    event: assert.stringEquals('nodeStart'),
-    nodeId: assert.stringNotEmpty,
+    event: assert.stringEquals('removeNodes'),
+    ids: createArrayParser(assert.stringNotEmpty),
   })],
+
   [createSchema({
-    event: assert.stringEquals('nodeAbort'),
-    nodeId: assert.stringNotEmpty,
-  })],
-  [createSchema({
-    event: assert.stringEquals('nodeSetMetaValue'),
+    event: assert.stringEquals('setNodeMetaValues'),
     nodes: createArrayParser({
-      nodeId: assert.stringNotEmpty,
+      id: assert.stringNotEmpty,
       key: assert.stringNotEmpty,
       value: assert.notNull,
     }),
   })],
+
   [createSchema({
-    event: assert.stringEquals('nodeSetDataValue'),
-    nodeId: assert.stringNotEmpty,
-    portId: assert.stringNotEmpty,
+    event: assert.stringEquals('setNodeInputValue'),
+    id: assert.stringNotEmpty,
+    key: assert.stringNotEmpty,
     value: assert.notNull,
   })],
+
   [createSchema({
     event: assert.stringEquals('nodeSearchDataOptions'),
     id: assert.stringNotEmpty,
     key: assert.stringNotEmpty,
     query: assert.string,
   })],
-  [createSchema({
-    event: assert.stringEquals('nodesRemove'),
-    nodeIds: createArrayParser(assert.stringNotEmpty),
-  })],
 
-  // --- Link events.
+  /***************************************************************************/
+  /* Links                                                                   */
+  /***************************************************************************/
+
   [createSchema({
-    event: assert.stringEquals('linkCreate'),
+    event: assert.stringEquals('createLink'),
     source: assert.stringNotEmpty,
     target: assert.stringNotEmpty,
   })],
+
   [createSchema({
-    event: assert.stringEquals('linkRemove'),
+    event: assert.stringEquals('removeLink'),
     source: assert.stringNotEmpty,
+  })],
+
+  /***************************************************************************/
+  /* User                                                                    */
+  /***************************************************************************/
+
+  [createSchema({
+    event: assert.stringEquals('setUserPosition'),
+    x: assert.number,
+    y: assert.number,
+  })],
+
+  [createSchema({
+    event: assert.stringEquals('userLeave'),
   })],
 )
 
