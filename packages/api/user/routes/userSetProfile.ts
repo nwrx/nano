@@ -1,21 +1,23 @@
 import type { ModuleUser } from '../index'
 import { createRoute } from '@unserved/server'
-import { assertStringNotEmpty, assertStringUuid, createSchema } from '@unshared/validation'
+import { assertString, assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
 
 export function userSetProfile(this: ModuleUser) {
   return createRoute(
     {
       name: 'PUT /api/users/:username/profile',
       parameters: createSchema({
-        username: assertStringUuid,
+        username: assertStringNotEmpty,
       }),
       body: createSchema({
-        displayName: assertStringNotEmpty,
+        displayName: [[assertUndefined], [assertStringNotEmpty]],
+        biography: [[assertUndefined], [assertString]],
+        company: [[assertUndefined], [assertString]],
+        website: [[assertUndefined], [assertString]],
       }),
     },
     async({ event, parameters, body }): Promise<void> => {
       const { username } = parameters
-      const { displayName } = body
       const { user } = await this.authenticate(event)
 
       // --- Check if the user is allowed to update the profile.
@@ -23,8 +25,11 @@ export function userSetProfile(this: ModuleUser) {
         throw this.errors.USER_NOT_ALLOWED()
 
       // --- Find the user by the ID.
-      const userToUpdate = await this.resolveUser(username)
-      userToUpdate.displayName = displayName
+      const userToUpdate = await this.resolveUser(username, { profile: true })
+      if (body.displayName !== undefined) userToUpdate.profile!.displayName = body.displayName
+      if (body.biography !== undefined) userToUpdate.profile!.biography = body.biography
+      if (body.company !== undefined) userToUpdate.profile!.company = body.company
+      if (body.website !== undefined) userToUpdate.profile!.website = body.website
 
       // --- Save and return the user.
       const { User } = this.getRepositories()
