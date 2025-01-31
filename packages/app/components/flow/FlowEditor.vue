@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import type { FlowCategoryNodesJSON, FlowSessionEventPayload, FlowSessionParticipantJSON, FlowSessionSecretJSON, FlowSessionVariableJSON, NodeInstanceJSON } from '@nwrx/api'
+import type {
+  FlowCategoryNodesJSON,
+  FlowSessionEventPayload,
+  FlowSessionParticipantJSON,
+  FlowSessionSecretJSON,
+  FlowSessionVariableJSON,
+  NodeInstanceJSON,
+} from '@nwrx/api'
 import { throttle } from '@unshared/functions/throttle'
 import PATTERN_EDITOR_URL from '~/assets/pattern-editor.svg'
 
@@ -127,7 +134,7 @@ const editor = useFlowEditor({
 
       <!-- Pattern -->
       <div
-        class="absolute top-0 left-0 right-0 bottom-0 dark:op-5 op-20 dark:invert"
+        class="absolute top-0 left-0 right-0 bottom-0 dark:op-5 op-10 dark:invert"
         :style="{
           backgroundImage: `url(${PATTERN_EDITOR_URL})`,
           backgroundSize: '60px',
@@ -135,7 +142,7 @@ const editor = useFlowEditor({
         }"
       />
 
-      <!-- Cursors -->
+      <!-- Peer Cursors -->
       <FlowEditorPeer
         v-for="peer in editor.cursorPeers"
         :style="editor.getPeerStyle(peer)"
@@ -178,7 +185,7 @@ const editor = useFlowEditor({
         :zoom="editor.viewZoom"
       />
 
-      <!-- Link used to drag from one node to another. -->
+      <!-- Active Link -->
       <FlowEditorLink
         v-if="editor.linkDragProps"
         v-bind="editor.linkDragProps"
@@ -188,21 +195,20 @@ const editor = useFlowEditor({
     </div>
 
     <!-- Overlay -->
-    <div
-      class="absolute top-md left-md bottom-md right-md z-9999 pointer-events-none children:pointer-events-auto"
-      @wheel.stop>
+    <div class="absolute top-0 left-0 h-full w-full z-1000 pointer-events-none p-md">
+      <div class="grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-md w-full h-full" @wheel.stop>
 
-      <!-- Toolbar -->
-      <FlowEditorToolbar
-        :name="name"
-        :isRunning="isRunning"
-        class="absolute top-0 left-0"
-        @run="() => emit('run')"
-        @abort="() => emit('abort')"
-      />
+        <!-- Toolbar -->
+        <FlowEditorToolbar
+          class="pointer-events-auto justify-self-start"
+          :name="name"
+          :isRunning="isRunning"
+          @run="() => emit('run')"
+          @abort="() => emit('abort')"
+          @mousedown.stop
+        />
 
-      <!-- Edit panel -->
-      <div class="absolute top-0 right-0 bottom-0 pointer-events-none">
+        <!-- Panel -->
         <FlowEditorPanel
           v-model:isOpen="isPanelOpen"
           v-model:isFlowMethodsOpen="isPanelFlowMethodsOpen"
@@ -210,6 +216,7 @@ const editor = useFlowEditor({
           v-model:isFlowVariablesOpen="isPanelFlowEnvironmentsOpen"
           v-model:isNodeDataOpen="isPanelNodeDataOpen"
           v-model:isNodeResultOpen="isPanelNodeResultOpen"
+          class="pointer-events-auto row-span-2 justify-self-end h-full"
           :name="name"
           :methods="methods"
           :secrets="secrets"
@@ -217,7 +224,7 @@ const editor = useFlowEditor({
           :description="description"
           :nodeSelected="editor.nodeSelected"
           :events="events"
-          class="pointer-events-auto"
+          :nodes="nodes"
           @setName="(name) => emit('setName', name)"
           @setMethods="(methods) => emit('setMethods', methods)"
           @setDescription="(description) => emit('setDescription', description)"
@@ -227,14 +234,16 @@ const editor = useFlowEditor({
           @variableUpdate="(name, value) => emit('variableUpdate', name, value)"
           @variableRemove="(name) => emit('variableRemove', name)"
           @eventsClear="() => emit('eventsClear')"
+          @mousedown.stop
+        />
+
+        <!-- Drawer -->
+        <FlowEditorDrawer
+          :categories="categories"
+          class="pointer-events-auto self-start justify-self-start"
+          @mousedown.stop
         />
       </div>
-
-      <!-- Drawer -->
-      <FlowEditorDrawer
-        :categories="categories"
-        class="absolute bottom-0 left-0"
-      />
     </div>
   </div>
 </template>

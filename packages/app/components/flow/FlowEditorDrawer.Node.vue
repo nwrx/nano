@@ -4,6 +4,7 @@ import type { DropPayload } from '~/utils/types'
 
 const props = defineProps<NodeJSON>()
 
+// --- Drag start event handler.
 function onDragStart(event: DragEvent) {
   if (!event.dataTransfer) return
   event.dataTransfer.setData('application/json', JSON.stringify(({
@@ -12,11 +13,18 @@ function onDragStart(event: DragEvent) {
   } as DropPayload)))
 }
 
-const typeColors = computed(() => {
-  if (!props.dataSchema || !props.resultSchema) return []
-  const colors = new Set<string>()
-  for (const port of [...props.dataSchema, ...props.resultSchema])
-    if (port.typeColor) colors.add(port.typeColor)
+// --- Collect all colors from the data and result schema.
+const colors = computed(() => {
+  const colors: string[] = []
+  if (props.dataSchema) {
+    for (const socket of props.dataSchema)
+      if (socket.typeColor) colors.push(socket.typeColor)
+  }
+  if (props.resultSchema) {
+    for (const socket of props.resultSchema)
+      if (socket.typeColor) colors.push(socket.typeColor)
+  }
+  return colors
 })
 </script>
 
@@ -31,35 +39,22 @@ const typeColors = computed(() => {
     @mousedown.stop
     @dragstart="(event) => onDragStart(event)">
 
+    <!-- Icon -->
     <div class="flex items-center space-x-sm">
-
-      <!-- Icon -->
       <BaseIcon :icon="icon" class="size-6" load />
 
       <!-- Name & Description -->
       <div class="w-full">
         <div class="text-base font-medium flex items-center w-full space-x-sm">
-
-          <!-- Name -->
-          <span class="mr-auto">
-            {{ name }}
-          </span>
-
-          <!-- Type colors -->
+          <span class="mr-auto" v-text="name" />
           <BaseIcon
-            v-for="color in typeColors"
+            v-for="color in colors"
             :key="color"
             :style="{ color }"
             icon="i-carbon:circle-solid"
             class="size-3 inline-block"
           />
         </div>
-
-        <!--
-          <div class="text-xs opacity-50 line-clamp-1">
-          {{ description }}
-          </div>
-        -->
       </div>
     </div>
   </div>
