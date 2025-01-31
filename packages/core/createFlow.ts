@@ -478,8 +478,8 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
 
       // --- If the node is `nwrx/core:output`, set the output of the flow.
       if (node.kind === 'nwrx/core:output') {
-        this.output[data.name as string] = result.value
-        this.dispatch('flow:output', data.name as string, result.value, this.eventMeta )
+        this.output[data.name as string] = data.value
+        this.dispatch('flow:output', data.name as string, data.value, this.eventMeta)
       }
     })
 
