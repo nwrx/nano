@@ -67,6 +67,8 @@ export async function authenticate(this: ModuleUser, event: H3Event, options: Au
     if (userSession.expiresAt < now) throw this.errors.USER_SESSION_EXPIRED()
 
     // --- Return the user associated with the session.
+    userSession.lastUsedAt = now
+    await UserSession.save(userSession)
     return userSession as AuthenticateResult
   }
   catch (error) {
