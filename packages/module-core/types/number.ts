@@ -1,10 +1,11 @@
 import { defineFlowType } from '@nwrx/core'
 import { assertNumber, assertStringNumber, createParser } from '@unshared/validation'
 
-export const typeNumber = defineFlowType({
+export const number = defineFlowType({
   kind: 'number',
   name: 'Number',
   color: '#FF1648',
+  defaultValue: 0,
   description: 'A floating-point number with a decimal point.',
   parse: createParser(
     [assertNumber],

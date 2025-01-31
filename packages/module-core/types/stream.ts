@@ -2,7 +2,7 @@
 import { defineFlowType } from '@nwrx/core'
 import { createAssertInstance, createParser } from '@unshared/validation'
 
-export const typeStream = defineFlowType({
+export const stream = defineFlowType({
   kind: 'stream',
   name: 'Stream',
   color: '#EEDCFF',

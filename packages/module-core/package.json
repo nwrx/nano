@@ -21,8 +21,8 @@
     "LICENSE.md"
   ],
   "scripts": {
-    "dev": "rollup -c ../../rollup.config.mjs -w",
-    "build": "rollup -c ../../rollup.config.mjs"
+    "dev": "rollup --config ../../rollup.config.mjs --watch",
+    "build": "rollup --config ../../rollup.config.mjs"
   },
   "dependencies": {
     "@nwrx/core": "workspace:*",

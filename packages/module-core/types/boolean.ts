@@ -2,7 +2,7 @@ import { defineFlowType } from '@nwrx/core'
 import { parseBoolean } from '@unshared/string'
 import { assertBoolean, assertStringNotEmpty, createParser } from '@unshared/validation'
 
-export const typeBoolean = defineFlowType({
+export const boolean = defineFlowType({
   kind: 'boolean',
   name: 'Boolean',
   color: '#3386CF',

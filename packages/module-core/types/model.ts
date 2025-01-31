@@ -1,0 +1,70 @@
+import { defineFlowType } from '@nwrx/core'
+import { assertStringNotEmpty, assertUndefined, createAssertInstance, createParser } from '@unshared/validation'
+
+/** The context that is passed in the model inference process. */
+interface ModelInferenceContext {
+  prompt: string
+}
+
+/** A function that returns the body of a request that should be sent to the model API. */
+type ModelGetBody = (context: ModelInferenceContext) => Record<string, any>
+
+/** A function that returns the completion from the response of the model API. */
+type ModelGetCompletion = (response: any) => string
+
+/**
+ * The `nwrx/lm-model` flow type represents an instance of a language model used to infer completions
+ * of text. The values bearing this type are passed to the `nwrx/inference` flow node to generate
+ * completions based on some input text.
+ */
+export const model = defineFlowType({
+  kind: 'lm-model',
+  name: 'LM Model',
+  color: '#CB7fff',
+  description: 'An instance of a language model used to infer completions of text.',
+  parse: createParser({
+
+    /**
+     * The URL of the model API. It is used to specify the endpoint to which the
+     * request should be sent to generate completions.
+     *
+     * @example 'https://api.openai.com/v1/engines/davinci/completions'
+     */
+    url: assertStringNotEmpty,
+
+    /**
+     * The name of the model. It is used to specify which language model from
+     * the API should be used to generate completions. Safe to say it must exist
+     * in the API's list of models.
+     *
+     * @example 'davinci'
+     */
+    model: assertStringNotEmpty,
+
+    /**
+     * The API token used to authenticate with the model API. It is used to
+     * authorize the request to generate completions.
+     *
+     * @example 'sk-1234567890abcdef1234567890abcdef'
+     */
+    token: [[assertUndefined], [assertStringNotEmpty]],
+
+    /**
+     * The function that generates the body of the request to the model API. Since
+     * as of now, there is no universal format across all model APIs, this function
+     * is used to generate the request body based on the context of the inference.
+     *
+     * @example ({ prompt }) => ({ model: 'davinci', prompt })
+     */
+    getBody: createAssertInstance(Function) as (fn: unknown) => asserts fn is ModelGetBody,
+
+    /**
+     * The function that extracts the completion from the response of the model API.
+     * Since as of now, there is no universal format across all model APIs, this function
+     * is used to extract the completion from the response based on the API's format.
+     *
+     * @example response => response.choices[0].text
+     */
+    getCompletion: createAssertInstance(Function) as (fn: unknown) => asserts fn is ModelGetCompletion,
+  }),
+})
