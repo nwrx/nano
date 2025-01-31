@@ -2,7 +2,8 @@
 import type { FlowNode, FlowNodeDefinition, FlowThreadNodeState, InputSchema, SocketControl, SocketListOption } from '@nwrx/core'
 import type { MaybeLiteral } from '@unshared/types'
 import type { Peer } from 'crossws'
-import type { FlowSessionEventPayload, FlowSessionInstance } from './resolveFlowSession'
+import type { FlowSessionEventPayload } from './flowSessionEvents'
+import type { FlowSessionInstance } from './resolveFlowSession'
 import { getModuleNodes } from '@nwrx/core'
 import { MODULES } from '../constants'
 
