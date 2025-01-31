@@ -1,5 +1,6 @@
 import type { Theme as ThemeUno } from 'unocss/preset-uno'
 import { createColorPalette } from '@unshared/color/createColorPalette'
+import { presetUnshared } from '@unshared/unocss-preset'
 import { defineConfig, presetIcons, presetUno } from 'unocss'
 import { presetTheme } from 'unocss-preset-theme'
 import * as THEME from './theme'
@@ -15,7 +16,7 @@ export const COLORS = {
   success: createColorPalette('#86bd25', { stepUp: 11, stepDown: 5, hueShift: 20 }),
 }
 
-type Theme = THEME.ThemeBadge & THEME.ThemeHint & ThemeUno
+type Theme = THEME.ThemeBadge & THEME.ThemeHint & THEME.ThemeInput & ThemeUno
 export default defineConfig<Theme>({
 
   /**
@@ -46,6 +47,7 @@ export default defineConfig<Theme>({
   rules: [
     THEME.ruleBadge,
     THEME.ruleHint,
+    THEME.ruleInput,
   ],
 
   /**
@@ -162,6 +164,49 @@ export default defineConfig<Theme>({
       mono: '"Fira Code", monospace',
     },
 
+    // Input
+    inputColor: {
+      DEFAULT: COLORS.primary[900],
+      hover: COLORS.primary[900],
+      focus: COLORS.primary[900],
+      error: COLORS.danger[600],
+      disabled: `${COLORS.primary[900]}40`,
+      readonly: COLORS.primary[900],
+    },
+    inputBackground: {
+      DEFAULT: 'transparent',
+      hover: 'transparent',
+      focus: `${COLORS.primary[500]}10`,
+      error: COLORS.danger[50],
+      disabled: `${COLORS.primary[900]}10`,
+      readonly: `${COLORS.primary[900]}10`,
+    },
+    inputBorder: {
+      DEFAULT: `${COLORS.primary[900]}20`,
+      hover: COLORS.primary[600],
+      focus: COLORS.primary[600],
+      error: COLORS.danger[600],
+      disabled: `${COLORS.primary[900]}10`,
+      readonly: `${COLORS.primary[900]}20`,
+    },
+    inputVariant: {
+      DEFAULT: {
+        fontSize: '0.875rem',
+        borderRadius: '0.0rem',
+        borderSize: '1px',
+        paddingX: '0.75rem',
+        paddingY: '0.5rem',
+      },
+      lg: {
+        fontSize: '1.25rem',
+        borderRadius: '0.25rem',
+        borderSize: '1px',
+        paddingX: '1.5rem',
+        paddingY: '1rem',
+      },
+    },
+
+    // Badge
     badgeColor: {
       DEFAULT: {
         background: COLORS.primary[100],
@@ -192,7 +237,6 @@ export default defineConfig<Theme>({
         inverse: COLORS.warning[700],
       },
     },
-
     badgeSize: {
       DEFAULT: {
         height: '1.5rem',
@@ -212,6 +256,7 @@ export default defineConfig<Theme>({
       },
     },
 
+    // Hint
     hintColor: {
       DEFAULT: COLORS.primary[900],
       primary: COLORS.primary[600],
@@ -270,11 +315,13 @@ export default defineConfig<Theme>({
      * The UnoCSS Theme preset is used to provide the utilities for
      * theming the application based on the theme object.
      */
-    // presetUnshared({}),
+    presetUnshared({}),
     presetTheme<Theme>({
       prefix: '--theme',
       theme: {
         dark: {
+
+          // Theme
           colors: {
             ...COLORS,
           },
@@ -304,12 +351,40 @@ export default defineConfig<Theme>({
             prominent: COLORS.primary[100],
           },
           borderColor: {
-            app: `${COLORS.primary[300]}40`,
+            app: `${COLORS.primary[100]}20`,
             subtle: COLORS.primary[850],
             layout: COLORS.primary[800],
             emphasized: COLORS.primary[300],
             prominent: COLORS.primary[500],
           },
+
+          // Input
+          inputColor: {
+            DEFAULT: COLORS.primary[50],
+            hover: COLORS.primary[50],
+            focus: COLORS.primary[50],
+            error: COLORS.danger[50],
+            disabled: `${COLORS.primary[50]}40`,
+            readonly: COLORS.primary[50],
+          },
+          inputBackground: {
+            DEFAULT: 'transparent',
+            hover: 'transparent',
+            focus: `${COLORS.primary[500]}04`,
+            error: COLORS.danger[800],
+            disabled: `${COLORS.primary[50]}10`,
+            readonly: `${COLORS.primary[50]}10`,
+          },
+          inputBorder: {
+            DEFAULT: `${COLORS.primary[50]}40`,
+            hover: `${COLORS.primary[50]}80`,
+            focus: COLORS.primary[50],
+            error: COLORS.danger[800],
+            disabled: `${COLORS.primary[50]}10`,
+            readonly: `${COLORS.primary[50]}20`,
+          },
+
+          // Hint
           hintColor: {
             DEFAULT: COLORS.primary[100],
             primary: COLORS.primary[400],
