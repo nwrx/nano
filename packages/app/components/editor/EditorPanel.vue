@@ -99,8 +99,8 @@ watch(() => props.events, scrollToBottom, { deep: true })
 <template>
   <div
     :style="{
-      width: `${isOpen ? width : 64}px`,
-      height: isOpen ? undefined : '64px',
+      width: `${isOpen ? width : 48}px`,
+      height: isOpen ? undefined : '48px',
     }"
     :class="{
       'transition-all duration-slow': !isResizing,
@@ -115,6 +115,7 @@ watch(() => props.events, scrollToBottom, { deep: true })
     <EditorPanelResize
       :is-resizing="isResizing"
       class="z-10"
+      :class="{ 'pointer-events-none': !isOpen }"
       @start-resize="() => isResizing = true"
       @stop-resize="() => isResizing = false"
     />
@@ -129,13 +130,20 @@ watch(() => props.events, scrollToBottom, { deep: true })
 
     <!-- Toggle -->
     <EditorFab
-      class="absolute top-0 right-0 mt-3 mr-3"
-      :icon="isOpen ? 'i-carbon:right-panel-close-filled' : 'i-carbon:right-panel-open'"
-      @click="() => isOpen = !isOpen"
-    />
+      class="absolute top-0 right-0 mt-2 mr-2"
+      @click="() => isOpen = !isOpen">
+      <BaseIcon
+        icon="i-carbon:chevron-left"
+        :class="{ 'rotate-180': isOpen }"
+        class="size-5 shrink-0 transition-all"
+      />
+    </EditorFab>
 
     <!-- Flow -->
-    <div ref="container" class="flex flex-col h-full overflow-y-auto overflow-x-hidden transition" :class="{ 'op-0': !isOpen }">
+    <div
+      ref="container"
+      class="flex flex-col h-full overflow-y-auto overflow-x-hidden transition"
+      :class="{ 'op-0': !isOpen }">
       <EditorPanelFlow
         v-if="selectedTab === 'flow'"
         v-model:is-secrets-open="isSecretsOpen"

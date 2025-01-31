@@ -14,13 +14,15 @@ const props = defineProps<{
     v-bind="props"
     eager
     :class="{ 'text-white !bg-primary-500': isActive }"
-    class="flex items-center justify-center size-10 rounded hover:bg-prominent transition">
+    class="flex items-center justify-center size-8 rounded hover:bg-prominent transition">
 
     <!-- Icon -->
-    <BaseIcon
-      v-if="icon"
-      :icon="icon"
-      class="size-6 shrink-0"
-    />
+    <slot>
+      <BaseIcon
+        v-if="icon"
+        :icon="icon"
+        class="size-5 shrink-0"
+      />
+    </slot>
   </BaseButton>
 </template>
