@@ -46,25 +46,30 @@ export const input = defineComponent(
     },
     outputs: {
       value: {
-        name: 'Value',
-        type: 'string',
-        description: 'The value of the entrypoint.',
-        oneOf: [
-          { type: 'array' },
-          { type: 'object' },
-          { type: 'string' },
-          { type: 'number' },
-          { type: 'boolean' },
-          { 'x-type': 'stream' },
-        ],
+        'type': 'string',
+        'name': 'Value',
+        'description': 'The value of the entrypoint.',
+        'x-optional': true,
       },
     },
   },
   ({ data, thread }) => {
-    const name = data.name
-    const required = data.required
+    const { name, required } = data
+
     const value = thread.input[name]
-    if (required && value === undefined) throw new Error(`Input "${name}" is required but not provided.`)
-    return { value: value as string }
+    if (required && value === undefined)
+      throw new Error(`Input "${name}" is required but not provided.`)
+
+    if (value instanceof ReadableStream)
+      throw new Error(`Input "${name}" is a stream and cannot be used as an input.`)
+
+    if (value instanceof File)
+      throw new Error(`Input "${name}" is a file and cannot be used as an input'`)
+
+    return {
+      value: value === undefined
+        ? undefined
+        : String(value),
+    }
   },
 )
