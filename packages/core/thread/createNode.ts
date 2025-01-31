@@ -12,7 +12,6 @@ export class Node extends Emitter<NodeEvents> {
 
   startedAt = 0
   error: ThreadError | undefined
-  data: ObjectLike = {}
   result: ObjectLike = {}
   internalState: NodeState = 'IDLE'
   abortController = new AbortController()
@@ -46,10 +45,10 @@ export class Node extends Emitter<NodeEvents> {
     this.abortController = new AbortController()
   }
 
-  async process(data: ObjectLike = {}) {
+  async process(data: ObjectLike) {
     this.startedAt = Date.now()
+    this.state = 'PROCESSING'
     try {
-
       const context: NodeContext = {
         data,
         result: this.result,
@@ -58,7 +57,6 @@ export class Node extends Emitter<NodeEvents> {
       }
 
       if (this.component.process) {
-        this.state = 'PROCESSING'
         this.dispatch('start', context, this.eventMetadata)
         this.result = context.result = await this.component.process(context)
       }

@@ -2,7 +2,7 @@ import type { MaybePromise, ObjectLike } from '@unshared/types'
 import type { Component } from '../module'
 import type { ComponentInstance, Reference, ThreadEventMeta, ThreadEvents } from '../utils'
 import { randomUUID } from 'node:crypto'
-import { Emitter, getLinks, isNodeReadyToStart, resolveComponent, resolveSchema } from '../utils'
+import { Emitter, getComponentInstance, getLinks, isNodeReadyToStart, isReferenceLink, resolveComponent, resolveSchema } from '../utils'
 import { Node } from './createNode'
 
 export const NODE_INPUT_KIND = 'core/input'
@@ -63,8 +63,16 @@ export class Thread extends Emitter<ThreadEvents> implements ThreadOptions {
   /** The resolvers that are used to resolve the component kind. */
   componentResolvers = [] as ComponentResolver[]
 
-  /** The resolvers that are used to resolve the reference to a value. */
-  referenceResolvers = [] as ReferenceResolver[]
+  referenceResolvers = [
+    (reference) => {
+      if (isReferenceLink(reference)) {
+        const { id, name } = reference.$fromNode
+        const node = this.nodes.get(id)
+        if (!node) return
+        return node.result[name]
+      }
+    },
+  ] as ReferenceResolver[]
 
   /***************************************************************************/
   /* Helpers                                                                 */
@@ -142,14 +150,13 @@ export class Thread extends Emitter<ThreadEvents> implements ThreadOptions {
 
         // --- If the node is an output, we collect this specific output value and it's corresponding name
         // --- and apply it to the thread output. We also dispatch the output event with the name and value.
-        node.on('end', (context, meta) => {
+        node.on('end', async(context, meta) => {
           this.dispatch('nodeEnd', id, context, { ...meta, ...this.eventMetadata })
 
           // --- If the node is an output, apply the output value to the thread output.
-          const { data: input } = context
           if (componentInstance.kind === NODE_OUTPUT_KIND) {
-            const name = input.name as string
-            const value = input.value
+            const name = context.data.name as string
+            const value = context.data.value
             threadOutput[name] = value
             this.dispatch('output', name, value, this.eventMetadata)
           }
@@ -158,15 +165,17 @@ export class Thread extends Emitter<ThreadEvents> implements ThreadOptions {
           // --- if all their incoming nodes are done.
           const outgoingLinks = links.filter(link => link.sourceId === id)
           for (const link of outgoingLinks) {
-            const targetNode = this.nodes.get(link.targetId)
-            if (!targetNode) continue
+            const target = getComponentInstance(this, link.targetId)
+            const targetNode = this.nodes.get(link.targetId)!
+            const targetComponent = components.get(link.targetId)!
+            if (!target) continue
             if (!isNodeReadyToStart(this, link.targetId)) continue
-            const dataPromise = resolveSchema({
-              data: componentInstance.input,
+            const data = await resolveSchema({
+              data: target.input,
               resolvers: this.referenceResolvers,
-              schema: component.inputSchema,
+              schema: targetComponent.inputSchema,
             })
-            void dataPromise.then(data => targetNode.process(data))
+            void targetNode.process(data)
           }
 
           // --- If all the nodes are done, dispatch the end event.
