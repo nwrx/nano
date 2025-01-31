@@ -1,16 +1,16 @@
 {
-  "name": "@nanoworks/core",
+  "name": "@nwrx/core",
   "type": "module",
   "version": "0.0.1",
   "license": "MIT",
   "sideEffects": false,
   "author": "Stanley Horwood <stanley@hsjm.io>",
-  "bugs": "https://github.com/maestrau/maestrau-ce/issues",
-  "homepage": "https://github.com/maestrau/maestrau-ce#readme",
+  "bugs": "https://github.com/nwrx/nano-ce.git/issues",
+  "homepage": "https://github.com/nwrx/nano-ce.git#readme",
   "repository": {
     "directory": "packages/core",
     "type": "git",
-    "url": "git@github.com:maestrau/maestrau-ce.git"
+    "url": "https://github.com/nwrx/nano-ce.git"
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -51,6 +51,16 @@
       "types": "./dist/defineFlowType.d.ts",
       "import": "./dist/defineFlowType.js"
     },
+    "./flowFromJsonV1": {
+      "require": "./dist/flowFromJsonV1.cjs",
+      "types": "./dist/flowFromJsonV1.d.ts",
+      "import": "./dist/flowFromJsonV1.js"
+    },
+    "./flowToJson": {
+      "require": "./dist/flowToJson.cjs",
+      "types": "./dist/flowToJson.d.ts",
+      "import": "./dist/flowToJson.js"
+    },
     "./types": {
       "require": "./dist/types.cjs",
       "types": "./dist/types.d.ts",
@@ -68,9 +78,9 @@
     "LICENSE.md"
   ],
   "dependencies": {
-    "@unshared/collection": "0.0.16",
-    "@unshared/string": "0.0.16",
-    "@unshared/types": "0.0.16",
-    "@unshared/validation": "0.0.16"
+    "@unshared/collection": "0.0.19",
+    "@unshared/string": "0.0.19",
+    "@unshared/types": "0.0.19",
+    "@unshared/validation": "0.0.19"
   }
 }
