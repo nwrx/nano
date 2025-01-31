@@ -1,5 +1,5 @@
 import type { JSONSchema4 } from 'json-schema'
-import type { AudioData, Message } from './modelOpenai.types'
+import type { OpenaiChatMessage } from './OpenaiChatMessage'
 
 export interface OpenaiChatRequest {
 
@@ -8,7 +8,7 @@ export interface OpenaiChatRequest {
    * model you use, different message types (modalities) are supported, like text,
    * images, and audio.
    */
-  messages: Message[]
+  messages: OpenaiChatMessage[]
 
   /**
    * ID of the model to use. See the model endpoint compatibility table for
@@ -95,7 +95,7 @@ export interface OpenaiChatRequest {
    * Parameters for audio output. Required when audio output is requested with
    * `modalities: ["audio"]`. Learn more.
    */
-  audio?: AudioData
+  audio?: AudioParameters
 
   /**
    * Number between -2.0 and 2.0. Positive values penalize new tokens based on
@@ -235,6 +235,19 @@ export interface OpenaiChatRequest {
    * monitor and detect abuse. Learn more.
    */
   user?: string
+}
+
+interface AudioParameters {
+
+  /**
+   * Specifies the voice type. Supported voices are `alloy`, `echo`, `fable`, `onyx`, `nova`, and `shimmer`.
+   */
+  voice: 'alloy' | 'echo' | 'fable' | 'nova' | 'onyx' | 'shimmer'
+
+  /**
+   * Specifies the output audio format. Must be one of `wav`, `mp3`, `flac`, `opus`, or `pcm16`.
+   */
+  format: 'flac' | 'mp3' | 'opus' | 'pcm16' | 'wav'
 }
 
 /** Specifies the format that the model must output. */
