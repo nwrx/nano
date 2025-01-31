@@ -20,4 +20,4 @@ export interface MonitoringSessionEventMap {
 
 export type MonitoringSessionEventName = keyof MonitoringSessionEventMap
 export type MonitoringSessionEventPayload<K extends MonitoringSessionEventName = MonitoringSessionEventName> =
-  { [P in K]: { event: P } & MonitoringSessionEventMap[P] }[K]
+  { [P in K]: MonitoringSessionEventMap[P] & { event: P } }[K]
