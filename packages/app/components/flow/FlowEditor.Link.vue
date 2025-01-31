@@ -18,7 +18,7 @@ const strokeWidth = computed(() =>
 const d = computed(() => [
   'M',
   props.sourceX,
-  props.sourceY,
+  props.sourceY + 0.5,
   'C',
   props.sourceX + offset.value,
   props.sourceY,
@@ -37,7 +37,7 @@ const linearGradient = computed(() => ({
 </script>
 
 <template>
-  <svg class="w-full h-full pointer-events-none">
+  <svg class="w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient :id v-bind="linearGradient">
         <stop :stop-color="sourceColor" offset="0.25" />
