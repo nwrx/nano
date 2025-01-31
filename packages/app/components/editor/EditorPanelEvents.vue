@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FlowSessionEventPayload, FlowThreadNodeJSON } from '@nwrx/api'
+import type { FlowSessionEventName, FlowSessionEventPayload, FlowThreadNodeJSON } from '@nwrx/api'
 
 const props = defineProps<{
   events: FlowSessionEventPayload[]
@@ -10,9 +10,9 @@ const emit = defineEmits<{
   'clear': []
 }>()
 
-const EVENTS_WHITELIST = new Set([
-  'flowStart',
-  'end',
+const EVENTS_WHITELIST = new Set<FlowSessionEventName>([
+  'thread:start',
+  'thread:end',
   'thread:nodeError',
   'thread:nodeEnd',
 ])

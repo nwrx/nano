@@ -1,29 +1,24 @@
 <script setup lang="ts">
 import type { FlowSessionEventPayload } from '@nwrx/api'
-import type { FlowThreadEventMeta } from '@nwrx/core'
+import type { FlowThreadEventMeta, FlowThreadNodeEventMeta } from '@nwrx/core'
 
-const props = defineProps<{
-  event: FlowSessionEventPayload
+defineProps<{
+  event: FlowSessionEventPayload & Partial<FlowThreadEventMeta & FlowThreadNodeEventMeta>
 }>()
 
 const { t } = useI18n()
-const meta = computed(() => (
-  'meta' in props.event
-    ? props.event.meta as Partial<FlowThreadEventMeta >
-    : {}
-))
 </script>
 
 <template>
   <EditorPanelDataContainer>
     <EditorPanelData v-if="event.event" :name="t('meta.event')" :model-value="event.event" />
-    <EditorPanelData v-if="'state' in meta" :name="t('meta.state')" :model-value="meta.state" />
-    <EditorPanelData v-if="'delta' in meta" :name="t('meta.delta')" :model-value="t('meta.delta.value', { delta: meta.delta })" />
-    <EditorPanelData v-if="'duration' in meta" :name="t('meta.duration')" :model-value="t('meta.duration.value', { duration: meta.duration })" />
-    <EditorPanelData v-if="'timestamp' in meta" :name="t('meta.timestamp')" :model-value="formatDateTime(meta.timestamp)" />
+    <EditorPanelData v-if="'state' in event" :name="t('meta.state')" :model-value="event.state" />
+    <EditorPanelData v-if="'delta' in event" :name="t('meta.delta')" :model-value="t('meta.delta.value', { delta: event.delta })" />
+    <EditorPanelData v-if="'duration' in event" :name="t('meta.duration')" :model-value="t('meta.duration.value', { duration: event.duration })" />
+    <EditorPanelData v-if="'timestamp' in event" :name="t('meta.timestamp')" :model-value="formatDateTime(event.timestamp)" />
     <EditorPanelData v-if="'id' in event" :name="t('meta.id')" :model-value="event.id" />
-    <EditorPanelData v-if="'threadId' in meta" :name="t('meta.threadId')" :model-value="meta.threadId" />
-    <EditorPanelData v-if="'executionId' in meta" :name="t('meta.executionId')" :model-value="meta.executionId" />
+    <EditorPanelData v-if="'threadId' in event" :name="t('meta.threadId')" :model-value="event.threadId" />
+    <EditorPanelData v-if="'executionId' in event" :name="t('meta.executionId')" :model-value="event.executionId" />
   </EditorPanelDataContainer>
 </template>
 
@@ -39,10 +34,6 @@ en:
   meta.id: ID
   meta.threadId: Thread
   meta.executionId: Execution ID
-  data.title: Data
-  data.empty: The node did not receive any data.
-  result.title: Result
-  result.empty: The node did not produce any result.
 fr:
   meta.event: Événement
   meta.state: État
@@ -54,10 +45,6 @@ fr:
   meta.id: ID
   meta.threadId: Fil d'exécution
   meta.executionId: ID d'exécution
-  data.title: Données
-  data.empty: Le nœud n'a reçu aucune donnée.
-  result.title: Résultat
-  result.empty: Le nœud n'a produit aucun résultat.
 de:
   meta.event: Ereignis
   meta.state: Status
@@ -69,10 +56,6 @@ de:
   meta.id: ID
   meta.threadId: Thread
   meta.executionId: Ausführung
-  data.title: Daten
-  data.empty: Der Knoten hat keine Daten erhalten.
-  result.title: Ergebnis
-  result.empty: Der Knoten hat kein Ergebnis erzeugt.
 es:
   meta.event: Evento
   meta.state: Estado
@@ -84,10 +67,6 @@ es:
   meta.id: ID
   meta.threadId: Hilo
   meta.executionId: ID de ejecución
-  data.title: Datos
-  data.empty: El nodo no recibió ningún dato.
-  result.title: Resultado
-  result.empty: El nodo no produjo ningún resultado.
 zh:
   meta.event: 事件
   meta.state: 状态
@@ -99,8 +78,4 @@ zh:
   meta.id: ID
   meta.threadId: 线程
   meta.executionId: 执行 ID
-  data.title: 数据
-  data.empty: 节点未收到任何数据。
-  result.title: 结果
-  result.empty: 节点未产生任何结果。
 </i18n>

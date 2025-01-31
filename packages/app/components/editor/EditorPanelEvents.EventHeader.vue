@@ -13,6 +13,14 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const isOpen = useVModel(props, 'isOpen', emit, { passive: true })
+
+function getBadgeClass(event: FlowSessionEventPayload): string {
+  if (event.event === 'thread:nodeError') return 'badge-danger'
+  if (event.event === 'thread:nodeEnd') return 'badge-success'
+  if (event.event === 'thread:start') return 'badge-primary'
+  if (event.event === 'thread:end') return 'badge-primary'
+  return ''
+}
 </script>
 
 <template>
@@ -25,11 +33,7 @@ const isOpen = useVModel(props, 'isOpen', emit, { passive: true })
     <!-- Event Type -->
     <Badge
       class="mr-sm"
-      :class="{
-        'badge-danger': event.event === 'thread:nodeError',
-        'badge-success': event.event === 'thread:nodeEnd',
-        'badge-primary': event.event === 'flowStart' || event.event === 'end',
-      }"
+      :class="getBadgeClass(event)"
       :label="t(event.event)"
       icon="i-carbon:dot-mark"
       icon-load
@@ -48,43 +52,43 @@ const isOpen = useVModel(props, 'isOpen', emit, { passive: true })
     <div class="grow" />
 
     <!-- Duration -->
-    <div v-if="'delta' in event && typeof event.delta === 'number'" class="flex items-center space-x-md ml-auto text-end">
-      <p class="text-xs text-subtle">
-        {{ event.delta }} ms
-      </p>
+    <div
+      v-if="'delta' in event && typeof event.delta === 'number'"
+      class="flex items-center space-x-md ml-auto text-end text-xs text-subtle">
+      {{ event.delta }} ms
     </div>
   </BaseButton>
 </template>
 
 <i18n lang="yaml">
 en:
-  start: Start
-  end: Completed
-  abort: Aborted
+  thread:start: Start
+  thread:end: Completed
+  thread:abort: Aborted
   thread:nodeError: Error
   thread:nodeEnd: Node
 fr:
-  start: Démarrage
-  end: Terminé
-  abort: Abandonné
+  thread:start: Démarrage
+  thread:end: Terminé
+  thread:abort: Abandonné
   thread:nodeError: Erreur
   thread:nodeEnd: Noeud
 de:
-  start: Start
-  end: Beendet
-  abort: Abgebrochen
+  thread:start: Start
+  thread:end: Abgeschlossen
+  thread:abort: Abgebrochen
   thread:nodeError: Fehler
   thread:nodeEnd: Knoten
 es:
-  start: Inicio
-  end: Completado
-  abort: Abortado
+  thread:start: Inicio
+  thread:end: Completado
+  thread:abort: Abortado
   thread:nodeError: Error
   thread:nodeEnd: Nodo
 zh:
-  start: 开始
-  end: 完成
-  abort: 已中止
+  thread:start: 开始
+  thread:end: 完成
+  thread:abort: 已中止
   thread:nodeError: 错误
   thread:nodeEnd: 节点
 </i18n>
