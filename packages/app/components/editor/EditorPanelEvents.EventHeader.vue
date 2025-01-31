@@ -15,6 +15,7 @@ const { t } = useI18n()
 const isOpen = useVModel(props, 'isOpen', emit, { passive: true })
 
 function getBadgeClass(event: FlowSessionEventPayload): string {
+  if (event.event === 'thread:nodeTrace') return 'badge-secondary'
   if (event.event === 'thread:nodeError') return 'badge-danger'
   if (event.event === 'thread:nodeEnd') return 'badge-success'
   if (event.event === 'thread:start') return 'badge-primary'
@@ -67,28 +68,33 @@ en:
   thread:abort: Aborted
   thread:nodeError: Error
   thread:nodeEnd: Node
+  thread:nodeTrace: Trace
 fr:
   thread:start: Démarrage
   thread:end: Terminé
   thread:abort: Abandonné
   thread:nodeError: Erreur
   thread:nodeEnd: Noeud
+  thread:nodeTrace: Trace
 de:
   thread:start: Start
   thread:end: Abgeschlossen
   thread:abort: Abgebrochen
   thread:nodeError: Fehler
   thread:nodeEnd: Knoten
+  thread:nodeTrace: Spur
 es:
   thread:start: Inicio
   thread:end: Completado
   thread:abort: Abortado
   thread:nodeError: Error
   thread:nodeEnd: Nodo
+  thread:nodeTrace: Rastro
 zh:
   thread:start: 开始
   thread:end: 完成
   thread:abort: 已中止
   thread:nodeError: 错误
   thread:nodeEnd: 节点
+  thread:nodeTrace: 跟踪
 </i18n>
