@@ -45,6 +45,7 @@ onMounted(async() => {
         @send-message="(message) => chat.sendMessage(message)"
         @create-thread="(project, flow) => chat.createThread(project, flow)"
         @open-thread="(id) => chat.openThread(id)"
+        @delete-thread="(id) => chat.deleteThread(id)"
       />
     </AppPage>
   </div>

@@ -5,6 +5,7 @@ defineProps<{
 
 const emit = defineEmits<{
   archive: []
+  delete: []
 }>()
 
 const { t } = useI18n()
@@ -14,13 +15,13 @@ const isDialogShareOpen = ref(false)
 </script>
 
 <template>
-  <div>
+  <div @mousedown.stop>
     <ContextMenu x="left" y="bottom">
       <template #default="{ open }">
         <BaseIcon
           icon="i-carbon:overflow-menu-vertical"
           class="size-5"
-          @click="() => open()"
+          @mousedown="() => open()"
         />
       </template>
       <template #menu="{ close }">
@@ -38,6 +39,11 @@ const isDialogShareOpen = ref(false)
           :label="t('menu.share')"
           icon="i-carbon:copy"
           @click="() => isDialogShareOpen = true"
+        />
+        <ContextMenuItem
+          :label="t('menu.delete')"
+          icon="i-carbon:trash-can"
+          @click="() => emit('delete')"
         />
       </template>
     </ContextMenu>
@@ -64,20 +70,25 @@ en:
   menu.rename: Rename
   menu.archive: Archive
   menu.share: Share
+  menu.delete: Delete
 fr:
   menu.rename: Renommer
   menu.archive: Archiver
   menu.share: Partager
+  menu.delete: Supprimer
 de:
   menu.rename: Umbenennen
   menu.archive: Archivieren
   menu.share: Teilen
+  menu.delete: Löschen
 es:
   menu.rename: Renombrar
   menu.archive: Archivar
   menu.share: Compartir
+  menu.delete: Eliminar
 zh:
   menu.rename: 重命名
   menu.archive: 存档
   menu.share: 分享
+  menu.delete: 删除
 </i18n>

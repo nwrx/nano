@@ -9,8 +9,9 @@ defineProps<{
 }>()
 
 const emit = defineEmits<{
-  'click': []
-  'archive': []
+  click: []
+  archive: []
+  delete: []
   // 'rename': [name: string]
 }>()
 </script>
@@ -47,6 +48,7 @@ const emit = defineEmits<{
     <ChatPanelThreadActions
       :name="name"
       @archive="() => emit('archive')"
+      @delete="() => emit('delete')"
     />
   </BaseButton>
 </template>
