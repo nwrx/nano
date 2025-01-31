@@ -8,7 +8,6 @@ defineProps<{
 const emit = defineEmits<{
   run: []
   abort: []
-  delete: []
   bookmark: []
   download: []
 }>()
@@ -17,10 +16,9 @@ const emit = defineEmits<{
 <template>
   <div
     class="
-      flex items-center gap-4 px-4 h-16
-      bg-primary-50/60 rounded
-      border border-black/10
-      backdrop-blur-md
+      flex items-center gap-4 px-4 h-16 rd
+      bg-editor-panel border border-editor
+      backdrop-blur-2xl
     ">
 
     <h1 class="text-xl">
@@ -30,37 +28,25 @@ const emit = defineEmits<{
     <!-- Favorite -->
     <FlowEditorToolbarButton
       :icon="isBookmarked ? 'i-carbon:bookmark-add' : 'i-carbon:bookmark'"
-      light
-      eager
       @click="() => emit('bookmark')"
     />
 
     <!-- Vertial divider -->
-    <div
-      class="w-[1px] h-full bg-black/10"
-      aria-hidden="true"
-    />
+    <div class="h-full border-r border-editor" />
 
     <!-- Settings -->
-    <FlowEditorToolbarButton
-      icon="i-carbon:settings"
-      light
-      eager
-    />
+    <FlowEditorToolbarButton icon="i-carbon:settings"/>
 
     <!-- Export -->
     <FlowEditorToolbarButton
       icon="i-carbon:download"
-      light
-      eager
       @click="() => emit('download')"
     />
 
     <!-- Start -->
     <FlowEditorToolbarButton
-      :icon="isRunning ? 'i-carbon:stop' : 'i-carbon:play'"
-      light
-      eager
+      :isActive="isRunning"
+      :icon="isRunning ? 'i-line-md:loading-loop' : 'i-carbon:play'"
       @click="() => isRunning ? emit('abort') : emit('run')"
     />
   </div>
