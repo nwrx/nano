@@ -22,13 +22,10 @@ const PARSE_CATEGORY = createSchema({
    *
    * @example 'Math'
    */
-  name: [
-    [assert.undefined],
-    [
-      assert.string.with('The name of the category must be a string.'),
-      assert.stringNotEmpty.with('The name of the category must be a non-empty string.'),
-    ],
-  ],
+  name: [[assert.undefined], [
+    assert.string.with('The name of the category must be a string.'),
+    assert.stringNotEmpty.with('The name of the category must be a non-empty string.'),
+  ]],
 
   /**
    * An URL to an icon that represents the category in the UI.
@@ -36,13 +33,10 @@ const PARSE_CATEGORY = createSchema({
    *
    * @example 'https://api.iconify.design/carbon:math.svg'
    */
-  icon: [
-    [assert.undefined],
-    [
-      assert.string.with('The icon of the category must be a string.'),
-      assert.stringNotEmpty.with('The icon of the category must be a non-empty string.'),
-    ],
-  ],
+  icon: [[assert.undefined], [
+    assert.string.with('The icon of the category must be a string.'),
+    assert.stringNotEmpty.with('The icon of the category must be a non-empty string.'),
+  ]],
 
   /**
    * A color that is used to represent the category in the UI.
@@ -50,13 +44,10 @@ const PARSE_CATEGORY = createSchema({
    *
    * @example '#FF0000'
    */
-  color: [
-    [assert.undefined],
-    [
-      assert.string.with('The color of the category must be a string.'),
-      assert.stringMatching(/^#[\dA-Fa-f]{6}$/).with('The color of the category must be a hexadecimal color code.'),
-    ],
-  ],
+  color: [[assert.undefined], [
+    assert.string.with('The color of the category must be a string.'),
+    assert.stringMatching(/^#[\dA-Fa-f]{6}$/).with('The color of the category must be a hexadecimal color code.'),
+  ]],
 
   /**
    * A paragraph of text that describes the category and its
@@ -64,13 +55,10 @@ const PARSE_CATEGORY = createSchema({
    *
    * @example 'A collection of nodes for performing mathematical operations.'
    */
-  description: [
-    [assert.undefined],
-    [
-      assert.string.with('The description of the category must be a string.'),
-      assert.stringNotEmpty.with('The description of the category must be a non-empty string.'),
-    ],
-  ],
+  description: [[assert.undefined], [
+    assert.string.with('The description of the category must be a string.'),
+    assert.stringNotEmpty.with('The description of the category must be a non-empty string.'),
+  ]],
 })
 
 /** A category that groups nodes with a similar purpose. */
@@ -92,9 +80,9 @@ export type Category = Loose<ReturnType<typeof PARSE_CATEGORY>>
  * // Register the category and node in the module.
  * const module = defineModule({ nodes: [NodeAdd], categories: [CategoryMath] })
  */
-export function defineCategory<T extends Category>(category: Readonly<T>): T {
+export function defineCategory(category: Category): Category {
   try {
-    return PARSE_CATEGORY({ ...category, name: category?.name ?? category?.kind }) as T
+    return PARSE_CATEGORY({ ...category, name: category?.name ?? category?.kind }) as Category
   }
   catch (error) {
     if (error instanceof ValidationError) {
