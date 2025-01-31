@@ -1,6 +1,5 @@
 /* eslint-disable unicorn/prevent-abbreviations */
 import type { FlowNodeInstanceJSON, FlowSessionParticipantJSON } from '@nwrx/api'
-import type { FlowLink } from '@nwrx/core'
 import type { Position } from '@vueuse/core'
 import type { FlowEditorNode } from '#build/components'
 import type { CSSProperties } from 'vue'
@@ -25,13 +24,6 @@ export interface UseFlowEditorOptions {
    * @default []
    */
   nodes: Ref<FlowNodeInstanceJSON[]>
-
-  /**
-   * The list of links that are currently in the flow editor.
-   *
-   * @default []
-   */
-  links: Ref<FlowLink[]>
 
   /**
    * The size of the viewplane. This is used to determine the size of internal
@@ -114,7 +106,6 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
     peerId,
     peers,
     nodes,
-    links,
     viewSize = 1000,
     onNodeCreate = () => {},
     onNodeDuplicate = () => {},
@@ -137,8 +128,8 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
   const viewDragOriginScreen = ref({ x: 0, y: 0 })
   const viewDragOriginWorld = ref({ x: 0, y: 0 })
   const viewSelecting = ref(false)
-  const viewSelectFrom = ref<Position>({ x: 0, y: 0 })
-  const viewSelectTo = ref<Position>({ x: 0, y: 0 })
+  const viewSelectFrom = ref({ x: 0, y: 0 })
+  const viewSelectTo = ref({ x: 0, y: 0 })
 
   // --- Initialize the cursor state.
   const cursorView = ref({ x: 0, y: 0 })
@@ -198,58 +189,67 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
 
   // --- Compute the position of the cursor in the screen coordinates.
   function setLinkProps() {
-    const result = [] as FlowLinkProps[]
+    setTimeout(() => {
+      const result = [] as FlowLinkProps[]
 
-    // --- Iterate over the links and compute the position of the source and target pins.
-    for (const link of links.value) {
-      const [source, sourceProperty] = link.source.split(':')
-      const [target, targetProperty] = link.target.split(':')
+      // --- Iterate over the links and compute the position of the source and target pins.
+      for (const node of nodes.value) {
+        for (const key in node.data) {
+          const value = node.data[key]
+          if (typeof value !== 'string') continue
+          if (!value.startsWith('$NODE.')) continue
 
-      // --- Get the source and target node elements.
-      /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-      /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-      const sourceNodeComponent = nodeComponents.value[source] as unknown as typeof FlowEditorNode
-      const targetNodeComponent = nodeComponents.value[target] as unknown as typeof FlowEditorNode
-      if (!sourceNodeComponent || !targetNodeComponent) continue
+          // --- Get the source and target node IDs.
+          const [source, sourceProperty] = value.slice(6).split(':')
+          const [target, targetProperty] = [node.id, key]
 
-      // --- Get the source and target pin elements.
-      const sourceElement = sourceNodeComponent.portsResult[sourceProperty]?.pin as HTMLElement
-      const targetElement = targetNodeComponent.portsData[targetProperty]?.pin as HTMLElement
-      if (!sourceElement || !targetElement) continue
-      /* eslint-enable @typescript-eslint/no-unsafe-member-access */
-      /* eslint-enable @typescript-eslint/no-unsafe-assignment */
+          // --- Get the source and target node elements.
+          /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+          /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+          const sourceNodeComponent = nodeComponents.value[source] as unknown as typeof FlowEditorNode
+          const targetNodeComponent = nodeComponents.value[target] as unknown as typeof FlowEditorNode
+          if (!sourceNodeComponent || !targetNodeComponent) continue
 
-      // --- Get the source and target pin rectangles.
-      const sourceRect = sourceElement.getBoundingClientRect()
-      const targetRect = targetElement.getBoundingClientRect()
+          // --- Get the source and target pin elements.
+          const sourceElement = sourceNodeComponent.portsResult[sourceProperty]?.pin as HTMLElement
+          const targetElement = targetNodeComponent.portsData[targetProperty]?.pin as HTMLElement
+          if (!sourceElement || !targetElement) continue
+          /* eslint-enable @typescript-eslint/no-unsafe-member-access */
+          /* eslint-enable @typescript-eslint/no-unsafe-assignment */
 
-      const sourcePosition = screenToView({
-        x: sourceRect.x + sourceRect.width / 2,
-        y: sourceRect.y + sourceRect.height / 2,
-      })
+          // --- Get the source and target pin rectangles.
+          const sourceRect = sourceElement.getBoundingClientRect()
+          const targetRect = targetElement.getBoundingClientRect()
 
-      const targetPosition = screenToView({
-        x: targetRect.x + targetRect.width / 2,
-        y: targetRect.y + targetRect.height / 2,
-      })
+          const sourcePosition = screenToView({
+            x: sourceRect.x + sourceRect.width / 2,
+            y: sourceRect.y + sourceRect.height / 2,
+          })
 
-      // --- Push the computed link to the links array.
-      result.push({
-        sourceX: sourcePosition.x,
-        sourceY: sourcePosition.y,
-        targetX: targetPosition.x,
-        targetY: targetPosition.y,
-        sourceColor: sourceElement.style.backgroundColor,
-        targetColor: targetElement.style.backgroundColor,
-      })
-    }
+          const targetPosition = screenToView({
+            x: targetRect.x + targetRect.width / 2,
+            y: targetRect.y + targetRect.height / 2,
+          })
 
-    // --- Return the computed links.
-    void nextTick(() => linksProps.value = result)
+          // --- Push the computed link to the links array.
+          result.push({
+            sourceX: sourcePosition.x,
+            sourceY: sourcePosition.y,
+            targetX: targetPosition.x,
+            targetY: targetPosition.y,
+            sourceColor: sourceElement.style.backgroundColor,
+            targetColor: targetElement.style.backgroundColor,
+          })
+        }
+      }
+
+      // --- Return the computed links.
+      linksProps.value = result
+    }, 1)
   }
 
   // --- Watch the links and update the link properties when the links change.
-  watch([links, nodes, viewSize], setLinkProps, { immediate: true, deep: true })
+  watch([nodes, viewZoom], setLinkProps, { immediate: true, deep: true })
 
   ////////////////////////////
 
@@ -379,7 +379,6 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
 
       else if (event.button) {
         viewMoving.value = true
-        nodeSelectedIds.value = new Set()
         viewDragOriginScreen.value = { x: event.clientX, y: event.clientY }
         viewDragOriginWorld.value = { x: viewPosition.value.x, y: viewPosition.value.y }
       }
