@@ -1,14 +1,90 @@
+import type { SpecifierObject } from './parseSpecifier'
+import { dedent } from '@unshared/string'
 import { createError } from './createError'
+import { serializeSpecifier } from './serializeSpecifier'
 
 export const ERRORS = {
+
+  /***************************************************************************/
+  /* Errors.                                                                 */
+  /***************************************************************************/
+
+  NODE_NOT_FOUND: (id: string) => createError({
+    message: `The node with the ID "${id}" could not be found`,
+    name: 'E_NODE_NOT_FOUND',
+    context: { id },
+  }),
+  NODE_DUPLICATE_ID: (id: string) => createError({
+    message: `A node with the ID "${id}" already exists`,
+    name: 'E_NODE_DUPLICATE_ID',
+    context: { id },
+  }),
+  NODE_SOCKET_NOT_FOUND: (id: string, name: string) => createError({
+    message: `The input socket "${name}" does not exist on node "${id}"`,
+    name: 'E_NODE_SOCKET_NOT_FOUND',
+    context: { id, name },
+  }),
+  COMPONENT_INVALID_SPECIFIER_FORMAT: (specifier: string) => createError({
+    message: `The component specifier "${specifier}" is invalid`,
+    name: 'E_COMPONENT_INVALID_SPECIFIER_FORMAT',
+    context: { specifier },
+  }),
+  COMPONENT_RESOLVED_BUT_NOT_COMPONENT: (specifier: SpecifierObject) => createError({
+    message: `The component with specifier "${serializeSpecifier(specifier)}" was resolved but is not a valid component`,
+    name: 'E_COMPONENT_RESOLVED_BUT_NOT_COMPONENT',
+    context: { specifier },
+  }),
+  COMPONENT_NOT_RESOLVED: (specifier: SpecifierObject) => createError({
+    message: `The component with specifier "${serializeSpecifier(specifier)}" could not be resolved. The specifier does not match any component in the registry`,
+    name: 'E_COMPONENT_NOT_RESOLVED',
+    context: { specifier },
+  }),
+
+  /***************************************************************************/
+  /* Parse flow errors.                                                      */
+  /***************************************************************************/
+
+  FLOW_VERSION_MISSING: () => createError({
+    message: 'Flow file version is missing',
+    name: 'E_FLOW_VERSION_MISSING',
+  }),
+  FLOW_VERSION_UNSUPPORTED: (version: string) => createError({
+    message: `Unsupported flow file version: ${version}`,
+    name: 'E_FLOW_VERSION_UNSUPPORTED',
+    context: { version },
+  }),
+  FLOW_NODE_NOT_OBJECT: (id: string) => createError({
+    message: `The node with the ID "${id}" is not an object`,
+    name: 'E_FLOW_NODE_NOT_OBJECT',
+    context: { id },
+  }),
+  FLOW_NODE_SPECIFIER_NOT_STRING: (id: string) => createError({
+    message: `The node specifier of the node with the ID "${id}" is not a string`,
+    name: 'E_FLOW_NODE_SPECIFIER_NOT_STRING',
+    context: { id },
+  }),
 
   /***************************************************************************/
   /* Runtime errors.                                                         */
   /***************************************************************************/
 
-  REFERENCE_UNRESOLVED: (ref: string) => createError({
+  ISOLATED_VM_CATASTROPHIC_FAILURE: (message: string) => createError({
+    message: `The JavaScript sandbox has encountered a catastrophic failure: ${message}`,
+    name: 'E_RUNTIME_VM_CATASTROPHIC_FAILURE',
+    context: { message },
+  }),
+  ISOLATED_VM_DISPOSED: () => createError({
+    message: 'The JavaScript sandbox has been disposed',
+    name: 'E_ISOLATED_VM_DISPOSED',
+  }),
+
+  /***************************************************************************/
+  /* Reference errors.                                                       */
+  /***************************************************************************/
+
+  REFERENCE_NOT_RESOLVED: (ref: string) => createError({
     message: 'The reference could not be resolved',
-    name: 'E_REFERENCE_UNRESOLVED',
+    name: 'E_REFERENCE_NOT_RESOLVED',
     context: { ref },
   }),
   REFERENCE_INVALID_FORMAT: () => createError({
@@ -41,131 +117,161 @@ export const ERRORS = {
   /* Input errors.                                                           */
   /***************************************************************************/
 
-  INPUT_REQUIRED: () => createError({
-    message: 'The value is required',
+  NODE_INPUT_SCHEMA_MISMATCH: (id: string, errors: Record<string, Error>) => createError({
+    message: dedent(`
+      The input schema of the node with the ID "${id}" does not match the input object:
+      ${Object.entries(errors).map(([key, error]) => `  - ${key}: ${error.message}`).join('\n')}
+    `),
+    name: 'E_NODE_INPUT_SCHEMA_MISMATCH',
+    context: { errors },
+  }),
+  INPUT_REQUIRED: (path: string) => createError({
+    message: `The input at "${path}" is required but was not undefined`,
     name: 'E_INPUT_REQUIRED',
+    context: { path },
   }),
   INPUT_NOT_ANY_OF: (errors: Error[]) => createError({
     message: 'The value does not match any of the anyOf schemas',
     name: 'E_NOT_ANY_OF',
     context: { errors },
   }),
-  INPUT_NOT_ONE_OF: (errors: Error[]) => createError({
-    message: 'The value does not match any of the oneOf schemas',
+  INPUT_NOT_ONE_OF: (path: string, errors: Error[]) => createError({
+    message: [
+      `The value at "${path}" did not match any of the oneOf schemas:`,
+      errors.map(error => `  - ${error.message}`).join('\n'),
+    ].join('\n'),
     name: 'E_NOT_ONE_OF',
-    context: { errors },
+    context: { errors, path },
   }),
 
   // String errors.
-  INPUT_NOT_STRING: () => createError({
-    message: 'Expected a string value',
+  INPUT_NOT_STRING: (path: string) => createError({
+    message: `The input at "${path}" is not a string`,
     name: 'E_INPUT_NOT_STRING',
+    context: { path },
   }),
-  INPUT_PATTERN_MISMATCH: (pattern: string) => createError({
-    message: 'The value does not match the pattern',
+  INPUT_PATTERN_MISMATCH: (path: string, pattern: string) => createError({
+    message: `The input at "${path}" does not match the pattern "${pattern}"`,
     name: 'E_INPUT_NOT_STRING_PATTERN',
-    context: { pattern },
+    context: { path, pattern },
   }),
-  INPUT_TOO_SHORT: (minLength: number) => createError({
-    message: 'The value is too short',
+  INPUT_TOO_SHORT: (path: string, minLength: number) => createError({
+    message: `The input at "${path}" is too short, expected at least ${minLength} characters`,
     name: 'E_INPUT_TOO_SHORT',
-    context: { minLength },
+    context: { path, minLength },
   }),
-  INPUT_TOO_LONG: (maxLength: number) => createError({
-    message: 'The value is too long',
+  INPUT_TOO_LONG: (path: string, maxLength: number) => createError({
+    message: `The input at "${path}" is too long, expected at most ${maxLength} characters`,
     name: 'E_INPUT_TOO_LONG',
-    context: { maxLength },
+    context: { path, maxLength },
   }),
-  INPUT_NOT_IN_ENUM: (enumerations: Array<number | string>) => createError({
-    message: 'The value does not match any of the enumaration values',
+  INPUT_NOT_IN_ENUM: (path: string, enumerations: Array<number | string>) => createError({
+    message: dedent(`
+      The input at "${path}" is expected to be one of the following values:
+      ${enumerations.map(x => `  - ${x}`).join('\n')}
+    `),
     name: 'E_INPUT_NOT_STRING_ENUM',
-    context: { enumerations },
+    context: { path, enumerations },
   }),
 
   // Number errors.
-  INPUT_NOT_NUMBER: () => createError({
-    message: 'Expected a number value',
+  INPUT_NOT_NUMBER: (path: string) => createError({
+    message: `The input at "${path}" is not a number`,
     name: 'E_INPUT_NOT_NUMBER',
+    context: { path },
   }),
-  INPUT_NOT_EXCEED_MINIMUM: (minimum: number) => createError({
-    message: 'The value does not exceed the minimum',
+  INPUT_NOT_EXCEED_MINIMUM: (path: string, minimum: number) => createError({
+    message: `The input number at "${path}" does not exceed the minimum value, expected at least ${minimum}`,
     name: 'E_INPUT_NOT_EXCEED_MINIMUM',
-    context: { minimum },
+    context: { path, minimum },
   }),
-  INPUT_NOT_BELOW_MAXIMUM: (maximum: number) => createError({
-    message: 'The value does not below the maximum',
+  INPUT_NOT_BELOW_MAXIMUM: (path: string, maximum: number) => createError({
+    message: `The input number at "${path}" does not fall below the maximum value, expected at most ${maximum}`,
     name: 'E_INPUT_NOT_BELOW_MAXIMUM',
-    context: { maximum },
+    context: { path, maximum },
   }),
-  INPUT_TOO_SMALL: (minimum: number) => createError({
-    message: 'The value is too small',
+  INPUT_TOO_SMALL: (path: string, minimum: number) => createError({
+    message: `The input number at "${path}" is too small, expected at least ${minimum}`,
     name: 'E_INPUT_TOO_SMALL',
-    context: { minimum },
+    context: { path, minimum },
   }),
-  INPUT_TOO_LARGE: (maximum: number) => createError({
-    message: 'The value is too large',
+  INPUT_TOO_LARGE: (path: string, maximum: number) => createError({
+    message: `The input number at "${path}" is too large, expected at most ${maximum}`,
     name: 'E_INPUT_TOO_LARGE',
-    context: { maximum },
+    context: { path, maximum },
   }),
-  INPUT_NOT_MULTIPLE_OF: (multipleOf: number) => createError({
-    message: 'The value is not a multiple of the number',
+  INPUT_NOT_MULTIPLE_OF: (path: string, multipleOf: number) => createError({
+    message: `The input number at "${path}" is not a multiple of ${multipleOf}`,
     name: 'E_INPUT_NOT_MULTIPLE_OF',
-    context: { multipleOf },
+    context: { path, multipleOf },
   }),
-  INPUT_NOT_INTEGER: () => createError({
-    message: 'The value is not an integer',
+  INPUT_NOT_INTEGER: (path: string) => createError({
+    message: `The input at "${path}" is expected to be an integer value`,
     name: 'E_INPUT_NOT_INTEGER',
+    context: { path },
   }),
 
   // Boolean errors.
-  INPUT_NOT_BOOLEAN: () => createError({
-    message: 'Expected a boolean value',
+  INPUT_NOT_BOOLEAN: (path: string) => createError({
+    message: `The input at "${path}" is expected to be a boolean value`,
     name: 'E_INPUT_NOT_BOOLEAN',
   }),
 
   // Array errors.
-  INPUT_NOT_ARRAY: () => createError({
-    message: 'Expected an array value',
+  INPUT_NOT_ARRAY: (path: string) => createError({
+    message: `The input at "${path}" is not an array`,
     name: 'E_INPUT_NOT_ARRAY',
+    context: { path },
   }),
-  INPUT_ARRAY_TOO_SHORT: (minItems: number) => createError({
-    message: 'The array is too short',
+  INPUT_ARRAY_TOO_SHORT: (path: string, minItems: number) => createError({
+    message: `The array at "${path}" is too short, expected at least ${minItems} items`,
     name: 'E_INPUT_ARRAY_TOO_SHORT',
-    context: { minItems },
+    context: { path, minItems },
   }),
-  INPUT_ARRAY_TOO_LONG: (maxItems: number) => createError({
-    message: 'The array is too long',
+  INPUT_ARRAY_TOO_LONG: (path: string, maxItems: number) => createError({
+    message: `The array at "${path}" is too long, expected at most ${maxItems} items`,
     name: 'E_INPUT_ARRAY_TOO_LONG',
-    context: { maxItems },
+    context: { path, maxItems },
   }),
-  INPUT_ARRAY_NOT_UNIQUE: () => createError({
-    message: 'The array is not unique',
+  INPUT_ARRAY_NOT_UNIQUE: (path: string, extra: string[]) => createError({
+    message: dedent(`
+      The input array at "${path}" is not unique, the following items are duplicated:
+      ${extra.map(x => `  - ${x}`).join('\n')}
+    `),
     name: 'E_INPUT_ARRAY_NOT_UNIQUE',
+    context: { path, extra },
   }),
 
   // Object errors.
-  INPUT_NOT_OBJECT: () => createError({
-    message: 'Expected an object value',
+  INPUT_NOT_OBJECT: (path: string) => createError({
+    message: `The input at "${path}" is not an object`,
     name: 'E_INPUT_NOT_OBJECT',
+    context: { path },
   }),
-  INPUT_OBJECT_TOO_FEW_PROPERTIES: (minProperties: number) => createError({
-    message: 'The object has too few properties',
+  INPUT_OBJECT_TOO_FEW_PROPERTIES: (path: string, minProperties: number) => createError({
+    message: `The object at "${path}" has too few properties, expected at least ${minProperties}`,
     name: 'E_INPUT_OBJECT_TOO_FEW_PROPERTIES',
-    context: { minProperties },
+    context: { path, minProperties },
   }),
-  INPUT_OBJECT_TOO_MANY_PROPERTIES: (maxProperties: number) => createError({
-    message: 'The object has too many properties',
+  INPUT_OBJECT_TOO_MANY_PROPERTIES: (path: string, maxProperties: number) => createError({
+    message: `The object at "${path}" has too many properties, expected at most ${maxProperties}`,
     name: 'E_INPUT_OBJECT_TOO_MANY_PROPERTIES',
-    context: { maxProperties },
+    context: { path, maxProperties },
   }),
-  INPUT_OBJECT_EXTRA_PROPERTIES: (extra: string[]) => createError({
-    message: 'The object has extra properties',
+  INPUT_OBJECT_EXTRA_PROPERTIES: (path: string, extra: string[]) => createError({
+    message: dedent(`
+      The object at "${path}" has extra properties:
+      ${extra.map(x => `  - ${x}`).join('\n')}
+    `),
     name: 'E_INPUT_OBJECT_EXTRA_PROPERTIES',
-    context: { extra },
+    context: { path, extra },
   }),
-  INPUT_OBJECT_MISSING_PROPERTIES: (missing: string[]) => createError({
-    message: 'The object is missing properties',
+  INPUT_OBJECT_MISSING_PROPERTIES: (path: string, missing: string[]) => createError({
+    message: dedent(`
+      The object at "${path}" is missing required properties:
+      ${missing.map(x => `  - ${x}`).join('\n')}
+    `),
     name: 'E_INPUT_OBJECT_MISSING_PROPERTIES',
-    context: { missing },
+    context: { path, missing },
   }),
 }

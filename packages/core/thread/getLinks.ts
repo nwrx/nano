@@ -3,13 +3,13 @@ import type { Thread } from './createThread'
 import { isLink, parseLink } from '../utils'
 
 /**
- * Get all the links between the nodes in the flow. This function iterates over
- * all the nodes in the flow and collects the links between the nodes. If a node
+ * Get all the links between the nodes in the thread. This function iterates over
+ * all the nodes in the thread and collects the links between the nodes. If a node
  * has a property that is a string that matches the expected format of a link,
  * the link is added to the list of links.
  *
  * @param thread The thread where the nodes are located.
- * @returns The list of links between the nodes in the flow.
+ * @returns The list of links between the nodes in the thread.
  * @example getLinks(thread) // [
  *   { sourceId: 'node-1', sourceName: 'output', targetId: 'node-2', targetName: 'input' },
  *   { sourceId: 'node-3', sourceName: 'output', targetId: 'node-2', targetName: 'input' }
@@ -17,7 +17,7 @@ import { isLink, parseLink } from '../utils'
  */
 export function getLinks(thread: Thread): Link[] {
   const links: Link[] = []
-  for (const [targetId, { input }] of thread.componentInstances) {
+  for (const [targetId, { input }] of thread.nodes) {
     for (const targetName in input) {
       const value = input[targetName]
 

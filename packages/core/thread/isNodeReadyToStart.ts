@@ -1,5 +1,5 @@
-import type { Thread } from '../thread/createThread'
-import { getLinks } from '../thread/getLinks'
+import type { Thread } from './createThread'
+import { getLinks } from './getLinks'
 
 /**
  * Check if all incoming links to a node are DONE. If so, the node is ready to start
@@ -15,7 +15,7 @@ export function isNodeReadyToStart(thread: Thread, id: string): boolean {
     if (link.targetId !== id) continue
     const sourceNode = thread.nodes.get(link.sourceId)
     if (!sourceNode) return false
-    if (sourceNode.state !== 'DONE') return false
+    if (sourceNode.state !== 'done') return false
   }
   return true
 }

@@ -31,10 +31,9 @@ describe('resolveReference', () => {
     await expect(shouldReject).rejects.toThrow(error)
   })
 
-  it('should throw an error if all resolvers return undefined', async() => {
+  it('should return undefined if the reference is not resolved', async() => {
     const resolver: ReferenceResolver = () => undefined
-    const shouldReject = resolveReference({ $ref: '#/Example/Foo/Bar' }, [resolver])
-    const error = E.REFERENCE_UNRESOLVED('#/Example/Foo/Bar')
-    await expect(shouldReject).rejects.toThrow(error)
+    const result = await resolveReference({ $ref: '#/Example/Foo/Bar' }, [resolver])
+    expect(result).toBeUndefined()
   })
 })

@@ -1,4 +1,4 @@
-import type { MaybePromise } from '@unshared/types'
+import type { MaybePromise, ObjectLike } from '@unshared/types'
 import type { OpenAPIV3 } from 'openapi-types'
 import type { ProcessContext } from './defineComponent'
 
@@ -47,7 +47,7 @@ export interface LanguageModelTool {
    *
    * @example ({ location, unit }) => `What is the temperature in ${location} in ${unit}?`
    */
-  call: (context: ProcessContext) => MaybePromise<string>
+  call: (context: ProcessContext) => MaybePromise<ObjectLike | string>
 }
 
 export function createTool(tool: LanguageModelTool) {

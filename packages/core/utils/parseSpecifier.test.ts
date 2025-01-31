@@ -1,61 +1,63 @@
+import { ERRORS as E } from './errors'
 import { parseSpecifier } from './parseSpecifier'
 
 describe('parseSpecifier', () => {
   describe('with provider name', () => {
-    it('should parse a specifier with module, version, and name', () => {
-      const result = parseSpecifier('example.com:module@1/name')
+    it('should parse a specifier with collection, version, and name', () => {
+      const result = parseSpecifier('example.com:my-collection/my-component@1')
       expect(result).toStrictEqual({
-        moduleName: 'module',
-        moduleVersion: '1',
-        componentName: 'name',
-        providerName: 'example.com',
+        tag: '1',
+        name: 'my-component',
+        collection: 'my-collection',
+        registry: 'example.com',
       })
     })
 
-    it('should parse a specifier with module and name', () => {
-      const result = parseSpecifier('example.com:module/name')
+    it('should parse a specifier with collection and name', () => {
+      const result = parseSpecifier('example.com:my-collection/my-component')
       expect(result).toStrictEqual({
-        moduleName: 'module',
-        moduleVersion: 'latest',
-        componentName: 'name',
-        providerName: 'example.com',
+        tag: 'latest',
+        name: 'my-component',
+        collection: 'my-collection',
+        registry: 'example.com',
       })
     })
 
     it('should throw an error if the specifier is invalid', () => {
-      const shouldThrow = () => parseSpecifier('example.com:module')
-      expect(shouldThrow).toThrow('The component specifier "example.com:module" is invalid.')
+      const shouldThrow = () => parseSpecifier('example.com:my-collection')
+      const error = E.COMPONENT_INVALID_SPECIFIER_FORMAT('example.com:my-collection')
+      expect(shouldThrow).toThrow(error)
     })
   })
 
   describe('without provider name', () => {
-    it('should parse a specifier with module, version, and name', () => {
-      const result = parseSpecifier('module@1/name')
+    it('should parse a specifier with collection, version, and name', () => {
+      const result = parseSpecifier('my-collection/my-component@1')
       expect(result).toStrictEqual({
-        moduleName: 'module',
-        moduleVersion: '1',
-        componentName: 'name',
-        providerName: undefined,
+        tag: '1',
+        name: 'my-component',
+        collection: 'my-collection',
+        registry: 'default',
       })
     })
 
-    it('should parse a specifier with module and name', () => {
-      const result = parseSpecifier('module/name')
+    it('should parse a specifier with collection and name', () => {
+      const result = parseSpecifier('my-collection/my-component')
       expect(result).toStrictEqual({
-        moduleName: 'module',
-        moduleVersion: 'latest',
-        componentName: 'name',
-        providerName: undefined,
+        tag: 'latest',
+        name: 'my-component',
+        collection: 'my-collection',
+        registry: 'default',
       })
     })
 
-    it('should default to the core module if no module is provided', () => {
-      const result = parseSpecifier('name')
+    it('should default to the core collection if no collection is provided', () => {
+      const result = parseSpecifier('my-component')
       expect(result).toStrictEqual({
-        moduleName: 'core',
-        moduleVersion: 'latest',
-        componentName: 'name',
-        providerName: undefined,
+        tag: 'latest',
+        name: 'my-component',
+        collection: 'core',
+        registry: 'default',
       })
     })
   })

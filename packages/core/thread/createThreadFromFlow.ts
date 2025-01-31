@@ -1,27 +1,31 @@
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
 import type { Thread, ThreadOptions } from './createThread'
 import type { FlowV1 } from './serialize'
+import { ERRORS as E } from '../utils'
+import { addNode } from './addNode'
 import { createThread } from './createThread'
 
 /**
  * Instantiate a thread from a serialized JSON object.
  *
- * @param json The serialized JSON object.
+ * @param flow The serialized JSON object.
  * @param options The options to create the thread with.
  * @returns The thread instance.
  */
-export function createThreadFromJson(json: FlowV1, options: ThreadOptions = {}): Thread {
-  const { version, components = {} } = json
+export function createThreadFromFlow(flow: FlowV1, options: ThreadOptions = {}): Thread {
+  const { version, nodes = {} } = flow
 
   // --- Assert that the version is supported.
-  if (!version) throw new Error('Flow file version is missing')
-  if (version !== '1') throw new Error(`Unsupported flow file version: ${version}`)
+  if (!version) throw E.FLOW_VERSION_MISSING()
+  if (version !== '1') throw E.FLOW_VERSION_UNSUPPORTED(version)
 
-  // --- Create the thread instance and add the component instances.
-  // --- Collect all the instances to add to the thread.
+  // --- Add all the nodes to the thread.
   const thread = createThread(options)
-  for (const id in components) {
-    const { specifier, ...data } = components[id]
+  for (const id in nodes) {
+    const node = nodes[id]
+    if (typeof node !== 'object' || !node.specifier) throw E.FLOW_NODE_NOT_OBJECT(id)
+    if (typeof node.specifier !== 'string') throw E.FLOW_NODE_SPECIFIER_NOT_STRING(id)
+
+    const { specifier, ...data } = nodes[id]
     const metadata: Record<string, unknown> = {}
     const input: Record<string, unknown> = {}
 
@@ -35,7 +39,7 @@ export function createThreadFromJson(json: FlowV1, options: ThreadOptions = {}):
     }
 
     // --- Append the component instance to the thread.
-    thread.componentInstances.set(id, { specifier, input, metadata })
+    addNode(thread, specifier, { id, input, metadata })
   }
 
   // --- Return the thread instance.

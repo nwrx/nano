@@ -1,13 +1,45 @@
+/* eslint-disable @typescript-eslint/consistent-type-definitions */
 import type { ObjectLike } from '@unshared/types'
-import type { Component, ComponentResolver, ReferenceResolver, ThreadEventMeta, ThreadEvents } from '../utils'
-import type { ComponentInstance } from './add'
-import { randomUUID } from 'node:crypto'
-import { Emitter, isNodeReadyToStart, Node, resolveSchema } from '../utils'
-import { DEFAULT_COMPONENT_RESOLVER } from './defaultComponentResolver'
-import { DEFAULT_REFERENCE_RESOLVER } from './defaultReferenceResolver'
-import { getComponent } from './getComponent'
-import { getInstance } from './getInstance'
-import { getLinks } from './getLinks'
+import type { ComponentResolver, ReferenceResolver } from '../utils'
+import type { Node } from './addNode'
+import type { EventMetadata } from './createEventMetadata'
+import { DEFAULT_COMPONENT_RESOLVER, DEFAULT_REFERENCE_RESOLVER, Emitter } from '../utils'
+
+export type ThreadEvents = {
+
+  /** When the thread is started. */
+  'start': [input: ObjectLike, metadata: EventMetadata]
+
+  /** When an error occurs during the execution of the flow outside of a node. */
+  'error': [error: Error, metadata: EventMetadata]
+
+  /** When the thread is aborted. */
+  'abort': [metadata: EventMetadata]
+
+  /** When the thread receives an input. */
+  'input': [name: string, value: unknown, metadata: EventMetadata]
+
+  /** When the thread outputs a value. */
+  'output': [name: string, value: unknown, metadata: EventMetadata]
+
+  /** When the thread is done. */
+  'done': [output: ObjectLike, metadata: EventMetadata]
+
+  /** When the state of a node changes. */
+  'nodeState': [id: string, node: Node, metadata: EventMetadata]
+
+  /** When a node emits an error event. */
+  'nodeError': [id: string, node: Node, error: Error, metadata: EventMetadata]
+
+  /** When a node emits a trace event. */
+  'nodeTrace': [id: string, node: Node, trace: ObjectLike, metadata: EventMetadata]
+
+  /** When a node is about to start processing. */
+  'nodeStart': [id: string, node: Node, data: ObjectLike, metadata: EventMetadata]
+
+  /** When a node is done processing. */
+  'nodeDone': [id: string, node: Node, result: ObjectLike, metadata: EventMetadata]
+}
 
 /**
  * The options that are used to create a new flow instance. The options can be
@@ -16,7 +48,17 @@ import { getLinks } from './getLinks'
  * available at runtime.
  */
 export interface ThreadOptions {
+
+  /**
+   * The resolvers that are used to resolve the component based on a specifier.
+   */
   componentResolvers?: ComponentResolver[]
+
+  /**
+   * The resolvers that are used to resolve the references. Typically used to
+   * resolve the output of another nodes or some other value that is only
+   * available at runtime.
+   */
   referenceResolvers?: ReferenceResolver[]
 }
 
@@ -32,139 +74,22 @@ export class Thread extends Emitter<ThreadEvents> implements ThreadOptions {
     if (options.referenceResolvers) this.referenceResolvers.push(...options.referenceResolvers)
   }
 
-  /** The unique identifier of the flow thread. */
-  readonly id = randomUUID()
-
   /** The time when the flow thread was started. */
-  startedAt = 0
+  startedAt = -1
 
   /** The component instance that is used to run the flow thread. */
-  componentInstances = new Map<string, ComponentInstance>()
-
-  /** The nodes that are currently running in the flow thread. */
   nodes = new Map<string, Node>()
 
   /** The abort controller that is used to abort the flow thread. */
   abortController = new AbortController()
 
   /** The resolvers that are used to resolve the component kind. */
-  componentResolvers = [DEFAULT_COMPONENT_RESOLVER.bind(this)] as ComponentResolver[]
+  componentResolvers: ComponentResolver[] = [DEFAULT_COMPONENT_RESOLVER]
 
   /** The resolvers that are used to resolve the references. */
-  referenceResolvers = [DEFAULT_REFERENCE_RESOLVER.bind(this)] as ReferenceResolver[]
-
-  /***************************************************************************/
-  /* Helpers                                                                 */
-  /***************************************************************************/
-
-  private get eventMetadata(): ThreadEventMeta {
-    return {
-      threadId: this.id,
-      threadDelta: Date.now() - this.startedAt,
-      timestamp: new Date().toISOString(),
-    }
-  }
-
-  public get isRunning() {
-    for (const node of this.nodes.values()) {
-      const isNodeRunning = node.state === 'PROCESSING'
-      if (isNodeRunning) return true
-    }
-    return false
-  }
-
-  async start(threadInput: ObjectLike = {}) {
-    const threadOutput: ObjectLike = {}
-    const links = getLinks(this)
-
-    this.nodes.clear()
-    this.startedAt = Date.now()
-    this.dispatch('start', threadInput, this.eventMetadata)
-
-    // --- Resolve all components before starting the nodes.
-    const components = new Map<string, Component>()
-    for (const [id] of this.componentInstances) {
-      const component = await getComponent(this, id)
-      components.set(id, component)
-    }
-
-    return new Promise<ObjectLike>((resolve) => {
-      for (const [id, componentInstance] of this.componentInstances) {
-        const component = components.get(id)!
-        const node = new Node(component)
-        this.nodes.set(id, node)
-        node.on('state', meta => this.dispatch('nodeState', id, { ...meta, ...this.eventMetadata }))
-        node.on('trace', (data, meta) => this.dispatch('nodeTrace', id, data, { ...meta, ...this.eventMetadata }))
-
-        // --- If the node is an input, apply the input value to the thread input.
-        node.on('start', (context, meta) => {
-          this.dispatch('nodeStart', id, context, { ...meta, ...this.eventMetadata })
-          const { data, result } = context
-          if (componentInstance.specifier === 'input') {
-            const name = data.name as string
-            result.value = threadInput[name]
-          }
-        })
-
-        // --- Dispatch the node error event if the node emits an error.
-        node.on('error', (error, meta) => {
-          this.dispatch('nodeError', id, error, { ...meta, ...this.eventMetadata })
-          if (this.isRunning) return
-          return resolve(threadOutput)
-        })
-
-        // --- If the node is an output, we collect this specific output value and it's corresponding name
-        // --- and apply it to the thread output. We also dispatch the output event with the name and value.
-        node.on('end', async(context, meta) => {
-          this.dispatch('nodeEnd', id, context, { ...meta, ...this.eventMetadata })
-
-          // --- If the node is an output, apply the output value to the thread output.
-          if (componentInstance.specifier === 'output') {
-            const name = context.data.name as string
-            const value = context.data.value
-            threadOutput[name] = value
-            this.dispatch('output', name, value, this.eventMetadata)
-          }
-
-          // --- If the node has outgoing links, start the next nodes
-          // --- if all their incoming nodes are done.
-          const outgoingLinks = links.filter(link => link.sourceId === id)
-          for (const link of outgoingLinks) {
-            const target = getInstance(this, link.targetId)
-            const targetNode = this.nodes.get(link.targetId)!
-            const targetComponent = components.get(link.targetId)!
-            if (!target) continue
-            if (!isNodeReadyToStart(this, link.targetId)) continue
-            const data = await resolveSchema({
-              data: target.input,
-              resolvers: this.referenceResolvers,
-              schema: targetComponent.inputs,
-            })
-            void targetNode.process(data)
-          }
-
-          // --- If all the nodes are done, dispatch the end event.
-          setTimeout(() => {
-            if (this.isRunning) return
-            this.dispatch('end', threadOutput, this.eventMetadata)
-            return resolve(threadOutput)
-          }, 100)
-        })
-
-        // --- If the node has no incoming links, start the node immediately.
-        const hasIncomingLinks = links.some(link => link.targetId === id)
-        if (hasIncomingLinks) continue
-        const dataPromise = resolveSchema({
-          data: componentInstance.input,
-          resolvers: this.referenceResolvers,
-          schema: component.inputs,
-        })
-        void dataPromise.then(data => node.process(data))
-      }
-    })
-  }
+  referenceResolvers: ReferenceResolver[] = [DEFAULT_REFERENCE_RESOLVER.bind(this)]
 }
 
-export function createThread(options?: ThreadOptions): Thread {
+export function createThread(options: ThreadOptions = {}): Thread {
   return new Thread(options)
 }

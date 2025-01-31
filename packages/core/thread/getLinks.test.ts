@@ -1,6 +1,6 @@
 import { defineComponent } from '../utils'
-import { add } from './add'
 import { addLink } from './addLink'
+import { addNode } from './addNode'
 import { createThread } from './createThread'
 import { getLinks } from './getLinks'
 
@@ -28,8 +28,8 @@ describe('getLinks', () => {
   describe('with simple value', () => {
     it('should return links for valid node references', async() => {
       const thread = createThread({ componentResolvers: [() => component] })
-      const sourceId = add(thread, 'example')
-      const targetId = add(thread, 'example')
+      const sourceId = addNode(thread, 'example')
+      const targetId = addNode(thread, 'example')
       await addLink(thread, { sourceId, sourceName: 'output1', targetId, targetName: 'valueSimple' })
       const result = getLinks(thread)
       expect(result).toStrictEqual([
@@ -47,8 +47,8 @@ describe('getLinks', () => {
   describe('with array', () => {
     it('should return links for valid node references in arrays', async() => {
       const thread = createThread({ componentResolvers: [() => component] })
-      const sourceId = add(thread, 'example')
-      const targetId = add(thread, 'example')
+      const sourceId = addNode(thread, 'example')
+      const targetId = addNode(thread, 'example')
       await addLink(thread, { sourceId, sourceName: 'output1', targetId, targetName: 'valueArray' })
       await addLink(thread, { sourceId, sourceName: 'output2', targetId, targetName: 'valueArray' })
       const result = getLinks(thread)
@@ -74,8 +74,8 @@ describe('getLinks', () => {
   describe('with object', () => {
     it('should return links for valid node references in objects', async() => {
       const thread = createThread({ componentResolvers: [() => component] })
-      const sourceId = add(thread, 'example')
-      const targetId = add(thread, 'example')
+      const sourceId = addNode(thread, 'example')
+      const targetId = addNode(thread, 'example')
       await addLink(thread, { sourceId, sourceName: 'output1', targetId, targetName: 'valueObject', targetPath: 'key1' })
       await addLink(thread, { sourceId, sourceName: 'output2', targetId, targetName: 'valueObject', targetPath: 'key2' })
       const result = getLinks(thread)

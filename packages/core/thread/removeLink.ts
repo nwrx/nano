@@ -1,9 +1,9 @@
 import type { Link } from './addLink'
 import type { Thread } from './createThread'
 import { isLink, parseLink } from '../utils'
-import { getInputSocket } from './getInputSocket'
-import { getInputValue } from './getInputValue'
-import { setInputValue } from './setInputValue'
+import { getNodeInputSocket } from './getNodeInputSocket'
+import { getNodeInputValue } from './getNodeInputValue'
+import { setNodeInputValue } from './setNodeInputValue'
 
 export interface RemoveLinkResult {
   id: string
@@ -21,7 +21,7 @@ function shouldRemove(value: unknown, linkToRemove: Partial<Link>): boolean {
 
 export async function removeLink(thread: Thread, linkToRemove: Partial<Link>): Promise<RemoveLinkResult[]> {
   const results: RemoveLinkResult[] = []
-  for (const [id, componentInstance] of thread.componentInstances) {
+  for (const [id, componentInstance] of thread.nodes) {
 
     // --- Skip nodes that are not the source or target.
     if (linkToRemove.targetId && id !== linkToRemove.targetId) continue
@@ -30,18 +30,18 @@ export async function removeLink(thread: Thread, linkToRemove: Partial<Link>): P
     // --- Iterate over the input values of the node.
     for (const name in componentInstance.input) {
       if (linkToRemove.targetName !== undefined && name !== linkToRemove.targetName) continue
-      const socket = await getInputSocket(thread, id, name)
-      const value = await getInputValue(thread, id, name)
+      const socket = await getNodeInputSocket(thread, id, name)
+      const value = await getNodeInputValue(thread, id, name)
 
       if (shouldRemove(value, linkToRemove)) {
-        setInputValue(thread, id, name, undefined)
+        setNodeInputValue(thread, id, name, undefined)
         results.push({ id, name, value: undefined })
       }
 
       // --- Handle the case where the value is an array of links.
       else if (socket.type === 'array' && Array.isArray(value)) {
         const newValue = value.filter(value => !shouldRemove(value, linkToRemove))
-        setInputValue(thread, id, name, newValue)
+        setNodeInputValue(thread, id, name, newValue)
         results.push({ id, name, value: newValue })
       }
 
@@ -51,7 +51,7 @@ export async function removeLink(thread: Thread, linkToRemove: Partial<Link>): P
           .filter(([, value]) => !shouldRemove(value, linkToRemove))
           .map(([path, value]) => [path, value] as [string, unknown])
         const newValue = Object.fromEntries(newValueEntries)
-        setInputValue(thread, id, name, newValue)
+        setNodeInputValue(thread, id, name, newValue)
         results.push({ id, name, value: newValue })
       }
     }

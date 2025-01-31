@@ -1,6 +1,7 @@
 import type { Thread } from './createThread'
+import { serializeSpecifier } from '../utils'
 
-export interface FlowV1ComponentInstance {
+export interface FlowV1Node {
   specifier: string
   [key: string]: unknown
 }
@@ -16,8 +17,8 @@ export interface FlowV1Metadata {
 
 export interface FlowV1 {
   version: '1'
-  metadata: FlowV1Metadata
-  components: Record<string, FlowV1ComponentInstance>
+  nodes: Record<string, FlowV1Node>
+  metadata?: FlowV1Metadata
 }
 
 /**
@@ -30,26 +31,30 @@ export interface FlowV1 {
  * @example serializeThread(thread) // { version: '1', components: { ... } }
  */
 export function serialize(thread: Thread, metadata: FlowV1Metadata = {}): FlowV1 {
-  const components: Record<string, FlowV1ComponentInstance> = {}
+  const nodes: Record<string, FlowV1Node> = {}
 
   // --- Collect all component instances values and meta values.
-  for (const [id, { specifier, input, metadata }] of thread.componentInstances) {
+  for (const [id, node] of thread.nodes) {
 
     // --- Prepend `_` to all meta properties.
     const metaProperties: Record<string, unknown> = {}
-    for (const key in metadata) {
+    for (const key in node.metadata) {
       const metaKey = `_${key}`
-      const metaValue = metadata[key]
+      const metaValue = node.metadata[key]
       metaProperties[metaKey] = metaValue
     }
 
     // --- Add the component instance to the components object.
-    components[id] = { specifier, ...input, ...metaProperties }
+    nodes[id] = {
+      specifier: serializeSpecifier(node),
+      ...node.input,
+      ...metaProperties,
+    }
   }
 
   return {
     version: '1',
     metadata,
-    components,
+    nodes,
   }
 }

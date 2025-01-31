@@ -1,16 +1,17 @@
 /* eslint-disable vue/component-definition-name-casing */
+import { title } from 'process'
 import { defineComponent } from './defineComponent'
 import { isComponent } from './isComponent'
 
 describe('isComponent', () => {
   it('should return true for an object created with defineComponent', () => {
-    const component = defineComponent({ name: 'example', version: '1.0.0' })
+    const component = defineComponent({})
     const result = isComponent(component)
     expect(result).toBe(true)
   })
 
   it('should return false for object not created with defineComponent', () => {
-    const result = isComponent({ name: 'example' })
+    const result = isComponent({ title: 'Test' })
     expect(result).toBe(false)
   })
 

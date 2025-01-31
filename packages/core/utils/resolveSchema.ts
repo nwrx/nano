@@ -1,51 +1,59 @@
-import type { ObjectLike } from '@unshared/types'
+import type { OpenAPIV3 } from 'openapi-types'
 import type { InputSocket, OutputSocket } from './defineComponent'
 import type { ReferenceResolver } from './resolveReference'
-import { createError } from './createError'
-import { resolveSchemaValue } from './resolveSchemaValue'
+import { ERRORS as E } from './errors'
+import { isReference } from './isReference'
+import { resolveReference } from './resolveReference'
+import { resolveSchemaArray } from './resolveSchemaArray'
+import { resolveSchemaBoolean } from './resolveSchemaBoolean'
+import { resolveSchemaNumber } from './resolveSchemaNumber'
+import { resolveSchemaObject } from './resolveSchemaObject'
+import { resolveSchemaOneOf } from './resolveSchemaOneOf'
+import { resolveSchemaString } from './resolveSchemaString'
 
-export interface ResolveSchemaOptions {
-  data?: ObjectLike
-  schema?: Record<string, InputSocket | OutputSocket>
-  resolvers?: ReferenceResolver[]
-  skipErrors?: boolean
-}
-
-/**
- * Resolve the input object by iterating over the input schema and resolving the
- * input values. If the value is an array, each value in the array is resolved.
- *
- * @param options The options to resolve the input object.
- * @returns The resolved input object.
- * @example
- *
- * // Resolve an input object.
- * const input = resolveSchema({ name: 'John Doe' }, { name: { type: string } }, []) // { name: 'John Doe' }
- */
-export async function resolveSchema(options: ResolveSchemaOptions): Promise<ObjectLike> {
-  const { data = {}, schema = {}, resolvers = [], skipErrors = false } = options
-  const resolved: ObjectLike = {}
-  const errors: Record<string, Error> = {}
-
-  // --- Iterate over the input schema and resolve the input values.
-  for (const key in schema) {
-    const value = data[key]
-    try { resolved[key] = await resolveSchemaValue(value, schema[key], resolvers) }
-    catch (error) {
-      errors[key] = error as Error
-      if (skipErrors) continue
-    }
+export async function resolveSchema(
+  path: string,
+  value: unknown,
+  schema: InputSocket | OutputSocket,
+  resolvers: ReferenceResolver[] = [],
+): Promise<unknown> {
+  if (isReference(value)) {
+    value = await resolveReference(value, resolvers)
+    if (value === undefined) throw E.REFERENCE_NOT_RESOLVED(path)
   }
 
-  // --- If there are any errors, throw an error with the list of errors.
-  if (!skipErrors && Object.keys(errors).length > 0) {
-    throw createError({
-      name: 'SCHEMA_RESOLVE_ERROR',
-      message: 'Failed to resolve the schema.',
-      context: errors,
-    })
+  if (value === undefined || value === null) {
+    if ('x-optional' in schema && schema['x-optional'] === true) return schema.default
+    throw E.INPUT_REQUIRED(path)
   }
 
-  // --- Return the resolved input so far.
-  return resolved
+  else if (schema.oneOf) {
+    return resolveSchemaOneOf(path, value, schema.oneOf as OpenAPIV3.SchemaObject[], resolvers)
+  }
+
+  else if (schema.anyOf) {
+    return resolveSchemaOneOf(path, value, schema.anyOf as OpenAPIV3.SchemaObject[], resolvers)
+  }
+
+  else if (schema.type === 'string') {
+    return resolveSchemaString(path, value, schema)
+  }
+
+  else if (schema.type === 'number' || schema.type === 'integer') {
+    return resolveSchemaNumber(path, value, schema)
+  }
+
+  else if (schema.type === 'boolean') {
+    return resolveSchemaBoolean(path, value)
+  }
+
+  else if (schema.type === 'array') {
+    return resolveSchemaArray(path, value, schema, resolvers)
+  }
+
+  else if (schema.type === 'object') {
+    return resolveSchemaObject(path, value, schema, resolvers)
+  }
+
+  return value
 }

@@ -2,35 +2,37 @@
 import type { OpenAPIV3 } from 'openapi-types'
 import type { ReferenceResolver } from './resolveReference'
 import { ERRORS as E } from './errors'
-import { resolveSchemaValue } from './resolveSchemaValue'
+import { resolveSchema } from './resolveSchema'
 
 export async function resolveSchemaObject(
+  path: string,
   value: unknown,
   schema: OpenAPIV3.SchemaObject,
   resolvers: ReferenceResolver[] = [],
 ): Promise<Record<string, unknown>> {
-  if (typeof value !== 'object' || value === null) throw E.INPUT_NOT_OBJECT()
+  if (typeof value !== 'object' || value === null) throw E.INPUT_NOT_OBJECT(path)
   const resolved: Record<string, unknown> = {}
 
   // --- Resolve each property in the object.
   for (const key in schema.properties) {
     const propertySchema = schema.properties[key] as OpenAPIV3.SchemaObject
     const propertyValue = (value as Record<string, unknown>)[key]
-    resolved[key] = await resolveSchemaValue(propertyValue, propertySchema, resolvers)
+    const propertyPath = `${path}.${key}`
+    resolved[key] = await resolveSchema(propertyPath, propertyValue, propertySchema, resolvers)
   }
 
   // --- Assert required properties.
   if (schema.required) {
     const missing: string[] = []
     for (const key of schema.required) if (resolved[key] === undefined) missing.push(key)
-    if (missing.length > 0) throw E.INPUT_OBJECT_MISSING_PROPERTIES(missing)
+    if (missing.length > 0) throw E.INPUT_OBJECT_MISSING_PROPERTIES(path, missing)
   }
 
   // --- Assert no additional properties.
   if (schema.additionalProperties === false && schema.properties) {
     const expected = Object.keys(schema.properties)
     const extra = Object.keys(value).filter(key => !expected.includes(key))
-    if (extra.length > 0) throw E.INPUT_OBJECT_EXTRA_PROPERTIES(extra)
+    if (extra.length > 0) throw E.INPUT_OBJECT_EXTRA_PROPERTIES(path, extra)
   }
 
   // --- Resolve additional properties schema.
@@ -39,7 +41,8 @@ export async function resolveSchemaObject(
     for (const key in value) {
       if (schema.properties && key in schema.properties) continue
       const propertyValue = (value as Record<string, unknown>)[key]
-      resolved[key] = await resolveSchemaValue(propertyValue, additionalSchema, resolvers)
+      const propertyPath = `${path}.${key}`
+      resolved[key] = await resolveSchema(propertyPath, propertyValue, additionalSchema, resolvers)
     }
   }
 
@@ -48,17 +51,20 @@ export async function resolveSchemaObject(
     for (const key in value) {
       if (schema.properties && key in schema.properties) continue
       const propertyValue = (value as Record<string, unknown>)[key]
-      resolved[key] = await resolveSchemaValue(propertyValue, {}, resolvers)
+      const propertyPath = `${path}.${key}`
+      resolved[key] = await resolveSchema(propertyPath, propertyValue, {}, resolvers)
     }
   }
 
   // --- Assert minProperties.
   if (schema.minProperties !== undefined && Object.keys(resolved).length < schema.minProperties)
-    throw E.INPUT_OBJECT_TOO_FEW_PROPERTIES(schema.minProperties)
+    throw E.INPUT_OBJECT_TOO_FEW_PROPERTIES(path, schema.minProperties)
 
   // --- Assert maxProperties.
   if (schema.maxProperties !== undefined && Object.keys(resolved).length > schema.maxProperties)
-    throw E.INPUT_OBJECT_TOO_MANY_PROPERTIES(schema.maxProperties)
+    throw E.INPUT_OBJECT_TOO_MANY_PROPERTIES(path, schema.maxProperties)
 
-  return resolved
+  // --- Return the resolved object. If a `properties` option was given, only return
+  // --- the passed properties. Otherwise, return a shallow copy of the object.
+  return schema.properties ? resolved : { ...value } as Record<string, unknown>
 }

@@ -1,4 +1,5 @@
 import type { Thread } from './createThread'
+import { createEventMetadata } from './createEventMetadata'
 
 /**
  * Aborts a thread and all its nodes.
@@ -7,7 +8,6 @@ import type { Thread } from './createThread'
  */
 export function abort(thread: Thread) {
   thread.abortController.abort()
-  thread.dispatch('abort', thread.eventMetadata)
+  thread.dispatch('abort', createEventMetadata(thread))
   thread.abortController = new AbortController()
-  for (const [, node] of thread.nodes) node.abort()
 }
