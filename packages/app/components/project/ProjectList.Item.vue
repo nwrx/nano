@@ -67,7 +67,7 @@ const { isOverDropZone } = useDropZone(dropzone, {
       <BaseIcon
         icon="i-carbon:chevron-down"
         :class="{ 'rotate-180': model }"
-        class="cursor-pointer size-8 opacity-40 group-hover:opacity-100 transition duration-slow"
+        class="cursor-pointer shrink-0 size-8 opacity-40 group-hover:opacity-100 transition duration-slow"
       />
 
       <!-- Header -->
