@@ -1,5 +1,5 @@
 /* eslint-disable sonarjs/cognitive-complexity */
-import type { OpenAPIV3 } from 'openapi-types'
+import type { SocketSchema } from './defineComponent'
 import type { ReferenceResolver } from './resolveReference'
 import { ERRORS as E } from './errors'
 import { resolveSchema } from './resolveSchema'
@@ -7,7 +7,7 @@ import { resolveSchema } from './resolveSchema'
 export async function resolveSchemaObject(
   path: string,
   value: unknown,
-  schema: OpenAPIV3.SchemaObject,
+  schema: SocketSchema,
   resolvers: ReferenceResolver[] = [],
 ): Promise<Record<string, unknown>> {
   if (typeof value !== 'object' || value === null) throw E.INPUT_NOT_OBJECT(path)
@@ -15,7 +15,7 @@ export async function resolveSchemaObject(
 
   // --- Resolve each property in the object.
   for (const key in schema.properties) {
-    const propertySchema = schema.properties[key] as OpenAPIV3.SchemaObject
+    const propertySchema = schema.properties[key]
     const propertyValue = (value as Record<string, unknown>)[key]
     const propertyPath = `${path}.${key}`
     resolved[key] = await resolveSchema(propertyPath, propertyValue, propertySchema, resolvers)
@@ -37,7 +37,7 @@ export async function resolveSchemaObject(
 
   // --- Resolve additional properties schema.
   if (typeof schema.additionalProperties === 'object' && schema.additionalProperties !== null) {
-    const additionalSchema = schema.additionalProperties as OpenAPIV3.SchemaObject
+    const additionalSchema = schema.additionalProperties
     for (const key in value) {
       if (schema.properties && key in schema.properties) continue
       const propertyValue = (value as Record<string, unknown>)[key]

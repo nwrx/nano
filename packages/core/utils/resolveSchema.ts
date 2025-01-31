@@ -1,5 +1,4 @@
-import type { OpenAPIV3 } from 'openapi-types'
-import type { InputSocket, OutputSocket } from './defineComponent'
+import type { SocketSchema } from './defineComponent'
 import type { ReferenceResolver } from './resolveReference'
 import { ERRORS as E } from './errors'
 import { isReference } from './isReference'
@@ -14,7 +13,7 @@ import { resolveSchemaString } from './resolveSchemaString'
 export async function resolveSchema(
   path: string,
   value: unknown,
-  schema: InputSocket | OutputSocket,
+  schema: SocketSchema,
   resolvers: ReferenceResolver[] = [],
 ): Promise<unknown> {
   if (isReference(value)) {
@@ -28,11 +27,11 @@ export async function resolveSchema(
   }
 
   else if (schema.oneOf) {
-    return resolveSchemaOneOf(path, value, schema.oneOf as OpenAPIV3.SchemaObject[], resolvers)
+    return resolveSchemaOneOf(path, value, schema.oneOf, resolvers)
   }
 
   else if (schema.anyOf) {
-    return resolveSchemaOneOf(path, value, schema.anyOf as OpenAPIV3.SchemaObject[], resolvers)
+    return resolveSchemaOneOf(path, value, schema.anyOf, resolvers)
   }
 
   else if (schema.type === 'string') {

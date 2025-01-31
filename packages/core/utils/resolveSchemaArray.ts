@@ -1,4 +1,4 @@
-import type { OpenAPIV3 } from 'openapi-types'
+import type { SocketSchema } from './defineComponent'
 import type { ReferenceResolver } from './resolveReference'
 import { ERRORS as E } from './errors'
 import { resolveSchema } from './resolveSchema'
@@ -6,7 +6,7 @@ import { resolveSchema } from './resolveSchema'
 export async function resolveSchemaArray(
   path: string,
   value: unknown,
-  schema: OpenAPIV3.ArraySchemaObject,
+  schema: SocketSchema,
   resolvers: ReferenceResolver[] = [],
 ): Promise<unknown[]> {
   if (!Array.isArray(value)) throw E.INPUT_NOT_ARRAY(path)
@@ -31,10 +31,13 @@ export async function resolveSchemaArray(
     if (extra.size > 0) throw E.INPUT_ARRAY_NOT_UNIQUE(path, [...extra])
   }
 
+  // --- If no `items` schema is provided, return the value as is.
+  if (!schema.items) return value as unknown[]
+
   // --- Resolve and assert each item in the array.
   const promises = value.map((value, index) => {
     const nestedPath = `${path}[${index}]`
-    return resolveSchema(nestedPath, value, schema.items as OpenAPIV3.SchemaObject, resolvers)
+    return resolveSchema(nestedPath, value, schema.items!, resolvers)
   })
   return await Promise.all(promises)
 }

@@ -1,10 +1,10 @@
-import type { OpenAPIV3 } from 'openapi-types'
+import type { SocketSchema } from './defineComponent'
 import { ERRORS as E } from './errors'
 
 export function resolveSchemaString(
   path: string,
   value: unknown,
-  schema: OpenAPIV3.SchemaObject,
+  schema: SocketSchema,
 ): string {
   if (typeof value !== 'string')
     throw E.INPUT_NOT_STRING(path)
