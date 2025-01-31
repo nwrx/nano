@@ -74,7 +74,7 @@ const { setLocale, locale } = useI18n()
           </template>
 
           <!-- Page -->
-          <NuxtPage transition/>
+          <NuxtPage/>
         </NuxtErrorBoundary>
       </main>
     </div>
