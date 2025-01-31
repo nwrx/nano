@@ -118,4 +118,18 @@ export const ERRORS = {
     statusMessage: 'Bad Request',
     message: 'The recovery token has expired',
   }),
+
+  // --- Updates
+  USER_ALREADY_ENABLED: () => createError({
+    name: 'E_USER_ALREADY_ENABLED',
+    statusCode: 400,
+    statusMessage: 'Bad Request',
+    message: 'The user is already enabled',
+  }),
+  USER_ALREADY_DISABLED: () => createError({
+    name: 'E_USER_ALREADY_DISABLED',
+    statusCode: 400,
+    statusMessage: 'Bad Request',
+    message: 'The user is already disabled',
+  }),
 }
