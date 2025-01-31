@@ -125,8 +125,16 @@ export const modelOllama = defineNode({
           model: data.model,
           messages: [{ role: 'user', content: prompt }],
         }),
-        getCompletion: ({ message }: OllamaChatResponse) =>
-          message.content,
+        getCompletion: (response: OllamaChatResponse) => {
+          const { message, eval_count, prompt_eval_count, created_at } = response
+          return {
+            completion: message.content,
+            fingerprint: created_at,
+            tokensPrompt: prompt_eval_count,
+            tokensCompletion: eval_count,
+            tokensTotal: prompt_eval_count + eval_count,
+          }
+        },
       },
     }
   },
