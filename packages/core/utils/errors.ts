@@ -119,9 +119,15 @@ export const ERRORS = {
     name: 'E_REFERENCE_WRONG_TYPE',
     context: { type, expected },
   }),
-  REFERENCE_MISSING_NAME: (ref: string) => createError({
-    message: `The reference "${ref}" does not contain a name`,
-    name: 'E_REFERENCE_MISSING_NAME',
+  REFERENCE_TO_PENDING_NODE: (sourceId: string) => createError({
+    message: `The reference to the "${sourceId}" node could not be resolved as this node is still pending. This is likely a circular dependency.`,
+    name: 'E_REFERENCE_TO_PENDING_NODE',
+    context: { sourceId },
+  }),
+  REFERENCE_TO_TOOL_BUT_NO_PROCESS_FUNCTION: (sourceId: string) => createError({
+    message: `A tool reference to the node "${sourceId}" could not be resolved as the component does not have a process function`,
+    name: 'E_REFERENCE_TO_TOOL_BUT_NO_PROCESS_FUNCTION',
+    context: { sourceId },
   }),
 
   /***************************************************************************/
@@ -295,6 +301,13 @@ export const ERRORS = {
   INPUT_STREAM_LOCKED: (path: string) => createError({
     message: `The input stream at "${path}" is locked`,
     name: 'E_INPUT_STREAM_LOCKED',
+    context: { path },
+  }),
+
+  // File errors.
+  INPUT_NOT_FILE: (path: string) => createError({
+    message: `The input at "${path}" is not a file`,
+    name: 'E_INPUT_NOT_FILE',
     context: { path },
   }),
 }

@@ -13,11 +13,21 @@ describe('DEFAULT_REFERENCE_RESOLVER', () => {
 
     it('should resolve a reference to the result of a node', async() => {
       const thread = createThread()
-      const id = addNode(thread, 'example', { component })
-      const node = thread.nodes.get(id)!
+      const nodeId = addNode(thread, 'example', { component })
+      const node = thread.nodes.get(nodeId)!
+      node.state = 'done'
       node.result = { output: 'test-result' }
-      const result = await DEFAULT_REFERENCE_RESOLVER.call(thread, 'Nodes', id, 'output')
+      const result = await DEFAULT_REFERENCE_RESOLVER.call(thread, 'Nodes', nodeId, 'output')
       expect(result).toBe('test-result')
+    })
+
+    it('should return undefined if the result is undefined', async() => {
+      const thread = createThread()
+      const nodeId = addNode(thread, 'example', { component })
+      const node = thread.nodes.get(nodeId)!
+      node.state = 'done'
+      const result = await DEFAULT_REFERENCE_RESOLVER.call(thread, 'Nodes', nodeId, 'output')
+      expect(result).toBeUndefined()
     })
 
     it('should throw if the node is not found', async() => {
@@ -29,88 +39,66 @@ describe('DEFAULT_REFERENCE_RESOLVER', () => {
 
     it('should throw if the node output socket does not exist', async() => {
       const thread = createThread()
-      const id = addNode(thread, 'example', { component })
-      const shouldReject = DEFAULT_REFERENCE_RESOLVER.call(thread, 'Nodes', id, 'invalid-socket')
-      const error = E.NODE_OUTPUT_SOCKET_NOT_FOUND(id, 'invalid-socket')
+      const nodeId = addNode(thread, 'example', { component })
+      const node = thread.nodes.get(nodeId)!
+      node.state = 'done'
+      const shouldReject = DEFAULT_REFERENCE_RESOLVER.call(thread, 'Nodes', nodeId, 'invalid-socket')
+      const error = E.NODE_OUTPUT_SOCKET_NOT_FOUND(nodeId, 'invalid-socket')
       await expect(shouldReject).rejects.toThrow(error)
     })
 
-    it('should return undefined if the result is undefined', async() => {
+    it('should throw if the node is not done', async() => {
       const thread = createThread()
-      const id = addNode(thread, 'example', { component })
-      const result = await DEFAULT_REFERENCE_RESOLVER.call(thread, 'Nodes', id, 'output')
-      expect(result).toBeUndefined()
+      const nodeId = addNode(thread, 'example', { component })
+      const shouldReject = DEFAULT_REFERENCE_RESOLVER.call(thread, 'Nodes', nodeId, 'output')
+      const error = E.REFERENCE_TO_PENDING_NODE(nodeId)
+      await expect(shouldReject).rejects.toThrow(error)
     })
   })
 
   describe('Tools', () => {
-    const component = defineComponent({
-      inputs: {
-        valueOptional: {
-          'type': 'string',
-          'x-optional': true,
-        },
-        valueRequired: {
-          type: 'object',
-          properties: {
-            key: { type: 'string' },
-          },
-        },
-      },
-      outputs: {
-        result: {
-          type: 'string',
-        },
-      },
-    }, () => ({ result: 'test-result' }))
-
     it('should resolve a reference to a tool', async() => {
       const thread = createThread()
-      const id = addNode(thread, 'example', { component })
-      const result = await DEFAULT_REFERENCE_RESOLVER.call(thread, 'Tools', id)
+      const component = defineComponent({}, () => ({ result: 'Hello, World!' }))
+      const nodeId = addNode(thread, 'example', { component })
+      const result = await DEFAULT_REFERENCE_RESOLVER.call(thread, 'Nodes', nodeId)
       expect(result).toStrictEqual({
         call: expect.any(Function),
+        name: nodeId,
+        nodeId,
         description: '',
-        name: 'core/example',
-        parameters: {
-          properties: {
-            __toolMessage: {
-              type: 'string',
-              description: expect.any(String),
-            },
-            __toolName: {
-              type: 'string',
-              description: expect.any(String),
-            },
-            valueOptional: {
-              'type': 'string',
-              'x-optional': true,
-            },
-            valueRequired: {
-              type: 'object',
-              properties: { key: { type: 'string' } },
-            },
-          },
-          required: [
-            'valueRequired',
-          ],
-          type: 'object',
-        },
+        parameters: expect.any(Object),
       })
     })
 
-    it('should return undefined if the component\'s inputs are undefined', async() => {
+    it('should use the title as the tool name if provided', async() => {
       const thread = createThread()
-      const id = addNode(thread, 'example', { component: { ...component, inputs: undefined } })
-      const result = await DEFAULT_REFERENCE_RESOLVER.call(thread, 'Tools', id)
-      expect(result).toBeUndefined()
+      const component = defineComponent({ title: 'Example Tool Component' }, () => ({ result: 'Hello, World!' }))
+      const nodeId = addNode(thread, 'example', { component })
+      const result = await DEFAULT_REFERENCE_RESOLVER.call(thread, 'Nodes', nodeId)
+      expect(result).toStrictEqual({
+        call: expect.any(Function),
+        name: 'example-tool-component',
+        nodeId,
+        description: '',
+        parameters: expect.any(Object),
+      })
     })
 
-    it('should return undefined if the component\'s process is undefined', async() => {
+    it('should throw an error of the node component does not have a call function', async() => {
       const thread = createThread()
-      const id = addNode(thread, 'example', { component: { ...component, process: undefined } })
-      const result = await DEFAULT_REFERENCE_RESOLVER.call(thread, 'Tools', id)
-      expect(result).toBeUndefined()
+      const component = defineComponent({})
+      const nodeId = addNode(thread, 'example', { component })
+      const shouldReject = DEFAULT_REFERENCE_RESOLVER.call(thread, 'Nodes', nodeId)
+      const error = E.REFERENCE_TO_TOOL_BUT_NO_PROCESS_FUNCTION(nodeId)
+      await expect(shouldReject).rejects.toThrow(error)
+    })
+
+    it('should throw an error if the node is not found', async() => {
+      const thread = createThread()
+      const shouldReject = DEFAULT_REFERENCE_RESOLVER.call(thread, 'Nodes', 'invalid-id')
+      const error = E.NODE_NOT_FOUND('invalid-id')
+      await expect(shouldReject).rejects.toThrow(error)
     })
   })
 })
