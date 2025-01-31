@@ -16,7 +16,6 @@ export function isThreadRunning(thread: Thread, links = getLinks(thread)): boole
     if (isNodeUsedAsTool(thread, id, links)) continue
     if (node.state === 'starting') return true
     if (node.state === 'processing') return true
-    if (node.state === 'idle') return true
   }
   return false
 }
