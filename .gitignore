@@ -1,15 +1,16 @@
-# Nuxt dev/build outputs
+# Outputs
 .output
 .data
 .nuxt
 .nitro
 .cache
+.coverage
 .assets
 dist
 components.d.ts
 auto-imports.d.ts
 
-# Node dependencies
+# Dependencies
 node_modules
 
 # Logs
