@@ -4,12 +4,12 @@ export const NAV_USER_SETTINGS: NavItem[] = [
       {
         label: 'Profile',
         icon: 'i-carbon:user',
-        to: '/settings',
+        to: { name: 'SettingsProfile' },
       },
       {
         label: 'Account',
-        to: '/settings/account',
         icon: 'i-carbon:settings',
+        to: { name: 'SettingsAccount' },
       },
       {
         label: 'Notifications',
