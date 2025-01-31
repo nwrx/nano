@@ -1,16 +1,16 @@
-import { FlowThreadEvents } from '@nwrx/core'
+import { FlowThreadNodeEvents } from '@nwrx/core'
 import { BaseEntity, transformerDate, transformerJson } from '@unserved/server'
 import { ObjectLike } from '@unshared/types'
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
 import { FlowThread } from './FlowThread'
 
 /**
- * A `FlowThreadEvent` is used to log the events that occurred during the execution
- * of a flow. It is used to store the information about the event such as the
- * type, message, etc.
+ * A `FlowThreadNodeEvent` is used to log the events that occurred during the
+ * execution of a flow node. It is used to store the information about the event
+ * such as the type, message, etc.
  */
-@Entity({ name: 'FlowThreadEvent' })
-export class FlowThreadEvent extends BaseEntity {
+@Entity({ name: 'FlowThreadNodeEvent' })
+export class FlowThreadNodeEvent extends BaseEntity {
 
   /**
    * The type of the event. It is used to determine the action that was performed
@@ -19,7 +19,28 @@ export class FlowThreadEvent extends BaseEntity {
    * @example 'start'
    */
   @Column('varchar', { length: 255 })
-  event: keyof FlowThreadEvents
+  event: keyof FlowThreadNodeEvents
+
+  /**
+   * The ID of the node in the flow. It is used to determine the node that the event
+   * was triggered on.
+   */
+  @Column('varchar', { length: 255 })
+  node: string
+
+  /**
+   * The kind of the node that the event is associated with. It is used to determine
+   * the type of the node that the event was triggered on.
+   */
+  @Column('varchar', { length: 255 })
+  kind: string
+
+  /**
+   * The duration of the event. It is used to determine the time taken to perform
+   * a non-blocking action.
+   */
+  @Column('int', { default: 0 })
+  duration: number
 
   /**
    * The timestamp when the event occurred. It is used to determine the time when
@@ -50,25 +71,29 @@ export class FlowThreadEvent extends BaseEntity {
    * @example FlowSession { ... }
    */
   @JoinColumn()
-  @ManyToOne(() => FlowThread, run => run.events, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => FlowThread, thread => thread.nodeEvents, { nullable: false, onDelete: 'CASCADE' })
   thread: FlowThread
 
   /**
    * @returns The object representation of the event.
    */
-  serialize(): FlowThreadEventObject {
+  serialize() {
     return {
       event: this.event,
-      data: this.data,
-      delta: this.delta,
+      kind: this.kind,
+      duration: this.duration,
       timestamp: this.timestamp,
+      delta: this.delta,
+      data: this.data,
     }
   }
 }
 
-export interface FlowThreadEventObject {
-  event: keyof FlowThreadEvents
-  data: ObjectLike
-  delta: number
+export interface FlowThreadNodeEventObject {
+  event: keyof FlowThreadNodeEvents
+  kind: string
+  duration: number
   timestamp?: Date
+  delta: number
+  data: ObjectLike
 }

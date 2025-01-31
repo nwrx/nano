@@ -1,3 +1,4 @@
+export * from './captureFlowThreadEvents'
 export * from './errors'
 export * from './flowSessionMessageSchema'
 export * from './resolveFlowEntity'

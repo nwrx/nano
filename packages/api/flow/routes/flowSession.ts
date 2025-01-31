@@ -3,7 +3,7 @@ import { createRoute } from '@unserved/server'
 import { assert, createSchema } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
-import { FLOW_SESSION_MESSAGE_SCHEMA } from '../utils'
+import { captureFlowThreadEvents, FLOW_SESSION_MESSAGE_SCHEMA, resolveFlowEntity, resolveFlowSession, resolveFlowSessionByPeer } from '../utils'
 
 export function flowSession(this: ModuleFlow) {
   return createRoute(
@@ -37,12 +37,13 @@ export function flowSession(this: ModuleFlow) {
           // --- Resolve the flow and check if the user has access to it.
           const workspace = await workspaceModule.resolveWorkspace({ user, name: workspaceName, permission: 'Read' })
           const project = await workspaceModule.resolveProject({ workspace, name: projectName, permission: 'Read' })
-          const flowEntity = await this.resolveFlowEntity({ name: flowName, project, workspace })
+          const flowEntity = await resolveFlowEntity.call(this, { name: flowName, project, workspace })
           if (!flowEntity) throw this.errors.FLOW_NOT_FOUND(workspaceName, projectName, flowName)
 
           // --- Create or retrieve the flow session and subscribe the peer to it.
-          const session = this.resolveFlowSession(flowEntity)
+          const session = resolveFlowSession.call(this, flowEntity)
           await session.subscribe(peer, user)
+          await captureFlowThreadEvents.call(this, session.thread, flowEntity)
         }
 
         // --- When an error occurs, send an error message to the client
@@ -77,7 +78,7 @@ export function flowSession(this: ModuleFlow) {
        * @param context.peer The peer that connected to the WebSocket.
        */
       onClose: ({ peer }) => {
-        const session = this.resolveFlowSessionByPeer(peer)
+        const session = resolveFlowSessionByPeer.call(this, peer)
         if (session) session.unsubscribe(peer)
       },
 
@@ -92,7 +93,7 @@ export function flowSession(this: ModuleFlow) {
        * @param context.message The message that was received from the client.
        */
       onMessage: async({ peer, message }) => {
-        const session = this.resolveFlowSessionByPeer(peer)
+        const session = resolveFlowSessionByPeer.call(this, peer)
         if (!session) throw new Error('Flow session not found for peer')
         await session.onMessage(peer, message)
       },
