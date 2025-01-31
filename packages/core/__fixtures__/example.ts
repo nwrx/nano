@@ -13,7 +13,7 @@ const flow = new Flow([], {
   ],
 })
 
-flow.create({
+flow.createNode({
   id: 'input-message',
   kind: 'core/input',
   input: {
@@ -26,7 +26,7 @@ flow.create({
   },
 })
 
-flow.create({
+flow.createNode({
   id: 'transform-uppercase',
   kind: 'core/transform',
   input: {
@@ -38,7 +38,7 @@ flow.create({
   },
 })
 
-flow.create({
+flow.createNode({
   id: 'message',
   kind: 'core/output',
   input: {
