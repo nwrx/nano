@@ -24,6 +24,15 @@ export const useSession = createSharedComposable(() => {
 
   return {
     data: toReactive(session),
+
+    /**
+     * Refresh the current session data. This will fetch the session data from the API
+     * and update the session object with the new data. If the session data is already
+     * available, this will not fetch the data again unless the `force` parameter is set.
+     *
+     * @param force Whether to force the refresh even if the session data is already available.
+     * @returns The current session data.
+     */
     refresh,
 
     /**
