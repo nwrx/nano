@@ -1,8 +1,71 @@
 {
-  "name": "@maestrau/core",
+  "name": "@nanoworks/core",
   "type": "module",
+  "version": "0.0.1",
+  "license": "MIT",
   "sideEffects": false,
+  "author": "Stanley Horwood <stanley@hsjm.io>",
+  "bugs": "https://github.com/maestrau/maestrau-ce/issues",
+  "homepage": "https://github.com/maestrau/maestrau-ce#readme",
+  "repository": {
+    "directory": "packages/core",
+    "type": "git",
+    "url": "git@github.com:maestrau/maestrau-ce.git"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./createFlow": {
+      "require": "./dist/createFlow.cjs",
+      "types": "./dist/createFlow.d.ts",
+      "import": "./dist/createFlow.js"
+    },
+    "./createFlowNodeInstance": {
+      "require": "./dist/createFlowNodeInstance.cjs",
+      "types": "./dist/createFlowNodeInstance.d.ts",
+      "import": "./dist/createFlowNodeInstance.js"
+    },
+    "./createSchemaParser": {
+      "require": "./dist/createSchemaParser.cjs",
+      "types": "./dist/createSchemaParser.d.ts",
+      "import": "./dist/createSchemaParser.js"
+    },
+    "./defineFlowModule": {
+      "require": "./dist/defineFlowModule.cjs",
+      "types": "./dist/defineFlowModule.d.ts",
+      "import": "./dist/defineFlowModule.js"
+    },
+    "./defineFlowNode": {
+      "require": "./dist/defineFlowNode.cjs",
+      "types": "./dist/defineFlowNode.d.ts",
+      "import": "./dist/defineFlowNode.js"
+    },
+    "./defineFlowType": {
+      "require": "./dist/defineFlowType.cjs",
+      "types": "./dist/defineFlowType.d.ts",
+      "import": "./dist/defineFlowType.js"
+    },
+    "./types": {
+      "require": "./dist/types.cjs",
+      "types": "./dist/types.d.ts",
+      "import": "./dist/types.js"
+    },
+    ".": {
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE.md"
+  ],
   "dependencies": {
-    "unshared": "0.0.15"
+    "@unshared/collection": "0.0.16",
+    "@unshared/string": "0.0.16",
+    "@unshared/types": "0.0.16",
+    "@unshared/validation": "0.0.16"
   }
 }
