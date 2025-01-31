@@ -36,7 +36,7 @@ describe('resolveSchemaNumber', () => {
 
     it('should throw an error if the number is below the minimum', () => {
       const shouldThrow = () => resolveSchemaNumber('value', 39, { type: 'number', minimum: 40 })
-      const error = E.INPUT_TOO_SMALL('value', 40)
+      const error = E.INPUT_NUMBER_TOO_SMALL('value', 40)
       expect(shouldThrow).toThrow(error)
     })
   })
@@ -49,7 +49,7 @@ describe('resolveSchemaNumber', () => {
 
     it('should throw an error if the number is equal to the minimum', () => {
       const shouldThrow = () => resolveSchemaNumber('value', 40, { type: 'number', minimum: 40, exclusiveMinimum: true })
-      const error = E.INPUT_NOT_EXCEED_MINIMUM('value', 40)
+      const error = E.INPUT_NUMBER_NOT_EXCEED_MINIMUM('value', 40)
       expect(shouldThrow).toThrow(error)
     })
   })
@@ -62,7 +62,7 @@ describe('resolveSchemaNumber', () => {
 
     it('should throw an error if the number is above the maximum', () => {
       const shouldThrow = () => resolveSchemaNumber('value', 51, { type: 'number', maximum: 50 })
-      const error = E.INPUT_TOO_LARGE('value', 50)
+      const error = E.INPUT_NUMBER_TOO_LARGE('value', 50)
       expect(shouldThrow).toThrow(error)
     })
   })
@@ -75,7 +75,7 @@ describe('resolveSchemaNumber', () => {
 
     it('should throw an error if the number is equal to the maximum', () => {
       const shouldThrow = () => resolveSchemaNumber('value', 50, { type: 'number', maximum: 50, exclusiveMaximum: true })
-      const error = E.INPUT_NOT_BELOW_MAXIMUM('value', 50)
+      const error = E.INPUT_NUNBER_NOT_BELOW_MAXIMUM('value', 50)
       expect(shouldThrow).toThrow(error)
     })
   })
@@ -88,7 +88,7 @@ describe('resolveSchemaNumber', () => {
 
     it('should throw an error if the number is not a multiple of the given value', () => {
       const shouldThrow = () => resolveSchemaNumber('value', 7, { type: 'number', multipleOf: 5 })
-      const error = E.INPUT_NOT_MULTIPLE_OF('value', 5)
+      const error = E.INPUT_NUMBER_NOT_MULTIPLE_OF('value', 5)
       expect(shouldThrow).toThrow(error)
     })
   })
@@ -101,7 +101,7 @@ describe('resolveSchemaNumber', () => {
 
     it('should throw an error if the value is not an integer', () => {
       const shouldThrow = () => resolveSchemaNumber('value', 42.5, { type: 'integer' })
-      const error = E.INPUT_NOT_INTEGER('value')
+      const error = E.INPUT_NUMBER_NOT_INTEGER('value')
       expect(shouldThrow).toThrow(error)
     })
   })
