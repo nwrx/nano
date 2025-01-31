@@ -10,7 +10,7 @@ const emit = defineEmits<{
   'submit': []
 }>()
 
-const { t } = useI18n({ useScope: 'local' })
+const { t } = useI18n()
 const model = useVModel(props, 'modelValue', emit, { passive: true })
 </script>
 

@@ -18,7 +18,7 @@ const emit = defineEmits<{
 }>()
 
 // --- Load i18n instance.
-const { t, locale } = useI18n({ useScope: 'local' })
+const { t, locale } = useI18n()
 
 // --- Dialog states.
 const isDialogDeleteOpen = ref(false)

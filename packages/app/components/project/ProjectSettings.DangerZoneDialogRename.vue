@@ -10,7 +10,7 @@ const emit = defineEmits<{
   'submit': [value: string]
 }>()
 
-const { t } = useI18n({ useScope: 'local' })
+const { t } = useI18n()
 const model = useVModel(props, 'modelValue', emit, { passive: true })
 const name = ref('')
 </script>
@@ -20,6 +20,7 @@ const name = ref('')
     v-model="model"
     icon="i-carbon:label"
     class-hint="hint-warning"
+    class-button="button-warning"
     :title="t('title', { title })"
     :text="t('text', { workspace, project })"
     :label-cancel="t('button.cancel')"

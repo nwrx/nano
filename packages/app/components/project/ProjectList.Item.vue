@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import type { WorkspaceProjectObject } from '@nwrx/api'
 
-const props = defineProps<{
+const props = defineProps<WorkspaceProjectObject & {
   workspace: string
   modelValue?: boolean
-} & WorkspaceProjectObject>()
+}>()
 
 const emit = defineEmits<{
   delete: []
@@ -17,7 +17,7 @@ const emit = defineEmits<{
 }>()
 
 // --- Localize & VModel
-const { t } = useI18n({ useScope: 'local' })
+const { t } = useI18n()
 const model = useVModel(props, 'modelValue', emit, {
   passive: true,
 })
@@ -131,14 +131,12 @@ const { isOverDropZone } = useDropZone(dropzone, {
         />
 
         <!-- Create flow button -->
-        <Button
-          link
+        <Hyperlink
           :label="t('createFlow')"
-          class="text-subtle my-md"
+          class="text-sm my-md"
           icon-prepend="i-carbon:flow"
           icon-append="i-carbon:chevron-right"
           icon-expand
-          size="sm"
           @click="() => emit('flowCreate')"
         />
       </div>
@@ -157,7 +155,7 @@ fr:
   menu.settings: Modifier
   menu.access: Accès
   menu.delete: Supprimer
-  createFlow: Créer un nouveau Flow dans ce projet
+  createFlow: Créer un nouveau flux dans ce projet
   dropZone: Importer un flux dans le projet **{title}**.
 de:
   menu.settings: Bearbeiten

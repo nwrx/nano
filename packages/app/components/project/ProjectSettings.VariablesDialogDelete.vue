@@ -26,6 +26,7 @@ function submit() {
     v-model="isOpen"
     icon="i-carbon:label"
     class-hint="hint-danger"
+    class-button="button-danger"
     :title="t('title')"
     :text="t('text', { workspace, project })"
     :label-cancel="t('cancel')"

@@ -10,7 +10,7 @@ const emit = defineEmits<{
   'submit': []
 }>()
 
-const { t } = useI18n({ useScope: 'local' })
+const { t } = useI18n()
 const slug = computed(() => `${props.workspace}/${props.project}`)
 const model = useVModel(props, 'modelValue', emit, { passive: true })
 const confirm = ref('')
@@ -21,6 +21,7 @@ const confirm = ref('')
     v-model="model"
     icon="i-carbon:trash-can"
     class-hint="hint-danger"
+    class-button="button-danger"
     :title="t('title', { title: title || project, slug })"
     :text="t('hint', { slug })"
     :label-cancel="t('cancel')"

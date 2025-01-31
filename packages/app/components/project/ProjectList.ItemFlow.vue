@@ -17,13 +17,23 @@ const emit = defineEmits<{
   duplicate: []
 }>()
 
-const { t } = useI18n({ useScope: 'local' })
+const { t } = useI18n()
+
+const chat = 'chat'
 
 function getFlowRoute(workspace: string, project: string, flow: string) {
   if (!workspace || !project || !flow) return
   return {
     name: 'FlowEditor',
     params: { workspace, project, flow },
+  }
+}
+
+function getChatRoute(workspace: string, project: string, flow: string, chat: string) {
+  if (!workspace || !project || !flow) return
+  return {
+    name: 'Chat',
+    params: { workspace, project, flow, chat },
   }
 }
 </script>
@@ -38,8 +48,7 @@ function getFlowRoute(workspace: string, project: string, flow: string) {
     <!-- Left - Name & Description -->
     <div class="w-full">
       <div class="flex items-center space-x-md">
-        <Button
-          link
+        <Hyperlink
           eager
           :icon="icon"
           :label="title"
@@ -97,6 +106,12 @@ function getFlowRoute(workspace: string, project: string, flow: string) {
       <ContextMenu x="right" y="top">
         <template #menu="{ close }">
           <ContextMenuItem
+            :label="t('menu.chat')"
+            icon="i-carbon:chat-bot"
+            keybind="Enter"
+            :to="getChatRoute(workspace, project, name, chat)"
+          />
+          <ContextMenuItem
             :label="t('menu.edit')"
             icon="i-carbon:edit"
             keybind="Ctrl + E"
@@ -139,6 +154,7 @@ function getFlowRoute(workspace: string, project: string, flow: string) {
 
 <i18n lang="yaml">
 en:
+  menu.chat: Chat
   menu.edit: Edit
   menu.delete: Delete
   menu.duplicate: Duplicate
@@ -146,6 +162,7 @@ en:
   menu.publish: Publish
   menu.settings: Settings
 fr:
+  menu.chat: Chat
   menu.edit: Modifier
   menu.delete: Supprimer
   menu.duplicate: Dupliquer
@@ -153,6 +170,7 @@ fr:
   menu.publish: Publier
   menu.settings: Paramètres
 de:
+  menu.chat: Chat
   menu.edit: Bearbeiten
   menu.delete: Löschen
   menu.duplicate: Duplizieren
@@ -160,6 +178,7 @@ de:
   menu.publish: Veröffentlichen
   menu.settings: Einstellungen
 es:
+  menu.chat: Chat
   menu.edit: Editar
   menu.delete: Eliminar
   menu.duplicate: Duplicar
@@ -167,6 +186,7 @@ es:
   menu.publish: Publicar
   menu.settings: Ajustes
 zh:
+  menu.chat: Chat
   menu.edit: 编辑
   menu.delete: 删除
   menu.duplicate: 复制

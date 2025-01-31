@@ -14,7 +14,7 @@ const emit = defineEmits<{
   submit: [username: string, permissions: WorkspaceProjectPermission[]]
 }>()
 
-const { t } = useI18n({ useScope: 'local' })
+const { t } = useI18n()
 const assigments = useVModel(props, 'assigments', emit, { passive: true })
 const assigmentsSelectedIds = ref<UUID[]>([])
 const isAssignDialogOpen = ref(false)

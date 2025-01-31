@@ -11,7 +11,7 @@ const emit = defineEmits<{
   'submit': [value: string]
 }>()
 
-const { t } = useI18n({ useScope: 'local' })
+const { t } = useI18n()
 const isOpen = useVModel(props, 'modelValue', emit, { passive: true })
 const newValue = ref('')
 
@@ -25,6 +25,7 @@ watch(isOpen, (value) => {
     v-model="isOpen"
     icon="i-carbon:label"
     class-hint="hint-warning"
+    class-button="button-warning"
     :title="t('title', { name })"
     :text="t('text', { name, workspace, project })"
     :label-cancel="t('cancel')"

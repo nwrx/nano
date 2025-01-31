@@ -14,7 +14,7 @@ const emit = defineEmits<{
   'submit': [username: string]
 }>()
 
-const { t } = useI18n({ useScope: 'local' })
+const { t } = useI18n()
 const search = ref('')
 const model = useVModel(props, 'modelValue', emit, { passive: true })
 const users = ref<UserObject[]>([])
@@ -29,8 +29,9 @@ watch(search, async() => {
 <template>
   <AppDialog
     v-model="model"
-    class-hint="hint-warning"
     icon="i-carbon:warning"
+    class-hint="hint-warning"
+    class-button="button-warning"
     :title="t('title', { title })"
     :text="t('text', { workspace, project })"
     :label-cancel="t('button.cancel')"
