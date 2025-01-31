@@ -179,9 +179,11 @@ export class Thread extends Emitter<ThreadEvents> implements ThreadOptions {
           }
 
           // --- If all the nodes are done, dispatch the end event.
-          if (this.isRunning) return
-          this.dispatch('end', threadOutput, this.eventMetadata)
-          return resolve(threadOutput)
+          setTimeout(() => {
+            if (this.isRunning) return
+            this.dispatch('end', threadOutput, this.eventMetadata)
+            return resolve(threadOutput)
+          }, 100)
         })
 
         // --- If the node has no incoming links, start the node immediately.
