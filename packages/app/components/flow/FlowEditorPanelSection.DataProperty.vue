@@ -14,7 +14,7 @@ const md = new Markdown({ html: true })
   <div class="flex flex-wrap items-center text-sm not-first:border-t border-editor">
 
     <!-- Name -->
-    <div class="w-3/12 px-sm py-xs border-r border-editor font-sans">
+    <div class="w-3/12 self-start px-sm py-xs border-r border-editor font-sans">
       {{ name }}
     </div>
 
@@ -46,7 +46,7 @@ const md = new Markdown({ html: true })
     <!-- String -->
     <div
       v-else-if="typeof value === 'string'"
-      class="w-8/12 px-sm py-xs whitespace-pre-wrap max-h-128 overflow-y-auto relative">
+      class="w-9/12 p-xs whitespace-pre-wrap max-h-128 overflow-y-auto relative">
 
       <!-- Markdown -->
       <span
