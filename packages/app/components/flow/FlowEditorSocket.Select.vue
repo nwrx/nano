@@ -109,7 +109,7 @@ function setOption(option: SocketListOption<unknown>) {
             absolute left-0 w-full top-full
             bg-editor-panel backdrop-blur-2xl
             p-sm rounded space-y-xs rd
-            b b-editor z-10
+            b b-editor z-10 mt-sm
             overflow-y-auto max-h-100
           "
         @wheel.stop>
