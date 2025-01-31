@@ -40,8 +40,8 @@ const linearGradient = computed(() => ({
   <svg class="w-full h-full pointer-events-none">
     <defs>
       <linearGradient :id v-bind="linearGradient">
-        <stop :stop-color="sourceColor" offset="0.50" />
-        <stop :stop-color="targetColor" offset="0.50" />
+        <stop :stop-color="sourceColor" offset="0.25" />
+        <stop :stop-color="targetColor" offset="0.75" />
       </linearGradient>
     </defs>
     <path
