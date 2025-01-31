@@ -4,7 +4,6 @@ import type { FlowSessionSecretJSON, FlowSessionVariableJSON, NodeInstanceJSON }
 const props = defineProps<{
   id: string
   zoom: number
-  isRunning: boolean
   isDragging: boolean
   isSelected: boolean
   isHighlighted: boolean
@@ -26,8 +25,8 @@ const emit = defineEmits<{
 }>()
 
 // --- State
-const isRunning = computed(() => props.isRunning)
-const isRunningThrottled = refThrottled(isRunning, 200)
+const isRunning = computed(() => props.state.startsWith('RUNNING'))
+const isRunningThrottled = refThrottled(isRunning, 300)
 const dataSchema = computed(() => props.dataSchema.filter(x => !x.isInternal))
 const resultSchema = computed(() => props.resultSchema.filter(x => !x.isInternal))
 
@@ -88,17 +87,17 @@ function handleClick(event: MouseEvent) {
 
     <!-- Error Overlay -->
     <div
-      v-if="errors && errors.length > 0"
+      v-if="error"
       class="
         absolute top-0 left-0 right-0 bottom-0
-        bg-diagonalstripes-red/20
-        gradient-mask-t pointer-events-none
+        bg-diagonalstripes-danger-500/30
+        mask-to-t pointer-events-none
       "
     />
 
     <!-- Header -->
     <FlowEditorNodeHeader
-      :id="id"
+      :id="state"
       :kind="kind"
       :name="name"
       :icon="icon"
@@ -115,7 +114,7 @@ function handleClick(event: MouseEvent) {
     />
 
     <!-- Graphflow Node Body -->
-    <div class="flex flex-col py-sm space-y-xs">
+    <div class="flex flex-col py-sm space-y-xs z-10">
       <FlowEditorSocket
         v-for="port in dataSchema"
         v-bind="port"
@@ -126,6 +125,7 @@ function handleClick(event: MouseEvent) {
         :value="data?.[port.key]"
         :secrets="secrets"
         :variables="variables"
+        :error="dataParseErrors[port.key]"
         kind="target"
         @set-value="(value) => emit('setDataValue', port.key, value)"
         @grab="(state) => emit('portGrab', state)"
@@ -141,6 +141,7 @@ function handleClick(event: MouseEvent) {
         :port-id="port.key"
         :node-id="id"
         :value="result?.[port.key]"
+        :error="resultParseErrors[port.key]"
         kind="source"
         @set-value="(value) => emit('setDataValue', port.key, value)"
         @grab="(state) => emit('portGrab', state)"
