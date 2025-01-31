@@ -18,5 +18,5 @@ export class ModuleMonitoring extends ModuleBase {
     super()
   }
 
-  captureFlowThreadEvents = UTILS.captureFlowThreadEvents.bind(this)
+  captureThreadEvents = UTILS.captureThreadEvents.bind(this)
 }

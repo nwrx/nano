@@ -1,3 +1,3 @@
-export * from './captureFlowThreadEvents'
+export * from './captureThreadEvents'
 export * from './errors'
 export * from './types'
