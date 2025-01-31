@@ -49,6 +49,13 @@ describe.concurrent<Context>('createPassword', (it) => {
     })
   })
 
+  it('should assign the password to the user if provided', async({ expect, ctx }) => {
+    const { User } = ctx.ModuleUser.getRepositories()
+    const user = User.create({ username: 'username' })
+    const result = await createPassword.call(ctx.ModuleUser, 'password', { user })
+    expect(result.user).toStrictEqual(user)
+  })
+
   it('should not generate the same hash for the same password', async({ expect, ctx }) => {
     const result1 = await createPassword.call(ctx.ModuleUser, 'password')
     const result2 = await createPassword.call(ctx.ModuleUser, 'password')
