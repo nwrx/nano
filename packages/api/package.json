@@ -12,6 +12,7 @@
     "@nwrx/module-openai": "workspace:*",
     "@unserved/server": "0.0.16",
     "@unshared/binary": "0.1.0",
+    "@unshared/collection": "0.1.0",
     "@unshared/eslint-config": "0.1.0",
     "@unshared/functions": "0.1.0",
     "@unshared/string": "0.1.0",
