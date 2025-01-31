@@ -459,5 +459,13 @@ export function useFlowSession(workspace: MaybeRef<string>, project: MaybeRef<st
     linkRemove: (source: string) => {
       session.send({ event: 'linkRemove', source })
     },
+
+    /**
+     * Clear all events from the event event list. This allows the user
+     * to better track the events that occur during the flow execution.
+     */
+    eventsClear: () => {
+      events.value = []
+    },
   }
 }
