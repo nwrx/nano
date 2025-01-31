@@ -70,133 +70,177 @@ describe('createFlow', () => {
   })
 
   describe('add', () => {
-    it('should create a node instance from the given node definition', () => {
-      using flow = createFlow()
-      const node = flow.add(nodeParse)
-      expect(node).toMatchObject({ node: nodeParse })
+    describe('instantiation', () => {
+      it('should create a node instance from the given node definition', async() => {
+        using flow = createFlow()
+        const instance = await flow.add(nodeParse)
+        expect(instance).toMatchObject({ node: nodeParse })
+      })
+
+      it('should create a node using syncroneous `resolveNode` method', async() => {
+        const resolveNode = vi.fn(() => nodeParse)
+        using flow = createFlow({ resolveNode })
+        const instance = await flow.add('anything')
+        expect(resolveNode).toHaveBeenCalledWith('anything')
+        expect(instance).toMatchObject({ node: nodeParse })
+      })
+
+      it('should set the flow property of the node instance', async() => {
+        using flow = createFlow()
+        const node = await flow.add(nodeParse)
+        expect(node.flow).toBe(flow)
+      })
+
+      it('should add the node instance to the flow', async() => {
+        using flow = createFlow()
+        const node = await flow.add(nodeParse)
+        expect(flow.nodes).toContain(node)
+      })
+
+      it('should set the meta properties of the node instance', async() => {
+        using flow = createFlow()
+        const instance = await flow.add(nodeParse, { meta: { label: 'Node' } })
+        expect(instance.meta).toMatchObject({ label: 'Node' })
+      })
+
+      it('should create a node instance with the given ID', async() => {
+        using flow = createFlow()
+        const node = await flow.add(nodeParse, { id: 'node-id' })
+        expect(node.id).toBe('node-id')
+      })
     })
 
-    it('should create a node using the `resolveNode` method', () => {
-      const resolveNode = vi.fn(() => nodeParse)
-      using flow = createFlow({ resolveNode })
-      const node = flow.add('json-parse')
-      expect(resolveNode).toHaveBeenCalledWith('json-parse')
-      expect(node).toMatchObject({ node: nodeParse })
+    describe('schema', () => {
+      it('should not resolve the data schema of the node when created', async() => {
+        using flow = createFlow()
+        const listener = vi.fn()
+        flow.on('node:dataSchema', listener)
+        const node = defineNode({ kind: 'boolean', dataSchema: () => ({ boolean: { type: typeNumber } }) })
+        const instance = await flow.add(node)
+        expect(instance.dataSchema).toStrictEqual({})
+        expect(listener).not.toHaveBeenCalled()
+      })
+
+      it('should not resolve the result schema of the node when created', async() => {
+        using flow = createFlow()
+        const listener = vi.fn()
+        flow.on('node:resultSchema', listener)
+        const node = defineNode({ kind: 'boolean', resultSchema: () => ({ boolean: { type: typeNumber } }) })
+        const instance = await flow.add(node)
+        expect(instance.resultSchema).toStrictEqual({})
+        expect(listener).not.toHaveBeenCalled()
+      })
+
+      it('should not resolve the data of the node when created', async() => {
+        using flow = createFlow()
+        const instance = await flow.add(nodeParse, { initialData: { json: '{"key": "value"}' } })
+        expect(instance.dataResolved).toStrictEqual({})
+      })
     })
 
-    it('should attach the node instance to the flow', () => {
-      using flow = createFlow()
-      const node = flow.add(nodeParse)
-      expect(node.flow).toBe(flow)
-      expect(flow.nodes).toHaveLength(1)
-      expect(flow.nodes[0]).toBe(node)
-    })
+    describe('event', () => {
+      it('should emit a node:create event', async() => {
+        using flow = createFlow()
+        const listener = vi.fn()
+        flow.on('node:create', listener)
+        const node = await flow.add(nodeParse)
+        expect(listener).toHaveBeenCalledWith(node)
+      })
 
-    it('should set the meta properties of the node instance', () => {
-      using flow = createFlow()
-      const node = flow.add(nodeParse, { meta: { label: 'Node' } })
-      expect(node.meta).toMatchObject({ label: 'Node' })
-    })
+      it('should emit a node:data event when the data of a node is set', async() => {
+        using flow = createFlow()
+        const instance = await flow.add(nodeParse)
+        const listener = vi.fn()
+        flow.on('node:data', listener)
+        instance.setDataValue('json', '{"key": "value"}')
+        expect(listener).toHaveBeenCalledOnce()
+        expect(listener).toHaveBeenCalledWith(instance, { json: '{"key": "value"}' }, {
+          state: 'IDLE',
+          delta: expect.any(Number),
+          duration: expect.any(Number),
+          executionId: expect.stringMatching(EXP_UUID),
+          threadId: expect.stringMatching(EXP_UUID),
+          timestamp: expect.any(Number),
+        })
+      })
 
-    it('should create a node instance with the given ID', () => {
-      using flow = createFlow()
-      const node = flow.add(nodeParse, { id: 'node-id' })
-      expect(node.id).toBe('node-id')
-    })
+      it('should emit a node:result event when the result of a node is set', async() => {
+        using flow = createFlow()
+        const node = await flow.add(nodeParse)
+        const listener = vi.fn()
+        flow.on('node:result', listener)
+        // @ts-expect-error: Method is private
+        node.setResult({ object: { key: 'value' } })
+        expect(listener).toHaveBeenCalledOnce()
+        expect(listener).toHaveBeenCalledWith(node, { object: { key: 'value' } }, {
+          state: 'IDLE',
+          delta: expect.any(Number),
+          duration: expect.any(Number),
+          executionId: expect.stringMatching(EXP_UUID),
+          threadId: expect.stringMatching(EXP_UUID),
+          timestamp: expect.any(Number),
+        })
+      })
 
-    it('should not resolve the data schema of the node when created', () => {
-      using flow = createFlow()
-      const listener = vi.fn()
-      flow.on('node:dataSchema', listener)
-      const definition = defineNode({ kind: 'boolean', dataSchema: () => ({ boolean: { type: typeNumber } }) })
-      const node = flow.add(definition)
-      expect(node.dataSchema).toStrictEqual({})
-      expect(listener).not.toHaveBeenCalled()
-    })
+      it('should emit a node:dataSchema event when the data schema of a node is resolved', async() => {
+        using flow = createFlow()
+        const listener = vi.fn()
+        flow.on('node:dataSchema', listener)
+        const dataSchema = { boolean: { type: typeNumber } }
+        const node = defineNode({ kind: 'boolean', dataSchema: () => dataSchema })
+        const instance = await flow.add(node)
+        // @ts-expect-error: dataSchema is private
+        await instance.resolveDataSchema()
+        expect(listener).toHaveBeenCalledWith(instance, dataSchema, {
+          state: 'IDLE',
+          delta: expect.any(Number),
+          duration: expect.any(Number),
+          executionId: expect.stringMatching(EXP_UUID),
+          threadId: expect.stringMatching(EXP_UUID),
+          timestamp: expect.any(Number),
+        })
+      })
 
-    it('should not resolve the result schema of the node when created', () => {
-      using flow = createFlow()
-      const listener = vi.fn()
-      flow.on('node:resultSchema', listener)
-      const definition = defineNode({ kind: 'boolean', resultSchema: () => ({ boolean: { type: typeNumber } }) })
-      const node = flow.add(definition)
-      expect(node.resultSchema).toStrictEqual({})
-      expect(listener).not.toHaveBeenCalled()
-    })
-
-    it('should emit a node:create event', () => {
-      using flow = createFlow()
-      const listener = vi.fn()
-      flow.on('node:create', listener)
-      const node = flow.add(nodeParse)
-      expect(listener).toHaveBeenCalledWith(node)
-    })
-
-    it('should emit a node:data event when the data of a node is set', () => {
-      using flow = createFlow()
-      const node = flow.add(nodeParse)
-      const listener = vi.fn()
-      flow.on('node:data', listener)
-      node.setDataValue('json', '{"key": "value"}')
-      expect(listener).toHaveBeenCalledOnce()
-      expect(listener).toHaveBeenCalledWith(node, { json: '{"key": "value"}' })
-    })
-
-    it('should emit a node:result event when the result of a node is set', () => {
-      using flow = createFlow()
-      const node = flow.add(nodeParse)
-      const listener = vi.fn()
-      flow.on('node:result', listener)
-      // @ts-expect-error: Method is private
-      node.setResult({ object: { key: 'value' } })
-      expect(listener).toHaveBeenCalledOnce()
-      expect(listener).toHaveBeenCalledWith(node, { object: { key: 'value' } })
-    })
-
-    it('should emit a node:dataSchema event when the data schema of a node is resolved', async() => {
-      using flow = createFlow()
-      const listener = vi.fn()
-      flow.on('node:dataSchema', listener)
-      const dataSchema = { boolean: { type: typeNumber } }
-      const definition = defineNode({ kind: 'boolean', dataSchema: () => dataSchema })
-      const node = flow.add(definition)
-      // @ts-expect-error: dataSchema is private
-      await node.resolveDataSchema()
-      expect(listener).toHaveBeenCalledWith(node, dataSchema)
-    })
-
-    it('should emit a node:resultSchema event when the result schema of a node is resolved', async() => {
-      using flow = createFlow()
-      const listener = vi.fn()
-      flow.on('node:resultSchema', listener)
-      const resultSchema = { boolean: { type: typeNumber } }
-      const definition = defineNode({ kind: 'boolean', resultSchema: () => resultSchema })
-      const node = flow.add(definition)
-      // @ts-expect-error: resultSchema is private
-      await node.resolveResultSchema()
-      expect(listener).toHaveBeenCalledWith(node, resultSchema)
+      it('should emit a node:resultSchema event when the result schema of a node is resolved', async() => {
+        using flow = createFlow()
+        const listener = vi.fn()
+        flow.on('node:resultSchema', listener)
+        const resultSchema = { boolean: { type: typeNumber } }
+        const definition = defineNode({ kind: 'boolean', resultSchema: () => resultSchema })
+        const node = await flow.add(definition)
+        // @ts-expect-error: resultSchema is private
+        await node.resolveResultSchema()
+        expect(listener).toHaveBeenCalledWith(node, resultSchema, {
+          state: 'IDLE',
+          delta: expect.any(Number),
+          duration: expect.any(Number),
+          executionId: expect.stringMatching(EXP_UUID),
+          threadId: expect.stringMatching(EXP_UUID),
+          timestamp: expect.any(Number),
+        })
+      })
     })
   })
 
   describe('remove', () => {
-    it('should remove a node from the flow', () => {
+    it('should remove a node from the flow', async() => {
       using flow = createFlow()
-      const node = flow.add(nodeParse)
+      const node = await flow.add(nodeParse)
       flow.remove(node.id)
       expect(flow.nodes).toHaveLength(0)
     })
 
-    it('should remove mulitple nodes from the flow', () => {
+    it('should remove mulitple nodes from the flow', async() => {
       using flow = createFlow()
-      const node1 = flow.add(nodeParse)
-      const node2 = flow.add(nodeParse)
+      const node1 = await flow.add(nodeParse)
+      const node2 = await flow.add(nodeParse)
       flow.remove(node1.id, node2.id)
       expect(flow.nodes).toHaveLength(0)
     })
 
-    it('should emit a node:remove event', () => {
+    it('should emit a node:remove event', async() => {
       using flow = createFlow()
-      const node = flow.add(nodeParse)
+      const node = await flow.add(nodeParse)
       const listener = vi.fn()
       flow.on('node:remove', listener)
       flow.remove(node.id)
@@ -209,9 +253,9 @@ describe('createFlow', () => {
       expect(shouldThrow).toThrow('Node instance with ID "node-id" does not exist')
     })
 
-    it('should throw an error if one of the nodes does not exist', () => {
+    it('should throw an error if one of the nodes does not exist', async() => {
       using flow = createFlow()
-      const node1 = flow.add(nodeParse)
+      const node1 = await flow.add(nodeParse)
       const shouldThrow = () => flow.remove(node1.id, 'unknown')
       expect(shouldThrow).toThrow('Node instance with ID "unknown" does not exist')
       expect(flow.nodes).toHaveLength(1)
@@ -219,9 +263,9 @@ describe('createFlow', () => {
   })
 
   describe('get', () => {
-    it('should get a node instance given an ID', () => {
+    it('should get a node instance given an ID', async() => {
       using flow = createFlow()
-      const node = flow.add(nodeParse)
+      const node = await flow.add(nodeParse)
       const instance = flow.get(node.id)
       expect(instance).toBe(node)
     })
@@ -247,31 +291,38 @@ describe('createFlow', () => {
         },
       })
 
-      it('should link the output of a node to the input of another node', () => {
+      it('should link the output of a node to the input of another node', async() => {
         using flow = createFlow()
-        const node1 = flow.add(node, { id: 'node-1' })
-        const node2 = flow.add(node, { id: 'node-2' })
+        const node1 = await flow.add(node, { id: 'node-1' })
+        const node2 = await flow.add(node, { id: 'node-2' })
         flow.link(node1.id, 'a', node2.id, 'a')
         expect(node2.data).toMatchObject({ a: '$NODE.node-1:a' })
         expect(node1.data).toMatchObject({})
       })
 
-      it('should emit a node:data event when a link is created', () => {
+      it('should emit a node:data event when a link is created', async() => {
         using flow = createFlow()
         const listener = vi.fn()
         flow.on('node:data', listener)
-        const node1 = flow.add(node, { id: 'node-1' })
-        const node2 = flow.add(node, { id: 'node-2' })
+        const node1 = await flow.add(node, { id: 'node-1' })
+        const node2 = await flow.add(node, { id: 'node-2' })
         flow.link(node1.id, 'a', node2.id, 'a')
         expect(listener).toHaveBeenCalledOnce()
-        expect(listener).toHaveBeenCalledWith(node2, { a: '$NODE.node-1:a' })
+        expect(listener).toHaveBeenCalledWith(node2, { a: '$NODE.node-1:a' }, {
+          state: 'IDLE',
+          delta: expect.any(Number),
+          duration: expect.any(Number),
+          executionId: expect.stringMatching(EXP_UUID),
+          threadId: expect.stringMatching(EXP_UUID),
+          timestamp: expect.any(Number),
+        })
       })
 
-      it('should override the existing link if the target is already linked to another source', () => {
+      it('should override the existing link if the target is already linked to another source', async() => {
         using flow = createFlow()
-        const node1 = flow.add(node, { id: 'node-1' })
-        const node2 = flow.add(node, { id: 'node-2' })
-        const node3 = flow.add(node, { id: 'node-3' })
+        const node1 = await flow.add(node, { id: 'node-1' })
+        const node2 = await flow.add(node, { id: 'node-2' })
+        const node3 = await flow.add(node, { id: 'node-3' })
         flow.link(node1.id, 'a', node3.id, 'a')
         flow.link(node2.id, 'a', node3.id, 'a')
         expect(node3.data).toMatchObject({ a: `$NODE.${node2.id}:a` })
@@ -279,11 +330,11 @@ describe('createFlow', () => {
         expect(node1.data).toMatchObject({})
       })
 
-      it('should link multiple targets from the same source', () => {
+      it('should link multiple targets from the same source', async() => {
         using flow = createFlow()
-        const node1 = flow.add(node, { id: 'node-1' })
-        const node2 = flow.add(node, { id: 'node-2' })
-        const node3 = flow.add(node, { id: 'node-3' })
+        const node1 = await flow.add(node, { id: 'node-1' })
+        const node2 = await flow.add(node, { id: 'node-2' })
+        const node3 = await flow.add(node, { id: 'node-3' })
         flow.link(node1.id, 'a', node2.id, 'a')
         flow.link(node1.id, 'a', node3.id, 'a')
         expect(node2.data).toMatchObject({ a: '$NODE.node-1:a' })
@@ -304,39 +355,46 @@ describe('createFlow', () => {
         },
       })
 
-      it('should add a link to an iterable socket', () => {
+      it('should add a link to an iterable socket', async() => {
         using flow = createFlow()
-        const node1 = flow.add(node, { id: 'node-1' })
-        const node2 = flow.add(node, { id: 'node-2' })
+        const node1 = await flow.add(node, { id: 'node-1' })
+        const node2 = await flow.add(node, { id: 'node-2' })
         flow.link(node1.id, 'a', node2.id, 'a')
         expect(node2.data).toMatchObject({ a: ['$NODE.node-1:a'] })
       })
 
-      it('should emit a node:data event when a link is created', () => {
+      it('should emit a node:data event when a link is created', async() => {
         using flow = createFlow()
         const listener = vi.fn()
         flow.on('node:data', listener)
-        const node1 = flow.add(node, { id: 'node-1' })
-        const node2 = flow.add(node, { id: 'node-2' })
+        const node1 = await flow.add(node, { id: 'node-1' })
+        const node2 = await flow.add(node, { id: 'node-2' })
         flow.link(node1.id, 'a', node2.id, 'a')
         expect(listener).toHaveBeenCalledOnce()
-        expect(listener).toHaveBeenCalledWith(node2, { a: ['$NODE.node-1:a'] })
+        expect(listener).toHaveBeenCalledWith(node2, { a: ['$NODE.node-1:a'] }, {
+          state: 'IDLE',
+          delta: expect.any(Number),
+          duration: expect.any(Number),
+          executionId: expect.stringMatching(EXP_UUID),
+          threadId: expect.stringMatching(EXP_UUID),
+          timestamp: expect.any(Number),
+        })
       })
 
-      it('should add multiple links to an iterable socket', () => {
+      it('should add multiple links to an iterable socket', async() => {
         using flow = createFlow()
-        const node1 = flow.add(node, { id: 'node-1' })
-        const node2 = flow.add(node, { id: 'node-2' })
-        const node3 = flow.add(node, { id: 'node-3' })
+        const node1 = await flow.add(node, { id: 'node-1' })
+        const node2 = await flow.add(node, { id: 'node-2' })
+        const node3 = await flow.add(node, { id: 'node-3' })
         flow.link(node1.id, 'a', node3.id, 'a')
         flow.link(node2.id, 'a', node3.id, 'a')
         expect(node3.data).toMatchObject({ a: ['$NODE.node-1:a', `$NODE.${node2.id}:a`] })
       })
 
-      it('should not add duplicate links to an iterable socket', () => {
+      it('should not add duplicate links to an iterable socket', async() => {
         using flow = createFlow()
-        const node1 = flow.add(node, { id: 'node-1' })
-        const node2 = flow.add(node, { id: 'node-2' })
+        const node1 = await flow.add(node, { id: 'node-1' })
+        const node2 = await flow.add(node, { id: 'node-2' })
         flow.link(node1.id, 'a', node2.id, 'a')
         flow.link(node1.id, 'a', node2.id, 'a')
         expect(node2.data).toMatchObject({ a: ['$NODE.node-1:a'] })
@@ -344,54 +402,54 @@ describe('createFlow', () => {
     })
 
     describe('edge cases', () => {
-      it('should throw an error if the target node does not exist', () => {
+      it('should throw an error if the target node does not exist', async() => {
         using flow = createFlow()
-        const node = flow.add(nodeInput)
+        const node = await flow.add(nodeInput)
         const shouldThrow = () => flow.link(node.id, 'value', 'unknown', 'json')
         expect(shouldThrow).toThrow('The node with ID "unknown" does not exist')
       })
 
-      it('should throw an error if the target socket does not exist', () => {
+      it('should throw an error if the target socket does not exist', async() => {
         using flow = createFlow()
-        const node1 = flow.add(nodeInput)
-        const node2 = flow.add(nodeParse)
+        const node1 = await flow.add(nodeInput)
+        const node2 = await flow.add(nodeParse)
         const shouldThrow = () => flow.link(node1.id, 'value', node2.id, 'unknown')
         expect(shouldThrow).toThrow('The data property "unknown" does not exist')
       })
 
-      it('should throw an error if the source node does not exist', () => {
+      it('should throw an error if the source node does not exist', async() => {
         using flow = createFlow()
-        const node = flow.add(nodeInput)
+        const node = await flow.add(nodeInput)
         const shouldThrow = () => flow.link('unknown', 'value', node.id, 'json')
         expect(shouldThrow).toThrow('The node with ID "unknown" does not exist')
       })
 
-      it('should throw an error if the source socket does not exist', () => {
+      it('should throw an error if the source socket does not exist', async() => {
         using flow = createFlow()
-        const node1 = flow.add(nodeInput)
-        const node2 = flow.add(nodeParse)
+        const node1 = await flow.add(nodeInput)
+        const node2 = await flow.add(nodeParse)
         const shouldThrow = () => flow.link(node1.id, 'unknown', node2.id, 'json')
         expect(shouldThrow).toThrow('The result property "unknown" does not exist')
       })
 
-      it('should throw an error if the source and target are the same', () => {
+      it('should throw an error if the source and target are the same', async() => {
         using flow = createFlow()
-        const node = flow.add(nodeParse)
+        const node = await flow.add(nodeParse)
         const shouldThrow = () => flow.link(node.id, 'object', node.id, 'json')
         expect(shouldThrow).toThrow('Cannot link a node to itself')
       })
 
-      it('should throw an error if the target socket is not a socket', () => {
+      it('should throw an error if the target socket is not a socket', async() => {
         using flow = createFlow()
-        const node1 = flow.add(nodeInput)
-        const node2 = flow.add({ kind: 'boolean', dataSchema: { boolean: { type: typeNumber } } })
+        const node1 = await flow.add(nodeInput)
+        const node2 = await flow.add({ kind: 'boolean', dataSchema: { boolean: { type: typeNumber } } })
         const shouldThrow = () => flow.link(node1.id, 'value', node2.id, 'boolean')
         expect(shouldThrow).toThrow('The data property "boolean" cannot be linked to.')
       })
 
-      it('should throw an error if the source and target are on the same node', () => {
+      it('should throw an error if the source and target are on the same node', async() => {
         using flow = createFlow()
-        const node = flow.add(nodeParse)
+        const node = await flow.add(nodeParse)
         const shouldThrow = () => flow.link(node.id, 'object', node.id, 'json')
         expect(shouldThrow).toThrow('Cannot link a node to itself')
       })
@@ -412,11 +470,11 @@ describe('createFlow', () => {
         },
       })
 
-      it('should remove a link specified by source and target ids and keys', () => {
+      it('should remove a link specified by source and target ids and keys', async() => {
         using flow = createFlow()
-        const node1 = flow.add(node, { id: 'node-1' })
-        const node2 = flow.add(node, { id: 'node-2' })
-        const node3 = flow.add(node, { id: 'node-3' })
+        const node1 = await flow.add(node, { id: 'node-1' })
+        const node2 = await flow.add(node, { id: 'node-2' })
+        const node3 = await flow.add(node, { id: 'node-3' })
         flow.link(node1.id, 'a', node2.id, 'a')
         flow.link(node1.id, 'b', node2.id, 'b')
         flow.link(node1.id, 'a', node3.id, 'a')
@@ -426,11 +484,11 @@ describe('createFlow', () => {
         expect(node3.data).toStrictEqual({ a: '$NODE.node-1:a', b: '$NODE.node-1:b' })
       })
 
-      it('should remove links specified by the source and target ids', () => {
+      it('should remove links specified by the source and target ids', async() => {
         using flow = createFlow()
-        const node1 = flow.add(node, { id: 'node-1' })
-        const node2 = flow.add(node, { id: 'node-2' })
-        const node3 = flow.add(node, { id: 'node-3' })
+        const node1 = await flow.add(node, { id: 'node-1' })
+        const node2 = await flow.add(node, { id: 'node-2' })
+        const node3 = await flow.add(node, { id: 'node-3' })
         flow.link(node1.id, 'a', node2.id, 'a')
         flow.link(node1.id, 'a', node3.id, 'a')
         flow.link(node1.id, 'b', node2.id, 'b')
@@ -440,11 +498,11 @@ describe('createFlow', () => {
         expect(node3.data).toStrictEqual({ a: '$NODE.node-1:a', b: '$NODE.node-1:b' })
       })
 
-      it('should remove links specified by the source id and key', () => {
+      it('should remove links specified by the source id and key', async() => {
         using flow = createFlow()
-        const node1 = flow.add(node, { id: 'node-1' })
-        const node2 = flow.add(node, { id: 'node-2' })
-        const node3 = flow.add(node, { id: 'node-3' })
+        const node1 = await flow.add(node, { id: 'node-1' })
+        const node2 = await flow.add(node, { id: 'node-2' })
+        const node3 = await flow.add(node, { id: 'node-3' })
         flow.link(node1.id, 'a', node2.id, 'a')
         flow.link(node1.id, 'a', node3.id, 'a')
         flow.link(node1.id, 'b', node2.id, 'b')
@@ -454,11 +512,11 @@ describe('createFlow', () => {
         expect(node3.data).toStrictEqual({ a: undefined, b: '$NODE.node-1:b' })
       })
 
-      it('should remove links specified by the target id and key', () => {
+      it('should remove links specified by the target id and key', async() => {
         using flow = createFlow()
-        const node1 = flow.add(node, { id: 'node-1' })
-        const node2 = flow.add(node, { id: 'node-2' })
-        const node3 = flow.add(node, { id: 'node-3' })
+        const node1 = await flow.add(node, { id: 'node-1' })
+        const node2 = await flow.add(node, { id: 'node-2' })
+        const node3 = await flow.add(node, { id: 'node-3' })
         flow.link(node1.id, 'a', node2.id, 'a')
         flow.link(node1.id, 'a', node3.id, 'a')
         flow.link(node1.id, 'b', node2.id, 'b')
@@ -468,11 +526,11 @@ describe('createFlow', () => {
         expect(node3.data).toStrictEqual({ a: '$NODE.node-1:a', b: '$NODE.node-1:b' })
       })
 
-      it('should remove all links specified by the source id', () => {
+      it('should remove all links specified by the source id', async() => {
         using flow = createFlow()
-        const node1 = flow.add(node, { id: 'node-1' })
-        const node2 = flow.add(node, { id: 'node-2' })
-        const node3 = flow.add(node, { id: 'node-3' })
+        const node1 = await flow.add(node, { id: 'node-1' })
+        const node2 = await flow.add(node, { id: 'node-2' })
+        const node3 = await flow.add(node, { id: 'node-3' })
         flow.link(node1.id, 'a', node2.id, 'a')
         flow.link(node1.id, 'a', node3.id, 'a')
         flow.link(node1.id, 'b', node2.id, 'b')
@@ -482,11 +540,11 @@ describe('createFlow', () => {
         expect(node3.data).toStrictEqual({ a: undefined, b: undefined })
       })
 
-      it('should remove all links specified by the target id', () => {
+      it('should remove all links specified by the target id', async() => {
         using flow = createFlow()
-        const node1 = flow.add(node, { id: 'node-1' })
-        const node2 = flow.add(node, { id: 'node-2' })
-        const node3 = flow.add(node, { id: 'node-3' })
+        const node1 = await flow.add(node, { id: 'node-1' })
+        const node2 = await flow.add(node, { id: 'node-2' })
+        const node3 = await flow.add(node, { id: 'node-3' })
         flow.link(node1.id, 'a', node2.id, 'a')
         flow.link(node1.id, 'a', node3.id, 'a')
         flow.link(node1.id, 'b', node2.id, 'b')
@@ -510,11 +568,11 @@ describe('createFlow', () => {
         },
       })
 
-      it('should remove a link specified by source and target ids and keys', () => {
+      it('should remove a link specified by source and target ids and keys', async() => {
         using flow = createFlow()
-        const node1 = flow.add(node, { id: 'node-1' })
-        const node2 = flow.add(node, { id: 'node-2' })
-        const node3 = flow.add(node, { id: 'node-3' })
+        const node1 = await flow.add(node, { id: 'node-1' })
+        const node2 = await flow.add(node, { id: 'node-2' })
+        const node3 = await flow.add(node, { id: 'node-3' })
         flow.link(node1.id, 'a', node2.id, 'a')
         flow.link(node1.id, 'a', node3.id, 'a')
         flow.link(node1.id, 'a', node2.id, 'b')
@@ -534,11 +592,11 @@ describe('createFlow', () => {
         })
       })
 
-      it('should remove links specified by the source and target ids', () => {
+      it('should remove links specified by the source and target ids', async() => {
         using flow = createFlow()
-        const node1 = flow.add(node, { id: 'node-1' })
-        const node2 = flow.add(node, { id: 'node-2' })
-        const node3 = flow.add(node, { id: 'node-3' })
+        const node1 = await flow.add(node, { id: 'node-1' })
+        const node2 = await flow.add(node, { id: 'node-2' })
+        const node3 = await flow.add(node, { id: 'node-3' })
         flow.link(node1.id, 'a', node2.id, 'a')
         flow.link(node1.id, 'a', node3.id, 'a')
         flow.link(node1.id, 'a', node2.id, 'b')
@@ -558,11 +616,11 @@ describe('createFlow', () => {
         })
       })
 
-      it('should remove links specified by the source id and key', () => {
+      it('should remove links specified by the source id and key', async() => {
         using flow = createFlow()
-        const node1 = flow.add(node, { id: 'node-1' })
-        const node2 = flow.add(node, { id: 'node-2' })
-        const node3 = flow.add(node, { id: 'node-3' })
+        const node1 = await flow.add(node, { id: 'node-1' })
+        const node2 = await flow.add(node, { id: 'node-2' })
+        const node3 = await flow.add(node, { id: 'node-3' })
         flow.link(node1.id, 'a', node2.id, 'a')
         flow.link(node1.id, 'a', node3.id, 'a')
         flow.link(node1.id, 'a', node2.id, 'b')
@@ -582,11 +640,11 @@ describe('createFlow', () => {
         })
       })
 
-      it('should remove links specified by the target id and key', () => {
+      it('should remove links specified by the target id and key', async() => {
         using flow = createFlow()
-        const node1 = flow.add(node, { id: 'node-1' })
-        const node2 = flow.add(node, { id: 'node-2' })
-        const node3 = flow.add(node, { id: 'node-3' })
+        const node1 = await flow.add(node, { id: 'node-1' })
+        const node2 = await flow.add(node, { id: 'node-2' })
+        const node3 = await flow.add(node, { id: 'node-3' })
         flow.link(node1.id, 'a', node2.id, 'a')
         flow.link(node1.id, 'a', node3.id, 'a')
         flow.link(node1.id, 'a', node2.id, 'b')
@@ -606,11 +664,11 @@ describe('createFlow', () => {
         })
       })
 
-      it('should remove all links specified by the source id', () => {
+      it('should remove all links specified by the source id', async() => {
         using flow = createFlow()
-        const node1 = flow.add(node, { id: 'node1' })
-        const node2 = flow.add(node, { id: 'node2' })
-        const node3 = flow.add(node, { id: 'node3' })
+        const node1 = await flow.add(node, { id: 'node1' })
+        const node2 = await flow.add(node, { id: 'node2' })
+        const node3 = await flow.add(node, { id: 'node3' })
         flow.link(node1.id, 'a', node2.id, 'a')
         flow.link(node1.id, 'a', node3.id, 'a')
         flow.link(node1.id, 'a', node2.id, 'b')
@@ -630,11 +688,11 @@ describe('createFlow', () => {
         })
       })
 
-      it('should remove all links specified by the target id', () => {
+      it('should remove all links specified by the target id', async() => {
         using flow = createFlow()
-        const node1 = flow.add(node, { id: 'node1' })
-        const node2 = flow.add(node, { id: 'node2' })
-        const node3 = flow.add(node, { id: 'node3' })
+        const node1 = await flow.add(node, { id: 'node1' })
+        const node2 = await flow.add(node, { id: 'node2' })
+        const node3 = await flow.add(node, { id: 'node3' })
         flow.link(node1.id, 'a', node2.id, 'a')
         flow.link(node1.id, 'a', node3.id, 'a')
         flow.link(node1.id, 'a', node2.id, 'b')
@@ -726,7 +784,7 @@ describe('createFlow', () => {
 
       it('should set the `result` of the input nodes', async() => {
         using flow = createFlow()
-        const node = flow.add(nodeInput, { initialData: { name: 'message' } })
+        const node = await flow.add(nodeInput, { initialData: { name: 'message' } })
         await flow.start({ message: 'Hello, World!' })
         expect(node.result).toStrictEqual({ value: 'Hello, World!' })
       })
@@ -750,7 +808,11 @@ describe('createFlow', () => {
         void flow.start({ key: 'value' })
         expect(listener).toHaveBeenCalledWith(
           { key: 'value' },
-          { threadId: flow.threadId, timestamp: Date.now(), delta: 0 },
+          {
+            threadId: flow.threadId,
+            timestamp: Date.now(),
+            delta: expect.any(Number),
+          },
         )
       })
     })
@@ -766,15 +828,15 @@ describe('createFlow', () => {
 
       it('should set the output of the flow to the output object', async() => {
         using flow = createFlow()
-        flow.add(nodeOutput, { initialData: { name: 'message', value: 'Hello, World!' } })
+        await flow.add(nodeOutput, { initialData: { name: 'message', value: 'Hello, World!' } })
         await flow.start()
         expect(flow.output).toStrictEqual({ message: 'Hello, World!' })
       })
 
       it('should set the output of the flow to the output object with multiple nodes', async() => {
         using flow = createFlow()
-        flow.add(nodeOutput, { initialData: { name: 'message1', value: 'Hello, World!' } })
-        flow.add(nodeOutput, { initialData: { name: 'message2', value: 'Hello, Universe!' } })
+        await flow.add(nodeOutput, { initialData: { name: 'message1', value: 'Hello, World!' } })
+        await flow.add(nodeOutput, { initialData: { name: 'message2', value: 'Hello, Universe!' } })
         await flow.start()
         expect(flow.output).toStrictEqual({
           message1: 'Hello, World!',
@@ -786,7 +848,7 @@ describe('createFlow', () => {
         using flow = createFlow()
         const listener = vi.fn()
         flow.on('flow:end', listener)
-        flow.add(nodeOutput, { initialData: { name: 'message', value: 'Hello, World!' } })
+        await flow.add(nodeOutput, { initialData: { name: 'message', value: 'Hello, World!' } })
         await flow.start()
         expect(listener).toHaveBeenCalledWith(
           { message: 'Hello, World!' },
