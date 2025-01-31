@@ -16,9 +16,10 @@ const isOpen = ref(true)
 
 <template>
   <div class="b-app b-b">
-    <div
+    <BaseButton
+      eager
       class="
-        flex items-center px-md py-sm group
+        flex items-center px-md py-sm group w-full
         cursor-pointer transition-colors bg-app hover:bg-subtle select-none
       "
       @click="() => isOpen = !isOpen">
@@ -41,7 +42,7 @@ const isOpen = ref(true)
         icon="i-carbon:dot-mark"
         class="size-3 text-success shrink-0 ml-auto"
       />
-    </div>
+    </BaseButton>
 
     <!-- Items -->
     <BaseCollapse
@@ -54,6 +55,7 @@ const isOpen = ref(true)
       <MonitoringItem
         v-for="flow in project.flows"
         :key="flow.name"
+        icon="i-carbon:dot-mark"
         :title="flow.title"
         :text="`${project.name}/${flow.name}`"
         :is-selected="flow.name === selectedFlow"

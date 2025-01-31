@@ -25,7 +25,6 @@ const emit = defineEmits<{
   selectEvent: [event: string]
   'update:filters': [value: MonitoringSessionFilters]
 }>()
-
 const eventNames = useVModel(props, 'eventNames', emit, { passive: true, defaultValue: [] })
 const eventTypes = useVModel(props, 'eventTypes', emit, { passive: true, defaultValue: [] })
 
@@ -39,25 +38,25 @@ function getRandomColor() {
 </script>
 
 <template>
-  <div class="flex items-stretch h-full bg-layout space-x-xs">
+  <div class="flex items-stretch grow divide-x divide-app overflow-hidden">
 
     <!-- Flows -->
     <MonitoringProjects
       :selected-flow="selectedFlow"
       :selected-project="selectedProject"
       :projects="projects"
-      class="w-1/4 bg-app rd overflow-y-auto"
+      class="w-1/4 bg-app overflow-y-auto"
       @select="(project, flow) => emit('selectFlow', project, flow)"
     />
 
     <!-- Threads -->
-    <div class="flex flex-col w-3/4 h-full space-y-xs overflow-hidden">
-      <div class="grow grid grid-cols-2 gap-xs overflow-hidden">
+    <div class="flex flex-col w-3/4 h-full divide-y divide-app overflow-hidden">
+      <div class="grow grid grid-cols-2 divide-x divide-app overflow-hidden">
         <MonitoringThreads
           :selected-flow="selectedFlow"
           :selected-thread="selectedThread"
           :threads="threads"
-          class="w-1/2 bg-app rd overflow-y-auto"
+          class="w-1/2 bg-app overflow-y-auto"
           @select="thread => emit('selectThread', thread)"
         />
 
@@ -74,7 +73,7 @@ function getRandomColor() {
       </div>
 
       <!-- Stat Selector -->
-      <div class="shrink-0 grid grid-cols-4 gap-xs">
+      <div class="shrink-0 grid grid-cols-4 divide-x divide-app">
         <div class="w-full bg-subtle rd col-span-1">
           <h3 class="text-lg font-medium p-md">
             Select Statistic
@@ -87,7 +86,7 @@ function getRandomColor() {
           <MonitoringItem title="Errors" text="122" icon="i-carbon:error" />
         </div>
 
-        <div class="grid grid-cols-3 gap-xs col-span-3">
+        <div class="grid grid-cols-3 divide-x divide-app col-span-3">
           <MonitoringProjectChart
             title="Per Provider"
             unit="tokens"

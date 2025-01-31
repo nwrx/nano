@@ -52,6 +52,14 @@ function createDataset(label: string, color: string, min = 10000, max = 30000) {
   } as ChartDataset<'line', any>
 }
 
+function toReadableNumber(value: number | string) {
+  if (typeof value === 'string') value = Number.parseFloat(value)
+  if (value < 1000) return value
+  if (value < 1000000) return `${(value / 1000).toLocaleString('en-US', { maximumFractionDigits: 1 })}K`
+  if (value < 1000000000) return `${(value / 1000000).toLocaleString('en-US', { maximumFractionDigits: 1 })}M`
+  return `${(value / 1000000000).toLocaleString('en-US', { maximumFractionDigits: 1 })}B`
+}
+
 watch([props, localSettings], () => {
   if (!canvas.value) return
   if (chart.value) chart.value.destroy()
@@ -80,6 +88,11 @@ watch([props, localSettings], () => {
         },
         y: {
           grid: { display: false },
+          ticks: {
+            color: textColor.value,
+            font: { size: 12, family: 'IBM Plex Sans' },
+            callback: value => toReadableNumber(value),
+          },
         },
       },
       plugins: {
@@ -95,6 +108,7 @@ watch([props, localSettings], () => {
           },
         },
         legend: {
+          display: false,
           labels: {
             color: textColor.value,
           },
