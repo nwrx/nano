@@ -34,8 +34,8 @@ watch(isOpen, (value) => {
     <!-- Confirmation input -->
     <InputText
       v-model="newValue"
-      type=""
-      class="mt-2"
+      type="textarea"
+      class="mt-2 font-mono"
       :placeholder="t('placeholder')"
     />
   </AppDialog>

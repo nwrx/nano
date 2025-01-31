@@ -29,7 +29,8 @@ const newValue = ref('')
     <!-- Confirmation input -->
     <InputText
       v-model="newValue"
-      class="mt-2"
+      type="textarea"
+      class="mt-2 font-mono"
       :placeholder="t('placeholder')"
     />
   </AppDialog>
