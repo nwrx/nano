@@ -3,6 +3,7 @@ import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, createSchema } from '@unshared/validation'
 import { setResponseStatus } from 'h3'
 import { ModuleWorkspace } from '../../workspace'
+import { getUser } from '../utils'
 
 export function userDelete(this: ModuleUser) {
   return createHttpRoute(
@@ -17,20 +18,27 @@ export function userDelete(this: ModuleUser) {
       const { user } = await this.authenticate(event)
       const { username } = parameters
 
+      // --- Super administrators can not delete themselves.
+      if (user.username === username && user.isSuperAdministrator)
+        throw this.errors.USER_UNABLE_TO_DELETE_SUPER_ADMIN()
+
       // --- Only super administrators and the user itself can delete the user.
       if (user.username !== username && !user.isSuperAdministrator)
         throw this.errors.USER_NOT_ALLOWED()
 
-      // --- Resolve the user and workspace to remove.
+      // --- Find the user to remove.
       const { User } = this.getRepositories()
       const { Workspace } = workspaceModule.getRepositories()
-      const userToRemove = await this.resolveUser({ user, username })
-      const workspaceToRemove = await Workspace.findOneByOrFail({ name: username })
+      const userToRemove = await getUser.call(this, { user, username, withDisabled: user.isSuperAdministrator })
+
+      // --- Find the workspace associated with the user and archive it.
+      const workspaceToArchive = await Workspace.findOneByOrFail({ name: username })
+      workspaceToArchive.archivedAt = new Date()
 
       // --- Soft-remove the user and workspace.
       await this.withTransaction(async() => {
-        await User.softDelete({ id: userToRemove.id })
-        await Workspace.softDelete({ id: workspaceToRemove.id })
+        await User.softRemove(userToRemove)
+        await Workspace.save(workspaceToArchive)
       })
 
       // --- Respond with a 204 status code.

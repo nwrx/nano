@@ -2,6 +2,7 @@ import type { ModuleUser } from '..'
 import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, createSchema } from '@unshared/validation'
 import { setResponseStatus } from 'h3'
+import { getUser } from '../utils'
 
 export function userDisable(this: ModuleUser) {
   return createHttpRoute(
@@ -17,24 +18,18 @@ export function userDisable(this: ModuleUser) {
 
       // --- Only super administrators can disable users.
       if (!user.isSuperAdministrator) throw this.errors.USER_NOT_ALLOWED()
-
-      // --- Resolve the user to disable.
-      const userToDisable = await this.resolveUser({
+      const userToDisable = await getUser.call(this, {
         user,
         username,
         withDeleted: true,
         withDisabled: true,
       })
 
-      // --- If the user is already disabled, throw an error.
-      if (userToDisable.disabledAt) throw this.errors.USER_ALREADY_DISABLED()
-
       // --- Disable the user and save the changes.
+      if (userToDisable.disabledAt) throw this.errors.USER_ALREADY_DISABLED()
       const { User } = this.getRepositories()
       userToDisable.disabledAt = new Date()
       await User.save(userToDisable)
-
-      // --- Respond with a 204 status code.
       setResponseStatus(event, 204)
     },
   )

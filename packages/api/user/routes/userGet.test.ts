@@ -1,163 +1,358 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import type { Context } from '../../__fixtures__'
-import { createContext } from '../../__fixtures__'
+import { EXP_UUID } from '@unshared/validation'
+import { createTestContext } from '../../__fixtures__'
 
 describe.concurrent<Context>('userGet', () => {
   beforeEach<Context>(async(context) => {
-    context.ctx = await createContext()
-    await context.ctx.createServer()
+    await createTestContext(context)
+    await context.application.createTestServer()
   })
 
   afterEach<Context>(async(context) => {
-    await context.ctx.destroy()
+    await context.application.destroy()
   })
 
-  describe<Context>('with super administrator', (it) => {
-    it('should return the user of the super administrator', async({ expect, ctx }) => {
-      const { headers } = await ctx.createUser('jdoe', { isSuperAdministrator: true })
-      const response = await ctx.fetch('/api/users/jdoe', { method: 'GET', headers })
-      const body = await response.json() as Record<string, string>
-      expect(response.status).toBe(200)
-      expect(response.statusText).toBe('OK')
-      expect(body).toStrictEqual({ username: 'jdoe', displayName: 'jdoe' })
-    })
+  describe<Context>('with super administrator', () => {
+    describe<Context>('own user', (it) => {
+      it('should return the user', async({ createUser, application }) => {
+        const { headers } = await createUser('admin', { isSuperAdministrator: true })
+        const response = await application.fetch('/api/users/admin', { method: 'GET', headers })
+        const body = await response.json() as Record<string, string>
+        expect(response.status).toBe(200)
+        expect(response.statusText).toBe('OK')
+        expect(body).toStrictEqual({
+          id: expect.stringMatching(EXP_UUID),
+          username: 'admin',
+          email: 'admin@acme.com',
+          displayName: 'admin',
+          avatarUrl: '/api/users/admin/avatar',
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+        })
+      })
 
-    it('should return the user of another user', async({ expect, ctx }) => {
-      const { headers } = await ctx.createUser('jdoe', { isSuperAdministrator: true })
-      await ctx.createUser('other')
-      const response = await ctx.fetch('/api/users/other', { method: 'GET', headers })
-      const body = await response.json() as Record<string, string>
-      expect(response.status).toBe(200)
-      expect(response.statusText).toBe('OK')
-      expect(body).toStrictEqual({ username: 'other', displayName: 'other' })
-    })
+      it('should return the user with profile details', async({ createUser, moduleUser, application }) => {
+        const { user, headers } = await createUser('admin', { isSuperAdministrator: true })
+        user.profile!.displayName = 'John Doe'
+        user.profile!.company = 'Acme Inc.'
+        user.profile!.website = 'https://acme.com'
+        user.profile!.biography = 'A short biography'
+        user.profile!.socials = ['https://twitter.com/acme']
+        await moduleUser.getRepositories().User.save(user)
+        const response = await application.fetch('/api/users/admin?withProfile=true', { method: 'GET', headers })
+        const body = await response.json() as Record<string, string>
+        expect(response.status).toBe(200)
+        expect(response.statusText).toBe('OK')
+        expect(body).toStrictEqual({
+          id: expect.stringMatching(EXP_UUID),
+          username: 'admin',
+          email: 'admin@acme.com',
+          displayName: 'John Doe',
+          avatarUrl: '/api/users/admin/avatar',
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
 
-    it('should return with user profile details of another user', async({ expect, ctx }) => {
-      const { headers } = await ctx.createUser('jdoe', { isSuperAdministrator: true })
-      const { user } = await ctx.createUser('other')
-      user.profile!.displayName = 'Other User'
-      user.profile!.company = 'Acme Inc.'
-      user.profile!.website = 'https://acme.com'
-      user.profile!.biography = 'A short biography'
-      user.profile!.socials = ['https://twitter.com/acme']
-      const { User } = ctx.ModuleUser.getRepositories()
-      await User.save(user)
-      const response = await ctx.fetch('/api/users/other?withProfile=true', { method: 'GET', headers })
-      const body = await response.json() as Record<string, string>
-      expect(response.status).toBe(200)
-      expect(response.statusText).toBe('OK')
-      expect(body).toStrictEqual({
-        biography: 'A short biography',
-        company: 'Acme Inc.',
-        displayName: 'Other User',
-        socials: ['https://twitter.com/acme'],
-        username: 'other',
-        website: 'https://acme.com',
+          biography: 'A short biography',
+          company: 'Acme Inc.',
+          socials: ['https://twitter.com/acme'],
+          website: 'https://acme.com',
+        })
+      })
+
+      it('should return the user with session details', async({ createUser, application }) => {
+        const { headers } = await createUser('admin', { isSuperAdministrator: true })
+        const response = await application.fetch('/api/users/admin?withSessions=true', { method: 'GET', headers })
+        const body = await response.json() as Record<string, string>
+        expect(response.status).toBe(200)
+        expect(response.statusText).toBe('OK')
+        expect(body).toStrictEqual({
+          id: expect.stringMatching(EXP_UUID),
+          username: 'admin',
+          email: 'admin@acme.com',
+          displayName: 'admin',
+          avatarUrl: '/api/users/admin/avatar',
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+
+          sessions: expect.any(Array),
+          lastSeenAt: expect.any(String),
+        })
       })
     })
 
-    it('should return an error if the user does not exist', async({ expect, ctx }) => {
-      const { headers } = await ctx.createUser('jdoe', { isSuperAdministrator: true })
-      const response = await ctx.fetch('/api/users/does-not-exists', { method: 'GET', headers })
-      const body = await response.json() as Record<string, string>
-      expect(response.status).toBe(404)
-      expect(response.statusText).toBe('Not Found')
-      expect(body).toMatchObject({ data: { name: 'E_USER_NOT_FOUND' } })
-    })
+    describe<Context>('other user', (it) => {
+      it('should return the user of another user', async({ createUser, application }) => {
+        const { headers } = await createUser('admin', { isSuperAdministrator: true })
+        await createUser('jdoe')
+        const response = await application.fetch('/api/users/jdoe', { method: 'GET', headers })
+        const body = await response.json() as Record<string, string>
+        expect(response.status).toBe(200)
+        expect(response.statusText).toBe('OK')
+        expect(body).toStrictEqual({
+          id: expect.stringMatching(EXP_UUID),
+          username: 'jdoe',
+          email: 'jdoe@acme.com',
+          displayName: 'jdoe',
+          avatarUrl: '/api/users/jdoe/avatar',
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+        })
+      })
 
-    it('should return the user of a deleted user', async({ expect, ctx }) => {
-      const { headers } = await ctx.createUser('jdoe', { isSuperAdministrator: true })
-      const { user } = await ctx.createUser('other')
-      const { User } = ctx.ModuleUser.getRepositories()
-      await User.softRemove(user)
-      const response = await ctx.fetch('/api/users/other', { method: 'GET', headers })
-      const body = await response.json() as Record<string, string>
-      expect(response.status).toBe(200)
-      expect(response.statusText).toBe('OK')
-      expect(body).toMatchObject({ username: 'other' })
-    })
-  })
+      it('should return the user with profile details', async({ createUser, moduleUser, application }) => {
+        const { headers } = await createUser('admin', { isSuperAdministrator: true })
+        const { user } = await createUser('jdoe')
+        user.profile!.displayName = 'John Doe'
+        user.profile!.company = 'Acme Inc.'
+        user.profile!.website = 'https://acme.com'
+        user.profile!.biography = 'A short biography'
+        user.profile!.socials = ['https://twitter.com/acme']
+        await moduleUser.getRepositories().User.save(user)
+        const response = await application.fetch('/api/users/jdoe?withProfile=true', { method: 'GET', headers })
+        const body = await response.json() as Record<string, string>
+        expect(response.status).toBe(200)
+        expect(response.statusText).toBe('OK')
+        expect(body).toStrictEqual({
+          id: expect.stringMatching(EXP_UUID),
+          username: 'jdoe',
+          email: 'jdoe@acme.com',
+          displayName: 'John Doe',
+          avatarUrl: '/api/users/jdoe/avatar',
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
 
-  describe<Context>('with authenticated user', (it) => {
-    it('should return the user when requesting its own', async({ expect, ctx }) => {
-      const { headers } = await ctx.createUser('jdoe')
-      const response = await ctx.fetch('/api/users/jdoe', { method: 'GET', headers })
-      const body = await response.json() as Record<string, string>
-      expect(response.status).toBe(200)
-      expect(response.statusText).toBe('OK')
-      expect(body).toStrictEqual({ username: 'jdoe', displayName: 'jdoe' })
-    })
+          biography: 'A short biography',
+          company: 'Acme Inc.',
+          socials: ['https://twitter.com/acme'],
+          website: 'https://acme.com',
+        })
+      })
 
-    it('should return with user profile details', async({ expect, ctx }) => {
-      const { user, headers } = await ctx.createUser('jdoe')
-      user.profile!.displayName = 'John Doe'
-      user.profile!.company = 'Acme Inc.'
-      user.profile!.website = 'https://acme.com'
-      user.profile!.biography = 'A short biography'
-      user.profile!.socials = ['https://twitter.com/acme']
-      const { User } = ctx.ModuleUser.getRepositories()
-      await User.save(user)
-      const response = await ctx.fetch('/api/users/jdoe?withProfile=true', { method: 'GET', headers })
-      const body = await response.json() as Record<string, string>
-      expect(response.status).toBe(200)
-      expect(response.statusText).toBe('OK')
-      expect(body).toStrictEqual({
-        biography: 'A short biography',
-        company: 'Acme Inc.',
-        displayName: 'John Doe',
-        socials: ['https://twitter.com/acme'],
-        username: 'jdoe',
-        website: 'https://acme.com',
+      it('should return the user with session details', async({ createUser, application }) => {
+        const { headers } = await createUser('admin', { isSuperAdministrator: true })
+        await createUser('jdoe')
+        const response = await application.fetch('/api/users/jdoe?withSessions=true', { method: 'GET', headers })
+        const body = await response.json() as Record<string, string>
+        expect(response.status).toBe(200)
+        expect(response.statusText).toBe('OK')
+        expect(body).toStrictEqual({
+          id: expect.stringMatching(EXP_UUID),
+          email: 'jdoe@acme.com',
+          username: 'jdoe',
+          displayName: 'jdoe',
+          avatarUrl: '/api/users/jdoe/avatar',
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+
+          sessions: expect.any(Array),
+          lastSeenAt: expect.any(String),
+        })
       })
     })
 
-    it('should return an error if the user requests the of another user', async({ expect, ctx }) => {
-      const { headers } = await ctx.createUser('jdoe')
-      await ctx.createUser('other')
-      const response = await ctx.fetch('/api/users/other', { method: 'GET', headers })
-      const body = await response.json() as Record<string, string>
-      expect(response.status).toBe(403)
-      expect(response.statusText).toBe('Forbidden')
-      expect(body).toMatchObject({ data: { name: 'E_USER_NOT_ALLOWED' } })
+    describe<Context>('edge cases', (it) => {
+      it('should return deleted user', async({ createUser, application }) => {
+        const { headers } = await createUser('admin', { isSuperAdministrator: true })
+        await createUser('jdoe', { deletedAt: new Date() })
+        const response = await application.fetch('/api/users/jdoe?withDeleted=true', { method: 'GET', headers })
+        const body = await response.json() as Record<string, string>
+        expect(response.status).toBe(200)
+        expect(response.statusText).toBe('OK')
+        expect(body).toMatchObject({ username: 'jdoe' })
+      })
+
+      it('should return disabled user', async({ createUser, application }) => {
+        const { headers } = await createUser('admin', { isSuperAdministrator: true })
+        await createUser('jdoe', { disabledAt: new Date() })
+        const response = await application.fetch('/api/users/jdoe?withDisabled=true', { method: 'GET', headers })
+        const body = await response.json() as Record<string, string>
+        expect(response.status).toBe(200)
+        expect(response.statusText).toBe('OK')
+        expect(body).toMatchObject({ username: 'jdoe' })
+      })
+
+      it('should return an error if the user does not exist', async({ createUser, application }) => {
+        const { headers } = await createUser('admin', { isSuperAdministrator: true })
+        const response = await application.fetch('/api/users/does-not-exists', { method: 'GET', headers })
+        const body = await response.json() as Record<string, string>
+        expect(response.status).toBe(404)
+        expect(response.statusText).toBe('Not Found')
+        expect(body).toMatchObject({ data: { name: 'E_USER_NOT_FOUND' } })
+      })
+    })
+  })
+
+  describe<Context>('with authenticated user', () => {
+    describe<Context>('own user', (it) => {
+      it('should return the user', async({ createUser, application }) => {
+        const { headers } = await createUser('jdoe')
+        const response = await application.fetch('/api/users/jdoe', { method: 'GET', headers })
+        const body = await response.json() as Record<string, string>
+        expect(response.status).toBe(200)
+        expect(response.statusText).toBe('OK')
+        expect(body).toStrictEqual({
+          id: expect.stringMatching(EXP_UUID),
+          username: 'jdoe',
+          email: 'jdoe@acme.com',
+          displayName: 'jdoe',
+          avatarUrl: '/api/users/jdoe/avatar',
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+        })
+      })
+
+      it('should return own user with profile details', async({ createUser, moduleUser, application }) => {
+        const { user, headers } = await createUser('jdoe')
+        user.profile!.displayName = 'John Doe'
+        user.profile!.company = 'Acme Inc.'
+        user.profile!.website = 'https://acme.com'
+        user.profile!.biography = 'A short biography'
+        user.profile!.socials = ['https://twitter.com/acme']
+        await moduleUser.getRepositories().User.save(user)
+        const response = await application.fetch('/api/users/jdoe?withProfile=true', { method: 'GET', headers })
+        const body = await response.json() as Record<string, string>
+        expect(response.status).toBe(200)
+        expect(response.statusText).toBe('OK')
+        expect(body).toStrictEqual({
+          id: expect.stringMatching(EXP_UUID),
+          username: 'jdoe',
+          email: 'jdoe@acme.com',
+          displayName: 'John Doe',
+          avatarUrl: '/api/users/jdoe/avatar',
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+
+          biography: 'A short biography',
+          company: 'Acme Inc.',
+          socials: ['https://twitter.com/acme'],
+          website: 'https://acme.com',
+        })
+      })
+
+      it('should return own user with session details', async({ createUser, application }) => {
+        const { headers } = await createUser('jdoe')
+        const response = await application.fetch('/api/users/jdoe?withSessions=true', { method: 'GET', headers })
+        const body = await response.json() as Record<string, string>
+        expect(response.status).toBe(200)
+        expect(response.statusText).toBe('OK')
+        expect(body).toStrictEqual({
+          id: expect.stringMatching(EXP_UUID),
+          username: 'jdoe',
+          email: 'jdoe@acme.com',
+          displayName: 'jdoe',
+          avatarUrl: '/api/users/jdoe/avatar',
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+
+          sessions: expect.any(Array),
+          lastSeenAt: expect.any(String),
+        })
+      })
     })
 
-    it('should return an error if the user does not exist', async({ expect, ctx }) => {
-      const { headers } = await ctx.createUser('jdoe')
-      const response = await ctx.fetch('/api/users/does-not-exists', { method: 'GET', headers })
-      const body = await response.json() as Record<string, string>
-      expect(response.status).toBe(403)
-      expect(response.statusText).toBe('Forbidden')
-      expect(body).toMatchObject({ data: { name: 'E_USER_NOT_ALLOWED' } })
+    describe<Context>('other user', (it) => {
+      it('should return the user of another user', async({ createUser, application }) => {
+        const { headers } = await createUser('user')
+        await createUser('jdoe')
+        const response = await application.fetch('/api/users/jdoe', { method: 'GET', headers })
+        const body = await response.json() as Record<string, string>
+        expect(response.status).toBe(200)
+        expect(response.statusText).toBe('OK')
+        expect(body).toStrictEqual({
+          username: 'jdoe',
+          displayName: 'jdoe',
+          avatarUrl: '/api/users/jdoe/avatar',
+        })
+      })
+
+      it('should return the user with profile details', async({ createUser, moduleUser, application }) => {
+        const { headers } = await createUser('user')
+        const { user } = await createUser('jdoe')
+        user.profile!.displayName = 'John Doe'
+        user.profile!.company = 'Acme Inc.'
+        user.profile!.website = 'https://acme.com'
+        user.profile!.biography = 'A short biography'
+        user.profile!.socials = ['https://twitter.com/acme']
+        await moduleUser.getRepositories().User.save(user)
+        const response = await application.fetch('/api/users/jdoe?withProfile=true', { method: 'GET', headers })
+        const body = await response.json() as Record<string, string>
+        expect(response.status).toBe(200)
+        expect(response.statusText).toBe('OK')
+        expect(body).toStrictEqual({
+          username: 'jdoe',
+          displayName: 'John Doe',
+          avatarUrl: '/api/users/jdoe/avatar',
+          biography: 'A short biography',
+          company: 'Acme Inc.',
+          socials: ['https://twitter.com/acme'],
+          website: 'https://acme.com',
+        })
+      })
+
+      it('should return an error if the user requests the session details of another user', async({ createUser, application }) => {
+        const { headers } = await createUser('user')
+        await createUser('jdoe')
+        const response = await application.fetch('/api/users/jdoe?withSessions=true', { method: 'GET', headers })
+        const body = await response.json() as Record<string, string>
+        expect(response.status).toBe(403)
+        expect(response.statusText).toBe('Forbidden')
+        expect(body).toMatchObject({ data: { name: 'E_USER_NOT_ALLOWED' } })
+      })
     })
 
-    it('should return an error if the user is deleted', async({ expect, ctx }) => {
-      const { headers } = await ctx.createUser('jdoe')
-      const { user } = await ctx.createUser('other')
-      const { User } = ctx.ModuleUser.getRepositories()
-      await User.softRemove(user)
-      const response = await ctx.fetch('/api/users/other', { method: 'GET', headers })
-      const body = await response.json() as Record<string, string>
-      expect(response.status).toBe(403)
-      expect(response.statusText).toBe('Forbidden')
-      expect(body).toMatchObject({ data: { name: 'E_USER_NOT_ALLOWED' } })
+    describe<Context>('edge cases', (it) => {
+      it('should return an error if the user is deleted', async({ createUser, moduleUser, application }) => {
+        const { headers } = await createUser('user')
+        const { user } = await createUser('jdoe')
+        const { User } = moduleUser.getRepositories()
+        await User.softRemove(user)
+        const response = await application.fetch('/api/users/other', { method: 'GET', headers })
+        const body = await response.json() as Record<string, string>
+        expect(response.status).toBe(404)
+        expect(response.statusText).toBe('Not Found')
+        expect(body).toMatchObject({ data: { name: 'E_USER_NOT_FOUND' } })
+      })
+
+      it('should return an error if the user is disabled', async({ createUser, moduleUser, application }) => {
+        const { headers } = await createUser('user')
+        const { user } = await createUser('jdoe')
+        user.disabledAt = new Date()
+        await moduleUser.getRepositories().User.save(user)
+        const response = await application.fetch('/api/users/other', { method: 'GET', headers })
+        const body = await response.json() as Record<string, string>
+        expect(response.status).toBe(404)
+        expect(response.statusText).toBe('Not Found')
+        expect(body).toMatchObject({ data: { name: 'E_USER_NOT_FOUND' } })
+      })
+
+      it('should return an error if the user does not exist', async({ createUser, application }) => {
+        const { headers } = await createUser('user')
+        const response = await application.fetch('/api/users/does-not-exists', { method: 'GET', headers })
+        const body = await response.json() as Record<string, string>
+        expect(response.status).toBe(404)
+        expect(response.statusText).toBe('Not Found')
+        expect(body).toMatchObject({ data: { name: 'E_USER_NOT_FOUND' } })
+      })
     })
   })
 
   describe<Context>('with unauthenticated user', (it) => {
-    it('should return an error if the user does not exist', async({ expect, ctx }) => {
-      const response = await ctx.fetch('/api/users/does-not-exists', { method: 'GET' })
+    it('should return with E_USER_NOT_AUTHENTICATED if the user does not exist', async({ application }) => {
+      const response = await application.fetch('/api/users/does-not-exists', { method: 'GET' })
       const body = await response.json() as Record<string, string>
       expect(response.status).toBe(401)
       expect(response.statusText).toBe('Unauthorized')
       expect(body).toMatchObject({ data: { name: 'E_USER_NOT_AUTHENTICATED' } })
     })
 
-    it('should return an error if the user exists but the request is not authenticated', async({ expect, ctx }) => {
-      await ctx.createUser('jdoe')
-      const response = await ctx.fetch('/api/users/jdoe', { method: 'GET' })
+    it('should return with E_USER_NOT_AUTHENTICATED if the user exists but the request is not authenticated', async({ createUser, application }) => {
+      await createUser('jdoe')
+      const response = await application.fetch('/api/users/jdoe', { method: 'GET' })
       const body = await response.json() as Record<string, string>
       expect(response.status).toBe(401)
       expect(response.statusText).toBe('Unauthorized')
       expect(body).toMatchObject({ data: { name: 'E_USER_NOT_AUTHENTICATED' } })
     })
   })
-})
+}, 1000)

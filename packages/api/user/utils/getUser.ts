@@ -1,7 +1,7 @@
 import type { Loose } from '@unshared/types'
 import type { ModuleUser } from '..'
 import type { User } from '../entities'
-import { assertBoolean, assertNull, assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
+import { assertBoolean, assertNil, assertNull, assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
 
 /** The options to resolve the user. */
 const GET_USER_OPTIONS_SCHEMA = createSchema({
@@ -16,13 +16,13 @@ const GET_USER_OPTIONS_SCHEMA = createSchema({
   })]],
 
   /** Also resolve deleted users. */
-  withDeleted: [[assertUndefined], [assertBoolean]],
+  withDeleted: [[assertNil], [assertBoolean]],
 
   /** Also resolve disabled users. */
-  withDisabled: [[assertUndefined], [assertBoolean]],
+  withDisabled: [[assertNil], [assertBoolean]],
 
   /** Also resolve the user's profile. */
-  withProfile: [[assertUndefined], [assertBoolean]],
+  withProfile: [[assertNil], [assertBoolean]],
 })
 
 /** The options to resolve the user. */
@@ -49,7 +49,7 @@ export async function getUser(this: ModuleUser, options: GetUserOptions): Promis
   const result = await User.findOne({
     where: { username },
     relations: { profile: withProfile ? { avatar: true } : undefined },
-    withDeleted,
+    withDeleted: withDeleted === true,
   })
 
   // --- Throw an error if the user does not exist.

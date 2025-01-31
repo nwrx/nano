@@ -1,4 +1,3 @@
-/* eslint-disable sonarjs/no-duplicate-string */
 import { createError } from '@unserved/server'
 
 export const ERRORS = {
@@ -67,6 +66,12 @@ export const ERRORS = {
     statusMessage: 'Forbidden',
     message: 'The user is not allowed to perform this operation',
   }),
+  USER_UNABLE_TO_DELETE_SUPER_ADMIN: () => createError({
+    name: 'E_USER_UNABLE_TO_DELETE_SUPER_ADMIN',
+    statusCode: 403,
+    statusMessage: 'Forbidden',
+    message: 'The super administrator cannot be deleted',
+  }),
   USER_AVATAR_NOT_IMAGE: () => createError({
     name: 'E_USER_AVATAR_NOT_IMAGE',
     statusCode: 400,
@@ -129,20 +134,20 @@ export const ERRORS = {
   // Update
   USER_ALREADY_ENABLED: () => createError({
     name: 'E_USER_ALREADY_ENABLED',
-    statusCode: 400,
-    statusMessage: 'Bad Request',
+    statusCode: 409,
+    statusMessage: 'Conflict',
     message: 'The user is already enabled',
   }),
   USER_ALREADY_DISABLED: () => createError({
     name: 'E_USER_ALREADY_DISABLED',
-    statusCode: 400,
-    statusMessage: 'Bad Request',
+    statusCode: 409,
+    statusMessage: 'Conflict',
     message: 'The user is already disabled',
   }),
   USER_ALREADY_VERIFIED: () => createError({
     name: 'E_USER_ALREADY_VERIFIED',
-    statusCode: 400,
-    statusMessage: 'Bad Request',
+    statusCode: 409,
+    statusMessage: 'Conflict',
     message: 'The user is already verified',
   }),
 }

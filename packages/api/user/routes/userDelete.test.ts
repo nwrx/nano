@@ -1,102 +1,116 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import type { Context } from '../../__fixtures__'
-import { createContext } from '../../__fixtures__'
+import { createTestContext } from '../../__fixtures__'
 
-describe.concurrent<Context>('userCreate', () => {
+describe.concurrent('userDelete', () => {
   beforeEach<Context>(async(context) => {
-    context.ctx = await createContext()
-    await context.ctx.createServer()
+    await createTestContext(context)
+    await context.application.createTestServer()
   })
 
   afterEach<Context>(async(context) => {
-    await context.ctx.destroy()
+    await context.application.destroy()
   })
 
-  describe<Context>('with super administrator', (it) => {
-    it('should respond with status 204', async({ expect, ctx }) => {
-      const { headers } = await ctx.createUser('admin', { isSuperAdministrator: true })
-      await ctx.createUser('jdoe', { email: 'jdoe@example.com' })
-      const response = await ctx.fetch('/api/users/jdoe', { method: 'DELETE', headers })
-      expect(response.status).toBe(204)
-      expect(response.statusText).toBe('No Content')
+  describe<Context>('with super administrator', () => {
+    describe<Context>('own user', (it) => {
+      it('should respond with an error if the user is the super administrator', async({ createUser, application }) => {
+        const { headers } = await createUser('admin', { isSuperAdministrator: true })
+        const response = await application.fetch('/api/users/admin', { method: 'DELETE', headers })
+        const data = await response.json() as Record<string, string>
+        expect(response.status).toBe(403)
+        expect(response.statusText).toBe('Forbidden')
+        expect(data).toMatchObject({ data: { name: 'E_USER_UNABLE_TO_DELETE_SUPER_ADMIN' } })
+      })
     })
 
-    it('should respond with an empty body', async({ expect, ctx }) => {
-      const { headers } = await ctx.createUser('admin', { isSuperAdministrator: true })
-      await ctx.createUser('jdoe', { email: 'jdoe@example.com' })
-      const response = await ctx.fetch('/api/users/jdoe', { method: 'DELETE', headers })
-      const data = await response.text()
-      expect(data).toBe('')
-      expect(response.headers.get('content-type')).toBe(null)
-      expect(response.headers.get('content-length')).toBe(null)
+    describe<Context>('other user', (it) => {
+      it('should soft remove the user from the database', async({ createUser, moduleUser, application }) => {
+        const { headers } = await createUser('admin', { isSuperAdministrator: true })
+        await createUser('jdoe')
+        const response = await application.fetch('/api/users/jdoe', { method: 'DELETE', headers })
+        const { User } = moduleUser.getRepositories()
+        const result = await User.findOneOrFail({ where: { username: 'jdoe' }, withDeleted: true })
+        expect(response.status).toBe(204)
+        expect(response.statusText).toBe('No Content')
+        expect(result).toMatchObject({ username: 'jdoe', deletedAt: expect.any(Date) })
+      })
+
+      it('should archive the user workspace', async({ createUser, moduleWorkspace, application }) => {
+        const { headers } = await createUser('admin', { isSuperAdministrator: true })
+        await createUser('jdoe')
+        const response = await application.fetch('/api/users/jdoe', { method: 'DELETE', headers })
+        const { Workspace } = moduleWorkspace.getRepositories()
+        const result = await Workspace.findOneOrFail({ where: { name: 'jdoe' }, withDeleted: true })
+        expect(response.status).toBe(204)
+        expect(response.statusText).toBe('No Content')
+        expect(result).toMatchObject({ name: 'jdoe', deletedAt: undefined, archivedAt: expect.any(Date) })
+      })
     })
 
-    it('should soft remove the user from the database', async({ expect, ctx }) => {
-      const { headers } = await ctx.createUser('admin', { isSuperAdministrator: true })
-      await ctx.createUser('jdoe', { email: 'jdoe@example.com' })
-      await ctx.fetch('/api/users/jdoe', { method: 'DELETE', headers })
-      const { User } = ctx.ModuleUser.getRepositories()
-      const result = await User.findOneOrFail({ where: { username: 'jdoe' }, withDeleted: true })
-      expect(result).toMatchObject({ username: 'jdoe', deletedAt: expect.any(Date) })
-    })
+    describe<Context>('edge cases', (it) => {
+      it('should remove disabled users', async({ createUser, moduleUser, application }) => {
+        const { headers } = await createUser('admin', { isSuperAdministrator: true })
+        await createUser('jdoe', { disabledAt: new Date() })
+        const response = await application.fetch('/api/users/jdoe', { method: 'DELETE', headers })
+        const { User } = moduleUser.getRepositories()
+        const result = await User.findOneOrFail({ where: { username: 'jdoe' }, withDeleted: true })
+        expect(response.status).toBe(204)
+        expect(response.statusText).toBe('No Content')
+        expect(result).toMatchObject({ username: 'jdoe', deletedAt: expect.any(Date) })
+      })
 
-    it('should soft remove the user workspace', async({ expect, ctx }) => {
-      const { headers } = await ctx.createUser('admin', { isSuperAdministrator: true })
-      await ctx.createUser('jdoe', { email: 'jdoe@example.com' })
-      await ctx.fetch('/api/users/jdoe', { method: 'DELETE', headers })
-      const { Workspace } = ctx.ModuleWorkspace.getRepositories()
-      const result = await Workspace.findOneOrFail({ where: { name: 'jdoe' }, withDeleted: true })
-      expect(result).toMatchObject({ name: 'jdoe', deletedAt: expect.any(Date) })
-    })
-
-    it('should respond with a E_USER_EMAIL_OR_NAME_TAKEN error if the email is already taken', async({ expect, ctx }) => {
-      await ctx.createUser('jdoe', { email: 'jdoe@example.com' })
-      const { headers } = await ctx.createUser('admin', { isSuperAdministrator: true })
-      const body = JSON.stringify({ email: 'jdoe@example.com', username: 'not-jdoe' })
-      const response = await ctx.fetch('/api/users', { method: 'POST', body, headers })
-      const data = await response.json() as Record<string, string>
-      expect(response.status).toBe(409)
-      expect(data).toMatchObject({ data: { name: 'E_USER_EMAIL_OR_NAME_TAKEN' } })
-    })
-
-    it('should respond with a E_USER_EMAIL_OR_NAME_TAKEN error if the username is already taken', async({ expect, ctx }) => {
-      await ctx.createUser('jdoe')
-      const { headers } = await ctx.createUser('admin', { isSuperAdministrator: true })
-      const body = JSON.stringify({ email: 'not-jdoe@example.com', username: 'jdoe' })
-      const response = await ctx.fetch('/api/users', { method: 'POST', body, headers })
-      const data = await response.json() as Record<string, string>
-      expect(response.status).toBe(409)
-      expect(data).toMatchObject({ data: { name: 'E_USER_EMAIL_OR_NAME_TAKEN' } })
+      it('should respond with a error if the user does not exist', async({ createUser, application }) => {
+        const { headers } = await createUser('admin', { isSuperAdministrator: true })
+        const response = await application.fetch('/api/users/jdoe', { method: 'DELETE', headers })
+        const data = await response.json() as Record<string, string>
+        expect(response.status).toBe(404)
+        expect(response.statusText).toBe('Not Found')
+        expect(data).toMatchObject({ data: { name: 'E_USER_NOT_FOUND' } })
+      })
     })
   })
 
-  describe<Context>('with authenticated user', (it) => {
-    it('should not soft remove the user from the database', async({ expect, ctx }) => {
-      const { headers } = await ctx.createUser('jdoe')
-      await ctx.createUser('paul', { email: 'paul@example.com' })
-      await ctx.fetch('/api/users/paul', { method: 'DELETE', headers })
-      const { User } = ctx.ModuleUser.getRepositories()
-      const result = await User.find()
-      expect(result).toHaveLength(2)
+  describe<Context>('with authenticated user', () => {
+    describe<Context>('own user', (it) => {
+      it('should soft remove the user from the database', async({ createUser, moduleUser, application }) => {
+        const { headers } = await createUser('jdoe')
+        const response = await application.fetch('/api/users/jdoe', { method: 'DELETE', headers })
+        const { User } = moduleUser.getRepositories()
+        const result = await User.findOneOrFail({ where: { username: 'jdoe' }, withDeleted: true })
+        expect(response.status).toBe(204)
+        expect(response.statusText).toBe('No Content')
+        expect(result).toMatchObject({ username: 'jdoe', deletedAt: expect.any(Date) })
+      })
     })
 
-    it('should respond with a E_USER_NOT_ALLOWED error', async({ expect, ctx }) => {
-      const { headers } = await ctx.createUser('jdoe')
-      await ctx.createUser('paul', { email: 'paul@example.com' })
-      const response = await ctx.fetch('/api/users/paul', { method: 'DELETE', headers })
-      const data = await response.json() as Record<string, string>
-      expect(response.status).toBe(403)
-      expect(data).toMatchObject({ data: { name: 'E_USER_NOT_ALLOWED' } })
+    describe<Context>('other user', (it) => {
+      it('should not soft remove the user from the database', async({ createUser, moduleUser, application }) => {
+        const { headers } = await createUser('jdoe')
+        await createUser('paul')
+        const response = await application.fetch('/api/users/paul', { method: 'DELETE', headers })
+        const { User } = moduleUser.getRepositories()
+        const result = await User.findOneOrFail({ where: { username: 'paul' }, withDeleted: true })
+        const data = await response.json() as Record<string, string>
+        expect(response.status).toBe(403)
+        expect(response.statusText).toBe('Forbidden')
+        expect(result).toMatchObject({ username: 'paul' })
+        expect(data).toMatchObject({ data: { name: 'E_USER_NOT_ALLOWED' } })
+      })
     })
   })
 
   describe<Context>('with unauthenticated user', (it) => {
-    it('should respond with a E_USER_NOT_AUTHENTICATED error', async({ expect, ctx }) => {
-      await ctx.createUser('paul', { email: 'paul@example.com' })
-      const response = await ctx.fetch('/api/users/jdoe', { method: 'DELETE' })
+    it('should not soft remove the user from the database', async({ createUser, moduleUser, application }) => {
+      await createUser('jdoe')
+      const response = await application.fetch('/api/users/jdoe', { method: 'DELETE' })
       const data = await response.json() as Record<string, string>
+      const { User } = moduleUser.getRepositories()
+      const result = await User.findOneByOrFail({ username: 'jdoe' })
       expect(response.status).toBe(401)
+      expect(response.statusText).toBe('Unauthorized')
       expect(data).toMatchObject({ data: { name: 'E_USER_NOT_AUTHENTICATED' } })
+      expect(result).toMatchObject({ username: 'jdoe' })
     })
   })
-})
+}, 1000)

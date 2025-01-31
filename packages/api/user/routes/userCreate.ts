@@ -2,17 +2,18 @@ import type { UserObject } from '../entities'
 import type { ModuleUser } from '../index'
 import { createHttpRoute } from '@unserved/server'
 import { toSlug } from '@unshared/string'
-import { assert, createSchema } from '@unshared/validation'
+import { assertStringEmail, assertStringKebabCase, createSchema } from '@unshared/validation'
 import { setResponseStatus } from 'h3'
 import { ModuleWorkspace } from '../../workspace'
+import { createUser } from '../utils'
 
 export function userCreate(this: ModuleUser) {
   return createHttpRoute(
     {
       name: 'POST /api/users',
       parseBody: createSchema({
-        email: [assert.stringNotEmpty, assert.stringEmail],
-        username: [assert.stringNotEmpty, assert.stringKebabCase, toSlug],
+        email: [assertStringEmail],
+        username: [assertStringKebabCase, toSlug],
       }),
     },
     async({ event, body }): Promise<UserObject> => {
@@ -25,10 +26,8 @@ export function userCreate(this: ModuleUser) {
       // --- Only super administrators can create users.
       if (!user.isSuperAdministrator) throw this.errors.USER_NOT_ALLOWED()
 
-      // --- Save the user to the database and return the serialized user.
-      const { user: userToCreate, workspace } = await this.createUser({ username, email })
-
-      // --- Save the user and workspace in a transaction.
+      // --- Create user and workspace and save them in a transaction in the database.
+      const { user: userToCreate, workspace } = await createUser.call(this, { username, email })
       await this.withTransaction(async() => {
         await User.save(userToCreate)
         await Workspace.save(workspace)

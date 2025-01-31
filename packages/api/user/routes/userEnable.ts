@@ -3,6 +3,7 @@ import type { ModuleUser } from '..'
 import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, createSchema } from '@unshared/validation'
 import { setResponseStatus } from 'h3'
+import { getUser } from '../utils'
 
 export function userEnable(this: ModuleUser) {
   return createHttpRoute(
@@ -18,24 +19,18 @@ export function userEnable(this: ModuleUser) {
 
       // --- Only super administrators can enable users.
       if (!user.isSuperAdministrator) throw this.errors.USER_NOT_ALLOWED()
-
-      // --- Resolve the user to enable.
-      const userToEnable = await this.resolveUser({
+      const userToEnable = await getUser.call(this, {
         user,
         username,
         withDeleted: true,
         withDisabled: true,
       })
 
-      // --- If the user is not disabled, throw an error.
-      if (!userToEnable.disabledAt) throw this.errors.USER_ALREADY_ENABLED()
-
       // --- Enable the user and save the changes.
+      if (!userToEnable.disabledAt) throw this.errors.USER_ALREADY_ENABLED()
       const { User } = this.getRepositories()
       userToEnable.disabledAt = null
       await User.save(userToEnable)
-
-      // --- Respond with a 204 status code.
       setResponseStatus(event, 204)
     },
   )
