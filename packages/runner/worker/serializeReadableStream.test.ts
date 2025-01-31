@@ -30,7 +30,7 @@ describe('serializeReadableStream', () => {
     const callback = vi.fn()
     serialized.port.on('message', callback)
     serialized.port.postMessage('read')
-    await new Promise(resolve => setTimeout(resolve, 1))
+    await new Promise(resolve => setTimeout(resolve, 10))
     expect(callback).toHaveBeenCalledTimes(1)
     expect(callback).toHaveBeenCalledWith({ event: 'data', value: 'Hello, world!' })
   })
