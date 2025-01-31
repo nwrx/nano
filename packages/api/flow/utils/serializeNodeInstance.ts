@@ -22,7 +22,7 @@ export interface NodeInstanceJSON {
   isProcessing: boolean
   categoryName: string
   categoryColor: string
-  error?: string
+  errors?: string[]
 }
 
 /**
@@ -33,16 +33,15 @@ export interface NodeInstanceJSON {
  * @returns The serialized version of the `NodeInstance` object.
  */
 export function serializeNodeInstance(instance: NodeInstance): NodeInstanceJSON {
-  const nodeModule = instance.flow.resolveNodeModule(instance)
   return {
     id: instance.id,
-    kind: `${nodeModule.kind}:${instance.node.kind}`,
+    kind: instance.node.kind,
     icon: instance.node.icon ?? '',
-    name: instance.node.name ?? `${nodeModule.kind}:${instance.node.kind}`,
+    name: instance.node.name ?? instance.node.kind,
     label: instance.meta.label ?? '',
     description: instance.node.description ?? '',
     position: instance.meta.position ?? { x: 0, y: 0 },
-    data: instance.dataRaw,
+    data: instance.data,
     result: instance.result,
     dataSchema: serializeDataSchema(instance.dataSchema),
     resultSchema: serializeResultSchema(instance.resultSchema),
@@ -51,6 +50,6 @@ export function serializeNodeInstance(instance: NodeInstance): NodeInstanceJSON 
     isProcessing: false, // instance.isProcessing,
     categoryName: instance.node.category?.name ?? 'Uncategorized',
     categoryColor: instance.node.category?.color ?? '#000000',
-    error: instance.error?.message,
+    errors: instance.errors.map(error => error.message),
   }
 }
