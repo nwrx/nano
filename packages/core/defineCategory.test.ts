@@ -1,3 +1,4 @@
+import type { Category } from './defineCategory'
 import { defineCategory } from './defineCategory'
 
 describe('defineCategory', () => {
@@ -112,7 +113,7 @@ describe('defineCategory', () => {
   describe('inference', () => {
     it('should return the type of a flow category', () => {
       const category = defineCategory({ kind: 'math' })
-      expectTypeOf(category).toEqualTypeOf<{ kind: 'math' }>()
+      expectTypeOf(category).toEqualTypeOf<Category>()
     })
   })
 })
