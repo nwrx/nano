@@ -1,20 +1,12 @@
 <script setup lang="ts">
-import { useAlerts, useClient } from '#imports'
 import ASSET_NWRX_LOGO from '~/assets/nwrx-logo-white.svg'
 import { CONSTANTS } from '~/utils/constants'
 import { NAV_BAR_END, NAV_BAR_START, NAV_DRAWER_END, NAV_DRAWER_START } from '~/utils/navigation'
 
 const route = useRoute()
-const isAuthenticationRoute = computed(() => route.path.startsWith('/auth'))
+const session = useSession()
 const isDrawerOpen = useLocalStorage('__DrawerOpen', true)
-
-function signout() {
-  return useClient().requestAttempt('DELETE /api/signout', {
-    onSuccess: () => useAlerts().success('You have been signed out'),
-    onError: error => useAlerts().error(error),
-    onEnd: () => useRouter().push('/auth/signin'),
-  })
-}
+const isAuthenticationRoute = computed(() => route.path.startsWith('/auth'))
 </script>
 
 <template>
@@ -29,7 +21,7 @@ function signout() {
       :itemsEnd="NAV_BAR_END"
       userName="John Doe"
       userAvatar="https://fakeimg.pl/32x32/"
-      @signout="() => signout()"
+      @signout="() => session.signout()"
     />
 
     <!-- Nav Drawer -->
@@ -50,7 +42,7 @@ function signout() {
           <AppAlerts />
 
           <!-- On error, show error boundary -->
-          <NuxtErrorBoundary @error="(error) => console.error(error)">
+          <NuxtErrorBoundary>
             <template #error="{ error, clearError }">
               <AppPageErrorBoundary
                 :message="error"
