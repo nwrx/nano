@@ -2,6 +2,7 @@ import { defineComponent } from '../utils/defineComponent'
 
 export const ask = defineComponent(
   {
+    isTrusted: true,
     title: 'Ask',
     icon: 'https://api.iconify.design/mdi:comment-question-outline.svg',
     description: 'Ask for user input and await the response. This will interrupt the flow until the user provides a response.',
@@ -9,29 +10,88 @@ export const ask = defineComponent(
       question: {
         'type': 'string',
         'title': 'Question',
-        'default': '',
         'description': 'The question to ask the user.',
         'x-placeholder': 'What is your name?',
       },
+      text: {
+        'type': 'string',
+        'title': 'Text',
+        'description': 'The text to display to the user.',
+        'x-optional': true,
+        'x-control': 'textarea',
+      },
       choices: {
-        type: 'array',
-        title: 'If provided, the response must be one of the following choices.',
-        items: { type: 'string' },
-        description: 'The choices for the response.',
+        'type': 'array',
+        'title': 'If provided, the response must be one of the following choices.',
+        'description': 'The choices for the response.',
+        'x-optional': true,
+        'items': {
+          type: 'object',
+          required: ['value', 'label'],
+          additionalProperties: false,
+          properties: {
+            value: {
+              title: 'Value',
+              description: 'The value of the choice.',
+              oneOf: [
+                { type: 'array' },
+                { type: 'object' },
+                { type: 'string' },
+                { type: 'number' },
+                { type: 'boolean' },
+              ],
+            },
+            label: {
+              type: 'string',
+              title: 'Label',
+              description: 'The label for the choice.',
+            },
+            description: {
+              type: 'string',
+              title: 'Description',
+              description: 'A description of the choice.',
+            },
+            icon: {
+              type: 'string',
+              title: 'Icon',
+              description: 'The icon for the choice.',
+            },
+            imageUrl: {
+              type: 'string',
+              title: 'Image URL',
+              description: 'The image URL for the choice.',
+            },
+          },
+        },
       },
       timeout: {
-        type: 'number',
-        title: 'Timeout',
-        default: 0,
-        description: 'The timeout in milliseconds before the response is considered invalid.',
+        'type': 'integer',
+        'title': 'Timeout',
+        'minimum': 0,
+        'description': 'The timeout in milliseconds before the response is considered invalid.',
+        'x-optional': true,
       },
     },
     outputs: {
       response: {
-        type: 'string',
         title: 'Response',
         description: 'The response from the user.',
+        oneOf: [
+          { type: 'array' },
+          { type: 'object' },
+          { type: 'string' },
+          { type: 'number' },
+          { type: 'boolean' },
+        ],
       },
     },
   },
+  async({ data, askQuestion }) => ({
+    response: await askQuestion({
+      question: data.question,
+      text: data.text,
+      choices: data.choices,
+      timeout: data.timeout,
+    }),
+  }),
 )
