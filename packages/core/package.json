@@ -31,6 +31,11 @@
       "types": "./dist/createSchemaParser.d.ts",
       "import": "./dist/createSchemaParser.js"
     },
+    "./defineFlowCategory": {
+      "require": "./dist/defineFlowCategory.cjs",
+      "types": "./dist/defineFlowCategory.d.ts",
+      "import": "./dist/defineFlowCategory.js"
+    },
     "./defineFlowModule": {
       "require": "./dist/defineFlowModule.cjs",
       "types": "./dist/defineFlowModule.d.ts",

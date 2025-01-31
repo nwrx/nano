@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 import type { MaybePromise } from '@unshared/types'
 import type { Flow } from './createFlow'
+import type { FlowCategory } from './defineFlowCategory'
 import type { FlowType, FlowTypeJSON } from './defineFlowType'
 import type { InferSchemaType } from './types'
 import { mapValues } from '@unshared/collection'
@@ -54,6 +55,7 @@ export interface FlowNodeJSON {
   kind: string
   name?: string
   icon?: string
+  category?: string
   description?: string
   dataSchema?: Record<string, FlowNodePortJSON>
   resultSchema?: Record<string, FlowNodePortJSON>
@@ -236,6 +238,14 @@ export interface FlowNodeOptions<
   description?: string
 
   /**
+   * The category of the node. The category is used to group the node with
+   * other nodes that have a similar purpose and should be unique to the node.
+   *
+   * @example FlowCategory { ... }
+   */
+  category?: FlowCategory
+
+  /**
    * A function that defines the schema of the data that the node expects.
    * The schema is used to validate the data that is passed to the node and
    * to provide information about the data that is expected.
@@ -349,6 +359,7 @@ export function defineFlowNode<
     kind: options.kind,
     name: options.name,
     icon: options.icon,
+    category: options.category,
     description: options.description,
     defineDataSchema: options.defineDataSchema ?? {},
     defineResultSchema: options.defineResultSchema ?? {},
@@ -369,6 +380,7 @@ export function defineFlowNode<
         kind: options.kind,
         name: options.name,
         icon: options.icon,
+        category: options.category?.kind,
         description: options.description,
         dataSchema,
         resultSchema,
