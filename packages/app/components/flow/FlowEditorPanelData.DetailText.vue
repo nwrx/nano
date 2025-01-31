@@ -28,7 +28,7 @@ const asRaw = ref(false)
     <!-- Raw Text -->
     <div
       v-if="asRaw"
-      class="font-mono whitespace-break-spaces p-sm text-xs"
+      class="font-mono whitespace-break-spaces p-sm"
       v-text="model"
     />
 

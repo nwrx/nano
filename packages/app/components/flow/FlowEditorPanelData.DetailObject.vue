@@ -18,10 +18,15 @@ const model = useVModel(props, 'modelValue', emit, {
 
 <template>
   <div class="font-mono">
-    <div v-for="(value, key) in modelValue" class="flex">
+
+    <div v-for="(value, key) in model" class="flex">
+
+      <!-- Key -->
       <div class="w-140px shrink-0 py-xs px-sm truncate b-r b-editor">
         {{ key }}
       </div>
+
+      <!-- Value -->
       <div class="w-full py-xs px-sm truncate">
         {{ value }}
       </div>

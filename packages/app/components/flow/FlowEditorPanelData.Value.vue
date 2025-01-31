@@ -37,7 +37,7 @@ const isLink = computed(() => {
 <template>
   <FlowEditorPanelDataValueLink
     v-if="isLink"
-    :modelValue="typeof model === 'string' ? model : undefined"
+    :modelValue="model"
     :nodes="nodes"
   />
 
@@ -56,6 +56,13 @@ const isLink = computed(() => {
     :label="socket?.typeName ?? t('object')"
   />
 
+  <!-- Boolean -->
+  <FlowEditorPanelDataValueRadio
+    v-else-if="typeof model === 'boolean'"
+    v-model="model"
+    :options="socket?.options"
+  />
+
   <!-- Fallback to text -->
   <input
     v-else
@@ -69,13 +76,18 @@ const isLink = computed(() => {
 
 <i18n lang="yaml">
   en:
+    object: Object
     noDefault: No default value
   fr:
+    object: Objet
     noDefault: Aucune valeur par défaut
   de:
+    object: Objekt
     noDefault: Kein Standardwert
   es:
+    object: Objeto
     noDefault: Sin valor predeterminado
   zh:
+    object: 对象
     noDefault: 没有默认值
 </i18n>
