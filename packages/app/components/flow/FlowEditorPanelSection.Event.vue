@@ -9,12 +9,6 @@ const props = defineProps<{
 // --- Localization
 const { t } = useI18n()
 const isOpen = ref(false)
-
-// --- Methods
-// function getNode(event: FlowSessionEventPayload) {
-//   if ('id' in event) return props.nodes.find(node => node.id === event.id)
-// }
-
 const node = computed(() => props.nodes.find(node => node.id === props.event.id))
 </script>
 
@@ -26,7 +20,7 @@ const node = computed(() => props.nodes.find(node => node.id === props.event.id)
     <!-- Header -->
     <BaseButton
       eager
-      class="flex items-center font-medium px py transition w-full cursor-pointer"
+      class="flex items-center font-medium px py-sm transition w-full cursor-pointer"
       :class="{ 'hover:bg-subtle/50': !isOpen }"
       @click="() => { isOpen = !isOpen }">
       <Badge
@@ -42,6 +36,11 @@ const node = computed(() => props.nodes.find(node => node.id === props.event.id)
         :label="node?.name || t(`event.node:${event.event}`, event as any)"
         iconLoad
       />
+      <!-- Duration -->
+      <div v-if="'duration' in event" class="flex items-center space-x-md ml-auto text-end">
+        <p v-if="'id' in event" class="w-40 text-xs font-normal text-subtle truncate">{{ event.id }}</p>
+        <p class="w-12 text-xs text-subtle">{{ event.duration }}ms</p>
+      </div>
     </BaseButton>
 
     <!-- Content -->
@@ -52,7 +51,7 @@ const node = computed(() => props.nodes.find(node => node.id === props.event.id)
       :class="{ 'opacity-0': !isOpen }">
 
       <!-- Meta -->
-      <div class="w-full p-lg pt-sm space-y-lg">
+      <div class="w-full p-md pt-xs space-y-lg">
         <FlowEditorPanelSectionData
           :title="t('event.flow')"
           :label="t('event.flow')"
@@ -62,12 +61,20 @@ const node = computed(() => props.nodes.find(node => node.id === props.event.id)
           }"
         />
 
+        <!-- Data -->
+        <FlowEditorPanelSectionData
+          v-if="isOpen && event.event === 'node:end'"
+          :title="t('event.node:end')"
+          :data="event.data"
+          :label="t('event.node:end.label')"
+        />
+
         <!-- Result -->
         <FlowEditorPanelSectionData
-          v-if="isOpen && event.event === 'node:result'"
-          :title="t('event.node:result')"
+          v-if="isOpen && event.event === 'node:end'"
+          :title="t('event.node:end')"
           :data="event.result"
-          :label="t('event.node:result.label')"
+          :label="t('event.node:end.label')"
         />
 
         <!-- Error -->
@@ -89,6 +96,14 @@ const node = computed(() => props.nodes.find(node => node.id === props.event.id)
     event.flow:start: Start
     event.flow:end: Completed
     event.flow:abort: Aborted
-    event.node:result: Node
+    event.node:end: Node
     event.node:error: Error
+  fr:
+    label.id: ID
+    label.event: Événement
+    event.flow:start: Démarrage
+    event.flow:end: Terminé
+    event.flow:abort: Annulé
+    event.node:end: Noeud
+    event.node:error: Erreur
 </i18n>

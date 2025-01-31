@@ -1,5 +1,5 @@
 import type { ModuleFlow, User } from '@nwrx/api'
-import type { FlowEvents, Flow as FlowInstance } from '@nwrx/core'
+import type { FlowEvents, Flow as FlowInstance, NodeRunEvent } from '@nwrx/core'
 import type { Peer } from 'crossws'
 import type { Repository } from 'typeorm'
 import type { Flow } from '../entities'
@@ -39,9 +39,9 @@ export interface FlowSessionEventMap extends Record<keyof FlowEvents, unknown> {
   'flow:metaValue': { key: string; value: unknown }
   'flow:input': { key: string; value: unknown }
   'flow:output': { key: string; value: unknown }
-  'flow:abort': object
-  'flow:start': object
-  'flow:end': object
+  'flow:start': { id: string }
+  'flow:abort': { id: string; duration: number }
+  'flow:end': { id: string; duration: number }
 
   // Variables
   'variables:create': { name: string; value: string }
@@ -61,10 +61,10 @@ export interface FlowSessionEventMap extends Record<keyof FlowEvents, unknown> {
   'node:dataSchema': { id: string; schema: DataSocketJSON[] }
   'node:result': { id: string; result: Record<string, unknown> }
   'node:resultSchema': { id: string; schema: ResultSocketJSON[] }
-  'node:start': { id: string }
-  'node:abort': { id: string }
+  'node:start': { id: string } & NodeRunEvent
+  'node:abort': { id: string } & NodeRunEvent
+  'node:end': { id: string } & NodeRunEvent
   'node:error': { id: string; message: string }
-  'node:end': { id: string }
 
   // User
   'user:join': { id: string; name: string; color: string }
@@ -101,9 +101,9 @@ export class FlowSessionInstance {
     this.flow.on('flow:metaValue', (key, value) => this.broadcast({ event: 'flow:metaValue', key, value }))
     this.flow.on('flow:input', (key, value) => this.broadcast({ event: 'flow:input', key, value }))
     this.flow.on('flow:output', (key, value) => this.broadcast({ event: 'flow:output', key, value }))
-    this.flow.on('flow:start', () => this.broadcast({ event: 'flow:start' }))
-    this.flow.on('flow:abort', () => this.broadcast({ event: 'flow:abort' }))
-    this.flow.on('flow:end', () => this.broadcast({ event: 'flow:end' }))
+    this.flow.on('flow:start', id => this.broadcast({ event: 'flow:start', id }))
+    this.flow.on('flow:abort', (id, duration) => this.broadcast({ event: 'flow:abort', id, duration }))
+    this.flow.on('flow:end', (id, duration) => this.broadcast({ event: 'flow:end', id, duration }))
 
     // --- Node events.
     this.flow.on('node:create', node => this.broadcast({ event: 'node:create', ...serializeNodeInstance(node) }))
@@ -113,10 +113,10 @@ export class FlowSessionInstance {
     this.flow.on('node:dataSchema', (id, schema) => this.broadcast({ event: 'node:dataSchema', id, schema: serializeDataSchema(schema) }))
     this.flow.on('node:result', (id, result) => this.broadcast({ event: 'node:result', id, result }))
     this.flow.on('node:resultSchema', (id, schema) => this.broadcast({ event: 'node:resultSchema', id, schema: serializeResultSchema(schema) }))
-    this.flow.on('node:start', id => this.broadcast({ event: 'node:start', id }))
-    this.flow.on('node:abort', id => this.broadcast({ event: 'node:abort', id }))
+    this.flow.on('node:start', (id, event) => this.broadcast({ event: 'node:start', id, ...event }))
+    this.flow.on('node:abort', (id, event) => this.broadcast({ event: 'node:abort', id, ...event }))
+    this.flow.on('node:end', (id, event) => this.broadcast({ event: 'node:end', id, ...event }))
     this.flow.on('node:error', (id, error) => this.broadcast({ event: 'node:error', id, message: error.message }))
-    this.flow.on('node:end', id => this.broadcast({ event: 'node:end', id }))
   }
 
   /** The peers that are subscribed to the flow session. */
@@ -192,7 +192,16 @@ export class FlowSessionInstance {
     for (const participant of this.participants) {
       if (!participant.peer) continue
       if (participant.peer.id === except?.id) continue
-      participant.peer.send(payload)
+
+      // --- Before sending the payload, check if the payload contains a secret.
+      // --- If so, replace the secret with a placeholder.
+      const payloadSecrets = Object.values(this.flow.variables)
+      let payloadJson = JSON.stringify(payload)
+      for (const secret of payloadSecrets)
+        payloadJson = payloadJson.replaceAll(secret, 'HIDDEN')
+      const payloadSafe = JSON.parse(payloadJson) as FlowSessionEventPayload<T>
+
+      participant.peer.send(payloadSafe)
     }
   }
 

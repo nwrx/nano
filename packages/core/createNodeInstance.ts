@@ -5,6 +5,14 @@ import type { Node, NodeInstanceContext } from './defineNode'
 import type { ResultFromSchema, ResultSchema } from './defineResultSchema'
 import { randomUUID } from 'node:crypto'
 
+export interface NodeRunEvent<T extends DataSchema = DataSchema, U extends ResultSchema = ResultSchema> {
+  runId: string
+  duration: number
+  timestamp: number
+  data: DataFromSchema<T>
+  result: ResultFromSchema<U>
+}
+
 /**
  * A map of events that can be dispatched by a flow node and the variables
  * that are passed to the event listeners.
@@ -17,11 +25,11 @@ export interface NodeEvents<T extends DataSchema, U extends ResultSchema> {
   result: [result: ResultFromSchema<U>]
   dataSchema: [schema: T]
   resultSchema: [schema: U]
-  start: []
-  abort: []
-  end: []
   reset: []
   error: [error: Error]
+  start: [NodeRunEvent<T, U>]
+  abort: [NodeRunEvent<T, U>]
+  end: [NodeRunEvent<T, U>]
 }
 
 /**
@@ -100,6 +108,8 @@ export class NodeInstance<
   public eventTarget = new EventTarget()
   public eventHandlers = new Map<string, EventListener>()
   public abortController = new AbortController()
+  public runId = ''
+  public runStart = 0
 
   /**
    * Dispatch an event to the node. The event is dispatched to all nodes in
@@ -258,18 +268,6 @@ export class NodeInstance<
   }
 
   /**
-   * Set a property of the result of the node by key.
-   *
-   * @param key The key of the result property.
-   * @param value The value of the result property.
-   */
-  public setResultValue<K extends keyof U>(key: K, value: ResultFromSchema<U>[K]): void {
-    const port = this.getResultSocket(key)
-    this.result[key] = port.type.parse(value) as ResultFromSchema<U>[K]
-    this.dispatch('result', this.result)
-  }
-
-  /**
    * Set the result of the node.
    *
    * @param result The result to set.
@@ -385,7 +383,13 @@ export class NodeInstance<
     if (!error) error = new Error('Node execution was aborted')
     this.abortController.abort(error)
     this.abortController = new AbortController()
-    this.dispatch('abort')
+    this.dispatch('abort', {
+      runId: this.runId,
+      duration: Date.now() - this.runStart,
+      timestamp: Date.now(),
+      data: this.data,
+      result: this.result,
+    })
   }
 
   /**
@@ -406,6 +410,7 @@ export class NodeInstance<
     if (!this.node.process) return
     try {
       this.isRunning = true
+      this.runStart = Date.now()
       await this.resolveDataSchema()
       await this.resolveResultSchema()
 
@@ -417,7 +422,19 @@ export class NodeInstance<
         if (value === undefined && !isOptional) return
       }
 
-      this.dispatch('start')
+      // --- Dispatch the start event to notify listeners that the node
+      // --- has started processing and is running. The run ID is generated
+      // --- to identify the current run of the node and the start timestamp
+      // --- is stored to calculate the duration of the run.
+      this.dispatch('start', {
+        runId: this.runId = randomUUID(),
+        duration: 0,
+        timestamp: this.runStart,
+        data: this.data,
+        result: this.result,
+      })
+
+      // --- Process the node with the context of the node.
       const result = await this.node.process(this.context)
       this.setResult(result)
       this.isDone = true
@@ -434,7 +451,13 @@ export class NodeInstance<
     // --- node has finished processing and is no longer running.
     finally {
       this.isRunning = false
-      this.dispatch('end')
+      this.dispatch('end', {
+        runId: this.runId,
+        duration: Date.now() - this.runStart,
+        timestamp: Date.now(),
+        data: this.data,
+        result: this.result,
+      })
     }
   }
 
