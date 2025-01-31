@@ -1,21 +1,26 @@
 import { presetUnshared } from '@unshared/unocss-preset'
-import { defineConfig, presetIcons, presetUno, presetWebFonts } from 'unocss'
-import * as COLORS from './utils/colors'
-
-const FONT_SANS = 'IBM Plex Sans'
+import { defineConfig, presetIcons, presetUno } from 'unocss'
+import { COLORS } from './utils/colors'
 
 export default defineConfig({
   presets: [
     presetUno(),
     presetIcons({ cdn: 'https://esm.sh/' }),
     presetUnshared(),
-    presetWebFonts({
-      fonts: {
-        sans: [FONT_SANS],
-      },
-    }),
   ],
-
+  content: {
+    pipeline: {
+      include: [
+        './**/*.ts',
+        './**/*.vue',
+      ],
+      exclude: [
+        '.nuxt',
+        'node_modules',
+        '.git',
+      ],
+    },
+  },
   theme: {
     colors: COLORS,
     breakpoints: {
@@ -24,7 +29,9 @@ export default defineConfig({
       lg: '1440px',
     },
     fontFamily: {
-      sans: 'sans, sans-serif',
+      sans: '"IBM Plex Sans", sans-serif',
+      serif: '"IBM Plex Serif", serif',
+      mono: '"IBM Plex Mono", monospace',
     },
     width: {
       page: '1440px',
