@@ -1,60 +1,23 @@
-import type { MaybeLiteral } from '@unshared/types'
 import type { Flow } from './createFlow'
 import type { DataFromSchema, DataSchema } from './defineDataSchema'
 import type { Node, NodeInstanceContext } from './defineNode'
 import type { ResultFromSchema, ResultSchema } from './defineResultSchema'
+import { ValidationError } from '@unshared/validation'
 import { randomUUID } from 'node:crypto'
 
+const PREFIX_VARIABLE = '$VARIABLE.'
+const PREFIX_SECRET = '$SECRET.'
+const PREFIX_NODE = '$NODE.'
+
 export interface NodeEventMeta {
-
-  /** The ID of the node execution. */
   executionId: string
-
-  /** The ID of the flow execution. */
   threadId: string
-
-  /** The time from the start of the flow execution to the dispatch of the event. */
   delta: number
-
-  /** The amount of time since the start of the node execution. */
   duration: number
-
-  /** The timestamp of the node execution. */
   timestamp: number
 }
 
-/**
- * A map of events that can be dispatched by a flow node and the variables
- * that are passed to the event listeners.
- */
-export interface NodeEvents<T extends DataSchema, U extends ResultSchema> {
-  meta: [meta: NodeInstanceMeta]
-  metaValue: [key: string, value: unknown]
-  data: [data: DataFromSchema<T>]
-  dataRaw: [data: Record<string, unknown>]
-  result: [result: ResultFromSchema<U>]
-  dataSchema: [schema: T]
-  resultSchema: [schema: U]
-  reset: [meta: NodeInstanceMeta]
-  start: [data: DataFromSchema<T>, meta: NodeEventMeta]
-  end: [data: DataFromSchema<T>, result: ResultFromSchema<U>, meta: NodeEventMeta]
-  error: [error: Error, meta: NodeEventMeta]
-  abort: [meta: NodeEventMeta]
-}
-
-/**
- * A listener for a flow node event. The listener is called when the event is
- * dispatched by the flow node.
- */
-export type NodeListener<T extends DataSchema, U extends ResultSchema, K extends keyof NodeEvents<T, U>> =
-  (...parameters: NodeEvents<T, U>[K]) => Promise<void> | void
-
-/**
- * Additional properties that can be set on a flow node instance. They are used to
- * provide additional information about the node instance, such as a label, a comment,
- * a position, and other meta information that are context-specific.
- */
-export interface NodeInstanceMeta {
+export interface NodeMeta {
   label?: string
   comment?: string
   position?: { x: number; y: number }
@@ -63,77 +26,200 @@ export interface NodeInstanceMeta {
   [key: string]: unknown
 }
 
-/**
- * The options that are used to define a flow node. The options contain the flow
- * that the node is part of, the node definition, the initial data, and the initial
- * result of the node.
- *
- * @template T The schema of the data that the node expects.
- * @template U The schema of the result that the node produces.
- */
-export interface NodeInstanceOptions<T extends DataSchema, U extends ResultSchema> {
+export interface NodeEvents<T extends DataSchema, U extends ResultSchema> {
+  meta: [key: string, value: unknown]
+  data: [data: Record<string, unknown>]
+  result: [result: ResultFromSchema<U>]
+  dataSchema: [schema: T]
+  resultSchema: [schema: U]
+  start: [data: DataFromSchema<T>, meta: NodeEventMeta]
+  end: [data: DataFromSchema<T>, result: ResultFromSchema<U>, meta: NodeEventMeta]
+  error: [error: Error, meta: NodeEventMeta]
+  abort: [meta: NodeEventMeta]
+}
+
+export type NodeListener<T extends DataSchema, U extends ResultSchema, K extends keyof NodeEvents<T, U>> =
+  (...parameters: NodeEvents<T, U>[K]) => Promise<void> | void
+
+export interface NodeInstanceOptions<T extends DataSchema = DataSchema, U extends ResultSchema = ResultSchema> {
   id?: string
-  flow: Flow
   node: Node<string, T, U>
-  meta?: NodeInstanceMeta
+  meta?: NodeMeta
   initialData?: Partial<DataFromSchema<T>>
   initialResult?: Partial<ResultFromSchema<U>>
 }
 
-/**
- * A flow node that can be used in a flow to process data.
- * It is the basic building block of a flow that can be connected to other
- * nodes to create a flow of nodes that process data in a sequence.
- *
- * @example new ChainNode({ id: 'core:entrypoint', name: 'Entrypoint' })
- */
-export class NodeInstance<
-  T extends DataSchema = DataSchema,
-  U extends ResultSchema = ResultSchema,
-> implements NodeInstanceOptions<T, U> {
-  constructor(options: NodeInstanceOptions<T, U>) {
-    this.flow = options.flow
+export class NodeInstance<T extends DataSchema = DataSchema, U extends ResultSchema = ResultSchema> implements NodeInstanceOptions<T, U> {
+  constructor(public flow: Flow, options: NodeInstanceOptions<T, U>) {
     this.node = options.node
     if (options.id) this.id = options.id
     if (options.meta) this.meta = options.meta
-    this.dataRaw = { ...options.initialData }
-    this.result = { ...options.initialResult } as DataFromSchema<U>
+    if (options.initialData) this.data = { ...options.initialData }
+    if (options.initialResult) this.result = { ...options.initialResult } as DataFromSchema<U>
     this.dataSchema = (typeof this.node.dataSchema === 'function' ? {} : this.node.dataSchema) as T
     this.resultSchema = (typeof this.node.resultSchema === 'function' ? {} : this.node.resultSchema) as U
   }
 
-  public flow
-  public node
-  public meta: NodeInstanceMeta = {}
   public id = randomUUID() as string
+  public node
+  public meta: NodeMeta = {}
 
   public isDone = false
   public isRunning = false
+  public isDestroyed = false
+  public isProcessing = false
+  public errors: Error[] = []
+
   public executionId = randomUUID() as string
   public executionStart = Date.now()
   public executionIndex = 0
 
-  public error: Error | undefined
-  public dataRaw = {} as Record<string, unknown>
+  public data = {} as Record<string, unknown>
+  public dataResolved = {} as DataFromSchema<T>
   public dataSchema: T
   public result = {} as DataFromSchema<U>
   public resultSchema: U
 
   public eventTarget = new EventTarget()
-  public eventHandlers = new Map<string, EventListener>()
+  public eventHandlers: Array<[event: string, handler: EventListener]> = []
   public abortController = new AbortController()
 
-  /**
-   * Dispatch an event to the node. The event is dispatched to all nodes in
-   * the flow.
-   *
-   * @param event The event to dispatch.
-   * @param data The parameters to pass to the event listeners.
-   */
-  public dispatch<K extends keyof NodeEvents<T, U>>(event: K, ...data: NodeEvents<T, U>[K]) {
+  /***************************************************************************/
+  /* Private methods                                                         */
+  /***************************************************************************/
+
+  private get eventMeta(): NodeEventMeta {
+    return {
+      executionId: this.executionId,
+      threadId: this.flow.threadId,
+      delta: Date.now() - this.executionStart,
+      duration: Date.now() - this.executionStart,
+      timestamp: Date.now(),
+    }
+  }
+
+  private get context(): NodeInstanceContext<T, U> {
+    return {
+      data: this.dataResolved,
+      result: this.result,
+      abortSignal: this.abortController.signal,
+    } as NodeInstanceContext<T, U>
+  }
+
+  private dispatch<K extends keyof NodeEvents<T, U>>(event: K, ...data: NodeEvents<T, U>[K]) {
     const customEvent = new CustomEvent(event as string, { detail: data })
     this.eventTarget.dispatchEvent(customEvent)
   }
+
+  private async resolveDataSchema(): Promise<T> {
+    try {
+      if (typeof this.node.dataSchema !== 'function') return this.dataSchema
+      this.dataSchema = await this.node.dataSchema(this.context)
+      this.dispatch('dataSchema', this.dataSchema)
+      return this.dataSchema
+    }
+    catch (error) {
+      this.dispatch('error', error as Error, this.eventMeta)
+      return this.dataSchema
+    }
+  }
+
+  private async resolveResultSchema(): Promise<U> {
+    try {
+      if (typeof this.node.resultSchema !== 'function') return this.resultSchema
+      this.resultSchema = await this.node.resultSchema(this.context)
+      this.dispatch('resultSchema', this.resultSchema)
+      return this.resultSchema
+    }
+    catch (error) {
+      this.dispatch('error', error as Error, this.eventMeta)
+      return this.resultSchema
+    }
+  }
+
+  private async resolveDataValue(key: string): Promise<unknown> {
+
+    // --- Get the parser for the data property.
+    const raw = this.data[key]
+    const socket = this.dataSchema[key]
+    if (!socket) return
+    const parse = socket.type.parse as (value: unknown) => unknown
+
+    // --- If value is undefined and the socket is optional, return the default value.
+    if (raw === undefined && socket.isOptional)
+      return socket.defaultValue
+
+    // --- Anything other than a string is considered to be a final value.
+    if (typeof raw !== 'string') return parse(raw)
+
+    // --- If the value is a variable, get the value of the variable.
+    if (raw.startsWith(PREFIX_VARIABLE)) {
+      const name = raw.slice(PREFIX_VARIABLE.length)
+      const value = await this.flow.resolveVariable?.(name)
+      if (!value) throw new Error(`Variable "${name}" does not exist or is not accessible`)
+      return parse(value)
+    }
+
+    // --- If the value is a secret, get the value of the secret.
+    else if (raw.startsWith(PREFIX_SECRET)) {
+      const name = raw.slice(PREFIX_SECRET.length)
+      const value = await this.flow.resolveSecret?.(name)
+      if (!value) throw new Error(`Secret "${name}" does not exist or is not accessible`)
+      return parse(value)
+    }
+
+    // --- If the value is a result of another node, resolve it's value.
+    else if (raw.startsWith(PREFIX_NODE)) {
+      const [id, key] = raw.slice(PREFIX_NODE.length).split(':')
+      const node = this.flow.get(id)
+      const value = node.result[key]
+      return parse(value)
+    }
+
+    // --- Otherwise, parse and return the value as is.
+    return parse(raw)
+  }
+
+  private async resolveData(): Promise<void> {
+    const data = {} as Record<string, unknown>
+    for (const key in this.dataSchema) {
+      try {
+        data[key] = await this.resolveDataValue(key)
+      }
+      catch (error) {
+        (error as Error).message = `Failed to resolve "${key}": ${(error as Error).message}`
+        this.dispatch('error', error as Error, this.eventMeta)
+      }
+    }
+    this.dataResolved = data as DataFromSchema<T>
+  }
+
+  private setResult(result: DataFromSchema<U>): void {
+    const finalResult: Record<string, unknown> = {}
+    for (const key in this.resultSchema) {
+      try {
+        const value = result[key]
+        const socket = this.resultSchema[key]
+        if (value === undefined && socket.isOptional) continue
+        const parse = this.resultSchema[key].type.parse
+        finalResult[key] = parse(value)
+      }
+      catch (_error) {
+        const error = _error instanceof ValidationError ? _error : new Error(_error as string)
+        const message = `Unexpected result on "${this.id}/${key}"`
+        error.message = `${message}: ${error.message}`
+        this.dispatch('error', error, this.eventMeta)
+        console.warn(error)
+        finalResult[key] = undefined
+      }
+    }
+    this.result = finalResult as DataFromSchema<U>
+    this.dispatch('result', this.result)
+  }
+
+  /***************************************************************************/
+  /* Public methods                                                          */
+  /***************************************************************************/
 
   /**
    * Add a listener for a flow node event. The listener is called when the event
@@ -146,7 +232,7 @@ export class NodeInstance<
   public on<K extends keyof NodeEvents<T, U>>(event: K, listener: NodeListener<T, U, K>): () => void {
     const handler = (event: Event) => { void listener(...(event as CustomEvent<NodeEvents<T, U>[K]>).detail) }
     this.eventTarget.addEventListener(event, handler)
-    this.eventHandlers.set(event, handler)
+    this.eventHandlers.push([event as string, handler])
     return () => this.eventTarget.removeEventListener(event, handler)
   }
 
@@ -158,63 +244,9 @@ export class NodeInstance<
    * @param key The key of the value to set in the meta object.
    * @param value The value to set in the meta object.
    */
-  public setMetaValue(key: string, value: unknown) {
+  public setMeta(key: string, value: unknown) {
     this.meta = { ...this.meta, [key]: value }
-    this.dispatch('metaValue', key, value)
-  }
-
-  /**
-   * Resolve the schema of the data that the node expects. If the schema is
-   * already resolved, the resolved schema is returned. Otherwise, the given
-   * `dataSchema` function is called to resolve the schema and the schema
-   * is stored in the state.
-   *
-   * @returns The schema of the data that the node expects.
-   */
-  public async resolveDataSchema(): Promise<T> {
-    try {
-      if (typeof this.node.dataSchema !== 'function') return this.dataSchema
-      this.dataSchema = await this.node.dataSchema(this.context)
-      this.dispatch('dataSchema', this.dataSchema)
-      return this.dataSchema
-    }
-    catch (error) {
-      this.dispatch('error', error as Error, {
-        executionId: this.executionId,
-        threadId: this.flow.threadId,
-        delta: Date.now() - this.executionStart,
-        duration: Date.now() - this.executionStart,
-        timestamp: Date.now(),
-      })
-      return this.dataSchema
-    }
-  }
-
-  /**
-   * Resolve the schema of the result that the node produces. If the schema is
-   * already resolved, the resolved schema is returned. Otherwise, the given
-   * `defineResultSchema` function is called to resolve the schema and the schema
-   * is stored in the state.
-   *
-   * @returns The schema of the result that the node produces.
-   */
-  public async resolveResultSchema(): Promise<U> {
-    try {
-      if (typeof this.node.resultSchema !== 'function') return this.resultSchema
-      this.resultSchema = await this.node.resultSchema(this.context)
-      this.dispatch('resultSchema', this.resultSchema)
-      return this.resultSchema
-    }
-    catch (error) {
-      this.dispatch('error', error as Error, {
-        executionId: this.executionId,
-        threadId: this.flow.threadId,
-        delta: Date.now() - this.executionStart,
-        duration: Date.now() - this.executionStart,
-        timestamp: Date.now(),
-      })
-      return this.resultSchema
-    }
+    this.dispatch('meta', key, value)
   }
 
   /**
@@ -224,168 +256,69 @@ export class NodeInstance<
    * @param value The value of the data property.
    */
   public setDataValue<K extends keyof T>(key: K, value: DataFromSchema<T>[K]): void {
-    this.dataRaw[key as string] = value
+    this.data[key as string] = value
     this.dispatch('data', this.data)
-    this.dispatch('dataRaw', this.dataRaw)
   }
 
   /**
-   * Set the result of the node.
+   * Process the node by calling the `process` function of the node with the
+   * context of the node. The context contains the data, the secrets, the
+   * variables, and the abort signal.
    *
-   * @param result The result to set.
-   */
-  public setResult(result: DataFromSchema<U>): void {
-    if (!this.resultSchema) throw new Error('Cannot set the result of the node before the result schema has been resolved')
-    const newResult: Record<string, unknown> = {}
-    for (const key in this.resultSchema) {
-      try {
-        const value = result[key]
-        const socket = this.resultSchema[key]
-        if (value === undefined && socket.isOptional) continue
-        const parse = this.resultSchema[key].type.parse
-        newResult[key] = parse(value)
-      }
-      catch (_error) {
-        const error = _error instanceof Error ? _error : new Error(_error as string)
-        const message = `Failed to parse the result of the node "${this.id}" for the key "${key}"`
-        error.message = `${message}: ${error.message}`
-        this.dispatch('error', error, this.eventMeta)
-        console.warn(error)
-        newResult[key] = undefined
-      }
-    }
-    this.result = newResult as DataFromSchema<U>
-    this.dispatch('result', this.result)
-  }
-
-  /**
-   * Resolve the data value of the node by key. The data value is resolved by
-   * extracting variables or secrets from the flow or by getting the result
-   * of another node in the flow.
+   * @returns The result of the node processing.
+   * @example
    *
-   * @param key The key of the data property to resolve.
-   * @returns The resolved data value of the node by key.
+   * // Create a new flow with a single node.
+   * using flow = createFlow({ modules: [Core] })
+   * const node = flow.node('core:parse-json', { initialData: { json: '{"key": "value"}' } })
+   *
+   * // Start processing the node right away.
+   * const result = await node.start()
    */
-  public resolveDataValue<K extends keyof DataFromSchema<T>>(key: MaybeLiteral<K & string>): DataFromSchema<T>[K] | undefined {
+  public async start(): Promise<ResultFromSchema<U> | undefined> {
     try {
+      if (this.isRunning) throw new Error('The node is already running')
+      if (this.isDestroyed) throw new Error('The node has been destroyed')
 
-      // --- Get the parser for the data property.
-      const raw = this.dataRaw[key]
-      const socket = this.dataSchema[key]
-      if (!socket) return
-      const isOptional = socket.isOptional
-      const defaultValue = socket.defaultValue as DataFromSchema<T>[K] | undefined
-      const parse = socket.type.parse as (value: unknown) => DataFromSchema<T>[K]
-      let value: DataFromSchema<T>[K] | undefined
+      // --- Initialize and resolve the data schema and the result schema.
+      this.isRunning = true
+      await this.resolveDataSchema()
+      await this.resolveResultSchema()
 
-      if (typeof raw !== 'string') {
-        value = parse(raw)
+      // --- If any of the required data properties are missing,
+      // --- do not start processing the node and return early.
+      await this.resolveData()
+      for (const key in this.dataSchema) {
+        const { isOptional } = this.dataSchema[key]
+        const value = this.dataResolved[key]
+        if (value === undefined && !isOptional) return
       }
 
-      // --- If the value is a variable, get the value of the variable.
-      else if (raw.startsWith('$VARIABLE.')) {
-        const name = raw.slice(10)
-        const variableValue = this.flow.variables[name]
-        if (variableValue === undefined) throw new Error(`The variable "${name}" does not exist`)
-        value = parse(variableValue)
-      }
-
-      // --- If the value is a secret, get the value of the secret.
-      else if (raw.startsWith('$SECRET.')) {
-        const name = raw.slice(8)
-        const secretValue = this.flow.secrets[name]
-        if (secretValue === undefined) throw new Error(`The secret "${name}" does not exist`)
-        value = parse(secretValue)
-      }
-
-      // --- If the value is a result of another node, resolve it's value.
-      else if (raw.startsWith('$NODE.')) {
-        const [id, key] = raw.slice(6).split(':')
-        const node = this.flow.getNodeInstance(id)
-        if (!node.isDone) return
-        const resultValue = this.result[key]
-        value = parse(resultValue)
-      }
-
-      // --- Otherwise, parse and return the value as is.
-      else if (raw !== undefined) {
-        value = parse(raw)
-      }
-
-      else if (defaultValue !== undefined) {
-        value = defaultValue
-      }
-
-      else if (!isOptional) {
-        throw new Error(`The data property "${key}" is required but missing`)
-      }
-
-      return value
+      // --- Process the node by calling the process function of the node.
+      this.dispatch('start', this.dataResolved, this.eventMeta)
+      this.isProcessing = true
+      const result = await this.node.process?.(this.context)
+      if (result) this.setResult(result)
+      this.dispatch('end', this.dataResolved, this.result, this.eventMeta)
+      this.isDone = true
     }
+
+    // --- If an error occurs, dispatch the error event so that listeners
+    // --- can handle the error and take appropriate action.
     catch (error) {
-      (error as Error).message = `Failed to resolve "${key}": ${(error as Error).message}`
       this.dispatch('error', error as Error, this.eventMeta)
-      console.warn(error)
-      return
     }
-  }
 
-  /**
-   * Resolve the full kind of the node by resolving the kind of the node and
-   * the kind of the module that the node belongs to. The full kind is used
-   * to uniquely identify the node in the flow.
-   *
-   * @returns The full kind of the node.
-   */
-  public get kind(): string {
-    const module = this.flow.resolveNodeModule(this.node)
-    return `${module.kind}:${this.node.kind}`
-  }
-
-  /**
-   * A proxy object that is used to access the data of the node. The proxy
-   * object is used to resolve the data value of the node by key.
-   *
-   * @returns A proxy object that is used to access the data of the node.
-   */
-  public get data(): DataFromSchema<T> {
-    // eslint-disable-next-line unicorn/no-this-assignment, @typescript-eslint/no-this-alias
-    return new Proxy(this.dataRaw, {
-      get: (_, key: keyof T & string) => this.resolveDataValue(key),
-    }) as DataFromSchema<T>
-  }
-
-  /**
-   * Compute the current event meta data for the node. The event meta data
-   * contains the execution ID, the thread ID, the delta time, the duration,
-   * and the timestamp of the event.
-   *
-   * @returns The current event meta data for the node.
-   */
-  private get eventMeta(): NodeEventMeta {
-    return {
-      executionId: this.executionId,
-      threadId: this.flow.threadId,
-      delta: Date.now() - this.flow.threadStart,
-      duration: Date.now() - this.executionStart,
-      timestamp: Date.now(),
+    // --- Finally, dispatch the end event to notify listeners that the
+    // --- node has finished processing and is no longer running.
+    finally {
+      this.isRunning = false
+      this.isProcessing = false
+      this.executionId = randomUUID() as string
+      this.executionStart = Date.now()
+      this.executionIndex++
     }
-  }
-
-  /**
-   * Return the context object that is used to process the node. The context
-   * object contains the data, the secrets, variables and the abort signal.
-   * The context object is passed to the `process` function of the node.
-   *
-   * @returns The context object that is used to process the node.
-   */
-  public get context(): NodeInstanceContext<T, U> {
-    return {
-      flow: this.flow,
-      data: this.data as NodeInstanceContext<T, U>['data'],
-      result: this.result as NodeInstanceContext<T, U>['result'],
-      abortSignal: this.abortController.signal,
-    }
+    return this.result
   }
 
   /**
@@ -403,74 +336,16 @@ export class NodeInstance<
     this.dispatch('abort', this.eventMeta)
   }
 
-  /**
-   * Process the node by calling the `process` function of the node with the
-   * context of the node. The context contains the data, the secrets, the
-   * variables, and the abort signal.
-   *
-   * @example
-   *
-   * // Create a new flow with a single node.
-   * using flow = createFlow({ modules: [Core] })
-   * const node = flow.node('core:parse-json', { initialData: { json: '{"key": "value"}' } })
-   *
-   * // Start processing the node right away.
-   * node.process()
-   */
-  public async process(): Promise<void> {
-    try {
-      this.isRunning = true
-      await this.resolveDataSchema()
-      await this.resolveResultSchema()
-
-      // --- If any of the required data properties are missing,
-      // --- do not start processing the node and return early.
-      for (const key in this.dataSchema) {
-        const { isOptional } = this.dataSchema[key]
-        const value = this.data[key]
-        if (value === undefined && !isOptional) return
-      }
-
-      // --- Process the node by calling the process function of the node.
-      this.dispatch('start', this.data, this.eventMeta)
-      const result = await this.node.process?.(this.context)
-      if (result) this.setResult(result)
-      this.dispatch('end', this.data, this.result, this.eventMeta)
-      this.isDone = true
-    }
-
-    // --- If an error occurs, dispatch the error event so that listeners
-    // --- can handle the error and take appropriate action.
-    catch (error) {
-      console.warn(error)
-      this.dispatch('error', error as Error, this.eventMeta)
-    }
-
-    // --- Finally, dispatch the end event to notify listeners that the
-    // --- node has finished processing and is no longer running.
-    finally {
-      this.isRunning = false
-      this.executionId = randomUUID() as string
-      this.executionStart = Date.now()
-      this.executionIndex++
-    }
-  }
-
-  /**
-   * Destroy the node by removing all event listeners and stopping any
-   * pending operations by triggering the abort signal.
-   */
+  /** Destroy the instance by aborting the node and removing all event listeners. */
   public destroy() {
+    this.isDestroyed = true
     this.abort()
     for (const [event, handler] of this.eventHandlers)
       this.eventTarget.removeEventListener(event, handler)
-    this.eventHandlers.clear()
+    this.eventHandlers = []
   }
 
-  /**
-   * Dispose of the node by removing all event listeners and stopping any
-   * pending operations by triggering the abort signal.
-   */
+  /** @internal */
   [Symbol.dispose]() {
     this.destroy()
   }
@@ -481,12 +356,13 @@ export class NodeInstance<
  * instance is created with the given flow, node, position, initial data, and
  * initial result.
  *
+ * @param flow The flow to create the flow node instance with.
  * @param options The options to create the flow node instance with.
  * @returns The flow node instance created with the given options.
  */
-export function createFlowNodeInstance<
+export function createNodeInstance<
   T extends DataSchema,
   U extends ResultSchema,
->(options: NodeInstanceOptions<T, U>): NodeInstance<T, U> {
-  return new NodeInstance(options)
+>(flow: Flow, options: NodeInstanceOptions<T, U>) {
+  return new NodeInstance(flow, options)
 }
