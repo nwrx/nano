@@ -4,6 +4,7 @@ import type { BaseInputFileProps } from '@unshared/vue'
 const props = defineProps<{
   label?: string
   clearable?: boolean
+  circular?: boolean
 } & BaseInputFileProps>()
 
 const model = useVModel(props, 'modelValue', undefined, { passive: true })
@@ -14,7 +15,11 @@ const model = useVModel(props, 'modelValue', undefined, { passive: true })
     v-slot="{ thumbnails, openDialog }"
     v-bind="props"
     v-model="model"
-    :class="{ 'opacity-50 pointer-events-none': disabled }"
+    :class="{
+      'opacity-50 pointer-events-none': disabled,
+      'rounded-full aspect-1/1': circular,
+      'rounded': !circular,
+    }"
     class="
       relative group w-full h-full p-4 cursor-pointer
       border border-black/10 rounded
@@ -44,6 +49,10 @@ const model = useVModel(props, 'modelValue', undefined, { passive: true })
       <div
         v-for="(thumbnail, index) in thumbnails"
         :key="thumbnail"
+        :class="{
+          'rounded-full': circular,
+          'rounded': !circular,
+        }"
         class="rounded bg-cover bg-center w-full h-full"
         :style="{ backgroundImage: `url(${thumbnail})` }"
         @click="() => openDialog()">
