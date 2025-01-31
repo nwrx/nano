@@ -15,22 +15,25 @@ describe.concurrent<Context>('createWorkspace', (it) => {
     const { user } = await ctx.createUser()
     const workspace = await createWorkspace.call(ctx.ModuleWorkspace, { user, name: 'workspace' })
     const { Workspace } = ctx.ModuleWorkspace.getRepositories()
+    await Workspace.save(workspace)
     const result = await Workspace.findOneBy({ name: 'workspace' })
     expect(result).toMatchObject({ id: workspace.id, name: 'workspace', isPublic: false })
   })
 
   it('should create a new public workspace in the database', async({ expect, ctx }) => {
     const { user } = await ctx.createUser()
-    const { Workspace } = ctx.ModuleWorkspace.getRepositories()
     const workspace = await createWorkspace.call(ctx.ModuleWorkspace, { user, name: 'workspace', isPublic: true })
+    const { Workspace } = ctx.ModuleWorkspace.getRepositories()
+    await Workspace.save(workspace)
     const result = await Workspace.findOneBy({ name: 'workspace' })
     expect(result).toMatchObject({ id: workspace.id, name: 'workspace', isPublic: true })
   })
 
   it('should assign the workspace to the user with full access', async({ expect, ctx }) => {
     const { user } = await ctx.createUser()
-    const { WorkspaceAssignment } = ctx.ModuleWorkspace.getRepositories()
+    const { Workspace, WorkspaceAssignment } = ctx.ModuleWorkspace.getRepositories()
     const workspace = await createWorkspace.call(ctx.ModuleWorkspace, { user, name: 'workspace' })
+    await Workspace.save(workspace)
     const result = await WorkspaceAssignment.findBy({ workspace: { id: workspace.id } })
     expect(result).toHaveLength(1)
     expect(result).toMatchObject([{ permission: 'Owner' }])
@@ -38,7 +41,7 @@ describe.concurrent<Context>('createWorkspace', (it) => {
 
   it('should throw an error if the workspace already exists', async({ expect, ctx }) => {
     const { user } = await ctx.createUser()
-    await createWorkspace.call(ctx.ModuleWorkspace, { user, name: 'workspace' })
+    await ctx.createWorkspace('workspace')
     const shouldReject = createWorkspace.call(ctx.ModuleWorkspace, { user, name: 'workspace' })
     const error = ctx.ModuleWorkspace.errors.WORKSPACE_NAME_TAKEN('workspace')
     await expect(shouldReject).rejects.toThrow(error)
