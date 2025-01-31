@@ -1,10 +1,20 @@
 import type { ObjectLike } from '@nwrx/core'
-import type { LanguageModelResult } from '../types/languageModel'
+import type { LanguageModel, LanguageModelResult, LanguageModelTool } from '../types'
 import { defineNode, defineResultSchema } from '@nwrx/core'
 import { defineDataSchema } from '@nwrx/core'
 import { categoryLanguageModel } from '../categories'
-import { languageModel, number, string } from '../types'
-import { languageModelTool } from '../types/languageModelTool'
+import { languageModel, languageModelTool, number, string } from '../types'
+
+/** The context that is passed in the model inference process. */
+export type NodeInferenceOptions = {
+  model: LanguageModel
+  tools?: LanguageModelTool
+  prompt: string
+  frequencyPenalty?: number
+  logitBias?: number
+  maxCompletionTokens?: number
+  temperature?: number
+}
 
 export const inference = defineNode({
   kind: 'inference',
@@ -13,11 +23,11 @@ export const inference = defineNode({
   description: 'Generates a completion based on a language model.',
   category: categoryLanguageModel,
 
-  dataSchema: defineDataSchema({
+  dataSchema: defineDataSchema<NodeInferenceOptions>({
     model: {
+      type: languageModel,
       name: 'Model',
       control: 'socket',
-      type: languageModel,
       description: 'The language model used to generate the completion.',
     },
     tools: {
@@ -26,7 +36,6 @@ export const inference = defineNode({
       control: 'socket',
       description: 'The tools used to generate the completion.',
       isOptional: true,
-      isArray: true,
     },
     prompt: {
       type: string,
@@ -43,6 +52,7 @@ export const inference = defineNode({
       sliderMax: 2,
       sliderStep: 0.1,
       defaultValue: 0,
+      isOptional: true,
     },
     logitBias: {
       type: number,
@@ -53,6 +63,7 @@ export const inference = defineNode({
       sliderMin: -100,
       sliderMax: 100,
       sliderStep: 1,
+      isOptional: true,
     },
     maxCompletionTokens: {
       type: number,
@@ -63,6 +74,7 @@ export const inference = defineNode({
       sliderMax: 2048,
       sliderStep: 64,
       defaultValue: 1024,
+      isOptional: true,
     },
     temperature: {
       type: number,
@@ -73,6 +85,7 @@ export const inference = defineNode({
       sliderMax: 2,
       sliderStep: 0.1,
       defaultValue: 0.7,
+      isOptional: true,
     },
   }),
 
@@ -107,7 +120,7 @@ export const inference = defineNode({
   process: async({ data }) => {
     const { model, tools } = data
     const { url, token, getBody, onData, onError } = model
-    const body = getBody(data) as ObjectLike
+    const body = getBody(data)
 
     let canResume = false
     function resume() {
@@ -116,9 +129,10 @@ export const inference = defineNode({
 
     async function call(name: string, data: unknown) {
       if (!tools) throw new Error('The tools were not provided.')
-      const tool = tools.find(tool => tool.name === name)
-      if (!tool) throw new Error(`The tool "${name}" was not provided.`)
-      return await tool.call(data)
+      // const tool = tools.find(tool => tool.name === name)
+      // if (!tool) throw new Error(`The tool "${name}" was not provided.`)
+      // return await tool.call(data)
+      return await tools?.call(data)
     }
 
     // --- Send the request to the model API. Retry up to 10 times to handle any tool calls
