@@ -50,7 +50,7 @@ const model = useVModel(props, 'modelValue', emit, {
         <div
           v-if="slotProps.isOpen"
           :class="{ 'z-9999': slotProps.isOpen }"
-          class="p-4 space-y-2 w-64 bg-white border border-black/10 rounded-xl cursor-auto">
+          class="p-4 space-y-2 w-64 bg-white border border-black/10 rounded cursor-auto">
           <slot name="menu" v-bind="slotProps"/>
         </div>
       </Transition>
