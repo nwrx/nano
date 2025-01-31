@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "license": "MIT",
   "private": true,
-  "packageManager": "pnpm@9.11.0",
+  "packageManager": "pnpm@9.13.2",
   "engines": {
     "node": ">=20.0.0",
     "pnpm": ">=9.0.0"
@@ -14,13 +14,9 @@
       "allowAny": [
         "eslint",
         "typescript",
-        "meow"
+        "meow",
+        "@typescript-eslint/parser"
       ]
-    },
-    "patchedDependencies": {
-      "@unserved/client": "patches/@unserved__client.patch",
-      "@unshared/validation": "patches/@unshared__validation.patch",
-      "@unshared/vue": "patches/@unshared__vue.patch"
     }
   },
   "scripts": {
@@ -35,44 +31,30 @@
     "test:types": "vitest --typecheck",
     "test:coverage": "vitest --coverage",
     "commit": "uncli commit",
-    "commit:lint": "commitlint --edit",
-    "preinstall": "node ./forcePnpm.js",
-    "prepare": "husky"
+    "commit:lint": "commitlint --edit"
   },
   "devDependencies": {
     "@commitlint/config-pnpm-scopes": "19.5.0",
     "@rollup/plugin-url": "8.0.2",
-    "@types/node": "22.7.5",
+    "@types/node": "22.8.2",
     "@types/nodemailer": "6.4.16",
-    "@unshared/eslint-config": "0.0.20",
-    "@unshared/scripts": "0.0.20",
-    "@unshared/validation": "0.0.20",
-    "@vitest/coverage-v8": "2.1.2",
-    "@vitest/ui": "2.1.2",
-    "@vitest/utils": "2.1.2",
+    "@unshared/eslint-config": "0.1.0",
+    "@unshared/scripts": "0.1.0",
+    "@unshared/validation": "0.1.0",
+    "@vitest/coverage-v8": "2.1.4",
+    "@vitest/ui": "2.1.4",
+    "@vitest/utils": "2.1.4",
     "commitlint": "19.5.0",
-    "eslint": "9.12.0",
+    "eslint": "9.13.0",
     "happy-dom": "15.7.4",
     "husky": "9.1.6",
-    "memfs": "4.13.0",
-    "rollup": "4.24.0",
+    "memfs": "4.14.0",
+    "rollup": "4.24.2",
     "rollup-plugin-dts": "6.1.1",
     "rollup-plugin-esbuild": "6.1.1",
-    "tsx": "4.19.1",
-    "turbo": "2.1.3",
+    "tsx": "4.19.2",
+    "turbo": "2.2.3",
     "typescript": "5.6.3",
-    "vitest": "2.1.2"
-  },
-  "commitlint": {
-    "extends": [
-      "@commitlint/config-pnpm-scopes"
-    ],
-    "rules": {
-      "body-max-length": [
-        2,
-        "always",
-        "Infinity"
-      ]
-    }
+    "vitest": "2.1.4"
   }
 }
