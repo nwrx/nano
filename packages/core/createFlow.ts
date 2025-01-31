@@ -8,10 +8,10 @@ import { randomUUID } from 'node:crypto'
 import { NodeInstance } from './createNodeInstance'
 
 /** The kind of the input node. */
-export const NODE_INPUT_KIND = 'core:input'
+export const NODE_INPUT_KIND = 'nwrx/core:input'
 
 /** The kind of the output node. */
-export const NODE_OUTPUT_KIND = 'core:output'
+export const NODE_OUTPUT_KIND = 'nwrx/core:output'
 
 export interface FlowEventMeta {
   threadId: string
@@ -25,7 +25,6 @@ export interface FlowEvents {
   'node:create': [node: NodeInstance]
   'node:meta': [node: NodeInstance, key: string, value: unknown]
   'node:data': [node: NodeInstance, data: Record<string, unknown>]
-  'node:dataRaw': [node: NodeInstance, data: Record<string, unknown>]
   'node:dataSchema': [node: NodeInstance, schema: DataSchema]
   'node:result': [node: NodeInstance, result: Record<string, unknown>]
   'node:resultSchema': [node: NodeInstance, schema: ResultSchema]
