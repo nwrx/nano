@@ -4,6 +4,7 @@ import type { FlowThreadNodeJSON, InputSocketJSON } from '@nwrx/api'
 import { isReferenceLink } from '@nwrx/core/utils'
 
 const props = defineProps<{
+  node?: FlowThreadNodeJSON
   nodes?: FlowThreadNodeJSON[]
   socket?: InputSocketJSON
   modelValue?: unknown
@@ -22,51 +23,53 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
 </script>
 
 <template>
-  <!-- Reference/Link -->
-  <EditorPanelDataDetailObject
-    v-if="isReferenceLink(model)"
-    :depth="depth"
-    :model-value="{
-      [t('linkNode')]: model.$fromNode.id,
-      [t('linkName')]: model.$fromNode.name,
-    }"
-  />
-
-  <!-- Text -->
-  <EditorPanelDataDetailText
-    v-else-if="typeof model === 'string'"
-    v-model="model"
-  />
-
-  <!-- Object -->
-  <!--
+  <div class="w-full">
+    <!-- Reference/Link -->
     <EditorPanelDataDetailObject
-    v-else-if="typeof model === 'object' && model !== null"
-    v-model="model"
-    :socket="socket"
-    />
-  -->
-
-  <!-- Object / Recrusive -->
-  <template v-else-if="typeof model === 'object' && model !== null">
-    <EditorPanelData
-      v-for="(value, key) in (model as Record<string, unknown>)"
-      :key="key"
-      :name="typeof key === 'number' ? `#${key}` : key"
-      :model-value="value"
-      :nodes="nodes"
+      v-if="isReferenceLink(model)"
       :depth="depth"
-      is-nested
+      :model-value="{
+        [t('linkNode')]: model.$fromNode.id,
+        [t('linkName')]: model.$fromNode.name,
+      }"
     />
-  </template>
 
-  <!-- No Data -->
-  <div
-    v-else
-    class="flex items-center py-xs px-sm">
-    <span class="text-subtle italic">
-      {{ t('noData') }}
-    </span>
+    <!-- Text -->
+    <EditorPanelDataDetailText
+      v-else-if="typeof model === 'string'"
+      v-model="model"
+    />
+
+    <!-- Object -->
+    <!--
+      <EditorPanelDataDetailObject
+      v-else-if="typeof model === 'object' && model !== null"
+      v-model="model"
+      :socket="socket"
+      />
+    -->
+
+    <!-- Object / Recrusive -->
+    <template v-else-if="typeof model === 'object' && model !== null">
+      <EditorPanelData
+        v-for="(value, key) in (model as Record<string, unknown>)"
+        :key="key"
+        :name="typeof key === 'number' ? `#${key}` : key"
+        :model-value="value"
+        :nodes="nodes"
+        :depth="depth"
+        is-nested
+      />
+    </template>
+
+    <!-- No Data -->
+    <div
+      v-else
+      class="flex items-center py-xs px-sm">
+      <span class="text-subtle italic">
+        {{ t('noData') }}
+      </span>
+    </div>
   </div>
 </template>
 

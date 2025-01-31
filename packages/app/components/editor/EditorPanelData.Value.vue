@@ -53,12 +53,19 @@ const defaultValue = computed(() => {
 
   <!-- Fallback to text -->
   <input
-    v-else
+    v-else-if="isEditable"
     v-model="model"
     class="px-sm line-clamp-1 font-mono bg-transparent outline-none transition grow"
     :class="{ 'opacity-50': isOpen, 'cursor-default italic': !model && !defaultValue }"
-    :placeholder="defaultValue ?? t('noDefault')"
-    :readonly="!isEditable">
+    :placeholder="defaultValue ?? t('noDefault')">
+
+  <!-- Text -->
+  <span
+    v-else
+    class="px-sm line-clamp-1 font-mono bg-transparent"
+    :class="{ 'opacity-50': isOpen }"
+    v-text="model"
+  />
 </template>
 
 <i18n lang="yaml">
