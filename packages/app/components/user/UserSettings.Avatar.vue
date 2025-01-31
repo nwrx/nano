@@ -17,7 +17,7 @@ const emit = defineEmits<{
     <InputFile
       label="Upload a new profile picture"
       accept="image/*"
-      :modelValue="avatarUrl"
+      :model-value="avatarUrl"
       @insert="(avatar) => emit('submit', avatar[0])"
     />
   </AppPageForm>
