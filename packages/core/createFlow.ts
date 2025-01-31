@@ -210,10 +210,10 @@ export class Flow<T extends FlowModule = FlowModule> implements FlowOptions<T> {
    * flow.nodeCreate(Core.nodes.Entrypoint)
    * flow.nodeCreate(Core.nodes.Log)
    */
-  public async nodeCreate<T extends FlowNode<string, any, any>>(node: T, options?: Omit<FlowNodeInstanceOptions<T>, 'flow' | 'node'>): Promise<FlowNodeInstance<T>>
-  public async nodeCreate<K extends InferNodeKind<T>>(node: K, options?: Omit<FlowNodeInstanceOptions<InferNodeByKind<T, K>>, 'flow' | 'node'>): Promise<FlowNodeInstance<InferNodeByKind<T, K>>>
-  public async nodeCreate(node: FlowNode | string, options?: Omit<FlowNodeInstanceOptions, 'flow' | 'node'>): Promise<FlowNodeInstance>
-  public async nodeCreate(node: FlowNode | string, options: Omit<FlowNodeInstanceOptions, 'flow' | 'node'> = {}) {
+  public nodeCreate<T extends FlowNode<string, any, any>>(node: T, options?: Omit<FlowNodeInstanceOptions<T>, 'flow' | 'node'>): FlowNodeInstance<T>
+  public nodeCreate<K extends InferNodeKind<T>>(node: K, options?: Omit<FlowNodeInstanceOptions<InferNodeByKind<T, K>>, 'flow' | 'node'>): FlowNodeInstance<InferNodeByKind<T, K>>
+  public nodeCreate(node: FlowNode | string, options?: Omit<FlowNodeInstanceOptions, 'flow' | 'node'>): FlowNodeInstance
+  public nodeCreate(node: FlowNode | string, options: Omit<FlowNodeInstanceOptions, 'flow' | 'node'> = {}) {
 
     // --- If the node is a string, get the node from the modules.
     if (typeof node === 'string') node = this.resolveNodeDefinition(node as InferNodeKind<T>)
@@ -221,8 +221,6 @@ export class Flow<T extends FlowModule = FlowModule> implements FlowOptions<T> {
     // --- Create the node instance and add it to the flow.
     const instance = createFlowNodeInstance({ ...options, flow: this, node })
     this.nodes.push(instance)
-    await instance.resolveDataSchema()
-    await instance.resolveResultSchema()
     this.dispatch('node:create', instance)
     instance.on('data', data => this.dispatch('node:data', instance.id, data))
     instance.on('result', result => this.dispatch('node:result', instance.id, result))
@@ -422,15 +420,12 @@ export class Flow<T extends FlowModule = FlowModule> implements FlowOptions<T> {
     })
 
     // --- When all nodes are done, we stop the flow and remove the listener.
-    const nodesIdsToTrack = new Set(this.nodes.map(node => node.id))
-    const stopAll = this.on('node:end', (id) => {
-      nodesIdsToTrack.delete(id)
-      if (nodesIdsToTrack.size === 0) {
-        this.isRunning = false
-        stop()
-        stopAll()
-        this.dispatch('flow:end')
-      }
+    const unsubscribe = this.on('node:end', () => {
+      for (const node of this.nodes) if (node.isRunning) return
+      this.isRunning = false
+      stop()
+      unsubscribe()
+      this.dispatch('flow:end')
     })
 
     // --- Find nodes that don't have any incoming links and set them as the entrypoints.
