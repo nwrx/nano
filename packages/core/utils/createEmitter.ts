@@ -30,13 +30,14 @@ export class Emitter<T extends EmitterEvents> {
    * @example
    *
    * // Create a new emitter instance.
-   * const emitter = new Emitter<{ 'click': [MouseEvent] }>()
+   * const emitter = new Emitter<{ 'nodeStart': [string, ...] }>()
    *
-   * // Add a listener for the 'click' event.
-   * emitter.on('click', (event) => { ... })
+   * // Add a listener for the 'nodeStart' event.
+   * emitter.on('nodeStart', (nodeId) => console.log(nodeId))
    *
-   * // Dispatch the 'click' event with a MouseEvent.
-   * emitter.dispatch('click', new MouseEvent('click'))
+   * // Dispatch the 'nodeStart' event with a MouseEvent.
+   * emitter.dispatch('nodeStart', 'node-1')
+   * // 'node-1'
    */
   on<K extends keyof T & string>(eventName: K, listener: (...payload: T[K]) => any) {
     const handler = ((event: EmitterEventPayload) => { listener(...event.payload as T[K]) }) as EventListener
@@ -55,13 +56,14 @@ export class Emitter<T extends EmitterEvents> {
    * @example
    *
    * // Create a new emitter instance.
-   * const emitter = new Emitter<{ 'click': [MouseEvent] }>()
+   * const emitter = new Emitter<{ 'nodeStart': [string, ...] }>()
    *
-   * // Add a listener for the 'click' event.
-   * emitter.on('click', (event) => { ... })
+   * // Add a listener for the 'nodeStart' event.
+   * emitter.on('nodeStart', (nodeId) => console.log(nodeId))
    *
-   * // Dispatch the 'click' event with a MouseEvent.
-   * emitter.dispatch('click', new MouseEvent('click'))
+   * // Dispatch the 'nodeStart' event with a MouseEvent.
+   * emitter.dispatch('nodeStart', 'node-1')
+   * // 'node-1'
    */
   dispatch<K extends keyof T & string>(eventName: K, ...payload: T[K]) {
     const event = new EmitterEventPayload(eventName, payload)
