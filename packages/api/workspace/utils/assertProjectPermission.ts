@@ -1,5 +1,5 @@
 import type { Asserted } from '@unshared/types'
-import { createAssertStringEnum } from '@unshared/validation'
+import { assert } from '@unshared/validation'
 
 /**
  * Asserts that the given value is a valid `WorkspaceProject` permission.
@@ -7,7 +7,7 @@ import { createAssertStringEnum } from '@unshared/validation'
  * @param value The value to assert.
  * @example assertProjectPermission('Owner') // 'Owner'
  */
-export const assertProjectPermission = createAssertStringEnum([
+export const assertProjectPermission = assert.stringEnum(
   'Owner',
   'Write',
   'WriteApiKeys',
@@ -15,7 +15,7 @@ export const assertProjectPermission = createAssertStringEnum([
   'WriteVariables',
   'Execute',
   'Read',
-])
+).with('Invalid project permission')
 
 /** The permission that a user has on a project. */
 export type WorkspaceProjectPermission = Asserted<typeof assertProjectPermission>
