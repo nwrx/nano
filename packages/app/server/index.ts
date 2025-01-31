@@ -13,6 +13,7 @@ export const application = await Application.initialize([
   Nwrx.ModuleFlow,
   Nwrx.ModuleWorkspace,
   Nwrx.ModuleStorage,
+  Nwrx.ModuleMonitoring,
 ], {
   prefix: 'NWRX',
   logger: Consola,
