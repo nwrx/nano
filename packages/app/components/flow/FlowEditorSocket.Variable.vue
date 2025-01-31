@@ -17,7 +17,7 @@ const model = useVModel(props, 'modelValue', emit, {
   passive: true,
 })
 
-const values = computed(() => [
+const options = computed(() => [
   ...(props.secrets ?? []).map(secret => ({
     label: secret.name,
     value: `$SECRET.${secret.name}`,
@@ -34,7 +34,7 @@ const values = computed(() => [
   <FlowEditorSocketSelect
     v-model="model"
     :name="name"
-    :options="values"
+    :options="options"
     badge
   />
 </template>
