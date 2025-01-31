@@ -1,3 +1,3 @@
-export * from './threadRemove'
+export * from './threadDelete'
 export * from './threadSearch'
 export * from './threadSession'
