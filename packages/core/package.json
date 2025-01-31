@@ -25,10 +25,10 @@
     "build": "tsup"
   },
   "dependencies": {
-    "@unshared/collection": "0.3.2",
-    "@unshared/decorators": "0.3.2",
-    "@unshared/string": "0.3.2",
-    "@unshared/types": "0.3.2",
-    "@unshared/validation": "0.3.2"
+    "@unshared/collection": "0.4.0",
+    "@unshared/decorators": "0.4.0",
+    "@unshared/string": "0.4.0",
+    "@unshared/types": "0.4.0",
+    "@unshared/validation": "0.4.0"
   }
 }
