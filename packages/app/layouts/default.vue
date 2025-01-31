@@ -12,17 +12,22 @@ const isAuthenticationRoute = computed(() => {
 
 // --- State
 const isDrawerOpen = useLocalStorage('__DrawerOpen', true)
+const themeColor = useLocalStorage('__ThemeColor', 'system')
 
 // --- Locale
 const { setLocale, locale } = useI18n()
 </script>
 
 <template>
-  <div id="layout" class="font-sans flex flex-col w-full h-screen bg-primary-900 text-white overflow-hidden">
+  <div
+    id="layout"
+    :class="{ dark: themeColor === 'dark' }"
+    class="font-sans flex flex-col w-full h-screen overflow-hidden pb pr bg-layout text-layout">
 
     <!-- Header -->
-    <AppNavBar
-      class="shrink-0 col-span-2"
+    <AppNav
+      class="h-16 px"
+      :theme="themeColor"
       :title="CONSTANTS.appTitle"
       :imageUrl="ASSET_NWRX_LOGO"
       :itemsStart="NAV_BAR_START"
@@ -34,41 +39,40 @@ const { setLocale, locale } = useI18n()
       :locales="LOCALES"
       @signout="() => session.signout()"
       @setLocale="(locale) => setLocale(locale)"
+      @setTheme="(theme) => themeColor = theme"
     />
 
     <!-- Nav Drawer -->
-    <div class="shrink-1 flex w-full h-full pb-8 overflow-hidden">
-      <AppNavDrawer
+    <div class="flex w-full h-full shrink-1 overflow-hidden">
+      <AppDrawer
         v-model="isDrawerOpen"
-        class="dark text-white h-full shrink-0 pt-12 overflow-y-auto"
+        class="h-full shrink-0 overflow-y-auto text-unset"
         :itemsTop="NAV_DRAWER_START"
         :itemsBottom="NAV_DRAWER_END"
         :isHidden="isAuthenticationRoute"
       />
 
       <!-- Main Content -->
-      <div class="w-full h-full overflow-x-hidden pr-8">
-        <main class="relative w-full h-full overflow-hidden rounded-lg">
+      <main class="w-full h-full relative overflow-hidden rounded-app">
 
-          <!-- Alerts -->
-          <AppAlerts class="fixed top-0 z-100 w-full" />
+        <!-- Alerts -->
+        <AppAlerts class="fixed top-0 z-100 w-full" />
 
-          <!-- On error, show error boundary -->
-          <NuxtErrorBoundary>
-            <template #error="{ error, clearError }">
-              <AppPageErrorBoundary
-                :message="error"
-                @clearError="() => clearError()"
-              />
-            </template>
+        <!-- On error, show error boundary -->
+        <NuxtErrorBoundary>
+          <template #error="{ error, clearError }">
+            <AppPageErrorBoundary
+              :message="error"
+              @clearError="() => clearError()"
+            />
+          </template>
 
-            <!-- Page -->
-            <slot>
-              <NuxtPage/>
-            </slot>
-          </NuxtErrorBoundary>
-        </main>
-      </div>
+          <!-- Page -->
+          <slot>
+            <NuxtPage/>
+          </slot>
+        </NuxtErrorBoundary>
+      </main>
     </div>
   </div>
 </template>
