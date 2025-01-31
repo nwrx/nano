@@ -1,16 +1,7 @@
 import type { Flow } from './createFlow'
-import type { Module } from './defineModule'
 import type { FlowExportV1, FlowNodeExportV1 } from './flowFromJsonV1'
 
-/**
- * An enumeration of flow file versions. This is used to determine how to
- * parse the flow and what features are available in the flow file. This
- * allows for backwards compatibility with older flow files from previous
- * versions of the application.
- */
-export enum FLOW_FILE_VERSION {
-  V1 = '1',
-}
+const MODULE_KIND_EXP = /^([^/]+)\/(.+)$/
 
 /**
  * The JSON representation of a flow definition. The JSON representation can be
@@ -26,38 +17,34 @@ export type FlowExport = FlowExportV1
  * @param flow The flow object to serialize.
  * @returns The serialized flow object.
  */
-export function flowToJson(flow: Flow<Module<string, any, any>>): FlowExport {
+export function flowToJson(flow: Flow): FlowExport {
   const nodes: Record<string, FlowNodeExportV1> = {}
   const modules = new Set<string>()
 
   // --- Serialize the flow nodes.
   for (const node of flow.nodes) {
-    const nodeModule = flow.resolveNodeModule(node)
-    const nodeKind = `${nodeModule.kind}:${node.node.kind}`
-    const nodeData: FlowNodeExportV1 = { kind: nodeKind }
-    modules.add(nodeModule.kind)
 
-    // --- Collect the node data and the links.
-    for (const key in node.dataSchema) {
-      const linkTarget = `${node.id}:${key}`
-      const linkFrom = flow.links.find(link => link.target === linkTarget)
-      if (linkFrom) nodeData[key] = `$NODE.${linkFrom.source}`
-      if (node.dataRaw[key] !== undefined) nodeData[key] = String(node.dataRaw[key])
-    }
+    // --- Extract the module and kind.
+    const match = MODULE_KIND_EXP.exec(node.node.kind)
+    if (!match) throw new Error(`Invalid node kind: ${node.node.kind}`)
+    const [, nodeModule, nodeKind] = match
+    modules.add(nodeModule)
+    const kind = `${nodeModule}/${nodeKind}`
 
-    // --- Collect the node meta data.
+    // --- Extract node meta.
+    const meta: Record<string, unknown> = {}
     for (const key in node.meta) {
       const metaKey = `_${key}`
       const metaValue = node.meta[key]
-      nodeData[metaKey] = metaValue
+      meta[metaKey] = metaValue
     }
 
     // --- Export the node.
-    nodes[node.id] = nodeData
+    nodes[node.id] = { kind, ...meta, ...node.data }
   }
 
   return {
-    version: FLOW_FILE_VERSION.V1,
+    version: '1',
     name: flow.meta.name,
     icon: flow.meta.icon,
     description: flow.meta.description,

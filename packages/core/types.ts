@@ -48,10 +48,8 @@ export type NodeOf<T extends Module> =
  * type Node = InferNode<typeof module, 'example:parse:boolean'>
  */
 export type NodeByKind<T extends Module, K extends NodeKind<T>> =
-  K extends `${infer U}:${infer N}`
-
-    // Infer the node from a flow module instance.
-    ? T extends Module<U, any, any>
+  K extends `${infer U}/${infer N}`
+    ? T extends Module<U, any>
       ? NodeOf<T> extends infer R ? R extends { kind: N } ? R : never : never
       : never
     : never
