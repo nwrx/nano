@@ -6,6 +6,15 @@ import { serializeSpecifier } from './serializeSpecifier'
 export const ERRORS = {
 
   /***************************************************************************/
+  /* Thread errors.                                                          */
+  /***************************************************************************/
+
+  THREAD_IS_ALREADY_RUNNING: () => createError({
+    message: 'The thread is already running',
+    name: 'E_THREAD_IS_ALREADY_RUNNING',
+  }),
+
+  /***************************************************************************/
   /* Node errors.                                                            */
   /***************************************************************************/
 
