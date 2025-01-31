@@ -118,7 +118,7 @@ const INFERENCE_OUTPUT_SCHEMA = defineOutputSchema({
 export const nodeInference = defineNode({
   kind: 'core/inference',
   name: 'Inference',
-  icon: 'https://api.iconify.design/carbon:ai.svg',
+  icon: 'https://api.iconify.design/majesticons:sparkles-line.svg',
   description: 'Generates a completion based on a language model.',
 
   category: categoryLanguageModel,
