@@ -1,9 +1,10 @@
 import type { ObjectLike } from '@unshared/types'
 import type { Thread } from './createThread'
-import { processInSandbox } from '../sandbox/processInSandbox'
-import { createEventMetadata, createProcessContext } from '../utils'
+import { processInSandbox } from '../sandbox'
+import { createEventMetadata } from '../utils'
 import { getNode } from './getNode'
 import { getNodeComponent } from './getNodeComponent'
+import { getNodeData } from './getNodeData'
 
 export async function startNode(thread: Thread, nodeId: string, data?: ObjectLike): Promise<ObjectLike> {
   const node = getNode(thread, nodeId)
@@ -16,7 +17,9 @@ export async function startNode(thread: Thread, nodeId: string, data?: ObjectLik
     // --- Process the node if it has a process method.
     if (component.process) {
       node.state = 'processing'
-      const context = await createProcessContext(thread, nodeId, data)
+      const context = component.isTrusted
+        ? { data: data ?? await getNodeData(thread, nodeId), nodeId, thread }
+        : { data: data ?? await getNodeData(thread, nodeId) }
       thread.dispatch('nodeState', nodeId, createEventMetadata(thread, node))
       thread.dispatch('nodeStart', nodeId, context.data, createEventMetadata(thread, node))
       node.result = component.isTrusted
