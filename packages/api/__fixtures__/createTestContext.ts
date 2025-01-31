@@ -8,6 +8,7 @@ import { createCipheriv, createHash, randomBytes } from 'node:crypto'
 import { ModuleFlow } from '../flow'
 import { ModuleProject } from '../project'
 import { ModuleStorage } from '../storage'
+import { createStoragePoolFs } from '../storage/utils'
 import { ModuleUser } from '../user'
 import { createUser } from '../user/utils'
 import { ModuleWorkspace, type Workspace } from '../workspace'
@@ -22,45 +23,22 @@ export async function createTestContext(testContext: TestContext) {
     ModuleProject,
     ModuleFlow,
   ], {
+    storagePools: new Map([['default', createStoragePoolFs()]] as const),
     projectSecretKey: 'SECRET',
   })
 
   const context = {
     application,
 
+    /************************************************/
+    /* Modules                                      */
+    /************************************************/
+
     get moduleUser() { return application.getModule(ModuleUser) },
-
-    /************************************************/
-    /* Workspace                                    */
-    /************************************************/
-
-    createWorkspace: async(name = 'my-workspace', isPublic = false) => {
-      const { Workspace } = application.getModule(ModuleWorkspace).getRepositories()
-      const workspace = Workspace.create({ name, isPublic })
-      return { workspace: await Workspace.save(workspace) }
-    },
-
-    assignWorkspace: async(workspace: Workspace, user: User, permission: WorkspacePermission) => {
-      const { WorkspaceAssignment } = application.getModule(ModuleWorkspace).getRepositories()
-      const assignment = WorkspaceAssignment.create({ workspace, user, permission })
-      return { assignment: await WorkspaceAssignment.save(assignment) }
-    },
-
-    /************************************************/
-    /* Project                                      */
-    /************************************************/
-
-    createProject: async(name = 'my-project', workspace: Workspace, isPublic = false) => {
-      const { Project } = application.getModule(ModuleProject).getRepositories()
-      const project = Project.create({ name, title: name, workspace, isPublic })
-      return { project: await Project.save(project) }
-    },
-
-    assignProject: async(project: Project, user: User, permission?: ProjectPermission) => {
-      const { ProjectAssignment } = application.getModule(ModuleProject).getRepositories()
-      const assignment = ProjectAssignment.create({ project, user, permission })
-      return { assignment: await ProjectAssignment.save(assignment) }
-    },
+    get moduleStorage() { return application.getModule(ModuleStorage) },
+    get moduleWorkspace() { return application.getModule(ModuleWorkspace) },
+    get moduleProject() { return application.getModule(ModuleProject) },
+    get moduleFlow() { return application.getModule(ModuleFlow) },
 
     /************************************************/
     /* User module utilities.                       */
@@ -97,7 +75,7 @@ export async function createTestContext(testContext: TestContext) {
 
       // --- Create the cookie header.
       const cookie = `${userModule.userSessionCookieName}=${token}`
-      const headers = { cookie, 'user-agent': 'Mozilla/5.0' }
+      const headers = { cookie, 'user-agent': 'Mozilla/5.0' } as Record<string, string>
 
       // --- Save the user and workspace.
       const { User } = userModule.getRepositories()
@@ -108,6 +86,38 @@ export async function createTestContext(testContext: TestContext) {
 
       // --- Return all the created entities and the headers to use in requests.
       return { user, session, headers, password }
+    },
+
+    /************************************************/
+    /* Workspace                                    */
+    /************************************************/
+
+    createWorkspace: async(name = 'my-workspace', isPublic = false) => {
+      const { Workspace } = application.getModule(ModuleWorkspace).getRepositories()
+      const workspace = Workspace.create({ name, isPublic })
+      return { workspace: await Workspace.save(workspace) }
+    },
+
+    assignWorkspace: async(workspace: Workspace, user: User, permission: WorkspacePermission) => {
+      const { WorkspaceAssignment } = application.getModule(ModuleWorkspace).getRepositories()
+      const assignment = WorkspaceAssignment.create({ workspace, user, permission })
+      return { assignment: await WorkspaceAssignment.save(assignment) }
+    },
+
+    /************************************************/
+    /* Project                                      */
+    /************************************************/
+
+    createProject: async(name = 'my-project', workspace: Workspace, isPublic = false) => {
+      const { Project } = application.getModule(ModuleProject).getRepositories()
+      const project = Project.create({ name, title: name, workspace, isPublic })
+      return { project: await Project.save(project) }
+    },
+
+    assignProject: async(project: Project, user: User, permission?: ProjectPermission) => {
+      const { ProjectAssignment } = application.getModule(ModuleProject).getRepositories()
+      const assignment = ProjectAssignment.create({ project, user, permission })
+      return { assignment: await ProjectAssignment.save(assignment) }
     },
   }
 
