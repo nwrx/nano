@@ -107,9 +107,21 @@ watch(modelEntries, (modelEntries) => {
           :class="{ 'text-editor-node italic': !entry[1] }"
           class="cursor-text w-0 grow h-full outline-none bg-transparent text-sm px-sm b-l b-editor">
 
+        <!-- Add -->
+        <div
+          v-if="index === modelEntries.length - 1"
+          class="flex items-center justify-center w-8 h-full cursor-pointer hover:bg-prominent"
+          @click="() => modelEntries.push(['', ''])">
+          <BaseIcon
+            icon="i-carbon:add"
+            class="size-4 text-app my-1"
+          />
+        </div>
+
         <!-- Remove -->
         <div
-          class="flex items-center justify-center w-12 h-full cursor-pointer hover:bg-prominent"
+          v-else
+          class="flex items-center justify-center w-8 h-full cursor-pointer hover:bg-prominent"
           @click="() => modelEntries.splice(index, 1)">
           <BaseIcon
             icon="i-carbon:close"
