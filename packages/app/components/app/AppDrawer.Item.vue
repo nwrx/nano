@@ -10,12 +10,17 @@ defineProps<{ isOpen?: boolean } & NavItem>()
     :as="NuxtLink"
     :to="to"
     eager
-    class-active="bg-layout-emphasized text-layout-prominent border-prominent font-medium"
+    :class="{
+      'opacity-40': !to,
+    }"
+    class-active="
+      !bg-layout-prominent text-layout-prominent
+      border-prominent font-medium"
     class="
       flex items-center w-full p-sm rounded transition
       text-layout-emphasized  hover:text-layout-prominent
       border border-transparent hover:border-prominent
-      bg-layout hover:bg-layout-emphasized
+      bg-layout hover:bg-layout-prominent
     ">
 
     <!-- Icon -->

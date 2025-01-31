@@ -13,14 +13,11 @@ defineProps<{
     eager
     :to="to"
     :label="label"
-    class-active="
-      bg-primary-200/20
-      font-medium
-    "
+    class-active="font-medium !bg-prominent !text-prominent"
     class="
-      flex items-center gap-2 px-3 py-2 rounded
-      opacity-80 hover:opacity-100
-      hover:bg-primary-200/10
+      flex items-center gap-sm px-md py-sm rd
+      bg-transparent hover:bg-emphasized
+      text-app hover:text-app
     ">
 
     <!-- Icon -->

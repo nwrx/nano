@@ -20,14 +20,17 @@ const emit = defineEmits<{
     class="
       flex gap-x-8 sm:gap-x-16 w-full
       not-first:mt-16
+      not-first:pt-16
+      not-first:border-t
+      border-app
     ">
 
     <!-- Title and Text -->
-    <div class="w-full" :class="{ 'lg:w-2/5': !vertical }">
+    <div class="w-full" :class="{ 'lg:w-2/5 min-w-96': !vertical }">
       <h2 class="text-2xl font-medium">
         <slot name="title">{{ title }}</slot>
       </h2>
-      <p class="text-base text-black/60 mt-2">
+      <p class="text-sm opacity-60 mt-1">
         <slot name="text">{{ text }}</slot>
       </p>
     </div>
