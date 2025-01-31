@@ -107,7 +107,7 @@ export interface Node<
    *
    * @returns The schema of the data that the node expects.
    */
-  dataSchema?: ((context: InstanceContext<T, U>) => MaybePromise<T>) | T
+  dataSchema?: ((context: InstanceContext<NoInfer<T>, NoInfer<U>>) => MaybePromise<T>) | T
 
   /**
    * A function that defines the schema of the result that the node produces.
@@ -116,7 +116,7 @@ export interface Node<
    *
    * @returns The schema of the result that the node produces.
    */
-  resultSchema?: ((context: InstanceContext<T, U>) => MaybePromise<U>) | U
+  resultSchema?: ((context: InstanceContext<NoInfer<T>, NoInfer<U>>) => MaybePromise<U>) | U
 
   /**
    * A function that processes the data of the node and produces a result.
@@ -175,9 +175,7 @@ export interface Node<
  *   }),
  * })
  */
-export function defineNode<K extends string, T extends DataSchema, U extends ResultSchema>(options: Node<K, T, U>): Node<K, T, U>
-export function defineNode<T extends Node>(options: Readonly<T>): T
-export function defineNode(options: Readonly<Node>): Node {
+export function defineNode<K extends string, T extends DataSchema, U extends ResultSchema>(options: Node<K, T, U>): Node<K, T, U> {
   assertNotNil(options)
   assertStringNotEmpty(options.kind)
   return {
@@ -189,5 +187,5 @@ export function defineNode(options: Readonly<Node>): Node {
     dataSchema: options.dataSchema,
     resultSchema: options.resultSchema,
     process: options.process,
-  } as Node
+  } as Node<K, T, U>
 }
