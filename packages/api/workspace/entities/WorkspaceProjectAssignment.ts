@@ -46,7 +46,7 @@ export class WorkspaceProjectAssignment extends BaseEntity {
   serialize(): WorkspaceProjectAssignmentObject {
     return {
       userName: this.user?.username,
-      userDisplayName: this.user?.displayName,
+      userDisplayName: this.user?.profile?.displayName,
       permission: this.permission,
     }
   }
