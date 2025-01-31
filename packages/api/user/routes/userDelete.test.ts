@@ -1,6 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable unicorn/no-null */
-
 import type { Context } from '../../__fixtures__'
 import { createContext } from '../../__fixtures__'
 

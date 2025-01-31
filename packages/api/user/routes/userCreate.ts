@@ -2,7 +2,7 @@ import type { UserObject } from '../entities'
 import type { ModuleUser } from '../index'
 import { createRoute } from '@unserved/server'
 import { toSlug } from '@unshared/string'
-import { assertStringEmail, assertStringNotEmpty, createSchema } from '@unshared/validation'
+import { assert, createSchema } from '@unshared/validation'
 import { setResponseStatus } from 'h3'
 import { ModuleWorkspace } from '../../workspace'
 
@@ -11,8 +11,8 @@ export function userCreate(this: ModuleUser) {
     {
       name: 'POST /api/users',
       body: createSchema({
-        email: assertStringEmail,
-        username: [assertStringNotEmpty, toSlug],
+        email: [assert.stringNotEmpty, assert.stringEmail],
+        username: [assert.stringNotEmpty, assert.stringKebabCase, toSlug],
       }),
     },
     async({ event, body }): Promise<UserObject> => {

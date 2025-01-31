@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/no-hardcoded-ip */
 import type { Context } from '../../__fixtures__'
 import { createContext } from '../../__fixtures__'
 

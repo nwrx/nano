@@ -1,6 +1,6 @@
 import type { ModuleStorage } from '../index'
 import { createRoute } from '@unserved/server'
-import { createAssertInstance, createParser } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 
 export function fileUpload(this: ModuleStorage) {
@@ -8,7 +8,7 @@ export function fileUpload(this: ModuleStorage) {
     {
       name: 'POST /api/storage',
       formData: createParser({
-        file: createAssertInstance(File),
+        file: assert.instance(File),
       }),
     },
     async({ event, formData }) => {

@@ -12,9 +12,7 @@ export function userSessionGet(this: ModuleUser) {
 
       const user = await this.resolveUser({ username: session.user.username, withProfile: true })
       if (!user.profile) throw new Error('User profile not found')
-      return user.serialize({
-        withProtected: true,
-      })
+      return user.serialize({ withProtected: true })
     },
   )
 }
