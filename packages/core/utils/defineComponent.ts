@@ -2,6 +2,8 @@ import type { OpenAPIV2 } from '@unshared/client/openapi'
 import type { MaybeLiteral, MaybePromise } from '@unshared/types'
 import type { OpenAPIV3 } from 'openapi-types'
 
+export const SYMBOL_COMPONENT = Symbol.for('component')
+
 export type InputControl =
   | 'autocomplete'
   | 'radio'
@@ -64,6 +66,7 @@ export function defineComponent<
   U extends Record<string, OutputSchema>,
 >(options: Component<K, T, U>, process?: ProcessFunction<T, U>): Component<K, T, U> {
   return {
+    [SYMBOL_COMPONENT]: true,
     name: options.name,
     icon: options.icon,
     title: options.title ?? options.name,

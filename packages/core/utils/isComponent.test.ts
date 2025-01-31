@@ -1,13 +1,15 @@
+import { defineComponent } from './defineComponent'
 import { isComponent } from './isComponent'
 
 describe('isComponent', () => {
-  it('should return true for a valid Component object', () => {
-    const result = isComponent({ kind: 'parse-json' })
+  it('should return true for an object created with defineComponent', () => {
+    const component = defineComponent({ name: 'Example' })
+    const result = isComponent(component)
     expect(result).toBe(true)
   })
 
-  it('should return false for an object without kind property', () => {
-    const result = isComponent({ notKind: 'parse-json' })
+  it('should return false for object not created with defineComponent', () => {
+    const result = isComponent({ name: 'example' })
     expect(result).toBe(false)
   })
 
@@ -18,11 +20,6 @@ describe('isComponent', () => {
 
   it('should return false for a null value', () => {
     const result = isComponent(null)
-    expect(result).toBe(false)
-  })
-
-  it('should return false for an object with a non-string kind property', () => {
-    const result = isComponent({ kind: 123 })
     expect(result).toBe(false)
   })
 })

@@ -1,4 +1,5 @@
 import type { Component } from './defineComponent'
+import { SYMBOL_COMPONENT } from './defineComponent'
 
 /**
  * Predicate if the given value is a `Component`. This function
@@ -13,7 +14,7 @@ export function isComponent(value: unknown): value is Component {
   return (
     typeof value === 'object'
     && value !== null
-    && 'kind' in value
-    && typeof value.kind === 'string'
+    && SYMBOL_COMPONENT in value
+    && value[SYMBOL_COMPONENT] === true
   )
 }
