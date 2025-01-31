@@ -2,7 +2,7 @@
 import type { WorkspaceProjectObject } from '@nwrx/api'
 
 const props = defineProps<{
-  workspace: string
+  workspace?: string
   projects?: WorkspaceProjectObject[]
   modelValue?: Record<string, boolean>
 }>()
@@ -23,7 +23,7 @@ const model = useVModel(props, 'modelValue', emit, {
 </script>
 
 <template>
-  <div class="flex flex-col w-full">
+  <div v-if="workspace" class="flex flex-col w-full">
     <ProjectListItem
       v-for="project in projects"
       :key="project.name"
