@@ -29,9 +29,9 @@ const emit = defineEmits<{
           alt="User Avatar"
           class="w-10 h-10 rounded-full"
         />
-        <div class="text-sm font-medium text-black/80">
-          <p class="text-sm truncate text-black">{{ displayName }}</p>
-          <p class="text-sm truncate text-black/60">{{ email }}</p>
+        <div class="text-sm font-medium">
+          <p class="text-sm truncate text-app">{{ displayName }}</p>
+          <p class="text-sm truncate text-subtle">{{ email }}</p>
         </div>
       </div>
       <ContextMenuDivider />

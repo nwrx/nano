@@ -2,6 +2,7 @@
 import type { LocaleObject } from '@nuxtjs/i18n'
 
 const props = defineProps<{
+  theme?: string
   title?: string
   imageUrl?: string
   itemsStart?: NavItem[]
@@ -18,11 +19,19 @@ const props = defineProps<{
 const emit = defineEmits<{
   signout: []
   setLocale: [language: string]
+  setTheme: ['dark' | 'light']
 }>()
 
 // --- Search.
 const search = useVModel(props, 'search', emit, { passive: true })
 const searchOpen = useVModel(props, 'searchOpen', emit, { passive: true })
+
+// --- Theme.
+const theme = useVModel(props, 'theme', emit, {
+  passive: false,
+  defaultValue: 'light',
+  eventName: 'setTheme',
+})
 
 // --- Language.
 const locale = useVModel(props, 'locale', emit, {
@@ -33,67 +42,73 @@ const locale = useVModel(props, 'locale', emit, {
 </script>
 
 <template>
-  <header
-    class="
-      flex items-center justify-start
-      w-full h-16 pl-5 pr-9 space-x-8
-      text-white
-    ">
+  <header class="flex items-center justify-start w-full space-x-md">
 
     <!-- Title and logo -->
-    <div class="flex items-center space-x-4">
+    <div class="flex items-center space-x-sm">
       <img
         v-if="imageUrl"
         :src="imageUrl"
         alt="Logo"
-        class="w-8 h-8 rounded mr-1"
+        class="size-8 rounded"
       />
 
-      <h1 class="text-sm font-medium font-mono lowercase mr-8">
+      <h1 class="text-sm font-medium font-mono lowercase">
         {{ title }}
       </h1>
     </div>
 
     <!-- Items - Start -->
-    <nav class="flex items-center grow-1">
-      <AppNavBarItem
+    <nav class="flex h-full items-center grow">
+      <AppNavItem
         v-for="item in itemsStart"
         :key="item.label"
         :to="item.to"
         :label="item.label"
+        class="w-full h-full px-xs"
       />
     </nav>
 
     <!-- Search -->
-    <AppNavBarSearch
+    <AppNavSearch
       v-model="search"
       v-model:open="searchOpen"
       class="shrink-1"
     />
 
     <!-- Items - End -->
-    <nav class="flex items-center justify-end">
-      <AppNavBarItem
+    <nav class="flex h-full items-center justify-end">
+      <AppNavItem
         v-for="item in itemsEnd"
         :key="item.label"
         :to="item.to"
         :label="item.label"
+        class="w-full h-full px-xs"
       />
     </nav>
 
+    <!-- Theme switch -->
+    <div>
+      <BaseIcon
+        :icon="theme === 'dark' ? 'i-carbon:moon' : 'i-carbon:sunny'"
+        class="cursor-pointer text-subtle hover:text-app transition"
+        @click="() => theme = theme === 'dark' ? 'light' : 'dark'"
+      />
+    </div>
+
+    <!-- Language -->
+    <AppNavLanguage
+      v-if="locales"
+      v-model="locale"
+      :locales="locales"
+    />
+
     <!-- User -->
-    <AppNavBarUser
+    <AppNavUser
       :avatarUrl="userAvatarUrl"
       :email="userEmail"
       :displayName="userDisplayName"
       @signout="() => emit('signout')"
-    />
-
-    <!-- Language -->
-    <AppNavBarLanguage
-      v-if="locales"
-      v-model="locale"
-      :locales="locales"
     />
   </header>
 </template>

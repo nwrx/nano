@@ -2,13 +2,9 @@
   <!-- Search bar with icon -->
   <div
     class="
-    flex items-center rounded
-    h-8 px-2 space-x-2
-    bg-primary-900
-    ring-1 ring-primary-200/20
-    hover:ring-primary-200/40
-    transition-all duration-200
-    group
+    flex items-center rd h-8 px-sm space-x-sm
+    bg-layout border-1 border-layout hover:border-layout-subtle
+    transition group
   ">
 
     <!-- Search icon -->
