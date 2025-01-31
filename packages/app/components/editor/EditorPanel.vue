@@ -89,7 +89,7 @@ async function scrollToBottom() {
   const stickyHeight = 250
   if (scrollHeight - scrollTop > clientHeight + stickyHeight) return
   await nextTick()
-  container.value.scrollTo({ top: scrollHeight, behavior: 'smooth' })
+  container.value.scrollTo({ top: scrollHeight, behavior: 'instant' })
 }
 
 // --- When a new event is added, scroll to the bottom if the container is already at the bottom.
@@ -135,7 +135,7 @@ watch(() => props.events, scrollToBottom, { deep: true })
     />
 
     <!-- Flow -->
-    <div ref="container" class="flex flex-col h-full overflow-y-auto transition" :class="{ 'op-0': !isOpen }">
+    <div ref="container" class="flex flex-col h-full overflow-y-auto overflow-x-hidden transition" :class="{ 'op-0': !isOpen }">
       <EditorPanelFlow
         v-if="selectedTab === 'flow'"
         v-model:is-secrets-open="isSecretsOpen"
