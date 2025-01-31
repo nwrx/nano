@@ -1,5 +1,4 @@
 import type { ScryptOptions } from 'node:crypto'
-import type { User } from '../entities'
 import type { ModuleUser } from '../index'
 import { randomBytes, scrypt } from 'node:crypto'
 
@@ -33,6 +32,15 @@ export interface PasswordOptions extends ScryptOptions {
    * @default randomBytes(32).toString(encoding)
    */
   salt: string
+
+  /**
+   * The duration time in milliseconds for the password. If the password
+   * duration from the creation time exceeds the duration, the password
+   * is considered expired and cannot be used to authenticate the user.
+   *
+   * @default -1
+   */
+  duration?: number
 }
 
 /**
@@ -40,20 +48,20 @@ export interface PasswordOptions extends ScryptOptions {
  * salt and hashes the password using the options provided. The default options
  * are provided by OWASP and are recommended for password hashing.
  *
- * @param user The user to hash the password for.
  * @param password The password to hash.
  * @param options The options to hash the password.
  * @returns The salt, hash, and options used to hash the password.
  * @see https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#scrypt
  * @example await createPassword('password', USER_HASH_OPTIONS) // => { salt, hash, options }
  */
-export async function createPassword(this: ModuleUser, user: User, password: string, options: Partial<PasswordOptions> = {}) {
+export async function createPassword(this: ModuleUser, password: string, options: Partial<PasswordOptions> = {}) {
   const {
     keylen = 512,
     encoding = 'hex',
     N = 16384,
     r = 8,
     p = 1,
+    duration = -1,
     maxmem = 64 * 1024 * 1024,
     salt = randomBytes(32).toString(encoding),
   } = options
@@ -67,7 +75,8 @@ export async function createPassword(this: ModuleUser, user: User, password: str
     }))
 
   // --- Return the new password entity.
+  const expiredAt = duration > 0 ? new Date(Date.now() + duration) : undefined
   const passwordOptions = { algorithm: 'scrypt', ...hashOptions, keylen, encoding, salt }
   const { UserPassword } = this.getRepositories()
-  return UserPassword.create({ user, hash, options: passwordOptions })
+  return UserPassword.create({ hash, expiredAt, options: passwordOptions })
 }
