@@ -43,7 +43,7 @@ const { isOverDropZone } = useDropZone(dropzone, {
 </script>
 
 <template>
-  <div ref="dropzone" class="w-full h-full relative pb-md">
+  <div ref="dropzone" class="w-full h-full relative">
 
     <!-- Dropzone -->
     <Dropzone
@@ -112,9 +112,8 @@ const { isOverDropZone } = useDropZone(dropzone, {
       vertical
       :isOpen="model"
       :class="{ 'opacity-0': !model }"
-      class="relative border-l border-app ml-lg pl-lg transition-all duration-slow pb-md">
-
-      <div class="flex flex-col space-y-xs pt-md mb-md">
+      class="relative border-l border-app ml-lg pl-lg transition-all duration-slow">
+      <div class="space-y-md py-md">
         <ProjectListItemFlow
           v-for="flow in flows"
           :key="flow.name"
@@ -129,19 +128,19 @@ const { isOverDropZone } = useDropZone(dropzone, {
           @download="() => emit('flowDownload', flow.name)"
           @duplicate="() => emit('flowDuplicate', flow.name)"
         />
-      </div>
 
-      <!-- Create flow button -->
-      <Button
-        link
-        :label="t('createFlow')"
-        class="mb-sm text-subtle"
-        icon-prepend="i-carbon:flow"
-        icon-append="i-carbon:chevron-right"
-        icon-expand
-        size="sm"
-        @click="() => emit('flowCreate')"
-      />
+        <!-- Create flow button -->
+        <Button
+          link
+          :label="t('createFlow')"
+          class="text-subtle my-md"
+          icon-prepend="i-carbon:flow"
+          icon-append="i-carbon:chevron-right"
+          icon-expand
+          size="sm"
+          @click="() => emit('flowCreate')"
+        />
+      </div>
     </BaseCollapse>
   </div>
 </template>

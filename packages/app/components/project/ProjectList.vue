@@ -30,6 +30,7 @@ const model = useVModel(props, 'modelValue', emit, {
       v-model:modelValue="model[project.name]"
       v-bind="project"
       :workspace="workspace"
+      class="pb-md"
       @delete="() => emit('projectDelete', project.name)"
       @flowCreate="() => emit('flowCreate', project.name)"
       @flowImport="file => emit('flowImport', project.name, file)"
