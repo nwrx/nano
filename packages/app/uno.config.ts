@@ -360,7 +360,7 @@ export default defineConfig<Theme>({
             'editor': COLORS.primary[900],
             'editor-select': `${COLORS.primary[500]}40`,
             'editor-node': `${COLORS.primary[850]}80`,
-            'editor-panel': `${COLORS.primary[900]}C8`,
+            'editor-panel': `${COLORS.primary[850]}C8`,
             'editor-panel-data': `${COLORS.primary[500]}20`,
           },
           textColor: {

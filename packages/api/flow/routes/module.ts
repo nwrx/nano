@@ -19,7 +19,7 @@ export function moduleGet(this: ModuleFlow) {
       const { withNodes = false } = query
 
       // --- Find the module by ID or slug.
-      const { module, entity } = await this.resolveFlowModule(idOrKind)
+      const { module, entity } = await this.resolveModule(idOrKind)
 
       // --- Return the module.
       return {

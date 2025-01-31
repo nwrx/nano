@@ -8,12 +8,12 @@ import * as UTILS from './utils'
 
 export * from './entities'
 export type * from './utils/resolveFlowSession'
-export type * from './utils/serializeFlowCategories'
-export type * from './utils/serializeFlowNode'
-export type * from './utils/serializeFlowNodeInstance'
-export type * from './utils/serializeFlowNodePortValues'
-export type * from './utils/serializeFlowSchema'
+export type * from './utils/serializeCategories'
+export type * from './utils/serializeDataSchema'
 export type * from './utils/serializeFlowSession'
+export type * from './utils/serializeNode'
+export type * from './utils/serializeNodeInstance'
+export type * from './utils/serializeSocketOptions'
 
 export interface ModuleFlowOptions {
 
@@ -50,7 +50,7 @@ export class ModuleFlow extends ModuleBase implements ModuleFlowOptions {
   flowSessions = new Map<string, FlowSessionInstance>()
   flowModuleDir = '../.data/modules'
   resolveFlow = UTILS.resolveFlow.bind(this)
-  resolveFlowModule = UTILS.resolveFlowModule.bind(this)
+  resolveModule = UTILS.resolveModule.bind(this)
   resolveFlowSession = UTILS.resolveFlowSession.bind(this)
   resolveFlowSessionByPeer = UTILS.resolveFlowSessionByPeer.bind(this)
 }

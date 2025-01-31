@@ -2,7 +2,6 @@
 const props = defineProps<{
   name: string
   modelValue: string
-  defaultValue: string
 }>()
 
 const emit = defineEmits<{
@@ -26,7 +25,6 @@ const model = useVModel(props, 'modelValue', emit, {
     <input
       ref="input"
       v-model="model"
-      :placeholder="defaultValue"
       :class="{ 'text-editor-node italic': !model }"
       class="w-full outline-none bg-transparent text-sm"
     />

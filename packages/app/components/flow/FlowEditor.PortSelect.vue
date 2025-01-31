@@ -1,5 +1,5 @@
-<script setup lang="ts" generic="T">
-import type { FlowNodePortValue } from '@nwrx/core'
+<script setup lang="ts">
+import type { SocketOption } from '@nwrx/core'
 import type { BaseInputListProps } from '@unshared/vue'
 import type { BaseInputList } from '#components'
 import type { ComponentInstance } from 'vue'
@@ -7,9 +7,8 @@ import type { ComponentInstance } from 'vue'
 const props = defineProps<{
   name: string
   modelValue: unknown
-  values: Array<FlowNodePortValue<T>>
   badge?: boolean
-} & BaseInputListProps<unknown, unknown, false>>()
+} & BaseInputListProps<SocketOption, unknown, false>>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
@@ -40,7 +39,7 @@ function onClick() {
       ref="input"
       v-model="model"
       as="div"
-      :options="values"
+      :options="options"
       :option-value="value => value.value"
       :option-label="value => value.label"
       :class="{ 'text-editor-node italic': !model }"

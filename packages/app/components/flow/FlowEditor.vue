@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FlowCategoryNodesJSON, FlowNodeInstanceJSON, FlowSessionEventPayload, FlowSessionParticipantJSON, FlowSessionSecretJSON, FlowSessionVariableJSON } from '@nwrx/api'
+import type { FlowCategoryNodesJSON, FlowSessionEventPayload, FlowSessionParticipantJSON, FlowSessionSecretJSON, FlowSessionVariableJSON, NodeInstanceJSON } from '@nwrx/api'
 import { throttle } from '@unshared/functions/throttle'
 import PATTERN_EDITOR_URL from '~/assets/pattern-editor.svg'
 
@@ -9,7 +9,7 @@ const props = defineProps<{
   name: string
   icon: string
   description: string
-  nodes: FlowNodeInstanceJSON[]
+  nodes: NodeInstanceJSON[]
   categories: FlowCategoryNodesJSON[]
   methods: string[]
   secrets: FlowSessionSecretJSON[]
@@ -147,26 +147,17 @@ const editor = useFlowEditor({
       <!-- Nodes -->
       <FlowEditorNode
         v-for="node in nodes"
-        :id="node.id"
         :ref="(el) => editor.nodeComponents[node.id] = (el as ComponentPublicInstance)"
         :key="node.id"
-        :data="node.data"
-        :result="node.result"
-        :name="node.name ?? node.kind"
         :secrets="secrets"
         :variables="variables"
-        :icon="node.icon"
         :color="node.categoryColor"
-        :dataSchema="node.dataSchema"
-        :resultSchema="node.resultSchema"
-        :position="node.position"
         :error="node.error"
         :style="editor.getNodeStyle(node)"
         :zoom="editor.viewZoom"
-        :isRunning="node.isRunning"
-        :isCollapsed="node.isCollapsed"
         :isDragging="editor.nodeDragging"
         :isSelected="editor.isNodeSelected(node.id)"
+        v-bind="node"
         @run="() => emit('nodeStart', node.id)"
         @abort="() => emit('nodeAbort', node.id)"
         @click="(event) => editor.onNodeClick(event, node.id)"

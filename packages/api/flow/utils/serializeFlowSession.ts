@@ -1,10 +1,10 @@
 import type { FlowLink } from '@nwrx/core'
 import type { Peer } from 'crossws'
 import type { FlowSessionInstance } from './resolveFlowSession'
-import type { FlowCategoryNodesJSON } from './serializeFlowCategories'
-import type { FlowNodeInstanceJSON } from './serializeFlowNodeInstance'
-import { serializeFlowCategories } from './serializeFlowCategories'
-import { serializeFlowNodeInstance } from './serializeFlowNodeInstance'
+import type { FlowCategoryNodesJSON } from './serializeCategories'
+import type { NodeInstanceJSON } from './serializeNodeInstance'
+import { serializeCategories } from './serializeCategories'
+import { serializeNodeInstance } from './serializeNodeInstance'
 
 /**
  * The serialized peer data that is sent to the client. The peer data includes
@@ -46,7 +46,7 @@ export interface FlowSessionJSON {
   name: string
   icon: string
   description: string
-  nodes: FlowNodeInstanceJSON[]
+  nodes: NodeInstanceJSON[]
   links: FlowLink[]
   categories: FlowCategoryNodesJSON[]
   secrets: FlowSessionSecretJSON[]
@@ -68,9 +68,9 @@ export function serializeFlowSession(session: FlowSessionInstance, peer: Peer): 
     name: session.flow.meta.name ?? 'Untitled Flow',
     icon: session.flow.meta.icon ?? 'i-carbon:flow',
     description: session.flow.meta.description ?? '',
-    nodes: session.flow.nodes.map(serializeFlowNodeInstance),
+    nodes: session.flow.nodes.map(serializeNodeInstance),
     links: session.flow.links,
-    categories: serializeFlowCategories(session.flow),
+    categories: serializeCategories(session.flow),
     isRunning: session.flow.isRunning,
     secrets: Object.keys(session.flow.secrets).map(name => ({ name, from: 'project' })),
     variables: Object.entries(session.flow.variables).map(([name, value]) => ({ name, value, from: 'project' })),

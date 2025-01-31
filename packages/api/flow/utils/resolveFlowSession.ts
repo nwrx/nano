@@ -3,14 +3,16 @@ import type { FlowEvents, Flow as FlowInstance } from '@nwrx/core'
 import type { Peer } from 'crossws'
 import type { Repository } from 'typeorm'
 import type { Flow } from '../entities'
-import type { FlowNodeInstanceJSON } from './serializeFlowNodeInstance'
-import type { FlowNodePortJSON } from './serializeFlowSchema'
+import type { DataSocketJSON } from './serializeDataSchema'
 import type { FlowSessionJSON } from './serializeFlowSession'
+import type { NodeInstanceJSON } from './serializeNodeInstance'
+import type { ResultSocketJSON } from './serializeResultSchema'
 import { flowFromJsonV1, flowToJson } from '@nwrx/core'
 import { default as Core } from '@nwrx/module-core'
-import { serializeFlowNodeInstance } from './serializeFlowNodeInstance'
-import { serializeFlowSchema } from './serializeFlowSchema'
+import { serializeDataSchema } from './serializeDataSchema'
 import { serializeFlowSession } from './serializeFlowSession'
+import { serializeNodeInstance } from './serializeNodeInstance'
+import { serializeResultSchema } from './serializeResultSchema'
 
 /**
  * A `FlowSessionParticipant` represents a peer that is subscribed to a flow session.
@@ -52,13 +54,13 @@ export interface FlowSessionEventMap extends Record<keyof FlowEvents, unknown> {
   'secrets:remove': { name: string }
 
   // Node
-  'node:create': FlowNodeInstanceJSON
+  'node:create': NodeInstanceJSON
   'node:remove': { id: string }
   'node:metaValue': { id: string; key: string; value: unknown }
   'node:data': { id: string; data: Record<string, unknown> }
-  'node:dataSchema': { id: string; schema: FlowNodePortJSON[] }
+  'node:dataSchema': { id: string; schema: DataSocketJSON[] }
   'node:result': { id: string; result: Record<string, unknown> }
-  'node:resultSchema': { id: string; schema: FlowNodePortJSON[] }
+  'node:resultSchema': { id: string; schema: ResultSocketJSON[] }
   'node:start': { id: string }
   'node:abort': { id: string }
   'node:error': { id: string; message: string }
@@ -104,13 +106,13 @@ export class FlowSessionInstance {
     this.flow.on('flow:end', () => this.broadcast({ event: 'flow:end' }))
 
     // --- Node events.
-    this.flow.on('node:create', node => this.broadcast({ event: 'node:create', ...serializeFlowNodeInstance(node) }))
+    this.flow.on('node:create', node => this.broadcast({ event: 'node:create', ...serializeNodeInstance(node) }))
     this.flow.on('node:remove', id => this.broadcast({ event: 'node:remove', id }))
     this.flow.on('node:metaValue', (id, key, value) => this.broadcast({ event: 'node:metaValue', id, key, value }))
     this.flow.on('node:data', (id, data) => this.broadcast({ event: 'node:data', id, data }))
-    this.flow.on('node:dataSchema', (id, schema) => this.broadcast({ event: 'node:dataSchema', id, schema: serializeFlowSchema(schema) }))
+    this.flow.on('node:dataSchema', (id, schema) => this.broadcast({ event: 'node:dataSchema', id, schema: serializeDataSchema(schema) }))
     this.flow.on('node:result', (id, result) => this.broadcast({ event: 'node:result', id, result }))
-    this.flow.on('node:resultSchema', (id, schema) => this.broadcast({ event: 'node:resultSchema', id, schema: serializeFlowSchema(schema) }))
+    this.flow.on('node:resultSchema', (id, schema) => this.broadcast({ event: 'node:resultSchema', id, schema: serializeResultSchema(schema) }))
     this.flow.on('node:start', id => this.broadcast({ event: 'node:start', id }))
     this.flow.on('node:abort', id => this.broadcast({ event: 'node:abort', id }))
     this.flow.on('node:error', (id, error) => this.broadcast({ event: 'node:error', id, message: error.message }))
@@ -230,12 +232,11 @@ export async function resolveFlowSession(this: ModuleFlow, flow: Flow): Promise<
   for (const variable of flow.project.variables) flowInstance.variables[variable.name] = variable.value
 
   // --- Resolve all the nodes in the flow.
-  // const promisesData = flowInstance.nodes.map(node => node.resolveDataSchema())
-  // const promisesResult = flowInstance.nodes.map(node => node.resolveResultSchema())
-  // await Promise.all([...promisesData, ...promisesResult])
   for (const node of flowInstance.nodes) {
     await node.resolveDataSchema()
+    await node.resolveDataSchema()
     await node.resolveResultSchema()
+    console.log(`Resolving node: ${node.node.kind}`, { keys: Object.keys(node.dataSchema) })
   }
 
   // --- Create the flow session and store it in memory.

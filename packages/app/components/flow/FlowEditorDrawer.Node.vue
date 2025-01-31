@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { FlowNodeJSON } from '@nwrx/api'
+import type { NodeJSON } from '@nwrx/api'
 import type { DropPayload } from '~/utils/types'
 
-const props = defineProps<FlowNodeJSON>()
+const props = defineProps<NodeJSON>()
 
 function onDragStart(event: DragEvent) {
   if (!event.dataTransfer) return

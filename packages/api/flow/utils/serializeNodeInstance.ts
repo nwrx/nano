@@ -1,9 +1,11 @@
-import type { FlowNodeInstance } from '@nwrx/core'
-import type { FlowNodePortJSON } from './serializeFlowSchema'
-import { serializeFlowSchema } from './serializeFlowSchema'
+import type { NodeInstance } from '@nwrx/core'
+import type { DataSocketJSON } from './serializeDataSchema'
+import type { ResultSocketJSON } from './serializeResultSchema'
+import { serializeDataSchema } from './serializeDataSchema'
+import { serializeResultSchema } from './serializeResultSchema'
 
 /** The serialized representation of a flow node instance. */
-export interface FlowNodeInstanceJSON {
+export interface NodeInstanceJSON {
   id: string
   kind: string
   icon: string
@@ -13,8 +15,8 @@ export interface FlowNodeInstanceJSON {
   position: { x: number; y: number }
   data: Record<string, unknown>
   result: Record<string, unknown>
-  dataSchema: FlowNodePortJSON[]
-  resultSchema: FlowNodePortJSON[]
+  dataSchema: DataSocketJSON[]
+  resultSchema: ResultSocketJSON[]
   isRunning: boolean
   isCollapsed: boolean
   isProcessing: boolean
@@ -24,13 +26,13 @@ export interface FlowNodeInstanceJSON {
 }
 
 /**
- * Given a `FlowNodeInstance` object, returns a serialized version of it so
+ * Given a `NodeInstance` object, returns a serialized version of it so
  * that it can be sent to the client without any circular references.
  *
- * @param instance The `FlowNodeInstance` object to serialize.
- * @returns The serialized version of the `FlowNodeInstance` object.
+ * @param instance The `NodeInstance` object to serialize.
+ * @returns The serialized version of the `NodeInstance` object.
  */
-export function serializeFlowNodeInstance(instance: FlowNodeInstance): FlowNodeInstanceJSON {
+export function serializeNodeInstance(instance: NodeInstance): NodeInstanceJSON {
   const nodeModule = instance.flow.resolveNodeModule(instance)
   return {
     id: instance.id,
@@ -42,8 +44,8 @@ export function serializeFlowNodeInstance(instance: FlowNodeInstance): FlowNodeI
     position: instance.meta.position ?? { x: 0, y: 0 },
     data: instance.dataRaw,
     result: instance.result,
-    dataSchema: serializeFlowSchema(instance.dataSchema),
-    resultSchema: serializeFlowSchema(instance.resultSchema),
+    dataSchema: serializeDataSchema(instance.dataSchema),
+    resultSchema: serializeResultSchema(instance.resultSchema),
     isRunning: instance.isRunning,
     isCollapsed: instance.meta.isCollapsed ?? false,
     isProcessing: false, // instance.isProcessing,

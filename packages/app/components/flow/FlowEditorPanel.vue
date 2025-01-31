@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FlowNodeInstanceJSON, FlowSessionEventPayload, FlowSessionSecretJSON, FlowSessionVariableJSON } from '@nwrx/api'
+import type { NodeInstanceJSON, FlowSessionEventPayload, FlowSessionSecretJSON, FlowSessionVariableJSON } from '@nwrx/api'
 
 const props = defineProps<{
   name: string
@@ -7,7 +7,7 @@ const props = defineProps<{
   description: string
   secrets: FlowSessionSecretJSON[]
   variables: FlowSessionVariableJSON[]
-  nodeSelected: FlowNodeInstanceJSON[]
+  nodeSelected: NodeInstanceJSON[]
   events: FlowSessionEventPayload[]
   isOpen: boolean
   isFlowMethodsOpen?: boolean
