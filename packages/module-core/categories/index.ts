@@ -1,3 +1,3 @@
 export * from './basic'
 export * from './compute'
-export * from './lmModels'
+export * from './languageModel'

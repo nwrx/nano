@@ -1,8 +1,8 @@
 import { defineFlowNode } from '@nwrx/core'
 import { compute } from '../categories'
-import { model, string } from '../types'
+import { languageModelInstance, string } from '../types'
 
-export const nodeInference = defineFlowNode({
+export const inference = defineFlowNode({
   kind: 'inference',
   name: 'Inference',
   icon: 'https://api.iconify.design/carbon:ai.svg',
@@ -13,7 +13,7 @@ export const nodeInference = defineFlowNode({
     model: {
       name: 'Model',
       description: 'The language model used to generate the completion.',
-      type: model,
+      type: languageModelInstance,
     },
     prompt: {
       name: 'Prompt',

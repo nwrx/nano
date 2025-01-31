@@ -2,23 +2,23 @@ import { defineFlowType } from '@nwrx/core'
 import { assertStringNotEmpty, assertUndefined, createAssertInstance, createParser } from '@unshared/validation'
 
 /** The context that is passed in the model inference process. */
-interface ModelInferenceContext {
+export interface LanguageModelInferenceContext {
   prompt: string
 }
 
 /** A function that returns the body of a request that should be sent to the model API. */
-type ModelGetBody = (context: ModelInferenceContext) => Record<string, any>
+export type LanguageModelGetBody = (context: LanguageModelInferenceContext) => Record<string, any>
 
 /** A function that returns the completion from the response of the model API. */
-type ModelGetCompletion = (response: any) => string
+export type LanguageModelGetCompletion = (response: any) => string
 
 /**
  * The `nwrx/lm-model` flow type represents an instance of a language model used to infer completions
  * of text. The values bearing this type are passed to the `nwrx/inference` flow node to generate
  * completions based on some input text.
  */
-export const model = defineFlowType({
-  kind: 'lm-model',
+export const languageModelInstance = defineFlowType({
+  kind: 'language-model-instance',
   name: 'LM Model',
   color: '#CB7fff',
   description: 'An instance of a language model used to infer completions of text.',
@@ -56,7 +56,7 @@ export const model = defineFlowType({
      *
      * @example ({ prompt }) => ({ model: 'davinci', prompt })
      */
-    getBody: createAssertInstance(Function) as (fn: unknown) => asserts fn is ModelGetBody,
+    getBody: createAssertInstance(Function) as (fn: unknown) => asserts fn is LanguageModelGetBody,
 
     /**
      * The function that extracts the completion from the response of the model API.
@@ -65,6 +65,6 @@ export const model = defineFlowType({
      *
      * @example response => response.choices[0].text
      */
-    getCompletion: createAssertInstance(Function) as (fn: unknown) => asserts fn is ModelGetCompletion,
+    getCompletion: createAssertInstance(Function) as (fn: unknown) => asserts fn is LanguageModelGetCompletion,
   }),
 })
