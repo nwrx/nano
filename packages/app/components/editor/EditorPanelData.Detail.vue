@@ -25,7 +25,7 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
 <template>
   <div class="w-full">
     <!-- Reference/Link -->
-    <EditorPanelDataDetailObject
+    <EditorPanelDataDetail
       v-if="isReferenceLink(model)"
       :depth="depth"
       :model-value="{
