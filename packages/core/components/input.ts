@@ -1,4 +1,4 @@
-import { defineComponent } from '../utils'
+import { defineComponent } from '../utils/defineComponent'
 
 export const input = defineComponent(
   {
@@ -19,16 +19,26 @@ export const input = defineComponent(
         'x-optional': true,
         'x-control': 'text',
       },
-      isOptional: {
+      required: {
         'type': 'boolean',
         'title': 'Optional',
-        'description': 'If checked, the input is optional and the flow will continue even if no value is provided.',
+        'description': 'Whether the input is required to be provided in the flow. If set to true, the input will be required to be provided in the flow. If set to false, the input will be optional.',
         'defaultValue': false,
         'x-optional': true,
         'x-control': 'select',
-        'x-options': () => [
-          { value: true, label: 'Yes' },
-          { value: false, label: 'No' },
+        'oneOf': [
+          {
+            type: 'boolean',
+            enum: [true] as const,
+            title: 'Required',
+            description: 'The input is required to be provided in the flow.',
+          },
+          {
+            type: 'boolean',
+            enum: [false] as const,
+            title: 'Optional',
+            description: 'The input is optional to be provided in the flow.',
+          },
         ],
       },
     },
@@ -39,11 +49,5 @@ export const input = defineComponent(
         description: 'The value of the entrypoint.',
       },
     },
-  },
-  ({ data, result }) => {
-    const { name, isOptional } = data
-    const { value } = result
-    if (!isOptional && !value) throw new Error(`The input "${name}" is required but no value was provided.`)
-    return { value }
   },
 )
