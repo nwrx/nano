@@ -8,6 +8,7 @@ export default [
       'sonarjs/new-cap': 'off',
       'sonarjs/void-use': 'off',
       'sonarjs/sonar-no-unused-vars': 'off',
+      'sonarjs/no-empty-function': 'off',
       'vitest/valid-describe-callback': 'off',
     },
   },
