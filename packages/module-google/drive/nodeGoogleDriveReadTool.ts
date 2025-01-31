@@ -51,8 +51,8 @@ export const nodeGoogleDriveDownloadTool = defineComponent({
 
   process: ({ data }) => ({
     tool: {
-      name: input.name!,
-      description: input.description!,
+      name: data.name!,
+      description: data.description!,
       schema: {
         type: 'object',
         required: ['fileId'],
@@ -63,10 +63,10 @@ export const nodeGoogleDriveDownloadTool = defineComponent({
           },
         },
       } as JSONSchema4,
-      call: async(data) => {
+      call: async(properties) => {
         try {
-          const { credentials } = input
-          const { fileId } = data as unknown as GoogleDriveDownloadToolInput
+          const { credentials } = data
+          const { fileId } = properties as unknown as GoogleDriveDownloadToolInput
           const auth = new google.auth.GoogleAuth({
             scopes: ['https://www.googleapis.com/auth/drive'],
             credentials: JSON.parse(credentials) as object,
@@ -87,7 +87,7 @@ export const nodeGoogleDriveDownloadTool = defineComponent({
           throw new ThreadError({
             name: 'GOOGLE_DRIVE_DOWNLOAD_ERROR',
             message: `An error occurred while downloading the file from Google Drive: ${message}`,
-            data,
+            context: properties,
           })
         }
       },

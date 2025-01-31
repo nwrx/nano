@@ -112,8 +112,8 @@ export const nodeGoogleDriveSearchTool = defineComponent({
 
   process: ({ data }) => ({
     tool: {
-      name: input.name!,
-      description: input.description!,
+      name: data.name!,
+      description: data.description!,
       schema: {
         type: 'object',
         required: ['q'],
@@ -139,22 +139,21 @@ export const nodeGoogleDriveSearchTool = defineComponent({
           },
         },
       } as JSONSchema4,
-      call: async(data) => {
+      call: async(parameters) => {
         try {
-          const { credentials } = input
+          const { credentials } = data
           const auth = new google.auth.GoogleAuth({
             scopes: ['https://www.googleapis.com/auth/drive'],
             credentials: JSON.parse(credentials) as object,
           })
           const service = google.drive({ version: 'v3', auth })
           const fileList = await service.files.list({
-            q: data.q as string,
-            fields: data.fields as string,
-            pageSize: data.pageSize as number,
+            q: parameters.q as string,
+            fields: parameters.fields as string,
+            pageSize: parameters.pageSize as number,
             spaces: 'drive',
             includeItemsFromAllDrives: true,
             supportsAllDrives: true,
-            supportsTeamDrives: true,
           })
           return JSON.stringify(fileList.data.files, undefined, 2)
         }
@@ -163,7 +162,7 @@ export const nodeGoogleDriveSearchTool = defineComponent({
           throw new ThreadError({
             name: 'GOOGLE_DRIVE_SEARCH_ERROR',
             message: `An error occurred while searching for files in Google Drive: ${message}`,
-            data,
+            context: parameters,
           })
         }
       },
