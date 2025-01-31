@@ -1,11 +1,11 @@
-import { defineNode } from '@nwrx/core'
+import { defineComponent } from '@nwrx/core'
 import { object, string } from '@nwrx/module-core/types'
 import { categoryLegifrance } from '../categories'
 import { getAccessToken } from '../utils/getAccessToken'
 import { getCodes } from '../utils/getCodes'
 import { search } from '../utils/search'
 
-export const nodeLegifranceSearch = defineNode({
+export const nodeLegifranceSearch = defineComponent({
   kind: 'legifrance/search',
   name: 'Legifrance Search',
   icon: 'https://api.iconify.design/flags:fr.svg',
@@ -57,8 +57,8 @@ export const nodeLegifranceSearch = defineNode({
     },
   },
 
-  process: async({ input }) => {
-    const { clientId, clientSecret, code, query } = input
+  process: async({ data }) => {
+    const { clientId, clientSecret, code, query } = data
     const accessToken = await getAccessToken({ clientId, clientSecret })
     const documents = await search({ query, code, accessToken })
     return { documents }

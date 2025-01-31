@@ -1,4 +1,4 @@
-import { defineNode } from '@nwrx/core'
+import { defineComponent } from '@nwrx/core'
 import { getServerUrl, type Operation, resolveOperationTokenOptions } from '@unshared/client/openapi'
 import { parseRequest } from '@unshared/client/utils'
 import { toSlug } from '@unshared/string'
@@ -29,16 +29,16 @@ export function createNode(document: object, operation: Operation, options: Crea
   const { path, method, operationId, summary, description, parameters } = operation
   const kind = operationId ? toSlug(operationId) : toSlug(method, path)
 
-  return defineNode({
+  return defineComponent({
     kind: `${moduleKind}/${kind}`,
     name: summary ?? operationId,
     description: description ?? summary ?? operationId,
     inputSchema: createInputSchema(document, operation),
     outputSchema: createOutputSchema(operation),
-    process: async({ input }) => {
+    process: async({ data }) => {
 
       // --- Find the operation in the OpenAPI specification.
-      const { token, ...data } = input as { token?: string; [key: string]: unknown }
+      const { token, ...additionalData } = data as { token?: string; [key: string]: unknown }
       const baseUrl = getServerUrl(document)
       const tokenOptions = resolveOperationTokenOptions(document, operation)
 
@@ -48,9 +48,9 @@ export function createNode(document: object, operation: Operation, options: Crea
         method,
         baseUrl,
         token,
-        body: extractParametersFromData(data, parameters, 'body'),
-        query: extractParametersFromData(data, parameters, 'query'),
-        headers: extractParametersFromData(data, parameters, 'header'),
+        body: extractParametersFromData(additionalData, parameters, 'body'),
+        query: extractParametersFromData(additionalData, parameters, 'query'),
+        headers: extractParametersFromData(additionalData, parameters, 'header'),
         ...tokenOptions,
       })
 

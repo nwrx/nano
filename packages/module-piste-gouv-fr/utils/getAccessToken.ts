@@ -1,4 +1,4 @@
-import { FlowError } from '@nwrx/core'
+import { ThreadError } from '@nwrx/core'
 
 export interface PisteCredentials {
   clientId: string
@@ -20,7 +20,7 @@ export async function getAccessToken(credentials: PisteCredentials): Promise<str
 
   if (!authResponse.ok) {
     const message = await authResponse.text()
-    throw new FlowError({
+    throw new ThreadError({
       name: 'PISTE_AUTH_ERROR',
       message: `Failed to authenticate with Piste API: ${message}`,
       data: { message },

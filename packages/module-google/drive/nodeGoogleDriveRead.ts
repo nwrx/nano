@@ -1,4 +1,4 @@
-import { defineNode, FlowError } from '@nwrx/core'
+import { defineComponent, ThreadError } from '@nwrx/core'
 import { file, object, string } from '@nwrx/module-core/types'
 import { google } from 'googleapis'
 import { ReadableStream } from 'node:stream/web'
@@ -9,7 +9,7 @@ export interface GoogleDriveGetInput {
   fields?: string
 }
 
-export const nodeGoogleDriveGet = defineNode({
+export const nodeGoogleDriveGet = defineComponent({
   kind: 'google/drive-read',
   name: 'Google Drive - Read',
   icon: 'https://api.iconify.design/logos:google-drive.svg',
@@ -59,7 +59,7 @@ export const nodeGoogleDriveGet = defineNode({
     },
   },
 
-  process: async({ input }) => {
+  process: async({ data }) => {
     try {
       const { credentials, fileId } = input
       const auth = new google.auth.GoogleAuth({
@@ -89,7 +89,7 @@ export const nodeGoogleDriveGet = defineNode({
     }
     catch (error) {
       const message = (error as Error).message
-      throw new FlowError({
+      throw new ThreadError({
         name: 'GOOGLE_DRIVE_GET_ERROR',
         message: `An error occurred while retrieving the file from Google Drive: ${message}`,
       })

@@ -1,4 +1,4 @@
-import { FlowError } from '@nwrx/core'
+import { ThreadError } from '@nwrx/core'
 import { client } from './client'
 
 export interface SearchOptions {
@@ -67,7 +67,7 @@ export async function search({ query, code, accessToken }: SearchOptions) {
   // --- Handle errors
   if (!response.ok) {
     const data = await response.json() as { message: string }
-    throw new FlowError({
+    throw new ThreadError({
       name: 'PISTE_SEARCH_ERROR',
       message: data.message,
       data,
@@ -76,7 +76,7 @@ export async function search({ query, code, accessToken }: SearchOptions) {
 
   // --- Process response into a more usable format.
   const data = await response.json()
-  if (!data.results) throw new FlowError({ name: 'PISTE_SEARCH_ERROR', message: 'No results found' })
+  if (!data.results) throw new ThreadError({ name: 'PISTE_SEARCH_ERROR', message: 'No results found' })
   const results: Record<string, SearchResult> = {}
   for (const result of data.results) {
 

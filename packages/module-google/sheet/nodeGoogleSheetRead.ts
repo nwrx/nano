@@ -1,5 +1,5 @@
 import type { Type } from '@nwrx/core'
-import { defineNode, FlowError } from '@nwrx/core'
+import { defineComponent, ThreadError } from '@nwrx/core'
 import { object, string } from '@nwrx/module-core/types'
 import { google } from 'googleapis'
 import { categoryGoogleSheet } from '../categories/categoryGoogleSheet'
@@ -10,7 +10,7 @@ export interface GoogleSheetReadInput {
   credentials: string
 }
 
-export const nodeGoogleSheetRead = defineNode({
+export const nodeGoogleSheetRead = defineComponent({
   kind: 'google/sheet-read',
   name: 'Google Sheet - Read',
   icon: 'https://api.iconify.design/mdi:spreadsheet.svg',
@@ -88,9 +88,9 @@ export const nodeGoogleSheetRead = defineNode({
     },
   },
 
-  process: async({ input }) => {
+  process: async({ data }) => {
     try {
-      const { credentials, spreadsheetId, sheet, range } = input
+      const { credentials, spreadsheetId, sheet, range } = data
       const auth = new google.auth.GoogleAuth({
         scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
         credentials: JSON.parse(credentials) as object,
@@ -104,7 +104,7 @@ export const nodeGoogleSheetRead = defineNode({
       const rows = response.data.values
 
       if (!rows || rows.length === 0) {
-        throw new FlowError({
+        throw new ThreadError({
           name: 'GOOGLE_SHEET_NO_DATA',
           message: 'No data found in the specified range.',
         })
@@ -114,7 +114,7 @@ export const nodeGoogleSheetRead = defineNode({
     }
     catch (error) {
       const message = (error as Error).message
-      throw new FlowError({
+      throw new ThreadError({
         name: 'GOOGLE_SHEET_READ_ERROR',
         message: `An error occurred while reading data from Google Sheets: ${message}`,
       })

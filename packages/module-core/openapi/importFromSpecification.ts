@@ -1,4 +1,4 @@
-import type { FlowNodeDefinition } from '@nwrx/core'
+import type { Component } from '@nwrx/core'
 import type { OpenAPI } from 'openapi-types'
 import { resolveDocument } from '@unshared/client/openapi'
 import { withTemporaryFiles } from '@unshared/fs'
@@ -34,11 +34,12 @@ export async function importFromSpecificationUrl(url: string, options: ImportFro
 }
 
 export function importFromSpecification(data: object, options: ImportFromSpecificationOptions = {}) {
+  // @ts-expect-error: ignore
   const document = resolveDocument(data) as OpenAPI.Document
   const logo = ('x-logo' in document.info ? document.info['x-logo'] : {}) as Record<string, string>
 
   // --- Iterate over each path and operation in the document.
-  const nodes: Record<string, FlowNodeDefinition> = {}
+  const nodes: Record<string, Component> = {}
   for (const path in document.paths) {
     const pathObject = document.paths[path] as Record<string, OpenAPI.Operation>
     for (const method in pathObject) {

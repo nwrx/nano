@@ -1,16 +1,16 @@
-import { FlowError } from '@nwrx/core'
+import { ThreadError } from '@nwrx/core'
 import { toConstantCase } from '@unshared/string'
 
-export async function openaiOnError(response: Response, prefix = 'OPENAI'): Promise<FlowError> {
+export async function openaiOnError(response: Response, prefix = 'OPENAI'): Promise<ThreadError> {
   try {
     const data = await response.json() as { error: { message: string } }
-    return new FlowError({
+    return new ThreadError({
       name: toConstantCase(prefix, response.statusText),
       message: data.error.message,
     })
   }
   catch {
-    return new FlowError({
+    return new ThreadError({
       name: toConstantCase(prefix, response.statusText),
       message: response.statusText,
     })

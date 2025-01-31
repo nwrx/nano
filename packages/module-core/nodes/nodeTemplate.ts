@@ -1,11 +1,11 @@
-import { defineNode } from '@nwrx/core'
+import { defineComponent } from '@nwrx/core'
 import { categoryBasic } from '../categories'
 import { string } from '../types'
 
 /** The regular expression for extracting variables from the template. */
 const EXP_VAR_REGEX = /{{\s*(\w+\??)\s*}}/g
 
-export const nodeTemplate = defineNode({
+export const nodeTemplate = defineComponent({
   kind: 'core/template',
   name: 'Template',
   icon: 'https://api.iconify.design/carbon:text-indent.svg',
@@ -40,8 +40,8 @@ export const nodeTemplate = defineNode({
   },
 
   // --- Process the template by replacing the variables with the values.
-  process: ({ input }) => {
-    const { template, values = {} } = input
+  process: ({ data }) => {
+    const { template, values = {} } = data
 
     // --- Replace the variables in the template with the values.
     const compiled = template.replaceAll(EXP_VAR_REGEX, (_, key: string) => {

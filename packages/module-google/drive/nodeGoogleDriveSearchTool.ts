@@ -1,5 +1,5 @@
 import type { JSONSchema4 } from 'json-schema'
-import { defineNode, FlowError } from '@nwrx/core'
+import { defineComponent, ThreadError } from '@nwrx/core'
 import { languageModelTool, string } from '@nwrx/module-core/types'
 import { dedent } from '@unshared/string'
 import { google } from 'googleapis'
@@ -47,7 +47,7 @@ const QUERY_STRING_DESCRIPTION = dedent(`
   - Files that have not been shared with anyone or domains (only private, or shared with specific users or groups) => visibility = 'limited'
 `)
 
-export const nodeGoogleDriveSearchTool = defineNode({
+export const nodeGoogleDriveSearchTool = defineComponent({
   kind: 'google/drive-search-tool',
   name: 'Google Drive - Search Tool',
   icon: 'https://api.iconify.design/logos:google-drive.svg',
@@ -110,7 +110,7 @@ export const nodeGoogleDriveSearchTool = defineNode({
     },
   },
 
-  process: ({ input }) => ({
+  process: ({ data }) => ({
     tool: {
       name: input.name!,
       description: input.description!,
@@ -160,7 +160,7 @@ export const nodeGoogleDriveSearchTool = defineNode({
         }
         catch (error) {
           const message = (error as Error).message
-          throw new FlowError({
+          throw new ThreadError({
             name: 'GOOGLE_DRIVE_SEARCH_ERROR',
             message: `An error occurred while searching for files in Google Drive: ${message}`,
             data,

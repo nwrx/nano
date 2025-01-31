@@ -1,7 +1,7 @@
 import type { SocketListOption, Type } from '@nwrx/core'
 import type { ObjectLike } from '@unshared/types'
 import type { LanguageModel } from '../types'
-import { defineNode } from '@nwrx/core'
+import { defineComponent } from '@nwrx/core'
 import { categoryLanguageModel } from '../categories'
 import { languageModel, string } from '../types'
 import { openaiGetBody } from './openaiGetBody'
@@ -39,7 +39,7 @@ export interface LanguageModelOptions<T = ObjectLike, U = ObjectLike>
 }
 
 /**
- * Wrapper around the {@linkcode defineNode} function that creates a standardized
+ * Wrapper around the {@linkcode defineComponent} function that creates a standardized
  * language model node for a specific API. The function takes-in several options
  * that streamline the process of adapting the node to different inference providers.
  *
@@ -65,7 +65,7 @@ export function defineLanguageModel<T, U>(options: LanguageModelOptions<T, U>) {
     getModels = openaiGetModels,
   } = options
 
-  return defineNode({
+  return defineComponent({
     kind,
     name,
     icon,
@@ -115,7 +115,7 @@ export function defineLanguageModel<T, U>(options: LanguageModelOptions<T, U>) {
       },
     },
 
-    process: ({ input: { model, baseUrl, token } }) => ({
+    process: ({ data: { model, baseUrl, token } }) => ({
       model: {
         url: new URL(pathCompletions, baseUrl).toString(),
         model,

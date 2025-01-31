@@ -1,6 +1,6 @@
 import type { InferInput, InferOutput } from '@nwrx/core'
 import type { ObjectLike } from '@unshared/types'
-import { defineInputSchema, defineNode, defineOutputSchema } from '@nwrx/core'
+import { defineComponent, defineInputSchema, defineOutputSchema } from '@nwrx/core'
 import { categoryLanguageModel } from '../categories'
 import { languageModel, languageModelTool, number, string } from '../types'
 
@@ -100,7 +100,7 @@ const INFERENCE_OUTPUT_SCHEMA = defineOutputSchema({
   },
 })
 
-export const nodeInference = defineNode({
+export const nodeInference = defineComponent({
   kind: 'core/inference',
   name: 'Inference',
   icon: 'https://api.iconify.design/majesticons:sparkles-line.svg',
@@ -110,10 +110,10 @@ export const nodeInference = defineNode({
   inputSchema: INFERENCE_INPUT_SCHEMA,
   outputSchema: INFERENCE_OUTPUT_SCHEMA,
 
-  process: async({ input, trace }) => {
-    const { model, tools } = input
+  process: async({ data, trace }) => {
+    const { model, tools } = data
     const { url, token, getBody, onData, onError } = model
-    const body = getBody(input)
+    const body = getBody(data)
 
     let canResume = false
     function resume() {

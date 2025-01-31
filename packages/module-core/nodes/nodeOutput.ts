@@ -1,8 +1,8 @@
-import { defineNode, NODE_OUTPUT_KIND } from '@nwrx/core'
+import { defineComponent, NODE_OUTPUT_KIND } from '@nwrx/core'
 import { categoryBasic } from '../categories'
 import { string } from '../types'
 
-export const nodeOutput = defineNode({
+export const nodeOutput = defineComponent({
   kind: NODE_OUTPUT_KIND,
   name: 'Output',
   icon: 'https://api.iconify.design/carbon:arrow-up.svg',
