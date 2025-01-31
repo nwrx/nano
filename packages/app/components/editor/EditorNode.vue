@@ -3,14 +3,14 @@ import type { ComponentInstanceJSON } from '@nwrx/api'
 import type { SocketListOption } from '@nwrx/core'
 import type { FlowLinkSocket } from '~/composables/useFlowEditorView'
 
-const props = defineProps<{
+const props = defineProps<ComponentInstanceJSON & {
   zoom?: number
   isDragging?: boolean
   isSelected?: boolean
   secrets?: string[]
   variables?: string[]
   getOptions?: (key: string, query: string) => Promise<SocketListOption[]>
-} & ComponentInstanceJSON>()
+}>()
 
 const emit = defineEmits<{
   start: []
@@ -25,7 +25,7 @@ const emit = defineEmits<{
   linkUnassign: []
 }>()
 
-const isRunning = computed(() => props.state.startsWith('RUNNING'))
+const isRunning = computed(() => props.state === 'PROCESSING')
 const isRunningThrottled = refThrottled(isRunning, 300)
 
 const ringColor = computed(() => (

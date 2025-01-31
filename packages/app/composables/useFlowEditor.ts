@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/todo-tag */
 /* eslint-disable sonarjs/cognitive-complexity */
 import type { EditorSessionJSON, EditorSessionServerMessage, LinkJSON } from '@nwrx/api'
 import type { SocketListOption } from '@nwrx/core'
@@ -20,12 +21,13 @@ export function useFlowEditor(workspace: MaybeRef<string>, project: MaybeRef<str
     peerId: '',
   }) as EditorSessionJSON
 
-  const channel = client.connect('WS /ws/workspaces/:workspace/:project/:name', {
+  const channel = client.connect('WS /ws/workspaces/:workspace/:project/:name/editor', {
     parameters: {
       workspace: unref(workspace),
       project: unref(project),
       name: unref(name),
     },
+    // @ts-expect-error: TODO: Fix this in @unserved/*
     onMessage: (payload: EditorSessionServerMessage) => {
       data.events = [...data.events, payload]
       switch (payload.event) {
@@ -136,7 +138,7 @@ export function useFlowEditor(workspace: MaybeRef<string>, project: MaybeRef<str
           if (!node) return
           const socket = node.inputSchema?.find(s => s.key === name)
           if (!socket) return
-          socket.options = options
+          socket.options = options as unknown as SocketListOption[]
           data.nodes = [...data.nodes]
           break
         }
@@ -271,20 +273,21 @@ export function useFlowEditor(workspace: MaybeRef<string>, project: MaybeRef<str
       channel.send({ event: 'setNodeComment', id, comment })
     },
 
-    setNodeInputValue: (id: string, key: string, value: unknown) => {
-      channel.send({ event: 'setNodeInputValue', id, key, value })
+    setNodeInputValue: (id: string, name: string, value: unknown) => {
+      channel.send({ event: 'setNodeInputValue', id, name, value })
     },
 
-    getNodeInputOptions: async(id: string, key: string, query?: string): Promise<SocketListOption[]> => {
+    getNodeInputOptions: async(id: string, name: string, query?: string): Promise<SocketListOption[]> => {
       const promise = new Promise<SocketListOption[]>((resolve, reject) => {
-        const stop = channel.on('message', (payload: FlowSessionEventPayload) => {
+        // @ts-expect-error: TODO: Fix this in @unserved/*
+        const stop = channel.on('message', (payload: EditorSessionServerMessage) => {
           if (payload.event === 'error') reject(new Error(payload.message))
           if (payload.event !== 'node:inputOptionResult') return
-          resolve(payload.options)
+          resolve(payload.options as unknown as SocketListOption[])
           stop()
         })
       })
-      channel.send({ event: 'getInputValueOptions', id, key, query })
+      channel.send({ event: 'getInputValueOptions', id, name, query })
       return await promise
     },
 
