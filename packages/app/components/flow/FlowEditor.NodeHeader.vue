@@ -39,7 +39,7 @@ function handleGrab(event: MouseEvent) {
 <template>
   <div
     :style="{ backgroundColor: `${color}!important` }"
-    :class="isDragging ? 'cursor-grabbing' : 'cursor-pointer'"
+    :class="{ 'cursor-grabbing': isDragging }"
     class="flex justify-start items-center h-8 pr-sm rd-t"
     @mousedown="(event) => handleGrab(event)"
     @mousemove="(event) => emit('handleMove', event)"
