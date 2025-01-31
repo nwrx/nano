@@ -14,7 +14,7 @@ const props = defineProps<{
 } & NodeInstanceJSON>()
 
 const emit = defineEmits<{
-  run: []
+  start: []
   abort: []
   click: [event: MouseEvent]
   setDataValue: [portId: string, value: unknown]
@@ -107,12 +107,23 @@ const ringWidth = computed(() => (
       '--un-ring-width': ringWidth,
     }"
     class="
-      min-h-24 w-96
+      min-h-24 w-96 relative
       backdrop-blur-2xl rounded ring
       bg-editor-node border border-editor
     "
     @mousedown.stop="(event) => emit('click', event)">
 
+    <!-- Error Overlay -->
+    <div
+      v-if="error"
+      class="
+        absolute top-0 left-0 right-0 bottom-0
+        bg-diagonalstripes-red/20
+        gradient-mask-t pointer-events-none
+      "
+    />
+
+    <!-- Header -->
     <FlowEditorNodeHeader
       :id="id"
       :name="name"
@@ -121,7 +132,7 @@ const ringWidth = computed(() => (
       :isRunning="isRunning"
       :isDragging="isDragging"
       :isSelected="isSelected"
-      @run="() => emit('run')"
+      @start="() => emit('start')"
       @abort="() => emit('abort')"
       @handleGrab="(event) => emit('handleGrab', event)"
       @handleMove="(event) => emit('handleMove', event)"

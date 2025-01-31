@@ -10,7 +10,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  run: []
+  start: []
   abort: []
   handleGrab: [event: MouseEvent]
   handleMove: [event: MouseEvent]
@@ -54,7 +54,7 @@ const isRunningThrottled = refThrottled(isRunning, 200)
       eager
       class="flex items-center justify-center rounded size-5"
       @mousedown.stop
-      @click="() => isRunning ? emit('abort') : emit('run')">
+      @click="() => isRunning ? emit('abort') : emit('start')">
       <BaseIcon
         :icon="isRunningThrottled ? 'i-line-md:loading-loop' : 'i-carbon:play-filled'"
         class="size-4 text-white"
