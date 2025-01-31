@@ -44,7 +44,8 @@ const isMetadataOpen = useVModel(props, 'isMetadataOpen', emit, { passive: true 
     <!-- Error Hint -->
     <EditorPanelError
       v-if="node?.error"
-      :error="node.error"
+      :message="node.error"
+      :code="node.errorCode"
     />
 
     <!-- Input Data Table -->

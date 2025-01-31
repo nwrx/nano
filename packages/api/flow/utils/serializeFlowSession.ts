@@ -1,15 +1,10 @@
 /* eslint-disable sonarjs/todo-tag */
-import type { Flow, FlowNode, FlowNodeDefinition, FlowThreadNodeState, InputSchema, SocketControl, SocketListOption } from '@nwrx/core'
+import type { FlowNode, FlowNodeDefinition, FlowThreadNodeState, InputSchema, SocketControl, SocketListOption } from '@nwrx/core'
 import type { MaybeLiteral } from '@unshared/types'
 import type { Peer } from 'crossws'
 import type { FlowSessionEventPayload, FlowSessionInstance } from './resolveFlowSession'
 import { Core } from '@nwrx/module-core'
 
-/**
- * The modules that can be used to build a flow.
- *
- * TODO: This should be dynamically loaded from module registry.
- */
 const MODULES = [
   Core,
 ]
@@ -82,6 +77,7 @@ export interface FlowThreadNodeJSON extends FlowNodeDefinitionJSON {
   id: string
   state: FlowThreadNodeState
   error?: string
+  errorCode?: string
   label?: string
   comment?: string
   position: { x: number; y: number }
@@ -197,6 +193,7 @@ export async function serializeNode(session: FlowSessionInstance, node: FlowNode
     id: node.id,
     state: 'IDLE',
     error: session.thread.nodes.get(node.id)?.error?.message,
+    errorCode: session.thread.nodes.get(node.id)?.error?.code,
     label: node.meta?.label,
     comment: node.meta?.comment,
     position: node.meta?.position ?? { x: 0, y: 0 },
@@ -213,7 +210,7 @@ export async function serializeFlowSession(session: FlowSessionInstance, peer: P
   const nodePromises = session.flow.nodes.values().map(node => serializeNode(session, node))
   const nodes = await Promise.all(nodePromises)
   return {
-    name: session.entity.name ?? 'Untitled Flow',
+    name: session.entity.title ?? 'Untitled Flow',
     icon: 'i-carbon:flow',
     description: session.entity.description ?? '',
     nodes,
