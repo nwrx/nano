@@ -185,9 +185,6 @@ const editor = useFlowEditor({
 
           class="pointer-events-auto row-span-2 justify-self-end h-full"
 
-          @handle-grab="(event) => emit('panelHandleGrab', event)"
-          @handle-release="(event) => emit('panelHandleRelease', event)"
-
           @start="(input) => emit('start', input)"
           @set-name="(name) => emit('setName', name)"
           @set-description="(description) => emit('setDescription', description)"
