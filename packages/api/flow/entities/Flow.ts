@@ -61,6 +61,8 @@ export class Flow extends BaseEntity {
       name: this.name,
       title: this.title,
       description: this.description,
+      workspace: this.project?.workspace?.name,
+      project: this.project?.name,
     }
   }
 }
@@ -69,4 +71,6 @@ export interface FlowObject {
   name: string
   title: string
   description?: string
+  workspace?: string
+  project?: string
 }
