@@ -14,7 +14,6 @@ import { getComponentInstance } from '@nwrx/nano'
 import { setComponentInstanceInputValue } from '@nwrx/nano'
 import { setComponentInstanceMetaValue } from '@nwrx/nano'
 import { createLink } from '@nwrx/nano'
-import { randomUUID } from 'node:crypto'
 import { serializeComponentInstance } from './serializeComponentInstance'
 import { serializeSession } from './serializeSession'
 
@@ -174,9 +173,9 @@ export class EditorSession {
 
       if (message.event === 'cloneNodes') {
         const { id, x, y } = message
-        const componentInstance = getComponentInstance(this.thread, id)
-        const newId = addComponentInstance(this.thread, { ...componentInstance, id: randomUUID(), meta: { position: { x, y } } })
-        const component = await serializeComponentInstance(this.thread, id)
+        const { kind, input } = getComponentInstance(this.thread, id)
+        const newId = addComponentInstance(this.thread, { kind, input, meta: { position: { x, y } } })
+        const component = await serializeComponentInstance(this.thread, newId)
         await this.save()
         this.broadcast({ event: 'node:created', id: newId, component, x, y })
       }
