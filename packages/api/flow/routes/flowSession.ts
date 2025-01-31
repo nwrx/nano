@@ -345,11 +345,13 @@ export function flowSession(this: ModuleFlow) {
           // --- Node events.
           case 'nodeCreate': {
             const { kind, x, y } = message
-            await session.flow.nodeCreate(kind, {
+            const node = session.flow.nodeCreate(kind, {
               meta: { position: { x, y } },
               initialData: {},
               initialResult: {},
             })
+            await node.resolveDataSchema()
+            await node.resolveResultSchema()
             await session.save()
             break
           }
@@ -357,10 +359,12 @@ export function flowSession(this: ModuleFlow) {
             const { nodeId, x, y } = message
             const instance = session.flow.getNodeInstance(nodeId)
             const kind = `${instance.flow.resolveNodeModule(instance).kind}:${instance.node.kind}`
-            await session.flow.nodeCreate(kind, {
+            const node = session.flow.nodeCreate(kind, {
               meta: { position: { x, y } },
               initialData: instance.dataRaw,
             })
+            await node.resolveDataSchema()
+            await node.resolveResultSchema()
             await session.save()
             break
           }
