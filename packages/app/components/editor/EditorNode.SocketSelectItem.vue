@@ -36,7 +36,7 @@ defineProps<{
     <BaseIcon
       v-if="isSelected"
       icon="i-carbon:checkmark"
-      class="size-4"
+      class="size-4 shrink-0"
     />
   </div>
 </template>
