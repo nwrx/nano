@@ -1,4 +1,4 @@
-import type { SocketSchema } from './defineComponent'
+import type { Schema } from './defineComponent'
 import type { ReferenceResolver } from './resolveReference'
 import { ERRORS as E } from './errors'
 import { resolveSchema } from './resolveSchema'
@@ -6,7 +6,7 @@ import { resolveSchema } from './resolveSchema'
 export async function resolveSchemaOneOf(
   path: string,
   value: unknown,
-  schemas: SocketSchema[],
+  schemas: Schema[],
   resolvers: ReferenceResolver[] = [],
 ): Promise<unknown> {
   const errors: Error[] = []

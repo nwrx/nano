@@ -1,4 +1,4 @@
-import type { SocketSchema } from './defineComponent'
+import type { Schema } from './defineComponent'
 import type { ReferenceResolver } from './resolveReference'
 import { ERRORS as E } from './errors'
 import { isReference } from './isReference'
@@ -14,7 +14,7 @@ import { resolveSchemaUndefinedOrNull } from './resolveSchemaUndefinedOrNull'
 export async function resolveSchema(
   path: string,
   value: unknown,
-  schema: SocketSchema,
+  schema: Schema,
   resolvers: ReferenceResolver[] = [],
 ): Promise<unknown> {
   if (isReference(value)) {
