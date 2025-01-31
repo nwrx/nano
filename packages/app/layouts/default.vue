@@ -83,7 +83,9 @@ const { setLocale, locale } = useI18n()
 
 <style>
 .theme-change * {
-  transition: 100ms all ease-in-out !important;
+  transition-property: all !important;
+  transition-duration: 500ms !important;
+  transition-timing-function: cubic-bezier(0,1,0.15,0.9) !important;
 }
 
 /* Scrollbar should be light, thin and hidden when not in use. */
@@ -149,6 +151,40 @@ const { setLocale, locale } = useI18n()
 .markdown p {
   margin-top: 0;
   margin-bottom: 0.75rem;
+}
+
+.markdown b,
+.markdown strong {
+  font-weight: 600;
+}
+
+.markdown code {
+  padding: 0.15rem 0.25rem;
+  margin: 0 0.25rem;
+  border-radius: 0.25rem;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--theme-borderColor-app);
+  background-color: rgb(var(--theme-colors-prominent));
+}
+
+.markdown pre {
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-radius: 0.25rem;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--theme-borderColor-app);
+  background-color: rgb(var(--theme-colors-prominent));
+}
+
+.markdown pre > code {
+  padding: 0;
+  margin: 0;
+  border-radius: 0;
+  background-color: transparent;
+  border: 0;
 }
 
 .markdown hr {
