@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { EXP_UUID } from '@unshared/validation'
-import { addNode, createThread, getNode } from '../../../thread'
-import { createEventMetadata, ERRORS } from '../../../utils'
+import { addNode, createThread } from '../../../thread'
+import { ERRORS } from '../../../utils'
 import { askConfirmation } from './askConfirmation'
 
 describe('askConfirmation', () => {
@@ -24,31 +24,28 @@ describe('askConfirmation', () => {
       expect(callback).toHaveBeenCalledWith(
         nodeId,
         { id: expect.stringMatching(EXP_UUID), question: 'example', text: 'example', timeout: 60000 },
-        createEventMetadata(thread, nodeId),
       )
     })
 
     it('should resolve to "true" when dispatching a "nodeResponse" event with "response: true"', async() => {
       const thread = createThread()
       const nodeId = addNode(thread, 'example')
-      const node = getNode(thread, nodeId)
       const callback = vi.fn()
       thread.on('nodeResponse', callback)
       const eventId = new Promise<string>(resolve => thread.on('nodeConfirmRequest', (_, { id }) => resolve(id)))
       const promise = askConfirmation(thread, nodeId, { question: 'ignored', text: 'ignored' })
-      thread.dispatch('nodeResponse', nodeId, { id: await eventId, response: true }, createEventMetadata(thread, nodeId))
+      thread.dispatch('nodeResponse', nodeId, { id: await eventId, response: true })
       await expect(promise).resolves.toBe(true)
     })
 
     it('should resolve to "false" when dispatching a "nodeResponse" event with "confirm: false"', async() => {
       const thread = createThread()
       const nodeId = addNode(thread, 'example')
-      const node = getNode(thread, nodeId)
       const callback = vi.fn()
       thread.on('nodeResponse', callback)
       const eventId = new Promise<string>(resolve => thread.on('nodeConfirmRequest', (_, { id }) => resolve(id)))
       const promise = askConfirmation(thread, nodeId, { question: 'ignored', text: 'ignored' })
-      thread.dispatch('nodeResponse', nodeId, { id: await eventId, response: false }, createEventMetadata(thread, nodeId))
+      thread.dispatch('nodeResponse', nodeId, { id: await eventId, response: false })
       await expect(promise).resolves.toBe(false)
     })
   })
@@ -58,7 +55,7 @@ describe('askConfirmation', () => {
       const thread = createThread()
       const nodeId = addNode(thread, 'example')
       const shouldReject = askConfirmation(thread, nodeId, { question: 'ignored', text: 'ignored', timeout: 1 })
-      thread.dispatch('nodeResponse', nodeId, { id: 'differentId', response: true }, createEventMetadata(thread, nodeId))
+      thread.dispatch('nodeResponse', nodeId, { id: 'differentId', response: true })
       vi.advanceTimersByTime(1)
       await expect(shouldReject).rejects.toThrow()
     })
@@ -68,7 +65,7 @@ describe('askConfirmation', () => {
       const nodeId1 = addNode(thread, 'example')
       const nodeId2 = addNode(thread, 'example')
       const shouldReject = askConfirmation(thread, nodeId1, { question: 'ignored', text: 'ignored', timeout: 1 })
-      thread.dispatch('nodeResponse', nodeId2, { id: 'differentId', response: true }, createEventMetadata(thread, nodeId2))
+      thread.dispatch('nodeResponse', nodeId2, { id: 'differentId', response: true })
       vi.advanceTimersByTime(1)
       await expect(shouldReject).rejects.toThrow()
     })

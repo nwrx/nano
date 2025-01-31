@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import type { Thread } from '../../../thread'
 import { randomUUID } from 'node:crypto'
-import { createEventMetadata } from '../../../utils/createEventMetadata'
 
 export type QuestionChoiceValue = boolean | number | string
 
@@ -68,7 +67,6 @@ export async function askQuestion(thread: Thread, nodeId: string, options: Quest
       'nodeQuestionRequest',
       nodeId,
       eventQuestion,
-      createEventMetadata(thread, nodeId),
     )
   })
 }
