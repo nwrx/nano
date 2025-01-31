@@ -1,6 +1,5 @@
+import { addNode, createThread } from '../thread'
 import { defineComponent } from '../utils'
-import { addNode } from './addNode'
-import { createThread } from './createThread'
 import { isNodeUsedAsTool } from './isNodeUsedAsTool'
 
 describe('isNodeUsedAsTool', () => {
