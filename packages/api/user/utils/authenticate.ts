@@ -29,7 +29,6 @@ export async function authenticate(this: ModuleUser, event: H3Event): Promise<Au
 export async function authenticate(this: ModuleUser, event: H3Event, options: AuthenticateOptions<false>): Promise<AuthenticateResult>
 export async function authenticate(this: ModuleUser, event: H3Event, options: AuthenticateOptions<true>): Promise<AuthenticateResult | undefined>
 export async function authenticate(this: ModuleUser, event: H3Event, options: AuthenticateOptions = {}): Promise<AuthenticateResult | undefined> {
-  const { UserSession } = this.getRepositories()
   const { optional = false } = options
 
   // --- Extract and decrypt the token from the cookie.
@@ -45,6 +44,7 @@ export async function authenticate(this: ModuleUser, event: H3Event, options: Au
   if (!isUuid) throw this.errors.USER_SESSION_NOT_FOUND()
 
   // --- Find the user session by the token.
+  const { UserSession } = this.getRepositories()
   const userSession = await UserSession.findOne({
     where: { id: id as UUID },
     relations: { user: true },
@@ -61,6 +61,7 @@ export async function authenticate(this: ModuleUser, event: H3Event, options: Au
   if (!userSession) throw this.errors.USER_SESSION_NOT_FOUND()
   if (!userSession.user) throw this.errors.USER_SESSION_NOT_FOUND()
   if (userSession.user.deletedAt) throw this.errors.USER_SESSION_NOT_FOUND()
+  if (userSession.user.disabledAt) throw this.errors.USER_SESSION_NOT_FOUND()
   if (userSession.address !== address) throw this.errors.USER_SESSION_NOT_FOUND()
   if (userSession.userAgent !== userAgent) throw this.errors.USER_SESSION_NOT_FOUND()
   if (userSession.expiresAt < now) throw this.errors.USER_SESSION_EXPIRED()
