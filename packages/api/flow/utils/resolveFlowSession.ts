@@ -2,7 +2,7 @@ import type { Flow } from '../entities'
 import type { ModuleFlow } from '../index'
 import type { FlowSession } from './createFlowSession'
 import { flowFromJsonV1 } from '@nwrx/core'
-import Core from '@nwrx/module-core'
+import { default as Core } from '@nwrx/module-core'
 import { createFlowSession } from './createFlowSession'
 
 /**
@@ -18,10 +18,21 @@ export async function resolveFlowSession(this: ModuleFlow, flow: Flow): Promise<
   const exists = this.flowSessions.get(flow.id)
   if (exists) return exists
 
-  // --- Create the flow instance and the chain session.
+  // --- Assert the flow has a project and the project has secrets and variables.
+  if (!flow.project) throw new Error('The project of the flow is not loaded.')
+  if (!flow.project.secrets) throw new Error('The secrets of the project are not loaded.')
+  if (!flow.project.variables) throw new Error('The variables of the project are not loaded.')
+
+  // --- Create the flow instance.
   const flowInstance = await flowFromJsonV1(flow.data, [Core])
-  flowInstance.modules = [Core]
-  const session = createFlowSession(flowInstance, flow)
+  flowInstance.meta.name = flow.title
+  flowInstance.meta.description = flow.description
+  for (const secret of flow.project.secrets) flowInstance.secrets[secret.name] = secret.cipher
+  for (const variable of flow.project.variables) flowInstance.variables[variable.name] = variable.value
+
+  // --- Create the flow session and store it in memory.
+  const { Flow } = this.getRepositories()
+  const session = createFlowSession(flowInstance, flow, Flow)
   this.flowSessions.set(flow.id, session)
   return session
 }
