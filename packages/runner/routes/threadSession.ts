@@ -3,7 +3,7 @@ import type { ThreadWorkerMessage } from '../worker'
 import { createWebSocketRoute } from '@unserved/server'
 import { assertObjectStrict, createParser } from '@unshared/validation'
 import { authorize } from '../utils'
-import { createThreadWorkerSession, THREAD_CLIENT_MESSAGE_SCHEMA } from '../worker'
+import { createThreadWorker, THREAD_CLIENT_MESSAGE_SCHEMA } from '../worker'
 
 export function threadSession(this: ModuleRunner) {
   return createWebSocketRoute(
@@ -24,14 +24,18 @@ export function threadSession(this: ModuleRunner) {
         // --- Get the thread session for the given peer. If it doesn't exist, create a new one.
         let thread = this.runnerSessions.get(peer.id)
         if (!thread) {
-          thread = createThreadWorkerSession.call(this)
-          this.runnerSessions.set(peer.id, thread)
+          thread = createThreadWorker.call(this)
           thread.port.on('message', message => peer.send(message))
-          peer.send({ event: 'worker:ready', data: [peer.id] } as ThreadWorkerMessage)
+          this.runnerSessions.set(peer.id, thread)
         }
 
-        // --- Handle the message event.
-        if (message.event === 'create') await thread.create(message.data)
+        // --- Create the Thread instance in the worker.
+        if (message.event === 'create') {
+          await thread.create(message.data)
+          peer.send({ event: 'worker:created', data: [peer.id] } as ThreadWorkerMessage)
+        }
+
+        // --- Interact with the Thread instance.
         if (message.event === 'start') await thread.start(message.data)
         if (message.event === 'abort') await thread.abort()
       },

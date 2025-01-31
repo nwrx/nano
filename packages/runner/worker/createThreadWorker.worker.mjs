@@ -54,7 +54,7 @@ const EVENTS_TO_PROXY = [
 /**
  * @param {MessagePort} port The port to use for IPC communication.
  */
-export function createThreadInWorker(port) {
+export function createThreadWorker(port) {
 
   /** @type {Thread | undefined} */
   let thread
@@ -78,12 +78,12 @@ export function createThreadInWorker(port) {
       }
 
       // --- At this point, if there is no thread, we can't do anything.
-      if (!thread) throw new Error('Thread is not created yet.')
-      if (message.event === 'start') void start(thread, message.data).catch(noop)
-      if (message.event === 'abort') abort(thread)
+      else if (!thread) { throw new Error('Thread is not created yet.') }
+      else if (message.event === 'start') { void start(thread, message.data).catch(noop) }
+      else if (message.event === 'abort') { abort(thread) }
 
       // --- Push the output value of the thread to the parent thread.
-      if (message.event === 'getOutputValue') {
+      else if (message.event === 'getOutputValue') {
         if (isThreadRunning(thread)) throw new Error('Thread is still running.')
 
         /** @type {TransferList} */

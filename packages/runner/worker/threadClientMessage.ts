@@ -1,12 +1,11 @@
 import type { FlowV1, ThreadInputObject } from '@nwrx/core'
-import type { ObjectLike } from '@unshared/types'
 import { assert, assertObjectStrict, createRuleSet, createSchema } from '@unshared/validation'
 
 export const THREAD_CLIENT_MESSAGE_SCHEMA = createRuleSet(
 
   [createSchema({
     event: assert.stringEquals('create'),
-    data: assertObjectStrict<FlowV1 & ObjectLike>,
+    data: assertObjectStrict as (value: unknown) => asserts value is FlowV1,
   })],
 
   [createSchema({

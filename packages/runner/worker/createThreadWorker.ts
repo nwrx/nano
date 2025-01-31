@@ -7,14 +7,13 @@ import { MessageChannel } from 'node:worker_threads'
 
 export type ThreadWorkerMessage =
   | { [K in keyof ThreadEventMap]: { event: K; data: ThreadEventMap[K] } }[keyof ThreadEventMap]
-  | { event: 'worker:created' }
+  | { event: 'worker:created'; data: [id: string] }
   | { event: 'worker:outputValue'; data: [name: string, value: unknown] }
-  | { event: 'worker:ready'; data: [id: string] }
 
 export type ThreadSessionMessage =
   | { event: 'done'; data: [ObjectLike] }
 
-export class ThreadWorkerSession {
+export class ThreadWorker {
   constructor(public port: MessagePort) {}
 
   create(data: FlowV1) {
@@ -88,19 +87,19 @@ export class ThreadWorkerSession {
   }
 }
 
-export function createThreadWorkerSession(this: ModuleRunner) {
-  type Module = typeof import('./createThreadWorkerSession.worker.mjs').createThreadInWorker
-  const moduleId = new URL('createThreadWorkerSession.worker.mjs', import.meta.url).pathname
+export function createThreadWorker(this: ModuleRunner) {
+  type Module = typeof import('./createThreadWorker.worker.mjs').createThreadWorker
+  const moduleId = new URL('createThreadWorker.worker.mjs', import.meta.url).pathname
   const { port1, port2 } = new MessageChannel()
 
   // --- Create a new thread that we can interact with in a separate worker.
   // --- This allows us to balance the load of running multiple threads across
   // --- multiple CPUs / threads.
   void this.runnerWorkerPool.spawn<Module>(moduleId, {
-    name: 'createThreadInWorker',
+    name: 'createThreadWorker',
     parameters: [port2],
   })
 
   // --- Return an instance of the thread that we can interact with.
-  return new ThreadWorkerSession(port1)
+  return new ThreadWorker(port1)
 }

@@ -1,5 +1,5 @@
 import type { WorkerPool } from '@unshared/process'
-import type { ThreadWorkerSession } from './worker'
+import type { ThreadWorker } from './worker'
 import { ModuleBase } from '@unserved/server'
 import { createWorkerPool } from '@unshared/process'
 import { randomUUID } from 'node:crypto'
@@ -19,7 +19,7 @@ export class ModuleRunner extends ModuleBase {
 
   runnerWorkerPool: WorkerPool
   runnerWorkerPoolSize = cpus().length - 1
-  runnerSessions = new Map<string, ThreadWorkerSession>()
+  runnerSessions = new Map<string, ThreadWorker>()
 
   constructor() {
     super()
