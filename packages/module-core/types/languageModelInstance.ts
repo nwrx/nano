@@ -1,5 +1,5 @@
 import { defineType } from '@nwrx/core'
-import { assertStringNotEmpty, assertUndefined, createAssertInstance, createParser } from '@unshared/validation'
+import { assertFunction, assertStringNotEmpty, assertUndefined, createParser } from '@unshared/validation'
 
 /** The context that is passed in the model inference process. */
 export interface LanguageModelInferenceContext {
@@ -56,7 +56,7 @@ export const languageModelInstance = defineType({
      *
      * @example ({ prompt }) => ({ model: 'davinci', prompt })
      */
-    getBody: createAssertInstance(Function) as (fn: unknown) => asserts fn is LanguageModelGetBody,
+    getBody: assertFunction<LanguageModelGetBody>,
 
     /**
      * The function that extracts the completion from the response of the model API.
@@ -65,6 +65,6 @@ export const languageModelInstance = defineType({
      *
      * @example response => response.choices[0].text
      */
-    getCompletion: createAssertInstance(Function) as (fn: unknown) => asserts fn is LanguageModelGetCompletion,
+    getCompletion: assertFunction<LanguageModelGetCompletion>,
   }),
 })
