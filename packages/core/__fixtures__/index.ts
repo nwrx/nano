@@ -1,6 +1,14 @@
+import { defineFlowCategory } from '../defineFlowCategory'
 import { defineFlowModule } from '../defineFlowModule'
 import { defineFlowNode } from '../defineFlowNode'
 import { defineFlowType } from '../defineFlowType'
+
+export const categoryBasic = defineFlowCategory({
+  kind: 'basic',
+  name: 'Basic',
+  icon: 'https://api.iconify.design/carbon:basic.svg',
+  description: 'A collection of basic nodes for working with data.',
+})
 
 export const typeString = defineFlowType({
   kind: 'string',
@@ -38,67 +46,103 @@ export const typeBoolean = defineFlowType({
   },
 })
 
-export const nodeParseNumber = defineFlowNode({
-  kind: 'parse-number',
-  name: 'Parse Number',
-  icon: 'https://api.iconify.design/carbon:parse.svg',
-  description: 'Parses a string into a number.',
+export const nodeInput = defineFlowNode({
+  kind: 'input',
+  name: 'Input',
+  icon: 'https://api.iconify.design/carbon:arrow-down.svg',
+  category: categoryBasic,
+  description: 'A value generated from an entrypoint in the flow.',
 
   defineDataSchema: {
-    string: {
-      name: 'String',
+    property: {
+      name: 'Property',
+      display: 'text',
       type: typeString,
-      description: 'The string to parse into a number.',
+      disallowDynamic: true,
+      description: 'The name of the entrypoint.',
+    },
+  },
+
+  defineResultSchema: () => ({
+    value: {
+      name: 'Value',
+      type: typeString,
+      description: 'The value of the entrypoint.',
+    },
+  }),
+
+  process: ({ flow, data }) => {
+    flow.on('flow:input', ({ property }) => {
+      if (property !== data.property) return
+    })
+  },
+})
+
+export const nodeOutput = defineFlowNode({
+  kind: 'output',
+  name: 'Output',
+  icon: 'https://api.iconify.design/carbon:arrow-up.svg',
+  category: categoryBasic,
+  description: 'A value that is sent to an exitpoint in the flow.',
+
+  defineDataSchema: () => ({
+    property: {
+      name: 'Property',
+      display: 'text',
+      type: typeString,
+      disallowDynamic: true,
+      description: 'The name of the exitpoint.',
+    },
+    value: {
+      name: 'Value',
+      type: typeString,
+      description: 'The value to send to the exitpoint.',
+    },
+  }),
+
+  process: ({ flow, data }) => {
+    if (!data.value) return
+    if (!data.property) return
+    flow.dispatch('flow:output', data.property, data.value)
+  },
+})
+
+export const nodeJsonParse = defineFlowNode({
+  kind: 'json-parse',
+  name: 'JSON Parse',
+  icon: 'https://api.iconify.design/carbon:json.svg',
+  description: 'Parses a JSON string into an object.',
+
+  defineDataSchema: {
+    json: {
+      name: 'JSON',
+      type: typeString,
     },
   },
 
   defineResultSchema: {
-    number: {
-      name: 'Number',
-      type: typeNumber,
-      description: 'The number that was parsed from the string.',
+    object: {
+      name: 'Object',
+      type: typeObject,
     },
   },
 
-  process: ({ data }) => ({
-    number: Number.parseFloat(data.string),
-  }),
+  process: ({ data }) => {
+    const { json = '{}' } = data
+    return { object: JSON.parse(json) as Record<string, unknown> }
+  },
 })
 
-export const nodeParseBoolean = defineFlowNode({
-  kind: 'parse-boolean',
-  name: 'Parse Boolean',
-  icon: 'https://api.iconify.design/carbon:parse.svg',
-  description: 'Parses a string into a boolean.',
-  defineDataSchema: {
-    string: {
-      name: 'String',
-      type: typeString,
-      description: 'The string to parse into a boolean.',
-    },
-  },
-  defineResultSchema: {
-    boolean: {
-      name: 'Boolean',
-      type: typeBoolean,
-      description: 'The boolean that was parsed from the string.',
-    },
-  },
-  process: ({ data }) => ({
-    boolean: /^(true|1)$/i.test(data.string),
-  }),
-})
-
-export const moduleExample = defineFlowModule({
-  kind: 'example',
-  name: 'Example',
-  nodes: {
-    nodeParseNumber,
-    nodeParseBoolean,
-  },
-  types: {
+export const moduleCore = defineFlowModule({
+  kind: 'nwrx/core',
+  name: 'Core',
+  nodes: [
+    nodeJsonParse,
+    nodeOutput,
+    nodeInput,
+  ],
+  types: [
     typeString,
-    typeNumber,
-    typeBoolean,
-  },
+    typeObject,
+  ],
 })
