@@ -28,10 +28,11 @@ export interface NodeMeta {
 
 export interface NodeEvents<T extends DataSchema, U extends ResultSchema> {
   meta: [key: string, value: unknown]
-  data: [data: Record<string, unknown>]
   result: [result: ResultFromSchema<U>]
-  dataSchema: [schema: T]
   resultSchema: [schema: U]
+  data: [data: Record<string, unknown>]
+  dataError: [key: string, error: Error]
+  dataSchema: [schema: T]
   start: [data: DataFromSchema<T>, meta: NodeEventMeta]
   end: [data: DataFromSchema<T>, result: ResultFromSchema<U>, meta: NodeEventMeta]
   error: [error: Error, meta: NodeEventMeta]
@@ -56,8 +57,8 @@ export class NodeInstance<T extends DataSchema = DataSchema, U extends ResultSch
     if (options.meta) this.meta = options.meta
     if (options.initialData) this.data = { ...options.initialData }
     if (options.initialResult) this.result = { ...options.initialResult } as DataFromSchema<U>
-    this.dataSchema = (typeof this.node.dataSchema === 'function' ? {} : this.node.dataSchema) as T
-    this.resultSchema = (typeof this.node.resultSchema === 'function' ? {} : this.node.resultSchema) as U
+    if (typeof this.node.dataSchema === 'object') this.dataSchema = this.node.dataSchema
+    if (typeof this.node.resultSchema === 'object') this.resultSchema = this.node.resultSchema
   }
 
   public id = randomUUID() as string
@@ -68,7 +69,6 @@ export class NodeInstance<T extends DataSchema = DataSchema, U extends ResultSch
   public isRunning = false
   public isDestroyed = false
   public isProcessing = false
-  public errors: Error[] = []
 
   public executionId = randomUUID() as string
   public executionStart = Date.now()
@@ -76,9 +76,10 @@ export class NodeInstance<T extends DataSchema = DataSchema, U extends ResultSch
 
   public data = {} as Record<string, unknown>
   public dataResolved = {} as DataFromSchema<T>
-  public dataSchema: T
+  public dataSchema = {} as T
+  public dataErrors: Record<string, Error> = {}
   public result = {} as DataFromSchema<U>
-  public resultSchema: U
+  public resultSchema= {} as U
 
   public eventTarget = new EventTarget()
   public eventHandlers: Array<[event: string, handler: EventListener]> = []
@@ -137,62 +138,61 @@ export class NodeInstance<T extends DataSchema = DataSchema, U extends ResultSch
     }
   }
 
-  private async resolveDataValue(key: string): Promise<unknown> {
+  private async resolveData(): Promise<boolean> {
+    const data = {} as Record<string, unknown>
+    const dataErrors = {} as Record<string, Error>
+    let isReady = true
 
     // --- Get the parser for the data property.
-    const raw = this.data[key]
-    const socket = this.dataSchema[key]
-    if (!socket) return
-    const parse = socket.type.parse as (value: unknown) => unknown
-
-    // --- If value is undefined and the socket is optional, return the default value.
-    if (raw === undefined && socket.isOptional)
-      return socket.defaultValue
-
-    // --- Anything other than a string is considered to be a final value.
-    if (typeof raw !== 'string') return parse(raw)
-
-    // --- If the value is a variable, get the value of the variable.
-    if (raw.startsWith(PREFIX_VARIABLE)) {
-      const name = raw.slice(PREFIX_VARIABLE.length)
-      const value = await this.flow.resolveVariable?.(name)
-      if (!value) throw new Error(`Variable "${name}" does not exist or is not accessible`)
-      return parse(value)
-    }
-
-    // --- If the value is a secret, get the value of the secret.
-    else if (raw.startsWith(PREFIX_SECRET)) {
-      const name = raw.slice(PREFIX_SECRET.length)
-      const value = await this.flow.resolveSecret?.(name)
-      if (!value) throw new Error(`Secret "${name}" does not exist or is not accessible`)
-      return parse(value)
-    }
-
-    // --- If the value is a result of another node, resolve it's value.
-    else if (raw.startsWith(PREFIX_NODE)) {
-      const [id, key] = raw.slice(PREFIX_NODE.length).split(':')
-      const node = this.flow.get(id)
-      if (!node.isDone) return
-      const value = node.result[key]
-      return parse(value)
-    }
-
-    // --- Otherwise, parse and return the value as is.
-    return parse(raw)
-  }
-
-  private async resolveData(): Promise<void> {
-    const data = {} as Record<string, unknown>
     for (const key in this.dataSchema) {
       try {
-        data[key] = await this.resolveDataValue(key)
+        let value = this.data[key]
+        const socket = this.dataSchema[key]
+
+        // --- Skip properties not present in schema.
+        if (!socket) continue
+
+        // --- Value from secret.
+        if (typeof value === 'string' && value.startsWith(PREFIX_SECRET)) {
+          const name = value.slice(PREFIX_SECRET.length)
+          value = await this.flow.resolveSecret?.(name)
+          if (!value) throw new Error(`Secret "${name}" does not exist or is not accessible`)
+        }
+
+        // --- Value from variable.
+        if (typeof value === 'string' && value.startsWith(PREFIX_VARIABLE)) {
+          const name = value.slice(PREFIX_VARIABLE.length)
+          value = await this.flow.resolveVariable?.(name)
+          if (!value) throw new Error(`Variable "${name}" does not exist or is not accessible`)
+        }
+
+        // --- Value from node result.
+        if (typeof value === 'string' && value.startsWith(PREFIX_NODE)) {
+          const [id, key] = value.slice(PREFIX_NODE.length).split(':')
+          const node = this.flow.get(id)
+          if (!node.isDone) return false
+          value = node.result[key]
+        }
+
+        // --- Missing or undefined value.
+        if (value === undefined && !socket.isOptional) isReady = false
+
+        // --- Value from raw data.
+        data[key] = value === undefined
+          ? socket.defaultValue
+          :socket.type.parse(value)
       }
       catch (error) {
-        (error as Error).message = `Failed to resolve "${key}": ${(error as Error).message}`
-        this.dispatch('error', error as Error, this.eventMeta)
+        dataErrors[key] = error as Error
+        this.dispatch('dataError', key, error as Error)
+        isReady = false
       }
     }
+
+    // --- Set the resolved data and return it.
+    this.dataErrors = dataErrors
     this.dataResolved = data as DataFromSchema<T>
+    return isReady
   }
 
   private setResult(result: DataFromSchema<U>): void {
@@ -262,21 +262,37 @@ export class NodeInstance<T extends DataSchema = DataSchema, U extends ResultSch
   }
 
   /**
-   * Refresh the data schema, the result schema, and the data of the node.
+   * The `dataSchema` or `resultSchema` of the node can be a function that returns
+   * the schema based on the context of the node. This function can be called to
+   * refresh the schema of the node based on the current context.
    *
-   * @returns A promise that resolves when the node is initialized.
+   * Additionally, the `data` property of the node can contain special values such
+   * as `$VARIABLE.<name>`, `$SECRET.<name>`, and `$NODE.<id>:<key>`. These values
+   * are resolved when the node is refreshed.
+   *
+   * @returns A promise that resolves to `true` if the node is ready to be processed.
    * @example
    * // Create a new flow with a single node.
    * using flow = createFlow()
-   * const node = flow.add(...)
+   * const node = flow.add(..., { initialData: {
+   *  valueFromVariable: '$VARIABLE.MY_VARIABLE',
+   *  valueFromSecret: '$SECRET.MY_SUPER_SECRET',
+   *  valueFromNode: '$NODE.math-add:sum'
+   * }})
    *
-   * // Initialize the node before starting it.
+   * // Refresh the node to resolve the data properties.
    * await node.refresh()
+   * console.log(node.dataResolved)
+   * // {
+   * //   valueFromVariable: 'value of the MY_VARIABLE variable',
+   * //   valueFromSecret: 'value of the MY_SUPER_SECRET secret',
+   * //   valueFromNode: 'The result of the math-add node with the key "sum"'
+   * // }
    */
-  public async refresh(): Promise<void> {
-    await this.resolveData()
+  public async refresh(): Promise<boolean> {
     await this.resolveResultSchema()
     await this.resolveDataSchema()
+    return this.resolveData()
   }
 
   /**
@@ -301,7 +317,8 @@ export class NodeInstance<T extends DataSchema = DataSchema, U extends ResultSch
 
       // --- Initialize and resolve the data schema and the result schema.
       this.isRunning = true
-      await this.refresh()
+      const isReady = await this.refresh()
+      if (!isReady) return
 
       // --- Process the node by calling the process function of the node.
       this.dispatch('start', this.dataResolved, this.eventMeta)

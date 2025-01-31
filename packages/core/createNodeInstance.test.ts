@@ -4,7 +4,6 @@ import { typeString } from './__fixtures__'
 import { createFlow } from './createFlow'
 import { createNodeInstance } from './createNodeInstance'
 import { defineNode } from './defineNode'
-import { defineType } from './defineType'
 
 describe('createNodeInstance', () => {
   describe('initialize', () => {
@@ -33,8 +32,8 @@ describe('createNodeInstance', () => {
     it('should pass the initial data if provided', () => {
       using flow = createFlow()
       const node = defineNode({ kind: 'example' })
-      using instance = createNodeInstance(flow, { node, initialData: { string: 'Hello, World!' } })
-      expect(instance.data).toStrictEqual({ string: 'Hello, World!' })
+      using instance = createNodeInstance(flow, { node, initialData: { value: 'Hello, World!' } })
+      expect(instance.data).toStrictEqual({ value: 'Hello, World!' })
     })
 
     it('should pass the initial result if provided', () => {
@@ -46,7 +45,7 @@ describe('createNodeInstance', () => {
 
     it('should clone the initial data', () => {
       using flow = createFlow()
-      const initialData = { string: 'Hello, World!' }
+      const initialData = { value: 'Hello, World!' }
       const node = defineNode({ kind: 'example' })
       using instance = createNodeInstance(flow, { node, initialData })
       expect(instance.data).not.toBe(initialData)
@@ -98,8 +97,8 @@ describe('createNodeInstance', () => {
       const listener = vi.fn()
       instance.on('data', listener)
       // @ts-expect-error: Private method.
-      instance.dispatch('data', { string: 'Hello, World!' })
-      expect(listener).toHaveBeenCalledWith({ string: 'Hello, World!' })
+      instance.dispatch('data', { value: 'Hello, World!' })
+      expect(listener).toHaveBeenCalledWith({ value: 'Hello, World!' })
     })
 
     it('should remove the listener when destroyed', () => {
@@ -110,7 +109,7 @@ describe('createNodeInstance', () => {
       instance.on('data', listener)
       instance.destroy()
       // @ts-expect-error: Private method.
-      instance.dispatch('data', { string: 'Hello, World!' })
+      instance.dispatch('data', { value: 'Hello, World!' })
       expect(listener).not.toHaveBeenCalled()
     })
 
@@ -122,322 +121,450 @@ describe('createNodeInstance', () => {
       const removeListener = instance.on('data', listener)
       removeListener()
       // @ts-expect-error: Private method.
-      instance.dispatch('data', { string: 'Hello, World!' })
+      instance.dispatch('data', { value: 'Hello, World!' })
       expect(listener).not.toHaveBeenCalled()
-    })
-  })
-
-  describe('resolveDataSchema', () => {
-    describe('when dataSchema is an object', () => {
-      it('should apply the data schema immediatly', () => {
-        using flow = createFlow()
-        const port = { name: 'Value', type: typeString }
-        const node = defineNode({ kind: 'example', dataSchema: { string: port } })
-        using instance = createNodeInstance(flow, { node })
-        expect(instance.dataSchema).toStrictEqual({ string: port })
-      })
-    })
-
-    describe('when dataSchema is a function', () => {
-      it('should default to an empty object', () => {
-        using flow = createFlow()
-        const node = defineNode({ kind: 'example', dataSchema: () => ({}) })
-        using instance = createNodeInstance(flow, { node })
-        expect(instance.dataSchema).toStrictEqual({})
-      })
-
-      it('should resolve the data schema when calling resolveDataSchema', async() => {
-        using flow = createFlow()
-        const port = { name: 'Value', type: typeString }
-        const node = defineNode({ kind: 'example', dataSchema: () => ({ string: port }) })
-        using instance = createNodeInstance(flow, { node })
-        // @ts-expect-error: Calling a private method.
-        const result = await instance.resolveDataSchema()
-        expect(result).toStrictEqual({ string: port })
-        expect(instance.dataSchema).toStrictEqual({ string: port })
-      })
-
-      it('should call the data schema function with the context of the node instance', async() => {
-        using flow = createFlow()
-        const dataSchema = vi.fn(() => ({}))
-        const node = defineNode({ kind: 'example', dataSchema })
-        using instance = createNodeInstance(flow, { node })
-        // @ts-expect-error: Calling a private method.
-        await instance.resolveDataSchema()
-        expect(dataSchema).toHaveBeenCalledOnce()
-        expect(dataSchema).toHaveBeenCalledWith({
-          abortSignal: instance.abortController.signal,
-          data: instance.data,
-          result: instance.result,
-        })
-      })
-
-      it('should emit the "dataSchema" event when the data schema is resolved', async() => {
-        using flow = createFlow()
-        const port = { name: 'Value', type: typeString }
-        const node = defineNode({ kind: 'example', dataSchema: () => ({ string: port }) })
-        using instance = createNodeInstance(flow, { node })
-        const listener = vi.fn()
-        instance.on('dataSchema', listener)
-        // @ts-expect-error: Calling a private method.
-        await instance.resolveDataSchema()
-        expect(listener).toHaveBeenCalledOnce()
-        expect(listener).toHaveBeenCalledWith({ string: port })
-      })
-    })
-  })
-
-  describe('resolveResultSchema', () => {
-    describe('when resultSchema is an object', () => {
-      it('should apply the result schema immediatly', () => {
-        using flow = createFlow()
-        const port = { name: 'Value', type: typeString }
-        const node = defineNode({ kind: 'example', resultSchema: { string: port } })
-        using instance = createNodeInstance(flow, { node })
-        expect(instance.resultSchema).toStrictEqual({ string: port })
-      })
-    })
-
-    describe('when resultSchema is a function', () => {
-      it('should default to an empty object', () => {
-        using flow = createFlow()
-        const node = defineNode({ kind: 'example', resultSchema: () => ({}) })
-        using instance = createNodeInstance(flow, { node })
-        expect(instance.resultSchema).toStrictEqual({})
-      })
-
-      it('should resolve the result schema when calling resolveResultSchema', async() => {
-        using flow = createFlow()
-        const port = { name: 'Value', type: typeString }
-        const node = defineNode({ kind: 'example', resultSchema: () => ({ string: port }) })
-        using instance = createNodeInstance(flow, { node })
-        // @ts-expect-error: Calling a private method.
-        const result = await instance.resolveResultSchema()
-        expect(result).toStrictEqual({ string: port })
-        expect(instance.resultSchema).toStrictEqual({ string: port })
-      })
-
-      it('should call the result schema function with the context of the node instance', async() => {
-        using flow = createFlow()
-        const resultSchema = vi.fn(() => ({}))
-        const node = defineNode({ kind: 'example', resultSchema })
-        using instance = createNodeInstance(flow, { node })
-        // @ts-expect-error: Calling a private method.
-        await instance.resolveResultSchema()
-        expect(resultSchema).toHaveBeenCalledOnce()
-        expect(resultSchema).toHaveBeenCalledWith({
-          abortSignal: instance.abortController.signal,
-          data: instance.data,
-          result: instance.result,
-        })
-      })
-
-      it('should emit the "resultSchema" event when the result schema is resolved', async() => {
-        using flow = createFlow()
-        const port = { name: 'Value', type: typeString }
-        const node = defineNode({ kind: 'example', resultSchema: () => ({ string: port }) })
-        using instance = createNodeInstance(flow, { node })
-        const listener = vi.fn()
-        instance.on('resultSchema', listener)
-        // @ts-expect-error: Calling a private method.
-        await instance.resolveResultSchema()
-        expect(listener).toHaveBeenCalledOnce()
-        expect(listener).toHaveBeenCalledWith({ string: port })
-      })
-    })
-  })
-
-  describe('resolveDataValue', () => {
-    describe('when the value is provided', () => {
-      it('should return the value if it is defined', async() => {
-        using flow = createFlow()
-        const node = defineNode({ kind: 'example', dataSchema: { string: { name: 'Value', type: typeString, isOptional: true } } })
-        using instance = createNodeInstance(flow, { node, initialData: { string: 'Hello, World!' } })
-        // @ts-expect-error: Private method.
-        const result = await instance.resolveDataValue('string')
-        expect(result).toBe('Hello, World!')
-      })
-
-      it('should return the default value if the value is undefined', async() => {
-        using flow = createFlow()
-        const node = defineNode({
-          kind: 'example',
-          dataSchema: {
-            string: {
-              name: 'Value',
-              type: typeString,
-              isOptional: true,
-              defaultValue: 'Default Value',
-            },
-          },
-        })
-        using instance = createNodeInstance(flow, { node })
-        // @ts-expect-error: Private method.
-        const result = await instance.resolveDataValue('string')
-        expect(result).toBe('Default Value')
-      })
-
-      it('should return the string value', async() => {
-        using flow = createFlow()
-        const node = defineNode({ kind: 'example', dataSchema: { string: { name: 'Value', type: typeString } } })
-        using instance = createNodeInstance(flow, { node, initialData: { string: 'Hello, World!' } })
-        // @ts-expect-error: Private method.
-        const result = await instance.resolveDataValue('string')
-        expect(result).toBe('Hello, World!')
-      })
-
-      it('should parse the value using the type parser', async() => {
-        using flow = createFlow()
-        const type = defineType({ kind: 'core:number', parse: Number })
-        const node = defineNode({ kind: 'example', dataSchema: { number: { name: 'Value', type } } })
-        // @ts-expect-error: The value "42" can be parsed as a number.
-        using instance = createNodeInstance(flow, { node, initialData: { number: '42' } })
-        // @ts-expect-error: Private method.
-        const result = await instance.resolveDataValue('number')
-        expect(result).toBe(42)
-      })
-    })
-
-    describe('when value is a variable', () => {
-      it('should call the resolveVariable method of the flow', async() => {
-        const resolveVariable = vi.fn(() => 'Hello, World!')
-        using flow = createFlow({ resolveVariable })
-        const node = defineNode({ kind: 'example', dataSchema: { string: { name: 'Value', type: typeString } } })
-        using instance = createNodeInstance(flow, { node, initialData: { string: '$VARIABLE.GREET' } })
-        // @ts-expect-error: Private method.
-        await instance.resolveDataValue('string')
-        expect(resolveVariable).toHaveBeenCalledOnce()
-        expect(resolveVariable).toHaveBeenCalledWith('GREET')
-      })
-
-      it('should resolve and parse the variable value', async() => {
-        using flow = createFlow({ resolveVariable: name => ({ GREET: 'Hello, World!' }[name]) })
-        const node = defineNode({ kind: 'example', dataSchema: { string: { name: 'Value', type: typeString } } })
-        using instance = createNodeInstance(flow, { node, initialData: { string: '$VARIABLE.GREET' } })
-        // @ts-expect-error: Private method.
-        const result = await instance.resolveDataValue('string')
-        expect(result).toBe('Hello, World!')
-      })
-
-      it('should reject if the variable does not exist', async() => {
-        using flow = createFlow({ resolveVariable: () => undefined })
-        const node = defineNode({ kind: 'example', dataSchema: { string: { name: 'Value', type: typeString } } })
-        using instance = createNodeInstance(flow, { node, initialData: { string: '$VARIABLE.NON_EXISTENT' } })
-        // @ts-expect-error: Private method.
-        const shouldReject = instance.resolveDataValue('string')
-        await expect(shouldReject).rejects.toThrow('Variable "NON_EXISTENT" does not exist or is not accessible')
-      })
-
-      it('should dispatch an error if no `resolveVariable` method is provided', async() => {
-        using flow = createFlow()
-        const node = defineNode({ kind: 'example', dataSchema: { string: { name: 'Value', type: typeString } } })
-        using instance = createNodeInstance(flow, { node, initialData: { string: '$VARIABLE.GREET' } })
-        // @ts-expect-error: Private method.
-        const shouldReject = instance.resolveDataValue('string')
-        await expect(shouldReject).rejects.toThrow('Variable "GREET" does not exist or is not accessible')
-      })
-    })
-
-    describe('when value is a secret', () => {
-      it('should call the resolveSecret method of the flow', async() => {
-        const resolveSecret = vi.fn(() => 'Hello, World!')
-        using flow = createFlow({ resolveSecret })
-        const node = defineNode({ kind: 'example', dataSchema: { string: { name: 'Value', type: typeString } } })
-        using instance = createNodeInstance(flow, { node, initialData: { string: '$SECRET.GREET' } })
-        // @ts-expect-error: Private method.
-        await instance.resolveDataValue('string')
-        expect(resolveSecret).toHaveBeenCalledOnce()
-        expect(resolveSecret).toHaveBeenCalledWith('GREET')
-      })
-
-      it('should resolve and parse the secret value', async() => {
-        using flow = createFlow({ resolveSecret: name => ({ GREET: 'Hello, World!' }[name]) })
-        const node = defineNode({ kind: 'example', dataSchema: { string: { name: 'Value', type: typeString } } })
-        using instance = createNodeInstance(flow, { node, initialData: { string: '$SECRET.GREET' } })
-        // @ts-expect-error: Private method.
-        const result = await instance.resolveDataValue('string')
-        expect(result).toBe('Hello, World!')
-      })
-
-      it('should dispatch an error if the secret does not exist', async() => {
-        using flow = createFlow({ resolveSecret: () => undefined })
-        const node = defineNode({ kind: 'example', dataSchema: { string: { name: 'Value', type: typeString } } })
-        using instance = createNodeInstance(flow, { node, initialData: { string: '$SECRET.NON_EXISTENT' } })
-        // @ts-expect-error: Private method.
-        const shouldReject = instance.resolveDataValue('string')
-        await expect(shouldReject).rejects.toThrow('Secret "NON_EXISTENT" does not exist or is not accessible')
-      })
-
-      it('should dispatch an error if no `resolveSecret` method is provided', async() => {
-        using flow = createFlow()
-        const node = defineNode({ kind: 'example', dataSchema: { string: { name: 'Value', type: typeString } } })
-        using instance = createNodeInstance(flow, { node, initialData: { string: '$SECRET.GREET' } })
-        // @ts-expect-error: Private method.
-        const shouldReject = instance.resolveDataValue('string')
-        await expect(shouldReject).rejects.toThrow('Secret "GREET" does not exist or is not accessible')
-      })
-    })
-
-    describe('when value is a node reference', () => {
-      it('should resolve and parse value from the source node', async() => {
-        using flow = createFlow()
-        const nodeIn = defineNode({ kind: 'example', resultSchema: { string: { name: 'Value', type: typeString } } })
-        const nodeOut = defineNode({ kind: 'example', dataSchema: { string: { name: 'Value', type: typeString } } })
-        using instanceIn = flow.add(nodeIn, { initialResult: { string: 'Hello, World!' } })
-        using instanceOut = flow.add(nodeOut, { initialData: { string: `$NODE.${instanceIn.id}:string` } })
-        // @ts-expect-error: Private method.
-        const result = await instanceOut.resolveDataValue('string')
-        expect(result).toBe('Hello, World!')
-      })
-
-      it('should reject if a referenced node does not exist', async() => {
-        using flow = createFlow()
-        const node = defineNode({ kind: 'example', dataSchema: { string: { name: 'Value', type: typeString } } })
-        using instance = flow.add(node, { initialData: { string: '$NODE.NON_EXISTENT:string' } })
-        // @ts-expect-error: Private method.
-        const shouldReject = instance.resolveDataValue('string')
-        await expect(shouldReject).rejects.toThrow('The node with ID "NON_EXISTENT" does not exist')
-      })
-    })
-  })
-
-  describe('resolveData', () => {
-    it('should resolve the data schema and parse the data', async() => {
-      using flow = createFlow()
-      const node = defineNode({ kind: 'example', dataSchema: { string: { name: 'Value', type: typeString } } })
-      using instance = createNodeInstance(flow, { node, initialData: { string: 'Hello, World!' } })
-      // @ts-expect-error: Private method.
-      await instance.resolveData()
-      expect(instance.data).toStrictEqual({ string: 'Hello, World!' })
-    })
-
-    it('should not resolve the data if the data schema is not resolved', async() => {
-      using flow = createFlow()
-      const node = defineNode({ kind: 'example', dataSchema: () => ({ string: { name: 'Value', type: typeString } }) })
-      using instance = createNodeInstance(flow, { node, initialData: { string: 'Hello, World!' } })
-      // @ts-expect-error: Private method.
-      const data = await instance.resolveData()
-      expect(data).toBeUndefined()
     })
   })
 
   describe('setDataValue', () => {
     it('should set the value of a raw data property by key', () => {
       using flow = createFlow()
-      const node = defineNode({ kind: 'example', dataSchema: { string: { name: 'Value', type: typeString } } })
+      const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
       using instance = createNodeInstance(flow, { node })
-      instance.setDataValue('string', 'Hello, World!')
-      expect(instance.data).toStrictEqual({ string: 'Hello, World!' })
+      instance.setDataValue('value', 'Hello, World!')
+      expect(instance.data).toStrictEqual({ value: 'Hello, World!' })
     })
 
     it('should emit the "data" event when the data is set', () => {
       using flow = createFlow()
-      const node = defineNode({ kind: 'example', dataSchema: { string: { name: 'Value', type: typeString } } })
+      const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
       using instance = createNodeInstance(flow, { node })
       const listener = vi.fn()
       instance.on('data', listener)
-      instance.setDataValue('string', 'Hello, World!')
-      expect(listener).toHaveBeenCalledWith({ string: 'Hello, World!' })
+      instance.setDataValue('value', 'Hello, World!')
+      expect(listener).toHaveBeenCalledWith({ value: 'Hello, World!' })
+    })
+  })
+
+  describe('refresh', () => {
+    describe('resolveDataSchema', () => {
+      describe('when dataSchema is an object', () => {
+        it('should apply the dataSchema immediatly from the node definition', () => {
+          using flow = createFlow()
+          const port = { type: typeString }
+          const node = defineNode({ kind: 'example', dataSchema: { value: port } })
+          using instance = createNodeInstance(flow, { node })
+          expect(instance.dataSchema).toStrictEqual({ value: port })
+        })
+      })
+
+      describe('when dataSchema is a function', () => {
+        it('should default dataSchema to an empty object', () => {
+          using flow = createFlow()
+          const node = defineNode({ kind: 'example', dataSchema: () => ({}) })
+          using instance = createNodeInstance(flow, { node })
+          expect(instance.dataSchema).toStrictEqual({})
+        })
+
+        it('should resolve dataSchema when calling resolveDataSchema', async() => {
+          using flow = createFlow()
+          const node = defineNode({ kind: 'example', dataSchema: () => ({ value: { type: typeString } }) })
+          using instance = createNodeInstance(flow, { node })
+          await instance.refresh()
+          expect(instance.dataSchema).toStrictEqual({ value: { type: typeString } })
+        })
+
+        it('should call the node\'s "dataSchema" function with the context of the node instance', async() => {
+          using flow = createFlow()
+          const dataSchema = vi.fn(() => ({}))
+          const node = defineNode({ kind: 'example', dataSchema })
+          using instance = createNodeInstance(flow, { node })
+          await instance.refresh()
+          expect(dataSchema).toHaveBeenCalledOnce()
+          expect(dataSchema).toHaveBeenCalledWith({
+            abortSignal: instance.abortController.signal,
+            data: instance.data,
+            result: instance.result,
+          })
+        })
+
+        it('should emit the "dataSchema" event when the data schema is resolved', async() => {
+          using flow = createFlow()
+          const port = { type: typeString }
+          const node = defineNode({ kind: 'example', dataSchema: () => ({ value: port }) })
+          using instance = createNodeInstance(flow, { node })
+          const listener = vi.fn()
+          instance.on('dataSchema', listener)
+          await instance.refresh()
+          expect(listener).toHaveBeenCalledOnce()
+          expect(listener).toHaveBeenCalledWith({ value: port })
+        })
+      })
+    })
+
+    describe('resolveResultSchema', () => {
+      describe('when resultSchema is an object', () => {
+        it('should apply the resultSchema immediatly', () => {
+          using flow = createFlow()
+          const node = defineNode({ kind: 'example', resultSchema: { value: { type: typeString } } })
+          using instance = createNodeInstance(flow, { node })
+          expect(instance.resultSchema).toStrictEqual(node.resultSchema)
+        })
+      })
+
+      describe('when resultSchema is a function', () => {
+        it('should default resultSchema to an empty object', () => {
+          using flow = createFlow()
+          const node = defineNode({ kind: 'example', resultSchema: () => ({}) })
+          using instance = createNodeInstance(flow, { node })
+          expect(instance.resultSchema).toStrictEqual({})
+        })
+
+        it('should resolve resultSchema when calling resolveResultSchema', async() => {
+          using flow = createFlow()
+          const node = defineNode({ kind: 'example', resultSchema: () => ({ value: { type: typeString } }) })
+          using instance = createNodeInstance(flow, { node })
+          await instance.refresh()
+          expect(instance.resultSchema).toStrictEqual({ value: { type: typeString } })
+        })
+
+        it('should call the node\'s "resultSchema" function with the context of the node instance', async() => {
+          using flow = createFlow()
+          const resultSchema = vi.fn(() => ({}))
+          const node = defineNode({ kind: 'example', resultSchema })
+          using instance = createNodeInstance(flow, { node })
+          await instance.refresh()
+          expect(resultSchema).toHaveBeenCalledOnce()
+          expect(resultSchema).toHaveBeenCalledWith({
+            abortSignal: instance.abortController.signal,
+            data: instance.data,
+            result: instance.result,
+          })
+        })
+
+        it('should emit the "resultSchema" event when the result schema is resolved', async() => {
+          using flow = createFlow()
+          const port = { type: typeString }
+          const node = defineNode({ kind: 'example', resultSchema: () => ({ value: port }) })
+          using instance = createNodeInstance(flow, { node })
+          const listener = vi.fn()
+          instance.on('resultSchema', listener)
+          await instance.refresh()
+          expect(listener).toHaveBeenCalledOnce()
+          expect(listener).toHaveBeenCalledWith({ value: port })
+        })
+      })
+    })
+
+    describe('resolveData', () => {
+      describe('when key is not present in the data schema', () => {
+        it('should omit properties that are not defined in the data schema', async() => {
+          using flow = createFlow()
+          const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
+          // @ts-expect-error: Type mismatch.
+          using instance = createNodeInstance(flow, { node, initialData: { value: 'Hello, World!', number: 42 } })
+          await instance.refresh()
+          expect(instance.dataResolved).toStrictEqual({ value: 'Hello, World!' })
+        })
+
+        it('should resolve dataSchema before resolving data', async() => {
+          using flow = createFlow()
+          const node = defineNode({ kind: 'example', dataSchema: () => ({ value: { type: typeString } }) })
+          // @ts-expect-error: Type mismatch.
+          using instance = createNodeInstance(flow, { node, initialData: { value: 'Hello, World!', number: 42 } })
+          await instance.refresh()
+          expect(instance.dataResolved).toStrictEqual({ value: 'Hello, World!' })
+        })
+
+        it('should flag the node as ready even if additional properties are present', async() => {
+          using flow = createFlow()
+          const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
+          // @ts-expect-error: Type mismatch.
+          using instance = createNodeInstance(flow, { node, initialData: { value: 'Hello, World!', number: 42 } })
+          const isReady = await instance.refresh()
+          expect(isReady).toBe(true)
+        })
+      })
+
+      describe('when value is undefined', () => {
+        it('should return undefined if no default value is provided', async() => {
+          using flow = createFlow()
+          const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
+          using instance = createNodeInstance(flow, { node })
+          await instance.refresh()
+          expect(instance.dataResolved).toStrictEqual({ value: undefined })
+        })
+
+        it('should return the default value if provided', async() => {
+          using flow = createFlow()
+          const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString, defaultValue: 'Hello, World!' } } })
+          using instance = createNodeInstance(flow, { node })
+          await instance.refresh()
+          expect(instance.dataResolved).toStrictEqual({ value: 'Hello, World!' })
+        })
+
+        it('should flag the node as ready if the socket is optional', async() => {
+          using flow = createFlow()
+          const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString, isOptional: true } } })
+          using instance = createNodeInstance(flow, { node })
+          const isReady = await instance.refresh()
+          expect(isReady).toBe(true)
+        })
+
+        it('should flag the node as not ready if the socket is required', async() => {
+          using flow = createFlow()
+          const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString, isOptional: false } } })
+          using instance = createNodeInstance(flow, { node })
+          const isReady = await instance.refresh()
+          expect(isReady).toBe(false)
+        })
+      })
+
+      describe('when raw value is provided', () => {
+        it('should parse and return the value using the type\'s parser', async() => {
+          using flow = createFlow()
+          const type = { kind: 'string', parse: vi.fn(String) }
+          const node = defineNode({ kind: 'example', dataSchema: { value: { type } } })
+          // @ts-expect-error: Type mismatch.
+          using instance = createNodeInstance(flow, { node, initialData: { value: 42 } })
+          await instance.refresh()
+          expect(instance.dataResolved).toStrictEqual({ value: '42' })
+          expect(type.parse).toHaveBeenCalledOnce()
+          expect(type.parse).toHaveBeenCalledWith(42)
+        })
+
+        it('should flag the node as ready if the value was correctly parsed', async() => {
+          using flow = createFlow()
+          const type = { kind: 'string', parse: vi.fn(String) }
+          const node = defineNode({ kind: 'example', dataSchema: { value: { type } } })
+          // @ts-expect-error: Type mismatch.
+          using instance = createNodeInstance(flow, { node, initialData: { value: 42 } })
+          const isReady = await instance.refresh()
+          expect(isReady).toBe(true)
+        })
+
+        it('should collect the errors if the value cannot be parsed', async() => {
+          using flow = createFlow()
+          const type = { kind: 'string', parse: () => { throw new Error('Parsing error') } }
+          const node = defineNode({ kind: 'example', dataSchema: { value: { type } } })
+          // @ts-expect-error: Type mismatch.
+          using instance = createNodeInstance(flow, { node, initialData: { value: 42 } })
+          await instance.refresh()
+          expect(instance.dataResolved).toStrictEqual({})
+          expect(instance.dataErrors).toStrictEqual({ value: new Error('Parsing error') })
+        })
+
+        it('should dispatch a "dataError" event if the value cannot be parsed', async() => {
+          using flow = createFlow()
+          const type = { kind: 'string', parse: () => { throw new Error('Parsing error') } }
+          const node = defineNode({ kind: 'example', dataSchema: { value: { type } } })
+          // @ts-expect-error: Type mismatch.
+          using instance = createNodeInstance(flow, { node, initialData: { value: 42 } })
+          const listener = vi.fn()
+          instance.on('dataError', listener)
+          await instance.refresh()
+          const error = new Error('Parsing error')
+          expect(listener).toHaveBeenCalledOnce()
+          expect(listener).toHaveBeenCalledWith('value', error)
+        })
+
+        it('should flag the node as not ready if a parsing error occurs', async() => {
+          using flow = createFlow()
+          const type = { kind: 'string', parse: () => { throw new Error('Parsing error') } }
+          const node = defineNode({ kind: 'example', dataSchema: { value: { type } } })
+          // @ts-expect-error: Type mismatch.
+          using instance = createNodeInstance(flow, { node, initialData: { value: 42 } })
+          const isReady = await instance.refresh()
+          expect(isReady).toBe(false)
+        })
+      })
+
+      describe('when value is a variable', () => {
+        it('should resolve and parse the variable value', async() => {
+          using flow = createFlow({ resolveVariable: name => ({ GREET: 'Hello, World!' }[name]) })
+          const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
+          using instance = createNodeInstance(flow, { node, initialData: { value: '$VARIABLE.GREET' } })
+          await instance.refresh()
+          expect(instance.dataResolved).toStrictEqual({ value: 'Hello, World!' })
+        })
+
+        it('should collect the errors if the variable does not exist', async() => {
+          using flow = createFlow()
+          const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
+          using instance = createNodeInstance(flow, { node, initialData: { value: '$VARIABLE.NON_EXISTENT' } })
+          await instance.refresh()
+          expect(instance.dataResolved).toStrictEqual({})
+          expect(instance.dataErrors).toStrictEqual({ value: new Error('Variable "NON_EXISTENT" does not exist or is not accessible') })
+        })
+
+        it('should dispatch a "dataError" event if the variable does not exist', async() => {
+          using flow = createFlow()
+          const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
+          using instance = createNodeInstance(flow, { node, initialData: { value: '$VARIABLE.NON_EXISTENT' } })
+          const listener = vi.fn()
+          instance.on('dataError', listener)
+          await instance.refresh()
+          const error = new Error('Variable "NON_EXISTENT" does not exist or is not accessible')
+          expect(listener).toHaveBeenCalledOnce()
+          expect(listener).toHaveBeenCalledWith('value', error)
+        })
+
+        it('should call the resolveVariable method of the flow', async() => {
+          const resolveVariable = vi.fn(() => 'Hello, World!')
+          using flow = createFlow({ resolveVariable })
+          const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
+          using instance = createNodeInstance(flow, { node, initialData: { value: '$VARIABLE.GREET' } })
+          await instance.refresh()
+          expect(resolveVariable).toHaveBeenCalledOnce()
+          expect(resolveVariable).toHaveBeenCalledWith('GREET')
+        })
+
+        it('should flag the node as ready if the variable exists', async() => {
+          using flow = createFlow({ resolveVariable: () => 'Hello, World!' })
+          const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
+          using instance = createNodeInstance(flow, { node, initialData: { value: '$VARIABLE.GREET' } })
+          const isReady = await instance.refresh()
+          expect(isReady).toBe(true)
+        })
+
+        it('should flag the node as not ready if the variable does not exist', async() => {
+          using flow = createFlow()
+          const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
+          using instance = createNodeInstance(flow, { node, initialData: { value: '$VARIABLE.NON_EXISTENT' } })
+          const isReady = await instance.refresh()
+          expect(isReady).toBe(false)
+        })
+      })
+
+      describe('when value is a secret', () => {
+        it('should resolve and parse the secret value', async() => {
+          using flow = createFlow({ resolveSecret: name => ({ GREET: 'Hello, World!' }[name]) })
+          const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
+          using instance = createNodeInstance(flow, { node, initialData: { value: '$SECRET.GREET' } })
+          await instance.refresh()
+          expect(instance.dataResolved).toStrictEqual({ value: 'Hello, World!' })
+        })
+
+        it('should collect the errors if the secret does not exist', async() => {
+          using flow = createFlow()
+          const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
+          using instance = createNodeInstance(flow, { node, initialData: { value: '$SECRET.NON_EXISTENT' } })
+          await instance.refresh()
+          expect(instance.dataResolved).toStrictEqual({})
+          expect(instance.dataErrors).toStrictEqual({ value: new Error('Secret "NON_EXISTENT" does not exist or is not accessible') })
+        })
+
+        it('should dispatch a "dataError" event if the secret does not exist', async() => {
+          using flow = createFlow()
+          const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
+          using instance = createNodeInstance(flow, { node, initialData: { value: '$SECRET.NON_EXISTENT' } })
+          const listener = vi.fn()
+          instance.on('dataError', listener)
+          await instance.refresh()
+          const error = new Error('Secret "NON_EXISTENT" does not exist or is not accessible')
+          expect(listener).toHaveBeenCalledOnce()
+          expect(listener).toHaveBeenCalledWith('value', error)
+        })
+
+        it('should call the resolveSecret method of the flow', async() => {
+          const resolveSecret = vi.fn(() => 'Hello, World!')
+          using flow = createFlow({ resolveSecret })
+          const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
+          using instance = createNodeInstance(flow, { node, initialData: { value: '$SECRET.GREET' } })
+          await instance.refresh()
+          expect(resolveSecret).toHaveBeenCalledOnce()
+          expect(resolveSecret).toHaveBeenCalledWith('GREET')
+        })
+
+        it('should flag the node as ready if the secret exists', async() => {
+          using flow = createFlow({ resolveSecret: () => 'Hello, World!' })
+          const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
+          using instance = createNodeInstance(flow, { node, initialData: { value: '$SECRET.GREET' } })
+          const isReady = await instance.refresh()
+          expect(isReady).toBe(true)
+        })
+
+        it('should flag the node as not ready if the secret does not exist', async() => {
+          using flow = createFlow()
+          const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
+          using instance = createNodeInstance(flow, { node, initialData: { value: '$SECRET.NON_EXISTENT' } })
+          const isReady = await instance.refresh()
+          expect(isReady).toBe(false)
+        })
+      })
+
+      describe('when value is a node reference', () => {
+        it('should resolve source node result that is already done', async() => {
+          using flow = createFlow()
+          const nodeIn = defineNode({ kind: 'example-in', resultSchema: { value: { type: typeString } } })
+          const nodeOut = defineNode({ kind: 'example-out', dataSchema: { value: { type: typeString } } })
+          using instanceIn = flow.add(nodeIn, { initialResult: { value: 'Hello, World!' } })
+          using instanceOut = flow.add(nodeOut, { initialData: { value: `$NODE.${instanceIn.id}:value` } })
+          instanceIn.isDone = true
+          await instanceOut.refresh()
+          expect(instanceOut.dataResolved).toStrictEqual({ value: 'Hello, World!' })
+        })
+
+        it('should flag the node as ready if the source node is done', async() => {
+          using flow = createFlow()
+          const nodeIn = defineNode({ kind: 'example-in', resultSchema: { value: { type: typeString } } })
+          const nodeOut = defineNode({ kind: 'example-out', dataSchema: { value: { type: typeString } } })
+          using instanceIn = flow.add(nodeIn, { initialResult: { value: 'Hello, World!' } })
+          using instanceOut = flow.add(nodeOut, { initialData: { value: `$NODE.${instanceIn.id}:value` } })
+          instanceIn.isDone = true
+          const isReady = await instanceOut.refresh()
+          expect(isReady).toBe(true)
+        })
+
+        it('should omit property when source node is not done', async() => {
+          using flow = createFlow()
+          const nodeIn = defineNode({ kind: 'example-in', resultSchema: { value: { type: typeString } } })
+          const nodeOut = defineNode({ kind: 'example-out', dataSchema: { value: { type: typeString } } })
+          using instanceIn = flow.add(nodeIn, { initialResult: { value: 'Hello, World!' } })
+          using instanceOut = flow.add(nodeOut, { initialData: { value: `$NODE.${instanceIn.id}:value` } })
+          await instanceOut.refresh()
+          expect(instanceOut.dataResolved).toStrictEqual({})
+        })
+
+        it('should flag the node as not ready if the source node is not done', async() => {
+          using flow = createFlow()
+          const nodeIn = defineNode({ kind: 'example-in', resultSchema: { value: { type: typeString } } })
+          const nodeOut = defineNode({ kind: 'example-out', dataSchema: { value: { type: typeString } } })
+          using instanceIn = flow.add(nodeIn, { initialResult: { value: 'Hello, World!' } })
+          using instanceOut = flow.add(nodeOut, { initialData: { value: `$NODE.${instanceIn.id}:value` } })
+          const isReady = await instanceOut.refresh()
+          expect(isReady).toBe(false)
+        })
+
+        it('should collect error if node with the given id does not exist', async() => {
+          using flow = createFlow()
+          const nodeOut = defineNode({ kind: 'example-out', dataSchema: { value: { type: typeString } } })
+          using instanceOut = flow.add(nodeOut, { initialData: { value: '$NODE.NON_EXISTENT:value' } })
+          await instanceOut.refresh()
+          const error = new Error('The node with ID "NON_EXISTENT" does not exist')
+          expect(instanceOut.dataErrors).toStrictEqual({ value: error })
+        })
+
+        it('should dispatch a "dataError" event if the source node does not exist', async() => {
+          using flow = createFlow()
+          const nodeOut = defineNode({ kind: 'example-out', dataSchema: { value: { type: typeString } } })
+          using instanceOut = flow.add(nodeOut, { initialData: { value: '$NODE.NON_EXISTENT:value' } })
+          const listener = vi.fn()
+          instanceOut.on('dataError', listener)
+          await instanceOut.refresh()
+          const error = new Error('The node with ID "NON_EXISTENT" does not exist')
+          expect(listener).toHaveBeenCalledOnce()
+          expect(listener).toHaveBeenCalledWith('value', error)
+        })
+
+        it('should flag the node as not ready if the source node does not exist', async() => {
+          using flow = createFlow()
+          const nodeOut = defineNode({ kind: 'example-out', dataSchema: { value: { type: typeString } } })
+          using instanceOut = flow.add(nodeOut, { initialData: { value: '$NODE.NON_EXISTENT:value' } })
+          const isReady = await instanceOut.refresh()
+          expect(isReady).toBe(false)
+        })
+      })
     })
   })
 
@@ -449,23 +576,27 @@ describe('createNodeInstance', () => {
       process: ({ data }) => ({ output: data.input }),
     })
 
-    it('should resolve data schema and result schema before processing', async() => {
-      using flow = createFlow()
-      using instance = createNodeInstance(flow, { node })
-      const resolveDataSchemaSpy = vi.spyOn(instance as any, 'resolveDataSchema')
-      const resolveResultSchemaSpy = vi.spyOn(instance as any, 'resolveResultSchema')
-      await instance.start()
-      expect(resolveDataSchemaSpy).toHaveBeenCalledOnce()
-      expect(resolveResultSchemaSpy).toHaveBeenCalledOnce()
-    })
-
     it('should resolve data correctly before processing', async() => {
       using flow = createFlow()
       using instance = createNodeInstance(flow, { node, initialData: { input: 'Hello' } })
       const resolveDataSpy = vi.spyOn(instance as any, 'resolveData')
+      const resolveDataSchemaSpy = vi.spyOn(instance as any, 'resolveDataSchema')
+      const resolveResultSchemaSpy = vi.spyOn(instance as any, 'resolveResultSchema')
       await instance.start()
-      expect(resolveDataSpy).toHaveBeenCalledOnce()
       expect(instance.dataResolved).toStrictEqual({ input: 'Hello' })
+      expect(resolveDataSpy).toHaveBeenCalledOnce()
+      expect(resolveDataSchemaSpy).toHaveBeenCalledOnce()
+      expect(resolveResultSchemaSpy).toHaveBeenCalledOnce()
+    })
+
+    it('should skip processing if the node is not ready', async() => {
+      using flow = createFlow()
+      const node = defineNode({ kind: 'example', dataSchema: { input: { type: typeString } } })
+      using instance = createNodeInstance(flow, { node })
+      const listener = vi.fn()
+      instance.on('start', listener)
+      await instance.start()
+      expect(listener).not.toHaveBeenCalled()
     })
 
     it('should call the process function with the correct context', async() => {
@@ -647,7 +778,7 @@ describe('createNodeInstance', () => {
       instance.on('data', listener)
       instance.destroy()
       // @ts-expect-error: Private method.
-      instance.dispatch('data', { string: 'Hello, World!' })
+      instance.dispatch('data', { value: 'Hello, World!' })
       expect(listener).not.toHaveBeenCalled()
     })
   })
@@ -671,7 +802,7 @@ describe('createNodeInstance', () => {
       instance.on('data', listener)
       instance[Symbol.dispose]()
       // @ts-expect-error: Private method.
-      instance.dispatch('data', { string: 'Hello, World!' })
+      instance.dispatch('data', { value: 'Hello, World!' })
       expect(listener).not.toHaveBeenCalled()
     })
   })
