@@ -34,9 +34,9 @@ const isDialogTransferOpen = ref(false)
     </template>
 
     <!-- Actions -->
-    <AppPageFormActions variant="danger">
+    <AppPageFormActions class="border-danger">
       <AppPageFormAction
-        variant="danger"
+        class="border-danger"
         icon="i-carbon:edit"
         :title="t('action.rename.title')"
         :text="t('action.rename.text')"
@@ -44,7 +44,7 @@ const isDialogTransferOpen = ref(false)
         @click="() => isDialogRenameOpen = true"
       />
       <AppPageFormAction
-        variant="danger"
+        class="border-danger"
         icon="i-carbon:status-change"
         :title="t('action.transfer.title')"
         :text="t('action.transfer.text')"
@@ -52,7 +52,7 @@ const isDialogTransferOpen = ref(false)
         @click="() => isDialogTransferOpen = true"
       />
       <AppPageFormAction
-        variant="danger"
+        class="border-danger"
         icon="i-carbon:trash-can"
         :title="t('action.delete.title')"
         :text="t('action.delete.text')"

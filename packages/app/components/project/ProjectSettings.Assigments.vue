@@ -34,7 +34,7 @@ const isAssignDialogOpen = ref(false)
     </template>
 
     <!-- List of assignments -->
-    <div class="rounded w-full border border-black/10">
+    <div class="rounded w-full border border-app">
       <ProjectSettingsAssignmentsItem
         v-for="assignment in assigments"
         :key="assignment.user.username"

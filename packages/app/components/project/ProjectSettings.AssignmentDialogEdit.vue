@@ -56,7 +56,7 @@ watch(() => props.permissions, (permissions) => {
     </div>
 
     <!-- Access -->
-    <div class="space-y-4 mt-8 pt-8 border-t border-black/10">
+    <div class="space-y-4 mt-8 pt-8 border-t border-app">
       <AppDialogToggle
         v-model="access"
         value="WriteVariables"
