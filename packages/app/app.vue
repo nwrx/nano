@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { COLORS } from './uno.config'
-
 useHead({
   titleTemplate: `%s | ${CONSTANTS.appTitle}`,
 })

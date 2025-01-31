@@ -1,7 +1,6 @@
 <!-- eslint-disable sonarjs/pseudo-random -->
 <script setup lang="ts">
 import { Chart, type ChartDataset, registerables } from 'chart.js'
-import { COLORS } from '~/uno.config'
 
 const props = defineProps<{
   title: string

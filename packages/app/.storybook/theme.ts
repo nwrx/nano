@@ -1,5 +1,4 @@
 import { create } from '@storybook/theming'
-import { COLORS } from '../uno.config'
 
 export const theme = create({
   base: 'dark',

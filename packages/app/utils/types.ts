@@ -1,7 +1,6 @@
 import type { FlowObject } from '@nwrx/api'
 import type { MaybeLiteral } from '@unshared/types'
 import type { RouteLocationRaw } from 'vue-router'
-import type { COLORS } from '../uno.config'
 
 export type Size = 'large' | 'medium' | 'small' | 'xlarge' | 'xsmall'
 export type Variant = MaybeLiteral<keyof typeof COLORS>

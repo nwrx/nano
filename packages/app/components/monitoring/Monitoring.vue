@@ -5,7 +5,6 @@ import type {
   MonitoringFlowThreadObject,
   WorkspaceProjectObject,
 } from '@nwrx/api'
-import { COLORS } from '~/uno.config'
 
 const props = defineProps<{
   selectedProject?: string
