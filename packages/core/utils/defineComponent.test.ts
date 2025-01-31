@@ -8,6 +8,7 @@ describe('defineComponent', () => {
       description: 'This is an example component.',
       inputs: { input1: { type: 'string' } },
       outputs: { output1: { type: 'string' } },
+      isTrusted: true,
       // @ts-expect-error: Make sure the `proces` property is not used.
       process: vi.fn(),
     })
@@ -19,13 +20,13 @@ describe('defineComponent', () => {
       description: 'This is an example component.',
       inputs: { input1: { type: 'string' } },
       outputs: { output1: { type: 'string' } },
+      isTrusted: true,
       process: undefined,
     })
   })
 
   it('should define a component with a process function', () => {
     const process = vi.fn()
-    // @ts-expect-error: ignore infinite type inference.
     const component = defineComponent({}, process)
     expect(component).toStrictEqual({
       ['@instanceOf']: SYMBOL_COMPONENT,
@@ -34,6 +35,7 @@ describe('defineComponent', () => {
       icon: undefined,
       inputs: undefined,
       outputs: undefined,
+      isTrusted: undefined,
       title: undefined,
     })
   })

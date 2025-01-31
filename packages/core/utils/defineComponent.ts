@@ -1,6 +1,9 @@
 import type { OpenAPIV2 } from '@unshared/client/openapi'
 import type { MaybePromise, ObjectLike } from '@unshared/types'
 import type { OpenAPIV3 } from 'openapi-types'
+import type { ConfirmOption } from './askConfirmation'
+import type { QuestionOptions } from './askQuestion'
+import type { NotifyActionOptions } from './notifyAction'
 
 export const SYMBOL_COMPONENT = Symbol.for('component')
 
@@ -28,28 +31,37 @@ export type SocketSchema = Omit<OpenAPIV3.SchemaObject, 'additionalProperties' |
   additionalProperties?: boolean | SocketSchema
   items?: SocketSchema
   'x-type'?: 'function' | 'stream'
+  'x-default'?: () => any
   'x-returns'?: OpenAPIV3.SchemaObject
   'x-resolves'?: OpenAPIV3.SchemaObject
   'x-control'?: InputControl
   'x-placeholder'?: string
   'x-internal'?: boolean
   'x-optional'?: boolean
+  'x-slider-min'?: number
+  'x-slider-max'?: number
+  'x-slider-step'?: number
   'x-options'?: (data: any, query?: string) => MaybePromise<InputOption[]>
 }
 
-export type InferSchema<T> =
-{
-  [P in keyof T]:
-  T[P] extends { default: any } ? OpenAPIV2.InferSchema<T[P]>
-    : T[P] extends { 'x-type': 'stream' } ? ReadableStream
-      : T[P] extends { 'x-type': 'function'; 'x-returns': infer U } ? (...args: any[]) => OpenAPIV2.InferSchema<U>
-        : T[P] extends { 'x-type': 'function'; 'x-resolves': infer U } ? (...args: any[]) => Promise<OpenAPIV2.InferSchema<U>>
-          : OpenAPIV2.InferSchema<T[P]> | undefined
+export type InferSocketType<T> =
+ | (T extends { 'x-optional': true } ? undefined : never)
+ | (T extends { default: any } ? OpenAPIV2.InferSchema<T>
+   : T extends { 'x-type': 'stream' } ? ReadableStream
+     : T extends { 'x-type': 'function'; 'x-returns': infer U } ? (...args: any[]) => OpenAPIV2.InferSchema<U>
+       : T extends { 'x-type': 'function'; 'x-resolves': infer U } ? (...args: any[]) => Promise<OpenAPIV2.InferSchema<U>>
+         : OpenAPIV2.InferSchema<T>)
+
+export type InferSchema<T> = {
+  [P in keyof T]: InferSocketType<T[P]>
 }
 
 export interface ProcessContext<T extends ObjectLike = ObjectLike> {
   data: T
-  trace: (data: T) => void
+  notifyAction: (options: NotifyActionOptions) => void
+  askQuestion: (options: QuestionOptions) => Promise<boolean | number | ObjectLike | string | unknown[]>
+  askConfirmation: (options: ConfirmOption) => Promise<boolean>
+  abortSignal: AbortSignal
 }
 
 export type ProcessFunction<
@@ -69,6 +81,14 @@ export interface ComponentOptions<
   description?: string
   inputs?: T
   outputs?: U
+
+  /**
+   * If `true`, the component will be considered as trusted and will be allowed to
+   * run in an un-sandboxed environment. This is useful for components that are part of the core
+   * library and are considered safe to run. By default, all components are considered untrusted
+   * and will run in an isolated and sandboxed environment powered by `isolated-vm`.
+   */
+  isTrusted?: boolean
 }
 
 export interface Component<
@@ -90,6 +110,7 @@ export function defineComponent<
     description: options.description,
     inputs: options.inputs,
     outputs: options.outputs,
+    isTrusted: options.isTrusted,
     process,
   } as Component<T, U>
 }
