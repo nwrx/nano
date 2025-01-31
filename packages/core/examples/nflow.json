@@ -1,0 +1,63 @@
+{
+  "$schema": "./schema.1.0.0.json",
+  "version": "1",
+  "metadata": {
+    "name": "Summarize E-mails",
+    "description": "Summarize an email and extract the most important information.",
+    "author": "Nanoworks",
+    "variables": {
+      "OLLAMA_MODEL": {
+        "value": "ollama-email-summarization"
+      }
+    }
+  },
+  "nodes": {
+    "ollama": {
+      "component": "https://github.com/ollama/nwrx/components/ollama.ts",
+      "model": {
+        "$ref": "#/Secrets/OLLAMA_MODEL"
+      },
+      "token": {
+        "$ref": "#/Secrets/OLLAMA_TOKEN"
+      },
+      "endpoint": {
+        "$ref": "#/Secrets/OLLAMA_ENDPOINT"
+      }
+    },
+    "input-email-from": {
+      "component": "input",
+      "name": "From"
+    },
+    "input-email-content": {
+      "component": "input",
+      "name": "Content"
+    },
+    "prompt": {
+      "component": "template",
+      "values": {
+        "emailContent": {
+          "$ref": "#/Nodes/input-email-content/value"
+        },
+        "emailFrom": {
+          "$ref": "#/Nodes/input-email-from/value"
+        }
+      },
+      "template": "Summarize the email content.\n- Extract the most important information.\n- Keep the summary short and concise.\n- Avoid repeating the same information.\nEmail From: {{ emailFrom }}\nEmail Content: {{ emailContent }}\n"
+    },
+    "summarize": {
+      "component": "inference",
+      "model": {
+        "$ref": "#/Nodes/ollama/model"
+      },
+      "prompt": "$NODE.PROMPT.value",
+      "maxTokens": 100,
+      "temperature": 0.5
+    },
+    "output": {
+      "component": "output",
+      "value": {
+        "$ref": "#/Nodes/summarize/completion"
+      }
+    }
+  }
+}
