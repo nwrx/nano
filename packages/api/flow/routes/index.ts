@@ -1,6 +1,6 @@
 export * from './flowCreate'
 export * from './flowDelete'
+export * from './flowEditor'
 export * from './flowExport'
 export * from './flowGet'
 export * from './flowImport'
-export * from './flowSession'

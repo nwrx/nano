@@ -1,13 +1,15 @@
-import type { Flow as FlowEntity } from '../entities'
+import type { Flow } from '../entities'
 import type { ModuleFlow } from '../index'
-import { Flow, getModuleNode } from '@nwrx/core'
-import { defineNode } from '@nwrx/core'
+import { getModuleNode } from '@nwrx/core'
+import { defineComponent } from '@nwrx/core'
+import { createThreadFromJson } from '@nwrx/core'
 import { memoize } from '@unshared/functions'
+import { ModuleMonitoring } from '../../monitoring'
 import { ModuleWorkspace } from '../../workspace'
 import { MODULES } from './constants'
 
 function FALLBACK_NODE(kind: string) {
-  return defineNode({
+  return defineComponent({
     kind,
     name: kind,
     description: 'The node is not available.',
@@ -17,30 +19,30 @@ function FALLBACK_NODE(kind: string) {
 /**
  * Resolves the flow instance from the flow, project, and workspace.
  *
- * @param entity The flow to resolve the instance for.
+ * @param flow The flow to resolve the instance for.
  * @returns The resolved flow instance.
  */
-export function resolveFlowInstance(this: ModuleFlow, entity: FlowEntity) {
+export function loadThreadFromJson(this: ModuleFlow, flow: Flow) {
   const workspaceModule = this.getModule(ModuleWorkspace)
-  return Flow.fromJSON(entity.data, {
-    resolveNode: [
+  const monitoringModule = this.getModule(ModuleMonitoring)
+
+  // --- Load the `Thread` instance based on the flow specification.
+  const thread = createThreadFromJson(flow.data, {
+    componentResolvers: [
       memoize(async(kind) => {
         if (kind.startsWith('nwrx/')) kind = kind.slice(5)
-
-        // --- Find the node in the module.
         for (const module of MODULES) {
           const node = await getModuleNode(module, kind)
           if (node) return node
         }
-
         return FALLBACK_NODE(kind)
       }),
     ],
-    resolveReference: [
+    referenceResolvers: [
       async(reference) => {
         if ('$fromVariable' in reference) {
           const { name } = reference.$fromVariable
-          const { project } = entity
+          const { project } = flow
           const { WorkspaceProjectVariable } = workspaceModule.getRepositories()
           const variable = await WorkspaceProjectVariable.findOne({ where: { project, name } })
           if (!variable) throw new Error(`Variable not found: ${name}`)
@@ -48,7 +50,7 @@ export function resolveFlowInstance(this: ModuleFlow, entity: FlowEntity) {
         }
         if ('$fromSecret' in reference) {
           const { name } = reference.$fromSecret
-          const { project } = entity
+          const { project } = flow
           const { WorkspaceProjectSecret } = workspaceModule.getRepositories()
           const secret = await WorkspaceProjectSecret.findOne({ where: { project, name } })
           if (!secret) throw new Error(`Secret not found: ${name}`)
@@ -57,4 +59,8 @@ export function resolveFlowInstance(this: ModuleFlow, entity: FlowEntity) {
       },
     ],
   })
+
+  // --- Start monitoring the thread events.
+  monitoringModule.captureThreadEvents(thread, flow)
+  return thread
 }

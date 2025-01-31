@@ -1,6 +1,7 @@
-import { assert, createArrayParser, createRuleSet, createSchema } from '@unshared/validation'
+import type { ObjectLike } from '@unshared/types'
+import { assert, assertObjectStrict, createArrayParser, createRuleSet, createSchema } from '@unshared/validation'
 
-export const FLOW_SESSION_MESSAGE_SCHEMA = createRuleSet(
+export const EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA = createRuleSet(
 
   /***************************************************************************/
   /* Execute                                                                 */
@@ -8,7 +9,7 @@ export const FLOW_SESSION_MESSAGE_SCHEMA = createRuleSet(
 
   [createSchema({
     event: assert.stringEquals('start'),
-    input: assert.object,
+    input: assertObjectStrict<ObjectLike>,
   })],
 
   [createSchema({
@@ -31,7 +32,7 @@ export const FLOW_SESSION_MESSAGE_SCHEMA = createRuleSet(
 
   [createSchema({
     event: assert.stringEquals('setMetaValue'),
-    key: assert.stringNotEmpty,
+    name: assert.stringNotEmpty,
     value: assert.notNull,
   })],
 
@@ -120,14 +121,14 @@ export const FLOW_SESSION_MESSAGE_SCHEMA = createRuleSet(
   [createSchema({
     event: assert.stringEquals('setNodeInputValue'),
     id: assert.stringNotEmpty,
-    key: assert.stringNotEmpty,
+    name: assert.stringNotEmpty,
     value: assert.notNull,
   })],
 
   [createSchema({
     event: assert.stringEquals('getInputValueOptions'),
     id: assert.stringNotEmpty,
-    key: assert.stringNotEmpty,
+    name: assert.stringNotEmpty,
     query: [[assert.undefined], [assert.string]],
   })],
 
@@ -168,4 +169,4 @@ export const FLOW_SESSION_MESSAGE_SCHEMA = createRuleSet(
 )
 
 /** The message received from the client in a flow session. */
-export type FlowSessionMessage = ReturnType<typeof FLOW_SESSION_MESSAGE_SCHEMA>
+export type EditorSessionClientMessage = ReturnType<typeof EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA>

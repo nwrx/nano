@@ -4,7 +4,7 @@ import { parseBoolean } from '@unshared/string'
 import { assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
-import { resolveFlowEntity } from '../utils'
+import { resolveFlow } from '../utils'
 
 export function flowGet(this: ModuleFlow) {
   return createHttpRoute(
@@ -28,7 +28,7 @@ export function flowGet(this: ModuleFlow) {
       // --- Resolve the flow and check if the user has access to it.
       const workspace = await workspaceModule.resolveWorkspace({ user, name: workspaceName, permission: 'Read' })
       const project = await workspaceModule.resolveProject({ workspace, name: projectName, permission: 'Read' })
-      const flow = await resolveFlowEntity.call(this, { name: flowName, project, workspace })
+      const flow = await resolveFlow.call(this, { name: flowName, project, workspace })
 
       // --- Return the serialized flow.
       const { withData = false } = query

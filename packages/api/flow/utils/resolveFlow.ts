@@ -1,18 +1,26 @@
 import type { Loose } from '@unshared/types'
 import type { ModuleFlow } from '../index'
 import { assertStringNotEmpty, assertStringUuid, createSchema } from '@unshared/validation'
+import { ModuleWorkspace } from '../../workspace'
+import { assertProjectPermission } from '../../workspace/utils'
 
 /** The parser fuction for the {@linkcode resolveProject} function. */
 const RESOLVE_FLOW_ENTITY_OPTIONS = createSchema({
+
+  /** The `User` entity trying to resolve the flow. */
+  user: createSchema({ id: assertStringUuid }),
 
   /** The `name` of the `WorkspaceProject` to find. */
   name: assertStringNotEmpty,
 
   /** The `Project` to find the flow in. */
-  project: createSchema({ id: assertStringUuid, name: assertStringNotEmpty }),
+  project: assertStringNotEmpty,
 
   /** The `Workspace` to find the project in. */
-  workspace: createSchema({ id: assertStringUuid, name: assertStringNotEmpty }),
+  workspace: assertStringNotEmpty,
+
+  /** The project permission to assert. */
+  permission: assertProjectPermission,
 })
 
 /** The options to resolve the project with. */
@@ -24,8 +32,12 @@ export type ResolveFlowOptions = Loose<ReturnType<typeof RESOLVE_FLOW_ENTITY_OPT
  * @param options The options to resolve the flow with.
  * @returns The resolved flow.
  */
-export async function resolveFlowEntity(this: ModuleFlow, options: ResolveFlowOptions) {
-  const { name, project, workspace } = RESOLVE_FLOW_ENTITY_OPTIONS(options)
+export async function resolveFlow(this: ModuleFlow, options: ResolveFlowOptions) {
+  const { user, name, project: projectName, workspace: workspaceName, permission = 'Read' } = RESOLVE_FLOW_ENTITY_OPTIONS(options)
+
+  const workspaceModule = this.getModule(ModuleWorkspace)
+  const workspace = await workspaceModule.resolveWorkspace({ user, name: workspaceName, permission: 'Read' })
+  const project = await workspaceModule.resolveProject({ user, workspace, name: projectName, permission })
 
   // --- Find the flow in the workspace.
   const { Flow } = this.getRepositories()

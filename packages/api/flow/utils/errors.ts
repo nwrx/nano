@@ -1,6 +1,12 @@
 import { createError } from '@unserved/server'
 
 export const ERRORS = {
+  FLOW_NOT_FOUND_BY_ID: (id: string) => createError({
+    name: 'E_FLOW_NOT_FOUND',
+    statusCode: 404,
+    statusMessage: 'Not Found',
+    message: `Flow "${id}" was not found in the database`,
+  }),
   FLOW_NOT_FOUND: (workspace: string, project: string, name: string) => createError({
     name: 'E_FLOW_NOT_FOUND',
     statusCode: 404,

@@ -1,4 +1,4 @@
-import type { FlowSessionInstance } from './utils'
+import type { EditorSession } from './utils'
 import { ModuleBase } from '@unserved/server'
 import { ModuleUser } from '../user'
 import { ModuleWorkspace } from '../workspace'
@@ -7,18 +7,16 @@ import * as ROUTES from './routes'
 import * as UTILS from './utils'
 
 export * from './entities'
-export type * from './utils/resolveFlowSession'
-export type * from './utils/serializeFlowSession'
+export type * from './utils/editorSessionServerMessage'
+export type * from './utils/searchCategories'
+export type * from './utils/serializeComponent'
+export type * from './utils/serializeComponentInstance'
+export type * from './utils/serializeInputSchema'
+export type * from './utils/serializeOutputSchema'
+export type * from './utils/serializeSession'
 
-export interface ModuleFlowOptions {
-
-  /**
-   * The base directory in which the flow modules are stored. The modules
-   * are stored as .tgz files in this directory and are extracted when
-   * imported.
-   */
-  flowSessions?: Map<string, FlowSessionInstance>
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ModuleFlowOptions {}
 
 /**
  * The `ModuleFlow` module is used to manage the workflows and modules in the
@@ -26,16 +24,18 @@ export interface ModuleFlowOptions {
  * modules in the application.
  */
 export class ModuleFlow extends ModuleBase implements ModuleFlowOptions {
+  constructor(_options: ModuleFlowOptions = {}) { super() }
   errors = UTILS.ERRORS
   routes = ROUTES
   entities = ENTITIES
   dependencies = [ModuleUser, ModuleWorkspace]
-  flowSessions = new Map<string, FlowSessionInstance>()
 
-  constructor(options: ModuleFlowOptions = {}) {
-    super()
-    if (options.flowSessions) this.flowSessions = options.flowSessions
-  }
+  /** A map of flow editor sessions. */
+  flowEditorSessions = new Map<string, EditorSession>()
 
-  resolveFlow = UTILS.resolveFlowEntity.bind(this)
+  /** Load the `Flow` instance from a `Flow` entity. */
+  loadThreadFromJson = UTILS.loadThreadFromJson.bind(this)
+
+  /** Resolve a flow entity from the database. */
+  resolveFlow = UTILS.resolveFlow.bind(this)
 }
