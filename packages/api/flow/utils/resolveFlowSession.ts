@@ -109,7 +109,7 @@ export class FlowSessionInstance {
     this.flow.on('node:create', node => this.broadcast({ event: 'node:create', ...serializeNodeInstance(node) }))
     this.flow.on('node:remove', id => this.broadcast({ event: 'node:remove', id }))
     this.flow.on('node:metaValue', (id, key, value) => this.broadcast({ event: 'node:metaValue', id, key, value }))
-    this.flow.on('node:data', (id, data) => this.broadcast({ event: 'node:data', id, data }))
+    this.flow.on('node:dataRaw', (id, data) => this.broadcast({ event: 'node:data', id, data }))
     this.flow.on('node:dataSchema', (id, schema) => this.broadcast({ event: 'node:dataSchema', id, schema: serializeDataSchema(schema) }))
     this.flow.on('node:result', (id, result) => this.broadcast({ event: 'node:result', id, result }))
     this.flow.on('node:resultSchema', (id, schema) => this.broadcast({ event: 'node:resultSchema', id, schema: serializeResultSchema(schema) }))

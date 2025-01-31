@@ -302,26 +302,28 @@ export function flowSession(this: ModuleFlow) {
           // --- Node events.
           case 'nodeCreate': {
             const { kind, x, y } = message
-            const node = session.flow.createNode(kind, {
+            const definition = session.flow.resolveNodeDefinition(kind)
+            const instance = session.flow.createNode(definition, {
               meta: { position: { x, y } },
               initialData: {},
               initialResult: {},
             })
-            await node.resolveDataSchema()
-            await node.resolveResultSchema()
+            await instance.resolveDataSchema()
+            await instance.resolveResultSchema()
             await session.save()
             break
           }
           case 'nodeDuplicate': {
             const { nodeId, x, y } = message
             const instance = session.flow.getNodeInstance(nodeId)
-            const kind = `${instance.flow.resolveNodeModule(instance).kind}:${instance.node.kind}`
-            const node = session.flow.createNode(kind, {
+            const module = instance.flow.resolveNodeModule(instance)
+            const definition = session.flow.resolveNodeDefinition(`${module.kind}:${instance.node.kind}`)
+            const duplicate = session.flow.createNode(definition, {
               meta: { position: { x, y } },
               initialData: instance.dataRaw,
             })
-            await node.resolveDataSchema()
-            await node.resolveResultSchema()
+            await duplicate.resolveDataSchema()
+            await duplicate.resolveResultSchema()
             await session.save()
             break
           }

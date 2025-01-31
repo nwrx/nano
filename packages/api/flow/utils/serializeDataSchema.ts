@@ -1,11 +1,11 @@
-import type { DataSchema, SocketControl, SocketOption } from '@nwrx/core'
+import type { DataSchema, SocketControl, SocketListOption } from '@nwrx/core'
 import type { MaybeFunction, MaybeLiteral, MaybePromise } from '@unshared/types'
 import type { ResultSocketJSON } from './serializeResultSchema'
 import { serializeSocketOptions } from './serializeSocketOptions'
 
 export interface DataSocketJSON extends ResultSocketJSON {
   control?: MaybeLiteral<SocketControl>
-  options?: SocketOption[]
+  options?: SocketListOption[]
   sliderMax?: number
   sliderMin?: number
   sliderStep?: number
