@@ -11,8 +11,8 @@ export function userGet(this: ModuleUser) {
       }),
     },
     async({ event, parameters }) => {
+      const user = await this.authenticate(event)
       const { User } = this.getRepositories()
-      const { user } = await this.authenticate(event)
       const { username } = parameters
 
       // --- Fetch the user with the given ID.

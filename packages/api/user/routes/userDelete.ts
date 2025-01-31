@@ -11,10 +11,10 @@ export function userDelete(this: ModuleUser) {
       }),
     },
     async({ event, parameters }) => {
+      const user = await this.authenticate(event)
       const { username } = parameters
-      const { user } = await this.authenticate(event)
 
-      // --- Check if the user has the right permissions.
+      // --- Check if the request is made by the user or a super administrator.
       if (user.username !== username && !user.isSuperAdministrator)
         throw this.errors.USER_NOT_ALLOWED()
 
