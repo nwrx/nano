@@ -56,5 +56,6 @@ export function serializeFlowCategories(flow: Flow) {
 
   // --- Sort the categories by their kind.
   return categories
+    .filter(c => c.nodes.length > 0)
     .sort((a, b) => a.kind.localeCompare(b.kind))
 }
