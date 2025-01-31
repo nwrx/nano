@@ -41,7 +41,7 @@ export default defineNuxtConfig({
     '@unocss/nuxt',
     '@unshared/vue',
     '@unserved/nuxt',
-    '@nuxtjs/storybook',
+    // '@nuxtjs/storybook',
   ],
 
   /**
