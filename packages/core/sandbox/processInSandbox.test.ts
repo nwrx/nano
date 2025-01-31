@@ -113,6 +113,7 @@ describe('processInSandbox', () => {
     it('should accept stream in the properties of the result object', async() => {
       const component = defineComponent(
         {
+          inputs: {},
           outputs: { stream: { 'x-stream': true } },
         },
         () => {
