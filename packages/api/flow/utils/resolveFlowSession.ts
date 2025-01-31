@@ -78,17 +78,17 @@ export class FlowSessionInstance {
     this.thread.on('output', (name, value, meta) => this.broadcast({ event: 'thread:output', name, value, ...meta }))
     this.thread.on('start', (input, meta) => this.broadcast({ event: 'thread:start', input, ...meta }))
     this.thread.on('abort', meta => this.broadcast({ event: 'thread:abort', ...meta }))
-    this.thread.on('error', error => this.broadcast({ event: 'thread:error', code: error.code, message: error.message }))
+    this.thread.on('error', error => this.broadcast({ event: 'thread:error', code: error.name, message: error.message }))
     this.thread.on('end', (output, meta) => this.broadcast({ event: 'thread:end', output, ...meta }))
     this.thread.on('nodeState', ({ node: { id } }, meta) => this.broadcast({ event: 'thread:nodeState', id, ...meta }))
     this.thread.on('nodeStart', ({ node: { id } }, { input }, meta) => this.broadcast({ event: 'thread:nodeStart', id, input, ...meta }))
     this.thread.on('nodeEnd', ({ node: { id } }, { input, output }, meta) => this.broadcast({ event: 'thread:nodeEnd', id, input, output, ...meta }))
-    this.thread.on('nodeError', ({ node: { id } }, error, meta) => this.broadcast({ event: 'thread:nodeError', id, code: error.code, message: error.message, ...meta }))
+    this.thread.on('nodeError', ({ node: { id } }, error, meta) => this.broadcast({ event: 'thread:nodeError', id, code: error.name, message: error.message, ...meta }))
 
     // debug
-    this.thread.on('nodeError', ({ node: { id } }, error) => {
-      console.error('Node error:', id, error.message)
-      console.error(error.stack)
+    this.thread.on('nodeError', (_, error) => {
+      error.name = error.name ?? 'Error'
+      console.error(error)
     })
   }
 
@@ -276,6 +276,12 @@ export class FlowSessionInstance {
         this.flow.setNodesMetaValue(id, 'comment', value)
         this.broadcast({ event: 'node:metaValueChanged', id, key: 'comment', value })
         await this.save()
+      }
+
+      if (message.event === 'getInputValueOptions') {
+        const { id, key, query } = message
+        const options = this.flow.getNodeInputValueOptions(id, key, query)
+        peer.send({ event: 'node:inputOptionResult', id, key, options })
       }
 
       /***************************************************************************/

@@ -4,13 +4,13 @@ import { FlowError } from './createError'
 export const ERRORS = {
 
   NODE_SCHEMA_VALUE_MISSING: (socket: InputSocket | OutputSocket) => new FlowError({
-    code: 'E_NODE_SCHEMA_VALUE_MISSING',
+    name: 'E_NODE_SCHEMA_VALUE_MISSING',
     message: `The value of "${socket.name}" is required but was not provided. Please check your node configuration.`,
     data: { socket },
   }),
 
   NODE_SCHEMA_NOT_ITERABLE: (socket: InputSocket | OutputSocket) => new FlowError({
-    code: 'E_NODE_SCHEMA_NOT_ITERABLE',
+    name: 'E_NODE_SCHEMA_NOT_ITERABLE',
     message: `The value for the socket "${socket.name}" should be an array. Please ensure the correct data type is used.`,
     data: { socket },
   }),

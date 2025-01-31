@@ -1,5 +1,5 @@
 export interface FlowErrorOptions {
-  code: string
+  name: string
   message: string
   data?: Record<string, unknown>
 }
@@ -12,12 +12,12 @@ export interface FlowErrorOptions {
  * @param data The additional data for the error message.
  */
 export class FlowError extends Error {
-  code: string
+  name: string
   data: Record<string, unknown>
 
-  constructor({ code, message, data }: FlowErrorOptions) {
+  constructor({ name, message, data }: FlowErrorOptions) {
     super(message)
-    this.code = code
+    this.name = name
     this.data = data ?? {}
   }
 }
