@@ -5,20 +5,23 @@ definePageMeta({
   middleware: ['redirect-when-guest', 'abort-reserved'],
 })
 
-const open = useLocalStorage<Record<string, boolean>>('__Workspace_Open', {})
-const name = computed(() => useRoute().params.workspace as string)
-const createProjectDialog = ref(false)
-const workspace = useWorkspace(name, {
+useSeoMeta({
+  title: 'Workspace',
+  description: 'Create, edit, and delete your flows',
+})
+
+// --- Remote data.
+const route = useRoute()
+const workspace = useWorkspace(route.params.workspace as string, {
   withProjects: true,
   withProjectFlows: true,
   withProjectAssignments: true,
   withAssignments: true,
 })
 
-useSeoMeta({
-  title: 'Workspace',
-  description: 'Create, edit, and delete your flows',
-})
+// --- Dialog and list state.
+const isDialogCreateProjectOpen = ref(false)
+const isWorkspaceOpen = useLocalStorage<Record<string, boolean>>('__Workspace_Open', {})
 
 onMounted(async() => {
   await workspace.refresh()
@@ -36,14 +39,14 @@ onMounted(async() => {
     />
 
     <ProjectDialogCreate
-      v-model="createProjectDialog"
+      v-model="isDialogCreateProjectOpen"
       :workspaceName="workspace.data.name"
       @submit="options => workspace.createProject(options)"
     />
 
     <!-- Create project -->
     <div class="flex justify-end">
-      <Button icon="i-carbon:add" variant="primary" @click="() => createProjectDialog = true">
+      <Button icon="i-carbon:add" variant="primary" @click="() => isDialogCreateProjectOpen = true">
         Create Project
       </Button>
     </div>
@@ -51,7 +54,7 @@ onMounted(async() => {
     <!-- Project list -->
     <AppPageContainer>
       <ProjectList
-        v-model="open"
+        v-model="isWorkspaceOpen"
         :workspace="workspace.data.name"
         :projects="workspace.data.projects"
         @flowCreate="(project) => workspace.createFlow(project)"
