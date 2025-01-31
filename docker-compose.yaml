@@ -1,0 +1,72 @@
+volumes:
+  ollama: {}
+  ollama-ui: {}
+
+services:
+  maildev:
+    image: maildev/maildev:2.1.0
+    container_name: maildev
+    ports:
+      - "1080:1080"
+      - "1025:1025"
+
+  ollama:
+    image: ollama/ollama:0.3.10
+    container_name: ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    ports:
+      - "3100:11434"
+    volumes:
+      - ollama:/root/.ollama
+
+  ollama-ui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: ollama-ui
+    ports:
+      - "3200:8080"
+    volumes:
+      - ollama:/root/.ollama
+      - ollama-ui:/app/backend/data
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OLLAMA_BASE_URL=http://ollama:11434
+
+  nano-ce:
+    image: cimg/node:20.17.0
+    container_name: nano-ce
+    working_dir: /workspace
+    command: pnpm -F @nwrx/app dev
+    user: 1000:1000
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/workspace
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - NWRX_EMAIL_HOST=maildev
+      - NWRX_EMAIL_PORT=1025
+      - NWRX_USER_TRUST_PROXY=true
+      - NWRX_USER_SECRET_KEY=SECRET_KEY
+
+  openhands:
+    image: ghcr.io/all-hands-ai/openhands:0.9
+    container_name: openhands
+    user: root
+    ports:
+      - "3300:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - $PWD:/opt/workspace_base
+    environment:
+      - SANDBOX_RUNTIME_CONTAINER_IMAGE=ghcr.io/all-hands-ai/runtime:0.9-nikolaik
+      - SANDBOX_USER_ID=1000
+      - WORKSPACE_MOUNT_PATH=$PWD
