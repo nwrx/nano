@@ -56,7 +56,7 @@ const { setLocale, locale } = useI18n()
       />
 
       <!-- Main Content -->
-      <main class="w-full h-full relative overflow-hidden rd-app bg-app">
+      <main class="w-full h-full relative overflow-hidden rd-app bg-app b b-app">
 
         <!-- Alerts -->
         <AppAlerts class="fixed top-0 z-100 w-full" />
@@ -72,7 +72,7 @@ const { setLocale, locale } = useI18n()
           </template>
 
           <!-- Page -->
-          <NuxtPage />
+          <NuxtPage transition />
         </NuxtErrorBoundary>
       </main>
     </div>

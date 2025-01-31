@@ -5,8 +5,8 @@ import { toCSSObject } from './utils'
 
 export interface ThemeBadge {
   badgeColor?: Record<string, string>
-  badgeBackground?: Record<string, string>
   badgeBorderColor?: Record<string, string>
+  badgeBackgroundColor?: Record<string, string>
   badgeVariant?: Record<string, CSSProperties>
 }
 
@@ -39,7 +39,7 @@ export const ruleBadge: DynamicRule<ThemeBadge> = [
       })
     }
 
-    const background = theme.badgeBackground?.[b]
+    const background = theme.badgeBackgroundColor?.[b]
     if (background) {
       Object.assign(result, {
         '--un-badge-background': colorToString(background),
