@@ -1,4 +1,4 @@
-import type { Node } from './defineNode'
+import type { FlowNodeDefinition } from './defineNode'
 import { assertNotNil, assertStringNotEmpty } from '@unshared/validation'
 
 /** The options for defining a flow module. */
@@ -19,7 +19,7 @@ export interface Module<K extends string = string> {
    *
    * @example { CheckCredentials, CreateResource, DeleteResource }
    */
-  nodes: Record<string, Node<string, any, any>>
+  nodes: Record<string, FlowNodeDefinition<string, any, any>>
 
   /**
    * The display name of the flow module. The label is used to display the module

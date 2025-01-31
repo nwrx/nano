@@ -1,7 +1,4 @@
-import { defineCategory } from '../defineCategory'
-import { defineModule } from '../defineModule'
-import { defineNode } from '../defineNode'
-import { defineType } from '../defineType'
+import { defineCategory, defineModule, defineNode, defineType } from '../module'
 
 export const categoryBasic = defineCategory({
   kind: 'basic',
@@ -52,7 +49,7 @@ export const nodeInput = defineNode({
   icon: 'https://api.iconify.design/carbon:arrow-down.svg',
   category: categoryBasic,
   description: 'A value generated from an entrypoint in the flow.',
-  dataSchema: {
+  inputSchema: {
     property: {
       name: 'Property',
       control: 'text',
@@ -60,7 +57,7 @@ export const nodeInput = defineNode({
       description: 'The name of the entrypoint.',
     },
   },
-  resultSchema: {
+  outputSchema: {
     value: {
       name: 'Value',
       type: typeString,
@@ -79,7 +76,7 @@ export const nodeOutput = defineNode({
   category: categoryBasic,
   description: 'A value that is sent to an exitpoint in the flow.',
 
-  dataSchema: {
+  inputSchema: {
     property: {
       name: 'Property',
       type: typeString,
@@ -99,14 +96,14 @@ export const nodeParse = defineNode({
   name: 'JSON Parse',
   icon: 'https://api.iconify.design/carbon:json.svg',
   description: 'Parses a JSON string into an object.',
-  dataSchema: {
+  inputSchema: {
     json: { type: typeString },
   },
-  resultSchema: {
+  outputSchema: {
     object: { type: typeObject },
   },
-  process: ({ data }) => ({
-    object: JSON.parse(data.json) as Record<string, unknown>,
+  process: ({ input }) => ({
+    object: JSON.parse(input.json) as Record<string, unknown>,
   }),
 })
 

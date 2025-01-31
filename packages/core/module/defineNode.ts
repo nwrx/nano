@@ -1,7 +1,7 @@
 import type { MaybePromise, ObjectLike } from '@unshared/types'
 import type { Category } from './defineCategory'
-import type { DataFromSchema, DataSchema } from './defineDataSchema'
-import type { ResultFromSchema, ResultSchema } from './defineResultSchema'
+import type { InferInput as InferInput, InputSchema as InputSchema } from './defineInputSchema'
+import type { InferOutput, OutputSchema } from './defineOutputSchema'
 import { assertNotNil, assertStringNotEmpty } from '@unshared/validation'
 
 /**
@@ -9,7 +9,7 @@ import { assertNotNil, assertStringNotEmpty } from '@unshared/validation'
  * contain the input values and additional parameters that can be used to
  * process the data.
  */
-export interface InstanceContext<
+export interface FlowNodeContext<
   T extends ObjectLike = ObjectLike,
   U extends ObjectLike = ObjectLike,
 > {
@@ -18,14 +18,14 @@ export interface InstanceContext<
    * The data that is passed to the node when it is executed. The data comes
    * from the previous nodes or can be statically defined in the flow.
    */
-  data: T
+  input: T
 
   /**
    * The current result that is produced by the node when it is executed. The
    * result is used to pass the output of the node to the next nodes in the flow.
    * The result can be modified by the node to produce the desired output.
    */
-  result: U
+  output: U
 
   /**
    * The abort signal that can be triggered to cancel the execution of the
@@ -53,10 +53,10 @@ export interface InstanceContext<
  * @template T The schema of the data that the node expects.
  * @template U The schema of the result that the node produces.
  */
-export interface Node<
+export interface FlowNodeDefinition<
   K extends string = string,
-  T extends DataSchema = DataSchema,
-  U extends ResultSchema = ResultSchema,
+  T extends InputSchema = InputSchema,
+  U extends OutputSchema = OutputSchema,
 > {
 
   /**
@@ -106,7 +106,7 @@ export interface Node<
    *
    * @returns The schema of the data that the node expects.
    */
-  dataSchema?: T
+  inputSchema?: T
 
   /**
    * A function that defines the schema of the result that the node produces.
@@ -115,7 +115,7 @@ export interface Node<
    *
    * @returns The schema of the result that the node produces.
    */
-  resultSchema?: U
+  outputSchema?: U
 
   /**
    * A function that processes the data of the node and produces a result.
@@ -133,10 +133,10 @@ export interface Node<
    *   },
    * })
    */
-  process?: (context: InstanceContext<
-    DataFromSchema<NoInfer<T>>,
-    ResultFromSchema<NoInfer<U>>
-  >) => MaybePromise<ResultFromSchema<U>>
+  process?: (context: FlowNodeContext<
+    InferInput<NoInfer<T>>,
+    InferOutput<NoInfer<U>>
+  >) => MaybePromise<InferOutput<U>>
 }
 
 /**
@@ -154,7 +154,7 @@ export interface Node<
  *   description: 'Parses JSON data into a JavaScript object.',
  *
  *   // The node expects a JSON data string as input.
- *   dataSchema: () => ({
+ *   inputSchema: () => ({
  *     json: {
  *       name: 'JSON',
  *       type: typeString,
@@ -163,7 +163,7 @@ export interface Node<
  *   }),
  *
  *   // The result of the node is the JavaScript object that was parsed from the JSON data.
- *   defineResultSchema: () => ({
+ *   defineoutputSchema: () => ({
  *     object: {
  *       name: 'Object',
  *       type: typeObject,
@@ -177,7 +177,7 @@ export interface Node<
  *   }),
  * })
  */
-export function defineNode<K extends string, T extends DataSchema, U extends ResultSchema>(options: Node<K, T, U>): Node<K, T, U> {
+export function defineNode<K extends string, T extends InputSchema, U extends OutputSchema>(options: FlowNodeDefinition<K, T, U>): FlowNodeDefinition<K, T, U> {
   assertNotNil(options)
   assertStringNotEmpty(options.kind)
   return {
@@ -186,8 +186,8 @@ export function defineNode<K extends string, T extends DataSchema, U extends Res
     icon: options.icon,
     category: options.category,
     description: options.description,
-    dataSchema: options.dataSchema,
-    resultSchema: options.resultSchema,
+    inputSchema: options.inputSchema,
+    outputSchema: options.outputSchema,
     process: options.process,
-  } as Node<K, T, U>
+  } as FlowNodeDefinition<K, T, U>
 }
