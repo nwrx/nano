@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import type { Node } from './defineNode'
 import { EXP_UUID } from '@unshared/validation'
 import { nodeInput, nodeParse, typeNumber, typeString } from './__fixtures__'
 import { createFlow, Flow, NODE_INPUT_KIND, NODE_OUTPUT_KIND } from './createFlow'
@@ -78,7 +79,7 @@ describe('createFlow', () => {
       })
 
       it('should create a node using syncroneous `resolveNode` method', async() => {
-        const resolveNode = vi.fn(() => nodeParse)
+        const resolveNode = vi.fn(() => nodeParse) as () => Node
         using flow = createFlow({ resolveNode })
         const instance = await flow.add('anything')
         expect(resolveNode).toHaveBeenCalledWith('anything')

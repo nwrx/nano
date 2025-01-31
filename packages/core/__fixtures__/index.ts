@@ -47,7 +47,7 @@ export const typeBoolean = defineType({
 })
 
 export const nodeInput = defineNode({
-  kind: 'input',
+  kind: 'core/input',
   name: 'Input',
   icon: 'https://api.iconify.design/carbon:arrow-down.svg',
   category: categoryBasic,
@@ -67,16 +67,13 @@ export const nodeInput = defineNode({
       description: 'The value of the entrypoint.',
     },
   },
-  process: async({ flow, data }) => await new Promise((resolve) => {
-    flow.on('flow:input', (property, value) => {
-      if (property !== data.property) return
-      resolve({ value: value as string })
-    })
+  process: ({ result }) => ({
+    value: result.value,
   }),
 })
 
 export const nodeOutput = defineNode({
-  kind: 'output',
+  kind: 'core/output',
   name: 'Output',
   icon: 'https://api.iconify.design/carbon:arrow-up.svg',
   category: categoryBasic,
@@ -95,31 +92,18 @@ export const nodeOutput = defineNode({
       description: 'The value to send to the exitpoint.',
     },
   },
-
-  process: ({ flow, data }) => {
-    flow.dispatch('flow:output', data.property, data.value)
-    return {}
-  },
 })
 
 export const nodeParse = defineNode({
-  kind: 'parse-json',
+  kind: 'core/parse',
   name: 'JSON Parse',
   icon: 'https://api.iconify.design/carbon:json.svg',
   description: 'Parses a JSON string into an object.',
   dataSchema: {
-    json: {
-      label: 'JSON',
-      type: typeString,
-      control: 'socket',
-    },
+    json: { type: typeString },
   },
   resultSchema: {
-    object: {
-      label: 'Object',
-      type: typeObject,
-      control: 'object',
-    },
+    object: { type: typeObject },
   },
   process: ({ data }) => ({
     object: JSON.parse(data.json) as Record<string, unknown>,
@@ -127,15 +111,7 @@ export const nodeParse = defineNode({
 })
 
 export const moduleCore = defineModule({
-  kind: 'nwrx/core',
+  kind: 'core',
   name: 'Core',
-  nodes: [
-    nodeParse,
-    nodeOutput,
-    nodeInput,
-  ],
-  types: [
-    typeString,
-    typeObject,
-  ],
+  nodes: { nodeParse, nodeOutput, nodeInput },
 })

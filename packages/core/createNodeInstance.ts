@@ -1,11 +1,11 @@
 import type { Flow } from './createFlow'
 import type { DataFromSchema, DataSchema } from './defineDataSchema'
-import type { Node, NodeInstanceContext } from './defineNode'
+import type { InstanceContext, Node } from './defineNode'
 import type { ResultFromSchema, ResultSchema } from './defineResultSchema'
 import { ValidationError } from '@unshared/validation'
 import { randomUUID } from 'node:crypto'
 
-const REFERENCE_EXP = /^\$(?<type>[A-Z]+)\.(?<name>[\w-/]+)$/
+const REFERENCE_EXP = /^\$(?<type>[A-Z]+)\.(?<name>[\w-/:]+)$/
 
 export type NodeState =
   | 'DESTROYED'
@@ -130,12 +130,12 @@ export class NodeInstance<T extends DataSchema = DataSchema, U extends ResultSch
     }
   }
 
-  private get context(): NodeInstanceContext<T, U> {
+  private get context(): InstanceContext<T, U> {
     return {
-      data: { ...this.data, ...this.dataResolved },
+      data: this.dataResolved,
       result: this.result,
       abortSignal: this.abortController.signal,
-    } as NodeInstanceContext<T, U>
+    }
   }
 
   private dispatch<K extends keyof NodeEvents<T, U>>(event: K, ...data: NodeEvents<T, U>[K]) {
@@ -188,8 +188,8 @@ export class NodeInstance<T extends DataSchema = DataSchema, U extends ResultSch
 
     // --- Get the parser for the data property.
     for (const key of keys) {
+      let value = this.data[key]
       try {
-        let value = this.data[key]
         const socket = this.dataSchema[key]
 
         // --- Skip properties not present in schema.
@@ -212,12 +212,17 @@ export class NodeInstance<T extends DataSchema = DataSchema, U extends ResultSch
         // --- Value from raw data.
         dataResolved[key] = value === undefined
           ? socket.defaultValue
-          :socket.type.parse(value)
+          : socket.type.parse(value)
       }
       catch (error) {
         dataErrors[key] = error as Error
         this.dispatch('dataParseError', key, error as Error, this.eventMeta)
         this.dispatch('error', error as Error, this.eventMeta)
+        console.warn(`Unexpected data on "${key}"`, {
+          raw: this.data[key],
+          value,
+          type: this.dataSchema[key].type.kind,
+        })
         isReady = false
       }
     }
@@ -229,7 +234,7 @@ export class NodeInstance<T extends DataSchema = DataSchema, U extends ResultSch
     return isReady
   }
 
-  private setResult(result: DataFromSchema<U>): void {
+  private setResult(result: ResultFromSchema<U>): void {
     const resultFinal: Record<string, unknown> = {}
     const resultErrors: Record<string, Error> = {}
 
@@ -252,7 +257,7 @@ export class NodeInstance<T extends DataSchema = DataSchema, U extends ResultSch
       }
     }
     this.resultParseErrors = resultErrors
-    this.result = resultFinal as DataFromSchema<U>
+    this.result = resultFinal as ResultFromSchema<U>
     this.dispatch('result', this.result, this.eventMeta)
   }
 
