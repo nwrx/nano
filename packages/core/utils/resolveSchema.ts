@@ -1,8 +1,7 @@
-/* eslint-disable sonarjs/cognitive-complexity */
 import type { ObjectLike } from '@unshared/types'
 import type { InputSchema, InputSocket, OutputSchema, OutputSocket } from '../module'
 import type { ResolveReference } from './types'
-import { assertArray, assertObjectStrict, ValidationError } from '@unshared/validation'
+import { assertArray, assertObjectStrict } from '@unshared/validation'
 import { FlowError } from './createError'
 import { isReference } from './createReference'
 import { ERRORS } from './errors'
@@ -65,6 +64,7 @@ async function resolveSchemaValue(value: unknown, socket: InputSocket | OutputSo
 export async function resolveSchema(options: ResolveSchemaOptions): Promise<ObjectLike> {
   const { values = {}, schema = {}, resolvers = [], skipErrors = false } = options
   const resolved: ObjectLike = {}
+  const errors: Record<string, Error> = {}
 
   // --- Iterate over the input schema and resolve the input values.
   for (const key in schema) {
@@ -92,37 +92,18 @@ export async function resolveSchema(options: ResolveSchemaOptions): Promise<Obje
       }
     }
     catch (error) {
+      errors[key] = error as Error
       if (skipErrors) continue
-      if (error instanceof ValidationError) {
-        const errors = error.context as Record<string, Error | ValidationError>
-        for (const key in errors) {
-          if (errors[key] instanceof ValidationError) {
-            if (errors[key].name === 'E_RULE_SET_MISMATCH') {
-              throw new FlowError({
-                message: `Could not resolve the value of "${socket.name}/${key}": ${errors[key].message}`,
-                name: errors[key].name,
-              })
-            }
-            throw new FlowError({
-              message: `Could not resolve the value of "${socket.name}/${key}": ${errors[key].message}`,
-              name: errors[key].name,
-            })
-          }
-        }
-        throw new FlowError({
-          message: `Could not resolve the value of "${socket.name}": ${error.message}`,
-          name: error.name,
-        })
-      }
-      else if (error instanceof FlowError) {
-        throw new FlowError({
-          message: `Failed to resolve the value of "${socket.name}": ${error.message}`,
-          name: error.name,
-          data: { key, value, socket, ...error.data },
-        })
-      }
-      throw error
     }
+  }
+
+  // --- If there are any errors, throw an error with the list of errors.
+  if (Object.keys(errors).length > 0) {
+    throw new FlowError({
+      name: 'SCHEMA_RESOLVE_ERROR',
+      message: 'Failed to resolve the schema.',
+      context: errors,
+    })
   }
 
   // --- Return the resolved input so far.
