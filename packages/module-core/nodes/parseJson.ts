@@ -3,8 +3,8 @@ import { basic } from '../categories'
 import { object, string } from '../types'
 
 export const parseJson = defineNode({
-  kind: 'parse-json',
-  name: 'Parse JSON',
+  kind: 'parse',
+  name: 'Parse',
   icon: 'https://api.iconify.design/carbon:json.svg',
   description: 'Parses a JSON string into an object.',
   category: basic,

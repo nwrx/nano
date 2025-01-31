@@ -1,18 +1,18 @@
 import type { NodeInstanceContext } from '@nwrx/core'
 import { defineNode } from '@nwrx/core'
 import { defineDataSchema } from '@nwrx/core'
-import { basic } from '../categories'
+import { categoryText } from '../categories'
 import { string } from '../types'
 
 /** The regular expression for extracting variables from the template. */
-const EXP_VAR_REGEX = /{{\s*(\w+)\s*}}/g
+const EXP_VAR_REGEX = /{{\s*(\w+\??)\s*}}/g
 
 export const template = defineNode({
   kind: 'template',
   name: 'Template',
   icon: 'https://api.iconify.design/carbon:template.svg',
   description: 'A template for generating a string based on the input.',
-  category: basic,
+  category: categoryText,
 
   // --- Create the data schema that infers the variables from the template.
   dataSchema: ({ data }: NodeInstanceContext) => {
@@ -36,6 +36,7 @@ export const template = defineNode({
         name: key,
         type: string,
         control: 'socket',
+        isOptional: key.endsWith('?') as unknown as false,
         description: `The value for the template variable '${key}'.`,
       }
     }
@@ -60,8 +61,7 @@ export const template = defineNode({
     // --- Replace the variables in the template with the values.
     const compiled = template.replaceAll(EXP_VAR_REGEX, (_, key: string) => {
       if (key === 'template') return ''
-      if (key in data) return (data as Record<string, string>)[key]
-      return ''
+      return key in data ? data[key] : ''
     })
 
     // --- Return the compiled string.

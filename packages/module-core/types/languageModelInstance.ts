@@ -4,13 +4,25 @@ import { assertFunction, assertStringNotEmpty, assertUndefined, createParser } f
 /** The context that is passed in the model inference process. */
 export interface LanguageModelInferenceContext {
   prompt: string
+  seed?: number
+  stop?: string
+  temperature?: number
+  maxCompletionTokens?: number
+}
+
+export interface LanguageModelInferenceResponse {
+  completion: string
+  fingerprint: string
+  tokensTotal: number
+  tokensPrompt: number
+  tokensCompletion: number
 }
 
 /** A function that returns the body of a request that should be sent to the model API. */
 export type LanguageModelGetBody = (context: LanguageModelInferenceContext) => Record<string, any>
 
 /** A function that returns the completion from the response of the model API. */
-export type LanguageModelGetCompletion = (response: any) => string
+export type LanguageModelGetCompletion = (response: any) => LanguageModelInferenceResponse
 
 /**
  * The `nwrx/lm-model` flow type represents an instance of a language model used to infer completions
@@ -20,7 +32,7 @@ export type LanguageModelGetCompletion = (response: any) => string
 export const languageModelInstance = defineType({
   kind: 'language-model-instance',
   name: 'LM Model',
-  color: '#CB7fff',
+  color: '#5636D9',
   description: 'An instance of a language model used to infer completions of text.',
   parse: createParser({
 
