@@ -1,12 +1,14 @@
 import { defineConfig } from 'rollup'
 import RollupDts from 'rollup-plugin-dts'
 import RollupEsbuild from 'rollup-plugin-esbuild'
+import UnpluginRaw from 'unplugin-raw'
 
 export default defineConfig([
   {
     input: './index.ts',
     external: source => !source.startsWith('.') && !source.startsWith('/'),
     plugins: [
+      UnpluginRaw.rollup(),
       RollupEsbuild({
         define: { 'import.meta.vitest': 'false' },
         platform: 'node',
