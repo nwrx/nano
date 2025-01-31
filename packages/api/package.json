@@ -18,6 +18,7 @@
     "@unshared/validation": "0.0.19",
     "crossws": "0.2.4",
     "h3": "1.12.0",
+    "node-device-detector": "2.1.4",
     "nodemailer": "6.9.15",
     "typeorm": "0.3.20"
   },

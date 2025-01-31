@@ -2,7 +2,7 @@ import { BaseEntity, transformerDate } from '@unserved/server'
 import { Column, Entity, OneToMany, OneToOne } from 'typeorm'
 import { UserPassword } from './UserPassword'
 import { UserProfile, UserProfileObject } from './UserProfile'
-import { UserSession } from './UserSession'
+import { UserSession, UserSessionObject } from './UserSession'
 
 /**
  * A user of the application. It can be a customer, an employee, an administrator, etc.
@@ -94,6 +94,10 @@ export class User extends BaseEntity {
       username: this.username,
       ...this.profile?.serialize(),
       displayName: this.profile?.displayName ?? this.username,
+      sessions: this.sessions
+        ?.filter(session => session.expiresAt > new Date())
+        .filter(session => !session.deletedAt)
+        .map(session => session.serialize()),
     }
   }
 }
@@ -105,4 +109,5 @@ export class User extends BaseEntity {
 export interface UserObject extends UserProfileObject {
   username: string
   displayName: string
+  sessions?: UserSessionObject[]
 }
