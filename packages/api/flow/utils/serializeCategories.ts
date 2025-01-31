@@ -1,5 +1,8 @@
-import type { Flow, Node } from '@nwrx/core'
+/* eslint-disable sonarjs/todo-tag */
+import type { Node } from '@nwrx/core'
 import type { NodeJSON } from './serializeNode'
+import { Core } from '@nwrx/module-core'
+import { Openai } from '@nwrx/module-openai'
 import { serializeNode } from './serializeNode'
 
 /** The serialized representation of a flow category. */
@@ -12,13 +15,22 @@ export interface FlowCategoryNodesJSON {
 }
 
 /**
+ * The modules that can be used to build a flow.
+ *
+ * TODO: This should be dynamically loaded from module registry.
+ */
+const MODULES = [
+  Openai,
+  Core,
+]
+
+/**
  * Given a `Flow` object, returns a serialized version of it so that it can be
  * sent to the client without any circular references.
  *
- * @param flow The `Flow` object to serialize.
  * @returns The serialized version of the `Flow` object.
  */
-export function serializeCategories(flow: Flow) {
+export function serializeCategories() {
   const categories: FlowCategoryNodesJSON[] = [{
     kind: 'uncategorized',
     name: 'Uncategorized',
@@ -28,9 +40,9 @@ export function serializeCategories(flow: Flow) {
   }]
 
   // --- Collect all the categories from the module nodes.
-  for (const module of flow.modules) {
+  for (const module of MODULES) {
     if (!module.nodes) continue
-    for (const node of Object.values(module.nodes)) {
+    for (const node of module.nodes) {
       const nodeJson = serializeNode({ ...node, kind: `${module.kind}:${node.kind}` })
 
       // --- If the node has no category, add it to the uncategorized category.
