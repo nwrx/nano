@@ -1,6 +1,4 @@
-import { useClient } from '#imports'
-
 export default defineNuxtRouteMiddleware(async() => {
-  const { username } = await useClient().request('GET /api/session')
+  const { username } = await useSession()
   if (username) return navigateTo({ name: 'Workspace', params: { workspace: username } })
 })
