@@ -3,13 +3,13 @@ import { useClient } from '#imports'
 
 definePageMeta({
   name: 'ProjectSettings',
-  path: '/:workspace/:name/settings',
+  path: '/:workspace/:project/settings',
   middleware: 'redirect-when-guest',
 })
 
 // --- Extract route parameters.
 const route = useRoute()
-const name = computed(() => route.params.name as string)
+const name = computed(() => route.params.project as string)
 const workspace = computed(() => route.params.workspace as string)
 
 // --- Remote data.
