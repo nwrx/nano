@@ -1,4 +1,5 @@
 import type { Thread } from '../createThread'
+import type { Component } from './defineComponent'
 import { randomUUID } from 'node:crypto'
 
 export interface ComponentInstanceMetadata {
@@ -11,9 +12,10 @@ export interface ComponentInstanceMetadata {
 }
 
 export interface ComponentInstance {
-  kind: string
+  specifier: string
   input?: Record<string, unknown>
   metadata?: ComponentInstanceMetadata
+  component?: Component
 }
 
 /**
@@ -25,6 +27,8 @@ export interface ComponentInstance {
  */
 export function addComponentInstance(thread: Thread, componentInstance: ComponentInstance & { id?: string }) {
   const { id = randomUUID(), ...copy } = componentInstance
+  const exists = thread.componentInstances.has(id)
+  if (exists) throw new Error(`A component instance with ID "${id}" already exists in the thread.`)
   thread.componentInstances.set(id, copy)
   return id
 }
