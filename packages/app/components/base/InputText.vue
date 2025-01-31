@@ -46,7 +46,7 @@ const isFocused = ref(false)
     <div class="flex items-stretch w-full">
       <div
         v-if="textBefore"
-        class="flex items-center justify-center input input-readonly rounded-r-0 border-r-0"
+        class="flex items-center justify-center input input-disabled rounded-r-0 border-r-0"
         v-text="textBefore">
       </div>
 
@@ -57,11 +57,13 @@ const isFocused = ref(false)
           'rounded-r-none': textAfter,
           'cursor-text': !disabled,
           '!input-focus': isFocused,
+          '!input-readonly': readonly,
         }]"
         class="
           flex items-center w-full group
           input hover:input-hover
-          disabled:input-disabled readonly:input-readonly
+          disabled:input-disabled
+          active:input-focus
           transition
         "
         @click="(event) => handleGroupClick(event)">
