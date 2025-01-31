@@ -1,15 +1,10 @@
 <script setup lang="ts">
-defineProps<{
+import type { FlowObject } from '@nwrx/api'
+import BOOKMARK_1_URL from '~/assets/bookmark-1.png'
+
+const props = defineProps<FlowObject & {
   workspace: string
   project: string
-  name: string
-  title: string
-  icon?: string
-  imageUrl?: string
-  description?: string
-  isDraft?: boolean
-  isDeployed?: boolean
-  isRunning?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -30,7 +25,7 @@ function getFlowRoute(workspace: string, project: string, flow: string) {
 function getChatRoute(workspace: string, project: string, flow: string) {
   if (!workspace || !project || !flow) return
   return {
-    name: 'WorkspaceProjectFlowChat',
+    name: 'WorkspaceChat',
     params: { workspace, project, flow, thread: 'new' },
   }
 }
@@ -43,12 +38,18 @@ function getChatRoute(workspace: string, project: string, flow: string) {
       ring ring-transparent hover:bg-emphasized hover:ring-prominent
     ">
 
+    <!-- Image -->
+    <img
+      :src="BOOKMARK_1_URL"
+      alt="Bookmark"
+      class="size-24 b b-app rd">
+
     <!-- Left - Name & Description -->
     <div class="w-full">
       <div class="flex items-center space-x-md">
         <Hyperlink
           eager
-          :icon="icon"
+          icon="i-carbon:flow"
           :label="title"
           :to="getFlowRoute(workspace, project, name)"
           class="font-medium text-left whitespace-nowrap"
@@ -61,42 +62,19 @@ function getChatRoute(workspace: string, project: string, flow: string) {
       </p>
 
       <!-- Status -->
-      <div class="flex flex-wrap items-center gap-2 mt-2">
-        <Badge
-          class="badge-secondary"
-          icon="i-carbon:timer"
-        />
-        <Badge
-          label="Draft"
-          class="badge-primary"
-          icon="i-carbon:dot-mark"
-        />
-        <Badge
-          label="Deployed"
-          class="badge-success"
-          icon="i-carbon:dot-mark"
-        />
-        <Badge
-          label="Running"
-          class="badge-success"
-          icon="i-carbon:dot-mark"
-        />
-        <Badge
-          class="badge-danger"
-          icon="i-carbon:error"
-        />
-      </div>
-
+      <ProjectFlowBadges v-bind="props" />
     </div>
 
     <!-- Right - Statistics -->
     <div class="flex items-center justify-center space-x-md shrink-0">
       <div class="flex divide-x divide-app grow lt-md:hidden">
         <ProjectListItemStatistic
-          name="Executions"
-          trend="up"
-          value="100"
-          unit="runs"
+          v-for="(statistic, key) in statistics"
+          :key="key"
+          :name="key"
+          :trend="statistic.trend"
+          :value="statistic.value"
+          class="not-first:pl-lg not-last:pr-lg"
         />
       </div>
 
@@ -107,7 +85,7 @@ function getChatRoute(workspace: string, project: string, flow: string) {
             :label="t('menu.chat')"
             icon="i-carbon:chat-bot"
             keybind="Enter"
-            :to="getChatRoute(workspace, project, name, thread)"
+            :to="getChatRoute(workspace, project, name)"
           />
           <ContextMenuItem
             :label="t('menu.edit')"
