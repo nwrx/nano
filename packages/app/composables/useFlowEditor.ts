@@ -1,5 +1,5 @@
 /* eslint-disable unicorn/prevent-abbreviations */
-import type { NodeInstanceJSON, FlowSessionParticipantJSON } from '@nwrx/api'
+import type { FlowSessionParticipantJSON, NodeInstanceJSON } from '@nwrx/api'
 import type { Position } from '@vueuse/core'
 import type { FlowEditorNode } from '#build/components'
 import type { CSSProperties } from 'vue'
@@ -151,10 +151,9 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
   const zIndexCounter = ref(0)
   const zIndexMap = reactive<Record<string, number>>({})
   watch(nodeSelectedIds, () => {
-    if (viewSelecting.value) return
-    zIndexCounter.value += 1
-    for (const id of nodeSelectedIds.value) zIndexMap[id] = zIndexCounter.value
-  })
+    for (const id of nodeSelectedIds.value)
+      zIndexMap[id] = zIndexCounter.value++
+  }, { deep: true })
 
   // --- Initialize the drag link state.
   const linksProps = ref<FlowLinkProps[]>([])
@@ -336,7 +335,7 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
         position: 'absolute',
         left: `${x}px`,
         top: `${y}px`,
-        zIndex: zIndexMap[node.id] ?? 0,
+        zIndex: zIndexMap[node.id] ?? 1,
         transition: isSelected ? 'none' : 'all 0.1s ease',
       }
     },
