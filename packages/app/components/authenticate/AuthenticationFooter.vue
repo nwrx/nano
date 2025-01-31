@@ -10,11 +10,11 @@ defineProps<{
 
 <template>
   <div class="flex flex-col items-center justify-center text-sm">
-    <p class="text-white/50">
+    <p class="text-subtle">
       {{ text }}
     </p>
-    <Button :to="to" class="text-sm" link>
+    <Hyperlink :to="to" class="text-sm">
       {{ label }}
-    </Button>
+    </Hyperlink>
   </div>
 </template>

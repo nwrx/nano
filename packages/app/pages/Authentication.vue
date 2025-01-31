@@ -51,7 +51,7 @@ onMounted(() => {
         <!-- Submit -->
         <Button
           link
-          class="!mt-8 mx-auto"
+          class="!mt-8 mx-auto button-lg"
           type="submit"
           variant="primary"
           label="Sign-in"
