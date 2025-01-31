@@ -26,7 +26,7 @@ const model = useVModel(props, 'modelValue', emit, {
 function getProjectRoute(workspace: string, project: string) {
   if (!workspace || !project) return
   return {
-    name: 'ProjectSettings',
+    name: 'WorkspaceProjectSettings',
     params: { workspace, project },
   }
 }
