@@ -21,8 +21,13 @@ export function createEvent(options: Options) {
   const socket = new Socket()
   const request = new IncomingMessage(socket)
   const response = new ServerResponse(request)
-  request.headers = headers
   request.method = method
+
+  // --- To avoid casing issues, force all headers to lower case.
+  for (const key in headers) {
+    const lower = key.toLowerCase()
+    request.headers[lower] = headers[key]
+  }
 
   // --- Return the created event.
   const event = new H3Event(request, response)
