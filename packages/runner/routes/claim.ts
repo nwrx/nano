@@ -1,4 +1,4 @@
-import type { ModuleRunner } from '..'
+import type { ModuleRunner } from '../module'
 import { createHttpRoute } from '@unserved/server'
 import { getRequestHeader, getRequestIP } from 'h3'
 

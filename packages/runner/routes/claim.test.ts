@@ -2,7 +2,7 @@
 import type { TestApplication } from '@unserved/server'
 import { createTestApplication } from '@unserved/server'
 import { EXP_UUID } from '@unshared/validation'
-import { ModuleRunner } from '..'
+import { ModuleRunner } from '../module'
 
 interface Context {
   application: TestApplication<ModuleRunner>

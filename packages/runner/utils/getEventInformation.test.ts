@@ -1,6 +1,6 @@
 import type { TestApplication } from '@unserved/server'
 import { createTestApplication, createTestEvent, createTestPeer } from '@unserved/server'
-import { ModuleRunner } from '..'
+import { ModuleRunner } from '../module'
 import { getEventInformation } from './getEventInformation'
 
 interface Context {

@@ -1,16 +1,16 @@
 /* eslint-disable jsdoc/no-types */
-import { abort, createThreadFromFlow, start } from '@nwrx/core'
-import { isThreadRunning } from '@nwrx/core/utils'
+import { abort, createThreadFromFlow, start } from '@nwrx/nano'
+import { isThreadRunning } from '@nwrx/nano/utils'
 import { noop } from '@unshared/functions'
 import { serialize } from './serialize.mjs'
 import { serializeError } from './serializeError.mjs'
 
 /**
  * @typedef Thread
- * @type {import('@nwrx/core').Thread}
+ * @type {import('@nwrx/nano').Thread}
  *
  * @typedef ThreadEventName
- * @type {ReadonlyArray<keyof import('@nwrx/core').ThreadEventMap>}
+ * @type {ReadonlyArray<keyof import('@nwrx/nano').ThreadEventMap>}
  *
  * @typedef MessagePort
  * @type {import('worker_threads').MessagePort}

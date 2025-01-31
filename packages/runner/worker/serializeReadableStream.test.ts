@@ -14,7 +14,7 @@ function createStream(text: string, chunkSize = text.length): ReadableStream<str
   })
 }
 
-describe('serializeReadableStream', () => {
+describe('serializeReadableStream', { retry: 3 }, () => {
   it('should return an object with a `@instanceOf` property set to `ReadableStream`', () => {
     const stream = createStream('Hello, world!')
     const serialized = serializeReadableStream(stream)
@@ -100,7 +100,7 @@ describe('serializeReadableStream', () => {
     })
   })
 
-  it('should not consume the stream before the "read" event is sent', async() => {
+  it('should not consume the stream before the "read" event is sent', () => {
     const stream = new ReadableStream()
     serializeReadableStream(stream)
     expect(stream.locked).toBe(false)

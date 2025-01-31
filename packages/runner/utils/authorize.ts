@@ -1,6 +1,6 @@
 import type { Peer } from 'crossws'
 import type { H3Event } from 'h3'
-import type { ModuleRunner } from '..'
+import type { ModuleRunner } from '../module'
 import { getEventInformation } from './getEventInformation'
 
 export function authorize(this: ModuleRunner, event: H3Event | Peer) {

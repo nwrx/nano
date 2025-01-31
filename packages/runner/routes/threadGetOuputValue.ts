@@ -1,4 +1,4 @@
-import type { ModuleRunner } from '..'
+import type { ModuleRunner } from '../module'
 import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, assertStringUuid, createSchema } from '@unshared/validation'
 import { sendStream, setResponseHeader } from 'h3'

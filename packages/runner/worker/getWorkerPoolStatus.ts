@@ -1,4 +1,4 @@
-import type { ModuleRunner } from '..'
+import type { ModuleRunner } from '../module'
 
 export function getWorkerPoolStatus(this: ModuleRunner) {
   type Module = typeof import('./getWorkerPoolStatus.worker.mjs').getWorkerPoolStatus

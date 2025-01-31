@@ -2,7 +2,7 @@
 import type { TestApplication } from '@unserved/server'
 import { createTestApplication } from '@unserved/server'
 import { cpus } from 'node:os'
-import { ModuleRunner } from '..'
+import { ModuleRunner } from '../module'
 
 interface Context {
   application: TestApplication<ModuleRunner>

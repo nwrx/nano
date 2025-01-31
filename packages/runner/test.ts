@@ -1,5 +1,5 @@
 /* eslint-disable unicorn/prefer-top-level-await */
-import type { ModuleRunner } from '.'
+import type { ModuleRunner } from './module'
 import type { ThreadWorkerMessage } from './worker'
 import { createClient } from '@unserved/client'
 

@@ -1,4 +1,4 @@
-import type { ModuleRunner } from '..'
+import type { ModuleRunner } from '../module'
 import type { ThreadWorkerMessage } from '../worker'
 import { createWebSocketRoute } from '@unserved/server'
 import { assertObjectStrict, createParser } from '@unshared/validation'

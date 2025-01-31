@@ -1,7 +1,7 @@
-import type { FlowV1, ThreadEventMap, ThreadInputObject } from '@nwrx/core'
+import type { FlowV1, ThreadEventMap, ThreadInputObject } from '@nwrx/nano'
 import type { ObjectLike } from '@unshared/types'
 import type { MessagePort } from 'node:worker_threads'
-import type { ModuleRunner } from '..'
+import type { ModuleRunner } from '../module'
 import type { ThreadClientMessage } from './threadClientMessage'
 import { MessageChannel } from 'node:worker_threads'
 
