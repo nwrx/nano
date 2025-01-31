@@ -1,27 +1,41 @@
 <script setup lang="ts">
 import type { NavItem } from '~/utils/types'
 
-const props = defineProps<{
-  items: NavItem[]
+defineProps<{
+  itemsTop?: NavItem[]
+  itemsBottom?: NavItem[]
 }>()
+
+const collapsed = ref(false)
 </script>
 
 <template>
-  <div>
+  <div
+    class="flex flex-col bg-primary-100 p-4 transition-all duration-300"
+    :class="{
+      'w-64': !collapsed,
+      'w-20': collapsed,
+    }">
 
-    <!-- Navitems -->
-    <nav>
-      <ul>
-        <li
-          v-for="(item, index) in props.items"
-          :key="index"
-          class="bg-gray-200">
+    <!-- Collapse switch -->
+    <Button
+      icon="i-carbon:menu"
+      @click="() => { collapsed = !collapsed }"
+    />
 
-          <NuxtLink :to="item.to">
-            {{ item.text }}
-          </NuxtLink>
-        </li>
-      </ul>
-    </nav>
+    <!-- Nav -->
+    <AppNavDrawerSection
+      v-if="itemsTop"
+      :items="itemsTop"
+      :collapsed="collapsed"
+    />
+
+    <!-- Bottom -->
+    <AppNavDrawerSection
+      v-if="itemsBottom"
+      class="!mt-auto"
+      :items="itemsBottom"
+      :collapsed="collapsed"
+    />
   </div>
 </template>
