@@ -47,11 +47,11 @@ export type ProcessFunction<T, U> =
     : never
 
 export interface Component<
-  N extends string = string,
   T extends Record<string, InputSchema> = Record<string, InputSchema>,
   U extends Record<string, OutputSchema> = Record<string, OutputSchema>,
 > {
-  name: N
+  name: string
+  version: string
   icon?: string
   title?: string
   description?: string
@@ -61,18 +61,18 @@ export interface Component<
 }
 
 export function defineComponent<
-  K extends string,
   T extends Record<string, InputSchema>,
   U extends Record<string, OutputSchema>,
->(options: Component<K, T, U>, process?: ProcessFunction<T, U>): Component<K, T, U> {
+>(options: Component<T, U>, process?: ProcessFunction<T, U>): Component< T, U> {
   return {
     [SYMBOL_COMPONENT]: true,
     name: options.name,
+    version: options.version,
     icon: options.icon,
     title: options.title ?? options.name,
     description: options.description,
     inputs: options.inputs,
     outputs: options.outputs,
     process,
-  } as Component<K, T, U>
+  } as Component<T, U>
 }
