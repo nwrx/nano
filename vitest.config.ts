@@ -1,10 +1,5 @@
-import { resolvePackageNames } from '@unshared/scripts'
 import { cpus } from 'node:os'
 import { defineConfig } from 'vitest/config'
-
-const packageNames = await resolvePackageNames()
-const includeSource = packageNames.map(name => `./packages/${name}/**/*.ts`)
-const include = packageNames.map(name => `./packages/${name}/**/*.test.ts`)
 
 const exclude = [
   '**/node_modules/**',
@@ -19,12 +14,10 @@ const exclude = [
 
 export default defineConfig({
   test: {
-
     exclude,
     globals: true,
-    include,
-    includeSource,
-    reporters: ['basic'],
+    include: ['./packages/**/*.test.ts'],
+    reporters: [['default', { summary: false }]],
     setupFiles: './packages/setupTest.ts',
     testTimeout: 100,
     isolate: true,
@@ -42,7 +35,6 @@ export default defineConfig({
     // --- Benchmark configuration.
     benchmark: {
       exclude,
-      includeSource,
       outputFile: './benchmark/results.json',
       reporters: ['verbose'],
     },
@@ -64,7 +56,6 @@ export default defineConfig({
       enabled: false,
       exclude,
       ignoreSourceErrors: true,
-      include: includeSource,
     },
   },
 })
