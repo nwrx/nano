@@ -62,6 +62,7 @@ export const nodeTemplate = defineFlowNode({
       compiled = compiled.replace(match, values[key] ?? '')
     })
 
+    // --- Return the compiled string.
     return { compiled }
   },
 })
