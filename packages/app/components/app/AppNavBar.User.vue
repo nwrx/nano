@@ -1,6 +1,6 @@
 <script setup lang="ts">
 defineProps<{
-  imageUrl?: string
+  avatarUrl?: string
 }>()
 
 const emit = defineEmits<{
@@ -12,8 +12,8 @@ const emit = defineEmits<{
   <ContextMenu x="right" y="below">
 
     <img
-      v-if="imageUrl"
-      :src="imageUrl"
+      v-if="avatarUrl"
+      :src="avatarUrl"
       alt="User Avatar"
       class="w-8 h-8 rounded-full cursor-pointer"
     />
@@ -23,13 +23,13 @@ const emit = defineEmits<{
       <ContextMenuItem
         label="Profile"
         icon="i-carbon:user"
-        :to="{ name: 'UserSettings' }"
+        :to="{ name: 'SettingsProfile' }"
         @click="() => close()"
       />
       <ContextMenuItem
         label="Settings"
         icon="i-carbon:settings"
-        :to="{ name: 'UserSettings' }"
+        :to="{ name: 'SettingsAccount' }"
         @click="() => close()"
       />
       <ContextMenuItem

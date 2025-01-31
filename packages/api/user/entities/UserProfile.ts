@@ -1,5 +1,6 @@
 import { BaseEntity, transformerJson } from '@unserved/server'
-import { Column, Entity, JoinColumn, OneToOne } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm'
+import { StorageFile } from '../../storage'
 import { User } from './User'
 
 /**
@@ -12,7 +13,7 @@ export class UserProfile extends BaseEntity {
    * The user associated with this profile.
    */
   @JoinColumn()
-  @OneToOne(() => User, user => user.profile)
+  @OneToOne(() => User, user => user.profile, { nullable: false, onDelete: 'CASCADE' })
   user: User
 
   /**
@@ -21,6 +22,14 @@ export class UserProfile extends BaseEntity {
    */
   @Column('varchar', { length: 255 })
   displayName: string
+
+  /**
+   * The avatar of the user. It is used to show the user's profile picture in the
+   * application. It can be an image or a placeholder if the user has not set an avatar.
+   */
+  @JoinColumn()
+  @ManyToOne(() => StorageFile, { cascade: true, nullable: true, onDelete: 'SET NULL' })
+  avatar?: StorageFile
 
   /**
    * A short biography of the user.

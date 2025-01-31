@@ -19,8 +19,8 @@ const isAuthenticationRoute = computed(() => route.path.startsWith('/auth'))
       :imageUrl="ASSET_NWRX_LOGO"
       :itemsStart="NAV_BAR_START"
       :itemsEnd="NAV_BAR_END"
-      userName="John Doe"
-      userAvatar="https://fakeimg.pl/32x32/"
+      :userDisplayName="session.data.displayName"
+      :userAvatarUrl="session.data.avatarUrl"
       @signout="() => session.signout()"
     />
 
@@ -58,6 +58,5 @@ const isAuthenticationRoute = computed(() => route.path.startsWith('/auth'))
         </main>
       </div>
     </div>
-
   </div>
 </template>
