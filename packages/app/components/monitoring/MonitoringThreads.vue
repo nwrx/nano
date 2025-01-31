@@ -15,7 +15,7 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <div class="relative">
+  <div class="w-full relative">
 
     <!-- Empty -->
     <MonitoringEmpty v-if="!threads || threads.length === 0">
