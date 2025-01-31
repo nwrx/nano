@@ -68,14 +68,14 @@ const resultSchema = computed(() => {
   return props.resultSchema
 })
 
-const portsData = ref<Record<string, ComponentPublicInstance>>({})
-const portsResult = ref<Record<string, ComponentPublicInstance>>({})
+const socketsData = ref<Record<string, ComponentPublicInstance>>({})
+const socketsResult = ref<Record<string, ComponentPublicInstance>>({})
 
 /**
  * Expose the ports components to the parent component so their
  * position can be accessed and used to create links between nodes.
  */
-defineExpose({ portsData, portsResult })
+defineExpose({ socketsData, socketsResult })
 
 /**
  * Compute the ring color based on the node's state. If the node is
@@ -107,8 +107,9 @@ const ringWidth = computed(() => (
       '--un-ring-width': ringWidth,
     }"
     class="
-      absolute min-h-24 w-96 bg-editor-node border border-editor
+      min-h-24 w-96
       backdrop-blur-2xl rounded ring
+      bg-editor-node border border-editor
     "
     @mousedown.stop="(event) => emit('click', event)">
 
@@ -132,7 +133,7 @@ const ringWidth = computed(() => (
       <FlowEditorSocket
         v-for="port in dataSchema"
         v-bind="port"
-        :ref="(component) => portsData[port.key] = (component as ComponentPublicInstance)"
+        :ref="(component) => socketsData[port.key] = (component as ComponentPublicInstance)"
         :portId="port.key"
         :nodeId="id"
         :value="data?.[port.key]"
@@ -148,7 +149,7 @@ const ringWidth = computed(() => (
       <FlowEditorSocket
         v-for="port in resultSchema"
         v-bind="port"
-        :ref="(component) => portsResult[port.key] = (component as ComponentPublicInstance)"
+        :ref="(component) => socketsResult[port.key] = (component as ComponentPublicInstance)"
         :portId="port.key"
         :nodeId="id"
         :value="result?.[port.key]"
@@ -176,13 +177,6 @@ const ringWidth = computed(() => (
         :icon="isCollapsed ? 'i-carbon:chevron-down' : 'i-carbon:chevron-up'"
         class="size-4"
       />
-    </div>
-
-    <!-- Error message -->
-    <div v-if="error" class="absolute w-full mt-2">
-      <div class="bg-danger-100 text-danger-500 border border-danger-500 p-1 text-xs rounded">
-        <span>{{ error }}</span>
-      </div>
     </div>
   </div>
 </template>

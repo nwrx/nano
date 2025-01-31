@@ -210,8 +210,8 @@ export function useFlowEditor(options: UseFlowEditorOptions) {
           if (!sourceNodeComponent || !targetNodeComponent) continue
 
           // --- Get the source and target pin elements.
-          const sourceElement = sourceNodeComponent.portsResult[sourceProperty]?.pin as HTMLElement
-          const targetElement = targetNodeComponent.portsData[targetProperty]?.pin as HTMLElement
+          const sourceElement = sourceNodeComponent.socketsResult[sourceProperty]?.pin as HTMLElement
+          const targetElement = targetNodeComponent.socketsData[targetProperty]?.pin as HTMLElement
           if (!sourceElement || !targetElement) continue
           /* eslint-enable @typescript-eslint/no-unsafe-member-access */
           /* eslint-enable @typescript-eslint/no-unsafe-assignment */
