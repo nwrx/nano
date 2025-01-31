@@ -89,6 +89,7 @@ async function scrollToBottom() {
   const stickyHeight = 250
   if (scrollHeight - scrollTop > clientHeight + stickyHeight) return
   await nextTick()
+  if (!container.value) return
   container.value.scrollTo({ top: scrollHeight, behavior: 'instant' })
 }
 
