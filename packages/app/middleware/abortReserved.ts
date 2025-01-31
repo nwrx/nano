@@ -1,4 +1,4 @@
-const RESERVED_PATH = new Set([
+const RESERVED_PATH = [
   '/auth',
   '/admin',
   '/profile',
@@ -9,7 +9,7 @@ const RESERVED_PATH = new Set([
   '/verify-email',
   '/reset-password',
   '/forgot-password',
-])
+]
 
 export default defineNuxtRouteMiddleware(({ path }) => {
   for (const reserved of RESERVED_PATH)
