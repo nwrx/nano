@@ -59,6 +59,16 @@ export const template = defineFlowNode({
   process: ({ data }) => {
     const { template = '' } = data
 
+    // --- Loop through the variables and abort if one is missing.
+    const matches = template.match(EXP_VAR_REGEX) ?? []
+    for (const match of matches) {
+      const key = match.slice(2, -2).trim()
+      if (key === '') continue
+      if (key === 'template') continue
+      if (key in data === false) return
+      if (key in data && typeof data[key as keyof typeof data] !== 'string') return
+    }
+
     // --- Replace the variables in the template with the values.
     const compiled = template.replaceAll(EXP_VAR_REGEX, (_, key: string) => {
       if (key === 'template') return ''
