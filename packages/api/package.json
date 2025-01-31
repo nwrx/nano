@@ -1,31 +1,65 @@
 {
-  "name": "@nwrx/api",
-  "type": "module",
+  "name": "@nwrx/nano-api",
   "private": true,
-  "main": "./index.ts",
+  "types": "./index.ts",
+  "scripts": {
+    "dev": "concurrently --kill-others 'pnpm dev:build' 'pnpm dev:start'",
+    "dev:build": "tsup --watch --silent",
+    "dev:start": "NODE_OPTIONS='--enable-source-maps' nodemon -q",
+    "build": "tsup",
+    "start": "node --enable-source-maps dist/main.js"
+  },
   "dependencies": {
+    "jsonc-parser": "3.3.1",
+    "node-device-detector": "2.1.7",
+    "sqlite3": "5.1.7"
+  },
+  "devDependencies": {
     "@aws-sdk/client-s3": "3.734.0",
     "@aws-sdk/s3-request-presigner": "3.734.0",
     "@azure/storage-blob": "12.26.0",
-    "@nwrx/core": "workspace:*",
-    "@nwrx/module-core": "workspace:*",
-    "@nwrx/module-google": "workspace:*",
-    "@unserved/server": "0.3.1",
-    "@unshared/binary": "0.4.0",
-    "@unshared/collection": "0.4.0",
-    "@unshared/eslint-config": "0.4.0",
-    "@unshared/functions": "0.4.0",
-    "@unshared/string": "0.4.0",
-    "@unshared/types": "0.4.0",
-    "@unshared/validation": "0.4.0",
-    "crossws": "0.3.2",
+    "@nwrx/nano": "workspace:*",
+    "@nwrx/nano-module-core": "workspace:*",
+    "@types/node": "22.12.0",
+    "@unserved/server": "0.3.2",
+    "@unshared/binary": "0.4.1",
+    "@unshared/collection": "0.4.1",
+    "@unshared/functions": "0.4.1",
+    "@unshared/string": "0.4.1",
+    "@unshared/types": "0.4.1",
+    "@unshared/validation": "0.4.1",
+    "chart.js": "4.4.7",
+    "concurrently": "9.1.2",
+    "consola": "3.4.0",
+    "crossws": "0.3.3",
+    "date-fns": "4.1.0",
+    "dompurify": "3.2.3",
+    "eslint": "9.18.0",
     "h3": "1.14.0",
-    "node-device-detector": "2.1.7",
+    "marked": "15.0.6",
     "nodemailer": "6.10.0",
+    "nodemon": "3.1.9",
+    "nuxt": "3.15.4",
+    "nuxt-security": "2.1.5",
+    "reflect-metadata": "0.2.2",
+    "storybook": "8.5.1",
     "typeorm": "0.3.20",
+    "unocss": "65.4.3",
+    "unocss-preset-theme": "0.14.1",
+    "vite": "6.0.11",
+    "vue": "3.5.13",
+    "vue-router": "4.5.0",
     "yaml": "2.7.0"
   },
-  "devDependencies": {
-    "sqlite3": "5.1.7"
+  "tsup": {
+    "entry": [
+      "main.ts"
+    ],
+    "format": [
+      "cjs"
+    ],
+    "minify": true,
+    "treeshake": false,
+    "sourcemap": true
   }
 }

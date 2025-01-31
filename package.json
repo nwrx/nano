@@ -1,6 +1,5 @@
 {
   "name": "@nwrx/monorepo",
-  "type": "module",
   "version": "0.0.1",
   "license": "MIT",
   "private": true,
@@ -17,15 +16,12 @@
         "meow",
         "@typescript-eslint/parser"
       ]
-    },
-    "patchedDependencies": {
-      "@unserved/client": "patches/@unserved__client.patch",
-      "@unshared/client": "patches/@unshared__client.patch"
     }
   },
   "scripts": {
-    "dev": "turbo run dev",
-    "build": "turbo run build",
+    "dev": "NODE_OPTIONS='--max-old-space-size=4096' turbo watch dev",
+    "build": "NODE_OPTIONS='--max-old-space-size=4096' turbo run build",
+    "start": "NODE_OPTIONS='--max-old-space-size=4096' turbo run start",
     "lint": "DEBUG=eslint:eslint eslint --cache",
     "lint:ci": "eslint --cache --ignore-pattern examples",
     "lint:fix": "DEBUG=eslint:eslint eslint --fix --cache",
@@ -41,43 +37,27 @@
     "@commitlint/config-pnpm-scopes": "19.5.0",
     "@microsoft/api-extractor": "7.49.1",
     "@rollup/plugin-url": "8.0.2",
-    "@swc/core": "1.10.9",
-    "@types/node": "22.10.10",
+    "@swc/core": "1.10.11",
+    "@types/node": "22.12.0",
     "@types/nodemailer": "6.4.17",
-    "@unshared/eslint-config": "0.4.0",
-    "@unshared/scripts": "0.4.0",
-    "@unshared/validation": "0.4.0",
+    "@unshared/eslint-config": "0.4.1",
+    "@unshared/scripts": "0.4.1",
+    "@unshared/validation": "0.4.1",
     "@vitest/coverage-v8": "2.1.8",
     "@vitest/ui": "2.1.8",
     "@vitest/utils": "2.1.8",
     "commitlint": "19.6.1",
-    "eslint": "9.18.0",
-    "happy-dom": "16.7.2",
+    "eslint": "9.19.0",
+    "happy-dom": "16.7.3",
     "husky": "9.1.7",
     "memfs": "4.17.0",
     "rollup": "4.32.0",
     "rollup-plugin-dts": "6.1.1",
     "rollup-plugin-esbuild": "6.1.1",
-    "tsup": "8.3.5",
+    "tsup": "8.3.6",
     "tsx": "4.19.2",
     "turbo": "2.3.4",
     "typescript": "5.7.3",
     "vitest": "2.1.8"
-  },
-  "tsup": {
-    "entry": [
-      "index.ts",
-      "*/index.ts"
-    ],
-    "format": [
-      "esm",
-      "cjs"
-    ],
-    "dts": true,
-    "clean": true,
-    "splitting": true,
-    "sourcemap": true,
-    "treeshaking": true,
-    "experimental-dts": true
   }
 }

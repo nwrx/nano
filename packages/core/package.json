@@ -1,5 +1,5 @@
 {
-  "name": "@nwrx/core",
+  "name": "@nwrx/nano",
   "type": "module",
   "version": "0.0.1",
   "license": "MIT",
@@ -12,23 +12,39 @@
     "type": "git",
     "url": "git@github.com:nwrx/nano-ce.git"
   },
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
   "files": [
     "dist",
     "README.md",
     "LICENSE.md"
   ],
   "scripts": {
-    "dev": "NODE_OPTIONS='--max-old-space-size=16384' tsup --watch",
     "build": "tsup"
   },
   "dependencies": {
-    "@unshared/collection": "0.4.0",
-    "@unshared/decorators": "0.4.0",
-    "@unshared/string": "0.4.0",
-    "@unshared/types": "0.4.0",
-    "@unshared/validation": "0.4.0"
+    "@unshared/collection": "0.4.1",
+    "@unshared/decorators": "0.4.1",
+    "@unshared/string": "0.4.1",
+    "@unshared/types": "0.4.1",
+    "@unshared/validation": "0.4.1"
+  },
+  "tsup": {
+    "entry": [
+      "index.ts"
+    ],
+    "format": [
+      "cjs",
+      "esm"
+    ],
+    "clean": true,
+    "treeshake": true,
+    "sourcemap": true,
+    "dts": true
   }
 }
