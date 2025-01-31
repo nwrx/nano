@@ -2,6 +2,7 @@ import type { Context } from '../../__fixtures__'
 import { createTestEvent, createTestPeer } from '@unserved/server'
 import { randomBytes } from 'node:crypto'
 import { createTestContext } from '../../__fixtures__'
+import { User, UserSession } from '../entities'
 import { authenticate } from './authenticate'
 
 describe.concurrent('authenticate', () => {
@@ -16,6 +17,20 @@ describe.concurrent('authenticate', () => {
 
   describe('with HTTP request', () => {
     describe<Context>('authenticate', (it) => {
+      it('should return a UserSession instance', async({ moduleUser, createUser }) => {
+        const { headers } = await createUser()
+        const event = createTestEvent({ headers })
+        const result = await authenticate.call(moduleUser, event, {})
+        expect(result).toBeInstanceOf(UserSession)
+      })
+
+      it('should load the "user" relation', async({ moduleUser, createUser }) => {
+        const { headers } = await createUser()
+        const event = createTestEvent({ headers })
+        const result = await authenticate.call(moduleUser, event, {})
+        expect(result!.user).toBeInstanceOf(User)
+      })
+
       it('should authenticate when the token is valid', async({ moduleUser, createUser }) => {
         const { headers, session } = await createUser()
         const event = createTestEvent({ headers })
@@ -124,6 +139,20 @@ describe.concurrent('authenticate', () => {
 
   describe('with WebSocket request', () => {
     describe<Context>('authenticate', (it) => {
+      it('should return a UserSession instance', async({ moduleUser, createUser }) => {
+        const { headers } = await createUser()
+        const peer = createTestPeer({ headers })
+        const result = await authenticate.call(moduleUser, peer, {})
+        expect(result).toBeInstanceOf(UserSession)
+      })
+
+      it('should load the "user" relation', async({ moduleUser, createUser }) => {
+        const { headers } = await createUser()
+        const peer = createTestPeer({ headers })
+        const result = await authenticate.call(moduleUser, peer, {})
+        expect(result!.user).toBeInstanceOf(User)
+      })
+
       it('should authenticate when the token is valid', async({ moduleUser, createUser }) => {
         const { headers, session } = await createUser()
         const peer = createTestPeer({ headers })
