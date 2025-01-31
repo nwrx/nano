@@ -4,7 +4,7 @@ import { useClient } from '#imports'
 definePageMeta({
   name: 'ProjectSettings',
   path: '/:workspace/:name/settings',
-  middleware: ['protected', 'workspace'],
+  middleware: 'redirect-when-guest',
 })
 
 const workspace = computed(() => useRoute().params.workspace as string)
@@ -39,7 +39,9 @@ async function onDelete() {
   await useRouter().replace({ name: 'Workspace', params: { name: workspace.value } })
 }
 
-onMounted(project.refresh)
+onMounted(async() => {
+  await project.refresh()
+})
 </script>
 
 <template>
@@ -54,6 +56,7 @@ onMounted(project.refresh)
     <!-- Toolbar -->
     <AppPageContainer class="bg-white grow pt-32">
       <ProjectSettings
+        v-if="project.data.name"
         v-bind="project.data"
         :workspace="workspace"
         :searchUsers="searchUsers"
