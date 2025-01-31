@@ -1,11 +1,14 @@
+/* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
 /* eslint-disable unicorn/prefer-top-level-await */
 import Consola from 'consola'
 import { application } from './application'
 
-process.stdout.write('\u001Bc')
+const PORT = Number.parseInt(process.env.PORT || '3001', 10)
+const HOST = process.env.HOST ?? '0.0.0.0'
+
 application.initialize()
-  .then(() => application.createServer().listen(3001, '0.0.0.0', () => {
-    Consola.success('Server listening on http://localhost:3001')
+  .then(() => application.createServer().listen(PORT, HOST, () => {
+    Consola.success('Server listening on %s:%d', HOST, PORT)
   }))
   .catch((error) => {
     Consola.error(error)
