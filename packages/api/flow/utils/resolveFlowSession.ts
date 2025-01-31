@@ -1,5 +1,5 @@
 import type { ModuleFlow, User } from '@nwrx/api'
-import type { FlowEvents, Flow as FlowInstance, FlowThreadEventMeta, FlowThreadNodeEventMeta, SocketListOption } from '@nwrx/core'
+import type { Flow as FlowInstance, FlowThreadEventMeta, FlowThreadNodeEventMeta, SocketListOption } from '@nwrx/core'
 import type { FlowThread } from '@nwrx/core'
 import type { Peer } from 'crossws'
 import type { Repository } from 'typeorm'
@@ -18,43 +18,29 @@ export interface FlowSessionParticipant {
   selectedNodes: string[]
 }
 
-export interface FlowSessionEventMap extends Record<keyof FlowEvents, unknown> {
-
-  // Session
+export interface FlowSessionEventMap {
   'init': FlowJSON
   'user:join': { id: string; name: string; color: string }
   'user:leave': { id: string }
   'user:position': { id: string; x: number; y: number }
-
-  // Flow
   'meta': { key: string; value: unknown }
   'error': { message: string }
-
-  // Thread
   'thread:start': { input: Record<string, unknown> } & FlowThreadEventMeta
   'thread:abort': FlowThreadEventMeta
   'thread:error': { code?: string; message: string }
   'thread:end': { output: Record<string, unknown> } & FlowThreadEventMeta
   'thread:input': { name: string; value: unknown } & FlowThreadEventMeta
   'thread:output': { name: string; value: unknown } & FlowThreadEventMeta
-
-  // Node lifecycle
   'thread:nodeState': { id: string } & FlowThreadNodeEventMeta
   'thread:nodeStart': { id: string; input: Record<string, unknown> } & FlowThreadNodeEventMeta
   'thread:nodeError': { id: string; code?: string; message: string } & FlowThreadNodeEventMeta
   'thread:nodeEnd': { id: string; input: Record<string, unknown>; output: Record<string, unknown> } & FlowThreadNodeEventMeta
-
-  // Variables
   'variables:create': { name: string; value: string }
   'variables:update': { name: string; value: string }
   'variables:remove': { name: string }
-
-  // Secrets
   'secrets:create': { name: string; value: string }
   'secrets:update': { name: string; value: string }
   'secrets:remove': { name: string }
-
-  // Node
   'node:created': FlowThreadNodeJSON
   'node:removed': { ids: string[] }
   'node:metaValueChanged': { id: string; key: string; value: unknown }
