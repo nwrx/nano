@@ -1,8 +1,8 @@
-import type { InferInput } from '@unserved/client'
+import type { InferInput, InferOutput } from '@unserved/client'
 import type { application } from '~/server'
-import { awaitable } from '@unshared/functions'
 import { useAlerts, useClient, useRouter } from '#imports'
 
+export type SessionObject = InferOutput<typeof application, 'GET /api/session'>
 export type SessionSigninCredentials = InferInput<typeof application, 'POST /api/session'>
 export type SessionSignupCredentials = InferInput<typeof application, 'POST /api/signup'>
 
@@ -13,18 +13,18 @@ export type SessionSignupCredentials = InferInput<typeof application, 'POST /api
 export const useSession = createSharedComposable(() => {
   const client = useClient()
   const router = useRouter()
-  const username = ref('')
+  const session = ref<SessionObject>({})
 
-  const refresh = async() =>
-    await client.request('GET /api/session', {
+  const refresh = async() => {
+    if (session.value.username) return session.value
+    return await client.request('GET /api/session', {
       onError: error => useAlerts().error(error),
-      onData: (data) => {
-        if (data.username) username.value = data.username
-      },
+      onData: data => session.value = data,
     })
+  }
 
-  return awaitable({
-    username,
+  return {
+    data: toReactive(session),
     refresh,
 
     /**
@@ -37,7 +37,7 @@ export const useSession = createSharedComposable(() => {
         onError: error => useAlerts().error(error),
         onSuccess: () => {
           useAlerts().success('Account created successfully')
-          void useRouter().replace({ name: 'Workspace', params: { workspace: username.value } })
+          void useRouter().replace({ name: 'Workspace', params: { workspace: session.value.username } })
         },
         data: {
           email: credentials.email,
@@ -78,8 +78,11 @@ export const useSession = createSharedComposable(() => {
       await client.requestAttempt('DELETE /api/session', {
         onSuccess: () => useAlerts().success('You have been signed out'),
         onError: error => useAlerts().error(error),
-        onEnd: () => { void router.push({ name: 'Authentication' }) },
+        onEnd: () => {
+          session.value = {}
+          void router.push({ name: 'Authentication' })
+        },
       })
     },
-  }, refresh)
+  }
 })
