@@ -68,6 +68,7 @@ export interface FlowOptions<T extends Module = Module> {
   meta?: FlowMeta
   secrets?: Record<string, string>
   variables?: Record<string, string>
+  context?: Record<string, unknown>
 }
 
 /**
@@ -111,6 +112,7 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
   public modules: T[] = []
   public nodes: NodeInstance[] = []
   public secrets = {} as Record<string, string>
+  public context = {} as Record<string, unknown>
   public variables = {} as Record<string, string>
   public isRunning = false
   public eventTarget = new EventTarget()
@@ -387,8 +389,8 @@ export class Flow<T extends Module = Module> implements FlowOptions<T> {
    * useful when the flow needs to be reprocessed with new input.
    */
   public reset(): void {
-    for (const node of this.nodes)
-      node.reset()
+    this.context = {}
+    for (const node of this.nodes) node.reset()
   }
 
   /**
