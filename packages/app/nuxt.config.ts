@@ -17,6 +17,9 @@ export default defineNuxtConfig({
     rootTag: 'div',
     buildAssetsDir: '/static/',
     baseURL: '/',
+    keepalive: {
+      max: 10,
+    },
   },
 
   serverHandlers: [
