@@ -26,7 +26,7 @@ export default defineConfig({
     includeSource,
     reporters: ['basic'],
     setupFiles: './packages/setupTest.ts',
-    testTimeout: 1000,
+    testTimeout: 100,
     isolate: true,
 
     // --- Worker pool configuration.
