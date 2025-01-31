@@ -3,6 +3,7 @@ import ASSET_NWRX_LOGO from '~/assets/nwrx-logo-white.svg'
 
 const route = useRoute()
 const session = useSession()
+const localSettings = useLocalSettings()
 
 // --- Conditional UI.
 const isAuthenticationRoute = computed(() => {
@@ -10,12 +11,8 @@ const isAuthenticationRoute = computed(() => {
   return route.name.startsWith('Authentication')
 })
 
-// --- State
-const isDrawerOpen = useLocalStorage('__DrawerOpen', true)
-const themeColor = useLocalStorage('__ThemeColor', 'system')
-
 // --- On theme change, disable transitions for a moment.
-watch(themeColor, () => {
+watch(() => localSettings.value.themeColor, () => {
   document.documentElement.classList.add('theme-change')
   setTimeout(() => document.documentElement.classList.remove('theme-change'), 100)
 })
@@ -27,13 +24,13 @@ const { setLocale, locale } = useI18n()
 <template>
   <div
     id="layout"
-    :class="{ dark: themeColor === 'dark' }"
+    :class="{ dark: localSettings.themeColor === 'dark' }"
     class="font-sans flex flex-col w-full h-screen overflow-hidden pb pr bg-layout text-layout">
 
     <!-- Header -->
     <AppNav
       class="h-16 px"
-      :theme="themeColor"
+      :theme="localSettings.themeColor"
       :title="CONSTANTS.appTitle"
       :image-url="ASSET_NWRX_LOGO"
       :items-start="NAV_BAR_START"
@@ -45,13 +42,13 @@ const { setLocale, locale } = useI18n()
       :locales="LOCALES"
       @signout="() => session.signout()"
       @set-locale="(locale) => setLocale(locale)"
-      @set-theme="(theme) => themeColor = theme"
+      @set-theme="(theme) => localSettings.themeColor = theme"
     />
 
     <!-- Nav Drawer -->
     <div class="flex w-full h-full shrink-1 overflow-hidden">
       <AppDrawer
-        v-model="isDrawerOpen"
+        v-model="localSettings.drawerOpen"
         class="h-full shrink-0 overflow-y-auto text-unset"
         :items-top="NAV_DRAWER_START"
         :items-bottom="NAV_DRAWER_END"
@@ -161,6 +158,7 @@ const { setLocale, locale } = useI18n()
 .markdown code {
   padding: 0.15rem 0.25rem;
   margin: 0 0.25rem;
+  font-size: 0.875rem;
   border-radius: 0.25rem;
   border-width: 1px;
   border-style: solid;

@@ -2,7 +2,7 @@
 import type { MonitoringFlowThreadObject } from '@nwrx/api'
 
 defineProps<{
-  threads: MonitoringFlowThreadObject[]
+  threads?: MonitoringFlowThreadObject[]
   selectedFlow?: string
   selectedThread?: string
 }>()
@@ -18,7 +18,7 @@ const { t } = useI18n()
   <div class="relative">
 
     <!-- Empty -->
-    <MonitoringEmpty v-if="threads.length === 0">
+    <MonitoringEmpty v-if="!threads || threads.length === 0">
       {{ t('noThreads') }}
     </MonitoringEmpty>
 

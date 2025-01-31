@@ -15,11 +15,6 @@ export function useMonitoringSession(workspace: MaybeRef<string>) {
     },
   })
 
-  const filters = useLocalStorage<MonitoringSessionFilters>('___Monitoring_Filters', {
-    eventNames: [],
-    eventTypes: [],
-  })
-
   const data = reactive<MonitoringSessionState>({
     projects: [],
     threads: [],
@@ -76,7 +71,6 @@ export function useMonitoringSession(workspace: MaybeRef<string>) {
   return reactive({
     data,
     selection,
-    filters,
 
     selectFlow: (project: string, name: string) => {
       if (selection.flow === name && selection.project === project) return

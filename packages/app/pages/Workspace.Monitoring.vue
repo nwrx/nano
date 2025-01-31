@@ -14,12 +14,14 @@ useHead(() => ({
 const route = useRoute()
 const workspace = computed(() => route.params.workspace as string)
 const session = useMonitoringSession(workspace)
+const settings = useLocalSettings()
 </script>
 
 <template>
   <AppPage>
     <Monitoring
-      v-model:filters="session.filters"
+      v-model:event-names="settings.monitoringEventNames"
+      v-model:event-types="settings.monitoringEventTypes"
       :projects="session.data.projects"
       :threads="session.data.threads"
       :events="session.data.events"

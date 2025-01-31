@@ -35,8 +35,15 @@ const emit = defineEmits<{
   setUserPosition: [number, number]
 }>()
 
+const settings = useLocalSettings()
+const panelWidth = computed({
+  get: () => settings.value.editorPanelWidth,
+  set: value => settings.value.editorPanelWidth = value,
+})
+
 const editor = useFlowEditor({
   viewSize: 10e4,
+  panelWidth: panelWidth as Ref<number>,
   nodes: computed(() => props.nodes ?? []),
   peers: computed(() => props.peers ?? []),
   peerId: computed(() => props.peerId ?? '0'),
@@ -160,12 +167,12 @@ const editor = useFlowEditor({
 
         <!-- Panel -->
         <EditorPanel
-          v-model:is-open="editor.isPanelOpen"
+          v-model:is-open="settings.editorPanelOpen"
           v-model:is-resizing="editor.isPanelResizing"
-          v-model:is-secrets-open="editor.isPanelSecretsOpen"
-          v-model:is-variables-open="editor.isPanelVariablesOpen"
-          v-model:is-node-input-open="editor.isPanelNodeInputOpen"
-          v-model:is-node-output-open="editor.isPanelNodeOutputOpen"
+          v-model:is-secrets-open="settings.editorPanelSecretsOpen"
+          v-model:is-variables-open="settings.editorPanelVariablesOpen"
+          v-model:is-node-input-open="settings.editorPanelNodeInputOpen"
+          v-model:is-node-output-open="settings.editorPanelNodeOutputOpen"
           :width="editor.panelWidth"
 
           :name="name"

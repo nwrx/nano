@@ -5,20 +5,20 @@ import type { MonitoringFlowThreadEventObject, MonitoringFlowThreadNodeEventObje
 const props = defineProps<{
   selectedEvent?: string
   selectedThread?: string
-  events: MonitoringFlowThreadEventObject[]
-  nodeEvents: MonitoringFlowThreadNodeEventObject[]
-  filterEventNames?: string[]
-  filterEventTypes?: string[]
+  events?: MonitoringFlowThreadEventObject[]
+  nodeEvents?: MonitoringFlowThreadNodeEventObject[]
+  eventNames?: string[]
+  eventTypes?: string[]
 }>()
 
 const emit = defineEmits<{
-  'update:filterEventNames': [string[]]
-  'update:filterEventTypes': [string[]]
+  'update:eventNames': [string[]]
+  'update:eventTypes': [string[]]
 }>()
 
 const { t } = useI18n()
-const types = useVModel(props, 'filterEventTypes', emit, { passive: true, defaultValue: [] })
-const names = useVModel(props, 'filterEventNames', emit, { passive: true, defaultValue: [] })
+const types = useVModel(props, 'eventTypes', emit, { passive: true, defaultValue: [] })
+const names = useVModel(props, 'eventNames', emit, { passive: true, defaultValue: [] })
 
 const allEvents = computed(() => [
   ...(props.events ?? []).map(x => ({ type: 'thread', ...x })),
