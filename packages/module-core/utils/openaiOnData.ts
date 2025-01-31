@@ -1,13 +1,12 @@
 import type { InferenceResult } from '../nodes'
 import type { LanguageModelOnDataContext } from '../types'
-import type { OpenaiChatRequest } from './OpenaiChatRequest'
-import type { OpenaiChatResponse } from './OpenaiChatResponse'
+import type { OpenaiChatRequest, OpenaiChatResponse } from './openai'
 
 export async function openaiOnData(
   context: LanguageModelOnDataContext<OpenaiChatRequest, OpenaiChatResponse>,
 ): Promise<InferenceResult | void> {
   const { body, data, call, resume } = context
-  const { choices: [choice], id, usage } = data as unknown as OpenaiChatResponse
+  const { choices: [choice], id } = data as unknown as OpenaiChatResponse
 
   // --- Handle tool calls returned by the model.
   if (choice.finish_reason === 'tool_calls') {
@@ -34,9 +33,6 @@ export async function openaiOnData(
     return {
       id,
       completion: completion ?? '',
-      tokensTotal: usage.total_tokens,
-      tokensPrompt: usage.prompt_tokens,
-      tokensCompletion: usage.completion_tokens,
     }
   }
 }
