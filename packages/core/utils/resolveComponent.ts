@@ -9,7 +9,7 @@ import { parseComponentSpecifier } from './parseComponentSpecifier'
  * is used to resolve the component to a value that can be used in the
  * flow.
  */
-export type ComponentResolver = (specifier: ComponentSpecifier) => MaybePromise<Component | undefined>
+export type ComponentResolver = (specifier: ComponentSpecifier) => MaybePromise<Component<any, any> | undefined>
 
 /**
  * The function that is used to resolve a component. The resolve function

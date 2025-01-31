@@ -36,10 +36,10 @@ describe('resolveComponent', () => {
     expect(resolver2).toHaveBeenCalledOnce()
   })
 
-  it('should throw an error if the component is not resolved', () => {
+  it('should throw an error if the component is not resolved', async() => {
     const resolver: ComponentResolver = () => undefined
-    const shouldThrow = () => resolveComponent('module/invalidComponent', [resolver])
-    expect(shouldThrow).toThrow('The component with specifier "module/invalidComponent" could not be resolved.')
+    const shouldReject = resolveComponent('module/invalidComponent', [resolver])
+    await expect(shouldReject).rejects.toThrow('The component with specifier "module/invalidComponent" could not be resolved.')
   })
 
   it('should throw an error if the component is not valid', async() => {
