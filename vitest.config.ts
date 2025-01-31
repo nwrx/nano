@@ -30,14 +30,9 @@ export default defineConfig({
     isolate: true,
 
     // --- Worker pool configuration.
-    pool: 'threads',
+    pool: 'forks',
     maxConcurrency: cpus().length,
     poolOptions: {
-      threads: {
-        useAtomics: true,
-        maxThreads: cpus().length,
-        minThreads: cpus().length,
-      },
       forks: {
         maxForks: cpus().length,
         minForks: cpus().length,
