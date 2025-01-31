@@ -1,4 +1,9 @@
 <script setup lang="ts">
+defineProps<{
+  workspace: string
+  project: string
+}>()
+
 const { t } = useI18n()
 </script>
 
@@ -16,7 +21,11 @@ const { t } = useI18n()
     <div class="flex w-full gap-lg py-lg">
       <AppPageNav class="shrink">
         <AppPageNavGroup>
-          <AppPageNavItem :label="t('nav.settings.settings')" icon="i-carbon:settings" :to="{ name: 'ProjectSettings' }" />
+          <AppPageNavItem
+            :label="t('nav.settings.settings')"
+            icon="i-carbon:settings"
+            :to="{ name: 'ProjectSettings', params: { workspace, project } }"
+          />
           <AppPageNavItem :label="t('nav.settings.access')" icon="i-carbon:user" to="/settings/access" />
           <AppPageNavItem :label="t('nav.settings.integrations')" icon="i-carbon:connect" to="/settings/integrations" />
           <AppPageNavItem :label="t('nav.settings.webhooks')" icon="i-carbon:webhook" to="/settings/webhooks" />
