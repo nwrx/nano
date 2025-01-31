@@ -353,7 +353,7 @@ export class Flow implements Disposable, FlowOptions {
         const socket = node.dataSchema[key]
 
         // --- Filter out the link if the source and target are specified.
-        if (socket.isIterable && Array.isArray(value)) {
+        if (socket?.isIterable && Array.isArray(value)) {
           const newValue = value.filter((v: string) => {
             const link = this.fromLink(v)
             if (!link) return true
