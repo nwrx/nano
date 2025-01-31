@@ -1,5 +1,5 @@
 import type { ModuleFlow, User } from '@nwrx/api'
-import type { FlowEvents, Flow as FlowInstance, NodeRunEvent } from '@nwrx/core'
+import type { FlowEvents, Flow as FlowInstance, FlowRunEvent, NodeRunEvent } from '@nwrx/core'
 import type { Peer } from 'crossws'
 import type { Repository } from 'typeorm'
 import type { Flow } from '../entities'
@@ -37,11 +37,11 @@ export interface FlowSessionEventMap extends Record<keyof FlowEvents, unknown> {
   // Flow
   'flow:refresh': FlowSessionJSON
   'flow:metaValue': { key: string; value: unknown }
-  'flow:input': { key: string; value: unknown }
-  'flow:output': { key: string; value: unknown }
-  'flow:start': { id: string }
-  'flow:abort': { id: string; duration: number }
-  'flow:end': { id: string; duration: number }
+  'flow:input': { id: string; property: string; value: unknown }
+  'flow:output': { id: string; property: string; value: unknown }
+  'flow:start': FlowRunEvent
+  'flow:abort': FlowRunEvent
+  'flow:end': FlowRunEvent
 
   // Variables
   'variables:create': { name: string; value: string }
@@ -99,11 +99,11 @@ export class FlowSessionInstance {
 
     // --- Flow events.
     this.flow.on('flow:metaValue', (key, value) => this.broadcast({ event: 'flow:metaValue', key, value }))
-    this.flow.on('flow:input', (key, value) => this.broadcast({ event: 'flow:input', key, value }))
-    this.flow.on('flow:output', (key, value) => this.broadcast({ event: 'flow:output', key, value }))
-    this.flow.on('flow:start', id => this.broadcast({ event: 'flow:start', id }))
-    this.flow.on('flow:abort', (id, duration) => this.broadcast({ event: 'flow:abort', id, duration }))
-    this.flow.on('flow:end', (id, duration) => this.broadcast({ event: 'flow:end', id, duration }))
+    this.flow.on('flow:input', (id, property, value) => this.broadcast({ event: 'flow:input', id, property, value }))
+    this.flow.on('flow:output', (id, property, value) => this.broadcast({ event: 'flow:output', id, property, value }))
+    this.flow.on('flow:start', event => this.broadcast({ event: 'flow:start', ...event }))
+    this.flow.on('flow:abort', event => this.broadcast({ event: 'flow:abort', ...event }))
+    this.flow.on('flow:end', event => this.broadcast({ event: 'flow:end', ...event }))
 
     // --- Node events.
     this.flow.on('node:create', node => this.broadcast({ event: 'node:create', ...serializeNodeInstance(node) }))

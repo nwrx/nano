@@ -1,6 +1,6 @@
 import type { ModuleFlow } from '..'
 import { createRoute } from '@unserved/server'
-import { assertNotNull, assertNumber, assertStringConstantCase, assertStringNotEmpty, createArrayParser, createAssertStringEquals, createRuleSet, createSchema } from '@unshared/validation'
+import { assertNotNull, assertNumber, assertObject, assertStringConstantCase, assertStringNotEmpty, createArrayParser, createAssertStringEquals, createRuleSet, createSchema } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
 
@@ -36,7 +36,8 @@ export function flowSession(this: ModuleFlow) {
           value: assertNotNull,
         })],
         [createSchema({
-          event: createAssertStringEquals('flowRun'),
+          event: createAssertStringEquals('flowStart'),
+          input: assertObject<Record<string, unknown>>,
         })],
         [createSchema({
           event: createAssertStringEquals('flowAbort'),
@@ -228,8 +229,9 @@ export function flowSession(this: ModuleFlow) {
             await session.save()
             break
           }
-          case 'flowRun': {
-            session.flow.start()
+          case 'flowStart': {
+            const { input } = message
+            session.flow.start(input)
             break
           }
           case 'flowAbort': {

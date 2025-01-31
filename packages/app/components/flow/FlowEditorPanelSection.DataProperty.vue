@@ -1,13 +1,12 @@
 <script setup lang="ts">
-import Markdown from 'markdown-it'
+import { vMarkdown } from '#imports';
 
 defineProps<{
   name: string
   value: unknown
 }>()
 
-const asMarkdown = ref(true)
-const md = new Markdown({ html: true })
+const asMarkdown = ref(false)
 </script>
 
 <template>
@@ -52,7 +51,7 @@ const md = new Markdown({ html: true })
       <span
         v-if="asMarkdown"
         class="line-height-tight"
-        v-html="md.render(value).trim()"
+        v-markdown="value"
       />
 
       <!-- Raw -->
