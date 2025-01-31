@@ -1,4 +1,5 @@
 import { defineNuxtConfig } from 'nuxt/config'
+import { LOCALES } from './utils/locales'
 
 export default defineNuxtConfig({
 
@@ -115,26 +116,8 @@ export default defineNuxtConfig({
   i18n: {
     lazy: true,
     strategy: 'no_prefix',
-    defaultLocale: 'en',
-    locales: [
-      {
-        code: 'en',
-        language: 'English',
-      },
-      {
-        code: 'fr',
-        name: 'French',
-        language: 'Français',
-      },
-      {
-        code: 'de',
-        name: 'German',
-      },
-      {
-        code: 'cn',
-        name: 'Chinese',
-      },
-    ],
+    defaultLocale: 'en-US',
+    locales: LOCALES,
   },
 
   /**

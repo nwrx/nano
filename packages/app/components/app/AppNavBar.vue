@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { LocaleObject } from '@nuxtjs/i18n'
+
 const props = defineProps<{
   title?: string
   imageUrl?: string
@@ -10,16 +12,12 @@ const props = defineProps<{
   search?: string
   searchOpen?: boolean
   locale?: string
-  languages?: Array<{
-    code: string
-    name: string
-    icon: string
-  }>
+  locales?: Array<{ icon: string } & LocaleObject>
 }>()
 
 const emit = defineEmits<{
   signout: []
-  setLanguage: [language: string]
+  setLocale: [language: string]
 }>()
 
 // --- Search.
@@ -30,7 +28,7 @@ const searchOpen = useVModel(props, 'searchOpen', emit, { passive: true })
 const locale = useVModel(props, 'locale', emit, {
   passive: false,
   defaultValue: 'en',
-  eventName: 'setLanguage',
+  eventName: 'setLocale',
 }) as Ref<string>
 </script>
 
@@ -93,9 +91,9 @@ const locale = useVModel(props, 'locale', emit, {
 
     <!-- Language -->
     <AppNavBarLanguage
-      v-if="languages"
+      v-if="locales"
       v-model="locale"
-      :languages="languages"
+      :locales="locales"
     />
   </header>
 </template>

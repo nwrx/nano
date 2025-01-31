@@ -12,11 +12,9 @@ const isAuthenticationRoute = computed(() => {
 
 // --- State
 const isDrawerOpen = useLocalStorage('__DrawerOpen', true)
-const initialLocale = useLocalStorage('__Language', 'en')
 
 // --- Locale
 const { setLocale, locale } = useI18n()
-onMounted(() => setLocale(initialLocale.value))
 </script>
 
 <template>
@@ -25,7 +23,6 @@ onMounted(() => setLocale(initialLocale.value))
     <!-- Header -->
     <AppNavBar
       class="shrink-0 col-span-2"
-      :locale="locale"
       :title="CONSTANTS.appTitle"
       :imageUrl="ASSET_NWRX_LOGO"
       :itemsStart="NAV_BAR_START"
@@ -33,9 +30,10 @@ onMounted(() => setLocale(initialLocale.value))
       :userAvatarUrl="session.data.avatarUrl"
       :userEmail="session.data.email"
       :userDisplayName="session.data.displayName"
-      :languages="LANGUAGES"
+      :locale="locale"
+      :locales="LOCALES"
       @signout="() => session.signout()"
-      @set-language="(locale) => setLocale(locale)"
+      @setLocale="(locale) => setLocale(locale)"
     />
 
     <!-- Nav Drawer -->
