@@ -28,7 +28,7 @@ export const nodeModelOpenai = defineFlowNode({
 
     // --- Fetch the list of models from the OpenAI API.
     let modelIds: string[] = []
-    const apiKey = (data as { apiKey: string }).apiKey
+    const apiKey = data.apiKey as string
     if (apiKey) {
       const response = await fetch('https://api.openai.com/v1/models', { headers: { Authorization: `Bearer ${apiKey}` } })
       const modelList = await response.json() as OpenaiModelList
