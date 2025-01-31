@@ -16,7 +16,7 @@ export type InputControl =
   | 'textarea'
   | 'variable'
 
-export type InputSchema = OpenAPIV3.SchemaObject & {
+export type InputSocket = OpenAPIV3.SchemaObject & {
   'x-control'?: MaybeLiteral<InputControl>
   'x-placeholder'?: string
   'x-internal'?: boolean
@@ -24,7 +24,7 @@ export type InputSchema = OpenAPIV3.SchemaObject & {
   'x-stream'?: boolean
 }
 
-export type OutputSchema = OpenAPIV3.SchemaObject & {
+export type OutputSocket = OpenAPIV3.SchemaObject & {
   'x-internal'?: boolean
   'x-stream'?: boolean
 }
@@ -47,27 +47,37 @@ export interface ProcessContext<
   abortSignal: AbortSignal
 }
 
-export type ProcessFunction<T, U> =
+export type ProcessFunction<
+  T extends Record<string, InputSocket> = Record<string, InputSocket>,
+  U extends Record<string, OutputSocket> = Record<string, OutputSocket>,
+> =
   [InferSchema<T>, InferSchema<U>] extends [infer Data extends ObjectLike, infer Result extends ObjectLike]
     ? (context: ProcessContext<Data, Result>) => MaybePromise<Result>
     : never
 
-export interface Component<
-  T extends Record<string, InputSchema> = Record<string, InputSchema>,
-  U extends Record<string, OutputSchema> = Record<string, OutputSchema>,
+export interface ComponentOptions<
+  T extends Record<string, InputSocket> = Record<string, InputSocket>,
+  U extends Record<string, OutputSocket> = Record<string, OutputSocket>,
 > {
   icon?: string
   title?: string
   description?: string
   inputs?: T
   outputs?: U
+}
+
+export interface Component<
+  T extends Record<string, InputSocket> = Record<string, InputSocket>,
+  U extends Record<string, OutputSocket> = Record<string, OutputSocket>,
+> extends ComponentOptions<T, U> {
+  ['@instanceOf']: typeof SYMBOL_COMPONENT
   process?: ProcessFunction<T, U>
 }
 
 export function defineComponent<
-  T extends Record<string, InputSchema> = {},
-  U extends Record<string, OutputSchema> = {},
->(options: Component<T, U>, process?: ProcessFunction<T, U>): Component {
+  T extends Record<string, InputSocket> = {},
+  U extends Record<string, OutputSocket> = {},
+>(options: ComponentOptions<T, U>, process?: ProcessFunction<T, U>): Component<T, U> {
   return {
     ['@instanceOf']: SYMBOL_COMPONENT,
     icon: options.icon,
