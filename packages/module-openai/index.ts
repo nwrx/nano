@@ -1,7 +1,7 @@
 import { defineModule } from '@nwrx/core'
 import { nodeModelOpenai } from './nodeModelOpenai'
 
-export default defineModule({
+export const Openai = defineModule({
   kind: 'nwrx/openai',
   name: 'OpenAI',
   icon: 'https://api.iconify.design/logos:openai-icon.svg',
