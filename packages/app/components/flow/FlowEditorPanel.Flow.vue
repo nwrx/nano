@@ -1,22 +1,24 @@
 <script setup lang="ts">
+import type { FlowSessionSecretJSON, FlowSessionVariableJSON } from '@nwrx/api'
+
 const props = defineProps<{
   name: string
-  description: string
   methods: string[]
-  secrets: Array<{ name: string }>
-  variables: Array<{ name: string; value: string }>
+  description: string
+  secrets: FlowSessionSecretJSON[]
+  variables: FlowSessionVariableJSON[]
   isMethodsOpen: boolean
   isSecretsOpen: boolean
   isVariablesOpen: boolean
 }>()
 
 const emit = defineEmits<{
-  'update:name': [name: string]
-  'update:description': [description: string]
-  'update:methods': [methods: string[]]
   'update:isMethodsOpen': [isMethodsOpen: boolean]
   'update:isSecretsOpen': [isSecretsOpen: boolean]
   'update:isVariablesOpen': [isVariablesOpen: boolean]
+  setName: [name: string]
+  setMethods: [methods: string[]]
+  setDescription: [description: string]
   variableCreate: [name: string, value: string]
   variableUpdate: [name: string, value: string]
   variableRemove: [name: string]
@@ -26,9 +28,9 @@ const emit = defineEmits<{
 }>()
 
 // --- Two-way binding
-const title = useVModel(props, 'name', emit, { passive: true })
-const description = useVModel(props, 'description', emit, { passive: true })
-const methods = useVModel(props, 'methods', emit, { passive: true })
+const name = useVModel(props, 'name', emit, { passive: true, eventName: 'setName' })
+const methods = useVModel(props, 'methods', emit, { passive: true, eventName: 'setMethods' })
+const description = useVModel(props, 'description', emit, { passive: true, eventName: 'setDescription' })
 const isMethodsOpen = useVModel(props, 'isMethodsOpen', emit, { passive: true })
 const isSecretsOpen = useVModel(props, 'isSecretsOpen', emit, { passive: true })
 const isVariablesOpen = useVModel(props, 'isVariablesOpen', emit, { passive: true })
@@ -60,10 +62,11 @@ const isVariablesOpen = useVModel(props, 'isVariablesOpen', emit, { passive: tru
     <FlowEditorPanelSectionVariables
       v-model:isOpen="isVariablesOpen"
       :variables="variables"
-      title="Project Variables"
+      title="Variables"
       text="List and define variables."
       createTitle="Create a new variable"
       createText="Define a new variable with a name and value."
+      createLabel="+ CREATE_NEW_VARIABLE"
       updateTitle="Update variable"
       updateText="Update the value of the variable."
       @create="(name, value) => emit('variableCreate', name, value)"
@@ -74,10 +77,11 @@ const isVariablesOpen = useVModel(props, 'isVariablesOpen', emit, { passive: tru
     <FlowEditorPanelSectionVariables
       v-model:isOpen="isSecretsOpen"
       :variables="secrets"
-      title="Project Secrets"
+      title="Secrets"
       text="Create, replace, or remove secrets."
       createTitle="Create a new secret"
       createText="Define a new secret with a name and value."
+      createLabel="+ CREATE_NEW_SECRET"
       updateTitle="Update secret"
       updateText="Update the value of the secret."
       @create="(name, value) => emit('secretCreate', name, value)"

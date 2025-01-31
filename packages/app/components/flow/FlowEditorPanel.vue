@@ -1,27 +1,31 @@
 <script setup lang="ts">
-import type { FlowNodeInstanceJSON } from '@nwrx/api'
+import type { FlowNodeInstanceJSON, FlowSessionSecretJSON, FlowSessionVariableJSON } from '@nwrx/api'
 
 const props = defineProps<{
   name: string
-  description: string
   methods: string[]
-  secrets: Array<{ name: string }>
-  variables: Array<{ name: string; value: string }>
+  description: string
+  secrets: FlowSessionSecretJSON[]
+  variables: FlowSessionVariableJSON[]
   nodeSelected: FlowNodeInstanceJSON[]
   isOpen: boolean
-  isFlowMethodsOpen: boolean
-  isFlowSecretsOpen: boolean
-  isFlowVariablesOpen: boolean
+  isFlowMethodsOpen?: boolean
+  isFlowSecretsOpen?: boolean
+  isFlowVariablesOpen?: boolean
+  isNodeDataOpen?: boolean
+  isNodeResultOpen?: boolean
 }>()
 
 const emit = defineEmits<{
-  'update:name': [name: string]
-  'update:description': [description: string]
-  'update:methods': [methods: string[]]
   'update:isOpen': [isOpen: boolean]
   'update:isFlowMethodsOpen': [isOpen: boolean]
   'update:isFlowSecretsOpen': [isOpen: boolean]
   'update:isFlowVariablesOpen': [isOpen: boolean]
+  'update:isNodeDataOpen': [isOpen: boolean]
+  'update:isNodeResultOpen': [isOpen: boolean]
+  setName: [name: string]
+  setMethods: [methods: string[]]
+  setDescription: [description: string]
   variableCreate: [name: string, value: string]
   variableUpdate: [name: string, value: string]
   variableRemove: [name: string]
@@ -30,14 +34,18 @@ const emit = defineEmits<{
   secretRemove: [name: string]
 }>()
 
-// --- Two-way binding
-const title = useVModel(props, 'name', emit, { passive: true })
-const description = useVModel(props, 'description', emit, { passive: true })
+// --- Data.
+const name = useVModel(props, 'name', emit, { passive: true })
 const methods = useVModel(props, 'methods', emit, { passive: true })
+const description = useVModel(props, 'description', emit, { passive: true })
+
+// --- State.
 const isOpen = useVModel(props, 'isOpen', emit, { passive: true })
 const isFlowMethodsOpen = useVModel(props, 'isFlowMethodsOpen', emit, { passive: true })
 const isFlowSecretsOpen = useVModel(props, 'isFlowSecretsOpen', emit, { passive: true })
 const isFlowVariablesOpen = useVModel(props, 'isFlowVariablesOpen', emit, { passive: true })
+const isNodeDataOpen = useVModel(props, 'isNodeDataOpen', emit, { passive: true })
+const isNodeResultOpen = useVModel(props, 'isNodeResultOpen', emit, { passive: true })
 
 // --- Compute tabs based on selected node.
 const selectedTab = ref('flow')
@@ -49,10 +57,9 @@ const tabs = computed(() => {
   return tabs
 })
 
-// --- Get the selected node if only one is selected.
 const node = computed(() => {
-  if (!props.nodeSelected) return
-  if (props.nodeSelected.length === 1) return props.nodeSelected[0]
+  if (props.nodeSelected?.length === 1) return props.nodeSelected[0]
+  return
 })
 
 // --- When a node is selected, switch to the node tab if the flow tab is selected.
@@ -66,16 +73,28 @@ watch(() => props.nodeSelected, () => {
 <template>
   <div
     class="
-      flex flex-col w-96 max-h-full
-      bg-primary-50/60 rounded
+      flex flex-col max-h-full
+      bg-primary-50/80 rounded
       border border-black/10
       backdrop-blur-md
-      overflow-hidden
+      overflow-hidden relative
     "
+    :class="{
+      'w-16': !isOpen,
+      'w-128': isOpen,
+    }"
     @mousedown.stop>
 
+    <Button
+      filled
+      variant="secondary"
+      icon="i-carbon:close"
+      class="!absolute right-2 top-2 z-10"
+      @click="() => isOpen = !isOpen"
+    />
+
     <!-- Tab selector -->
-    <div class="flex gap-4 p-4">
+    <div class="flex gap-4 p-4" :class="{ 'opacity-0': !isOpen }">
       <BaseInputToggle
         v-for="tab in tabs"
         :key="tab.id"
@@ -101,24 +120,37 @@ watch(() => props.nodeSelected, () => {
     </div>
 
     <!-- Flow settings -->
-    <FlowEditorPanelFlow
-      v-if="selectedTab === 'flow'"
-      v-model:name="name"
-      v-model:description="description"
-      v-model:methods="methods"
-      v-model:isMethodsOpen="isFlowMethodsOpen"
-      v-model:isSecretsOpen="isFlowSecretsOpen"
-      v-model:isVariablesOpen="isFlowVariablesOpen"
-      :secrets="props.secrets"
-      :variables="props.variables"
-    />
-
-    <!-- Selected node settings -->
-    <!--
-      <FlowEditorPanelNode
-      v-else-if="selectedTab === 'node' && node"
-      :node="node"
+    <div :class="{ 'opacity-0': !isOpen }" class="flex-grow overflow-y-auto">
+      <FlowEditorPanelFlow
+        v-if="selectedTab === 'flow'"
+        v-model:isMethodsOpen="isFlowMethodsOpen"
+        v-model:isSecretsOpen="isFlowSecretsOpen"
+        v-model:isVariablesOpen="isFlowVariablesOpen"
+        :name="name"
+        :methods="methods"
+        :description="description"
+        :secrets="props.secrets"
+        :variables="props.variables"
+        @setName="(name) => emit('setName', name)"
+        @setMethods="(methods) => emit('setMethods', methods)"
+        @setDescription="(description) => emit('setDescription', description)"
+        @variableCreate="(name, value) => emit('variableCreate', name, value)"
+        @variableUpdate="(name, value) => emit('variableUpdate', name, value)"
+        @variableRemove="(name) => emit('variableRemove', name)"
+        @secretCreate="(name, value) => emit('secretCreate', name, value)"
+        @secretUpdate="(name, value) => emit('secretUpdate', name, value)"
+        @secretRemove="(name) => emit('secretRemove', name)"
       />
-    -->
+
+      <!-- Selected node settings -->
+      <FlowEditorPanelNode
+        v-else-if="selectedTab === 'node' && node"
+        v-model:isDataOpen="isNodeDataOpen"
+        v-model:isResultOpen="isNodeResultOpen"
+        :node="node"
+        :name="node.name"
+        :description="node.description"
+      />
+    </div>
   </div>
 </template>
