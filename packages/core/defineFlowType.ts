@@ -53,7 +53,7 @@ export interface FlowType<T = unknown> {
    *
    * @example 'Hello, World!'
    */
-  defaultValue?: MaybeFunction<T>
+  defaultValue?: MaybeFunction<NoInfer<T>>
 }
 
 /**
