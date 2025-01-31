@@ -17,7 +17,7 @@ export class Emitter<T extends EmitterEvents> {
   private eventTarget = new EventTarget()
 
   /** The event handlers that are currently active. */
-  private eventHandlers: Array<[keyof T & string, EventListener]> = []
+  public eventListeners: Array<[keyof T & string, EventListener]> = []
 
   /**
    * Add a listener for the specified event. The listener will be called whenever
@@ -41,7 +41,7 @@ export class Emitter<T extends EmitterEvents> {
   on<K extends keyof T & string>(eventName: K, listener: (...payload: T[K]) => any) {
     const handler = ((event: EmitterEventPayload) => { listener(...event.payload as T[K]) }) as EventListener
     this.eventTarget.addEventListener(eventName, handler)
-    this.eventHandlers.push([eventName, handler])
+    this.eventListeners.push([eventName, handler])
     return () => this.eventTarget.removeEventListener(eventName, handler)
   }
 
@@ -73,9 +73,9 @@ export class Emitter<T extends EmitterEvents> {
    * listeners from being called when the event is dispatched.
    */
   clearListeners() {
-    for (const [event, handler] of this.eventHandlers)
+    for (const [event, handler] of this.eventListeners)
       this.eventTarget.removeEventListener(event, handler)
-    this.eventHandlers = []
+    this.eventListeners = []
   }
 
   /**
