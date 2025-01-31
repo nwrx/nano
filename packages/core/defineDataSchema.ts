@@ -8,13 +8,13 @@ import type { ObjectLike } from './types'
  */
 export type SocketControl =
   | 'autocomplete'
+  | 'radio'
   | 'select'
   | 'slider'
   | 'socket'
   | 'stream'
   | 'text'
   | 'textarea'
-  | 'toggle'
   | 'variable'
 
 /**
