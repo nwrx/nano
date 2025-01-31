@@ -46,7 +46,7 @@ export class MonitoringFlowThreadNodeEvent extends BaseEntity {
    * The timestamp when the event occurred. It is used to determine the time when
    * the event was triggered.
    */
-  @Column('int')
+  @Column('bigint')
   timestamp: number
 
   /**

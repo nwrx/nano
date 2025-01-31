@@ -19,7 +19,7 @@ export class UserPassword extends BaseEntity {
   /**
    * The hashed password of the user.
    */
-  @Column('varchar', { length: 255 })
+  @Column('text')
   hash: string
 
   /**
