@@ -4,7 +4,10 @@ import RollupEsbuild from 'rollup-plugin-esbuild'
 
 export default defineConfig([
   {
-    input: './index.ts',
+    input: {
+      index: './index.ts',
+      utils: './utils/index.ts',
+    },
     external: source => !source.startsWith('.') && !source.startsWith('/'),
     plugins: [
       RollupEsbuild({
@@ -39,7 +42,10 @@ export default defineConfig([
     ],
   },
   {
-    input: './index.ts',
+    input: {
+      index: './index.ts',
+      utils: './utils/index.ts',
+    },
     external: source => !source.startsWith('.') && !source.startsWith('/'),
     plugins: [
       RollupDts({
