@@ -19,21 +19,19 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
-const chat = 'chat'
-
 function getFlowRoute(workspace: string, project: string, flow: string) {
   if (!workspace || !project || !flow) return
   return {
-    name: 'FlowEditor',
+    name: 'WorkspaceProjectFlowEditor',
     params: { workspace, project, flow },
   }
 }
 
-function getChatRoute(workspace: string, project: string, flow: string, chat: string) {
+function getChatRoute(workspace: string, project: string, flow: string) {
   if (!workspace || !project || !flow) return
   return {
-    name: 'Chat',
-    params: { workspace, project, flow, chat },
+    name: 'WorkspaceProjectFlowChat',
+    params: { workspace, project, flow, thread: 'new' },
   }
 }
 </script>
@@ -109,7 +107,7 @@ function getChatRoute(workspace: string, project: string, flow: string, chat: st
             :label="t('menu.chat')"
             icon="i-carbon:chat-bot"
             keybind="Enter"
-            :to="getChatRoute(workspace, project, name, chat)"
+            :to="getChatRoute(workspace, project, name, thread)"
           />
           <ContextMenuItem
             :label="t('menu.edit')"
