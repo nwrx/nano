@@ -1,5 +1,7 @@
+import type { SocketListOption } from '@nwrx/core'
 import type { Flow } from './createFlow'
 import type { DataFromSchema, DataSchema } from './defineDataSchema'
+import type { DataSocket } from './defineDataSchema'
 import type { InstanceContext, Node } from './defineNode'
 import type { ResultFromSchema, ResultSchema } from './defineResultSchema'
 import { ValidationError } from '@unshared/validation'
@@ -13,8 +15,7 @@ export type NodeState =
   | 'IDLE'
   | 'RUNNING/PROCESSING'
   | 'RUNNING/RESOLVING_DATA'
-  | 'RUNNING/RESOLVING_DATA_SCHEMA'
-  | 'RUNNING/RESOLVING_RESULT_SCHEMA'
+  | 'RUNNING/RESOLVING_RESULT'
 
 export interface NodeEventMeta {
   state: NodeState
@@ -79,18 +80,27 @@ export class NodeInstance<T extends DataSchema = DataSchema, U extends ResultSch
   }
 
   public id = randomUUID() as string
-  public meta = {} as NodeMeta
   public flow: Flow | undefined
   public error: Error | undefined
 
-  public data = {} as Record<string, unknown>
-  public dataSchema = {} as T
-  public dataResolved = {} as DataFromSchema<T>
-  public dataParseErrors: Record<string, Error> = {}
+  /***************************************************************************/
+  /* Meta                                                                    */
+  /***************************************************************************/
 
-  public result = {} as ResultFromSchema<U>
-  public resultSchema = {} as U
-  public resultParseErrors: Record<string, Error> = {}
+  public meta = {} as NodeMeta
+
+  /**
+   * Set a specific value in the meta object of the flow. This allows us to reduce
+   * the payload size when sending updates to the client by only sending the updated
+   * value instead of the entire meta object.
+   *
+   * @param key The key of the value to set in the meta object.
+   * @param value The value to set in the meta object.
+   */
+  public setMeta(key: string, value: unknown) {
+    this.meta = { ...this.meta, [key]: value }
+    this.dispatch('meta', key, value, this.eventMeta)
+  }
 
   /***************************************************************************/
   /* State                                                                   */
@@ -112,8 +122,6 @@ export class NodeInstance<T extends DataSchema = DataSchema, U extends ResultSch
   /***************************************************************************/
 
   private resolveReference
-  private eventTarget = new EventTarget()
-  private eventHandlers: Array<[event: string, handler: EventListener]> = []
   private abortController = new AbortController()
   private executionId = randomUUID() as string
   private executionStart = Date.now()
@@ -130,7 +138,7 @@ export class NodeInstance<T extends DataSchema = DataSchema, U extends ResultSch
     }
   }
 
-  private get context(): InstanceContext<T, U> {
+  private get context(): InstanceContext<DataFromSchema<T>, ResultFromSchema<U>> {
     return {
       data: this.dataResolved,
       result: this.result,
@@ -138,87 +146,91 @@ export class NodeInstance<T extends DataSchema = DataSchema, U extends ResultSch
     }
   }
 
+  /***************************************************************************/
+  /* Event handling                                                          */
+  /***************************************************************************/
+
+  private eventTarget = new EventTarget()
+  private eventHandlers: Array<[event: string, handler: EventListener]> = []
+
+  /**
+   * Add a listener for a flow node event. The listener is called when the event
+   * is dispatched by the flow node.
+   *
+   * @param event The event to listen for.
+   * @param listener The listener to call when the event is dispatched.
+   * @returns A function that removes the listener when called.
+   */
+  public on<K extends keyof NodeEvents<T, U>>(event: K, listener: NodeListener<T, U, K>): () => void {
+    const handler = (event: Event) => { void listener(...(event as CustomEvent<NodeEvents<T, U>[K]>).detail) }
+    this.eventTarget.addEventListener(event, handler)
+    this.eventHandlers.push([event as string, handler])
+    return () => this.eventTarget.removeEventListener(event, handler)
+  }
+
   private dispatch<K extends keyof NodeEvents<T, U>>(event: K, ...data: NodeEvents<T, U>[K]) {
     const customEvent = new CustomEvent(event as string, { detail: data })
     this.eventTarget.dispatchEvent(customEvent)
   }
 
-  private async resolveDataSchema(): Promise<T> {
-    try {
-      if (typeof this.node.dataSchema !== 'function') return this.dataSchema
-      this.state = 'RUNNING/RESOLVING_DATA_SCHEMA'
-      this.dataSchema = await this.node.dataSchema(this.context)
-      this.dispatch('dataSchema', this.dataSchema, this.eventMeta)
-      return this.dataSchema
+  /***************************************************************************/
+  /* Data handling                                                           */
+  /***************************************************************************/
+
+  public data = {} as Record<string, unknown>
+  public dataSchema = {} as T
+  public dataResolved = {} as DataFromSchema<T>
+  public dataParseErrors: Record<string, Error> = {}
+  public isDataReady = false
+
+  private async resolveDataValue(value: unknown, socket?: DataSocket): Promise<unknown> {
+    if (typeof value === 'string' && REFERENCE_EXP.test(value)) {
+      const { type, name } = REFERENCE_EXP.exec(value)!.groups!
+
+      // --- Value from node result.
+      if (type === 'NODE') {
+        if (!this.flow) throw new Error('Flow is not defined')
+        const [id, key] = name.split(':')
+        const node = this.flow.get(id)
+        if (node.state !== 'DONE') this.isDataReady = false
+        return node.result[key]
+      }
+
+      if (!this.resolveReference) throw new Error('Reference resolver is not defined')
+      return await this.resolveReference(type, name)
     }
-    catch (error) {
-      this.state = 'IDLE'
-      this.error = error as Error
-      this.dispatch('error', error as Error, this.eventMeta)
-      return this.dataSchema
-    }
+
+    // --- Raw value.
+    if (!socket) return value
+    if (value === undefined) return socket.defaultValue
+    return socket.type.parse(value)
   }
 
-  private async resolveResultSchema(): Promise<U> {
-    try {
-      if (typeof this.node.resultSchema !== 'function') return this.resultSchema
-      this.state = 'RUNNING/RESOLVING_DATA_SCHEMA'
-      this.resultSchema = await this.node.resultSchema(this.context)
-      this.dispatch('resultSchema', this.resultSchema, this.eventMeta)
-      return this.resultSchema
-    }
-    catch (error) {
-      this.state = 'IDLE'
-      this.error = error as Error
-      this.dispatch('error', error as Error, this.eventMeta)
-      return this.resultSchema
-    }
-  }
-
-  private async resolveData(): Promise<boolean> {
+  public async resolveData(): Promise<void> {
     this.state = 'RUNNING/RESOLVING_DATA'
     const dataResolved = {} as Record<string, unknown>
     const dataErrors = {} as Record<string, Error>
-    let isReady = true
-
-    const keys = [
-      ...Object.keys(this.dataSchema),
-      ...Object.keys(this.data),
-    ]
 
     // --- Get the parser for the data property.
-    for (const key of keys) {
+    this.isDataReady = true
+    for (const key in this.dataSchema) {
       try {
-        let value = this.data[key]
+        const value = this.data[key]
         const socket = this.dataSchema[key]
-
-        // --- Skip properties not present in schema.
-        if (!socket) {
-          dataResolved[key] = value
-          continue
+        if (socket?.isIterable) {
+          const array = Array.isArray(value) ? value : [value]
+          const promises = array.filter(Boolean).map(x => this.resolveDataValue(x, socket))
+          dataResolved[key] = await Promise.all(promises)
         }
-
-        // --- Value from reference.
-        if (typeof value === 'string' && REFERENCE_EXP.test(value)) {
-          if (!this.resolveReference) throw new Error('Reference resolver is not defined')
-          const { type, name } = REFERENCE_EXP.exec(value)!.groups!
-          value = await this.resolveReference(type, name)
+        else {
+          dataResolved[key] = await this.resolveDataValue(value, socket)
         }
-
-        // --- Missing or undefined value.
-        if (value === undefined && !socket.isOptional)
-          isReady = false
-
-        // --- Value from raw data.
-        dataResolved[key] = value === undefined
-          ? socket.defaultValue
-          : socket.type.parse(value)
       }
       catch (error) {
         dataErrors[key] = error as Error
         this.dispatch('dataParseError', key, error as Error, this.eventMeta)
-        this.dispatch('error', error as Error, this.eventMeta)
-        isReady = false
+        console.error((error as Error).message)
+        this.isDataReady = false
       }
     }
 
@@ -226,10 +238,29 @@ export class NodeInstance<T extends DataSchema = DataSchema, U extends ResultSch
     this.dataParseErrors = dataErrors
     this.dataResolved = dataResolved as DataFromSchema<T>
     this.state = 'IDLE'
-    return isReady
   }
 
-  private setResult(result: ResultFromSchema<U>): void {
+  /**
+   * Set the value of a data property of the node by key.
+   *
+   * @param key The key of the data property.
+   * @param value The value of the data property.
+   */
+  public setDataValue<K extends keyof T>(key: K, value: DataFromSchema<T>[K]): void {
+    this.data[key as string] = value
+    this.dispatch('data', this.data, this.eventMeta)
+  }
+
+  /***************************************************************************/
+  /* Result handling                                                         */
+  /***************************************************************************/
+
+  public result = {} as ResultFromSchema<U>
+  public resultSchema = {} as U
+  public resultParseErrors: Record<string, Error> = {}
+
+  private resolveResult(result: ResultFromSchema<U>): void {
+    this.state = 'RUNNING/RESOLVING_RESULT'
     const resultFinal: Record<string, unknown> = {}
     const resultErrors: Record<string, Error> = {}
 
@@ -238,8 +269,7 @@ export class NodeInstance<T extends DataSchema = DataSchema, U extends ResultSch
         const value = result[key]
         const socket = this.resultSchema[key]
         if (value === undefined && socket.isOptional) continue
-        const parse = this.resultSchema[key].type.parse
-        resultFinal[key] = parse(value)
+        resultFinal[key] = socket.type.parse(value)
       }
       catch (_error) {
         const error = _error instanceof ValidationError ? _error : new Error(_error as string)
@@ -257,80 +287,31 @@ export class NodeInstance<T extends DataSchema = DataSchema, U extends ResultSch
   }
 
   /***************************************************************************/
-  /* Public methods                                                          */
+  /* Helpers                                                                 */
   /***************************************************************************/
-  /**
-   * Add a listener for a flow node event. The listener is called when the event
-   * is dispatched by the flow node.
-   *
-   * @param event The event to listen for.
-   * @param listener The listener to call when the event is dispatched.
-   * @returns A function that removes the listener when called.
-   */
-  public on<K extends keyof NodeEvents<T, U>>(event: K, listener: NodeListener<T, U, K>): () => void {
-    const handler = (event: Event) => { void listener(...(event as CustomEvent<NodeEvents<T, U>[K]>).detail) }
-    this.eventTarget.addEventListener(event, handler)
-    this.eventHandlers.push([event as string, handler])
-    return () => this.eventTarget.removeEventListener(event, handler)
+
+  public getDataSocket<K extends keyof T & string>(key: K): T[K] {
+    const socket = this.dataSchema[key]
+    if (!socket) throw new Error(`Socket "${key}" does not exist in the data schema`)
+    return socket
   }
 
-  /**
-   * Set a specific value in the meta object of the flow. This allows us to reduce
-   * the payload size when sending updates to the client by only sending the updated
-   * value instead of the entire meta object.
-   *
-   * @param key The key of the value to set in the meta object.
-   * @param value The value to set in the meta object.
-   */
-  public setMeta(key: string, value: unknown) {
-    this.meta = { ...this.meta, [key]: value }
-    this.dispatch('meta', key, value, this.eventMeta)
+  public getResultSocket<K extends keyof U & string>(key: K): U[K] {
+    const socket = this.resultSchema[key]
+    if (!socket) throw new Error(`Socket "${key}" does not exist in the result schema`)
+    return socket
   }
 
-  /**
-   * Set the value of a data property of the node by key.
-   *
-   * @param key The key of the data property.
-   * @param value The value of the data property.
-   */
-  public setDataValue<K extends keyof T>(key: K, value: DataFromSchema<T>[K]): void {
-    this.data[key as string] = value
-    this.dispatch('data', this.data, this.eventMeta)
+  public async getDataOptions<K extends keyof T & string>(key: K, query?: string): Promise<SocketListOption[]> {
+    const socket = this.getDataSocket(key)
+    if (!socket.options) throw new Error(`Socket "${key}" does not have options`)
+    if (typeof socket.options === 'function') return await socket.options(this.context, query)
+    return socket.options
   }
 
-  /**
-   * The `dataSchema` or `resultSchema` of the node can be a function that returns
-   * the schema based on the context of the node. This function can be called to
-   * refresh the schema of the node based on the current context.
-   *
-   * Additionally, the `data` property of the node can contain special values such
-   * as `$VARIABLE.<name>`, `$SECRET.<name>`, and `$NODE.<id>:<key>`. These values
-   * are resolved when the node is refreshed.
-   *
-   * @returns A promise that resolves to `true` if the node is ready to be processed.
-   * @example
-   * // Create a new flow with a single node.
-   * using flow = createFlow()
-   * const node = await flow.add(..., { initialData: {
-   *  valueFromVariable: '$VARIABLE.MY_VARIABLE',
-   *  valueFromSecret: '$SECRET.MY_SUPER_SECRET',
-   *  valueFromNode: '$NODE.math-add:sum'
-   * }})
-   *
-   * // Refresh the node to resolve the data properties.
-   * await node.refresh()
-   * console.log(node.dataResolved)
-   * // {
-   * //   valueFromVariable: 'value of the MY_VARIABLE variable',
-   * //   valueFromSecret: 'value of the MY_SUPER_SECRET secret',
-   * //   valueFromNode: 'The result of the math-add node with the key "sum"'
-   * // }
-   */
-  public async refresh(): Promise<boolean> {
-    await this.resolveDataSchema()
-    await this.resolveResultSchema()
-    return this.resolveData()
-  }
+  /***************************************************************************/
+  /* Result handling                                                         */
+  /***************************************************************************/
 
   /**
    * Process the node by calling the `process` function of the node with the
@@ -349,23 +330,25 @@ export class NodeInstance<T extends DataSchema = DataSchema, U extends ResultSch
    */
   public async start(): Promise<ResultFromSchema<U> | undefined> {
     if (this.state === 'DESTROYED') throw new Error('Node has been destroyed')
-    if (this.state.startsWith('RUNNING')) throw new Error('Node is already running')
+    if (this.state === 'RUNNING/PROCESSING') throw new Error('Node is already running')
+    if (this.state === 'RUNNING/RESOLVING_DATA') throw new Error('Node is already running')
 
     // --- Initialize and resolve the data schema and the result schema.
     try {
-      const isReady = await this.refresh()
-      if (!isReady) {
-        this.state = 'IDLE'
-        return
-      }
+      await this.resolveData()
+      if (!this.isDataReady) return
 
       // --- Process the node by calling the process function of the node.
-      this.dispatch('start', this.dataResolved, this.eventMeta)
-      this.state = 'RUNNING/PROCESSING'
-      const result = await this.node.process?.(this.context)
-      if (result) this.setResult(result)
-      this.dispatch('end', this.dataResolved, this.result, this.eventMeta)
+      if (this.node.process) {
+        this.dispatch('start', this.dataResolved, this.eventMeta)
+        this.state = 'RUNNING/PROCESSING'
+        const result = await this.node.process(this.context)
+        if (result) this.resolveResult(result)
+      }
+
+      // --- End the node execution and dispatch the end event.
       this.state = 'DONE'
+      this.dispatch('end', this.dataResolved, this.result, this.eventMeta)
     }
 
     // --- If an error occurs, dispatch the error event so that listeners
@@ -396,6 +379,13 @@ export class NodeInstance<T extends DataSchema = DataSchema, U extends ResultSch
     this.abortController.abort(error)
     this.abortController = new AbortController()
     this.dispatch('abort', this.eventMeta)
+  }
+
+  public reset(): void {
+    this.state = 'IDLE'
+    this.result = {} as ResultFromSchema<U>
+    this.dataParseErrors = {}
+    this.resultParseErrors = {}
   }
 
   /** Destroy the instance by aborting the node and removing all event listeners. */

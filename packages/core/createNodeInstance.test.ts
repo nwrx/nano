@@ -39,40 +39,40 @@ describe('createNodeInstance', () => {
       expect(instance.data).not.toBe(initialData)
     })
 
-    it('should clone the initial result', async() => {
+    it('should clone the initial result', () => {
       const initialResult = { boolean: false }
       using instance = createNodeInstance({ kind: 'example' }, { initialResult })
       expect(instance.result).not.toBe(initialResult)
     })
 
-    it('should store the node definition', async() => {
+    it('should store the node definition', () => {
       const node = defineNode({ kind: 'example' })
       using instance = createNodeInstance(node)
       expect(instance.node).toBe(node)
     })
 
-    it('should bind the flow to the instance', async() => {
+    it('should bind the flow to the instance', () => {
       using flow = createFlow()
       using instance = createNodeInstance({ kind: 'example' }, { flow })
       expect(instance.flow).toBe(flow)
     })
   })
 
-  describe('setMeta', async() => {
-    it('should set the meta property', async() => {
+  describe('setMeta', () => {
+    it('should set the meta property', () => {
       using instance = createNodeInstance({ kind: 'example' })
       instance.setMeta('key', 'value')
       expect(instance.meta).toStrictEqual({ key: 'value' })
     })
 
-    it('should merge the meta properties', async() => {
+    it('should merge the meta properties', () => {
       using instance = createNodeInstance({ kind: 'example' })
       instance.setMeta('key', 'value')
       instance.setMeta('key', 'new value')
       expect(instance.meta).toStrictEqual({ key: 'new value' })
     })
 
-    it('should emit the "meta" event', async() => {
+    it('should emit the "meta" event', () => {
       using instance = createNodeInstance({ kind: 'example' })
       const listener = vi.fn()
       instance.on('meta', listener)
@@ -88,8 +88,8 @@ describe('createNodeInstance', () => {
     })
   })
 
-  describe('eventTarget', async() => {
-    it('should dispatch an event and call the listener', async() => {
+  describe('eventTarget', () => {
+    it('should dispatch an event and call the listener', () => {
       using instance = createNodeInstance({ kind: 'example' })
       const listener = vi.fn()
       instance.on('data', listener)
@@ -98,7 +98,7 @@ describe('createNodeInstance', () => {
       expect(listener).toHaveBeenCalledWith('Hello', 'World')
     })
 
-    it('should remove the listener when destroyed', async() => {
+    it('should remove the listener when destroyed', () => {
       using instance = createNodeInstance({ kind: 'example' })
       const listener = vi.fn()
       instance.on('data', listener)
@@ -108,7 +108,7 @@ describe('createNodeInstance', () => {
       expect(listener).not.toHaveBeenCalled()
     })
 
-    it('should remove the listener when calling the return value of `on`', async() => {
+    it('should remove the listener when calling the return value of `on`', () => {
       using instance = createNodeInstance({ kind: 'example' })
       const listener = vi.fn()
       const removeListener = instance.on('data', listener)
@@ -119,15 +119,15 @@ describe('createNodeInstance', () => {
     })
   })
 
-  describe('setDataValue', async() => {
-    it('should set the value of a raw data property by key', async() => {
+  describe('setDataValue', () => {
+    it('should set the value of a raw data property by key', () => {
       const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
       using instance = createNodeInstance(node)
       instance.setDataValue('value', 'Hello, World!')
       expect(instance.data).toStrictEqual({ value: 'Hello, World!' })
     })
 
-    it('should emit the "data" event when the data is set', async() => {
+    it('should emit the "data" event when the data is set', () => {
       const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
       using instance = createNodeInstance(node)
       const listener = vi.fn()
@@ -144,324 +144,195 @@ describe('createNodeInstance', () => {
     })
   })
 
-  describe('refresh', async() => {
-    describe('resolveDataSchema', async() => {
-      describe('when dataSchema is an object', async() => {
-        it('should apply the dataSchema immediatly from the node definition', async() => {
-          const dataSchema = { value: { type: typeString } }
-          using instance = createNodeInstance({ kind: 'example', dataSchema })
-          expect(instance.dataSchema).toStrictEqual(dataSchema)
-        })
-
-        it('should clone the dataSchema', async() => {
-          const dataSchema = { value: { type: typeString } }
-          using instance = createNodeInstance({ kind: 'example', dataSchema })
-          expect(instance.dataSchema).not.toBe(dataSchema)
-        })
+  describe('resolveData', () => {
+    describe('when key is not present in the data schema', () => {
+      it('should omit properties that are not defined in the data schema', async() => {
+        const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
+        // @ts-expect-error: Type mismatch.
+        using instance = createNodeInstance(node, { initialData: { value: 'Hello, World!', number: 42 } })
+        await instance.resolveData()
+        expect(instance.dataResolved).toStrictEqual({ value: 'Hello, World!' })
       })
 
-      describe('when dataSchema is a function', async() => {
-        it('should default dataSchema to an empty object', async() => {
-          using instance = createNodeInstance({ kind: 'example', dataSchema: () => ({}) })
-          expect(instance.dataSchema).toStrictEqual({})
-        })
-
-        it('should resolve dataSchema when calling resolveDataSchema', async() => {
-          const dataSchema = { value: { type: typeString } }
-          using instance = createNodeInstance({ kind: 'example', dataSchema: () => dataSchema })
-          await instance.refresh()
-          expect(instance.dataSchema).toStrictEqual(dataSchema)
-        })
-
-        it('should call the node\'s "dataSchema" function with the context of the node instance', async() => {
-          const dataSchema = vi.fn(() => ({}))
-          using instance = createNodeInstance({ kind: 'example', dataSchema })
-          await instance.refresh()
-          expect(dataSchema).toHaveBeenCalledOnce()
-          expect(dataSchema).toHaveBeenCalledWith({
-            // @ts-expect-error: Private property.
-            abortSignal: instance.abortController.signal,
-            data: instance.data,
-            result: instance.result,
-          })
-        })
-
-        it('should emit the "dataSchema" event when the data schema is resolved', async() => {
-          const dataSchema = { value: { type: typeString } }
-          using instance = createNodeInstance({ kind: 'example', dataSchema: () => dataSchema })
-          const listener = vi.fn()
-          instance.on('dataSchema', listener)
-          await instance.refresh()
-          expect(listener).toHaveBeenCalledOnce()
-          expect(listener).toHaveBeenCalledWith(dataSchema, {
-            state: 'IDLE',
-            delta: expect.any(Number),
-            duration: expect.any(Number),
-            executionId: expect.stringMatching(EXP_UUID),
-            threadId: undefined,
-            timestamp: expect.any(Number),
-          })
-        })
+      it('should flag the node as ready even if additional properties are present', async() => {
+        const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
+        // @ts-expect-error: Type mismatch.
+        using instance = createNodeInstance(node, { initialData: { value: 'Hello, World!', number: 42 } })
+        await instance.resolveData()
+        expect(instance.isDataReady).toBe(true)
       })
     })
 
-    describe('resolveResultSchema', async() => {
-      describe('when resultSchema is an object', async() => {
-        it('should apply the resultSchema immediatly from the node definition', async() => {
-          const resultSchema = { value: { type: typeString } }
-          using instance = createNodeInstance({ kind: 'example', resultSchema })
-          expect(instance.resultSchema).toStrictEqual(resultSchema)
-        })
-
-        it('should clone the resultSchema', async() => {
-          const resultSchema = { value: { type: typeString } }
-          using instance = createNodeInstance({ kind: 'example', resultSchema })
-          expect(instance.resultSchema).not.toBe(resultSchema)
-        })
+    describe('when value is undefined', () => {
+      it('should return undefined if no default value is provided', async() => {
+        const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
+        using instance = createNodeInstance(node)
+        await instance.resolveData()
+        expect(instance.dataResolved).toStrictEqual({ value: undefined })
       })
 
-      describe('when resultSchema is a function', async() => {
-        it('should default resultSchema to an empty object', async() => {
-          using instance = createNodeInstance({ kind: 'example', resultSchema: () => ({}) })
-          expect(instance.resultSchema).toStrictEqual({})
-        })
+      it('should return the default value if provided', async() => {
+        const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString, defaultValue: 'Hello, World!' } } })
+        using instance = createNodeInstance(node)
+        await instance.resolveData()
+        expect(instance.dataResolved).toStrictEqual({ value: 'Hello, World!' })
+      })
 
-        it('should resolve resultSchema when calling resolveResultSchema', async() => {
-          const resultSchema = { value: { type: typeString } }
-          using instance = createNodeInstance({ kind: 'example', resultSchema: () => resultSchema })
-          await instance.refresh()
-          expect(instance.resultSchema).toStrictEqual(resultSchema)
-        })
+      it('should flag the node as ready if the socket is optional', async() => {
+        const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString, isOptional: true } } })
+        using instance = createNodeInstance(node)
+        const isReady = await instance.resolveData()
+        expect(isReady).toBe(true)
+      })
 
-        it('should call the node\'s "resultSchema" function with the context of the node instance', async() => {
-          const resultSchema = vi.fn(() => ({}))
-          using instance = createNodeInstance({ kind: 'example', resultSchema })
-          await instance.refresh()
-          expect(resultSchema).toHaveBeenCalledOnce()
-          expect(resultSchema).toHaveBeenCalledWith({
-            // @ts-expect-error: Private property.
-            abortSignal: instance.abortController.signal,
-            data: instance.data,
-            result: instance.result,
-          })
-        })
-
-        it('should emit the "resultSchema" event when the result schema is resolved', async() => {
-          const resultSchema = { value: { type: typeString } }
-          using instance = createNodeInstance({ kind: 'example', resultSchema: () => resultSchema })
-          const listener = vi.fn()
-          instance.on('resultSchema', listener)
-          await instance.refresh()
-          expect(listener).toHaveBeenCalledOnce()
-          expect(listener).toHaveBeenCalledWith(resultSchema, {
-            state: 'IDLE',
-            delta: expect.any(Number),
-            duration: expect.any(Number),
-            executionId: expect.stringMatching(EXP_UUID),
-            threadId: undefined,
-            timestamp: expect.any(Number),
-          })
-        })
+      it('should flag the node as not ready if the socket is required', async() => {
+        const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString, isOptional: false } } })
+        using instance = createNodeInstance(node)
+        const isReady = await instance.resolveData()
+        expect(isReady).toBe(false)
       })
     })
 
-    describe('resolveData', async() => {
-      describe('when key is not present in the data schema', async() => {
-        it('should omit properties that are not defined in the data schema', async() => {
-          const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
-          // @ts-expect-error: Type mismatch.
-          using instance = createNodeInstance(node, { initialData: { value: 'Hello, World!', number: 42 } })
-          await instance.refresh()
-          expect(instance.dataResolved).toStrictEqual({ value: 'Hello, World!' })
-        })
+    describe('when value is a reference', () => {
+      it('should resolve the reference', async() => {
+        const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
+        using instance = createNodeInstance(node, { initialData: { value: '$VARIABLE.GREET' }, resolveReference: (type, name) => `Hello, world! (${type}:${name})` })
+        await instance.resolveData()
+        expect(instance.dataResolved).toStrictEqual({ value: 'Hello, world! (VARIABLE:GREET)' })
+      })
 
-        it('should resolve dataSchema before resolving data', async() => {
-          const node = defineNode({ kind: 'example', dataSchema: () => ({ value: { type: typeString } }) })
-          // @ts-expect-error: Type mismatch.
-          using instance = createNodeInstance(node, { initialData: { value: 'Hello, World!', number: 42 } })
-          await instance.refresh()
-          expect(instance.dataResolved).toStrictEqual({ value: 'Hello, World!' })
-        })
+      it('should parse the resolved value using the type\'s parser', async() => {
+        const type = { kind: 'string', parse: vi.fn(String) }
+        const node = defineNode({ kind: 'example', dataSchema: { value: { type } } })
+        using instance = createNodeInstance(node, { initialData: { value: '$VARIABLE.GREET' }, resolveReference: () => 42 })
+        await instance.resolveData()
+        expect(instance.dataResolved).toStrictEqual({ value: '42' })
+      })
 
-        it('should flag the node as ready even if additional properties are present', async() => {
-          const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
-          // @ts-expect-error: Type mismatch.
-          using instance = createNodeInstance(node, { initialData: { value: 'Hello, World!', number: 42 } })
-          const isReady = await instance.refresh()
-          expect(isReady).toBe(true)
+      it('should call the resolveReference method with the correct arguments', async() => {
+        const resolveReference = vi.fn()
+        const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
+        using instance = createNodeInstance(node, { initialData: { value: '$VARIABLE.GREET' }, resolveReference })
+        await instance.resolveData()
+        expect(resolveReference).toHaveBeenCalledOnce()
+        expect(resolveReference).toHaveBeenCalledWith('VARIABLE', 'GREET')
+      })
+
+      it('should collect the errors if the resolveReference method throws an error', async() => {
+        const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
+        const resolveReference = () => { throw new Error('Reference error') }
+        using instance = createNodeInstance(node, { initialData: { value: '$VARIABLE.GREET' }, resolveReference })
+        await instance.resolveData()
+        expect(instance.dataResolved).toStrictEqual({})
+        expect(instance.dataParseErrors).toStrictEqual({ value: new Error('Reference error') })
+      })
+
+      it('should dispatch a "dataParseError" event if the resolveReference method throws an error', async() => {
+        const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
+        const resolveReference = () => { throw new Error('Reference error') }
+        using instance = createNodeInstance(node, { initialData: { value: '$VARIABLE.GREET' }, resolveReference })
+        const listener = vi.fn()
+        instance.on('dataParseError', listener)
+        await instance.resolveData()
+        const error = new Error('Reference error')
+        expect(listener).toHaveBeenCalledOnce()
+        expect(listener).toHaveBeenCalledWith('value', error, {
+          state: 'IDLE',
+          delta: expect.any(Number),
+          duration: expect.any(Number),
+          executionId: expect.stringMatching(EXP_UUID),
+          threadId: undefined,
+          timestamp: expect.any(Number),
         })
       })
 
-      describe('when value is undefined', () => {
-        it('should return undefined if no default value is provided', async() => {
-          const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
-          using instance = createNodeInstance(node)
-          await instance.refresh()
-          expect(instance.dataResolved).toStrictEqual({ value: undefined })
-        })
-
-        it('should return the default value if provided', async() => {
-          const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString, defaultValue: 'Hello, World!' } } })
-          using instance = createNodeInstance(node)
-          await instance.refresh()
-          expect(instance.dataResolved).toStrictEqual({ value: 'Hello, World!' })
-        })
-
-        it('should flag the node as ready if the socket is optional', async() => {
-          const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString, isOptional: true } } })
-          using instance = createNodeInstance(node)
-          const isReady = await instance.refresh()
-          expect(isReady).toBe(true)
-        })
-
-        it('should flag the node as not ready if the socket is required', async() => {
-          const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString, isOptional: false } } })
-          using instance = createNodeInstance(node)
-          const isReady = await instance.refresh()
-          expect(isReady).toBe(false)
-        })
+      it('should flag the node as ready if the resolver method returns a value', async() => {
+        const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
+        using instance = createNodeInstance(node, { initialData: { value: '$VARIABLE.GREET' }, resolveReference: () => 'Hello, world!' })
+        const isReady = await instance.resolveData()
+        expect(isReady).toBe(true)
       })
 
-        const nodeOk = defineNode({
-          kind: 'example',
-          dataSchema: {
-            value: {
-              type: {
-                kind: 'string',
-                parse: vi.fn(String),
-              },
+      it('should flag the node as not ready if the variable does not exist', async() => {
+        const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
+        using instance = createNodeInstance(node, { initialData: { value: '$VARIABLE.GREET' }, resolveReference: () => undefined })
+        const isReady = await instance.resolveData()
+        expect(isReady).toBe(false)
+      })
+    })
+
+    describe('when value is defined', () => {
+      const nodeOk = defineNode({
+        kind: 'example',
+        dataSchema: {
+          value: {
+            type: {
+              kind: 'string',
+              parse: vi.fn(String),
             },
           },
-        })
+        },
+      })
 
-        const nodeError = defineNode({
-          kind: 'example',
-          dataSchema: {
-            value: {
-              type: {
-                kind: 'string',
-                parse: () => { throw new Error('Parsing error') },
-              },
+      const nodeError = defineNode({
+        kind: 'example',
+        dataSchema: {
+          value: {
+            type: {
+              kind: 'string',
+              parse: () => { throw new Error('Parsing error') },
             },
           },
-        })
+        },
+      })
 
-        it('should parse and return the value using the type\'s parser', async() => {
-          // @ts-expect-error: Type mismatch.
-          using instance = createNodeInstance(nodeOk, { initialData: { value: 42 } })
-          await instance.refresh()
-          expect(instance.dataResolved).toStrictEqual({ value: '42' })
-          expect(nodeOk.dataSchema.value.type.parse).toHaveBeenCalledOnce()
-          expect(nodeOk.dataSchema.value.type.parse).toHaveBeenCalledWith(42)
-        })
+      it('should parse and return the value using the type\'s parser', async() => {
+      // @ts-expect-error: Type mismatch.
+        using instance = createNodeInstance(nodeOk, { initialData: { value: 42 } })
+        await instance.resolveData()
+        expect(instance.dataResolved).toStrictEqual({ value: '42' })
+        expect(nodeOk.dataSchema.value.type.parse).toHaveBeenCalledOnce()
+        expect(nodeOk.dataSchema.value.type.parse).toHaveBeenCalledWith(42)
+      })
 
-        it('should flag the node as ready if the value was correctly parsed', async() => {
-          // @ts-expect-error: Type mismatch.
-          using instance = createNodeInstance(nodeOk, { initialData: { value: 42 } })
-          const isReady = await instance.refresh()
-          expect(isReady).toBe(true)
-        })
+      it('should flag the node as ready if the value was correctly parsed', async() => {
+      // @ts-expect-error: Type mismatch.
+        using instance = createNodeInstance(nodeOk, { initialData: { value: 42 } })
+        const isReady = await instance.resolveData()
+        expect(isReady).toBe(true)
+      })
 
-        it('should collect the errors if the value cannot be parsed', async() => {
-          // @ts-expect-error: Type mismatch.
-          using instance = createNodeInstance(nodeError, { initialData: { value: 42 } })
-          await instance.refresh()
-          expect(instance.dataResolved).toStrictEqual({})
-          expect(instance.dataParseErrors).toStrictEqual({ value: new Error('Parsing error') })
-        })
+      it('should collect the errors if the value cannot be parsed', async() => {
+      // @ts-expect-error: Type mismatch.
+        using instance = createNodeInstance(nodeError, { initialData: { value: 42 } })
+        await instance.resolveData()
+        expect(instance.dataResolved).toStrictEqual({})
+        expect(instance.dataParseErrors).toStrictEqual({ value: new Error('Parsing error') })
+      })
 
-        it('should dispatch a "dataParseError" event if the value cannot be parsed', async() => {
-          // @ts-expect-error: Type mismatch.
-          using instance = createNodeInstance(nodeError, { initialData: { value: 42 } })
-          const listener = vi.fn()
-          instance.on('dataParseError', listener)
-          await instance.refresh()
-          const error = new Error('Parsing error')
-          expect(listener).toHaveBeenCalledOnce()
-          expect(listener).toHaveBeenCalledWith('value', error, {
-            state: 'IDLE',
-            delta: expect.any(Number),
-            duration: expect.any(Number),
-            executionId: expect.stringMatching(EXP_UUID),
-            threadId: undefined,
-            timestamp: expect.any(Number),
-          })
-        })
-
-        it('should flag the node as not ready if a parsing error occurs', async() => {
-          // @ts-expect-error: Type mismatch.
-          using instance = createNodeInstance(nodeError, { initialData: { value: 42 } })
-          const isReady = await instance.refresh()
-          expect(isReady).toBe(false)
+      it('should dispatch a "dataParseError" event if the value cannot be parsed', async() => {
+      // @ts-expect-error: Type mismatch.
+        using instance = createNodeInstance(nodeError, { initialData: { value: 42 } })
+        const listener = vi.fn()
+        instance.on('dataParseError', listener)
+        await instance.resolveData()
+        const error = new Error('Parsing error')
+        expect(listener).toHaveBeenCalledOnce()
+        expect(listener).toHaveBeenCalledWith('value', error, {
+          state: 'IDLE',
+          delta: expect.any(Number),
+          duration: expect.any(Number),
+          executionId: expect.stringMatching(EXP_UUID),
+          threadId: undefined,
+          timestamp: expect.any(Number),
         })
       })
 
-      describe('when value is a reference', () => {
-        it('should resolve the reference', async() => {
-          const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
-          using instance = createNodeInstance(node, { initialData: { value: '$VARIABLE.GREET' }, resolveReference: (type, name) => `Hello, world! (${type}:${name})` })
-          await instance.refresh()
-          expect(instance.dataResolved).toStrictEqual({ value: 'Hello, world! (VARIABLE:GREET)' })
-        })
-
-        it('should parse the resolved value using the type\'s parser', async() => {
-          const type = { kind: 'string', parse: vi.fn(String) }
-          const node = defineNode({ kind: 'example', dataSchema: { value: { type } } })
-          using instance = createNodeInstance(node, { initialData: { value: '$VARIABLE.GREET' }, resolveReference: () => 42 })
-          await instance.refresh()
-          expect(instance.dataResolved).toStrictEqual({ value: '42' })
-        })
-
-        it('should call the resolveReference method with the correct arguments', async() => {
-          const resolveReference = vi.fn()
-          const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
-          using instance = createNodeInstance(node, { initialData: { value: '$VARIABLE.GREET' }, resolveReference })
-          await instance.refresh()
-          expect(resolveReference).toHaveBeenCalledOnce()
-          expect(resolveReference).toHaveBeenCalledWith('VARIABLE', 'GREET')
-        })
-
-        it('should collect the errors if the resolveReference method throws an error', async() => {
-          const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
-          const resolveReference = () => { throw new Error('Reference error') }
-          using instance = createNodeInstance(node, { initialData: { value: '$VARIABLE.GREET' }, resolveReference })
-          await instance.refresh()
-          expect(instance.dataResolved).toStrictEqual({})
-          expect(instance.dataParseErrors).toStrictEqual({ value: new Error('Reference error') })
-        })
-
-        it('should dispatch a "dataParseError" event if the resolveReference method throws an error', async() => {
-          const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
-          const resolveReference = () => { throw new Error('Reference error') }
-          using instance = createNodeInstance(node, { initialData: { value: '$VARIABLE.GREET' }, resolveReference })
-          const listener = vi.fn()
-          instance.on('dataParseError', listener)
-          await instance.refresh()
-          const error = new Error('Reference error')
-          expect(listener).toHaveBeenCalledOnce()
-          expect(listener).toHaveBeenCalledWith('value', error, {
-            state: 'IDLE',
-            delta: expect.any(Number),
-            duration: expect.any(Number),
-            executionId: expect.stringMatching(EXP_UUID),
-            threadId: undefined,
-            timestamp: expect.any(Number),
-          })
-        })
-
-        it('should flag the node as ready if the resolver method returns a value', async() => {
-          const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
-          using instance = createNodeInstance(node, { initialData: { value: '$VARIABLE.GREET' }, resolveReference: () => 'Hello, world!' })
-          const isReady = await instance.refresh()
-          expect(isReady).toBe(true)
-        })
-
-        it('should flag the node as not ready if the variable does not exist', async() => {
-          const node = defineNode({ kind: 'example', dataSchema: { value: { type: typeString } } })
-          using instance = createNodeInstance(node, { initialData: { value: '$VARIABLE.GREET' }, resolveReference: () => undefined })
-          const isReady = await instance.refresh()
-          expect(isReady).toBe(false)
-        })
+      it('should flag the node as not ready if a parsing error occurs', async() => {
+      // @ts-expect-error: Type mismatch.
+        using instance = createNodeInstance(nodeError, { initialData: { value: 42 } })
+        const isReady = await instance.resolveData()
+        expect(isReady).toBe(false)
       })
     })
   })
@@ -575,7 +446,7 @@ describe('createNodeInstance', () => {
           { input: 'Hello' },
           { output: 'Hello' },
           {
-            state: 'PROCESSING',
+            state: 'RUNNING/PROCESSING',
             executionId: expect.stringMatching(EXP_UUID),
             threadId: undefined,
             delta: expect.any(Number),
@@ -599,7 +470,7 @@ describe('createNodeInstance', () => {
         await instance.start()
         expect(listener).toHaveBeenCalledOnce()
         expect(listener).toHaveBeenCalledWith(error, {
-          state: 'PROCESSING',
+          state: 'RUNNING/PROCESSING',
           executionId: expect.stringMatching(EXP_UUID),
           threadId: undefined,
           delta: expect.any(Number),
@@ -610,7 +481,7 @@ describe('createNodeInstance', () => {
     })
 
     describe('state', () => {
-      it('should be "IDLE" before processing', async() => {
+      it('should be "IDLE" before processing', () => {
         using instance = createNodeInstance(node)
         expect(instance.state).toBe('IDLE')
       })
@@ -625,7 +496,7 @@ describe('createNodeInstance', () => {
         })
         using instance = createNodeInstance(node, { initialData: { input: 'Hello' } })
         const promise = instance.start()
-        expect(instance.state).toBe('RUNNING')
+        expect(instance.state).toBe('RUNNING/RESOLVING_DATA')
         await promise
       })
 
@@ -640,7 +511,7 @@ describe('createNodeInstance', () => {
         using instance = createNodeInstance(node)
         const promise = instance.start()
         await new Promise(resolve => setTimeout(resolve, 1))
-        expect(instance.state).toBe('PROCESSING')
+        expect(instance.state).toBe('RUNNING/PROCESSING')
         await promise
       })
 
@@ -677,7 +548,7 @@ describe('createNodeInstance', () => {
       expect(instance.context.abortSignal).not.toBe(signal)
     })
 
-    it('should emit the "abort" event when the node is aborted', () => {
+    it('should emit the "abort" event when the node is aborted', async() => {
       using instance = createNodeInstance({ kind: 'example' })
       const listener = vi.fn()
       instance.on('abort', listener)
