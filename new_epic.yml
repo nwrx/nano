@@ -1,0 +1,22 @@
+name: 📌 New Epic
+description: Create a new epic for nano-ce
+labels: [enhancement]
+issue_type: Epic
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### Epic title
+  - type: textarea
+    id: epic-description
+    attributes:
+      label: Clear and concise description of the Epic
+      placeholder: 'WYSIWYG Editor'
+    validations:
+      required: true
+  - type: dropdown
+    id: labels
+    attributes:
+      label: Labels
+      description: Choose the labels that are in the scope of the epic.
+      multiple: true
