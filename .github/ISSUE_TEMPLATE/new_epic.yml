@@ -1,0 +1,44 @@
+name: 🌟 New Epic
+description: Propose a new epic to regroup a scope of the application
+labels: [epic, pending triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for proposing a new epic! Please provide as much detail as possible.
+  - type: input
+    id: epic-title
+    attributes:
+      label: Epic Title
+      description: A clear and concise title for the epic.
+      placeholder: Epic title
+    validations:
+      required: true
+  - type: textarea
+    id: epic-description
+    attributes:
+      label: Epic Description
+      description: A detailed description of the epic, including the scope and objectives.
+      placeholder: Epic description
+    validations:
+      required: true
+  - type: textarea
+    id: related-issues
+    attributes:
+      label: Related Issues
+      description: List any related issues or PRs that are part of this epic.
+      placeholder: Related issues
+  - type: checkboxes
+    id: checkboxes
+    attributes:
+      label: Validations
+      description: Before submitting the epic, please make sure you do the following
+      options:
+        - label: Follow our [Code of Conduct](https://github.com/unshared-io/unshared/blob/main/CODE_OF_CONDUCT.md)
+          required: true
+        - label: Read the [Contributing Guidelines](https://github.com/unshared-io/unshared/blob/main/CONTRIBUTING.md).
+          required: true
+        - label: Check that there isn't [already an epic](https://github.com/unshared-io/unshared/issues) that covers the same scope to avoid creating a duplicate.
+          required: true
+        - label: Ensure the epic aligns with the project's goals and roadmap.
+          required: true
