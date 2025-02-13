@@ -27,9 +27,9 @@ export type AuthenticateResult = UserSession & { user: User }
  * @returns The user associated with the user session.
  */
 export async function authenticate(this: ModuleUser, event: H3Event | Peer): Promise<AuthenticateResult>
-export async function authenticate(this: ModuleUser, event: H3Event | Peer, options: AuthenticateOptions<true>): Promise<AuthenticateResult | undefined>
-export async function authenticate(this: ModuleUser, event: H3Event | Peer, options?: AuthenticateOptions): Promise<AuthenticateResult | undefined>
-export async function authenticate(this: ModuleUser, event: H3Event | Peer, options: AuthenticateOptions = {}): Promise<AuthenticateResult | undefined> {
+export async function authenticate(this: ModuleUser, event: H3Event | Peer, options: AuthenticateOptions<true>): Promise<Partial<AuthenticateResult>>
+export async function authenticate(this: ModuleUser, event: H3Event | Peer, options?: AuthenticateOptions): Promise<Partial<AuthenticateResult>>
+export async function authenticate(this: ModuleUser, event: H3Event | Peer, options: AuthenticateOptions = {}): Promise<Partial<AuthenticateResult>> {
   const { optional = false } = options
   const { token, address, userAgent } = getEventInformation(event, {
     cookieName: this.userSessionCookieName,
@@ -43,7 +43,7 @@ export async function authenticate(this: ModuleUser, event: H3Event | Peer, opti
     if (!userAgent) throw this.errors.USER_MISSING_USER_AGENT_HEADER()
   }
   catch (error) {
-    if (optional) return undefined
+    if (optional) return {}
     throw error
   }
 

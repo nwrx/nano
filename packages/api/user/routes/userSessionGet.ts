@@ -9,16 +9,16 @@ export function userSessionGet(this: ModuleUser) {
       name: 'GET /api/session',
     },
     async({ event }): Promise<UserObject | void> => {
-      const session = await this.authenticate(event, { optional: true })
-      if (!session) {
+      const { user } = await this.authenticate(event, { optional: true })
+      if (!user) {
         setResponseStatus(event, 204)
         return
       }
 
       // --- Get the user assigned to the session and return the user object.
-      const user = await getUser.call(this, { user: session.user, username: session.user.username, withProfile: true })
-      if (!user.profile) throw new Error('User profile not found')
-      return user.serialize({ withProtected: true })
+      const result = await getUser.call(this, { user, username: user.username, withProfile: true })
+      if (!result.profile) throw new Error('User profile not found')
+      return result.serialize({ withProtected: true })
     },
   )
 }

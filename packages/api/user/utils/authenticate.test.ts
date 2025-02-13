@@ -29,20 +29,20 @@ describe.concurrent('authenticate', () => {
           const { headers } = await createUser()
           const peer = createEvent({ headers })
           const result = await authenticate.call(moduleUser, peer, {})
-          expect(result!.user).toBeInstanceOf(User)
+          expect(result.user).toBeInstanceOf(User)
         })
 
         it('should authenticate when the token is valid', async({ moduleUser, createUser }) => {
           const { headers, session } = await createUser()
           const peer = createEvent({ headers })
           const result = await authenticate.call(moduleUser, peer, {})
-          expect(result!.id).toStrictEqual(session.id)
+          expect(result.id).toStrictEqual(session.id)
         })
 
         it('should authenticate when no token is provided and "optional" is true', async({ moduleUser }) => {
           const peer = createEvent()
           const result = await authenticate.call(moduleUser, peer, { optional: true })
-          expect(result).toBeUndefined()
+          expect(result).toStrictEqual({})
         })
       })
 
@@ -50,25 +50,25 @@ describe.concurrent('authenticate', () => {
         for (const optional of [false, true]) {
           describe<Context>(`when "optional" option is "${optional}"`, (it) => {
             if (optional) {
-              it('should return undefined when token is not provided', async({ moduleUser }) => {
+              it('should return empty object when token is not provided', async({ moduleUser }) => {
                 const peer = createEvent()
                 const result = await authenticate.call(moduleUser, peer, { optional })
-                expect(result).toBeUndefined()
+                expect(result).toStrictEqual({})
               })
 
-              it('should return undefined when address is not resolved', async({ moduleUser, createUser }) => {
+              it('should return empty object when address is not resolved', async({ moduleUser, createUser }) => {
                 const { headers } = await createUser()
                 const peer = createEvent({ headers, remoteAddress: '' })
                 const result = await authenticate.call(moduleUser, peer, { optional })
-                expect(result).toBeUndefined()
+                expect(result).toStrictEqual({})
               })
 
-              it('should return undefined when user agent is not provided', async({ moduleUser }) => {
+              it('should return empty object when user agent is not provided', async({ moduleUser }) => {
                 const token = randomBytes(32).toString('hex')
                 const headers = { cookie: `${moduleUser.userSessionCookieName}=${token}` }
                 const peer = createEvent({ headers })
                 const result = await authenticate.call(moduleUser, peer, { optional })
-                expect(result).toBeUndefined()
+                expect(result).toStrictEqual({})
               })
             }
 
