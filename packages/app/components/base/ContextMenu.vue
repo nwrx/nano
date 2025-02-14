@@ -19,8 +19,8 @@ const model = useVModel(props, 'modelValue', emit, {
   <BaseMenu
     v-bind="props"
     v-model="model"
-    x="right"
-    y="below"
+    :x="props.x ?? 'right'"
+    :y="props.y ?? 'below'"
     class="children:z-10">
 
     <!-- User Image -->
