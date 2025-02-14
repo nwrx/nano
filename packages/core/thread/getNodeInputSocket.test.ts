@@ -1,4 +1,4 @@
-import { defineComponent, ERRORS } from '../utils'
+import { defineComponent, ERRORS as E } from '../utils'
 import { addNode } from './addNode'
 import { createThread } from './createThread'
 import { getNodeInputSocket } from './getNodeInputSocket'
@@ -17,7 +17,7 @@ describe('getNodeInputSocket', () => {
     const thread = createThread()
     const id = addNode(thread, 'example', { component })
     const shouldReject = getNodeInputSocket(thread, id, 'invalid')
-    const error = ERRORS.NODE_INPUT_SOCKET_NOT_FOUND(id, 'invalid')
+    const error = E.NODE_INPUT_SOCKET_NOT_FOUND(id, 'invalid')
     await expect(shouldReject).rejects.toThrow(error)
   })
 
@@ -25,7 +25,7 @@ describe('getNodeInputSocket', () => {
     const thread = createThread()
     const id = addNode(thread, 'example')
     const shouldReject = getNodeInputSocket(thread, id, 'input')
-    const error = ERRORS.COMPONENT_NOT_RESOLVED({ collection: 'core', name: 'example', registry: 'default', tag: 'latest' })
+    const error = E.COMPONENT_NOT_RESOLVED({ collection: 'core', name: 'example', registry: 'default', tag: 'latest' })
     await expect(shouldReject).rejects.toThrow(error)
   })
 })

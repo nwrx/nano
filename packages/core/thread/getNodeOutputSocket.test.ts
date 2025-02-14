@@ -4,7 +4,9 @@ import { createThread } from './createThread'
 import { getNodeOutputSocket } from './getNodeOutputSocket'
 
 describe('getNodeOutputSocket', () => {
-  const component = defineComponent({ outputs: { output: { type: 'string' } } })
+  const component = defineComponent({
+    outputs: { output: { type: 'string' } },
+  })
 
   it('should return the output socket if it exists', async() => {
     const thread = createThread()
@@ -25,7 +27,12 @@ describe('getNodeOutputSocket', () => {
     const thread = createThread()
     const id = addNode(thread, 'example')
     const shouldReject = getNodeOutputSocket(thread, id, 'output')
-    const error = ERRORS.COMPONENT_NOT_RESOLVED({ collection: 'core', name: 'example', registry: 'default', tag: 'latest' })
+    const error = ERRORS.COMPONENT_NOT_RESOLVED({
+      collection: 'core',
+      name: 'example',
+      registry: 'default',
+      tag: 'latest',
+    })
     await expect(shouldReject).rejects.toThrow(error)
   })
 })
