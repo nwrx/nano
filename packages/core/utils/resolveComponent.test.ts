@@ -38,6 +38,13 @@ describe('resolveComponent', () => {
     expect(resolver2).toHaveBeenCalledOnce()
   })
 
+  it('should not call the resolver with more properties than needed', async() => {
+    const resolver = vi.fn(() => component)
+    // @ts-expect-error: The extra property is not allowed.
+    await resolveComponent({ ...specifier, extra: 'property' }, [resolver])
+    expect(resolver).toHaveBeenCalledWith(specifier)
+  })
+
   it('should throw an error if the component is not resolved', async() => {
     const resolver: ComponentResolver = () => undefined
     const shouldReject = resolveComponent(specifier, [resolver])

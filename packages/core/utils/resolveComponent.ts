@@ -21,11 +21,17 @@ export type ComponentResolver = (specifier: SpecifierObject) => MaybePromise<Com
  * @returns The resolved component.
  */
 export async function resolveComponent(specifier: SpecifierObject, resolvers: ComponentResolver[]): Promise<Component> {
+  const specifierObject = {
+    collection: specifier.collection,
+    name: specifier.name,
+    registry: specifier.registry,
+    tag: specifier.tag,
+  }
   for (const resolve of resolvers) {
-    const component = await resolve(specifier)
+    const component = await resolve(specifierObject)
     if (component === undefined) continue
-    if (!isComponent(component)) throw E.COMPONENT_RESOLVED_BUT_NOT_COMPONENT(specifier)
+    if (!isComponent(component)) throw E.COMPONENT_RESOLVED_BUT_NOT_COMPONENT(specifierObject)
     return component
   }
-  throw E.COMPONENT_NOT_RESOLVED(specifier)
+  throw E.COMPONENT_NOT_RESOLVED(specifierObject)
 }
