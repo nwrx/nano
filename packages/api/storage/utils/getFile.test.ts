@@ -18,7 +18,7 @@ function createFileLike(): FileLike {
   }
 }
 
-describe.concurrent<Context>('getFile', (it) => {
+describe.sequential<Context>('getFile', (it) => {
   beforeEach<Context>(async(context) => {
     await createTestContext(context)
     await context.application.createTestServer()
