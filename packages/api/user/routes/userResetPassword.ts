@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/todo-tag */
 import type { ModuleUser } from '../index'
 import { createHttpRoute } from '@unserved/server'
 import { assertStringEmail, createSchema } from '@unshared/validation'
@@ -26,6 +27,8 @@ export function userResetPassword(this: ModuleUser) {
       const iv = Buffer.alloc(16, 0)
       const key = createHash('sha256').update(this.userSecretKey).digest()
       const token = createCipheriv(this.userCypherAlgorithm, key, iv).update(request.id).toString('hex')
+
+      // TODO: Send the recovery token to the user's email.
 
       // --- Pass the recovery request to the user defined handler.
       if (process.env.NODE_ENV === 'development')
