@@ -11,7 +11,7 @@ export const assertWorkspacePermission = assert.stringEnum(
   'Owner',
   'Write',
   'Read',
-).with('Invalid workspace permission')
+)
 
 /** The permission that a user has on a workspace. */
 export type WorkspacePermission = Asserted<typeof assertWorkspacePermission>

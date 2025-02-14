@@ -21,7 +21,7 @@ export class WorkspaceAssignment extends BaseEntity {
    * @example User { ... }
    */
   @JoinColumn()
-  @ManyToOne(() => User, { onDelete: 'CASCADE', nullable: false })
+  @ManyToOne(() => User, { onDelete: 'RESTRICT', nullable: false })
   user?: User
 
   /**
@@ -30,7 +30,7 @@ export class WorkspaceAssignment extends BaseEntity {
    * @example Workspace { ... }
    */
   @JoinColumn()
-  @ManyToOne(() => Workspace, workspace => workspace.assignments, { onDelete: 'CASCADE', nullable: false })
+  @ManyToOne(() => Workspace, workspace => workspace.assignments, { onDelete: 'RESTRICT', nullable: false })
   workspace?: Workspace
 
   /**

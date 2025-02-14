@@ -1,23 +1,23 @@
 import type { Loose } from '@unshared/types'
 import type { ModuleWorkspace } from '..'
 import type { Workspace } from '../entities'
-import { assertBoolean, assertStringNotEmpty, assertStringUuid, assertUndefined, createSchema } from '@unshared/validation'
+import { assert, createSchema } from '@unshared/validation'
 
 /** The parser function for the {@linkcode createWorkspace} function. */
-const CREATE_WORKSPACE_OPTIONS = createSchema({
+const CREATE_WORKSPACE_OPTIONS_SCHEMA = createSchema({
 
   /** The name of the workspace to create. */
-  name: assertStringNotEmpty,
+  name: assert.stringNotEmpty,
 
   /** The `User` that will own the workspace. */
-  user: createSchema({ id: assertStringUuid }),
+  user: createSchema({ id: assert.stringUuid }),
 
   /** Whether the workspace is public or private. */
-  isPublic: [[assertUndefined], [assertBoolean]],
+  isPublic: [[assert.undefined], [assert.boolean]],
 })
 
 /** The options to create the workspace with. */
-export type CreateWorkspaceOptions = Loose<ReturnType<typeof CREATE_WORKSPACE_OPTIONS>>
+export type CreateWorkspaceOptions = Loose<ReturnType<typeof CREATE_WORKSPACE_OPTIONS_SCHEMA>>
 
 /**
  * Create a new workspace with the given name and title. The function will create a new
@@ -29,7 +29,7 @@ export type CreateWorkspaceOptions = Loose<ReturnType<typeof CREATE_WORKSPACE_OP
  */
 export async function createWorkspace(this: ModuleWorkspace, options: CreateWorkspaceOptions): Promise<Workspace> {
   const { Workspace, WorkspaceAssignment } = this.getRepositories()
-  const { user, name, isPublic = false } = CREATE_WORKSPACE_OPTIONS(options)
+  const { user, name, isPublic = false } = CREATE_WORKSPACE_OPTIONS_SCHEMA(options)
 
   // --- Assert the user does not already have a workspace with the same name.
   const exists = await Workspace.findOneBy({ name })
