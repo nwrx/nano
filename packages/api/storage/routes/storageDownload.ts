@@ -1,6 +1,7 @@
 import type { ModuleStorage } from '../index'
 import { createHttpRoute } from '@unserved/server'
-import { assertStringUuid, createSchema } from '@unshared/validation'
+import { parseBoolean } from '@unshared/string'
+import { assertStringNotEmpty, assertStringUuid, assertUndefined, createSchema } from '@unshared/validation'
 import { getHeader } from 'h3'
 import { ModuleUser } from '../../user'
 import { getFile } from '../utils'
@@ -12,11 +13,15 @@ export function fileDownload(this: ModuleStorage) {
       parseParameters: createSchema({
         id: assertStringUuid,
       }),
+      parseQuery: createSchema({
+        download: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
+      }),
     },
-    async({ event, parameters }) => {
+    async({ event, parameters, query }) => {
       const userModule = this.getModule(ModuleUser)
       const { user } = await userModule.authenticate(event)
       const { id } = parameters
+      const { download: isAttachment } = query
 
       // --- Only the super-admin can download files by ID.
       if (!user.isSuperAdministrator) throw userModule.errors.USER_NOT_ALLOWED()
@@ -34,7 +39,7 @@ export function fileDownload(this: ModuleStorage) {
 
       // --- Respond with the file.
       const file = await getFile.call(this, id)
-      return this.respondWith(event, file, { offset, size, abortSignal })
+      return this.respondWith(event, file, { offset, size, abortSignal, isAttachment })
     },
   )
 }
