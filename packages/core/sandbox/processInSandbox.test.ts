@@ -102,6 +102,13 @@ describe('processInSandbox', { retry: 3 }, () => {
       const result = await processInSandbox(thread, nodeId)
       expect(result).toStrictEqual(true)
     })
+
+    it('should return the data from the fetch request', async() => {
+      const fn = () => fetch('https://jsonplaceholder.typicode.com/todos/1').then(response => response.json())
+      const { thread, nodeId } = createContext(fn)
+      const result = await processInSandbox(thread, nodeId)
+      expect(result).toStrictEqual(data)
+    })
   })
 
   describe('isolation', () => {
