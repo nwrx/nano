@@ -35,7 +35,7 @@ export function createStoragePoolFs(options: StoragePoolFSOptions = {}): Storage
       stream.pipe(writeStream)
 
       // --- Wait for the stream to finish writing the data to the local filesystem.
-      await new Promise((resolve, reject) => {
+      await new Promise<void>((resolve, reject) => {
         writeStream.on('finish', resolve)
         writeStream.on('error', reject)
       })
