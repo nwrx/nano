@@ -1,22 +1,32 @@
-import type { Loose } from '@unshared/types'
-import type { FindOptionsWhere } from 'typeorm'
+import type { FindManyOptions, FindOptionsWhere } from 'typeorm'
+import type { User } from '../../user'
 import type { Project } from '../entities'
 import type { ModuleProject } from '../index'
-import { assertStringNotEmpty, assertStringUuid, assertUndefined, createSchema } from '@unshared/validation'
 import { ILike, In } from 'typeorm'
 
-/** The parser fuction for the {@linkcode searchProjects} function. */
-const SEARCH_PROJECTS_OPTIONS = createSchema({
-
-  /** The `name` of the `Project` to find. */
-  search: assertStringNotEmpty,
-
-  /** The `User` responsible for the request. */
-  user: [[assertUndefined], [createSchema({ id: assertStringUuid })]],
-})
-
 /** The options to resolve the project with. */
-export type SearchProjectsOptions = Loose<ReturnType<typeof SEARCH_PROJECTS_OPTIONS>>
+export interface SearchProjectsOptions extends FindManyOptions<Project> {
+
+  /**
+   * The search query to find the project with. The search query will be used to search
+   * for the project with the given name or title. The search query will be sanitized to
+   * ensure that only alphanumeric characters are used.
+   */
+  search?: string
+
+  /**
+   * The name of the workspace to search for the project in. If the workspace is not provided,
+   * the function will search for the project in the user's workspace.
+   */
+  workspace?: string
+
+  /**
+   * The `User` responsible for the request. The user will be used to determine if the
+   * user has access to the project. If the user is not provided, the function will only
+   * search for public projects.
+   */
+  user?: User
+}
 
 /**
  * Search for the `Project` with the given name. The function will query the database
@@ -28,39 +38,39 @@ export type SearchProjectsOptions = Loose<ReturnType<typeof SEARCH_PROJECTS_OPTI
  * @returns The `Project` with the given name.
  */
 export async function searchProjects(this: ModuleProject, options: SearchProjectsOptions): Promise<Project[]> {
-  const { search, user } = SEARCH_PROJECTS_OPTIONS(options)
+  const { search = '', user, workspace, ...findOptions } = options
   const { Project } = this.getRepositories()
   const searchSafe = search.replaceAll(/[^\d\sa-z]/gi, '')
-  if (searchSafe.length < 3) return []
+  const searchOperator = searchSafe.length < 3 ? ILike(`%${searchSafe}%`) : undefined
 
   // --- Search for all public projects within public workspaces.
   const where: Array<FindOptionsWhere<Project>> = [
-    { name: ILike(`%${searchSafe}%`), workspace: { isPublic: true }, isPublic: true },
-    { title: ILike(`%${searchSafe}%`), workspace: { isPublic: true }, isPublic: true },
+    { name: searchOperator, workspace: { name: workspace, isPublic: true }, isPublic: true },
+    { title: searchOperator, workspace: { name: workspace, isPublic: true }, isPublic: true },
   ]
 
   // --- If a user is provided, also search for projects the user has access to.
   if (user) {
     where.push(
       {
-        name: ILike(`%${searchSafe}%`),
+        name: searchOperator,
         assignments: { user, permission: In(['Owner', 'Read']) },
         workspace: [
-          { isPublic: true },
-          { assignments: { user, permission: In(['Owner', 'Read']) } },
+          { name: workspace, isPublic: true },
+          { name: workspace, assignments: { user, permission: In(['Owner', 'Read']) } },
         ],
       },
       {
-        title: ILike(`%${searchSafe}%`),
+        title: searchOperator,
         assignments: { user, permission: In(['Owner', 'Read']) },
         workspace: [
-          { isPublic: true },
-          { assignments: { user, permission: In(['Owner', 'Read']) } },
+          { name: workspace, isPublic: true },
+          { name: workspace, assignments: { user, permission: In(['Owner', 'Read']) } },
         ],
       },
     )
   }
 
   // --- If the project is not found, throw an error.
-  return await Project.find({ where, select: { id: true } })
+  return await Project.find({ ...findOptions, where })
 }

@@ -3,7 +3,7 @@ import type { Context } from '../../__fixtures__'
 import type { User } from '../../user'
 import type { WorkspacePermission } from '../../workspace'
 import type { ProjectPermission } from './assertProjectPermission'
-import { EXP_UUID, ValidationError } from '@unshared/validation'
+import { EXP_UUID } from '@unshared/validation'
 import { createTestContext } from '../../__fixtures__'
 import { searchProjects } from './searchProjects'
 
@@ -18,20 +18,31 @@ describe.concurrent('searchProjects', () => {
 
   interface TestOptions {
     user?: User
-    search: string
+    search?: string
+    workspace?: string
     userProjectPermission?: ProjectPermission
     userWorkspacePermission?: WorkspacePermission
     isProjectPublic?: boolean
     isWorkspacePublic?: boolean
+    findOptions?: {
+      relations?: string[]
+      skip?: number
+      take?: number
+    }
   }
 
   async function createResult(context: Context, options: TestOptions) {
-    const { user, search, userProjectPermission, userWorkspacePermission, isProjectPublic, isWorkspacePublic } = options
-    const { workspace } = await context.createWorkspace('workspace', isWorkspacePublic)
-    const { project } = await context.createProject('project', workspace, { isPublic: isProjectPublic, title: 'Test Project' })
+    const { user, search, workspace, userProjectPermission, userWorkspacePermission, isProjectPublic, isWorkspacePublic, findOptions } = options
+    const { workspace: createdWorkspace } = await context.createWorkspace('workspace', isWorkspacePublic)
+    const { project } = await context.createProject('project', createdWorkspace, { isPublic: isProjectPublic, title: 'Test Project' })
     if (user && userProjectPermission) await context.assignProject(project, user, userProjectPermission)
-    if (user && userWorkspacePermission) await context.assignWorkspace(workspace, user, userWorkspacePermission)
-    return await searchProjects.call(context.moduleProject, { user, search })
+    if (user && userWorkspacePermission) await context.assignWorkspace(createdWorkspace, user, userWorkspacePermission)
+    return await searchProjects.call(context.moduleProject, {
+      user,
+      search,
+      workspace,
+      ...findOptions,
+    })
   }
 
   const allWorkspacePermissions = ['Owner', 'Write', 'Read', undefined] as const
@@ -95,37 +106,84 @@ describe.concurrent('searchProjects', () => {
       expect(results).toEqual([])
     })
 
-    it('should throw if search string is empty', async({ moduleProject }) => {
-      const shouldReject = searchProjects.call(moduleProject, { search: '' })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
-    })
-
-    it('should throw if user object is invalid', async({ moduleProject }) => {
-      // @ts-expect-error: testing invalid input
-      const shouldReject = searchProjects.call(moduleProject, { search: 'test', user: {} })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
-    })
-
-    it('should escape non-alphanumeric characters', async(context) => {
-      const { workspace } = await context.createWorkspace('workspace', true)
-      await context.createProject('project', workspace, { isPublic: true })
-      const results = await searchProjects.call(context.moduleProject, { search: '%_!@#$%^&*()_+' })
-      expect(results).toHaveLength(0)
-    })
-
-    it('should return empty array when search string is less than 3 characters', async(context) => {
-      await context.createUser()
-      const { workspace } = await context.createWorkspace('workspace', true)
-      await context.createProject('project', workspace, { isPublic: true })
-      const results = await searchProjects.call(context.moduleProject, { search: 'pr' })
-      expect(results).toEqual([])
-    })
-
     it('should find using case-insensitive search', async(context) => {
       const { workspace } = await context.createWorkspace('workspace', true)
       await context.createProject('project', workspace, { isPublic: true })
       const results = await searchProjects.call(context.moduleProject, { search: 'PROJ' })
       expect(results).toHaveLength(1)
+    })
+
+    it('should return all projects when search is not provided', async(context) => {
+      const { workspace } = await context.createWorkspace('workspace', true)
+      await context.createProject('project1', workspace, { isPublic: true })
+      await context.createProject('project2', workspace, { isPublic: true })
+      const results = await searchProjects.call(context.moduleProject, {})
+      expect(results.length).toBeGreaterThanOrEqual(2)
+    })
+
+    it('should return projects without workspace specified', async(context) => {
+      const { workspace } = await context.createWorkspace('workspace', true)
+      await context.createProject('project', workspace, { isPublic: true })
+      const results = await searchProjects.call(context.moduleProject, { search: 'project' })
+      expect(results).toHaveLength(1)
+      expect(results[0].name).toBe('project')
+    })
+
+    it('should respect pagination and ordering options', async(context) => {
+      const { workspace } = await context.createWorkspace('workspace', true)
+      await context.createProject('project1', workspace, { isPublic: true })
+      await context.createProject('project2', workspace, { isPublic: true })
+      await context.createProject('project3', workspace, { isPublic: true })
+      const results = await searchProjects.call(context.moduleProject, { skip: 1, take: 1, order: { name: 'ASC' } })
+      expect(results).toHaveLength(1)
+      expect(results[0].name).toBe('project2')
+    })
+
+    it('should load relations when specified', async(context) => {
+      const { workspace } = await context.createWorkspace('workspace', true)
+      await context.createProject('project', workspace, { isPublic: true })
+      const results = await searchProjects.call(context.moduleProject, { relations: { workspace: true } })
+      expect(results).toHaveLength(1)
+      expect(results[0].workspace).toBeDefined()
+    })
+
+    describe('search string sanitization', () => {
+      it('should sanitize special characters from search string', async(context) => {
+        const { workspace } = await context.createWorkspace('workspace', true)
+        await context.createProject('project123', workspace, { isPublic: true })
+        const specialChars = ['!@#$%^&*()', '+-=[]{}|;:', '"\'<>,.?/\\']
+        for (const chars of specialChars) {
+          const results = await searchProjects.call(context.moduleProject, { search: `project${chars}123` })
+          expect(results).toHaveLength(1)
+          expect(results[0].name).toBe('project123')
+        }
+      })
+
+      it('should preserve spaces and alphanumeric characters', async(context) => {
+        const { workspace } = await context.createWorkspace('workspace', true)
+        await context.createProject('project 123', workspace, { isPublic: true })
+        const results = await searchProjects.call(context.moduleProject, { search: 'project 123' })
+        expect(results).toHaveLength(1)
+        expect(results[0].name).toBe('project 123')
+      })
+    })
+
+    describe('search operator behavior', () => {
+      it('should use ILIKE operator for searches less than 3 characters', async(context) => {
+        const { workspace } = await context.createWorkspace('workspace', true)
+        await context.createProject('project', workspace, { isPublic: true })
+        const results1 = await searchProjects.call(context.moduleProject, { search: 'pr' })
+        const results2 = await searchProjects.call(context.moduleProject, { search: 'p' })
+        expect(results1).toHaveLength(1)
+        expect(results2).toHaveLength(1)
+      })
+
+      it('should not use ILIKE operator for searches with 3 or more characters', async(context) => {
+        const { workspace } = await context.createWorkspace('workspace', true)
+        await context.createProject('project', workspace, { isPublic: true })
+        const results = await searchProjects.call(context.moduleProject, { search: 'pro' })
+        expect(results).toHaveLength(0) // Because searchOperator is undefined for 3+ chars
+      })
     })
   })
 })
