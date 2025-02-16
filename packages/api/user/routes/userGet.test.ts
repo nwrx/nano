@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import type { Context } from '../../__fixtures__'
+import type { UserObject } from '../entities'
 import { EXP_UUID } from '@unshared/validation'
 import { createTestContext } from '../../__fixtures__'
 
@@ -52,7 +53,6 @@ describe.concurrent<Context>('userGet', () => {
           avatarUrl: '/api/users/admin/avatar',
           createdAt: expect.any(String),
           updatedAt: expect.any(String),
-
           biography: 'A short biography',
           company: 'Acme Inc.',
           socials: ['https://twitter.com/acme'],
@@ -74,10 +74,20 @@ describe.concurrent<Context>('userGet', () => {
           avatarUrl: '/api/users/admin/avatar',
           createdAt: expect.any(String),
           updatedAt: expect.any(String),
-
           sessions: expect.any(Array),
           lastSeenAt: expect.any(String),
         })
+      })
+
+      it('should put the current session at the top of the list', async({ createUser, createSession, application }) => {
+        const { user } = await createUser('admin', { isSuperAdministrator: true })
+        await createSession(user, { userAgent: 'PostmanRuntime/7.26.5' })
+        const { headers } = await createSession(user, { userAgent: 'curl/7.64.1' })
+        const response = await application.fetch('/api/users/admin?withSessions=true', { method: 'GET', headers })
+        const body = await response.json() as UserObject
+        expect(response).toMatchObject({ status: 200, statusText: 'OK' })
+        expect(body.sessions!).toHaveLength(3)
+        expect(body.sessions![0].browser).toBe('curl')
       })
     })
 
