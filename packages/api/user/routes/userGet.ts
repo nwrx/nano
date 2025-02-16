@@ -26,7 +26,7 @@ export function userGet(this: ModuleUser) {
       if (withSessions && !withProtected) throw this.errors.USER_NOT_ALLOWED()
 
       // --- Fetch the user with the given ID.
-      const result = await User.findOne({
+      const found = await User.findOne({
         where: { username },
         withDeleted: Boolean(user.isSuperAdministrator),
         relations: {
@@ -36,9 +36,9 @@ export function userGet(this: ModuleUser) {
       })
 
       // --- If the `withSession` flag is provided, put the current session at the top of the list.
-      if (!result) throw this.errors.USER_NOT_FOUND(username)
+      if (!found) throw this.errors.USER_NOT_FOUND(username)
       if (withSessions) {
-        result?.sessions?.sort((a, b) => {
+        found?.sessions?.sort((a, b) => {
           if (a.id === id) return -1
           if (b.id === id) return 1
           return 0
@@ -46,7 +46,7 @@ export function userGet(this: ModuleUser) {
       }
 
       // --- If the request is made by a super administrator, add additional information.
-      return result.serialize({
+      return found.serialize({
         withProtected,
         withSessions,
       })

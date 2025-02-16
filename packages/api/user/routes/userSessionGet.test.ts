@@ -80,5 +80,16 @@ describe.concurrent('userSessionGet', () => {
       expect(response.headers.get('Content-Type')).toBe('application/json')
       expect(body).toMatchObject({ data: { name: 'E_USER_SESSION_NOT_FOUND' } })
     })
+
+    it('should delete the local cookie if the session is invalid', async({ createUser, moduleUser, application }) => {
+      const { session, headers } = await createUser()
+      const { UserSession } = moduleUser.getRepositories()
+      session.expiresAt = new Date(0)
+      await UserSession.save(session)
+      const response = await application.fetch('/api/session', { method: 'GET', headers })
+      expect(response.status).toBe(401)
+      expect(response.headers.get('Content-Type')).toBe('application/json')
+      expect(response.headers.get('Set-Cookie')).toBe('__Host-Session-Token=; Max-Age=0; Path=/; HttpOnly; Secure')
+    })
   })
 }, 1000)
