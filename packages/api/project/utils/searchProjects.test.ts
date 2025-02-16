@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import type { FindManyOptions } from 'typeorm'
 import type { Context } from '../../__fixtures__'
 import type { User } from '../../user'
 import type { WorkspacePermission } from '../../workspace'
+import type { Project } from '../entities'
 import type { ProjectPermission } from './assertProjectPermission'
 import { EXP_UUID } from '@unshared/validation'
 import { createTestContext } from '../../__fixtures__'
@@ -24,11 +26,7 @@ describe.concurrent('searchProjects', () => {
     userWorkspacePermission?: WorkspacePermission
     isProjectPublic?: boolean
     isWorkspacePublic?: boolean
-    findOptions?: {
-      relations?: string[]
-      skip?: number
-      take?: number
-    }
+    findOptions?: FindManyOptions<Project>
   }
 
   async function createResult(context: Context, options: TestOptions) {
@@ -56,39 +54,29 @@ describe.concurrent('searchProjects', () => {
             describe<Context>(`with user with "${userWorkspacePermission}" permission on workspace`, () => {
               for (const userProjectPermission of allProjectPermissions) {
                 describe<Context>(`with user with "${userProjectPermission}" permission on project`, (it) => {
-                  const isPublic = isProjectPublic && isWorkspacePublic
-                  const hasWorkspaceRead = userWorkspacePermission === 'Read' || userWorkspacePermission === 'Owner'
-                  const hasProjectRead = userProjectPermission === 'Read' || userProjectPermission === 'Owner'
-                  const hasAccess = hasWorkspaceRead && hasProjectRead
 
-                  if (isPublic) {
-                    it('should find project by name when public', async(context) => {
-                      const result = await createResult(context, { search: 'proj', isProjectPublic, isWorkspacePublic })
+                  // --- Determine if the user has read access to the project.
+                  const isWorkspaceOwner = userWorkspacePermission === 'Owner'
+                  const hasWorkspaceRead = userWorkspacePermission === 'Read' || isWorkspacePublic
+                  const hasProjectRead = userProjectPermission === 'Read' || userProjectPermission === 'Owner' || isProjectPublic
+                  const hasReadAccess = isWorkspaceOwner || (hasWorkspaceRead && hasProjectRead)
+
+                  // --- Based on the computed access, test either the project is found or not.
+                  if (hasReadAccess) {
+                    it('should find project', async(context) => {
+                      const { user } = await context.createUser()
+                      const options = { user, userProjectPermission, userWorkspacePermission, isProjectPublic, isWorkspacePublic }
+                      const result = await createResult(context, options)
                       expect(result).toHaveLength(1)
                       expect(result[0]).toMatchObject({ id: expect.stringMatching(EXP_UUID) })
                     })
                   }
                   else {
-                    it('should not find private project without access', async(context) => {
+                    it('should not find project', async(context) => {
                       const { user } = await context.createUser()
-                      const result = await createResult(context, { user, search: 'proj', isProjectPublic, isWorkspacePublic })
+                      const options = { user, userProjectPermission, userWorkspacePermission, isProjectPublic, isWorkspacePublic }
+                      const result = await createResult(context, options)
                       expect(result).toHaveLength(0)
-                    })
-                  }
-
-                  if (hasAccess) {
-                    it('should find project when user has access', async(context) => {
-                      const { user } = await context.createUser()
-                      const result = await createResult(context, {
-                        user,
-                        search: 'proj',
-                        userProjectPermission,
-                        userWorkspacePermission,
-                        isProjectPublic,
-                        isWorkspacePublic,
-                      })
-                      expect(result).toHaveLength(1)
-                      expect(result[0]).toMatchObject({ id: expect.stringMatching(EXP_UUID) })
                     })
                   }
                 })
@@ -101,6 +89,12 @@ describe.concurrent('searchProjects', () => {
   }
 
   describe<Context>('edge cases', { timeout: 300 }, (it) => {
+    it('should throw if a user without an ID is provided', async(context) => {
+      // @ts-expect-error: testing invalid input
+      const shouldReject = createResult(context, { user: { id: undefined } })
+      await expect(shouldReject).rejects.toThrow('User ID is required to search for projects.')
+    })
+
     it('should return empty array when no matches found', async(context) => {
       const results = await searchProjects.call(context.moduleProject, { search: 'nonexistent' })
       expect(results).toEqual([])
@@ -147,43 +141,32 @@ describe.concurrent('searchProjects', () => {
       expect(results[0].workspace).toBeDefined()
     })
 
-    describe('search string sanitization', () => {
-      it('should sanitize special characters from search string', async(context) => {
-        const { workspace } = await context.createWorkspace('workspace', true)
-        await context.createProject('project123', workspace, { isPublic: true })
-        const specialChars = ['!@#$%^&*()', '+-=[]{}|;:', '"\'<>,.?/\\']
-        for (const chars of specialChars) {
-          const results = await searchProjects.call(context.moduleProject, { search: `project${chars}123` })
-          expect(results).toHaveLength(1)
-          expect(results[0].name).toBe('project123')
-        }
-      })
-
-      it('should preserve spaces and alphanumeric characters', async(context) => {
-        const { workspace } = await context.createWorkspace('workspace', true)
-        await context.createProject('project 123', workspace, { isPublic: true })
-        const results = await searchProjects.call(context.moduleProject, { search: 'project 123' })
+    it('should sanitize special characters from search string', async(context) => {
+      const { workspace } = await context.createWorkspace('workspace', true)
+      await context.createProject('project123', workspace, { isPublic: true })
+      const specialChars = ['!@#$%^&*()', '+-=[]{}|;:', '"\'<>,.?/\\']
+      for (const chars of specialChars) {
+        const results = await searchProjects.call(context.moduleProject, { search: `project${chars}123` })
         expect(results).toHaveLength(1)
-        expect(results[0].name).toBe('project 123')
-      })
+        expect(results[0].name).toBe('project123')
+      }
     })
 
-    describe('search operator behavior', () => {
-      it('should use ILIKE operator for searches less than 3 characters', async(context) => {
-        const { workspace } = await context.createWorkspace('workspace', true)
-        await context.createProject('project', workspace, { isPublic: true })
-        const results1 = await searchProjects.call(context.moduleProject, { search: 'pr' })
-        const results2 = await searchProjects.call(context.moduleProject, { search: 'p' })
-        expect(results1).toHaveLength(1)
-        expect(results2).toHaveLength(1)
-      })
+    it('should preserve spaces and alphanumeric characters', async(context) => {
+      const { workspace } = await context.createWorkspace('workspace', true)
+      await context.createProject('project 123', workspace, { isPublic: true })
+      const results = await searchProjects.call(context.moduleProject, { search: 'project 123' })
+      expect(results).toHaveLength(1)
+      expect(results[0].name).toBe('project 123')
+    })
 
-      it('should not use ILIKE operator for searches with 3 or more characters', async(context) => {
-        const { workspace } = await context.createWorkspace('workspace', true)
-        await context.createProject('project', workspace, { isPublic: true })
-        const results = await searchProjects.call(context.moduleProject, { search: 'pro' })
-        expect(results).toHaveLength(0) // Because searchOperator is undefined for 3+ chars
-      })
+    it('should use ILIKE operator for searches less than 3 characters', async(context) => {
+      const { workspace } = await context.createWorkspace('workspace', true)
+      await context.createProject('project', workspace, { isPublic: true })
+      const results1 = await searchProjects.call(context.moduleProject, { search: 'pr' })
+      const results2 = await searchProjects.call(context.moduleProject, { search: 'p' })
+      expect(results1).toHaveLength(1)
+      expect(results2).toHaveLength(1)
     })
   })
 })

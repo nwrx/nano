@@ -4,7 +4,7 @@ import type { Project } from '../entities'
 import type { ModuleProject } from '../index'
 import { ILike, In } from 'typeorm'
 
-/** The options to resolve the project with. */
+/** The options to search the project with. */
 export interface SearchProjectsOptions extends FindManyOptions<Project> {
 
   /**
@@ -49,15 +49,50 @@ export async function searchProjects(this: ModuleProject, options: SearchProject
     { title: searchOperator, workspace: { name: workspace, isPublic: true }, isPublic: true },
   ]
 
+  // --- If a user is provided but does not have an ID, throw an error.
+  if (user && !user.id) throw new Error('User ID is required to search for projects.')
+
   // --- If a user is provided, also search for projects the user has access to.
   if (user) {
     where.push(
+
+      // --- If the user is the owner of the workspace, can access all projects.
+      {
+        name: searchOperator,
+        workspace: { name: workspace, assignments: { user, permission: 'Owner' } },
+      },
+      {
+        title: searchOperator,
+        workspace: { name: workspace, assignments: { user, permission: 'Owner' } },
+      },
+
+      // --- If the user has read access to the workspace, can access all public projects
+      // --- and all projects the user has at least read access to.
+      {
+        name: searchOperator,
+        isPublic: true,
+        workspace: [
+          { name: workspace, isPublic: true },
+          { name: workspace, assignments: { user, permission: 'Read' } },
+        ],
+      },
+      {
+        title: searchOperator,
+        isPublic: true,
+        workspace: [
+          { name: workspace, isPublic: true },
+          { name: workspace, assignments: { user, permission: 'Read' } },
+        ],
+      },
+
+      // --- If the user has read access to the workspace, can access all public projects
+      // --- and all projects the user has at least read access to.
       {
         name: searchOperator,
         assignments: { user, permission: In(['Owner', 'Read']) },
         workspace: [
           { name: workspace, isPublic: true },
-          { name: workspace, assignments: { user, permission: In(['Owner', 'Read']) } },
+          { name: workspace, assignments: { user, permission: 'Read' } },
         ],
       },
       {
@@ -65,12 +100,19 @@ export async function searchProjects(this: ModuleProject, options: SearchProject
         assignments: { user, permission: In(['Owner', 'Read']) },
         workspace: [
           { name: workspace, isPublic: true },
-          { name: workspace, assignments: { user, permission: In(['Owner', 'Read']) } },
+          { name: workspace, assignments: { user, permission: 'Read' } },
         ],
       },
     )
   }
 
   // --- If the project is not found, throw an error.
-  return await Project.find({ ...findOptions, where })
+  return await Project.find({
+    ...findOptions,
+    where,
+    relations: {
+      workspace: { assignments: { user: true } },
+      assignments: { user: true },
+    },
+  })
 }
