@@ -64,8 +64,9 @@ export class UserSession extends BaseEntity {
    *
    * @returns The device information of the session.
    */
-  getDevice(): UserSessionDevice {
-    const { os, client, device } = new DeviceDetector().detect(this.userAgent)
+  get device(): UserSessionDevice {
+    const deviceDetector = new DeviceDetector()
+    const { os, client, device } = deviceDetector.detect(this.userAgent)
     return {
       os: os.name,
       browser: client.name,
@@ -78,7 +79,7 @@ export class UserSession extends BaseEntity {
    */
   serialize(): UserSessionObject {
     return {
-      ...this.getDevice(),
+      ...this.device,
       address: this.address,
       lastUsedAt: this.lastUsedAt.toISOString(),
     }
