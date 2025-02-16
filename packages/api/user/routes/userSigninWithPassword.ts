@@ -18,7 +18,7 @@ export function userSigninWithPassword(this: ModuleUser) {
       // --- Try authenticating the user from the Cookie.
       // --- If successful, do not create a new session.
       const isSignedIn = await this.authenticate(event, { optional: true })
-      if (isSignedIn) return
+      if (isSignedIn.user) return
 
       // --- Get the user by the username and check the password.
       const { User } = this.getRepositories()
@@ -37,7 +37,11 @@ export function userSigninWithPassword(this: ModuleUser) {
       await UserSession.save(session)
 
       // --- Set the response status, content type, and user session cookie.
-      setSessionCookie.call(this, event, session)
+      setSessionCookie(event, session, {
+        secretKey: this.userSecretKey,
+        cookieName: this.userSessionCookieName,
+        cypherAlgorithm: this.userCypherAlgorithm,
+      })
     },
   )
 }

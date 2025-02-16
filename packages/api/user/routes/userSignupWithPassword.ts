@@ -24,7 +24,7 @@ export function userSignupWithPassword(this: ModuleUser) {
 
       // --- Check if the user is already signed in.
       const isSignedIn = await this.authenticate(event, { optional: true })
-      if (isSignedIn) return this.errors.USER_ALREADY_SIGNED_IN()
+      if (isSignedIn.user) return this.errors.USER_ALREADY_SIGNED_IN()
 
       // --- Create the user and session.
       if (password !== passwordConfirm) throw this.errors.USER_PASSWORD_MISMATCH()
