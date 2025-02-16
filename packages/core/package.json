@@ -40,7 +40,8 @@
     "LICENSE.md"
   ],
   "scripts": {
-    "build": "tsup"
+    "build": "tsup",
+    "dev": "tsup --watch"
   },
   "dependencies": {
     "@unshared/client": "0.4.1",
@@ -73,7 +74,6 @@
     "target": "node20",
     "dts": true,
     "shims": true,
-    "clean": true,
     "splitting": true,
     "sourcemap": true,
     "treeshaking": true,
