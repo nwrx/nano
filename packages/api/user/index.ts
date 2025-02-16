@@ -45,7 +45,7 @@ export interface ModuleUserOptions {
    * and authenticate the user. It can be any name but it
    * should be unique.
    *
-   * @default '__Secure_Session_Token'
+   * @default '__Host-Session-Token'
    */
   userSessionCookieName?: string
 
@@ -99,7 +99,7 @@ export class ModuleUser extends ModuleBase implements ModuleUserOptions {
   userTrustProxy = true
   userSecretKey = randomBytes(64).toString('hex')
   userCypherAlgorithm = 'aes-256-gcm'
-  userSessionCookieName = '__Secure-Session-Token'
+  userSessionCookieName = '__Host-Session-Token'
   userSessionDuration = 1000 * 60 * 60 * 24
   userRecoveryDuration = 1000 * 60 * 30
 
