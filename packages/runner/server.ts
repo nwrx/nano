@@ -8,7 +8,7 @@ const HOST = process.env.HOST ?? '0.0.0.0'
 
 application.initialize()
   .then(() => application.createServer().listen(PORT, HOST, () => {
-    Consola.success('Server listening on %s:%d', HOST, PORT)
+    Consola.box('Runner listening on %s:%d', HOST, PORT)
   }))
   .catch((error) => {
     Consola.error(error)
