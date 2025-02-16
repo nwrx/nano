@@ -2,8 +2,13 @@
   "name": "@nwrx/nano-runner",
   "type": "module",
   "private": true,
-  "bin": {
-    "nano-runner": "./dist/server.mjs"
+  "bin": "./dist/server.mjs",
+  "exports": {
+    ".": {
+      "types": "./index.ts",
+      "import": "./index.ts",
+      "require": "./index.ts"
+    }
   },
   "scripts": {
     "dev": "tsup --watch --onSuccess 'node dist/server.mjs'",
