@@ -119,6 +119,26 @@ export async function createTestContext(testContext: TestContext) {
       return { session, headers }
     },
 
+    createAvatar: async(user: User, data?: Buffer) => {
+      const storageModule = application.getModule(ModuleStorage)
+      const { UserProfile } = application.getModule(ModuleUser).getRepositories()
+      if (!data) data = randomBytes(1024)
+      const avatar = await storageModule.upload({
+        pool: 'default',
+        size: data.length,
+        type: 'image/png',
+        data,
+        name: 'avatar.png',
+        origin: 'test',
+      })
+      user.profile!.avatar = avatar
+      await UserProfile.save(user.profile!)
+      return {
+        data: new Uint8Array(data),
+        avatar,
+      }
+    },
+
     /************************************************/
     /* Workspace                                    */
     /************************************************/
