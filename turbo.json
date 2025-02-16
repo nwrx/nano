@@ -17,35 +17,35 @@
       "outputs": ["dist/**"],
       "outputLogs": "new-only"
     },
-    "@nwrx/nano-module-core#build": {
+    "@nwrx/nano-api#build": {
       "outputs": ["dist/**"],
       "dependsOn": ["@nwrx/nano#build"],
       "outputLogs": "new-only"
-    },
-    "@nwrx/nano-api#build": {
-      "outputs": ["dist/**"],
-      "dependsOn": ["@nwrx/nano#build", "@nwrx/nano-module-core#build"],
-      "outputLogs": "new-only"
-    },
-    "@nwrx/nano-api#start": {
-      "outputs": ["dist/**"],
-      "dependsOn": ["@nwrx/nano-api#build"]
     },
     "@nwrx/nano-app#build": {
       "outputs": [".output/**"],
       "outputLogs": "new-only"
     },
+    "@nwrx/nano-runner#build": {
+      "outputs": [".output/**"],
+      "outputLogs": "new-only"
+    },
+
+    "@nwrx/nano-runner#start": {
+      "outputs": ["dist/**"],
+      "dependsOn": ["@nwrx/nano-runner#build"]
+    },
+    "@nwrx/nano-api#start": {
+      "dependsOn": ["@nwrx/nano-api#build"],
+      "outputs": ["dist/**"]
+    },
     "@nwrx/nano-app#start": {
       "dependsOn": ["@nwrx/nano-app#build"],
       "persistent": true
     },
-    "@nwrx/nano-api#dev": {
-      "dependsOn": ["@nwrx/nano#build", "@nwrx/nano-module-core#build"],
-      "outputs": ["dist/**"],
-      "persistent": true
-    },
-    "@nwrx/nano-app#dev": {
-      "outputs": [".nuxt/**"],
+
+    "dev": {
+      "outputs": [".nuxt/**", ".output/**", "dist/**"],
       "persistent": true
     }
   }
