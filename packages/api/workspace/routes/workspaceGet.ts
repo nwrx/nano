@@ -7,19 +7,19 @@ import { ModuleUser } from '../../user'
 export function workspaceGet(this: ModuleWorkspace) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:name',
+      name: 'GET /api/workspaces/:workspace',
       parseParameters: createSchema({
-        name: assertStringNotEmpty,
+        workspace: assertStringNotEmpty,
       }),
     },
     async({ event, parameters }): Promise<WorkspaceObject> => {
       const userModule = this.getModule(ModuleUser)
       const { user } = await userModule.authenticate(event, { optional: true })
-      const { name } = parameters
+      const { workspace } = parameters
 
       // --- Get the workspace and assert the user has access to it
-      const workspace = await this.getWorkspace({ user, name, permission: 'Read' })
-      return workspace.serialize()
+      const found = await this.getWorkspace({ user, name: workspace, permission: 'Read' })
+      return found.serialize()
     },
   )
 }
