@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import type { VaultVariable } from '../entities'
-import type { VaultLocalData, VaultLocalOptions } from './createVaultLocal'
-import { ModuleVault } from '..'
+import type { ValueEncrypted } from '../utils'
+import type { VaultLocalOptions } from './createVaultLocal'
+import { ModuleVault } from '../index'
 import { createVaultLocal } from './createVaultLocal'
 
-function createVaultVariable(name: string, data?: VaultLocalData): VaultVariable<VaultLocalData> {
-  return { name, data } as VaultVariable<VaultLocalData>
+function createVaultVariable(name: string, data?: ValueEncrypted): VaultVariable<ValueEncrypted> {
+  return { name, data } as VaultVariable<ValueEncrypted>
 }
 
 describe('createVaultLocal', () => {
