@@ -2,18 +2,11 @@ import { BaseEntity, transformerJson } from '@unserved/server'
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, Unique } from 'typeorm'
 import { User } from '../../user'
 import { Workspace } from '../../workspace'
-import { VaultAwsOptions, VaultAzureOptions, VaultHashicorpOptions, VaultLocalOptions, VaultType } from '../adapters'
+import { Encrypted, VaultType } from '../utils'
 import { VaultAssignment } from './VaultAssignment'
 import { VaultFlowAssignment } from './VaultFlowAssignment'
 import { VaultProjectAssignment } from './VaultProjectAssignment'
 import { VaultVariable } from './VaultVariable'
-
-export type VaultConfiguration<T extends VaultType> =
-  T extends VaultType.AWS ? VaultAwsOptions
-    : T extends VaultType.Azure ? VaultAzureOptions
-      : T extends VaultType.Hashicorp ? VaultHashicorpOptions
-        : T extends VaultType.Local ? VaultLocalOptions
-          : Record<string, unknown>
 
 @Entity({ name: 'Vault' })
 @Unique(['name', 'workspace'])
@@ -49,7 +42,7 @@ export class Vault<T extends VaultType = VaultType> extends BaseEntity {
    * the settings required to access the vault.
    */
   @Column('text', { transformer: transformerJson })
-  configuration: VaultConfiguration<T>
+  configuration: Encrypted
 
   /**
    * The workspace that the vault belongs to. Variables within the workspace can
@@ -76,34 +69,34 @@ export class Vault<T extends VaultType = VaultType> extends BaseEntity {
    *
    * @example [ Variable { ... }, Variable { ... } ]
    */
-  @OneToMany(() => VaultVariable, variable => variable.vault)
+  @OneToMany(() => VaultVariable, variable => variable.vault, { cascade: true })
   variables?: VaultVariable[]
 
   /**
    * The user assignments for this vault. Users can be assigned different
    * permission levels to access the vault.
    */
-  @OneToMany(() => VaultAssignment, assignment => assignment.vault)
+  @OneToMany(() => VaultAssignment, assignment => assignment.vault, { cascade: true })
   assignments?: VaultAssignment[]
 
   /**
    * The flow assignments for this vault. Flows can be assigned different
    * permission levels to access the vault.
    */
-  @OneToMany(() => VaultFlowAssignment, assignment => assignment.vault)
+  @OneToMany(() => VaultFlowAssignment, assignment => assignment.vault, { cascade: true })
   flowAssignments?: VaultFlowAssignment[]
 
   /**
    * The project assignments for this vault. Projects can be assigned different
    * permission levels to access the vault.
    */
-  @OneToMany(() => VaultProjectAssignment, assignment => assignment.vault)
+  @OneToMany(() => VaultProjectAssignment, assignment => assignment.vault, { cascade: true })
   projectAssignments?: VaultProjectAssignment[]
 
   /**
    * @returns The serialized representation of the vault.
    */
-  serialize(): VariableVaultObject {
+  serialize(): VaultObject {
     return {
       type: this.type,
       name: this.name,
@@ -114,7 +107,7 @@ export class Vault<T extends VaultType = VaultType> extends BaseEntity {
   }
 }
 
-export interface VariableVaultObject {
+export interface VaultObject {
   type: VaultType
   name: string
   description?: string

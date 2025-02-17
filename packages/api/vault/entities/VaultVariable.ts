@@ -1,15 +1,7 @@
 import { BaseEntity, transformerJson } from '@unserved/server'
 import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm'
 import { User } from '../../user'
-import { VaultHashicorpData, VaultLocalData, VaultType } from '../adapters'
-import { VariableVaultObject, Vault } from './Vault'
-
-export type VaultData<T extends VaultType> =
-  T extends VaultType.AWS ? Record<string, any>
-    : T extends VaultType.Azure ? Record<string, any>
-      : T extends VaultType.Hashicorp ? VaultHashicorpData
-        : T extends VaultType.Local ? VaultLocalData
-          : Record<string, any>
+import { Vault, VaultObject } from './Vault'
 
 /**
  * A `Variable` is used to store variables that can be assigned to different resources.
@@ -18,7 +10,7 @@ export type VaultData<T extends VaultType> =
  */
 @Entity({ name: 'VaultVariable' })
 @Unique(['name', 'vault'])
-export class VaultVariable<T extends object = object> extends BaseEntity {
+export class VaultVariable<T = any> extends BaseEntity {
 
   /**
    * The vault where this variable is stored (optional)
@@ -42,7 +34,7 @@ export class VaultVariable<T extends object = object> extends BaseEntity {
    * about the variable. If the `local` key vault provider is used, this field
    * will contained the cyphered value of the variable, the IV and the tag.
    */
-  @Column('text', { transformer: transformerJson })
+  @Column('text', { default: '{}', transformer: transformerJson })
   data = {} as T
 
   /**
@@ -55,7 +47,7 @@ export class VaultVariable<T extends object = object> extends BaseEntity {
   /**
    * @returns The serialized representation of the variable.
    */
-  serialize(): VariableObject {
+  serialize(): VaultVariableObject {
     return {
       name: this.name,
       vault: this.vault?.serialize(),
@@ -65,9 +57,9 @@ export class VaultVariable<T extends object = object> extends BaseEntity {
   }
 }
 
-export interface VariableObject {
+export interface VaultVariableObject {
   name: string
-  vault?: VariableVaultObject
+  vault?: VaultObject
   createdAt: string
   updatedAt: string
 }

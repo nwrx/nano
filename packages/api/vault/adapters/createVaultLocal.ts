@@ -1,8 +1,8 @@
 import type { CipherGCMTypes } from 'node:crypto'
 import type { ModuleVault, VaultVariable } from '..'
-import type { ValueEncrypted } from '../utils'
+import type { Encrypted } from '../utils'
 import type { VaultAdapter } from './createVaultAdapter'
-import { valueDecrypt, valueEncrypt } from '../utils'
+import { decrypt, encrypt } from '../utils'
 import { createVaultAdapter } from './createVaultAdapter'
 
 export interface VaultLocalOptions {
@@ -22,7 +22,7 @@ export interface VaultLocalOptions {
   secret: string
 }
 
-export function createVaultLocal(this: ModuleVault, options: VaultLocalOptions): VaultAdapter<ValueEncrypted> {
+export function createVaultLocal(this: ModuleVault, options: VaultLocalOptions): VaultAdapter<Encrypted> {
   const { algorithm, secret } = options
   return createVaultAdapter({
     initialize: async(): Promise<void> => {
@@ -32,17 +32,18 @@ export function createVaultLocal(this: ModuleVault, options: VaultLocalOptions):
       return await Promise.resolve()
     },
 
-    setValue: async(variable, value): Promise<ValueEncrypted> => {
-      variable.data = await valueEncrypt(value, secret, algorithm)
-      return variable.data
+    setValue: async(variable, value): Promise<Encrypted> => {
+      const data = await encrypt(value, secret, algorithm)
+      variable.data = data
+      return data
     },
 
-    getValue: async(variable: VaultVariable<ValueEncrypted>): Promise<string> => {
+    getValue: async(variable: VaultVariable<Encrypted>): Promise<string> => {
       const { iv, tag, cipher, salt, algorithm } = variable.data
-      return await valueDecrypt({ iv, tag, cipher, salt, algorithm }, secret)
+      return await decrypt({ iv, tag, cipher, salt, algorithm }, secret)
     },
 
-    deleteValue(variable: VaultVariable<ValueEncrypted>): Promise<void> {
+    deleteValue(variable: VaultVariable<Encrypted>): Promise<void> {
       variable.data = { iv: '', tag: '', cipher: '', salt: '', algorithm }
       return Promise.resolve()
     },

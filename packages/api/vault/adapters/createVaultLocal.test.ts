@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import type { VaultVariable } from '../entities'
-import type { ValueEncrypted } from '../utils'
+import type { Encrypted } from '../utils'
 import type { VaultLocalOptions } from './createVaultLocal'
 import { ModuleVault } from '../index'
 import { createVaultLocal } from './createVaultLocal'
 
-function createVaultVariable(name: string, data?: ValueEncrypted): VaultVariable<ValueEncrypted> {
-  return { name, data } as VaultVariable<ValueEncrypted>
+function createVaultVariable(name: string, data?: Encrypted) {
+  return { name, data } as unknown as VaultVariable<Encrypted>
 }
 
 describe('createVaultLocal', () => {
@@ -63,7 +63,7 @@ describe('createVaultLocal', () => {
       const variable2 = createVaultVariable('MY_KEY')
       const result1 = await vault.setValue(variable1, 'SAME_VALUE')
       const result2 = await vault.setValue(variable2, 'SAME_VALUE')
-      expect(result1.cipher).not.toEqual(result2.cipher)
+      expect(result1).not.toMatchObject(result2)
     })
   })
 

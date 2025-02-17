@@ -28,7 +28,7 @@ export interface VaultAzureOptions {
 }
 
 // TODO: Implement Azure Key Vault adapter
-export function createKeyVaultAzure(options: VaultAzureOptions): VaultAdapter {
+export function createVaultAzure(options: VaultAzureOptions): VaultAdapter {
   return createVaultAdapter({
     async initialize() {
       throw new Error('Not implemented')

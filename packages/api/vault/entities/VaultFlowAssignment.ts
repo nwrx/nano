@@ -2,7 +2,7 @@ import { BaseEntity } from '@unserved/server'
 import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm'
 import { Flow } from '../../flow'
 import { User } from '../../user'
-import { VariablePermission } from '../utils'
+import { VaultPermission } from '../utils'
 import { Vault } from './Vault'
 
 @Entity({ name: 'VaultFlowAssignment' })
@@ -37,5 +37,5 @@ export class VaultFlowAssignment extends BaseEntity {
    * @example 'Read'
    */
   @Column('varchar', { length: 255 })
-  permission: VariablePermission
+  permission: VaultPermission
 }
