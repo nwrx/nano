@@ -1,5 +1,5 @@
 import { BaseEntity, transformerDate } from '@unserved/server'
-import { Column, Entity, OneToMany } from 'typeorm'
+import { Column, Entity, Index, OneToMany } from 'typeorm'
 import { Project, ProjectObject } from '../../project'
 import { UserObject } from '../../user'
 import { getWorkspaceUserAssignments } from '../utils'
@@ -19,6 +19,7 @@ export class Workspace extends BaseEntity {
    *
    * @example 'my-workspace'
    */
+  @Index({ unique: true })
   @Column('varchar', { length: 255, unique: true })
   name: string
 
@@ -65,7 +66,7 @@ export class Workspace extends BaseEntity {
    * @example [WorkspaceAssignment, WorkspaceAssignment, WorkspaceAssignment]
    */
   @OneToMany(() => WorkspaceAssignment, assignment => assignment.workspace, { cascade: true, onDelete: 'CASCADE' })
-  assignments: WorkspaceAssignment[]
+  assignments?: WorkspaceAssignment[]
 
   /**
    * @param options The options to use when serializing the object.
