@@ -59,7 +59,7 @@ export class Vault<T extends VaultType = VaultType> extends BaseEntity {
    */
   @JoinColumn()
   @ManyToOne(() => Workspace, { nullable: false, onDelete: 'CASCADE' })
-  workspace: Workspace
+  workspace?: Workspace
 
   /**
    * The user that created the vault. Mainly for auditing purposes.
@@ -68,7 +68,7 @@ export class Vault<T extends VaultType = VaultType> extends BaseEntity {
    */
   @JoinColumn()
   @ManyToOne(() => User, { nullable: false, onDelete: 'RESTRICT' })
-  createdBy: User
+  createdBy?: User
 
   /**
    * The variables stored in the vault. Variables can be assigned to the vault
@@ -77,28 +77,28 @@ export class Vault<T extends VaultType = VaultType> extends BaseEntity {
    * @example [ Variable { ... }, Variable { ... } ]
    */
   @OneToMany(() => VaultVariable, variable => variable.vault)
-  variables: VaultVariable[]
+  variables?: VaultVariable[]
 
   /**
    * The user assignments for this vault. Users can be assigned different
    * permission levels to access the vault.
    */
   @OneToMany(() => VaultAssignment, assignment => assignment.vault)
-  assignments: VaultAssignment[]
+  assignments?: VaultAssignment[]
 
   /**
    * The flow assignments for this vault. Flows can be assigned different
    * permission levels to access the vault.
    */
   @OneToMany(() => VaultFlowAssignment, assignment => assignment.vault)
-  flowAssignments: VaultFlowAssignment[]
+  flowAssignments?: VaultFlowAssignment[]
 
   /**
    * The project assignments for this vault. Projects can be assigned different
    * permission levels to access the vault.
    */
   @OneToMany(() => VaultProjectAssignment, assignment => assignment.vault)
-  projectAssignments: VaultProjectAssignment[]
+  projectAssignments?: VaultProjectAssignment[]
 
   /**
    * @returns The serialized representation of the vault.
