@@ -5,14 +5,14 @@ export const ERRORS = {
     name: 'E_WORKSPACE_NOT_FOUND',
     statusCode: 404,
     statusMessage: 'Not Found',
-    message: `Workspace "${workspace}" not found or user does not have access to the workspace`,
+    message: `Workspace "${workspace}" not found`,
     data: { workspace },
   }),
   WORKSPACE_ACTION_NOT_AUTHORIZED: (workspace: string) => createError({
     name: 'E_WORKSPACE_ACTION_NOT_AUTHORIZED',
     statusCode: 401,
     statusMessage: 'Unauthorized',
-    message: `Workspace "${workspace}" not found or action on this workspace is not authorized`,
+    message: `Not authorized to perform the requested action on workspace "${workspace}"`,
     data: { workspace },
   }),
   WORKSPACE_NAME_TAKEN: (workspace: string) => createError({
