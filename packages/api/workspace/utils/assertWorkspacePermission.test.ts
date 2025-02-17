@@ -1,28 +1,22 @@
 import type { WorkspacePermission } from './assertWorkspacePermission'
-import { assertWorkspacePermission } from './assertWorkspacePermission'
+import { ValidationError } from '@unshared/validation'
+import { assertWorkspacePermission, WORKSPACE_PERMISSIONS } from './assertWorkspacePermission'
 
 describe('assertWorkspacePermission', () => {
-  it('should assert a permission is Owner', () => {
-    const shouldPass = () => assertWorkspacePermission('Owner')
-    expect(shouldPass).not.toThrow()
-  })
-
-  it('should assert a permission is Write', () => {
-    const shouldPass = () => assertWorkspacePermission('Write')
-    expect(shouldPass).not.toThrow()
-  })
-
-  it('should assert a permission is Read', () => {
-    const shouldPass = () => assertWorkspacePermission('Read')
+  it.each(WORKSPACE_PERMISSIONS)('should assert a permission is %s', (permission) => {
+    const shouldPass = () => assertWorkspacePermission(permission)
     expect(shouldPass).not.toThrow()
   })
 
   it('should throw an error if the permission is not valid', () => {
     const shouldThrow = () => assertWorkspacePermission('Invalid' as any)
-    expect(shouldThrow).toThrow('String is not one of the values: \'Owner\', \'Write\', \'Read\'.')
+    const values = WORKSPACE_PERMISSIONS.map(value => `'${value}'`).join(', ')
+    expect(shouldThrow).toThrow(ValidationError)
+    expect(shouldThrow).toThrow(`String is not one of the values: ${values}`)
   })
 
   it('should infer the permission type', () => {
-    expectTypeOf<WorkspacePermission>().toEqualTypeOf<'Owner' | 'Read' | 'Write'>()
+    type Expected = typeof WORKSPACE_PERMISSIONS[number]
+    expectTypeOf<WorkspacePermission>().toEqualTypeOf<Expected>()
   })
 })
