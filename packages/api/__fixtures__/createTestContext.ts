@@ -1,7 +1,9 @@
 // eslint-disable-next-line n/no-extraneous-import
 import type { TestContext } from 'vitest'
+import type { Flow, FlowPermission } from '../flow'
 import type { Project, ProjectPermission } from '../project'
 import type { User, UserSession } from '../user'
+import type { Vault } from '../vault'
 import type { Workspace, WorkspacePermission } from '../workspace'
 import { ModuleRunner } from '@nwrx/nano-runner'
 import { createTestApplication } from '@unserved/server'
@@ -13,6 +15,8 @@ import { createStoragePoolFs } from '../storage/utils'
 import { ModuleThread } from '../thread'
 import { ModuleUser } from '../user'
 import { createUser } from '../user/utils'
+import { ModuleVault } from '../vault'
+import { encrypt } from '../vault/utils'
 import { ModuleWorkspace } from '../workspace'
 
 export type Context = Awaited<ReturnType<typeof createTestContext>>
@@ -25,9 +29,12 @@ export async function createTestContext(testContext: TestContext) {
     ModuleProject,
     ModuleFlow,
     ModuleThread,
+    ModuleVault,
   ], {
     storagePools: new Map([['default', createStoragePoolFs()]] as const),
-    projectSecretKey: 'SECRET',
+    vaultConfigurationAlgorithm: 'aes-256-gcm',
+    vaultConfigurationSecretKey: 'secret-key',
+    vaultDefaultLocalSecretKey: 'secret-key',
   })
 
   const runner = await createTestApplication([ModuleRunner])
@@ -46,6 +53,7 @@ export async function createTestContext(testContext: TestContext) {
     get moduleProject() { return application.getModule(ModuleProject) },
     get moduleFlow() { return application.getModule(ModuleFlow) },
     get moduleThread() { return application.getModule(ModuleThread) },
+    get moduleVault() { return application.getModule(ModuleVault) },
     get moduleRunner() { return runner.getModule(ModuleRunner) },
 
     /************************************************/
@@ -157,6 +165,34 @@ export async function createTestContext(testContext: TestContext) {
     },
 
     /************************************************/
+    /* Vault                                        */
+    /************************************************/
+
+    createVault: async(name = 'my-vault', user: User, workspace: Workspace, options: Partial<Vault> = {}) => {
+      const moduleVault = application.getModule(ModuleVault)
+      const { Vault } = moduleVault.getRepositories()
+
+      // --- Encrypt the configuration using the module's encryption key.
+      const configurationJson = JSON.stringify({ algorithm: 'aes-256-gcm', secret: 'secret-key' })
+      const configurationEncrypted = await encrypt(
+        configurationJson,
+        moduleVault.vaultConfigurationSecretKey,
+        moduleVault.vaultConfigurationAlgorithm,
+      )
+
+      const vault = Vault.create({
+        createdBy: user,
+        name,
+        type: 'local',
+        workspace,
+        configuration: configurationEncrypted,
+        ...options,
+      })
+
+      return { vault: await Vault.save(vault) }
+    },
+
+    /************************************************/
     /* Project                                      */
     /************************************************/
 
@@ -172,6 +208,24 @@ export async function createTestContext(testContext: TestContext) {
       const assignment = ProjectAssignment.create({ project, user, permission })
       return { assignment: await ProjectAssignment.save(assignment) }
     },
+
+    /************************************************/
+    /* Flow                                         */
+    /************************************************/
+
+    createFlow: async(name = 'my-flow', project: Project, options: Partial<Flow> = {}) => {
+      const { Flow } = application.getModule(ModuleFlow).getRepositories()
+      const flow = Flow.create({ name, title: name, project, ...options })
+      return { flow: await Flow.save(flow) }
+    },
+
+    assignFlow: async(flow: Flow, user: User, permission?: FlowPermission) => {
+      if (!permission) return { assignment: undefined }
+      const { FlowAssignment } = application.getModule(ModuleFlow).getRepositories()
+      const assignment = FlowAssignment.create({ flow, user, permission })
+      return { assignment: await FlowAssignment.save(assignment) }
+    },
+
   }
 
   Object.assign(testContext, context)
