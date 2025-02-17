@@ -8,15 +8,13 @@ import { getProject } from '../utils'
 export function projectGet(this: ModuleProject) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/:project',
+      name: 'GET /api/workspaces/:workspace/projects/:project',
       parseParameters: createSchema({
         project: assertStringNotEmpty,
         workspace: assertStringNotEmpty,
       }),
       parseQuery: createSchema({
         withFlows: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
-        withSecrets: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
-        withVariables: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
         withAssignments: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
       }),
     },
@@ -39,8 +37,6 @@ export function projectGet(this: ModuleProject) {
         where: { id },
         relations: {
           flows: query.withFlows,
-          secrets: query.withSecrets,
-          variables: query.withVariables,
           assignments: query.withAssignments ? { user: { profile: true } } : false,
         },
         order: {

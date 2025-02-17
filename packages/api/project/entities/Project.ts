@@ -6,8 +6,6 @@ import { Workspace } from '../../workspace'
 import { ProjectPermission } from '../utils'
 import { getProjectAssignments } from '../utils/getProjectAssignments'
 import { ProjectAssignment } from './ProjectAssignment'
-import { ProjectSecret, ProjectSecretObject } from './ProjectSecret'
-import { ProjectVariable, ProjectVariableObject } from './ProjectVariable'
 
 /**
  * A `Project` regroups multiple flows together. It can be used to organize the
@@ -62,22 +60,6 @@ export class Project extends BaseEntity {
   flows?: Flow[]
 
   /**
-   * The secrets of the project.
-   *
-   * @example [ProjectSecret, ProjectSecret]
-   */
-  @OneToMany(() => ProjectSecret, secret => secret.project, { cascade: true })
-  secrets?: ProjectSecret[]
-
-  /**
-   * The variables of the project.
-   *
-   * @example [ProjectVariable, ProjectVariable]
-   */
-  @OneToMany(() => ProjectVariable, variable => variable.project, { cascade: true })
-  variables?: ProjectVariable[]
-
-  /**
    * The users assigned to the project. They can have specific permissions on the project.
    *
    * @example ProjectAssignment { ... }
@@ -103,8 +85,6 @@ export class Project extends BaseEntity {
       title: this.title,
       description: this.description ?? undefined,
       flows: this.flows?.map(flow => flow.serialize()),
-      secrets: this.secrets?.map(secret => secret.serialize()),
-      variables: this.variables?.map(variable => variable.serialize()),
       assignments: getProjectAssignments(this)?.map(({ user, permissions }) => ({
         user: user.serialize(),
         permissions,
@@ -123,7 +103,5 @@ export interface ProjectObject {
   title: string
   description?: string
   flows?: FlowObject[]
-  secrets?: ProjectSecretObject[]
-  variables?: ProjectVariableObject[]
   assignments?: ProjectUserPermissionsObject[]
 }
