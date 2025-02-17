@@ -6,6 +6,8 @@ import type { WorkspacePermission } from '../../workspace'
 import type { ProjectPermission } from './assertProjectPermission'
 import { EXP_UUID, ValidationError } from '@unshared/validation'
 import { createTestContext } from '../../__fixtures__'
+import { WORKSPACE_PERMISSIONS } from '../../workspace'
+import { PROJECT_PERMISSIONS } from './assertProjectPermission'
 import { ERRORS as E } from './errors'
 import { getProject } from './getProject'
 
@@ -36,8 +38,8 @@ describe.concurrent('getProject', () => {
     return await getProject.call(context.moduleProject, { user, workspace: workspace.name, name: project.name, permission })
   }
 
-  const allWorkspacePermissions = ['Owner', 'Write', 'Read', undefined] as const
-  const allProjectPermissions = ['Owner', 'Write', 'WriteApiKeys', 'WriteSecrets', 'WriteVariables', 'Execute', 'Read', undefined] as const
+  const allWorkspacePermissions = [...WORKSPACE_PERMISSIONS, undefined] as const
+  const allProjectPermissions = [...PROJECT_PERMISSIONS, undefined] as const
 
   for (const isWorkspacePublic of [true, false]) {
     describe<Context>(isWorkspacePublic ? 'with public workspace' : 'with private workspace', () => {

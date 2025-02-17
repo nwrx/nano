@@ -13,18 +13,13 @@ describe('assertProjectPermission', () => {
     expect(shouldPass).not.toThrow()
   })
 
-  it('should assert a permission is WriteApiKeys', () => {
-    const shouldPass = () => assertProjectPermission('WriteApiKeys')
+  it('should assert a permission is VaultRead', () => {
+    const shouldPass = () => assertProjectPermission('VaultRead')
     expect(shouldPass).not.toThrow()
   })
 
-  it('should assert a permission is WriteSecrets', () => {
-    const shouldPass = () => assertProjectPermission('WriteSecrets')
-    expect(shouldPass).not.toThrow()
-  })
-
-  it('should assert a permission is WriteVariables', () => {
-    const shouldPass = () => assertProjectPermission('WriteVariables')
+  it('should assert a permission is VaultWrite', () => {
+    const shouldPass = () => assertProjectPermission('VaultWrite')
     expect(shouldPass).not.toThrow()
   })
 
@@ -48,10 +43,9 @@ describe('assertProjectPermission', () => {
       | 'Execute'
       | 'Owner'
       | 'Read'
+      | 'VaultRead'
+      | 'VaultWrite'
       | 'Write'
-      | 'WriteApiKeys'
-      | 'WriteSecrets'
-      | 'WriteVariables'
     >()
   })
 })
