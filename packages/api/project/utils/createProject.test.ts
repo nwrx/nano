@@ -29,6 +29,14 @@ describe.concurrent<Context>('createProject', () => {
       })
     })
 
+    it('should save the project to the database', async({ createUser, moduleProject }) => {
+      const { user, workspace } = await createUser()
+      const project = await createProject.call(moduleProject, { user, name: 'project', workspace: workspace.name })
+      const { Project } = moduleProject.getRepositories()
+      const saved = await Project.findOneBy({ id: project.id })
+      expect(saved).toMatchObject({ id: project.id })
+    })
+
     it('should create a new private project', async({ createUser, moduleProject }) => {
       const { user, workspace } = await createUser()
       const project = await createProject.call(moduleProject, { user, name: 'project', workspace: workspace.name })

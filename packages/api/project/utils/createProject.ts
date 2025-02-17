@@ -42,12 +42,15 @@ export async function createProject(this: ModuleProject, options: CreateProjectO
   const { Project, ProjectAssignment } = this.getRepositories()
   const { user, name, title = name, description, workspace: workspaceName, isPublic } = CREATE_PROJECT_OPTIONS(options)
 
-  // --- Assert the user has access to the workspace and the project does not exist.
+  // --- Assert the user has access to the workspace and can create the project.
   const workspace = await moduleWorkspace.getWorkspace({ user, name: workspaceName, permission: 'Write' })
-  const exists = await Project.findOneBy({ name, workspace: { id: workspace.id } })
-  if (exists) throw this.errors.PROJECT_NAME_TAKEN(workspace.name, name)
+
+  // --- Check if the project already exists in the workspace.
+  const exists = await Project.countBy({ name, workspace: { id: workspace.id } })
+  if (exists > 0) throw this.errors.PROJECT_NAME_TAKEN(workspace.name, name)
 
   // --- Create the project and assign the user as the owner.
   const assignment = ProjectAssignment.create({ user, permission: 'Owner' })
-  return Project.create({ name, title, description, workspace, isPublic, assignments: [assignment] })
+  const project = Project.create({ name, title, description, workspace, isPublic, assignments: [assignment] })
+  return await Project.save(project)
 }

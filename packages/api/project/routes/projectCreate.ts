@@ -8,7 +8,7 @@ import { createProject } from '../utils'
 export function projectCreate(this: ModuleProject) {
   return createHttpRoute(
     {
-      name: 'POST /api/workspaces/:workspace',
+      name: 'POST /api/workspaces/:workspace/projects',
       parseParameters: createSchema({
         workspace: assertStringNotEmpty,
       }),
@@ -26,10 +26,6 @@ export function projectCreate(this: ModuleProject) {
 
       // --- Create and save the project.
       const project = await createProject.call(this, { name, title, description, workspace, user })
-      const { Project } = this.getRepositories()
-      await Project.save(project)
-
-      // --- Return the serialized project.
       return project.serialize()
     },
   )
