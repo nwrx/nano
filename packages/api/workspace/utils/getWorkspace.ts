@@ -1,9 +1,7 @@
 import type { Loose } from '@unshared/types'
-import type { FindOptionsWhere } from 'typeorm'
 import type { Workspace } from '../entities'
 import type { ModuleWorkspace } from '../index'
 import { assertStringNotEmpty, assertStringUuid, assertUndefined, createSchema } from '@unshared/validation'
-import { In } from 'typeorm'
 import { assertWorkspacePermission } from './assertWorkspacePermission'
 
 /** The parser fuction for the {@linkcode getWorkspace} function. */
@@ -35,37 +33,36 @@ export type ResolveWorkspaceOptions = Loose<ReturnType<typeof GET_WORKSPACE_OPTI
 export async function getWorkspace(this: ModuleWorkspace, options: ResolveWorkspaceOptions): Promise<Workspace> {
   const { name, user, permission } = GET_WORKSPACE_OPTIONS(options)
   const { Workspace } = this.getRepositories()
-  const where: Array<FindOptionsWhere<Workspace>> = []
 
-  // --- Abort early if the user is not authenticated and the permission is not 'Read'.
-  if (!user && permission !== 'Read')
-    throw this.errors.WORKSPACE_ACTION_NOT_AUTHORIZED(name)
+  // --- Get the workspace.
+  const workspace = await Workspace.findOne({
+    where: { name },
+    relations: { assignments: { user: true } },
+  })
 
-  // --- If the request permission is 'Read', allow user-accessible workspaces to be retrieved.
-  // --- In our context, any permission on a workspace implicitly grants 'Read' access.
-  if (permission === 'Read') {
-    where.push({ name, isPublic: true })
-    if (user) where.push({ name, assignments: { user } })
+  // --- Assert that the workspace exists. Quit early if the workspace is public.
+  if (!workspace) throw this.errors.WORKSPACE_NOT_FOUND(name)
+  if (!user && permission === 'Read' && workspace.isPublic) {
+    delete workspace.assignments
+    return workspace
+  }
+  if (!user) {
+    throw workspace.isPublic
+      ? this.errors.WORKSPACE_ACTION_NOT_AUTHORIZED(name)
+      : this.errors.WORKSPACE_NOT_FOUND(name)
   }
 
-  // --- For any other permission, the user must have a matching permission
-  // --- to the workspace itself or be an owner of the workspace.
-  else if (user) {
-    where.push({
-      name,
-      assignments: { user, permission: In(['Owner', permission]) },
-    })
+  let hasAccess = permission === 'Read' && workspace.isPublic
+  let hasReadAccess = workspace.isPublic
+  for (const assignment of workspace.assignments!) {
+    if (assignment.user!.id !== user.id) continue
+    if (assignment.permission === 'Owner') return workspace
+    if (assignment.permission === 'Read') hasReadAccess = true
+    if (assignment.permission === permission) hasAccess = true
   }
 
-  // --- Now that we have the where clause, we can query the database for the workspace.
-  const result = await Workspace.findOne({ where })
-  if (result) return result
-
-  // --- If the workspace was not found, it means that there wasn't any workspace
-  // --- that matched the assignments and private/public criterias. We don't
-  // --- know if it was because the workspace didn't exist or if the user was not
-  // --- authorized to access it and we don't want to know it.
-  throw permission === 'Read'
-    ? this.errors.WORKSPACE_NOT_FOUND(name)
-    : this.errors.WORKSPACE_ACTION_NOT_AUTHORIZED(name)
+  if (!hasReadAccess) throw this.errors.WORKSPACE_NOT_FOUND(name)
+  if (!hasAccess) throw this.errors.WORKSPACE_ACTION_NOT_AUTHORIZED(name)
+  delete workspace.assignments
+  return workspace
 }
