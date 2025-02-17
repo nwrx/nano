@@ -1,4 +1,4 @@
-import type { ValueEncrypted } from './valueEncrypt'
+import type { Encrypted } from './encrypt'
 import { createDecipheriv, scrypt } from 'node:crypto'
 
 /**
@@ -7,9 +7,9 @@ import { createDecipheriv, scrypt } from 'node:crypto'
  * @param encrypted The encrypted value object.
  * @param secret The secret to use for decryption.
  * @returns The decrypted value.
- * @example await valueDecipher({ cipher: '...', ... }, 'my-secret-key') // 'my-secret-value'
+ * @example await decrypt({ cipher: '...', ... }, 'my-secret-key') // 'my-secret-value'
  */
-export async function valueDecrypt(encrypted: ValueEncrypted, secret: string): Promise<string> {
+export async function decrypt(encrypted: Encrypted, secret: string): Promise<string> {
 
   // --- Ensure the algorithm is GCM.
   const isGCM = ['aes-256-gcm', 'aes-128-gcm', 'aes-192-gcm'].includes(encrypted.algorithm)

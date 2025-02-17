@@ -1,7 +1,7 @@
 import type { CipherGCMTypes } from 'node:crypto'
 import { createCipheriv, randomBytes, scrypt } from 'node:crypto'
 
-export interface ValueEncrypted {
+export interface Encrypted {
   iv: string
   tag: string
   salt: string
@@ -16,9 +16,9 @@ export interface ValueEncrypted {
  * @param secret The secret to use for encryption.
  * @param algorithm The algorithm to use for encryption.
  * @returns An object containing cipher as well as the iv, tag, salt, and algorithm used.
- * @example await valueEncrypt('my-secret-value', 'my-secret-key', 'aes-256-gcm') // { cipher: '...', ... }
+ * @example await encrypt('my-secret-value', 'my-secret-key', 'aes-256-gcm') // { cipher: '...', ... }
  */
-export async function valueEncrypt(value: string, secret: string, algorithm: CipherGCMTypes): Promise<ValueEncrypted> {
+export async function encrypt(value: string, secret: string, algorithm: CipherGCMTypes): Promise<Encrypted> {
 
   // --- Ensure the algorithm is GCM.
   const isGCM = ['aes-256-gcm', 'aes-128-gcm', 'aes-192-gcm'].includes(algorithm)
