@@ -27,8 +27,8 @@ export class Vault<T extends VaultType = VaultType> extends BaseEntity {
    *
    * @example 'Production secrets manager for the EU West 1 region.'
    */
-  @Column('text', { nullable: true })
-  description?: string
+  @Column('text', { default: '' })
+  description = ''
 
   /**
    * The type of vault used to store the variables. The type of vault
@@ -98,8 +98,8 @@ export class Vault<T extends VaultType = VaultType> extends BaseEntity {
    */
   serialize(): VaultObject {
     return {
-      type: this.type,
       name: this.name,
+      type: this.type,
       description: this.description,
       createdAt: this.createdAt.toISOString(),
       updatedAt: this.updatedAt.toISOString(),
@@ -108,9 +108,9 @@ export class Vault<T extends VaultType = VaultType> extends BaseEntity {
 }
 
 export interface VaultObject {
-  type: VaultType
   name: string
-  description?: string
+  type: VaultType
+  description: string
   createdAt: string
   updatedAt: string
 }
