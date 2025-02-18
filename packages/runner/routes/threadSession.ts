@@ -3,7 +3,7 @@ import type { ThreadWorkerMessage } from '../worker'
 import { createWebSocketRoute } from '@unserved/server'
 import { assertObjectStrict, createParser } from '@unshared/validation'
 import { authorize } from '../utils'
-import { createThreadWorker, THREAD_CLIENT_MESSAGE_SCHEMA } from '../worker'
+import { createThreadWorker, deserialize, THREAD_CLIENT_MESSAGE_SCHEMA } from '../worker'
 
 export function threadSession(this: ModuleRunner) {
   return createWebSocketRoute(
@@ -25,17 +25,12 @@ export function threadSession(this: ModuleRunner) {
         let thread = this.runnerSessions.get(peer.id)
         if (!thread) {
           thread = createThreadWorker.call(this)
-          thread.port.on('message', message => peer.send(message))
+          thread.port.on('message', message => deserialize(peer.send(message)))
           this.runnerSessions.set(peer.id, thread)
         }
 
-        // --- Create the Thread instance in the worker.
-        if (message.event === 'create') {
-          await thread.create(message.data)
-          peer.send({ event: 'worker:ready', data: [peer.id] } as ThreadWorkerMessage)
-        }
-
-        // --- Interact with the Thread instance.
+        // --- Pass the message to the thread worker.
+        if (message.event === 'create') await thread.create(message.data)
         if (message.event === 'start') await thread.start(message.data)
         if (message.event === 'abort') await thread.abort()
       },

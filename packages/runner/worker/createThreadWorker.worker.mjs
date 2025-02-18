@@ -75,6 +75,9 @@ export function createThreadWorker(port) {
             port.postMessage({ event, data }, transferList)
           })
         }
+
+        // --- Notify the parent thread that the worker is ready to start.
+        port.postMessage({ event: 'worker:ready' })
       }
 
       // --- At this point, if there is no thread, we can't do anything.
