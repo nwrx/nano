@@ -46,7 +46,6 @@ export class FlowDeployment extends BaseEntity {
    */
   serialize(): FlowDeploymentObject {
     return {
-      id: this.id,
       version: this.version.toString(),
       notes: this.notes,
       flowName: this.flow?.name,
@@ -58,7 +57,6 @@ export class FlowDeployment extends BaseEntity {
 }
 
 export interface FlowDeploymentObject {
-  id: string
   version: string
   notes?: string
   flowName?: string
