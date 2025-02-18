@@ -29,7 +29,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiUrl: '',
+      apiUrl: 'http://localhost:3001',
       appUrl: 'app.nwrx.io',
       appTitle: 'Nanoworks',
       appDescription: 'A flow-based programming environment.',
@@ -37,11 +37,6 @@ export default defineNuxtConfig({
       appCanonicalUrl: 'https://app.nwrx.io',
     },
   },
-
-  serverHandlers: [
-    { route: '/api/**', handler: '~/server/index.ts' },
-    { route: '/ws/**', handler: '~/server/index.ts' },
-  ],
 
   modules: [
     'nuxt-security',
@@ -188,8 +183,6 @@ export default defineNuxtConfig({
   /**
    * Enable `experimentalDecorator` when bundling the server code with Vite. It
    * allows use to use decorators when declaring the TypeORM entities.
-   *
-   * @see https://typeorm.io/#typescript-configuration
    */
   nitro: {
     experimental: {
