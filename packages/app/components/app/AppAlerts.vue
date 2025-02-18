@@ -46,16 +46,15 @@ function getAlertIconColor(alert: Alert) {
 
         <!-- Icon -->
         <BaseIcon
-          :class="getAlertIconColor(alert)"
+          :class="[getAlertIconColor(alert), alert.title ? 'size-5' : 'size-4']"
           :icon="getAlertIcon(alert)"
-          class="w-4 h-4"
         />
 
-        <!-- Content -->
-        <p
-          class="text-sm"
-          v-text="alert.text"
-        />
+        <!-- Title -->
+        <div>
+          <p v-if="alert.type !== 'success'" class="text-sm font-semibold" v-text="alert.title" />
+          <p class="text-sm" v-text="alert.text" />
+        </div>
       </div>
     </TransitionGroup>
   </BaseAlerts>
