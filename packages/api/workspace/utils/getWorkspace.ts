@@ -32,12 +32,12 @@ export type ResolveWorkspaceOptions = Loose<ReturnType<typeof GET_WORKSPACE_OPTI
  */
 export async function getWorkspace(this: ModuleWorkspace, options: ResolveWorkspaceOptions): Promise<Workspace> {
   const { name, user, permission } = GET_WORKSPACE_OPTIONS(options)
-  const { Workspace } = this.getRepositories()
 
   // --- Get the workspace.
+  const { Workspace } = this.getRepositories()
   const workspace = await Workspace.findOne({
     where: { name },
-    relations: { assignments: { user: true } },
+    relations: user ? { assignments: { user: true } } : undefined,
   })
 
   // --- Assert that the workspace exists. Quit early if the workspace is public.
