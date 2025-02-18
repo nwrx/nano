@@ -16,6 +16,39 @@ services:
     ports:
       - "5432:5432"
 
+  # maildev:
+  #   image: maildev/maildev:2.1.0
+  #   container_name: maildev
+  #   ports:
+  #     - "1080:1080"
+  #     - "1025:1025"
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:1080"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 5
+
+  chroma:
+    image: chromadb/chroma:latest
+    container_name: chroma
+    ports:
+      - "8081:8081"
+
+  ollama:
+    image: ollama/ollama:0.3.10
+    container_name: ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama:/root/.ollama
+
   app:
     image: nano
     build:
