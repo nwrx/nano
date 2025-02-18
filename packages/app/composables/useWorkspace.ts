@@ -1,9 +1,9 @@
-import type { application, WorkspaceProjectObject } from '@nwrx/nano-api'
+import type { application, ProjectObject } from '@nwrx/nano-api'
 import type { RouteRequestData } from '@unserved/client'
 import { useAlerts, useClient } from '#imports'
 
-type UseProjectOptions = Omit<RouteRequestData<typeof application, 'GET /api/projects'>, 'workspace'>
-export type CreateProjectOptions = Omit<RouteRequestData<typeof application, 'POST /api/workspaces/:workspace'>, 'workspace'>
+type UseProjectOptions = Omit<RouteRequestData<typeof application, 'GET /api/workspaces/:workspace/projects'>, 'workspace'>
+export type CreateProjectOptions = Omit<RouteRequestData<typeof application, 'POST /api/workspaces/:workspace/projects'>, 'workspace'>
 
 /**
  * Fetch the project data from the API and provide methods to interact with it.
@@ -15,10 +15,10 @@ export type CreateProjectOptions = Omit<RouteRequestData<typeof application, 'PO
 export function useWorkspace(workspace: MaybeRef<string>, options: UseProjectOptions = {}) {
   const client = useClient()
   const alerts = useAlerts()
-  const data = ref<WorkspaceProjectObject[]>([])
+  const data = ref<ProjectObject[]>([])
 
   const refresh = async() => {
-    await client.request('GET /api/projects', {
+    await client.request('GET /api/workspaces/:workspace/projects', {
       onData: project => data.value = project,
       data: { workspace: unref(workspace), ...options },
     })
@@ -35,8 +35,7 @@ export function useWorkspace(workspace: MaybeRef<string>, options: UseProjectOpt
      * @returns The created project object.
      */
     createProject: async(options: CreateProjectOptions) =>
-      await client.requestAttempt('POST /api/workspaces/:workspace', {
-        onError: error => alerts.error(error),
+      await client.requestAttempt('POST /api/workspaces/:workspace/projects', {
         onSuccess: () => alerts.success('Project created successfully'),
         onEnd: () => void refresh(),
         data: { workspace: unref(workspace), ...options },
@@ -50,7 +49,6 @@ export function useWorkspace(workspace: MaybeRef<string>, options: UseProjectOpt
      */
     createFlow: async(project: string) =>
       await client.requestAttempt('POST /api/flows', {
-        onError: error => alerts.error(error),
         onSuccess: () => alerts.success('Flow created successfully'),
         onEnd: () => void refresh(),
         data: { workspace: unref(workspace), project },
@@ -66,8 +64,7 @@ export function useWorkspace(workspace: MaybeRef<string>, options: UseProjectOpt
     importFlow: async(project: string, file: File) => {
       const formData = new FormData()
       formData.append('file', file)
-      await client.requestAttempt('POST /api/workspaces/:workspace/:project/import', {
-        onError: error => alerts.error(error),
+      await client.requestAttempt('POST /api/workspaces/:workspace/projects/:project/import', {
         onSuccess: () => alerts.success('Flow imported successfully'),
         onEnd: () => void refresh(),
         data: { workspace: unref(workspace), project, file },
@@ -82,7 +79,7 @@ export function useWorkspace(workspace: MaybeRef<string>, options: UseProjectOpt
      * @returns A promise that resolves when the flow is deleted.
      */
     // deleteFlow: async(project: string, flow: string) =>
-    //   await client.requestAttempt('DELETE /api/workspaces/:workspace/:project/:flow', {
+    //   await client.requestAttempt('DELETE /api/workspaces/:workspace/projects/:project/:flow', {
     //     onError: error => alerts.error(error),
     //     onSuccess: () => alerts.success('Flow deleted successfully'),
     //     onEnd: () => void refresh(),
@@ -96,7 +93,7 @@ export function useWorkspace(workspace: MaybeRef<string>, options: UseProjectOpt
      * @returns A promise that resolves when the project is deleted.
      */
     // deleteProject: async(project: string) =>
-    //   await client.requestAttempt('DELETE /api/workspaces/:workspace/:project', {
+    //   await client.requestAttempt('DELETE /api/workspaces/:workspace/projects/:project', {
     //     onError: error => alerts.error(error),
     //     onSuccess: () => alerts.success('Project deleted successfully'),
     //     onEnd: () => { void refresh() },
