@@ -16,7 +16,7 @@ const dataId = computed(() => {
 
 <template>
   <div
-    class="h-8 flex items-center self-start"
+    class="w-6 h-8 flex items-center self-start"
     :class="{
       'pr-sm': !isOutput,
       'pl-sm': isOutput,

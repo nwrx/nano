@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { EditorSessionJSON, LinkJSON } from '@nwrx/nano-api'
 import type { SocketListOption } from '@nwrx/nano'
+import type { EditorSessionJSON, LinkJSON } from '@nwrx/nano-api'
 import { throttle } from '@unshared/functions/throttle'
 import PATTERN_EDITOR_URL from '~/assets/pattern-editor.svg?no-inline'
 
@@ -29,6 +29,7 @@ const emit = defineEmits<{
   setNodeComment: [string, string]
   setNodeInputValue: [string, string, unknown]
   getNodeInputOptions: [string, string, string | undefined]
+  setNodeSocketVisibility: [string, string, boolean]
   removeNodes: [string[]]
   createLink: [LinkJSON, LinkJSON]
   removeLink: [LinkJSON]
@@ -126,6 +127,7 @@ const editor = useFlowEditorView({
         @click="(event) => editor.onNodeClick(event, node.id)"
         @set-input-value="(key, value) => emit('setNodeInputValue', node.id, key, value)"
         @get-input-options="(key, query) => emit('getNodeInputOptions', node.id, key, query)"
+        @set-socket-visibility="(key, visible) => emit('setNodeSocketVisibility', node.id, key, visible)"
         @handle-grab="(event) => editor.onNodeHandleGrab(event, node.id)"
         @handle-release="() => editor.onNodeHandleRelease()"
         @link-grab="(link) => editor.onLinkGrab(link)"
