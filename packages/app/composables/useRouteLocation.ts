@@ -23,7 +23,7 @@ export const useRouteLocation = createSharedComposable(() => ({
   getFlowRoute(workspace: string, project: string, flow: string) {
     if (!flow || !project || !workspace) return
     return {
-      name: 'WorkspaceProjectFlowEditor',
+      name: 'ProjectFlowEditor',
       params: { workspace, project, flow },
     }
   },
