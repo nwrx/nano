@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { WorkspaceProjectUserPermissionsObject } from '@nwrx/nano-api'
+import type { ProjectUserPermissionsObject } from '@nwrx/nano-api'
 
 defineProps<{
-  assignments?: WorkspaceProjectUserPermissionsObject[]
+  assignments?: ProjectUserPermissionsObject[]
 }>()
 </script>
 

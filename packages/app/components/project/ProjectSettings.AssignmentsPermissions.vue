@@ -14,14 +14,14 @@ const { t } = useI18n()
       light
     />
     <Badge
-      v-if="permissions.includes('WriteSecrets')"
+      v-if="permissions.includes('VaultRead')"
       icon="i-carbon:password"
       variant="primary"
       size="xsmall"
       light
     />
     <Badge
-      v-if="permissions.includes('WriteApiKeys')"
+      v-if="permissions.includes('VaultWrite')"
       icon="i-carbon:api-key"
       variant="primary"
       size="xsmall"

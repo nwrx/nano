@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { WorkspaceProjectSecretObject } from '@nwrx/nano-api'
+import type { ProjectSecretObject } from '@nwrx/nano-api'
 
 const props = defineProps<{
   workspace: string
   project: string
-  secrets?: WorkspaceProjectSecretObject[]
+  secrets?: ProjectSecretObject[]
 }>()
 
 const emit = defineEmits<{

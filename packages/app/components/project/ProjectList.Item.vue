@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { WorkspaceProjectObject } from '@nwrx/nano-api'
+import type { ProjectObject } from '@nwrx/nano-api'
 
-const props = defineProps<WorkspaceProjectObject & {
+const props = defineProps<ProjectObject & {
   workspace: string
   modelValue?: boolean
 }>()
@@ -26,7 +26,7 @@ const model = useVModel(props, 'modelValue', emit, {
 function getProjectRoute(workspace: string, project: string) {
   if (!workspace || !project) return
   return {
-    name: 'WorkspaceProjectSettings',
+    name: 'ProjectSettings',
     params: { workspace, project },
   }
 }

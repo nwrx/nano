@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { WorkspaceProjectPermission } from '@nwrx/nano-api'
+import type { ProjectPermission } from '@nwrx/nano-api'
 
 const props = defineProps<{
   modelValue?: boolean
@@ -8,17 +8,17 @@ const props = defineProps<{
   title?: string
   username?: string
   userDisplayName?: string
-  permissions?: WorkspaceProjectPermission[]
+  permissions?: ProjectPermission[]
 }>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
-  'submit': [value: WorkspaceProjectPermission[]]
+  'submit': [value: ProjectPermission[]]
 }>()
 
 const model = useVModel(props, 'modelValue', emit, { passive: true })
-const role = ref<WorkspaceProjectPermission>('Read')
-const access = ref<WorkspaceProjectPermission[]>([])
+const role = ref<ProjectPermission>('Read')
+const access = ref<ProjectPermission[]>([])
 
 const { t } = useI18n()
 
@@ -76,14 +76,14 @@ watch(() => props.permissions, (permissions) => {
       />
       <AppDialogToggle
         v-model="access"
-        value="WriteSecrets"
+        value="VaultRead"
         :label="t('secrets.label')"
         :text="t('secrets.text')"
         type="checkbox"
       />
       <AppDialogToggle
         v-model="access"
-        value="WriteApiKeys"
+        value="VaultWrite"
         :label="t('apiKeys.label')"
         :text="t('apiKeys.text')"
         type="checkbox"

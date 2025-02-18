@@ -24,12 +24,12 @@ const { t } = useI18n()
           <AppPageNavItem
             :label="t('settings')"
             icon="i-carbon:settings"
-            :to="{ name: 'WorkspaceProjectSettings', params: { workspace, project } }"
+            :to="{ name: 'ProjectSettings', params: { workspace, project } }"
           />
           <AppPageNavItem
             :label="t('access')"
             icon="i-carbon:user"
-            :to="{ name: 'WorkspaceProjectSettingsAssignments', params: { workspace, project } }"
+            :to="{ name: 'ProjectSettingsAssignments', params: { workspace, project } }"
           />
           <AppPageNavItem
             :label="t('integrations')"
@@ -44,7 +44,7 @@ const { t } = useI18n()
           <AppPageNavItem
             :label="t('variables')"
             icon="i-carbon:label"
-            :to="{ name: 'WorkspaceProjectSettingsVariables', params: { workspace, project } }"
+            :to="{ name: 'ProjectSettingsVariables', params: { workspace, project } }"
           />
           <AppPageNavItem
             :label="t('apiKeys')"

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { MonitoringFlowThreadObject } from '@nwrx/nano-api'
+import type { ThreadObject } from '@nwrx/nano-api'
 
 defineProps<{
-  threads?: MonitoringFlowThreadObject[]
+  threads?: ThreadObject[]
   selectedFlow?: string
   selectedThread?: string
 }>()

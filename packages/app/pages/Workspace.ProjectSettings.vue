@@ -2,7 +2,7 @@
 import { useClient } from '#imports'
 
 definePageMeta({
-  name: 'WorkspaceProjectSettings',
+  name: 'ProjectSettings',
   path: '/:workspace/:project/settings',
   middleware: 'redirect-when-guest',
 })
@@ -61,7 +61,7 @@ onMounted(project.refresh)
       :project="name"
       :title="project.data.title"
       @submit-name="name => project.setName(name)"
-      @submit-delete="() => project.delete()"
+      @submit-delete="() => project.remove()"
       @submit-transfer="username => project.setName(username)"
     />
   </ProjectSettings>

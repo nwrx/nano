@@ -2,7 +2,7 @@
 import ProjectSettingsVariables from '~/components/project/ProjectSettings.Variables.vue'
 
 definePageMeta({
-  name: 'WorkspaceProjectSettingsVariables',
+  name: 'ProjectSettingsVariables',
   path: '/:workspace/:project/settings/variables',
   middleware: 'redirect-when-guest',
 })

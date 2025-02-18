@@ -1,12 +1,12 @@
 <!-- eslint-disable sonarjs/prefer-single-boolean-return -->
 <script setup lang="ts">
-import type { MonitoringFlowThreadEventObject, MonitoringFlowThreadNodeEventObject } from '@nwrx/nano-api'
+import type { ThreadEventObject, ThreadNodeEventObject } from '@nwrx/nano-api'
 
 const props = defineProps<{
   selectedEvent?: string
   selectedThread?: string
-  events?: MonitoringFlowThreadEventObject[]
-  nodeEvents?: MonitoringFlowThreadNodeEventObject[]
+  events?: ThreadEventObject[]
+  nodeEvents?: ThreadNodeEventObject[]
   eventNames?: string[]
   eventTypes?: string[]
 }>()

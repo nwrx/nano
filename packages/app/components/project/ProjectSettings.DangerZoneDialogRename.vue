@@ -21,7 +21,7 @@ const name = ref('')
     icon="i-carbon:label"
     class-hint="hint-warning"
     class-button="button-warning"
-    :title="t('title', { title })"
+    :title="t('title', { workspace, project })"
     :text="t('text', { workspace, project })"
     :label-cancel="t('button.cancel')"
     :label-confirm="t('button.confirm')"
@@ -39,31 +39,31 @@ const name = ref('')
 
 <i18n lang="yaml">
 en:
-  title: Rename the **{title}** project
+  title: Rename the **{workspace}/{project}** project
   text: Renaming the project will change the project URL and the project name. Meaning that **{workspace}/{project}** won't be a valid URL anymore. Make sure you are certain of this action before continuing.
-  input.name.label: Define the new project name0
+  input.name.label: Define the new project name
   button.confirm: I understand, rename the project
   button.cancel: Keep the name as-is
 fr:
-  title: Renommer le projet **{title}**
+  title: Renommer le projet **{workspace}/{project}**
   text: Renommer le projet changera l'URL du projet et le nom du projet. Cela signifie que **{workspace}/{project}** ne sera plus une URL valide. Assurez-vous d'être certain de cette action avant de continuer.
   input.name.label: Définir le nouveau nom du projet
   button.confirm: Je comprends, renommer le projet
   button.cancel: Conserver le nom tel quel
 de:
-  title: Benenne das Projekt **{title}** um
+  title: Benennen Sie das Projekt **{workspace}/{project}** um
   text: Durch das Umbenennen des Projekts wird die Projekt-URL und der Projektname geändert. Das bedeutet, dass **{workspace}/{project}** keine gültige URL mehr sein wird. Stellen Sie sicher, dass Sie sich dieser Aktion sicher sind, bevor Sie fortfahren.
   input.name.label: Definieren Sie den neuen Projektnamen
   button.confirm: Ich verstehe, benenne das Projekt um
   button.cancel: Behalte den Namen wie er ist
 es:
-  title: Renombrar el proyecto **{title}**
+  title: Renombrar el proyecto **{workspace}/{project}**
   text: Renombrar el proyecto cambiará la URL del proyecto y el nombre del proyecto. Lo que significa que **{workspace}/{project}** ya no será una URL válida. Asegúrate de estar seguro de esta acción antes de continuar.
   input.name.label: Define el nuevo nombre del proyecto
   button.confirm: Entiendo, renombrar el proyecto
   button.cancel: Mantener el nombre tal cual
 zh:
-  title: 重命名项目 **{title}**
+  title: 重命名项目 **{workspace}/{project}**
   text: 重命名项目将更改项目的 URL 和项目名称。这意味着 **{workspace}/{project}** 将不再是有效的 URL。在继续之前，请确保您对此操作有把握。
   input.name.label: 定义新项目名称
   button.confirm: 我明白，重命名项目

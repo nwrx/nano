@@ -2,7 +2,7 @@
 import ProjectSettingsAssignments from '~/components/project/ProjectSettings.Assignments.vue'
 
 definePageMeta({
-  name: 'WorkspaceProjectSettingsAssignments',
+  name: 'ProjectSettingsAssignments',
   path: '/:workspace/:project/settings/assignments',
   middleware: 'redirect-when-guest',
 })

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FlowObject } from '@nwrx/api'
+import type { FlowObject } from '@nwrx/nano-api'
 import BOOKMARK_1_URL from '~/assets/bookmark-1.png'
 
 defineProps<{

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { WorkspaceProjectVariableObject } from '@nwrx/nano-api'
+import type { ProjectVariableObject } from '@nwrx/nano-api'
 
 const props = defineProps<{
   workspace: string
   project: string
-  variables?: WorkspaceProjectVariableObject[]
+  variables?: ProjectVariableObject[]
 }>()
 
 const emit = defineEmits<{
