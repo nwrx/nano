@@ -1,11 +1,10 @@
-import type { WorkspaceProjectObject, WorkspaceProjectPermission } from '@nwrx/nano-api'
+import type { application, ProjectObject, ProjectPermission } from '@nwrx/nano-api'
 import type { RouteRequestData } from '@unserved/client'
-import type { application } from '~/server'
 import { useAlerts, useClient, useRouter } from '#imports'
 
 /** The options to pass to the {@linkcode useProject} composable. */
-export type UseProjectOptions = Omit<RouteRequestData<typeof application, 'GET /api/workspaces/:workspace/:project'>, 'project' | 'workspace'>
-export type SetSettingsOptions = Omit<RouteRequestData<typeof application, 'PUT /api/workspaces/:workspace/:project'>, 'project' | 'workspace'>
+export type UseProjectOptions = Omit<RouteRequestData<typeof application, 'GET /api/workspaces/:workspace/projects/:project'>, 'project' | 'workspace'>
+export type SetSettingsOptions = Omit<RouteRequestData<typeof application, 'PUT /api/workspaces/:workspace/projects/:project'>, 'project' | 'workspace'>
 
 /**
  * Fetch the project data from the API and provide methods to interact with it.
@@ -19,23 +18,44 @@ export function useProject(workspace: MaybeRef<string>, project: MaybeRef<string
   const alerts = useAlerts()
   const router = useRouter()
   const client = useClient()
-  const data = ref<WorkspaceProjectObject>({} as WorkspaceProjectObject)
+  const data = ref<ProjectObject>({} as ProjectObject)
 
   const refresh = async() => {
-    await client.requestAttempt('GET /api/workspaces/:workspace/:project', {
-      onError: error => showError(error),
-      onData: project => data.value = project,
+    await client.requestAttempt('GET /api/workspaces/:workspace/projects/:project', {
       data: {
         workspace: unref(workspace),
         project: unref(project),
         ...options,
       },
+      onData: (project) => {
+        data.value = project
+      },
     })
   }
 
   return {
-    data: toReactive(data) as WorkspaceProjectObject,
+    data: toReactive(data) as ProjectObject,
     refresh,
+
+    /**
+     * Rename the project to the given name. This will update the project name in the
+     * database and redirect to the new project URL if the project was renamed successfully.
+     *
+     * @param name The new name of the project.
+     * @returns A promise that resolves when the project is renamed.
+     */
+    setName: async(name: string) =>
+      await client.requestAttempt('PATCH /api/workspaces/:workspace/projects/:project', {
+        data: {
+          workspace: unref(workspace),
+          project: unref(project),
+          name,
+        },
+        onSuccess: async() => {
+          alerts.success('Project renamed successfully')
+          await router.replace({ name: 'ProjectSettings', params: { workspace: unref(workspace), project: name } })
+        },
+      }),
 
     /**
      * Update the project settings such as the name and description.
@@ -44,40 +64,17 @@ export function useProject(workspace: MaybeRef<string>, project: MaybeRef<string
      * @returns A promise that resolves when the project is updated.
      */
     setSettings: async(data: SetSettingsOptions) =>
-      await client.requestAttempt('PUT /api/workspaces/:workspace/:project', {
-        onError: error => alerts.error(error),
-        onSuccess: () => {
-          alerts.success('Project updated successfully')
-          void refresh()
-        },
+      await client.requestAttempt('PUT /api/workspaces/:workspace/projects/:project', {
         data: {
           workspace: unref(workspace),
           project: unref(project),
           ...data,
         },
-      }),
-
-    /**
-     * Rename the project to a new name.
-     *
-     * @param name The new name to assign to the project.
-     * @returns A promise that resolves when the project is renamed.
-     */
-    setName: async(name: string) => {
-      await client.requestAttempt('PUT /api/workspaces/:workspace/:project/name', {
-        onError: error => alerts.error(error),
         onSuccess: () => {
-          alerts.success('Project name updated successfully')
-          if (router.currentRoute.value.name === 'WorkspaceProjectSettings')
-            void router.replace({ name: 'WorkspaceProjectSettings', params: { workspace: unref(workspace), project: name } })
+          alerts.success('Project updated successfully')
+          void refresh()
         },
-        data: {
-          workspace: unref(workspace),
-          project: unref(project),
-          name,
-        },
-      })
-    },
+      }),
 
     /**
      * Update the permissions of a user assigned to the project.
@@ -86,165 +83,35 @@ export function useProject(workspace: MaybeRef<string>, project: MaybeRef<string
      * @param permissions The permissions to assign to the user.
      * @returns The updated project object.
      */
-    setUserAssignments: async(username: string, permissions: WorkspaceProjectPermission[]) =>
-      await client.requestAttempt('PUT /api/workspaces/:workspace/:project/assignments/:username', {
-        onError: error => alerts.error(error),
-        onSuccess: () => {
-          alerts.success('User assigned successfully')
-          void refresh()
-        },
+    setUserAssignments: async(username: string, permissions: ProjectPermission[]) =>
+      await client.requestAttempt('PUT /api/workspaces/:workspace/projects/:project/assignments/:username', {
         data: {
           project: unref(project),
           workspace: unref(workspace),
           username,
           permissions,
         },
+        onSuccess: () => {
+          alerts.success('User assigned successfully')
+          void refresh()
+        },
       }),
 
     /**
-     * Delete the project from the database and go back to the projects page.
+     * Remove the project from the database and go back to the projects page.
      *
      * @returns A promise that resolves when the project is deleted.
      */
-    delete: async() =>
-      await client.requestAttempt('DELETE /api/workspaces/:workspace/:project', {
-        onError: error => alerts.error(error),
-        onSuccess: () => {
+    remove: async() =>
+      await client.requestAttempt('DELETE /api/workspaces/:workspace/projects/:project', {
+        onSuccess: async() => {
           alerts.success('Project deleted successfully')
-          if (router.currentRoute.value.name === 'WorkspaceProjectSettings')
-            void router.replace({ name: 'Workspace', params: { name: unref(workspace) } })
+          if (router.currentRoute.value.name === 'ProjectSettings')
+            await router.replace({ name: 'Workspace', params: { name: unref(workspace) } })
         },
         data: {
           workspace: unref(workspace),
           project: unref(project),
-        },
-      }),
-
-    /**
-     * Create a new variable in the project.
-     *
-     * @param name The name of the variable.
-     * @param value The value of the variable.
-     * @returns A promise that resolves when the variable is created.
-     */
-    createVariable: async(name: string, value: string) =>
-      await client.requestAttempt('POST /api/workspaces/:workspace/:project/variables', {
-        onError: error => alerts.error(error),
-        onSuccess: () => {
-          alerts.success('Variable created successfully')
-          void refresh()
-        },
-        data: {
-          workspace: unref(workspace),
-          project: unref(project),
-          name,
-          value,
-        },
-      }),
-
-    /**
-     * Update an existing variable in the project.
-     *
-     * @param name The name of the variable.
-     * @param value The new value of the variable.
-     * @returns A promise that resolves when the variable is updated.
-     */
-    updateVariable: async(name: string, value: string) =>
-      await client.requestAttempt('PUT /api/workspaces/:workspace/:project/variables/:name', {
-        onError: error => alerts.error(error),
-        onSuccess: () => {
-          alerts.success('Variable updated successfully')
-          void refresh()
-        },
-        data: {
-          workspace: unref(workspace),
-          project: unref(project),
-          name,
-          value,
-        },
-      }),
-
-    /**
-     * Delete a variable from the project.
-     *
-     * @param name The name of the variable to delete.
-     * @returns A promise that resolves when the variable is deleted.
-     */
-    deleteVariable: async(name: string) =>
-      await client.requestAttempt('DELETE /api/workspaces/:workspace/:project/variables/:name', {
-        onError: error => alerts.error(error),
-        onSuccess: () => {
-          alerts.success('Variable deleted successfully')
-          void refresh()
-        },
-        data: {
-          workspace: unref(workspace),
-          project: unref(project),
-          name,
-        },
-      }),
-
-    /**
-     * Create a new secret in the project.
-     *
-     * @param name The name of the secret.
-     * @param value The value of the secret.
-     * @returns A promise that resolves when the secret is created.
-     */
-    createSecret: async(name: string, value: string) =>
-      await client.requestAttempt('POST /api/workspaces/:workspace/:project/secrets', {
-        onError: error => alerts.error(error),
-        onSuccess: () => {
-          alerts.success('Secret created successfully')
-          void refresh()
-        },
-        data: {
-          workspace: unref(workspace),
-          project: unref(project),
-          name,
-          value,
-        },
-      }),
-
-    /**
-     * Update an existing secret in the project.
-     *
-     * @param name The name of the secret.
-     * @param value The new value of the secret.
-     * @returns A promise that resolves when the secret is updated.
-     */
-    updateSecret: async(name: string, value: string) =>
-      await client.requestAttempt('PUT /api/workspaces/:workspace/:project/secrets/:name', {
-        onError: error => alerts.error(error),
-        onSuccess: () => {
-          alerts.success('Secret updated successfully')
-          void refresh()
-        },
-        data: {
-          workspace: unref(workspace),
-          project: unref(project),
-          name,
-          value,
-        },
-      }),
-
-    /**
-     * Delete a secret from the project.
-     *
-     * @param name The name of the secret to delete.
-     * @returns A promise that resolves when the secret is deleted.
-     */
-    deleteSecret: async(name: string) =>
-      await client.requestAttempt('DELETE /api/workspaces/:workspace/:project/secrets/:name', {
-        onError: error => alerts.error(error),
-        onSuccess: () => {
-          alerts.success('Secret deleted successfully')
-          void refresh()
-        },
-        data: {
-          workspace: unref(workspace),
-          project: unref(project),
-          name,
         },
       }),
   }
