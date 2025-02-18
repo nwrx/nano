@@ -40,9 +40,11 @@ const errorMessage = computed(() => (
     </div>
 
     <!-- Stack -->
-    <pre v-if="stack" class="stack text-xs text-left p-sm bg-app text-app rd b b-app">
-      {{ stack }}
-    </pre>
+    <pre
+      v-if="stack"
+      class="stack text-xs text-left p-sm bg-app text-app rd b b-app"
+      v-html="stack"
+    />
 
     <!-- Clear Error Button -->
     <Button
