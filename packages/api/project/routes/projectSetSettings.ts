@@ -2,12 +2,13 @@ import type { ModuleProject } from '../index'
 import { createHttpRoute } from '@unserved/server'
 import { assertString, assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
 import { ModuleUser } from '../../user'
+import { ModuleWorkspace } from '../../workspace'
 import { getProject } from '../utils'
 
 export function projectSetSettings(this: ModuleProject) {
   return createHttpRoute(
     {
-      name: 'PUT /api/workspaces/:workspace/:project',
+      name: 'PUT /api/workspaces/:workspace/projects/:project',
       parseParameters: createSchema({
         project: assertStringNotEmpty,
         workspace: assertStringNotEmpty,
@@ -18,24 +19,31 @@ export function projectSetSettings(this: ModuleProject) {
       }),
     },
     async({ event, parameters, body }): Promise<void> => {
-      const userModule = this.getModule(ModuleUser)
-      const { user } = await userModule.authenticate(event)
-      const { project: projectName, workspace } = parameters
+      const moduleUser = this.getModule(ModuleUser)
+      const moduleWorkspace = this.getModule(ModuleWorkspace)
+      const { Project } = this.getRepositories()
+      const { user } = await moduleUser.authenticate(event)
       const { title, description } = body
 
-      // --- Resolve the workspace and project and assert the user has access to them.
-      const project = await getProject.call(this, {
+      // --- Get the workspace.
+      const workspace = await moduleWorkspace.getWorkspace({
+        name: parameters.workspace,
         user,
-        name: projectName,
+        permission: 'Read',
+      })
+
+      // --- Get the project and assert permission.
+      const found = await getProject.call(this, {
+        user,
+        name: parameters.project,
         workspace,
         permission: 'Write',
       })
 
       // --- Update and save the project.
-      if (title) project.title = title
-      if (description) project.description = description
-      const { Project } = this.getRepositories()
-      await Project.save(project)
+      if (title) found.title = title
+      if (description) found.description = description
+      await Project.save(found)
     },
   )
 }
