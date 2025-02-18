@@ -7,13 +7,19 @@ import type { User } from '../../user'
 import type { Flow } from '../entities'
 import type { EditorSessionClientMessage } from './editorSessionClientMessage'
 import type { EditorSessionServerMessage } from './editorSessionServerMessage'
-import { getComponentInstanceValueOptions, serializeThread } from '@nwrx/nano'
-import { removeLink } from '@nwrx/nano'
-import { addComponentInstance, removeComponentInstances } from '@nwrx/nano'
-import { getComponentInstance } from '@nwrx/nano'
-import { setComponentInstanceInputValue } from '@nwrx/nano'
-import { setComponentInstanceMetaValue } from '@nwrx/nano'
-import { createLink } from '@nwrx/nano'
+import {
+  abort,
+  addLink,
+  addNode,
+  getNode,
+  getNodeInputOptions,
+  removeLink,
+  removeNode,
+  serialize,
+  setNodeInputValue,
+  setNodeMetadataValue,
+} from '@nwrx/nano'
+import { serializeSpecifier } from '@nwrx/nano/utils'
 import { serializeComponentInstance } from './serializeComponentInstance'
 import { serializeSession } from './serializeSession'
 
@@ -35,39 +41,21 @@ export class EditorSession {
     public thread: Thread,
     public flow: Flow,
     public repository: Repository<Flow>,
-  ) {
+  ) {}
 
-    this.thread.on('input', (name, value, meta) => this.broadcast({ event: 'thread:input', name, value, ...meta }))
-    this.thread.on('output', (name, value, meta) => this.broadcast({ event: 'thread:output', name, value, ...meta }))
-    this.thread.on('start', (input, meta) => this.broadcast({ event: 'thread:start', input, ...meta }))
-    this.thread.on('abort', meta => this.broadcast({ event: 'thread:abort', ...meta }))
-    this.thread.on('error', error => this.broadcast({ event: 'thread:error', code: error.name, message: error.message }))
-    this.thread.on('end', (output, meta) => this.broadcast({ event: 'thread:end', output, ...meta }))
-
-    // --- Node events
-    this.thread.on('nodeState', (id, { nodeState }) => this.broadcast({ event: 'thread:nodeState', id, state: nodeState }))
-    this.thread.on('nodeTrace', (id, data, meta) => this.broadcast({ event: 'thread:nodeTrace', id, data, ...meta }))
-    this.thread.on('nodeStart', (id, { data }, meta) => this.broadcast({ event: 'thread:nodeStart', id, data, ...meta }))
-    this.thread.on('nodeEnd', (id, { data, result }, meta) => this.broadcast({ event: 'thread:nodeEnd', id, data, result, ...meta }))
-    this.thread.on('nodeError', (id, error, meta) => this.broadcast({
-      event: 'thread:nodeError',
-      id,
-      name: error.name,
-      message: error.message,
-      context: error.context,
-      ...meta,
-    }))
-
-    // debug
-    this.thread.on('nodeError', (_, error) => {
-      error.name = error.name ?? 'Error'
-      console.error(error)
-    })
-  }
-
+  /** The owner of the session. */
   owner: EditorSessionParticipant
+
+  /** The participants of the session. */
   participants: EditorSessionParticipant[] = []
 
+  /**
+   * Check if the peer is already subscribed to the session. This is used to prevent
+   * multiple subscriptions from the same peer.
+   *
+   * @param peer The peer to check if it is already subscribed.
+   * @returns `true` if the peer is already subscribed, `false` otherwise.
+   */
   isSubscribed(peer: Peer) {
     return this.participants.some(p => p.peer?.id === peer.id)
   }
@@ -110,7 +98,7 @@ export class EditorSession {
     this.broadcast({ event: 'user:leave', id: peer.id })
 
     // --- If there are no more peers, stop the flow.
-    if (this.participants.length === 0) this.thread.abort()
+    if (this.participants.length === 0) abort(this.thread)
   }
 
   broadcast(payload: EditorSessionServerMessage, except?: Peer) {
@@ -131,15 +119,6 @@ export class EditorSession {
 
   async onMessage(peer: Peer, message: EditorSessionClientMessage) {
     try {
-
-      /***************************************************************************/
-      /* Thread                                                                  */
-      /***************************************************************************/
-
-      if (message.event === 'start') await this.thread.start(message.input)
-      if (message.event === 'abort') this.thread.abort()
-      if (message.event === 'startNode') throw new Error('Not implemented')
-      if (message.event === 'abortNode') throw new Error('Not implemented')
 
       /***************************************************************************/
       /* Flow                                                                    */
@@ -164,8 +143,8 @@ export class EditorSession {
       /***************************************************************************/
 
       if (message.event === 'createNode') {
-        const { kind, x, y } = message
-        const id = addComponentInstance(this.thread, { kind, meta: { position: { x, y } } })
+        const { specifier, x, y } = message
+        const id = addNode(this.thread, specifier, { metadata: { position: { x, y } } })
         const component = await serializeComponentInstance(this.thread, id)
         await this.save()
         this.broadcast({ event: 'node:created', id, component, x, y })
@@ -173,8 +152,9 @@ export class EditorSession {
 
       if (message.event === 'cloneNodes') {
         const { id, x, y } = message
-        const { kind, input } = getComponentInstance(this.thread, id)
-        const newId = addComponentInstance(this.thread, { kind, input, meta: { position: { x, y } } })
+        const { input, ...specifierObject } = getNode(this.thread, id)
+        const specifier = serializeSpecifier(specifierObject)
+        const newId = addNode(this.thread, specifier, { input, metadata: { position: { x, y } } })
         const component = await serializeComponentInstance(this.thread, newId)
         await this.save()
         this.broadcast({ event: 'node:created', id: newId, component, x, y })
@@ -182,21 +162,31 @@ export class EditorSession {
 
       if (message.event === 'removeNodes') {
         const { ids } = message
-        removeComponentInstances(this.thread, ...ids)
+        await removeNode(this.thread, ...ids)
         this.broadcast({ event: 'node:removed', ids })
         await this.save()
       }
 
       if (message.event === 'setNodeInputValue') {
         const { id, name, value } = message
-        setComponentInstanceInputValue(this.thread, id, name, value)
+        setNodeInputValue(this.thread, id, name, value)
         this.broadcast({ event: 'node:inputValueChanged', id, name, value })
+        await this.save()
+      }
+
+      if (message.event === 'setNodeInputVisibility') {
+        const { id, name, visible } = message
+        const { metadata: meta = {} } = getNode(this.thread, id)
+        const visibility = meta.visibility ?? {}
+        const newValue = { ...visibility, [name]: visible }
+        setNodeMetadataValue(this.thread, id, 'visibility', newValue)
+        this.broadcast({ event: 'node:metaValueChanged', id, name: 'visibility', value: newValue })
         await this.save()
       }
 
       if (message.event === 'setNodesPosition') {
         for (const { id, x, y } of message.positions) {
-          setComponentInstanceMetaValue(this.thread, id, 'position', { x, y })
+          setNodeMetadataValue(this.thread, id, 'position', { x, y })
           this.broadcast({ event: 'node:metaValueChanged', id, name: 'position', value: { x, y } })
         }
         await this.save()
@@ -205,7 +195,7 @@ export class EditorSession {
       if (message.event === 'setNodeLabel') {
         const { id, label } = message
         const value = label.trim() === '' ? undefined : label
-        setComponentInstanceMetaValue(this.thread, id, 'label', value)
+        setNodeMetadataValue(this.thread, id, 'label', value)
         this.broadcast({ event: 'node:metaValueChanged', id, name: 'label', value })
         await this.save()
       }
@@ -213,14 +203,14 @@ export class EditorSession {
       if (message.event === 'setNodeComment') {
         const { id, comment } = message
         const value = comment.trim() === '' ? undefined : comment
-        setComponentInstanceMetaValue(this.thread, id, 'comment', value)
+        setNodeMetadataValue(this.thread, id, 'comment', value)
         this.broadcast({ event: 'node:metaValueChanged', id, name: 'comment', value })
         await this.save()
       }
 
       if (message.event === 'getInputValueOptions') {
         const { id, name: key, query } = message
-        const options = await getComponentInstanceValueOptions(this.thread, id, key, query)
+        const options = await getNodeInputOptions(this.thread, id, key, query)
         peer.send({ event: 'node:inputOptionResult', id, key, options })
       }
 
@@ -229,7 +219,8 @@ export class EditorSession {
       /***************************************************************************/
 
       if (message.event === 'createLink') {
-        const { id, name, value } = await createLink(this.thread, message)
+        const { sourceId, sourceName, sourcePath, targetId, targetName, targetPath } = message
+        const { id, name, value } = await addLink(this.thread, { sourceId, sourceName, sourcePath, targetId, targetName, targetPath })
         this.broadcast({ event: 'node:inputValueChanged', id, name, value })
         await this.save()
       }
@@ -264,7 +255,7 @@ export class EditorSession {
   }
 
   async save() {
-    this.flow.data = serializeThread(this.thread)
+    this.flow.data = serialize(this.thread)
     await this.repository.save(this.flow)
   }
 

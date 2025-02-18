@@ -80,7 +80,7 @@ export const EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA = createRuleSet(
 
   [createSchema({
     event: assert.stringEquals('createNode'),
-    kind: assert.stringNotEmpty,
+    specifier: assert.stringNotEmpty,
     x: assert.number,
     y: assert.number,
   })],
@@ -123,6 +123,13 @@ export const EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA = createRuleSet(
     id: assert.stringNotEmpty,
     name: assert.stringNotEmpty,
     value: assert.notNull,
+  })],
+
+  [createSchema({
+    event: assert.stringEquals('setNodeInputVisibility'),
+    id: assert.stringNotEmpty,
+    name: assert.stringNotEmpty,
+    visible: assert.boolean,
   })],
 
   [createSchema({

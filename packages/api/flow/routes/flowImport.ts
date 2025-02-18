@@ -3,14 +3,14 @@ import { createHttpRoute } from '@unserved/server'
 import { toSlug } from '@unshared/string'
 import { assert, assertString, assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
 import * as YAML from 'yaml'
+import { ModuleProject } from '../../project'
 import { ModuleUser } from '../../user'
-import { randomName } from '../../utils'
-import { ModuleWorkspace } from '../../workspace'
+import { getRandomName } from '../utils'
 
 export function flowImport(this: ModuleFlow) {
   return createHttpRoute(
     {
-      name: 'POST /api/workspaces/:workspace/:project/import',
+      name: 'POST /api/workspaces/:workspace/projects/:project/import',
       parseParameters: createSchema({
         workspace: assertStringNotEmpty,
         project: assertStringNotEmpty,
@@ -21,14 +21,18 @@ export function flowImport(this: ModuleFlow) {
     },
     async({ event, formData, parameters }) => {
       const userModule = this.getModule(ModuleUser)
-      const workspaceModule = this.getModule(ModuleWorkspace)
+      const workspaceModule = this.getModule(ModuleProject)
       const { user } = await userModule.authenticate(event)
-      const { workspace: workspaceName, project: projectName } = parameters
+      const { workspace, project: projectName } = parameters
       const { file } = formData
 
       // --- Resolve the workspace and project and assert the user has access to them.
-      const workspace = await workspaceModule.resolveWorkspace({ user, name: workspaceName, permission: 'Read' })
-      const project = await workspaceModule.resolveProject({ user, workspace, name: projectName, permission: 'Write' })
+      const project = await workspaceModule.getProject({
+        user,
+        workspace,
+        name: projectName,
+        permission: 'Write',
+      })
 
       // --- Parse the file content.
       const text = await file.text()
@@ -38,7 +42,7 @@ export function flowImport(this: ModuleFlow) {
       else throw new Error('Invalid file type. Only JSON and YAML files are supported.')
 
       // --- Ensure the data is valid.
-      const { name = randomName(), title = name, description } = createSchema({
+      const { name = getRandomName(), title = name, description } = createSchema({
         name: [[assertUndefined], [assertStringNotEmpty, toSlug]],
         title: [[assertUndefined], [assertString]],
         description: [[assertUndefined], [assertString]],

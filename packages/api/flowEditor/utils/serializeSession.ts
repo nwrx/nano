@@ -1,6 +1,6 @@
 /* eslint-disable sonarjs/todo-tag */
 import type { Peer } from 'crossws'
-import type { EditorSession } from './createSession'
+import type { EditorSession } from './createEditorSession'
 import type { EditorSessionServerMessage } from './editorSessionServerMessage'
 import type { ComponentInstanceJSON } from './serializeComponentInstance'
 import { type CategoryJSON, searchCategories } from './searchCategories'
@@ -34,7 +34,7 @@ export interface LinkJSON {
 }
 
 export async function serializeSession(session: EditorSession, peer: Peer): Promise<EditorSessionJSON> {
-  const nodePromises = session.thread.componentInstances.keys().map(id => serializeComponentInstance(session.thread, id))
+  const nodePromises = session.thread.nodes.keys().map(id => serializeComponentInstance(session.thread, id))
   const nodes = await Promise.all(nodePromises)
 
   return {
@@ -43,7 +43,7 @@ export async function serializeSession(session: EditorSession, peer: Peer): Prom
     description: session.flow.description ?? '',
     nodes,
     categories: await searchCategories(),
-    isRunning: session.thread.isRunning,
+    isRunning: false, // session.thread.isRunning,
     events: [],
     secrets: session.flow.project?.secrets?.map(secret => secret.name) ?? [],
     variables: session.flow.project?.variables?.map(variable => variable.name) ?? [],

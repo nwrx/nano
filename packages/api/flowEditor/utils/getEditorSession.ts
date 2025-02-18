@@ -1,7 +1,8 @@
-import type { ModuleFlow, User } from '../../index'
-import { EditorSession } from './createSession'
+import type { ModuleFlow } from '..'
+import type { User } from '../../user'
+import { EditorSession } from './createEditorSession'
+import { getFlow } from './getFlow'
 import { loadThreadFromJson } from './loadThreadFromJson'
-import { resolveFlow } from './resolveFlow'
 
 export interface ResolveEditorSessionOptions {
   workspace: string
@@ -16,11 +17,11 @@ export interface ResolveEditorSessionOptions {
  * @param options The options to resolve the session.
  * @returns The `FlowSession` that corresponds to the given ID.
  */
-export async function resolveSession(this: ModuleFlow, options: ResolveEditorSessionOptions): Promise<EditorSession> {
+export async function getEditorSession(this: ModuleFlow, options: ResolveEditorSessionOptions): Promise<EditorSession> {
   const { user, workspace, project, name } = options
 
   // --- Resolve the flow and check if the user has access to it.
-  const flow = await resolveFlow.call(this, { user, name, project, workspace, permission: 'Write' })
+  const flow = await getFlow.call(this, { user, name, project, workspace, permission: 'Write' })
   const exists = this.flowEditorSessions.get(flow.id)
   if (exists) return exists
 

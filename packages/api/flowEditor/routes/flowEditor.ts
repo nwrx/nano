@@ -1,13 +1,13 @@
-import type { ModuleFlow } from '..'
+import type { ModuleFlow } from '../../flow'
 import { createWebSocketRoute } from '@unserved/server'
 import { assert, createSchema } from '@unshared/validation'
 import { ModuleUser } from '../../user'
-import { EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA, resolveSession, resolveSessionByPeer } from '../utils'
+import { EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA, getEditorSession, resolveSessionByPeer } from '../utils'
 
 export function flowEditor(this: ModuleFlow) {
   return createWebSocketRoute(
     {
-      name: 'WS /ws/workspaces/:workspace/:project/:name/editor',
+      name: 'WS /ws/workspaces/:workspace/projects/:project/flows/:name/editor',
       parseParameters: createSchema({
         workspace: assert.stringNotEmpty.with('Workspace name is required.'),
         project: assert.stringNotEmpty.with('Project name is required.'),
@@ -20,7 +20,7 @@ export function flowEditor(this: ModuleFlow) {
         try {
           const userModule = this.getModule(ModuleUser)
           const { user } = await userModule.authenticate(peer)
-          const session = await resolveSession.call(this, { ...parameters, user })
+          const session = await getEditorSession.call(this, { ...parameters, user })
           await session.subscribe(peer, user)
         }
         catch (error) {

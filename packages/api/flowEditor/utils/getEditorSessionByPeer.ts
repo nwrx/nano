@@ -1,6 +1,6 @@
 import type { Peer } from 'crossws'
 import type { ModuleFlow } from '../index'
-import type { EditorSession } from './createSession'
+import type { EditorSession } from './createEditorSession'
 
 export function resolveSessionByPeer(this: ModuleFlow, peer: Peer): EditorSession {
   for (const [,session] of this.flowEditorSessions) {

@@ -1,4 +1,4 @@
-import type { Component } from '@nwrx/nano'
+import type { Component } from '@nwrx/nano/utils'
 import type { InputJSON } from './serializeInputSchema'
 import type { OutputJSON } from './serializeOutputSchema'
 import { serializeInputSchema } from './serializeInputSchema'
@@ -18,18 +18,18 @@ export interface ComponentJSON {
   outputSchema: OutputJSON[]
 }
 
-export function serializeComponent(component: Component): ComponentJSON {
+export function serializeComponent(specifier: string, component: Component): ComponentJSON {
   return {
-    kind: component.kind,
+    kind: specifier,
     icon: component.icon ?? 'https://api.iconify.design/carbon:unknown.svg',
-    name: component.name ?? component.kind,
+    name: component.title ?? specifier,
     description: component.description ?? 'No description available.',
-    categoryKind: component.category?.kind ?? 'uncategorized',
-    categoryName: component.category?.name ?? 'Uncategorized',
-    categoryIcon: component.category?.icon ?? 'https://api.iconify.design/carbon:unknown.svg',
-    categoryColor: component.category?.color ?? '#000000',
-    categoryDescription: component.category?.description ?? 'No description available.',
-    inputSchema: serializeInputSchema(component.inputSchema),
-    outputSchema: serializeOutputSchema(component.outputSchema),
+    categoryKind: 'uncategorized',
+    categoryName: 'Uncategorized',
+    categoryIcon: 'https://api.iconify.design/carbon:unknown.svg',
+    categoryColor: '#000000',
+    categoryDescription: 'No description available.',
+    inputSchema: serializeInputSchema(component.inputs),
+    outputSchema: serializeOutputSchema(component.outputs),
   }
 }

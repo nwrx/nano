@@ -2,8 +2,8 @@ import type { ModuleFlow } from '../index'
 import { createHttpRoute } from '@unserved/server'
 import { assertStringUuid, createParser } from '@unshared/validation'
 import { setResponseStatus } from 'h3'
+import { ModuleProject } from '../../project'
 import { ModuleUser } from '../../user'
-import { ModuleWorkspace } from '../../workspace'
 
 export function flowDelete(this: ModuleFlow) {
   return createHttpRoute(
@@ -15,7 +15,7 @@ export function flowDelete(this: ModuleFlow) {
     },
     async({ event, parameters }) => {
       const userModule = this.getModule(ModuleUser)
-      const workspaceModule = this.getModule(ModuleWorkspace)
+      const workspaceModule = this.getModule(ModuleProject)
       const { Flow } = this.getRepositories()
       const { user } = await userModule.authenticate(event)
       const { id } = parameters
@@ -32,8 +32,12 @@ export function flowDelete(this: ModuleFlow) {
 
       // --- Resolve the workspace and project and assert the user has access to them.
       if (!flow) throw this.errors.FLOW_NOT_FOUND_BY_ID(id)
-      const workspace = await workspaceModule.resolveWorkspace({ user, name: flow.project!.workspace!.name, permission: 'Read' })
-      await workspaceModule.resolveProject({ user, workspace, name: flow.project!.name, permission: 'Write' })
+      await workspaceModule.getProject({
+        user,
+        name: flow.project!.name,
+        workspace: flow.project!.workspace!.name,
+        permission: 'Write',
+      })
 
       // --- Soft remove the flow.
       await Flow.softRemove(flow)
