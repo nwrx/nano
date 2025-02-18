@@ -1,6 +1,5 @@
-import type { UserObject } from '@nwrx/nano-api'
+import type { application, UserObject } from '@nwrx/nano-api'
 import type { RouteRequestData } from '@unserved/client'
-import type { application } from '~/server'
 import { useAlerts, useClient } from '#imports'
 
 type Options = Omit<RouteRequestData<typeof application, 'GET /api/users/:username'>, 'username'>
@@ -22,12 +21,9 @@ export function useUser(username: MaybeRef<string | undefined>, options: Options
 
   const refresh = async() => {
     await client.requestAttempt('GET /api/users/:username', {
+      data: { username: unref(username), ...options },
       onData: user => data.value = user,
       onError: error => showError(error),
-      data: {
-        username: unref(username),
-        ...options,
-      },
     })
   }
 
@@ -49,14 +45,13 @@ export function useUser(username: MaybeRef<string | undefined>, options: Options
      */
     async setProfile(options: SetProfileOptions) {
       await client.requestAttempt('PUT /api/users/:username/profile', {
-        onError: error => alerts.error(error),
-        onSuccess: () => {
-          alerts.success('Profile updated successfully.')
-          void refresh()
-        },
         data: {
           username: unref(username),
           ...options,
+        },
+        onSuccess: async() => {
+          await refresh()
+          alerts.success('Profile updated successfully.')
         },
       })
     },
@@ -69,14 +64,13 @@ export function useUser(username: MaybeRef<string | undefined>, options: Options
      */
     async setAvatar(options: SetAvatarOptions) {
       await client.requestAttempt('PUT /api/users/:username/avatar', {
-        onError: error => alerts.error(error),
-        onSuccess: () => {
-          alerts.success('Avatar updated successfully.')
-          void refresh()
-        },
         data: {
           username: unref(username),
           ...options,
+        },
+        onSuccess: async() => {
+          await refresh()
+          alerts.success('Avatar updated successfully.')
         },
       })
     },
@@ -89,14 +83,13 @@ export function useUser(username: MaybeRef<string | undefined>, options: Options
      */
     async setPassword(options: SetPasswordOptions) {
       await client.requestAttempt('PUT /api/users/:username/password', {
-        onError: error => alerts.error(error),
-        onSuccess: () => {
-          alerts.success('Password updated successfully.')
-          void refresh()
-        },
         data: {
           username: unref(username),
           ...options,
+        },
+        onSuccess: async() => {
+          await refresh()
+          alerts.success('Password updated successfully.')
         },
       })
     },
