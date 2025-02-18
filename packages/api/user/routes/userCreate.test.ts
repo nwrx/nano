@@ -83,7 +83,7 @@ describe.concurrent('userCreate', () => {
       const { Workspace } = moduleWorkspace.getRepositories()
       const result = await Workspace.find({ relations: { assignments: { user: true } } })
       expect(result[1].assignments).toHaveLength(1)
-      expect(result[1].assignments[0]).toMatchObject({
+      expect(result[1].assignments![0]).toMatchObject({
         permission: 'Owner',
         user: { username: 'jdoe' },
         createdAt: expect.any(Date),
