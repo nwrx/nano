@@ -46,7 +46,8 @@ onMounted(project.refresh)
       :workspace="workspace"
       @submit="({ title, description }) => project.setSettings({ title, description })"
     />
-    <ProjectSettingsAssigments
+    <!--
+      <ProjectSettingsAssigments
       v-if="project.data.assignments"
       :workspace="workspace"
       :project="name"
@@ -54,7 +55,8 @@ onMounted(project.refresh)
       :assigments="project.data.assignments"
       :search-users="searchUsers"
       @submit="(username, permissions) => project.setUserAssignments(username, permissions)"
-    />
+      />
+    -->
     <ProjectSettingsDangerZone
       :search-users="searchUsers"
       :workspace="workspace"
