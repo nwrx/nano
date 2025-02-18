@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-setup-props-reactivity-loss -->
 <script setup lang="ts">
 const props = defineProps<{
   modelValue: boolean
@@ -12,7 +13,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const model = useVModel(props, 'modelValue', emit, { passive: true })
-const name = ref('')
+const name = ref(props.project)
 </script>
 
 <template>
