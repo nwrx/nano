@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import ProjectSettingsVariables from '~/components/project/ProjectSettings.Variables.vue'
-
 definePageMeta({
   name: 'ProjectSettingsVariables',
   path: '/:workspace/:project/settings/variables',
