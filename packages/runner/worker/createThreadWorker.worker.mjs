@@ -95,7 +95,7 @@ export function createThreadWorker(port) {
 
     // --- If an error occurs, serialize the error and send it to the parent thread.
     catch (error) {
-      port.postMessage({ type: 'error', error: serializeError(error) })
+      port.postMessage({ event: 'error', data: [serializeError(error)] })
     }
   })
 }
