@@ -1,9 +1,9 @@
-import type { ModuleThread } from '../index'
+import type { ModuleThreadRunner } from '../index'
 import { createHttpRoute } from '@unserved/server'
 import { assertStringUuid, createSchema } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 
-export function getThreadRunnerStatus(this: ModuleThread) {
+export function getThreadRunnerStatus(this: ModuleThreadRunner) {
   return createHttpRoute(
     {
       name: 'GET /api/threads/runners/:runner',

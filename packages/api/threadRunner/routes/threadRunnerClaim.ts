@@ -1,4 +1,4 @@
-import type { ModuleThread } from '../index'
+import type { ModuleThreadRunner } from '../index'
 import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, createSchema } from '@unshared/validation'
 import { setResponseStatus } from 'h3'
@@ -6,7 +6,7 @@ import { randomUUID } from 'node:crypto'
 import { ModuleUser } from '../../user'
 import { createThreadRunner } from '../utils/createThreadRunner'
 
-export function claimThreadRunner(this: ModuleThread) {
+export function claimThreadRunner(this: ModuleThreadRunner) {
   return createHttpRoute(
     {
       name: 'POST /api/threads/runners',
