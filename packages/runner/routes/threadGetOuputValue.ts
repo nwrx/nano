@@ -8,20 +8,19 @@ import { deserialize } from '../worker'
 export function threadGetOuputValue(this: ModuleRunner) {
   return createHttpRoute(
     {
-      name: 'GET /thread/:id/:name',
+      name: 'GET /threads/:thread/:output',
       parseParameters: createSchema({
-        id: assertStringUuid,
-        name: assertStringNotEmpty,
+        thread: assertStringUuid,
+        output: assertStringNotEmpty,
       }),
     },
     async({ event, parameters }) => {
       authorize.call(this, event)
-      const { id, name } = parameters
-      const thread = this.runnerSessions.get(id)
+      const thread = this.runnerSessions.get(parameters.thread)
       if (!thread) throw new Error('Thread not found')
 
       // --- Get the output value from the thread session.
-      const serialized = await thread.getOutputValue(name)
+      const serialized = await thread.getOutputValue(parameters.output)
       const deserialized = deserialize(serialized) as ReadableStream<Uint8Array>
 
       if (deserialized instanceof ReadableStream) {

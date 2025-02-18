@@ -8,7 +8,7 @@ import { createThreadWorker, THREAD_CLIENT_MESSAGE_SCHEMA } from '../worker'
 export function threadSession(this: ModuleRunner) {
   return createWebSocketRoute(
     {
-      name: 'WS /thread',
+      name: 'WS /threads',
       parseClientMessage: THREAD_CLIENT_MESSAGE_SCHEMA,
       parseServerMessage: createParser(assertObjectStrict<ThreadWorkerMessage>),
     },
