@@ -7,7 +7,7 @@ import * as ROUTES from './routes'
 import * as UTILS from './utils'
 
 export * from './entities'
-export type * from './utils/assertVaultPermission'
+export * from './utils/assertVaultPermission'
 
 export interface ModuleVaultOptions {
 

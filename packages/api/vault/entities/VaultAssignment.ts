@@ -1,7 +1,7 @@
+import type { VaultPermission } from '../utils'
 import { BaseEntity } from '@unserved/server'
 import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm'
 import { User } from '../../user'
-import { VariablePermission } from '../utils'
 import { Vault } from './Vault'
 
 @Entity({ name: 'VaultAssignment' })
@@ -42,5 +42,5 @@ export class VaultAssignment extends BaseEntity {
    * @example 'Owner'
    */
   @Column('varchar', { length: 255 })
-  permission: VariablePermission
+  permission: VaultPermission
 }

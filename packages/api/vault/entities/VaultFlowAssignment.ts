@@ -1,8 +1,8 @@
+import type { VaultPermission } from '../utils'
 import { BaseEntity } from '@unserved/server'
 import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm'
 import { Flow } from '../../flow'
 import { User } from '../../user'
-import { VaultPermission } from '../utils'
 import { Vault } from './Vault'
 
 @Entity({ name: 'VaultFlowAssignment' })
