@@ -17,7 +17,7 @@ export const useSession = createSharedComposable(() => {
   const refresh = async(force = false) => {
     if (!force && session.value.username) return session.value
     return await client.request('GET /api/session', {
-      onData: data => session.value = data,
+      onData: data => session.value = data ?? {},
     })
   }
 
@@ -41,18 +41,17 @@ export const useSession = createSharedComposable(() => {
      */
     signupWithPassword: async(credentials: SignupCredentials) => {
       await useClient().requestAttempt('POST /api/signup', {
-        onError: error => alerts.error(error),
-        onSuccess: () => alerts.success('Account created successfully'),
-        onData: () => {
-          const redirect = useRoute().query.redirect as string | undefined
-          session.value = { username: credentials.username }
-          void router.replace(redirect ?? { name: 'Workspace', params: { workspace: session.value.username } })
-        },
         data: {
           email: credentials.email,
           username: credentials.username,
           password: credentials.password,
           passwordConfirm: credentials.passwordConfirm,
+        },
+        onData: async() => {
+          const redirect = useRoute().query.redirect as string | undefined
+          session.value = { username: credentials.username }
+          await router.replace(redirect ?? { name: 'Workspace', params: { workspace: session.value.username } })
+          alerts.success('Account created successfully')
         },
       })
     },
@@ -64,16 +63,15 @@ export const useSession = createSharedComposable(() => {
      */
     signinWithPassword: async(credentials: SigninCredentials) => {
       await useClient().requestAttempt('POST /api/session', {
-        onError: error => alerts.error(error),
-        onSuccess: async() => {
-          alerts.success('Logged in successfully')
-          const redirect = useRoute().query.redirect as string | undefined
-          await refresh(true)
-          return router.replace(redirect ?? { name: 'Workspace', params: { workspace: session.value.username } })
-        },
         data: {
           username: credentials.username,
           password: credentials.password,
+        },
+        onSuccess: async() => {
+          const redirect = useRoute().query.redirect as string | undefined
+          await refresh(true)
+          await router.replace(redirect ?? { name: 'Workspace', params: { workspace: session.value.username } })
+          alerts.success('Logged in successfully')
         },
       })
     },
@@ -86,11 +84,12 @@ export const useSession = createSharedComposable(() => {
      */
     signout: async() => {
       await client.requestAttempt('DELETE /api/session', {
-        onSuccess: () => alerts.success('You have been signed out'),
-        onError: error => alerts.error(error),
-        onEnd: () => {
+        onSuccess: () => {
+          alerts.success('You have been signed out')
+        },
+        onEnd: async() => {
           session.value = {}
-          void router.push({ name: 'Authentication' })
+          await router.push({ name: 'Authentication' })
         },
       })
     },
