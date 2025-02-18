@@ -1,5 +1,5 @@
 import { BaseEntity } from '@unserved/server'
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, Unique } from 'typeorm'
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, Unique } from 'typeorm'
 import { Flow, FlowObject } from '../../flow'
 import { UserObject } from '../../user'
 import { Workspace } from '../../workspace'
@@ -13,7 +13,7 @@ import { ProjectAssignment } from './ProjectAssignment'
  * to the same topic.
  */
 @Entity({ name: 'Project' })
-@Unique(['name', 'workspace'])
+@Index(['name', 'workspace'])
 export class Project extends BaseEntity {
 
   /**

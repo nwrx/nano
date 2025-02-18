@@ -3,12 +3,13 @@ import { createHttpRoute } from '@unserved/server'
 import { toSlug } from '@unshared/string'
 import { assertStringNotEmpty, createSchema } from '@unshared/validation'
 import { ModuleUser } from '../../user'
+import { ModuleWorkspace } from '../../workspace'
 import { getProject } from '../utils'
 
 export function projectSetName(this: ModuleProject) {
   return createHttpRoute(
     {
-      name: 'PUT /api/workspaces/:workspace/:project/name',
+      name: 'PUT /api/workspaces/:workspace/projects/:project/name',
       parseParameters: createSchema({
         workspace: assertStringNotEmpty,
         project: assertStringNotEmpty,
@@ -17,18 +18,25 @@ export function projectSetName(this: ModuleProject) {
         name: [assertStringNotEmpty, toSlug],
       }),
     },
-    async({ event, parameters, body }) => {
-      const userModule = this.getModule(ModuleUser)
-      const { user } = await userModule.authenticate(event)
-      const { workspace, project: projectName } = parameters
+    async({ event, parameters, body }): Promise<void> => {
+      const moduleUser = this.getModule(ModuleUser)
+      const moduleWorkspace = this.getModule(ModuleWorkspace)
+      const { user } = await moduleUser.authenticate(event)
       const { name } = body
 
-      // --- Resolve the workspace and project and assert the user has access to them.
-      const project = await getProject.call(this, {
+      // --- Get the workspace.
+      const workspace = await moduleWorkspace.getWorkspace({
+        name: parameters.workspace,
         user,
-        name: projectName,
+        permission: 'Read',
+      })
+
+      // --- Get the project and assert permission.
+      const project = await getProject.call(this, {
         workspace,
-        permission: 'Write',
+        user: { id: user.id },
+        name: parameters.project,
+        permission: 'Owner',
       })
 
       // --- Rename the project and save to the database.

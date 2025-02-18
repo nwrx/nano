@@ -45,15 +45,15 @@ export function useProject(workspace: MaybeRef<string>, project: MaybeRef<string
      * @returns A promise that resolves when the project is renamed.
      */
     setName: async(name: string) =>
-      await client.requestAttempt('PATCH /api/workspaces/:workspace/projects/:project', {
+      await client.requestAttempt('PUT /api/workspaces/:workspace/projects/:project/name', {
         data: {
           workspace: unref(workspace),
           project: unref(project),
           name,
         },
         onSuccess: async() => {
-          alerts.success('Project renamed successfully')
           await router.replace({ name: 'ProjectSettings', params: { workspace: unref(workspace), project: name } })
+          alerts.success('Project renamed successfully')
         },
       }),
 
