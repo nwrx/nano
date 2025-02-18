@@ -1,4 +1,4 @@
 export default defineNuxtRouteMiddleware(async() => {
-  const { username } = await useSession().refresh()
-  if (username) return navigateTo({ name: 'Workspace', params: { workspace: username } })
+  const session = await useSession().refresh()
+  if (session) return navigateTo({ name: 'Workspace', params: { workspace: session.username } })
 })
