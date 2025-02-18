@@ -16,14 +16,17 @@ const GET_VAULT_OPTIONS_SCHEMA = createSchema({
   /** The `Workspace` where the vault is located. */
   workspace: createSchema({ id: assertStringUuid }),
 
+  /** The permissions required to access the vault. */
+  permission: assertVaultPermission,
+
+  /** Weather to include the deleted vaults in the response. */
+  withDeleted: [[assertUndefined], [assertBoolean]],
+
   /** Whether to include the vault variables in the response. */
   withVariables: [[assertUndefined], [assertBoolean]],
 
   /** Whether to include the vault configuration in the response. */
   withConfiguration: [[assertUndefined], [assertBoolean]],
-
-  /** The permissions required to access the vault. */
-  permission: assertVaultPermission,
 })
 
 /** The options to get a vault by name. */
@@ -37,10 +40,18 @@ export type GetVaultOptions = Loose<ReturnType<typeof GET_VAULT_OPTIONS_SCHEMA>>
  * @returns The vault
  */
 export async function getVault(this: ModuleVault, options: GetVaultOptions): Promise<Vault> {
-  const { name, user, workspace, withVariables, withConfiguration, permission } = GET_VAULT_OPTIONS_SCHEMA(options)
-  const { Vault } = this.getRepositories()
+  const {
+    name,
+    user,
+    workspace,
+    permission,
+    withDeleted,
+    withVariables,
+    withConfiguration,
+  } = GET_VAULT_OPTIONS_SCHEMA(options)
 
   // --- Get the vault entity.
+  const { Vault } = this.getRepositories()
   const vault = await Vault.findOne({
     where: [
       { name, workspace: { assignments: { user, permission: 'Owner' } } },
@@ -56,6 +67,7 @@ export async function getVault(this: ModuleVault, options: GetVaultOptions): Pro
       variables: withVariables,
       configuration: withConfiguration,
     },
+    withDeleted,
   })
 
   // --- Assert that the vault exists and the user has access.
