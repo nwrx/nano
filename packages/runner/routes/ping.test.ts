@@ -8,7 +8,7 @@ interface Context {
   moduleRunner: ModuleRunner
 }
 
-describe.concurrent<Context>('ping', () => {
+describe.concurrent<Context>('ping', { timeout: 300 }, () => {
   beforeEach<Context>(async(context) => {
     context.application = await createTestApplication([ModuleRunner])
     context.moduleRunner = context.application.getModule(ModuleRunner)
@@ -53,4 +53,4 @@ describe.concurrent<Context>('ping', () => {
       })
     })
   })
-}, 1000)
+})
