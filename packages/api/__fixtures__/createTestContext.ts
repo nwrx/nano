@@ -13,6 +13,7 @@ import { ModuleProject } from '../project'
 import { ModuleStorage } from '../storage'
 import { createStoragePoolFs } from '../storage/utils'
 import { ModuleThread } from '../thread'
+import { ModuleThreadRunner } from '../threadRunner'
 import { ModuleUser } from '../user'
 import { createUser } from '../user/utils'
 import { ModuleVault } from '../vault'
@@ -28,8 +29,9 @@ export async function createTestContext(testContext: TestContext) {
     ModuleWorkspace,
     ModuleProject,
     ModuleFlow,
-    ModuleThread,
     ModuleVault,
+    ModuleThread,
+    ModuleThreadRunner,
   ], {
     storagePools: new Map([['default', createStoragePoolFs()]] as const),
     vaultConfigurationAlgorithm: 'aes-256-gcm',
@@ -52,8 +54,9 @@ export async function createTestContext(testContext: TestContext) {
     get moduleWorkspace() { return application.getModule(ModuleWorkspace) },
     get moduleProject() { return application.getModule(ModuleProject) },
     get moduleFlow() { return application.getModule(ModuleFlow) },
-    get moduleThread() { return application.getModule(ModuleThread) },
     get moduleVault() { return application.getModule(ModuleVault) },
+    get moduleThread() { return application.getModule(ModuleThread) },
+    get moduleThreadRunner() { return application.getModule(ModuleThreadRunner) },
     get moduleRunner() { return runner.getModule(ModuleRunner) },
 
     /************************************************/
