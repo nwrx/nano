@@ -2,10 +2,10 @@ import type { application, UserObject } from '@nwrx/nano-api'
 import type { RouteRequestData } from '@unserved/client'
 import { useAlerts, useClient } from '#imports'
 
-type Options = Omit<RouteRequestData<typeof application, 'GET /api/users/:username'>, 'username'>
-type SetProfileOptions = Omit<RouteRequestData<typeof application, 'PUT /api/users/:username/profile'>, 'username'>
-type SetAvatarOptions = Omit<RouteRequestData<typeof application, 'PUT /api/users/:username/avatar'>, 'username'>
-type SetPasswordOptions = Omit<RouteRequestData<typeof application, 'PUT /api/users/:username/password'>, 'username'>
+export type Options = Omit<RouteRequestData<typeof application, 'GET /api/users/:username'>, 'username'>
+export type SetProfileOptions = Omit<RouteRequestData<typeof application, 'PUT /api/users/:username/profile'>, 'username'>
+export type SetAvatarOptions = Omit<RouteRequestData<typeof application, 'PUT /api/users/:username/avatar'>, 'username'>
+export type SetPasswordOptions = Omit<RouteRequestData<typeof application, 'PUT /api/users/:username/password'>, 'username'>
 
 /**
  * Fetch the current user data from the API and provide methods to interact with it.
@@ -43,7 +43,7 @@ export function useUser(username: MaybeRef<string | undefined>, options: Options
      * @param options The options to pass to the request.
      * @returns A promise that resolves when the request is complete.
      */
-    async setProfile(options: SetProfileOptions) {
+    setProfile: async(options: SetProfileOptions) => {
       await client.requestAttempt('PUT /api/users/:username/profile', {
         data: {
           username: unref(username),
@@ -57,12 +57,31 @@ export function useUser(username: MaybeRef<string | undefined>, options: Options
     },
 
     /**
+     * Change the user's username to the given value.
+     *
+     * @param newUsername The new username to set.
+     * @returns A promise that resolves when the request is complete.
+     */
+    setUsername: async(newUsername?: string) => {
+      await client.requestAttempt('PUT /api/users/:username/username', {
+        data: {
+          username: unref(username),
+          newUsername,
+        },
+        onSuccess: async() => {
+          await refresh()
+          alerts.success('Username updated successfully.')
+        },
+      })
+    },
+
+    /**
      * Set the user avatar to the given file.
      *
      * @param options The options to pass to the request.
      * @returns A promise that resolves when the request is complete.
      */
-    async setAvatar(options: SetAvatarOptions) {
+    setAvatar: async(options: SetAvatarOptions) => {
       await client.requestAttempt('PUT /api/users/:username/avatar', {
         data: {
           username: unref(username),
@@ -81,7 +100,7 @@ export function useUser(username: MaybeRef<string | undefined>, options: Options
      * @param options The options to pass to the request.
      * @returns A promise that resolves when the request is complete.
      */
-    async setPassword(options: SetPasswordOptions) {
+    setPassword: async(options: SetPasswordOptions) => {
       await client.requestAttempt('PUT /api/users/:username/password', {
         data: {
           username: unref(username),
