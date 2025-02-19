@@ -1,5 +1,6 @@
 import { BaseEntity, transformerDate } from '@unserved/server'
-import { Column, Entity } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
+import { User, UserObject } from '../../user'
 
 @Entity({ name: 'ThreadRunner' })
 export class ThreadRunner extends BaseEntity {
@@ -34,8 +35,15 @@ export class ThreadRunner extends BaseEntity {
   lastSeenAt: Date
 
   /**
-   * The user responsible for creating the thread runner. This user is the
+   * The user responsible for registering the thread runner. This user must be
+   * a super administrator in order to register a thread runner. This is used
+   * to ensure that only authorized users can register thread runners.
+   *
+   * @example User { ... }
    */
+  @JoinColumn()
+  @ManyToOne(() => User, { nullable: false })
+  createdBy: User
 
   /**
    * @returns The serialized representation of the thread runner.
@@ -45,6 +53,7 @@ export class ThreadRunner extends BaseEntity {
       baseUrl: this.baseUrl,
       createdAt: this.createdAt.toISOString(),
       lastSeenAt: this.lastSeenAt.toISOString(),
+      createdBy: this.createdBy.serialize(),
     }
   }
 }
@@ -53,4 +62,5 @@ export interface ThreadRunnerObject {
   baseUrl: string
   createdAt: string
   lastSeenAt: string
+  createdBy: UserObject
 }
