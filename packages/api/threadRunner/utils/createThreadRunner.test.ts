@@ -1,4 +1,3 @@
-/* eslint-disable sonarjs/no-async-constructor */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { WebSocketChannel } from '@unshared/client/websocket'
 import { type Context, createTestContext } from '../../__fixtures__'
@@ -24,7 +23,7 @@ describe<Context>('createThreadRunner', () => {
       constructor(url: string | URL) {
         const urlString = typeof url === 'string' ? url : url.toString()
         const path = urlString.replace('http://localhost', '')
-        return context.runner.connect(path)
+        return context.runner.connect(path) as unknown as WebSocket
       }
     })
   })
