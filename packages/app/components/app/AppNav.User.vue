@@ -1,7 +1,7 @@
 <script setup lang="ts">
 defineProps<{
   email?: string
-  avatarUrl?: string
+  username?: string
   displayName?: string
 }>()
 
@@ -21,37 +21,25 @@ const isOpen = ref(false)
     @mouseleave="() => isOpen = false">
 
     <AppNavFab>
-      <img
-        v-if="avatarUrl"
-        :src="avatarUrl"
-        alt="User Avatar"
-        class="size-6 rounded-full cursor-pointer">
+      <UserAvatar
+        :username="username"
+        class="size-6 rounded-full cursor-pointer"
+      />
     </AppNavFab>
 
     <!-- Menu -->
     <template #menu="{ close }">
       <div class="flex items-center space-x-md pb-sm w-48">
-        <img
-          v-if="avatarUrl"
-          :src="avatarUrl"
-          alt="User Avatar"
-          class="size-10 rounded-full">
+        <UserAvatar
+          :username="username"
+          class="size-6 rounded-full cursor-pointer"
+        />
         <div class="truncate">
-          <p class="text-sm truncate text-app">
-            {{ displayName }}
-          </p>
-          <p class="text-sm truncate text-subtle">
-            {{ email }}
-          </p>
+          <p class="text-sm truncate text-app" v-text="displayName || username" />
+          <p class="text-sm truncate text-subtle" v-text="email" />
         </div>
       </div>
       <ContextMenuDivider />
-      <ContextMenuItem
-        label="Profile"
-        icon="i-carbon:user"
-        :to="{ name: 'UserSettingsProfile' }"
-        @click="() => close()"
-      />
       <ContextMenuItem
         label="Account"
         icon="i-carbon:settings"

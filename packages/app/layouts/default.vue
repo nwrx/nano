@@ -19,15 +19,6 @@ watch(() => localSettings.value.themeColor, () => {
 
 // --- Locale
 const { setLocale, locale } = useI18n()
-
-// --- Computed avatar URL.
-const avatarUrl = computed(() => {
-  const apiUrl = useRuntimeConfig().public.apiUrl
-  const avatarUrl = session.data.avatarUrl
-  if (!avatarUrl) return
-  if (avatarUrl.startsWith('http')) return avatarUrl
-  if (apiUrl) return new URL(avatarUrl, apiUrl).href
-})
 </script>
 
 <template>
@@ -44,7 +35,7 @@ const avatarUrl = computed(() => {
       :image-url="ASSET_NWRX_LOGO"
       :items-start="NAV_BAR_START"
       :items-end="NAV_BAR_END"
-      :user-avatar-url="avatarUrl"
+      :user-username="session.data.username"
       :user-email="session.data.email"
       :user-display-name="session.data.displayName"
       :locale="locale"

@@ -7,13 +7,13 @@ const props = defineProps<{
   imageUrl?: string
   itemsStart?: NavItem[]
   itemsEnd?: NavItem[]
-  userAvatarUrl?: string
   userEmail?: string
+  userUsername?: string
   userDisplayName?: string
   search?: string
   searchOpen?: boolean
   locale?: string
-  locales?: Array<{ icon: string } & LocaleObject>
+  locales?: Array<LocaleObject & { icon: string }>
 }>()
 
 const emit = defineEmits<{
@@ -100,8 +100,8 @@ const locale = useVModel(props, 'locale', emit, {
 
     <!-- User -->
     <AppNavUser
-      :avatar-url="userAvatarUrl"
       :email="userEmail"
+      :username="userUsername"
       :display-name="userDisplayName"
       @signout="() => emit('signout')"
     />
