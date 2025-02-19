@@ -1,5 +1,6 @@
 export * from './claim'
 export * from './getStatus'
 export * from './ping'
+export * from './release'
 export * from './threadGetOuputValue'
 export * from './threadSession'
