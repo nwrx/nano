@@ -2,9 +2,11 @@ import { Application, createHttpRoute, ModuleBase } from '@unserved/server'
 import Consola from 'consola'
 import { ModuleChat } from './chat'
 import { ModuleFlow } from './flow'
-import { ModuleMonitoring } from './monitoring'
-import { ModuleStorage, StoragePoolFS } from './storage'
+import { ModuleProject } from './project'
+import { ModuleStorage } from './storage'
+import { createStoragePoolFs } from './storage/utils'
 import { ModuleUser } from './user'
+import { ModuleVault } from './vault'
 import { ModuleWorkspace } from './workspace'
 
 class ModuleHealth extends ModuleBase {
@@ -22,18 +24,34 @@ export const application = new Application(
     ModuleUser,
     ModuleFlow,
     ModuleWorkspace,
+    ModuleVault,
+    ModuleProject,
     ModuleStorage,
-    ModuleMonitoring,
     ModuleChat,
     ModuleHealth,
   ],
   {
     prefix: 'NANO',
     logger: Consola,
-    projectSecretKey: 'SECRET',
+
+    // User
     userSecretKey: 'SECRET',
-    storagePools: [
-      new StoragePoolFS('Default', { path: '.data/storage' }),
-    ],
+
+    // Vault
+    vaultConfigurationAlgorithm: 'aes-256-gcm',
+    vaultConfigurationSecretKey: 'SECRET',
+    vaultDefaultLocalSecretKey: 'SECRET',
+
+    // Storage
+    storagePools: new Map([
+      ['Default', createStoragePoolFs({ path: '.data/storage' })],
+    ]),
+
+    // Database
+    dataSource: {
+      type: 'sqlite',
+      database: '.data/database.sqlite',
+      synchronize: true,
+    },
   },
 )
