@@ -6,7 +6,7 @@ import { ModuleUser } from '../../user'
 export function getThreadRunnerStatus(this: ModuleThreadRunner) {
   return createHttpRoute(
     {
-      name: 'GET /api/threads/runners/:runner',
+      name: 'GET /api/runners/:runner',
       parseParameters: createSchema({
         runner: assertStringUuid,
       }),

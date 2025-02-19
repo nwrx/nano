@@ -8,7 +8,7 @@ import { registerThreadRunner } from '../utils/registerThreadRunner'
 export function claimThreadRunner(this: ModuleThreadRunner) {
   return createHttpRoute(
     {
-      name: 'POST /api/threads/runners',
+      name: 'POST /api/runners',
       parseBody: createSchema({ baseUrl: assertStringNotEmpty }),
     },
     async({ event, body }) => {
