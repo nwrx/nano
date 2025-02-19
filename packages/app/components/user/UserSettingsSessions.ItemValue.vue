@@ -4,11 +4,7 @@ defineProps<{ name: string; value: string }>()
 
 <template>
   <div>
-    <p class="text-xs text-subtle">
-      {{ name }}
-    </p>
-    <p class="text-sm text-app">
-      {{ value }}
-    </p>
+    <p class="text-xs text-subtle" v-text="name" />
+    <p class="text-sm text-app" v-text="value" />
   </div>
 </template>

@@ -1,13 +1,13 @@
 <script setup lang="ts">
 const props = defineProps<{
-  displayName: string
+  displayName?: string
   biography?: string
   website?: string
   company?: string
 }>()
 
 const emit = defineEmits<{
-  submit: [profile: UserSetProfileOptions]
+  submit: [profile: SetProfileOptions]
 }>()
 
 // --- Localization

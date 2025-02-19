@@ -1,9 +1,9 @@
 <script setup lang="ts">
 const props = defineProps<{
-  modelValue: boolean
-  username: string
-  displayName: string
-  avatarUrl: string
+  modelValue?: boolean
+  username?: string
+  displayName?: string
+  avatarUrl?: string
 }>()
 
 const emit = defineEmits<{

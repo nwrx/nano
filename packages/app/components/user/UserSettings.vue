@@ -1,153 +1,170 @@
 <script setup lang="ts">
 const { t } = useI18n()
+const route = useRoute()
+const title = computed(() => t(`title.${route.name as string}`))
+
+useHead(() => ({
+  title: title.value,
+  meta: [{ hid: 'description', name: 'description', content: t('description') }],
+}))
 </script>
 
 <template>
-  <div class="flex w-full h-full gap-lg">
-    <AppPageNav class="shrink h-full">
-      <AppPageNavGroup>
-        <AppPageNavItem :label="t('nav.settings.profile')" icon="i-carbon:user" :to="{ name: 'UserSettingsProfile' }" />
-        <AppPageNavItem :label="t('nav.settings.account')" icon="i-carbon:settings" :to="{ name: 'UserSettingsAccount' }" />
-        <AppPageNavItem :label="t('nav.settings.notifications')" icon="i-carbon:notification" to="/settings/notifications" />
-        <AppPageNavItem :label="t('nav.settings.customizations')" icon="i-carbon:paint-brush" to="/settings/customizations" />
-      </AppPageNavGroup>
+  <AppPage>
 
-      <!-- Security -->
-      <AppPageNavGroup :label="t('nav.security')">
-        <AppPageNavItem :label="t('nav.security.password')" icon="i-carbon:security" :to="{ name: 'UserSettingsPassword' }" />
-        <AppPageNavItem :label="t('nav.security.sso')" icon="i-carbon:credentials" to="/settings/security/api-keys" />
-        <AppPageNavItem :label="t('nav.security.apiKeys')" icon="i-carbon:api-key" to="/settings/security/api-keys" />
-        <AppPageNavItem :label="t('nav.security.sessions')" icon="i-carbon:mobile-session" :to="{ name: 'UserSettingsSessions' }" />
-      </AppPageNavGroup>
+    <!-- Header -->
+    <AppPageHeader
+      icon="i-carbon:user"
+      :title="[t('title'), title]"
+      :description="t('description')"
+    />
 
-      <!-- Billing -->
-      <AppPageNavGroup :label="t('nav.billing')">
-        <AppPageNavItem :label="t('nav.billing.upgrade')" to="/settings/billing/upgrade" icon="i-carbon:upgrade" />
-        <AppPageNavItem :label="t('nav.billing.subscription')" to="/settings/billing/subscription" icon="i-carbon:document" />
-        <AppPageNavItem :label="t('nav.billing.invoices')" to="/settings/billing/invoices" icon="i-carbon:document-multiple-01" />
-        <AppPageNavItem :label="t('nav.billing.usage')" to="/settings/billing/usage" icon="i-carbon:analytics" />
-        <AppPageNavItem :label="t('nav.billing.paymentMethods')" to="/settings/billing/payment-methods" icon="i-carbon:money" />
-      </AppPageNavGroup>
+    <!-- Side menu -->
+    <div class="flex w-full h-full gap-lg overflow-x-hidden overflow-y-auto">
+      <AppPageNav class="shrink h-full sticky top-0 overflow-y-auto">
+        <AppPageNavGroup>
+          <AppPageNavItem :label="t('title.UserSettingsAccount')" icon="i-carbon:settings" :to="{ name: 'UserSettingsAccount' }" />
+          <AppPageNavItem :label="t('title.UserSettingsNotifications')" icon="i-carbon:notification" to="/settings/notifications" />
+          <AppPageNavItem :label="t('title.UserSettingsCustomizations')" icon="i-carbon:paint-brush" to="/settings/customizations" />
+        </AppPageNavGroup>
 
-      <!-- Support -->
-      <AppPageNavGroup :label="t('nav.support')">
-        <AppPageNavItem :label="t('nav.support.helpCenter')" to="/settings/support/help-center" icon="i-carbon:help" />
-        <AppPageNavItem :label="t('nav.support.contact')" to="/settings/support/contact" icon="i-carbon:chat" />
-        <AppPageNavItem :label="t('nav.support.chat')" to="/settings/support/chat" icon="i-carbon:chat-bot" />
-      </AppPageNavGroup>
-    </AppPageNav>
+        <!-- Security -->
+        <AppPageNavGroup :label="t('title.UserSettingsSecurity')">
+          <AppPageNavItem :label="t('title.UserSettingsPassword')" icon="i-carbon:security" :to="{ name: 'UserSettingsPassword' }" />
+          <AppPageNavItem :label="t('title.UserSettingsSso')" icon="i-carbon:credentials" to="/settings/security/api-keys" />
+          <AppPageNavItem :label="t('title.UserSettingsApiKeys')" icon="i-carbon:api-key" to="/settings/security/api-keys" />
+          <AppPageNavItem :label="t('title.UserSettingsSessions')" icon="i-carbon:mobile-session" :to="{ name: 'UserSettingsSessions' }" />
+        </AppPageNavGroup>
 
-    <!-- Content -->
-    <AppPageContainer contained>
-      <slot />
-    </AppPageContainer>
-  </div>
+        <!-- Billing -->
+        <AppPageNavGroup :label="t('title.UserSettingsBilling')">
+          <AppPageNavItem :label="t('title.UserSettingsUpgrade')" to="/settings/billing/upgrade" icon="i-carbon:upgrade" />
+          <AppPageNavItem :label="t('title.UserSettingsSubscription')" to="/settings/billing/subscription" icon="i-carbon:document" />
+          <AppPageNavItem :label="t('title.UserSettingsInvoices')" to="/settings/billing/invoices" icon="i-carbon:document-multiple-01" />
+          <AppPageNavItem :label="t('title.UserSettingsUsage')" to="/settings/billing/usage" icon="i-carbon:analytics" />
+          <AppPageNavItem :label="t('title.UserSettingsPaymentMethods')" to="/settings/billing/payment-methods" icon="i-carbon:money" />
+        </AppPageNavGroup>
+
+        <!-- Support -->
+        <AppPageNavGroup :label="t('title.UserSettingsSupport')">
+          <AppPageNavItem :label="t('title.UserSettingsHelpCenter')" to="/settings/support/help-center" icon="i-carbon:help" />
+          <AppPageNavItem :label="t('title.UserSettingsContact')" to="/settings/support/contact" icon="i-carbon:chat" />
+          <AppPageNavItem :label="t('title.UserSettingsChat')" to="/settings/support/chat" icon="i-carbon:chat-bot" />
+        </AppPageNavGroup>
+      </AppPageNav>
+
+      <!-- Content -->
+      <AppPageContainer contained>
+        <slot />
+      </AppPageContainer>
+    </div>
+  </AppPage>
 </template>
 
 <i18n lang="yaml">
 en:
-  nav.settings: Settings
-  nav.settings.profile: Profile
-  nav.settings.account: Account
-  nav.settings.notifications: Notifications
-  nav.settings.customizations: Customizations
-  nav.security: Security
-  nav.security.password: Password & MFA
-  nav.security.sso: Single sign-on
-  nav.security.apiKeys: API keys
-  nav.security.sessions: Sessions
-  nav.billing: Billing
-  nav.billing.upgrade: Upgrade
-  nav.billing.subscription: Plan & subscription
-  nav.billing.invoices: Invoices
-  nav.billing.usage: Usage
-  nav.billing.paymentMethods: Payment methods
-  nav.support: Support
-  nav.support.helpCenter: Help center
-  nav.support.contact: Contact support
-  nav.support.chat: Direct chat
+  title: Settings
+  title.UserSettingsProfile: Profile
+  title.UserSettingsAccount: Account
+  title.UserSettingsNotifications: Notifications
+  title.UserSettingsCustomizations: Customizations
+  title.UserSettingsSecurity: Security
+  title.UserSettingsPassword: Password & MFA
+  title.UserSettingsSso: Single sign-on
+  title.UserSettingsApiKeys: API keys
+  title.UserSettingsSessions: Sessions
+  title.UserSettingsBilling: Billing
+  title.UserSettingsUpgrade: Upgrade
+  title.UserSettingsSubscription: Plan & subscription
+  title.UserSettingsInvoices: Invoices
+  title.UserSettingsUsage: Usage
+  title.UserSettingsPaymentMethods: Payment methods
+  title.UserSettingsSupport: Support
+  title.UserSettingsHelpCenter: Help center
+  title.UserSettingsContact: Contact support
+  title.UserSettingsChat: Direct chat
 fr:
-  nav.settings: Paramètres
-  nav.settings.profile: Profil
-  nav.settings.account: Compte
-  nav.settings.notifications: Notifications
-  nav.settings.customizations: Personnalisation
-  nav.security: Sécurité
-  nav.security.password: Mot de passe & MFA
-  nav.security.sso: Authentification unique
-  nav.security.apiKeys: Clés API
-  nav.security.sessions: Sessions
-  nav.billing: Facturation
-  nav.billing.upgrade: Mise à niveau
-  nav.billing.subscription: Plan & abonnement
-  nav.billing.invoices: Factures
-  nav.billing.usage: Utilisation
-  nav.billing.paymentMethods: Moyens de paiement
-  nav.support: Support
-  nav.support.helpCenter: Centre d'aide
-  nav.support.contact: Contacter le support
-  nav.support.chat: Chat direct
+  title: Paramètres
+  title.UserSettingsProfile: Profil
+  title.UserSettingsAccount: Compte
+  title.UserSettingsNotifications: Notifications
+  title.UserSettingsCustomizations: Personnalisation
+  title.UserSettingsSecurity: Sécurité
+  title.UserSettingsPassword: Mot de passe & MFA
+  title.UserSettingsSso: Authentification unique
+  title.UserSettingsApiKeys: Clés API
+  title.UserSettingsSessions: Sessions
+  title.UserSettingsBilling: Facturation
+  title.UserSettingsUpgrade: Mise à niveau
+  title.UserSettingsSubscription: Plan & abonnement
+  title.UserSettingsInvoices: Factures
+  title.UserSettingsUsage: Utilisation
+  title.UserSettingsPaymentMethods: Moyens de paiement
+  title.UserSettingsSupport: Support
+  title.UserSettingsHelpCenter: Centre d'aide
+  title.UserSettingsContact: Contacter le support
+  title.UserSettingsChat: Chat direct
 de:
-  nav.settings: Einstellungen
-  nav.settings.profile: Profil
-  nav.settings.account: Konto
-  nav.settings.notifications: Benachrichtigungen
-  nav.settings.customizations: Anpassungen
-  nav.security: Sicherheit
-  nav.security.password: Passwort & MFA
-  nav.security.sso: Single Sign-On
-  nav.security.apiKeys: API-Schlüssel
-  nav.security.sessions: Sitzungen
-  nav.billing: Abrechnung
-  nav.billing.upgrade: Upgrade
-  nav.billing.subscription: Plan & Abonnement
-  nav.billing.invoices: Rechnungen
-  nav.billing.usage: Nutzung
-  nav.billing.paymentMethods: Zahlungsmethoden
-  nav.support: Support
-  nav.support.helpCenter: Hilfe-Center
-  nav.support.contact: Support kontaktieren
-  nav.support.chat: Direkter Chat
+  title: Einstellungen
+  title.UserSettingsProfile: Profil
+  title.UserSettingsAccount: Konto
+  title.UserSettingsNotifications: Benachrichtigungen
+  title.UserSettingsCustomizations: Anpassungen
+  title.UserSettingsSecurity: Sicherheit
+  title.UserSettingsPassword: Passwort & MFA
+  title.UserSettingsSso: Single Sign-On
+  title.UserSettingsApiKeys: API-Schlüssel
+  title.UserSettingsSessions: Sitzungen
+  title.UserSettingsBilling: Abrechnung
+  title.UserSettingsUpgrade: Upgrade
+  title.UserSettingsSubscription: Plan & Abonnement
+  title.UserSettingsInvoices: Rechnungen
+  title.UserSettingsUsage: Nutzung
+  title.UserSettingsPaymentMethods: Zahlungsmethoden
+  title.UserSettingsSupport: Support
+  title.UserSettingsHelpCenter: Hilfe-Center
+  title.UserSettingsContact: Support kontaktieren
+  title.UserSettingsChat: Direkter Chat
 es:
-  nav.settings: Configuraciones
-  nav.settings.profile: Perfil
-  nav.settings.account: Cuenta
-  nav.settings.notifications: Notificaciones
-  nav.settings.customizations: Personalizaciones
-  nav.security: Seguridad
-  nav.security.password: Contraseña y MFA
-  nav.security.sso: Inicio de sesión único
-  nav.security.apiKeys: Claves API
-  nav.security.sessions: Sesiones
-  nav.billing: Facturación
-  nav.billing.upgrade: Actualización
-  nav.billing.subscription: Plan y suscripción
-  nav.billing.invoices: Facturas
-  nav.billing.usage: Uso
-  nav.billing.paymentMethods: Métodos de pago
-  nav.support: Soporte
-  nav.support.helpCenter: Centro de ayuda
-  nav.support.contact: Contactar soporte
-  nav.support.chat: Chat directo
+  title: Ajustes
+  title.UserSettingsProfile: Perfil
+  title.UserSettingsAccount: Cuenta
+  title.UserSettingsNotifications: Notificaciones
+  title.UserSettingsCustomizations: Personalizaciones
+  title.UserSettingsSecurity: Seguridad
+  title.UserSettingsPassword: Contraseña y MFA
+  title.UserSettingsSso: Inicio de sesión único
+  title.UserSettingsApiKeys: Claves API
+  title.UserSettingsSessions: Sesiones
+  title.UserSettingsBilling: Facturación
+  title.UserSettingsUpgrade: Actualización
+  title.UserSettingsSubscription: Plan y suscripción
+  title.UserSettingsInvoices: Facturas
+  title.UserSettingsUsage: Uso
+  title.UserSettingsPaymentMethods: Métodos de pago
+  title.UserSettingsSupport: Soporte
+  title.UserSettingsHelpCenter: Centro de ayuda
+  title.UserSettingsContact: Contactar soporte
+  title.UserSettingsChat: Chat directo
 zh:
-  nav.settings: 设置
-  nav.settings.profile: 档案
-  nav.settings.account: 帐户
-  nav.settings.notifications: 通知
-  nav.settings.customizations: 自定义
-  nav.security: 安全
-  nav.security.password: 密码 & MFA
-  nav.security.sso: 单点登录
-  nav.security.apiKeys: API 密钥
-  nav.security.sessions: 会话
-  nav.billing: 计费
-  nav.billing.upgrade: 升级
-  nav.billing.subscription: 计划 & 订阅
-  nav.billing.invoices: 发票
-  nav.billing.usage: 使用情况
-  nav.billing.paymentMethods: 付款方式
-  nav.support: 支持
-  nav.support.helpCenter: 帮助中心
-  nav.support.contact: 联系支持
-  nav.support.chat: 直接聊天
+  title: 设置
+  title.UserSettingsProfile: 档案
+  title.UserSettingsAccount: 帐户
+  title.UserSettingsNotifications: 通知
+  title.UserSettingsCustomizations: 自定义
+  title.UserSettingsSecurity: 安全
+  title.UserSettingsPassword: 密码 & MFA
+  title.UserSettingsSso: 单点登录
+  title.UserSettingsApiKeys: API 密钥
+  title.UserSettingsSessions: 会话
+  title.UserSettingsBilling: 计费
+  title.UserSettingsUpgrade: 升级
+  title.UserSettingsSubscription: 计划 & 订阅
+  title.UserSettingsInvoices: 发票
+  title.UserSettingsUsage: 使用情况
+  title.UserSettingsPaymentMethods: 付款方式
+  title.UserSettingsSupport: 支持
+  title.UserSettingsHelpCenter: 帮助中心
+  title.UserSettingsContact: 联系支持
+  title.UserSettingsChat: 直接聊天
 </i18n>

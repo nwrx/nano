@@ -1,35 +1,41 @@
 <script setup lang="ts">
 definePageMeta({
   name: 'UserSettingsAccount',
-  path: '/settings/account',
+  path: '/settings',
+  alias: '/settings/account',
   middleware: 'redirect-when-guest',
 })
 
-// --- Get the session and user data.
-const session = useSession()
-const user = useUser(session.data.username, {
-  withProfile: true,
-})
+const user = useSession()
 
-onMounted(async() => {
-  await session.refresh()
-  await user.refresh()
-})
+const {
+  setAvatar,
+  setProfile,
+  setUsername,
+} = useUser(user.data.username)
+
+onMounted(user.refresh)
 </script>
 
 <template>
   <UserSettings>
-    <UserSettingsUsername
+    <UserSettingsAvatar
+      :avatar-url="`/api/users/${user.data.username}/avatar`"
+      @submit="(avatar) => setAvatar({ file: avatar })"
+    />
+    <UserSettingsInformations
       :username="user.data.username"
-      :avatar-url="user.data.avatarUrl"
       :display-name="user.data.displayName"
-      @submit-rename="(profile) => user.setProfile(profile)"
+      :biography="user.data.biography"
+      :website="user.data.website"
+      :company="user.data.company"
+      @submit="(profile) => setProfile(profile)"
     />
     <UserSettingsDangerZone
       :username="user.data.username"
-      :avatar-url="user.data.avatarUrl"
       :display-name="user.data.displayName"
-      @submit="(password) => user.setPassword(password)"
+      @submit-username="(newUsername) => setUsername(newUsername)"
+      @submit-delete="() => $router.push('/logout')"
     />
   </UserSettings>
 </template>

@@ -1,12 +1,12 @@
 <script setup lang="ts">
 defineProps<{
-  username: string
-  displayName: string
-  avatarUrl: string
+  username?: string
+  displayName?: string
+  avatarUrl?: string
 }>()
 
 const emit = defineEmits<{
-  submitRename: [value: string]
+  submitUsername: [value: string]
   submitDelete: []
 }>()
 
@@ -46,7 +46,7 @@ const isDialogRenameOpen = ref(false)
       :username="username"
       :display-name="displayName"
       :avatar-url="avatarUrl"
-      @submit="(name) => emit('submitRename', name)"
+      @submit="(name) => emit('submitUsername', name)"
     />
 
     <!-- Delete project dialog -->

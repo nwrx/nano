@@ -1,19 +1,7 @@
 <script setup lang="ts">
-const props = defineProps<{
-  username: string
-}>()
-
-const emit = defineEmits<{
-  submit: [{ username: string }]
-}>()
-
+const props = defineProps<{ username?: string }>()
+const emit = defineEmits<{ submitUsername: [username?: string ] }>()
 const username = useVModel(props, 'username', emit, { passive: true })
-
-function onSubmit() {
-  emit('submit', {
-    username: username.value,
-  })
-}
 </script>
 
 <template>
@@ -21,7 +9,7 @@ function onSubmit() {
     vertical
     title="General"
     label="Save Changes"
-    @submit="() => onSubmit()">
+    @submit="() => emit('submitUsername', username)">
     <template #text>
       Update your username. This is your unique identifier and will be used for logging in and other interactions.
       <br>

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { UserSessionObject } from '@nwrx/nano-api'
 
-const props = defineProps<{
+const props = defineProps<UserSessionObject & {
   isCurrent: boolean
-} & UserSessionObject>()
+}>()
 
 const emit = defineEmits<{
   remove: []
