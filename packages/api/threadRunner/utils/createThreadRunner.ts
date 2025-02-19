@@ -1,9 +1,13 @@
-import type { FlowV1, ThreadInputObject } from '@nwrx/nano'
+import type { FlowV1 } from '@nwrx/nano'
 import type { ModuleRunner } from '@nwrx/nano-runner'
+import type { ChannelConnectOptions } from '@unserved/client'
 import type { ServerErrorName } from '@unserved/server'
+import type { WebSocketChannel } from '@unshared/client/websocket'
 import type { ObjectLike } from '@unshared/types'
 import { createClient } from '@unserved/client'
 import { createError } from '@unserved/server'
+
+export type ThreadRunnerChannel = WebSocketChannel<ChannelConnectOptions<ModuleRunner, 'WS /threads'>>
 
 export class ThreadRunner {
   constructor(
@@ -76,7 +80,7 @@ export class ThreadRunner {
    * @param data The flow to run in the thread.
    * @returns A thread object with methods to start and abort the thread.
    */
-  async createThread(data: FlowV1) {
+  async createThread(data: FlowV1): Promise<ThreadRunnerChannel> {
     const channel = await this.client.connect('WS /threads', {
       autoReconnect: true,
       reconnectDelay: 1000,
@@ -93,29 +97,8 @@ export class ThreadRunner {
       })
     })
 
-    return {
-      channel,
-
-      async start(data: ThreadInputObject = {}): Promise<ObjectLike> {
-        this.channel.send({ event: 'start', data })
-        return await new Promise<ObjectLike>((resolve, reject) => {
-          this.channel.on('message', (message) => {
-            if (message.event === 'error') reject(message.data[0])
-            if (message.event === 'done') resolve(message.data[0])
-          })
-        })
-      },
-
-      async abort() {
-        this.channel.send({ event: 'abort' })
-        return await new Promise<void>((resolve, reject) => {
-          this.channel.on('message', (message) => {
-            if (message.event === 'error') reject(message.data[0])
-            if (message.event === 'abort') resolve()
-          })
-        })
-      },
-    }
+    // --- Return the thread object.
+    return channel
   }
 }
 

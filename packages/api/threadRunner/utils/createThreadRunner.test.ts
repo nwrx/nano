@@ -1,5 +1,6 @@
 /* eslint-disable sonarjs/no-async-constructor */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import { WebSocketChannel } from '@unshared/client/websocket'
 import { type Context, createTestContext } from '../../__fixtures__'
 import { createThreadRunner, ThreadRunner } from './createThreadRunner'
 
@@ -85,13 +86,13 @@ describe<Context>('createThreadRunner', () => {
     })
   })
 
-  describe<Context>('createThread', { timeout: 1000 }, (it) => {
+  describe<Context>('createThread', { timeout: 1000 }, () => {
     describe('instanciation', (it) => {
-      it('should create a thread', async() => {
+      it('should create a WebSocket channel', async() => {
         const runner = createThreadRunner('http://localhost')
         await runner.claim()
         const result = await runner.createThread({ version: '1', nodes: {} })
-        expect(result).toMatchObject({ channel: expect.any(Object) })
+        expect(result).toBeInstanceOf(WebSocketChannel)
       })
 
       it('should throw an error if the flow file version is unsupported', async() => {
@@ -102,13 +103,14 @@ describe<Context>('createThreadRunner', () => {
       })
     })
 
-    describe('start', (it) => {
+    describe('events', (it) => {
       it('should start a thread', async() => {
         const runner = createThreadRunner('http://localhost')
         await runner.claim()
         const thread = await runner.createThread({ version: '1', nodes: {} })
-        const result = await thread.start()
-        expect(result).toStrictEqual({})
+        thread.send({ event: 'start', data: {} })
+        const result = await new Promise(resolve => thread.on('message', resolve))
+        expect(result).toStrictEqual({ event: 'start', data: [{}] })
       })
 
       it('should start a thread and return the result', async() => {
@@ -118,11 +120,12 @@ describe<Context>('createThreadRunner', () => {
           version: '1',
           nodes: { 'node-1': { component: 'output', name: 'output', value: 42 } },
         })
-        const result = await thread.start()
-        expect(result).toStrictEqual({ output: 42 })
+        thread.send({ event: 'start', data: {} })
+        const result = await new Promise(resolve => thread.on('message', (message) => { if (message.event === 'done') resolve(message) }))
+        expect(result).toStrictEqual({ event: 'done', data: [{ output: 42 }] })
       })
 
-      it('should start a thread with the given input', async() => {
+      it('should start a thread with the given input and return the result', async() => {
         const runner = createThreadRunner('http://localhost')
         await runner.claim()
         const thread = await runner.createThread({
@@ -132,19 +135,9 @@ describe<Context>('createThreadRunner', () => {
             'node-2': { component: 'output', name: 'output', value: { $ref: '#/Nodes/node-1/value' } },
           },
         })
-        const result = await thread.start({ input: 'Hello, world!' })
-        expect(result).toStrictEqual({ output: 'Hello, world!' })
-      })
-    })
-
-    describe.todo('abort', (it) => {
-      it('should abort a thread', async() => {
-        const runner = createThreadRunner('http://localhost')
-        await runner.claim()
-        const thread = await runner.createThread({ version: '1', nodes: {} })
-        const promise = thread.start()
-        await thread.abort()
-        await expect(promise).rejects.toThrow('Thread aborted')
+        thread.send({ event: 'start', data: { input: 'Hello, world!' } })
+        const result = await new Promise(resolve => thread.on('message', (message) => { if (message.event === 'done') resolve(message) }))
+        expect(result).toStrictEqual({ event: 'done', data: [{ output: 'Hello, world!' }] })
       })
     })
   })
