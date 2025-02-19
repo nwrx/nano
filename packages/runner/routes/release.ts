@@ -7,7 +7,7 @@ export function release(this: ModuleRunner) {
     {
       name: 'POST /release',
     },
-    ({ event }) => {
+    async({ event }) => {
       authorize.call(this, event)
 
       // --- Check if the runner is not claimed.
@@ -16,6 +16,9 @@ export function release(this: ModuleRunner) {
       // --- Release the runner.
       this.runnerIsClaimed = false
       this.runnerMasterAddress = '127.0.0.1'
+
+      // --- Stop all worker threads.
+      await this.runnerWorkerPool.destroy()
     },
   )
 }

@@ -33,6 +33,15 @@ describe.concurrent<Context>('release', { timeout: 300 }, () => {
       expect(moduleRunner.runnerIsClaimed).toStrictEqual(false)
       expect(moduleRunner.runnerMasterAddress).toBe('127.0.0.1')
     })
+
+    it('should destroy all worker threads', async({ expect, application, moduleRunner }) => {
+      const headers = { Authorization: `Bearer ${moduleRunner.runnerToken}` }
+      await application.fetch('/claim', { method: 'POST' })
+      moduleRunner.runnerWorkerPool.initialize()
+      expect(moduleRunner.runnerWorkerPool.workers).not.toHaveLength(0)
+      await application.fetch('/release', { method: 'POST', headers })
+      expect(moduleRunner.runnerWorkerPool.workers).toHaveLength(0)
+    })
   })
 
   describe<Context>('not claimed', (it) => {
