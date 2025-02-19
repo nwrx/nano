@@ -23,7 +23,7 @@ export class ThreadRunner extends BaseEntity {
    * @example "http://localhost:3000"
    */
   @Column('varchar', { length: 255, nullable: false, unique: true })
-  baseUrl: string
+  address: string
 
   /**
    * The last time the thread runner was pinged. This is used to determine if
@@ -50,7 +50,7 @@ export class ThreadRunner extends BaseEntity {
    */
   serialize(): ThreadRunnerObject {
     return {
-      baseUrl: this.baseUrl,
+      address: this.address,
       createdAt: this.createdAt.toISOString(),
       lastSeenAt: this.lastSeenAt.toISOString(),
       createdBy: this.createdBy.serialize(),
@@ -59,7 +59,7 @@ export class ThreadRunner extends BaseEntity {
 }
 
 export interface ThreadRunnerObject {
-  baseUrl: string
+  address: string
   createdAt: string
   lastSeenAt: string
   createdBy: UserObject

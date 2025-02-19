@@ -9,13 +9,14 @@ export function claimThreadRunner(this: ModuleThreadRunner) {
   return createHttpRoute(
     {
       name: 'POST /api/runners',
-      parseBody: createSchema({ baseUrl: assertStringNotEmpty }),
+      parseBody: createSchema({ address: assertStringNotEmpty }),
     },
     async({ event, body }) => {
       const moduleUser = this.getModule(ModuleUser)
       const { user } = await moduleUser.authenticate(event)
-      await registerThreadRunner.call(this, { baseUrl: body.baseUrl, user })
-      setResponseStatus(event, 204)
+      const { address } = body
+      await registerThreadRunner.call(this, { address, user })
+      setResponseStatus(event, 201)
     },
   )
 }

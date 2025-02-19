@@ -11,10 +11,10 @@ export type ThreadRunnerChannel = WebSocketChannel<ChannelConnectOptions<ModuleR
 
 export class ThreadRunner {
   constructor(
-    public baseUrl: string,
+    public address: string,
     public token = '',
   ) {
-    this.client.options.baseUrl = baseUrl
+    this.client.options.baseUrl = address
     this.client.options.headers = { Authorization: `Bearer ${token}` }
   }
 
@@ -48,6 +48,18 @@ export class ThreadRunner {
     const { token } = await this.client.request('POST /claim')
     this.client.options.headers = { Authorization: `Bearer ${token}` }
     return token
+  }
+
+  /**
+   * Releases the thread runner by revoking the token that was claimed. This will
+   * allow the thread runner to be claimed by another API instance. Note that this
+   * will also stop all threads that are currently running on the thread runner.
+   *
+   * @example await threadRunner.release()
+   */
+  async release() {
+    await this.client.request('POST /release')
+    this.client.options.headers = {}
   }
 
   /**
