@@ -1,4 +1,5 @@
-import type { ModuleThreadRunner } from '..'
+import type { ModuleThreadRunner } from '../index'
+import type { ThreadRunner } from './createThreadRunner'
 
 /**
  * Request a thread runner to run a flow. This will query all available thread
@@ -8,7 +9,7 @@ import type { ModuleThreadRunner } from '..'
  * @returns A `ThreadRunner` instance that can be used to interact with the thread.
  * @example await requestThreadRunner().createThread({ version: '1', nodes: {} })
  */
-export async function requestThreadRunner(this: ModuleThreadRunner) {
+export async function requestThreadRunner(this: ModuleThreadRunner): Promise<ThreadRunner> {
   const threadRunners = [...this.threadRunners.values()]
   if (threadRunners.length === 0) throw this.errors.THREAD_RUNNER_NO_RUNNERS_AVAILABLE()
 
