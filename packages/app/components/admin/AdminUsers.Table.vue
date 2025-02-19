@@ -25,6 +25,7 @@ const { t } = useI18n()
       class="w-full"
       :columns="['name', 'email', 'status']"
       class-cell="px-8 py-2"
+      class-header="bg-subtle"
       class-row="b-t b-app hover:bg-subtle"
       :rows="users">
 
@@ -36,20 +37,9 @@ const { t } = useI18n()
       </template>
 
       <!-- Cell / Name -->
-      <template #cell.name="{ displayName, username, avatarUrl }">
+      <template #cell.name="{ displayName, username }">
         <div class="flex items-center justify-start space-x-md font-normal">
-          <div
-            class="size-10 bg-cover bg-center rounded-full"
-            :style="{ backgroundImage: `url(${avatarUrl})` }"
-          />
-          <div class="text-start">
-            <p class="font-medium">
-              {{ displayName }}
-            </p>
-            <p class="text-sm">
-              {{ username }}
-            </p>
-          </div>
+          <UserCard :display-name="displayName" :username="username" />
         </div>
       </template>
 

@@ -3,7 +3,6 @@ const props = defineProps<{
   modelValue: boolean
   username: string
   displayName: string
-  avatarUrl: string
 }>()
 
 const emit = defineEmits<{
@@ -27,8 +26,7 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
     @confirm="() => emit('submit')">
 
     <!-- User Card -->
-    <AdminUserCard
-      :avatar-url="avatarUrl"
+    <UserCard
       :display-name="displayName"
       :username="username"
     />

@@ -3,7 +3,6 @@ const props = defineProps<{
   modelValue: boolean
   username: string
   displayName: string
-  avatarUrl: string
 }>()
 
 const emit = defineEmits<{
@@ -18,6 +17,7 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
   <AppDialog
     v-model="model"
     class-hint="hint-success"
+    class-button="button-success"
     icon="i-carbon:checkmark"
     :title="t('title', { username: props.username })"
     :text="t('hint')"
@@ -26,8 +26,7 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
     @confirm="() => emit('submit')">
 
     <!-- User Card -->
-    <AdminUserCard
-      :avatar-url="avatarUrl"
+    <UserCard
       :display-name="displayName"
       :username="username"
     />

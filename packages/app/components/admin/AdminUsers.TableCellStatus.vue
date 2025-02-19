@@ -46,7 +46,7 @@ const isDialogImpersonateOpen = ref(false)
 
     <!-- Context Menu -->
     <ContextMenu x="right" y="top" @mousedown.stop>
-      <template #menu="{ close }">
+      <template #menu>
         <ContextMenuItem
           :label="t('menu.impersonate')"
           icon="i-carbon:login"
@@ -59,11 +59,13 @@ const isDialogImpersonateOpen = ref(false)
         />
         <ContextMenuDivider />
         <ContextMenuItem
+          v-if="!disabledAt"
           :label="t('menu.disable')"
           icon="i-carbon:close"
           @click="() => isDialogDisableOpen = true"
         />
         <ContextMenuItem
+          v-if="disabledAt"
           :label="t('menu.enable')"
           icon="i-carbon:checkmark"
           @click="() => isDialogEnableOpen = true"
@@ -77,45 +79,42 @@ const isDialogImpersonateOpen = ref(false)
     </ContextMenu>
 
     <!-- Dialog Delete -->
-    <AdminUserDeleteDialog
+    <AdminUsersDeleteDialog
       v-model="isDialogDeleteOpen"
       :username="username"
       :display-name="displayName"
-      :avatar-url="avatarUrl"
       @submit="() => emit('submitDelete')"
     />
 
     <!-- Disable Dialog -->
-    <AdminUserDisableDialog
+    <AdminUsersDialogDisable
       v-model="isDialogDisableOpen"
       :username="username"
       :display-name="displayName"
-      :avatar-url="avatarUrl"
       @submit="() => emit('submitDisable')"
     />
 
     <!-- Enable Dialog -->
-    <AdminUserEnableDialog
+    <AdminUsersDialogEnable
       v-model="isDialogEnableOpen"
       :username="username"
       :display-name="displayName"
-      :avatar-url="avatarUrl"
       @submit="() => emit('submitEnable')"
     />
 
     <!-- Verify Dialog -->
-    <AdminUserVerifyDialog
+    <AdminUsersDialogVerify
       v-model="isDialogVerifyOpen"
       :username="username"
       :display-name="displayName"
-      :avatar-url="avatarUrl"
       @submit="() => emit('submitVerify')"
     />
 
     <!-- Impersonate Dialog -->
-    <AdminUserImpersonateDialog
+    <AdminUsersDialogImpersonate
       v-model="isDialogImpersonateOpen"
       :username="username"
+      :display-name="displayName"
       @submit="() => emit('submitImpersonate')"
     />
   </div>
