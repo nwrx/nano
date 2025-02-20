@@ -6,24 +6,34 @@ import { User, UserObject } from '../../user'
 export class ThreadRunner extends BaseEntity {
 
   /**
+   * The base URL of the thread runner. This URL is used to make requests to
+   * the thread runner and must be unique across all runners. It is used to
+   * identify which runner is responsible for running specific threads.
+   *
+   * @example "localhost:3000"
+   */
+  @Column('varchar', { length: 255, nullable: false, unique: true })
+  address: string
+
+  /**
+   * The identity of the thread runner. This identity is given by the thread
+   * runner when it is claimed by the API. This identity is used to identify
+   * the thread runner and should be unique across all runners.
+   *
+   * @example "runner-eu-west-1-1"
+   */
+  @Column('varchar', { length: 255 })
+  identity: string
+
+  /**
    * The unique token used to authenticate the thread runner. This token is
    * provided by the thread runner when it is claimed by the API. This token
    * is used to make authenticated requests to the thread runner.
    *
    * @example "00000000-0000-0000-0000-000000000000"
    */
-  @Column('varchar', { length: 255, unique: true })
+  @Column('varchar', { length: 255 })
   token: string
-
-  /**
-   * The base URL of the thread runner. This URL is used to make requests to
-   * the thread runner and must be unique across all runners. It is used to
-   * identify which runner is responsible for running specific threads.
-   *
-   * @example "http://localhost:3000"
-   */
-  @Column('varchar', { length: 255, nullable: false, unique: true })
-  address: string
 
   /**
    * The last time the thread runner was pinged. This is used to determine if
@@ -51,16 +61,18 @@ export class ThreadRunner extends BaseEntity {
   serialize(): ThreadRunnerObject {
     return {
       address: this.address,
+      identity: this.identity,
       createdAt: this.createdAt.toISOString(),
       lastSeenAt: this.lastSeenAt.toISOString(),
-      createdBy: this.createdBy.serialize(),
+      createdBy: this.createdBy?.serialize(),
     }
   }
 }
 
 export interface ThreadRunnerObject {
   address: string
+  identity: string
   createdAt: string
   lastSeenAt: string
-  createdBy: UserObject
+  createdBy?: UserObject
 }
