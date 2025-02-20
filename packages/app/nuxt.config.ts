@@ -240,8 +240,8 @@ export default defineNuxtConfig({
          *
          * @see https://github.com/nuxt-modules/storybook/issues/776
          */
-        '@storybook/addon-docs',
-        'jsdoc-type-pratt-parser',
+        // '@storybook/addon-docs',
+        // 'jsdoc-type-pratt-parser',
       ],
     },
     server: {
