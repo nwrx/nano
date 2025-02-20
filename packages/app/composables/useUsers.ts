@@ -1,6 +1,5 @@
-import type { UserObject } from '@nwrx/nano-api'
+import type { application, UserObject } from '@nwrx/nano-api'
 import type { RouteRequestData } from '@unserved/client'
-import type { application } from '~/server'
 import { useAlerts, useClient } from '#imports'
 
 const LOCALES = {
@@ -163,9 +162,10 @@ export function useUsers(options: UseUserOptions = {}) {
      * @param query The query to search for.
      * @returns A promise that resolves with the list of users that match the query.
      */
-    search: async(query: string): Promise<UserObject[]> => await client.request('GET /api/users', {
-      onError: error => alerts.error(error),
-      data: { query },
-    }) as UserObject[],
+    search: async(query: string) =>
+      await client.request('GET /api/users', {
+        onError: error => alerts.error(error),
+        data: { query },
+      }),
   }
 }
