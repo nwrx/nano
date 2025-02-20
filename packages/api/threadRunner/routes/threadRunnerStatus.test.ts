@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/require-await */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import type { Context } from '../../__fixtures__'
 import { createTestContext } from '../../__fixtures__'
@@ -25,16 +26,48 @@ describe<Context>('threadRunnerStatus', { timeout: 300 }, () => {
     it('should return status of the registered runner', async({ application, createUser, moduleThreadRunner }) => {
       const { headers } = await createUser('admin', { isSuperAdministrator: true })
       // Claim a runner first.
-      const body = JSON.stringify({ baseUrl: 'http://localhost' })
+      const body = JSON.stringify({ address: 'http://localhost' })
       await application.fetch('/api/runners', { method: 'POST', body, headers })
       const runnerId = moduleThreadRunner.threadRunners.entries().next().value![0]
 
       // Check the status for the claimed runner.
       const response = await application.fetch(`/api/runners/${runnerId}`, { method: 'GET', headers })
-      const data = await response.json() as { baseUrl: string; status: unknown }
+      const data = await response.json() as { address: string; status: unknown }
       expect(response).toMatchObject({ status: 200, statusText: 'OK' })
-      expect(data).toMatchObject({
+      expect(data).toStrictEqual({
+        address: 'http://localhost',
+        createdAt: expect.any(String),
+        identity: expect.any(String),
+        lastSeenAt: expect.any(String),
+        isClaimed: true,
+        isRunning: false,
+        isReachable: true,
         workerPool: expect.any(Array),
+      })
+    })
+
+    it('should not return status for unreachable runner', async({ application, createUser, moduleThreadRunner }) => {
+      const { headers } = await createUser('admin', { isSuperAdministrator: true })
+      // Claim a runner first.
+      const body = JSON.stringify({ address: 'http://localhost' })
+      await application.fetch('/api/runners', { method: 'POST', body, headers })
+      const runnerId = moduleThreadRunner.threadRunners.entries().next().value![0]
+
+      // Check the status for the claimed runner.
+      moduleThreadRunner.threadRunners.get(runnerId)!.ping = async() => { throw new Error('Unreachable') }
+      moduleThreadRunner.threadRunners.get(runnerId)!.getStatus =async() => { throw new Error('Unreachable') }
+      const response = await application.fetch(`/api/runners/${runnerId}`, { method: 'GET', headers })
+      const data = await response.json() as { address: string; status: unknown }
+      expect(response).toMatchObject({ status: 200, statusText: 'OK' })
+      expect(data).toStrictEqual({
+        address: 'http://localhost',
+        createdAt: expect.any(String),
+        identity: expect.any(String),
+        lastSeenAt: expect.any(String),
+        isClaimed: false,
+        isRunning: false,
+        isReachable: false,
+        workerPool: [],
       })
     })
   })

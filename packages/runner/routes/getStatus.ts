@@ -4,6 +4,9 @@ import { authorize } from '../utils'
 import { getWorkerPoolStatus } from '../worker'
 
 export interface ThreadRunnerStatus {
+  isClaimed: boolean
+  isRunning: boolean
+  isReachable: boolean
   workerPool: ThreadRunnerWorkerPoolStatus[]
 }
 
@@ -13,6 +16,9 @@ export function getStatus(this: ModuleRunner) {
     async({ event }): Promise<ThreadRunnerStatus> => {
       authorize.call(this, event)
       return {
+        isClaimed: this.runnerIsClaimed,
+        isRunning: this.runnerWorkerPool.running > 0,
+        isReachable: true,
         workerPool: await getWorkerPoolStatus.call(this),
       }
     },

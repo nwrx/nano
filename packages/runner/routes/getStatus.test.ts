@@ -32,7 +32,12 @@ describe.concurrent<Context>('getStatus', { timeout: 300 }, () => {
       const headers = { Authorization: `Bearer ${moduleRunner.runnerToken}` }
       const response = await application.fetch('/status', { method: 'GET', headers })
       const data = await response.json() as Record<string, unknown[]>
-      expect(data.workerPool).toBeInstanceOf(Array)
+      expect(data).toMatchObject({
+        isClaimed: false,
+        isRunning: false,
+        isReachable: true,
+        workerPool: expect.any(Array),
+      })
       expect(data.workerPool).toHaveLength(cpus().length - 1)
       expect(data.workerPool[0]).toStrictEqual({
         running: 0,
