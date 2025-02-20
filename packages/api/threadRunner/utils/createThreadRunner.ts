@@ -6,6 +6,7 @@ import type { WebSocketChannel } from '@unshared/client/websocket'
 import type { ObjectLike } from '@unshared/types'
 import { createClient } from '@unserved/client'
 import { createError } from '@unserved/server'
+import { ERRORS } from './errors'
 
 export type ThreadRunnerChannel = WebSocketChannel<ChannelConnectOptions<ModuleRunner, 'WS /threads'>>
 
@@ -14,7 +15,7 @@ export class ThreadRunner {
     public address: string,
     public token = '',
   ) {
-    this.client.options.baseUrl = address
+    this.client.options.baseUrl = /^https?:\/\//.test(address) ? address : `http://${address}`
     this.client.options.headers = { Authorization: `Bearer ${token}` }
   }
 
@@ -45,7 +46,11 @@ export class ThreadRunner {
    * @example await threadRunner.claim() // -> '00000000-0000-0000-0000-000000000000'
    */
   async claim(): Promise<{ token: string; identity: string }> {
-    const { token, identity } = await this.client.request('POST /claim')
+    const { token, identity } = await this.client.request('POST /claim').catch((error: TypeError) => {
+      // @ts-expect-error: The error object has a `code` property.
+      const code = error.cause.code as string
+      throw code ? ERRORS.THREAD_RUNNER_NOT_REACHABLE(this.address, code) : error
+    })
     this.client.options.headers = { Authorization: `Bearer ${token}` }
     return { token, identity }
   }
@@ -114,6 +119,6 @@ export class ThreadRunner {
   }
 }
 
-export function createThreadRunner(baseUrl: string): ThreadRunner {
-  return new ThreadRunner(baseUrl)
+export function createThreadRunner(address: string): ThreadRunner {
+  return new ThreadRunner(address)
 }

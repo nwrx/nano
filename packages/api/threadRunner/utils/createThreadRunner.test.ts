@@ -75,7 +75,12 @@ describe<Context>('createThreadRunner', () => {
       const runner = createThreadRunner('http://localhost')
       await runner.claim()
       const result = await runner.getStatus()
-      expect(result).toStrictEqual({ workerPool: expect.any(Array) })
+      expect(result).toStrictEqual({
+        isClaimed: true,
+        isRunning: false,
+        isReachable: true,
+        workerPool: expect.any(Array),
+      })
     })
 
     it('should throw an error if the thread runner is not claimed', async() => {
