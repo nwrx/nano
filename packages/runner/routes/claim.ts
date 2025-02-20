@@ -16,8 +16,11 @@ export function claim(this: ModuleRunner) {
       this.runnerIsClaimed = true
       this.runnerMasterAddress = address
 
-      // --- Respond with the token.
-      return { token: this.runnerToken }
+      // --- Respond with the token and identity.
+      return {
+        token: this.runnerToken,
+        identity: this.runnerIdentity,
+      }
     },
   )
 }

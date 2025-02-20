@@ -21,38 +21,38 @@ describe<Context>('registerThreadRunner', () => {
 
   describe<Context>('registration', (it) => {
     it('should register a thread runner successfully', async({ createUser, moduleThreadRunner }) => {
-      const baseUrl = 'http://localhost'
+      const address = 'http://localhost'
       const { user } = await createUser('admin', { isSuperAdministrator: true })
-      await registerThreadRunner.call(moduleThreadRunner, { baseUrl, user })
+      await registerThreadRunner.call(moduleThreadRunner, { address, user })
       expect(moduleThreadRunner.threadRunners.size).toBe(1)
     })
 
     it('should store the thread runner in the database', async({ createUser, moduleThreadRunner }) => {
-      const baseUrl = 'http://localhost'
+      const address = 'http://localhost'
       const { user } = await createUser('admin', { isSuperAdministrator: true })
-      await registerThreadRunner.call(moduleThreadRunner, { baseUrl, user })
+      await registerThreadRunner.call(moduleThreadRunner, { address, user })
       const { ThreadRunner } = moduleThreadRunner.getRepositories()
       const runners = await ThreadRunner.find()
       expect(runners).toHaveLength(1)
-      expect(runners[0]).toMatchObject({ baseUrl, token: expect.any(String) })
+      expect(runners[0]).toMatchObject({ address, token: expect.any(String), identity: expect.any(String) })
     })
   })
 
   describe<Context>('authorization', (it) => {
     it('should throw an error if the user is not a super administrator', async({ createUser, moduleThreadRunner }) => {
-      const baseUrl = 'http://localhost'
+      const address = 'http://localhost'
       const { user } = await createUser('admin', { isSuperAdministrator: false })
-      const shouldReject = registerThreadRunner.call(moduleThreadRunner, { baseUrl, user })
+      const shouldReject = registerThreadRunner.call(moduleThreadRunner, { address, user })
       await expect(shouldReject).rejects.toThrow('Cannot perform this operation on the thread runner')
     })
   })
 
   describe<Context>('uniqueness', (it) => {
     it('should throw an error if the thread runner is already registered', async({ createUser, moduleThreadRunner }) => {
-      const baseUrl = 'http://localhost'
+      const address = 'http://localhost'
       const { user } = await createUser('admin', { isSuperAdministrator: true })
-      await registerThreadRunner.call(moduleThreadRunner, { baseUrl, user })
-      const shouldReject = registerThreadRunner.call(moduleThreadRunner, { baseUrl, user })
+      await registerThreadRunner.call(moduleThreadRunner, { address, user })
+      const shouldReject = registerThreadRunner.call(moduleThreadRunner, { address, user })
       await expect(shouldReject).rejects.toThrow('Thread runner with base URL "http://localhost" is already registered in the database')
     })
   })

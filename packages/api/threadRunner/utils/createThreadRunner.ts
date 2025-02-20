@@ -44,10 +44,10 @@ export class ThreadRunner {
    * @returns The token of the thread runner that was claimed.
    * @example await threadRunner.claim() // -> '00000000-0000-0000-0000-000000000000'
    */
-  async claim(): Promise<string> {
-    const { token } = await this.client.request('POST /claim')
+  async claim(): Promise<{ token: string; identity: string }> {
+    const { token, identity } = await this.client.request('POST /claim')
     this.client.options.headers = { Authorization: `Bearer ${token}` }
-    return token
+    return { token, identity }
   }
 
   /**

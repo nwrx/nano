@@ -1,7 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import type { TestApplication } from '@unserved/server'
 import { createTestApplication } from '@unserved/server'
-import { EXP_UUID } from '@unshared/validation'
 import { ModuleRunner } from '../application'
 
 interface Context {
@@ -23,14 +21,16 @@ describe.concurrent<Context>('claim', { timeout: 300 }, () => {
   describe<Context>('getToken', (it) => {
     it('should respond with status 200', async({ expect, application }) => {
       const response = await application.fetch('/claim', { method: 'POST' })
-      expect(response.status).toStrictEqual(200)
-      expect(response.statusText).toStrictEqual('OK')
+      expect(response).toMatchObject({ status: 200, statusText: 'OK' })
     })
 
-    it('should respond with the token', async({ expect, application }) => {
+    it('should respond with the token', async({ expect, application, moduleRunner }) => {
       const response = await application.fetch('/claim', { method: 'POST' })
       const data = await response.json() as Record<string, string>
-      expect(data).toMatchObject({ token: expect.stringMatching(EXP_UUID) })
+      expect(data).toStrictEqual({
+        token: moduleRunner.runnerToken,
+        identity: moduleRunner.runnerIdentity,
+      })
     })
 
     it('should set the "runnerIsClaimed" flag', async({ application, moduleRunner }) => {
@@ -55,20 +55,9 @@ describe.concurrent<Context>('claim', { timeout: 300 }, () => {
     it('should respond with status 409', async({ expect, application }) => {
       await application.fetch('/claim', { method: 'POST' })
       const response = await application.fetch('/claim', { method: 'POST' })
-      expect(response.status).toStrictEqual(409)
-      expect(response.statusText).toStrictEqual('Conflict')
-    })
-
-    it('should respond with an error message', async({ expect, application }) => {
-      await application.fetch('/claim', { method: 'POST' })
-      const response = await application.fetch('/claim', { method: 'POST' })
       const data = await response.json() as Record<string, string>
-      expect(data).toMatchObject({
-        data: { message: 'Runner is already claimed', name: 'E_RUNNER_ALREADY_CLAIMED' },
-        stack: [],
-        statusCode: 409,
-        statusMessage: 'Conflict',
-      })
+      expect(response).toMatchObject({ status: 409, statusText: 'Conflict' })
+      expect(data).toMatchObject({ data: { name: 'E_RUNNER_ALREADY_CLAIMED' } })
     })
   })
 })

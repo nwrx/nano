@@ -1,6 +1,5 @@
 import type { ModuleThreadRunner } from '..'
 import type { User } from '../../user'
-import { randomUUID } from 'node:crypto'
 import { createThreadRunner } from './createThreadRunner'
 
 export interface RegisterThreadRunnerOptions {
@@ -20,13 +19,20 @@ export async function registerThreadRunner(this: ModuleThreadRunner, options: Re
   if (exists > 0) throw this.errors.THREAD_RUNNER_ALREADY_REGISTERED(address)
 
   // --- Register, claim, and store the thread runner.
-  const id = randomUUID()
   const client = createThreadRunner.call(this, address)
-  const token = await client.claim()
+  const { token, identity } = await client.claim()
   await client.ping()
-  this.threadRunners.set(id, client)
 
-  // --- Store the thread runner in the database.
-  const runner = ThreadRunner.create({ id, address, token, lastSeenAt: new Date(), createdBy: user })
+  // --- Create the database record.
+  const runner = ThreadRunner.create({
+    token,
+    address,
+    identity,
+    createdBy: user,
+    lastSeenAt: new Date(),
+  })
+
+  // --- Save the client and database record.
+  this.threadRunners.set(runner.id, client)
   await ThreadRunner.save(runner)
 }

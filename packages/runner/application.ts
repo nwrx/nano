@@ -8,12 +8,16 @@ import { cpus } from 'node:os'
 import * as ROUTES from './routes'
 import { ERRORS } from './utils'
 
+export type { ThreadRunnerStatus } from './routes/getStatus'
+export type { ThreadRunnerWorkerPoolStatus } from './worker/getWorkerPoolStatus'
+
 export class ModuleRunner extends ModuleBase {
   routes = ROUTES
   errors = ERRORS
   entities = {}
 
   runnerToken = randomUUID()
+  runnerIdentity = randomUUID()
   runnerIsClaimed = false
   runnerTrustProxy = false
   runnerMasterAddress = '127.0.0.1'
