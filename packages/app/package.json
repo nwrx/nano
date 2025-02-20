@@ -20,6 +20,7 @@
     "@nuxtjs/storybook": "8.3.3",
     "@nwrx/nano": "workspace:*",
     "@nwrx/nano-api": "workspace:*",
+    "@nwrx/nano-runner": "workspace:*",
     "@storybook-vue/nuxt": "8.3.3",
     "@storybook/addon-essentials": "8.5.2",
     "@storybook/addon-interactions": "8.5.2",
