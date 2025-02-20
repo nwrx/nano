@@ -1,7 +1,7 @@
 {
   "name": "@nwrx/nano-api",
   "private": true,
-  "bin": "./dist/server.js",
+  "bin": "./dist/server.cjs",
   "exports": {
     ".": {
       "types": "./index.ts",
@@ -13,9 +13,9 @@
     "dist"
   ],
   "scripts": {
-    "dev": "tsup --watch --onSuccess \"node dist/server.js\"",
+    "dev": "tsup --watch --onSuccess \"node dist/server.cjs\"",
     "build": "tsup",
-    "start": "node dist/server.js"
+    "start": "node dist/server.cjs"
   },
   "dependencies": {
     "isolated-vm": "5.0.3",
@@ -58,6 +58,7 @@
     "source-map-support": "0.5.21",
     "storybook": "8.5.2",
     "testcontainers": "10.18.0",
+    "tsup": "8.3.6",
     "typeorm": "0.3.20",
     "unocss": "65.4.3",
     "unocss-preset-theme": "0.14.1",
@@ -65,17 +66,5 @@
     "vue": "3.5.13",
     "vue-router": "4.5.0",
     "yaml": "2.7.0"
-  },
-  "tsup": {
-    "entry": [
-      "server.ts"
-    ],
-    "format": [
-      "cjs"
-    ],
-    "minify": false,
-    "treeshake": false,
-    "splitting": false,
-    "sourcemap": "inline"
   }
 }

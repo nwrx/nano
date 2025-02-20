@@ -3,6 +3,7 @@
 import type { ModuleBase } from '@unserved/server'
 import Consola from 'consola'
 import { application } from './application'
+import 'source-map-support/register'
 
 const PORT = Number.parseInt(process.env.PORT || '3001', 10)
 const HOST = process.env.HOST ?? '0.0.0.0'
