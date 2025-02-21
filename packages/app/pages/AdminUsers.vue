@@ -16,7 +16,7 @@ onMounted(async() => {
 </script>
 
 <template>
-  <AdminSettings>
+  <AdminLayout>
     <AdminUsers
       :users="users.data.value"
       @submit-enable="(username) => users.enable(username)"
@@ -24,5 +24,5 @@ onMounted(async() => {
       @submit-disable="(username) => users.disable(username)"
       @submit-verify="(username) => users.verify(username)"
     />
-  </AdminSettings>
+  </AdminLayout>
 </template>

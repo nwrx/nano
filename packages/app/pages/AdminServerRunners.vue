@@ -13,7 +13,7 @@ onMounted(async() => {
 </script>
 
 <template>
-  <AdminSettings>
+  <AdminLayout>
     <AdminServerRunners
       :runners="runners.data.value"
       @submit-claim="(address) => runners.claim(address)"
@@ -21,5 +21,5 @@ onMounted(async() => {
       @subscribe="(runner) => runners.subscribe(runner)"
       @unsubscribe="(runner) => runners.unsubscribe(runner)"
     />
-  </AdminSettings>
+  </AdminLayout>
 </template>
