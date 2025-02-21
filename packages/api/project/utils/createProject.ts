@@ -2,24 +2,24 @@ import type { Loose } from '@unshared/types'
 import type { Project } from '../entities'
 import type { ModuleProject } from '../index'
 import { assertBoolean, assertString, assertStringNotEmpty, assertStringUuid, assertUndefined, createSchema } from '@unshared/validation'
-import { ModuleWorkspace } from '../../workspace'
+import { assertWorkspace } from '../../workspace'
 
 const CREATE_PROJECT_OPTIONS = createSchema({
+
+  /** The `User` responsible for the request. */
+  user: createSchema({ id: assertStringUuid }),
 
   /** The name of the project to create. */
   name: assertStringNotEmpty,
 
   /** The workspace to create the project in. */
-  workspace: assertStringNotEmpty,
+  workspace: assertWorkspace,
 
   /** The title of the project to create. */
   title: [[assertUndefined], [assertString]],
 
   /** The description of the project to create. */
   description: [[assertUndefined], [assertString]],
-
-  /** The `User` responsible for the request. */
-  user: createSchema({ id: assertStringUuid }),
 
   /** Whether the project is public or private. */
   isPublic: [[assertUndefined], [assertBoolean]],
@@ -38,15 +38,11 @@ export type CreateProjectOptions = Loose<ReturnType<typeof CREATE_PROJECT_OPTION
  * @returns The newly created `Project` entity.
  */
 export async function createProject(this: ModuleProject, options: CreateProjectOptions): Promise<Project> {
-  const moduleWorkspace = this.getModule(ModuleWorkspace)
   const { Project, ProjectAssignment } = this.getRepositories()
-  const { user, name, title = name, description, workspace: workspaceName, isPublic } = CREATE_PROJECT_OPTIONS(options)
-
-  // --- Assert the user has access to the workspace and can create the project.
-  const workspace = await moduleWorkspace.getWorkspace({ user, name: workspaceName, permission: 'Write' })
+  const { user, name, title = name, description, workspace, isPublic } = CREATE_PROJECT_OPTIONS(options)
 
   // --- Check if the project already exists in the workspace.
-  const exists = await Project.countBy({ name, workspace: { id: workspace.id } })
+  const exists = await Project.countBy({ name, workspace })
   if (exists > 0) throw this.errors.PROJECT_NAME_TAKEN(workspace.name, name)
 
   // --- Create the project and assign the user as the owner.

@@ -1,6 +1,5 @@
 import type { Context } from '../../__fixtures__'
 import { ValidationError } from '@unshared/validation'
-import { randomUUID } from 'node:crypto'
 import { createTestContext } from '../../__fixtures__'
 import { Project } from '../entities'
 import { createProject } from './createProject'
@@ -14,10 +13,10 @@ describe.concurrent<Context>('createProject', () => {
     await context.application.destroy()
   })
 
-  describe<Context>('with owner access', (it) => {
+  describe<Context>('createProject', (it) => {
     it('should create a project', async({ createUser, moduleProject }) => {
       const { user, workspace } = await createUser()
-      const project = await createProject.call(moduleProject, { user, name: 'project', workspace: workspace.name })
+      const project = await createProject.call(moduleProject, { user, name: 'project', workspace })
       expect(project).toBeInstanceOf(Project)
       expect(project).toMatchObject({
         id: project.id,
@@ -31,7 +30,7 @@ describe.concurrent<Context>('createProject', () => {
 
     it('should save the project to the database', async({ createUser, moduleProject }) => {
       const { user, workspace } = await createUser()
-      const project = await createProject.call(moduleProject, { user, name: 'project', workspace: workspace.name })
+      const project = await createProject.call(moduleProject, { user, name: 'project', workspace })
       const { Project } = moduleProject.getRepositories()
       const saved = await Project.findOneBy({ id: project.id })
       expect(saved).toMatchObject({ id: project.id })
@@ -39,97 +38,58 @@ describe.concurrent<Context>('createProject', () => {
 
     it('should create a new private project', async({ createUser, moduleProject }) => {
       const { user, workspace } = await createUser()
-      const project = await createProject.call(moduleProject, { user, name: 'project', workspace: workspace.name })
+      const project = await createProject.call(moduleProject, { user, name: 'project', workspace })
       expect(project).toMatchObject({ isPublic: false })
     })
 
     it('should create a new public project', async({ createUser, moduleProject }) => {
       const { user, workspace } = await createUser()
-      const project = await createProject.call(moduleProject, { user, name: 'project', workspace: workspace.name, isPublic: true })
+      const project = await createProject.call(moduleProject, { user, name: 'project', workspace, isPublic: true })
       expect(project).toMatchObject({ isPublic: true })
     })
 
     it('should create a project with a title', async({ createUser, moduleProject }) => {
       const { user, workspace } = await createUser()
-      const project = await createProject.call(moduleProject, { user, name: 'project', title: 'Project', workspace: workspace.name })
+      const project = await createProject.call(moduleProject, { user, name: 'project', title: 'Project', workspace })
       expect(project.title).toBe('Project')
     })
 
     it('should default the title to the project name', async({ createUser, moduleProject }) => {
       const { user, workspace } = await createUser()
-      const project = await createProject.call(moduleProject, { user, name: 'project', workspace: workspace.name })
+      const project = await createProject.call(moduleProject, { user, name: 'project', workspace })
       expect(project.title).toBe('project')
     })
   })
 
-  for (const isPublic of [true, false]) {
-    describe<Context>(`with ${isPublic ? 'public' : 'private'} project`, (it) => {
-      it('should create a project with write access', async({ createUser, createWorkspace, assignWorkspace, moduleProject }) => {
-        const { user } = await createUser()
-        const { workspace } = await createWorkspace()
-        await assignWorkspace(workspace, user, 'Write')
-        const project = await createProject.call(moduleProject, { user, name: 'project', workspace: workspace.name })
-        expect(project).toBeInstanceOf(Project)
-      })
-
-      it('should throw an error if the user does not have write access', async({ createUser, createWorkspace, assignWorkspace, moduleProject, moduleWorkspace }) => {
-        const { user } = await createUser()
-        const { workspace } = await createWorkspace()
-        await assignWorkspace(workspace, user, 'Read')
-        const shouldReject = createProject.call(moduleProject, { user, name: 'project', workspace: workspace.name })
-        const error = moduleWorkspace.errors.WORKSPACE_ACTION_NOT_AUTHORIZED(workspace.name)
-        await expect(shouldReject).rejects.toThrow(error)
-      })
-
-      it('should throw an error if the user does not have access to the workspace', async({ createUser, createWorkspace, moduleProject, moduleWorkspace }) => {
-        const { user } = await createUser()
-        const { workspace } = await createWorkspace()
-        const shouldReject = createProject.call(moduleProject, { user, name: 'project', workspace: workspace.name })
-        const error = moduleWorkspace.errors.WORKSPACE_ACTION_NOT_AUTHORIZED(workspace.name)
-        await expect(shouldReject).rejects.toThrow(error)
-      })
-    })
-  }
-
   describe<Context>('errors', (it) => {
-    it('should throw an error if the project already exists', async({ createUser, moduleProject }) => {
+    it('should throw an error if the project name is taken', async({ createUser, moduleProject, expect }) => {
       const { user, workspace } = await createUser()
-      const project = await createProject.call(moduleProject, { user, name: 'project', workspace: workspace.name })
+      const project = await createProject.call(moduleProject, { user, name: 'project', workspace })
       await moduleProject.getRepositories().Project.save(project)
-      const shouldReject = createProject.call(moduleProject, { user, name: 'project', workspace: workspace.name })
+      const shouldReject = createProject.call(moduleProject, { user, name: 'project', workspace })
       const error = moduleProject.errors.PROJECT_NAME_TAKEN(workspace.name, 'project')
       await expect(shouldReject).rejects.toThrow(error)
     })
 
-    it('should throw an error if the project name is empty', async({ moduleProject }) => {
-      const user = { id: randomUUID() }
-      const shouldReject = createProject.call(moduleProject, { user, name: '', workspace: 'workspace' })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
-    })
-
-    it('should throw an error if the project name is missing', async({ moduleProject }) => {
-      const user = { id: randomUUID() }
+    it('should throw an error if the project name is missing', async({ createUser, moduleProject }) => {
+      const { user, workspace } = await createUser()
       // @ts-expect-error: testing missing `name` property
-      const shouldReject = createProject.call(moduleProject, { user, workspace: 'workspace' })
+      const shouldReject = createProject.call(moduleProject, { user, workspace })
       await expect(shouldReject).rejects.toThrow(ValidationError)
     })
 
-    it('should throw an error if the project user id is not an UUID', async({ moduleProject, expect }) => {
-      // @ts-expect-error: testing invalid `user.id`
-      const shouldReject = createProject.call(moduleProject, { user: { id: 'not-a-uuid' }, name: 'project', workspace: 'workspace' })
+    it('should throw an error if the project user is missing', async({ createUser, moduleProject }) => {
+      const { workspace } = await createUser()
+      // @ts-expect-error: testing missing `user` property
+      const shouldReject = createProject.call(moduleProject, { name: 'project', workspace })
       await expect(shouldReject).rejects.toThrow(ValidationError)
     })
 
-    it('should throw an error if the user id is missing', async({ moduleProject, expect }) => {
-      // @ts-expect-error: testing missing `user.id` property
-      const shouldReject = createProject.call(moduleProject, { user: {}, name: 'project', workspace: 'workspace' })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
-    })
-
-    it('should throw an error if the workspace name is empty', async({ moduleProject }) => {
-      const user = { id: randomUUID() }
-      const shouldReject = createProject.call(moduleProject, { user, name: 'project', workspace: '' })
+    it('should throw an error if the project workspace is missing', async({ createUser, moduleProject }) => {
+      const { user } = await createUser()
+      // @ts-expect-error: testing missing `workspace` property
+      const shouldReject = createProject.call(moduleProject, { user, name: 'project' })
       await expect(shouldReject).rejects.toThrow(ValidationError)
     })
   })
-}, 1000)
+})
