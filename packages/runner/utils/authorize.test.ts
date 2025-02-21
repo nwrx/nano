@@ -21,41 +21,13 @@ describe.concurrent<Context>('getEventInformation', () => {
 
   describe<Context>('with event', (it) => {
     it('should authorize the event when the token and address are valid with "runnerTrustProxy" set to true', ({ moduleRunner }) => {
-      moduleRunner.runnerTrustProxy = true
-      const event = createTestEvent({
-        headers: {
-          'authorization': `Bearer ${moduleRunner.runnerToken}`,
-          'x-forwarded-for': moduleRunner.runnerMasterAddress,
-        },
-      })
-      const result = authorize.call(moduleRunner, event)
-      expect(result).toBeUndefined()
-    })
-
-    it('should authorize the event when the token and address are valid with "runnerTrustProxy" set to false', ({ moduleRunner }) => {
-      const event = createTestEvent({
-        headers: { authorization: `Bearer ${moduleRunner.runnerToken}` },
-        remoteAddress: moduleRunner.runnerMasterAddress,
-      })
+      const event = createTestEvent({ headers: { authorization: `Bearer ${moduleRunner.runnerToken}` } })
       const result = authorize.call(moduleRunner, event)
       expect(result).toBeUndefined()
     })
 
     it('should throw an error when the token is invalid', ({ moduleRunner }) => {
-      const event = createTestEvent({
-        headers: { authorization: 'Bearer invalid' },
-        remoteAddress: moduleRunner.runnerMasterAddress,
-      })
-      const shouldThrow = () => authorize.call(moduleRunner, event)
-      const error = moduleRunner.errors.UNAUTHORIZED()
-      expect(shouldThrow).toThrowError(error)
-    })
-
-    it('should throw an error when the address is invalid', ({ moduleRunner }) => {
-      const event = createTestEvent({
-        headers: { authorization: `Bearer ${moduleRunner.runnerToken}` },
-        remoteAddress: '0.0.0.0',
-      })
+      const event = createTestEvent({ headers: { authorization: 'Bearer invalid' } })
       const shouldThrow = () => authorize.call(moduleRunner, event)
       const error = moduleRunner.errors.UNAUTHORIZED()
       expect(shouldThrow).toThrowError(error)
@@ -64,41 +36,13 @@ describe.concurrent<Context>('getEventInformation', () => {
 
   describe<Context>('with peer', (it) => {
     it('should authorize the peer when the token and address are valid with "runnerTrustProxy" set to true', ({ moduleRunner }) => {
-      moduleRunner.runnerTrustProxy = true
-      const peer = createTestPeer({
-        headers: {
-          'authorization': `Bearer ${moduleRunner.runnerToken}`,
-          'x-forwarded-for': moduleRunner.runnerMasterAddress,
-        },
-      })
-      const result = authorize.call(moduleRunner, peer)
-      expect(result).toBeUndefined()
-    })
-
-    it('should authorize the peer when the token and address are valid with "runnerTrustProxy" set to false', ({ moduleRunner }) => {
-      const peer = createTestPeer({
-        headers: { authorization: `Bearer ${moduleRunner.runnerToken}` },
-        remoteAddress: moduleRunner.runnerMasterAddress,
-      })
+      const peer = createTestPeer({ headers: { authorization: `Bearer ${moduleRunner.runnerToken}` } })
       const result = authorize.call(moduleRunner, peer)
       expect(result).toBeUndefined()
     })
 
     it('should throw an error when the token is invalid', ({ moduleRunner }) => {
-      const peer = createTestPeer({
-        headers: { authorization: 'Bearer invalid' },
-        remoteAddress: moduleRunner.runnerMasterAddress,
-      })
-      const shouldThrow = () => authorize.call(moduleRunner, peer)
-      const error = moduleRunner.errors.UNAUTHORIZED()
-      expect(shouldThrow).toThrowError(error)
-    })
-
-    it('should throw an error when the address is invalid', ({ moduleRunner }) => {
-      const peer = createTestPeer({
-        headers: { authorization: `Bearer ${moduleRunner.runnerToken}` },
-        remoteAddress: '0.0.0.0',
-      })
+      const peer = createTestPeer({ headers: { authorization: 'Bearer invalid' } })
       const shouldThrow = () => authorize.call(moduleRunner, peer)
       const error = moduleRunner.errors.UNAUTHORIZED()
       expect(shouldThrow).toThrowError(error)

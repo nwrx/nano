@@ -19,8 +19,6 @@ export class ModuleRunner extends ModuleBase {
   runnerToken = process.env.NODE_ENV === 'production' ? randomUUID() : '00000000-0000-0000-0000-000000000000'
   runnerIdentity = process.env.NODE_ENV === 'production' ? randomUUID() : 'runner-1'
   runnerIsClaimed = false
-  runnerTrustProxy = false
-  runnerMasterAddress = '127.0.0.1'
 
   runnerWorkerPool: WorkerPool
   runnerWorkerPoolSize = cpus().length - 1

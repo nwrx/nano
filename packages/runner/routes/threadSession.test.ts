@@ -11,17 +11,16 @@ import { ModuleRunner } from '../application'
 interface Context {
   application: TestApplication<ModuleRunner>
   moduleRunner: ModuleRunner
-  headers: Record<string, string>
   address: string
 }
 
 async function createConnection(context: Context, flow: FlowV1) {
-  const { headers, application, moduleRunner } = context
+  const { application, moduleRunner } = context
   const body = JSON.stringify({ flow })
-  const response = await application.fetch('/threads', { method: 'POST', body, headers })
+  const response = await application.fetch('/threads', { method: 'POST', body, headers: { Authorization: `Bearer ${moduleRunner.runnerToken}` } })
   const data = await response.json() as { id: string }
   const address = `ws+unix:${application.socketPath}:/threads/${data.id}?token=${moduleRunner.runnerToken}`
-  const ws = new WebSocket(address, { headers })
+  const ws = new WebSocket(address)
   await new Promise<void>(resolve => ws.on('open', resolve))
   return ws
 }
@@ -47,12 +46,7 @@ describe<Context>('WS /threads/:id', { timeout: 300 }, () => {
   beforeEach<Context>(async(context) => {
     context.application = await createTestApplication([ModuleRunner])
     context.moduleRunner = context.application.getModule(ModuleRunner)
-    context.headers = { 'X-Forwarded-For': '127.0.0.1', 'Authorization': `Bearer ${context.moduleRunner.runnerToken}` }
     await context.application.createTestServer()
-
-    // --- Since we're using Unix sockets, there is not remote address to get the IP from.
-    // --- We need to trust the proxy to get the IP from the X-Forwarded-For header.
-    context.moduleRunner.runnerTrustProxy = true
   })
 
   afterEach<Context>(async({ application }) => {
@@ -82,11 +76,11 @@ describe<Context>('WS /threads/:id', { timeout: 300 }, () => {
   }
 
   describe<Context>('threadSession', (it) => {
-    it('should upgrade the connection to a WebSocket', async({ headers, application }) => {
+    it('should upgrade the connection to a WebSocket', async({ application }) => {
       const body = JSON.stringify(flow)
-      const response = await application.fetch('/threads', { method: 'POST', body, headers })
+      const response = await application.fetch('/threads', { method: 'POST', body })
       const { id } = await response.json() as { id: string }
-      const upgrade = await application.fetch(`/threads/${id}`, { headers })
+      const upgrade = await application.fetch(`/threads/${id}`)
       expect(upgrade).toMatchObject({ status: 426, statusText: 'Upgrade Required' })
     })
 
@@ -106,10 +100,10 @@ describe<Context>('WS /threads/:id', { timeout: 300 }, () => {
   })
 
   describe<Context>('errors', (it) => {
-    it('should fail with "E_THREAD_NOT_FOUND" if the thread does not exist', async({ headers, application, moduleRunner }) => {
+    it('should fail with "E_THREAD_NOT_FOUND" if the thread does not exist', async({ application, moduleRunner }) => {
       const id = randomUUID()
       const token = moduleRunner.runnerToken
-      const ws = new WebSocket(`ws+unix:${application.socketPath}:/threads/${id}?token=${token}`, { headers })
+      const ws = new WebSocket(`ws+unix:${application.socketPath}:/threads/${id}?token=${token}`)
       const data: Buffer = await new Promise(resolve => ws.on('message', resolve))
       const utf8 = data.toString()
       const event = JSON.parse(utf8) as ThreadWorkerMessage
