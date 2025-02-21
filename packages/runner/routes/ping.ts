@@ -1,13 +1,9 @@
 import type { ModuleRunner } from '../application'
 import { createHttpRoute } from '@unserved/server'
-import { authorize } from '../utils'
 
 export function ping(this: ModuleRunner) {
   return createHttpRoute(
     { name: 'GET /ping' },
-    ({ event }) => {
-      authorize.call(this, event)
-      return { ok: true }
-    },
+    () => new Uint8Array() as unknown as void,
   )
 }
