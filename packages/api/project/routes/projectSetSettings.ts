@@ -23,27 +23,15 @@ export function projectSetSettings(this: ModuleProject) {
       const moduleWorkspace = this.getModule(ModuleWorkspace)
       const { Project } = this.getRepositories()
       const { user } = await moduleUser.authenticate(event)
-      const { title, description } = body
 
-      // --- Get the workspace.
-      const workspace = await moduleWorkspace.getWorkspace({
-        name: parameters.workspace,
-        user,
-        permission: 'Read',
-      })
-
-      // --- Get the project and assert permission.
-      const found = await getProject.call(this, {
-        user,
-        name: parameters.project,
-        workspace,
-        permission: 'Write',
-      })
+      // --- Get the workspace and project.
+      const workspace = await moduleWorkspace.getWorkspace({ name: parameters.workspace, user, permission: 'Read' })
+      const project = await getProject.call(this, { name: parameters.project, workspace, user, permission: 'Write' })
 
       // --- Update and save the project.
-      if (title) found.title = title
-      if (description) found.description = description
-      await Project.save(found)
+      if (body.title) project.title = body.title
+      if (body.description) project.description = body.description
+      await Project.save(project)
     },
   )
 }

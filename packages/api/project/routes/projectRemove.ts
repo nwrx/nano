@@ -1,36 +1,31 @@
 import type { ModuleProject } from '../index'
 import { createHttpRoute } from '@unserved/server'
-import { toSlug } from '@unshared/string'
 import { assertStringNotEmpty, createSchema } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
 import { getProject } from '../utils'
 
-export function projectSetName(this: ModuleProject) {
+export function projectRemove(this: ModuleProject) {
   return createHttpRoute(
     {
-      name: 'PUT /api/workspaces/:workspace/projects/:project/name',
+      name: 'DELETE /api/workspaces/:workspace/projects/:project',
       parseParameters: createSchema({
         workspace: assertStringNotEmpty,
         project: assertStringNotEmpty,
       }),
-      parseBody: createSchema({
-        name: [assertStringNotEmpty, toSlug],
-      }),
     },
-    async({ event, parameters, body }): Promise<void> => {
+    async({ event, parameters }): Promise<void> => {
       const moduleUser = this.getModule(ModuleUser)
       const moduleWorkspace = this.getModule(ModuleWorkspace)
       const { user } = await moduleUser.authenticate(event)
 
       // --- Get the workspace and project.
       const workspace = await moduleWorkspace.getWorkspace({ name: parameters.workspace, user, permission: 'Read' })
-      const project = await getProject.call(this, { name: parameters.project, workspace, user, permission: 'Owner' })
+      const project = await getProject.call(this, { name: parameters.project, user, workspace, permission: 'Owner' })
 
-      // --- Rename the project and save to the database.
-      project.name = body.name
+      // --- Soft remove the project.
       const { Project } = this.getRepositories()
-      await Project.save(project)
+      await Project.softRemove(project)
     },
   )
 }

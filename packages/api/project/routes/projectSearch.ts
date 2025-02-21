@@ -1,36 +1,50 @@
 /* eslint-disable sonarjs/todo-tag */
 import type { ModuleProject } from '../index'
 import { createHttpRoute } from '@unserved/server'
-import { assertStringNotEmpty, createSchema } from '@unshared/validation'
+import { parseBoolean } from '@unshared/string'
+import { assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { searchProjects } from '../utils'
 
 export function projectSearch(this: ModuleProject) {
   return createHttpRoute(
     {
-      name: 'GET /api/projects',
-      parseQuery: createSchema({
+      name: 'GET /api/workspaces/:workspace/projects',
+      parseParameters: createSchema({
         workspace: assertStringNotEmpty,
-        // TODO: Implement the following query parameters.
-        // withFlows: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
-        // withAssignments: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
-        // page: [[assertUndefined], [assertStringNotEmpty, Number.parseInt]],
-        // limit: [[assertUndefined], [assertStringNotEmpty, Number.parseInt]],
+      }),
+      parseQuery: createSchema({
+        search: [[assertUndefined], [assertStringNotEmpty]],
+        page: [[assertUndefined], [assertStringNotEmpty, Number.parseInt]],
+        limit: [[assertUndefined], [assertStringNotEmpty, Number.parseInt]],
+        withFlows: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
+        withAssignments: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
       }),
     },
-    async({ event, query }) => {
+    async({ event, parameters, query }) => {
       const userModule = this.getModule(ModuleUser)
-      const { user } = await userModule.authenticate(event, { optional: true }) ?? {}
+      const { user } = await userModule.authenticate(event, { optional: true })
+      const { workspace } = parameters
       const {
-        workspace,
-        // withFlows = false,
-        // withAssignments = false,
-        // page = 1,
-        // limit = 10,
+        search,
+        page = 1,
+        limit = 10,
+        withFlows = false,
+        withAssignments = false,
       } = query
 
       // --- Assert that the user has access and fetch the workspace.
-      const projects = await searchProjects.call(this, { search: workspace, user })
+      const projects = await searchProjects.call(this, {
+        user,
+        page,
+        limit,
+        search,
+        workspace,
+        withFlows,
+        withAssignments,
+      })
+
+      // --- Return the projects.
       return projects.map(project => project.serialize())
     },
   )

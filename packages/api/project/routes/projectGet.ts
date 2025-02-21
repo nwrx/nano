@@ -1,8 +1,8 @@
 import type { ModuleProject } from '../index'
 import { createHttpRoute } from '@unserved/server'
-import { parseBoolean } from '@unshared/string'
-import { assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
+import { assertStringNotEmpty, createSchema } from '@unshared/validation'
 import { ModuleUser } from '../../user'
+import { ModuleWorkspace } from '../../workspace'
 import { getProject } from '../utils'
 
 export function projectGet(this: ModuleProject) {
@@ -13,39 +13,17 @@ export function projectGet(this: ModuleProject) {
         project: assertStringNotEmpty,
         workspace: assertStringNotEmpty,
       }),
-      parseQuery: createSchema({
-        withFlows: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
-        withAssignments: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
-      }),
     },
-    async({ event, parameters, query }) => {
-      const userModule = this.getModule(ModuleUser)
-      const { user } = await userModule.authenticate(event, { optional: true }) ?? {}
-      const { project: projectName, workspace } = parameters
+    async({ event, parameters }) => {
+      const moduleUser = this.getModule(ModuleUser)
+      const moduleWorkspace = this.getModule(ModuleWorkspace)
+      const { user } = await moduleUser.authenticate(event, { optional: true })
 
-      // --- Get the project and assert the user has access to them.
-      const { id } = await getProject.call(this, {
-        user,
-        name: projectName,
-        workspace,
-        permission: 'Read',
-      })
-
-      // --- Fetch the project from the database.
-      const { Project } = this.getRepositories()
-      const project = await Project.findOne({
-        where: { id },
-        relations: {
-          flows: query.withFlows,
-          assignments: query.withAssignments ? { user: { profile: true } } : false,
-        },
-        order: {
-          name: 'ASC',
-        },
-      })
+      // --- Get the workspace and project.
+      const workspace = await moduleWorkspace.getWorkspace({ name: parameters.workspace, user, permission: 'Read' })
+      const project = await getProject.call(this, { name: parameters.project, user, workspace, permission: 'Read' })
 
       // --- Return the serialized project.
-      if (!project) throw this.errors.PROJECT_NOT_FOUND(workspace, projectName)
       return project.serialize()
     },
   )
