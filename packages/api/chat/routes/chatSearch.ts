@@ -5,7 +5,7 @@ import { assertStringNotEmpty, assertStringNumber, assertUndefined, createSchema
 import { ILike } from 'typeorm'
 import { ModuleUser } from '../../user'
 
-export function threadSearch(this: ModuleChat) {
+export function chatSearch(this: ModuleChat) {
   return createHttpRoute(
     {
       name: 'GET /api/workspaces/:workspace/threads',

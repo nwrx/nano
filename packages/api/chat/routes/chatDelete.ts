@@ -4,7 +4,7 @@ import { assertStringNotEmpty, assertStringUuid, createSchema } from '@unshared/
 import { setResponseStatus } from 'h3'
 import { ModuleUser } from '../../user'
 
-export function threadDelete(this: ModuleChat) {
+export function chatDelete(this: ModuleChat) {
   return createHttpRoute(
     {
       name: 'DELETE /api/workspaces/:workspace/threads/:id',

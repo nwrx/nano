@@ -6,7 +6,6 @@ import type { ChatThread } from '../entities'
 import type { ChatMessageData, ModuleChat } from '../index'
 import type { ChatClientMessage } from './chatClientMessage'
 import type { ChatServerMessage } from './chatServerMessage'
-import { env } from 'node:process'
 import { ModuleFlow } from '../../flow'
 
 export interface ChatSessionOptions {
@@ -39,7 +38,7 @@ export class ChatSession {
   async createThread(project: string, name: string) {
     const { workspace, user } = this.options
     const flowModule = this.moduleThread.getModule(ModuleFlow)
-    const flow = await flowModule.resolveFlow({ workspace, project, name, user, permission: 'Execute' })
+    const flow = await flowModule.getFlow({ workspace, project, name, user, permission: 'Execute' })
     this.thread = flowModule.loadThreadFromJson(flow)
 
     // --- Create thread entity
@@ -143,7 +142,9 @@ export class ChatSession {
       this.broadcast({
         event: 'error',
         message: (error as Error).message,
-        stack: env.NODE_ENV === 'production' ? undefined : (error as Error).stack,
+        stack: process.env.NODE_ENV === 'production'
+          ? undefined
+          : (error as Error).stack,
       })
     }
   }
