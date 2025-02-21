@@ -2,6 +2,7 @@ import type { Loose } from '@unshared/types'
 import type { Workspace } from '../entities'
 import type { ModuleWorkspace } from '../index'
 import { assert, createSchema } from '@unshared/validation'
+import { In } from 'typeorm'
 import { assertWorkspacePermission } from './assertWorkspacePermission'
 
 /** The parser fuction for the {@linkcode getWorkspace} function. */
@@ -36,30 +37,20 @@ export async function getWorkspace(this: ModuleWorkspace, options: ResolveWorksp
   // --- Get the workspace.
   const { Workspace } = this.getRepositories()
   const workspace = await Workspace.findOne({
-    where: { name },
-    relations: user ? { assignments: { user: true } } : undefined,
+    where: user
+      ? [{ name, isPublic: true }, { name, assignments: { user, permission: In(['Owner', 'Read']) } }]
+      : [{ name, isPublic: true }],
   })
 
-  // --- Assert that the workspace exists. Quit early if the workspace is public.
+  // --- Abort early if the workspace is not found.
+  // --- Return early if the user has read access.
   if (!workspace) throw this.errors.WORKSPACE_NOT_FOUND(name)
-  if (!user && permission === 'Read' && workspace.isPublic) return workspace
-  if (!user) {
-    throw workspace.isPublic
-      ? this.errors.WORKSPACE_ACTION_NOT_AUTHORIZED(name)
-      : this.errors.WORKSPACE_NOT_FOUND(name)
-  }
+  if (permission === 'Read') return workspace
+  if (!user) throw this.errors.WORKSPACE_UNAUTHORIZED(name)
 
-  // --- Assert that the user has the right permissions.
-  let hasAccess = permission === 'Read' && workspace.isPublic
-  let hasReadAccess = workspace.isPublic
-  for (const assignment of workspace.assignments!) {
-    if (assignment.user!.id !== user.id) continue
-    if (assignment.permission === 'Owner') return workspace
-    if (assignment.permission === 'Read') hasReadAccess = true
-    if (assignment.permission === permission) hasAccess = true
-  }
-
-  if (!hasReadAccess) throw this.errors.WORKSPACE_NOT_FOUND(name)
-  if (!hasAccess) throw this.errors.WORKSPACE_ACTION_NOT_AUTHORIZED(name)
+  // --- Assert that the user has an assignment that matches the permission.
+  const { WorkspaceAssignment } = this.getRepositories()
+  const assignments = await WorkspaceAssignment.countBy({ user, workspace, permission: In(['Owner', permission]) })
+  if (assignments === 0) throw this.errors.WORKSPACE_UNAUTHORIZED(name)
   return workspace
 }

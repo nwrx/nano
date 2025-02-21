@@ -8,7 +8,7 @@ export const ERRORS = {
     message: `Workspace "${workspace}" not found`,
     data: { workspace },
   }),
-  WORKSPACE_ACTION_NOT_AUTHORIZED: (workspace: string) => createError({
+  WORKSPACE_UNAUTHORIZED: (workspace: string) => createError({
     name: 'E_WORKSPACE_ACTION_NOT_AUTHORIZED',
     statusCode: 401,
     statusMessage: 'Unauthorized',
