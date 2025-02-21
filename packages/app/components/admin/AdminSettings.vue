@@ -34,7 +34,7 @@ useHead(() => ({
         <!-- Server -->
         <AppPageNavGroup :label="t('title.AdminServer')">
           <AppPageNavItem :label="t('title.AdminServerSettings')" icon="i-carbon:settings" to="/admin/settings" />
-          <AppPageNavItem :label="t('title.AdminServerRunners')" icon="i-carbon:bare-metal-server-02" to="/admin/runner" />
+          <AppPageNavItem :label="t('title.AdminServerRunners')" icon="i-carbon:bare-metal-server-02" :to="{ name: 'AdminServerRunners' }" />
           <AppPageNavItem :label="t('title.AdminServerBilling')" icon="i-carbon:currency" to="/admin/billing" />
           <AppPageNavItem :label="t('title.AdminServerInvoice')" icon="i-carbon:document" to="/admin/invoice" />
           <AppPageNavItem :label="t('title.AdminServerLicenses')" icon="i-carbon:license" to="/admin/licenses" />
