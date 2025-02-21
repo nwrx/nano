@@ -1,10 +1,9 @@
 import { BaseEntity } from '@unserved/server'
-import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, Unique } from 'typeorm'
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from 'typeorm'
 import { Flow, FlowObject } from '../../flow'
 import { UserObject } from '../../user'
 import { Workspace } from '../../workspace'
 import { ProjectPermission } from '../utils'
-import { getProjectAssignments } from '../utils/getProjectAssignments'
 import { ProjectAssignment } from './ProjectAssignment'
 
 /**
@@ -13,7 +12,7 @@ import { ProjectAssignment } from './ProjectAssignment'
  * to the same topic.
  */
 @Entity({ name: 'Project' })
-@Index(['name', 'workspace'])
+@Index(['workspace', 'name'], { unique: true })
 export class Project extends BaseEntity {
 
   /**
@@ -39,7 +38,7 @@ export class Project extends BaseEntity {
    * @example 'This project is used to resume an article.'
    */
   @Column('text', { default: '' })
-  description?: string
+  description = ''
 
   /**
    * Flag to declare the project as public. If the project is public, it can be viewed
@@ -57,7 +56,7 @@ export class Project extends BaseEntity {
    * @example [Flow, Flow, Flow]
    */
   @OneToMany(() => Flow, flow => flow.project, { cascade: true })
-  flows?: Flow[]
+  flows: Flow[] | undefined
 
   /**
    * The users assigned to the project. They can have specific permissions on the project.
@@ -65,7 +64,7 @@ export class Project extends BaseEntity {
    * @example ProjectAssignment { ... }
    */
   @OneToMany(() => ProjectAssignment, assigment => assigment.project, { cascade: true })
-  assignments?: ProjectAssignment[]
+  assignments: ProjectAssignment[] | undefined
 
   /**
    * The workspace that the project is part of.
@@ -74,7 +73,7 @@ export class Project extends BaseEntity {
    */
   @JoinColumn()
   @ManyToOne(() => Workspace, workspace => workspace.projects, { onDelete: 'CASCADE', nullable: false })
-  workspace?: Workspace
+  workspace: undefined | Workspace
 
   /**
    * @returns The object representation of the workspace project.
@@ -83,12 +82,8 @@ export class Project extends BaseEntity {
     return {
       name: this.name,
       title: this.title,
-      description: this.description ?? undefined,
+      description: this.description,
       flows: this.flows?.map(flow => flow.serialize()),
-      assignments: getProjectAssignments(this)?.map(({ user, permissions }) => ({
-        user: user.serialize(),
-        permissions,
-      })),
     }
   }
 }
@@ -101,7 +96,6 @@ export interface ProjectUserPermissionsObject {
 export interface ProjectObject {
   name: string
   title: string
-  description?: string
+  description: string
   flows?: FlowObject[]
-  assignments?: ProjectUserPermissionsObject[]
 }
