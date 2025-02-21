@@ -2,8 +2,11 @@ import type { FlowV1, ThreadEventMap, ThreadInputObject } from '@nwrx/nano'
 import type { ObjectLike } from '@unshared/types'
 import type { MessagePort } from 'node:worker_threads'
 import type { ModuleRunner } from '../application'
+import type { SerializedError } from './deserializeError'
 import type { ThreadClientMessage } from './threadClientMessage'
+import { createError } from '@unserved/server'
 import { MessageChannel } from 'node:worker_threads'
+import { deserializeError } from './deserializeError'
 
 export type ThreadWorkerMessage =
   | { [K in keyof ThreadEventMap]: { event: K; data: ThreadEventMap[K] } }[keyof ThreadEventMap]
@@ -15,20 +18,6 @@ export type ThreadSessionMessage =
 
 export class ThreadWorker {
   constructor(public port: MessagePort) {}
-
-  create(data: FlowV1) {
-    this.port.postMessage({ event: 'create', data } as ThreadClientMessage)
-    return new Promise<void>((resolve, reject) => {
-      const callback = (message: ThreadWorkerMessage) => {
-        if (message.event === 'worker:ready') {
-          this.port.off('message', callback)
-          resolve()
-        }
-      }
-      this.port.once('error', reject)
-      this.port.on('message', callback)
-    })
-  }
 
   start(data: ThreadInputObject) {
     this.port.postMessage({ event: 'start', data } as ThreadClientMessage)
@@ -87,7 +76,7 @@ export class ThreadWorker {
   }
 }
 
-export function createThreadWorker(this: ModuleRunner) {
+export async function createThreadWorker(this: ModuleRunner, flow: FlowV1) {
   type Module = typeof import('./createThreadWorker.worker.mjs').createThreadWorker
   const moduleId = new URL('createThreadWorker.worker.mjs', import.meta.url).pathname
   const { port1, port2 } = new MessageChannel()
@@ -97,7 +86,26 @@ export function createThreadWorker(this: ModuleRunner) {
   // --- multiple CPUs / threads.
   void this.runnerWorkerPool.spawn<Module>(moduleId, {
     name: 'createThreadWorker',
-    parameters: [port2],
+    parameters: [port2, flow],
+  })
+
+  // --- Wait for the worker to be ready before returning the thread.
+  await new Promise<void>((resolve, reject) => {
+    const callback = (message: ThreadWorkerMessage) => {
+      if (message.event === 'worker:ready') { port1.off('message', callback); resolve() }
+      if (message.event === 'error') {
+        port1.off('message', callback)
+        const error = deserializeError(message.data[0] as SerializedError)
+        reject(createError({
+          name: error.name as 'E_FLOW_ERROR',
+          message: error.message,
+          statusCode: error.name.startsWith('E_') ? 400 : 500,
+          statusMessage: error.name.startsWith('E_') ? 'Bad Request' : 'Internal Server Error',
+        }))
+      }
+    }
+    port1.once('error', reject)
+    port1.on('message', callback)
   })
 
   // --- Return an instance of the thread that we can interact with.

@@ -1,12 +1,7 @@
-import type { FlowV1, ThreadInputObject } from '@nwrx/nano'
+import type { ThreadInputObject } from '@nwrx/nano'
 import { assert, assertObjectStrict, createRuleSet, createSchema } from '@unshared/validation'
 
 export const THREAD_CLIENT_MESSAGE_SCHEMA = createRuleSet(
-
-  [createSchema({
-    event: assert.stringEquals('create'),
-    data: assertObjectStrict as (value: unknown) => asserts value is FlowV1,
-  })],
 
   [createSchema({
     event: assert.stringEquals('start'),
