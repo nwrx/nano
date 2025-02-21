@@ -8,13 +8,10 @@ import { createClient } from '@unserved/client'
 import { createError } from '@unserved/server'
 import { ERRORS } from './errors'
 
-export type ThreadRunnerChannel = WebSocketChannel<ChannelConnectOptions<ModuleRunner, 'WS /threads'>>
+export type ThreadRunnerChannel = WebSocketChannel<ChannelConnectOptions<ModuleRunner, 'WS /threads/:id'>>
 
 export class ThreadRunner {
-  constructor(
-    public address: string,
-    public token = '',
-  ) {
+  constructor(public address: string, public token = '') {
     this.client.options.baseUrl = /^https?:\/\//.test(address) ? address : `http://${address}`
     this.client.options.headers = { Authorization: `Bearer ${token}` }
   }
@@ -51,6 +48,7 @@ export class ThreadRunner {
       const code = error.cause.code as string
       throw code ? ERRORS.THREAD_RUNNER_NOT_REACHABLE(this.address, code) : error
     })
+    this.token = token
     this.client.options.headers = { Authorization: `Bearer ${token}` }
     return { token, identity }
   }
@@ -64,6 +62,7 @@ export class ThreadRunner {
    */
   async release() {
     await this.client.request('POST /release')
+    this.token = ''
     this.client.options.headers = {}
   }
 
@@ -75,7 +74,7 @@ export class ThreadRunner {
    * @example await threadRunner.ping() // { ok: true }
    */
   async ping() {
-    return await this.client.request('GET /ping')
+    await this.client.request('GET /ping')
   }
 
   /**
@@ -94,28 +93,18 @@ export class ThreadRunner {
    * and sending the flow to run. This will return the ID of the thread that was
    * created.
    *
-   * @param data The flow to run in the thread.
+   * @param flow The flow to run in the thread.
    * @returns A thread object with methods to start and abort the thread.
    */
-  async createThread(data: FlowV1): Promise<ThreadRunnerChannel> {
-    const channel = await this.client.connect('WS /threads', {
+  async createThread(flow: FlowV1): Promise<ThreadRunnerChannel> {
+    const { id } = await this.client.request('POST /threads', { data: { flow } })
+    return await this.client.connect('WS /threads/:id', {
+      parameters: { id },
+      query: { token: this.token },
       autoReconnect: true,
-      reconnectDelay: 1000,
-      reconnectLimit: 10,
-      initialPayload: { event: 'create', data },
+      reconnectDelay: 300,
+      reconnectLimit: 3,
     })
-
-    // --- Wait for the thread worker to be ready.
-    await new Promise<void>((resolve, reject) => {
-      channel.on('error', reject)
-      channel.on('message', (message) => {
-        if (message.event === 'error') reject(message.data[0])
-        if (message.event === 'worker:ready') resolve()
-      })
-    })
-
-    // --- Return the thread object.
-    return channel
   }
 }
 

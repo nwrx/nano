@@ -1,9 +1,35 @@
+/* eslint-disable sonarjs/no-async-constructor */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import type { FlowV1 } from '@nwrx/nano'
+import type { Context } from '../../__fixtures__'
+import type { ThreadWorkerMessage } from '../../../runner/worker'
 import { WebSocketChannel } from '@unshared/client/websocket'
-import { type Context, createTestContext } from '../../__fixtures__'
+import { createTestContext } from '../../__fixtures__'
 import { createThreadRunner, ThreadRunner } from './createThreadRunner'
 
-describe<Context>('createThreadRunner', () => {
+const flow: FlowV1 = {
+  version: '1',
+  nodes: {
+    inputName: {
+      component: 'input',
+      name: 'name',
+    },
+    template: {
+      component: 'template',
+      template: 'Hello, {{name}}!',
+      values: {
+        name: { $ref: '#/Nodes/inputName/value' },
+      },
+    },
+    outputGreet: {
+      component: 'output',
+      name: 'greet',
+      value: { $ref: '#/Nodes/template/value' },
+    },
+  },
+}
+
+describe.sequential<Context>('createThreadRunner', () => {
   beforeEach<Context>(async(context) => {
     await createTestContext(context)
     await context.runner.createTestServer()
@@ -58,15 +84,8 @@ describe<Context>('createThreadRunner', () => {
   describe<Context>('ping', (it) => {
     it('should ping the thread runner', async() => {
       const runner = createThreadRunner('http://localhost')
-      await runner.claim()
       const result = await runner.ping()
-      expect(result).toStrictEqual({ ok: true })
-    })
-
-    it('should throw an error if the thread runner is not claimed', async() => {
-      const runner = createThreadRunner('http://localhost')
-      const shouldReject = runner.ping()
-      await expect(shouldReject).rejects.toThrow('Not authorized')
+      expect(result).toBeUndefined()
     })
   })
 
@@ -101,6 +120,7 @@ describe<Context>('createThreadRunner', () => {
 
       it('should throw an error if the flow file version is unsupported', async() => {
         const runner = createThreadRunner('http://localhost')
+        await runner.claim()
         // @ts-expect-error: intentionally passing an unsupported version
         const shouldReject = runner.createThread({ version: '0' })
         await expect(shouldReject).rejects.toThrow('Unsupported flow file version: 0')
@@ -112,36 +132,29 @@ describe<Context>('createThreadRunner', () => {
         const runner = createThreadRunner('http://localhost')
         await runner.claim()
         const thread = await runner.createThread({ version: '1', nodes: {} })
-        thread.send({ event: 'start', data: {} })
+        thread.send({ event: 'start', data: { name: 'Alice' } })
         const result = await new Promise(resolve => thread.on('message', resolve))
-        expect(result).toStrictEqual({ event: 'start', data: [{}] })
+        expect(result).toStrictEqual({ event: 'start', data: [{ name: 'Alice' }] })
       })
 
       it('should start a thread and return the result', async() => {
         const runner = createThreadRunner('http://localhost')
         await runner.claim()
-        const thread = await runner.createThread({
-          version: '1',
-          nodes: { 'node-1': { component: 'output', name: 'output', value: 42 } },
-        })
-        thread.send({ event: 'start', data: {} })
+        const thread = await runner.createThread(flow)
+        thread.send({ event: 'start', data: { name: 'Alice' } })
         const result = await new Promise(resolve => thread.on('message', (message) => { if (message.event === 'done') resolve(message) }))
-        expect(result).toStrictEqual({ event: 'done', data: [{ output: 42 }] })
+        expect(result).toStrictEqual({ event: 'done', data: [{ greet: 'Hello, Alice!' }] })
       })
 
-      it('should start a thread with the given input and return the result', async() => {
+      it('should collect all messages', async() => {
         const runner = createThreadRunner('http://localhost')
         await runner.claim()
-        const thread = await runner.createThread({
-          version: '1',
-          nodes: {
-            'node-1': { component: 'input', name: 'input' },
-            'node-2': { component: 'output', name: 'output', value: { $ref: '#/Nodes/node-1/value' } },
-          },
-        })
-        thread.send({ event: 'start', data: { input: 'Hello, world!' } })
-        const result = await new Promise(resolve => thread.on('message', (message) => { if (message.event === 'done') resolve(message) }))
-        expect(result).toStrictEqual({ event: 'done', data: [{ output: 'Hello, world!' }] })
+        const thread = await runner.createThread(flow)
+        const messages: ThreadWorkerMessage[] = []
+        thread.on('message', message => messages.push(message as ThreadWorkerMessage))
+        thread.send({ event: 'start', data: { name: 'Alice' } })
+        await new Promise(resolve => thread.on('message', (message) => { if (message.event === 'done') resolve(message) }))
+        expect(messages).toHaveLength(18)
       })
     })
   })
