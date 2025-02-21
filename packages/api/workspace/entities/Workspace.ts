@@ -50,7 +50,7 @@ export class Workspace extends BaseEntity {
    * @example Date { ... }
    */
   @Column('varchar', { length: 255, nullable: true, transformer: transformerDate })
-  archivedAt?: Date | null
+  archivedAt: Date | null
 
   /**
    * The projects that are part of the workspace.
@@ -58,7 +58,7 @@ export class Workspace extends BaseEntity {
    * @example [Project, Project, Project]
    */
   @OneToMany(() => Project, project => project.workspace, { cascade: true, onDelete: 'CASCADE' })
-  projects: Project[]
+  projects: Project[] | undefined
 
   /**
    * The assignments of the workspace to the users.
@@ -66,7 +66,7 @@ export class Workspace extends BaseEntity {
    * @example [WorkspaceAssignment, WorkspaceAssignment, WorkspaceAssignment]
    */
   @OneToMany(() => WorkspaceAssignment, assignment => assignment.workspace, { cascade: true, onDelete: 'CASCADE' })
-  assignments?: WorkspaceAssignment[]
+  assignments: undefined | WorkspaceAssignment[]
 
   /**
    * @param options The options to use when serializing the object.

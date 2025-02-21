@@ -22,7 +22,7 @@ export class WorkspaceAssignment extends BaseEntity {
    */
   @JoinColumn()
   @ManyToOne(() => User, { onDelete: 'RESTRICT', nullable: false })
-  user?: User
+  user: undefined | User
 
   /**
    * The workspace that is assigned to the user.
@@ -31,7 +31,7 @@ export class WorkspaceAssignment extends BaseEntity {
    */
   @JoinColumn()
   @ManyToOne(() => Workspace, workspace => workspace.assignments, { onDelete: 'RESTRICT', nullable: false })
-  workspace?: Workspace
+  workspace: undefined | Workspace
 
   /**
    * The permission that the user has for the workspace.
