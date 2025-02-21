@@ -20,7 +20,7 @@ export function storageDelete(this: ModuleStorage) {
       const { id, pool } = parameters
 
       // --- Only the super-admin can delete files.
-      if (!user.isSuperAdministrator) throw userModule.errors.USER_NOT_ALLOWED()
+      if (!user.isSuperAdministrator) throw userModule.errors.USER_FORBIDDEN()
 
       // --- Create an abort signal to cancel the action.
       const abortController = new AbortController()

@@ -38,7 +38,7 @@ export async function authenticate(this: ModuleUser, event: H3Event | Peer, opti
 
   // --- Extract and decrypt the token from the cookie.
   try {
-    if (!token) throw this.errors.USER_NOT_AUTHENTICATED()
+    if (!token) throw this.errors.USER_UNAUTHORIZED()
     if (!address) throw this.errors.USER_ADDRESS_NOT_RESOLVED()
     if (!userAgent) throw this.errors.USER_MISSING_USER_AGENT_HEADER()
   }

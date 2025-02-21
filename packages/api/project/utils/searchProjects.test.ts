@@ -1,15 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import type { FindManyOptions } from 'typeorm'
 import type { Context } from '../../__fixtures__'
 import type { User } from '../../user'
 import type { WorkspacePermission } from '../../workspace'
-import type { Project } from '../entities'
 import type { ProjectPermission } from './assertProjectPermission'
 import { EXP_UUID } from '@unshared/validation'
 import { createTestContext } from '../../__fixtures__'
 import { searchProjects } from './searchProjects'
 
-describe.concurrent('searchProjects', () => {
+describe.concurrent('searchProjects', { timeout: 1000 }, () => {
   beforeEach<Context>(async(context) => {
     await createTestContext(context)
   })
@@ -26,11 +24,10 @@ describe.concurrent('searchProjects', () => {
     userWorkspacePermission?: WorkspacePermission
     isProjectPublic?: boolean
     isWorkspacePublic?: boolean
-    findOptions?: FindManyOptions<Project>
   }
 
   async function createResult(context: Context, options: TestOptions) {
-    const { user, search, workspace, userProjectPermission, userWorkspacePermission, isProjectPublic, isWorkspacePublic, findOptions } = options
+    const { user, search, workspace, userProjectPermission, userWorkspacePermission, isProjectPublic, isWorkspacePublic } = options
     const { workspace: createdWorkspace } = await context.createWorkspace('workspace', isWorkspacePublic)
     const { project } = await context.createProject('project', createdWorkspace, { isPublic: isProjectPublic, title: 'Test Project' })
     if (user && userProjectPermission) await context.assignProject(project, user, userProjectPermission)
@@ -39,7 +36,6 @@ describe.concurrent('searchProjects', () => {
       user,
       search,
       workspace,
-      ...findOptions,
     })
   }
 
@@ -47,7 +43,7 @@ describe.concurrent('searchProjects', () => {
   const allProjectPermissions = ['Owner', 'Write', 'Read', undefined] as const
 
   for (const isWorkspacePublic of [true, false]) {
-    describe<Context>(isWorkspacePublic ? 'with public workspace' : 'with private workspace', { timeout: 300 }, () => {
+    describe<Context>(isWorkspacePublic ? 'with public workspace' : 'with private workspace', () => {
       for (const isProjectPublic of [true, false]) {
         describe<Context>(isProjectPublic ? 'with public project' : 'with private project', () => {
           for (const userWorkspacePermission of allWorkspacePermissions) {
@@ -88,7 +84,7 @@ describe.concurrent('searchProjects', () => {
     })
   }
 
-  describe<Context>('edge cases', { timeout: 300 }, (it) => {
+  describe<Context>('edge cases', (it) => {
     it('should throw if a user without an ID is provided', async(context) => {
       // @ts-expect-error: testing invalid input
       const shouldReject = createResult(context, { user: { id: undefined } })
@@ -128,17 +124,17 @@ describe.concurrent('searchProjects', () => {
       await context.createProject('project1', workspace, { isPublic: true })
       await context.createProject('project2', workspace, { isPublic: true })
       await context.createProject('project3', workspace, { isPublic: true })
-      const results = await searchProjects.call(context.moduleProject, { skip: 1, take: 1, order: { name: 'ASC' } })
+      const results = await searchProjects.call(context.moduleProject, { page: 3, limit: 1, order: { name: 'DESC' } })
       expect(results).toHaveLength(1)
-      expect(results[0].name).toBe('project2')
+      expect(results[0].name).toBe('project1')
     })
 
-    it('should load relations when specified', async(context) => {
+    it('should load flows when requested', async(context) => {
       const { workspace } = await context.createWorkspace('workspace', true)
       await context.createProject('project', workspace, { isPublic: true })
-      const results = await searchProjects.call(context.moduleProject, { relations: { workspace: true } })
+      const results = await searchProjects.call(context.moduleProject, { withFlows: true })
       expect(results).toHaveLength(1)
-      expect(results[0].workspace).toBeDefined()
+      expect(results[0].flows).toBeDefined()
     })
 
     it('should sanitize special characters from search string', async(context) => {

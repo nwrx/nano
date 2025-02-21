@@ -23,7 +23,7 @@ export function userSetProfile(this: ModuleUser) {
 
       // --- Check if the user is allowed to update the profile.
       if (user.username !== username && !user.isSuperAdministrator)
-        throw this.errors.USER_NOT_ALLOWED()
+        throw this.errors.USER_FORBIDDEN()
 
       // --- Find the user by the ID.
       const userToUpdate = await getUser.call(this, { user, username, withProfile: true })

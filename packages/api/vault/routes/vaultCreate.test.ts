@@ -103,13 +103,13 @@ describe.concurrent('POST /api/workspaces/:workspace/vaults', { timeout: 300 }, 
   })
 
   describe<Context>('with unauthenticated user', (it) => {
-    it('should respond with E_USER_NOT_AUTHENTICATED', async({ createUser, application }) => {
+    it('should respond with E_USER_UNAUTHORIZED', async({ createUser, application }) => {
       const { workspace } = await createUser()
       const body = JSON.stringify({ name: 'my-vault', type: 'local', configuration })
       const response = await application.fetch(`/api/workspaces/${workspace.name}/vaults`, { method: 'POST', body })
       const data = await response.json() as Record<string, unknown>
       expect(response.status).toBe(401)
-      expect(data).toMatchObject({ data: { name: 'E_USER_NOT_AUTHENTICATED' } })
+      expect(data).toMatchObject({ data: { name: 'E_USER_UNAUTHORIZED' } })
     })
   })
 

@@ -18,7 +18,7 @@ export function threadRunnerStatus(this: ModuleThreadRunner) {
       const { identity } = parameters
 
       // --- Assert the user is a super administrator.
-      if (!user?.isSuperAdministrator) throw moduleUser.errors.USER_NOT_ALLOWED()
+      if (!user?.isSuperAdministrator) throw moduleUser.errors.USER_FORBIDDEN()
 
       // --- Retrieve the thread runner from the database.
       const { ThreadRunner } = this.getRepositories()

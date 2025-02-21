@@ -30,7 +30,7 @@ export function userSetAvatar(this: ModuleUser) {
 
       // --- Check if the user is allowed to upload an avatar.
       if (user.username !== username && !user.isSuperAdministrator)
-        throw this.errors.USER_NOT_ALLOWED()
+        throw this.errors.USER_FORBIDDEN()
 
       // --- Assert the file is an image.
       const isImage = ACCEPTED_IMAGE_TYPES.has(file.type)

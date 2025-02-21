@@ -307,7 +307,7 @@ describe.concurrent<Context>('userGet', () => {
         const body = await response.json() as Record<string, string>
         expect(response.status).toBe(403)
         expect(response.statusText).toBe('Forbidden')
-        expect(body).toMatchObject({ data: { name: 'E_USER_NOT_ALLOWED' } })
+        expect(body).toMatchObject({ data: { name: 'E_USER_FORBIDDEN' } })
       })
     })
 
@@ -348,21 +348,21 @@ describe.concurrent<Context>('userGet', () => {
   })
 
   describe<Context>('with unauthenticated user', (it) => {
-    it('should return with E_USER_NOT_AUTHENTICATED if the user does not exist', async({ application }) => {
+    it('should return with E_USER_UNAUTHORIZED if the user does not exist', async({ application }) => {
       const response = await application.fetch('/api/users/does-not-exists', { method: 'GET' })
       const body = await response.json() as Record<string, string>
       expect(response.status).toBe(401)
       expect(response.statusText).toBe('Unauthorized')
-      expect(body).toMatchObject({ data: { name: 'E_USER_NOT_AUTHENTICATED' } })
+      expect(body).toMatchObject({ data: { name: 'E_USER_UNAUTHORIZED' } })
     })
 
-    it('should return with E_USER_NOT_AUTHENTICATED if the user exists but the request is not authenticated', async({ createUser, application }) => {
+    it('should return with E_USER_UNAUTHORIZED if the user exists but the request is not authenticated', async({ createUser, application }) => {
       await createUser('jdoe')
       const response = await application.fetch('/api/users/jdoe', { method: 'GET' })
       const body = await response.json() as Record<string, string>
       expect(response.status).toBe(401)
       expect(response.statusText).toBe('Unauthorized')
-      expect(body).toMatchObject({ data: { name: 'E_USER_NOT_AUTHENTICATED' } })
+      expect(body).toMatchObject({ data: { name: 'E_USER_UNAUTHORIZED' } })
     })
   })
 }, 5000)

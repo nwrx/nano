@@ -1,11 +1,11 @@
-import type { FindManyOptions, FindOptionsWhere } from 'typeorm'
+import type { FindOptionsOrder, FindOptionsWhere } from 'typeorm'
 import type { User } from '../../user'
 import type { Project } from '../entities'
 import type { ModuleProject } from '../index'
 import { ILike, In } from 'typeorm'
 
 /** The options to search the project with. */
-export interface SearchProjectsOptions extends FindManyOptions<Project> {
+export interface SearchProjectsOptions {
 
   /**
    * The search query to find the project with. The search query will be used to search
@@ -26,6 +26,41 @@ export interface SearchProjectsOptions extends FindManyOptions<Project> {
    * search for public projects.
    */
   user?: User
+
+  /**
+   * The page number to search for the projects.
+   *
+   * @default 1
+   */
+  page?: number
+
+  /**
+   * The limit of projects to return per page.
+   *
+   * @default 10
+   */
+  limit?: number
+
+  /**
+   * Include the flows that are part of the project.
+   *
+   * @default false
+   */
+  withFlows?: boolean
+
+  /**
+   * Include the assignments between the user and the project.
+   *
+   * @default false
+   */
+  withAssignments?: boolean
+
+  /**
+   * The order to sort the projects by.
+   *
+   * @default { name: 'ASC' }
+   */
+  order?: FindOptionsOrder<Project>
 }
 
 /**
@@ -38,7 +73,17 @@ export interface SearchProjectsOptions extends FindManyOptions<Project> {
  * @returns The `Project` with the given name.
  */
 export async function searchProjects(this: ModuleProject, options: SearchProjectsOptions): Promise<Project[]> {
-  const { search = '', user, workspace, ...findOptions } = options
+  const {
+    search = '',
+    user,
+    workspace, /* withAssignments, */
+    withFlows,
+    page = 1,
+    limit = 10,
+    order = { name: 'ASC' },
+  } = options
+
+  // --- Get the repositories to query the database.
   const { Project } = this.getRepositories()
   const searchSafe = search.replaceAll(/[^\d\sa-z]/gi, '')
   const searchOperator = searchSafe.length < 3 ? ILike(`%${searchSafe}%`) : undefined
@@ -108,9 +153,12 @@ export async function searchProjects(this: ModuleProject, options: SearchProject
 
   // --- If the project is not found, throw an error.
   return await Project.find({
-    ...findOptions,
     where,
+    order,
+    take: limit,
+    skip: (page - 1) * limit,
     relations: {
+      flows: withFlows,
       workspace: { assignments: { user: true } },
       assignments: { user: true },
     },

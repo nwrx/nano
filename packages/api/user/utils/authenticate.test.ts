@@ -76,7 +76,7 @@ describe.concurrent('authenticate', () => {
               it('should throw when token is not provided', async({ moduleUser }) => {
                 const peer = createEvent()
                 const shouldReject = authenticate.call(moduleUser, peer, { optional })
-                const error = moduleUser.errors.USER_NOT_AUTHENTICATED()
+                const error = moduleUser.errors.USER_UNAUTHORIZED()
                 await expect(shouldReject).rejects.toThrow(error)
               })
 

@@ -24,7 +24,7 @@ export function userDelete(this: ModuleUser) {
 
       // --- Only super administrators and the user itself can delete the user.
       if (user.username !== username && !user.isSuperAdministrator)
-        throw this.errors.USER_NOT_ALLOWED()
+        throw this.errors.USER_FORBIDDEN()
 
       // --- Find the user to remove.
       const { User } = this.getRepositories()

@@ -17,7 +17,7 @@ export function userVerify(this: ModuleUser) {
       const { username } = parameters
 
       // --- Only super administrators can verify users.
-      if (!user.isSuperAdministrator) throw this.errors.USER_NOT_ALLOWED()
+      if (!user.isSuperAdministrator) throw this.errors.USER_FORBIDDEN()
 
       // --- Resolve the user to verify.
       const userToVerify = await getUser.call(this, {

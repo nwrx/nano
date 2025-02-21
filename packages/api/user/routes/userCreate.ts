@@ -24,7 +24,7 @@ export function userCreate(this: ModuleUser) {
       const { username, email } = body
 
       // --- Only super administrators can create users.
-      if (!user.isSuperAdministrator) throw this.errors.USER_NOT_ALLOWED()
+      if (!user.isSuperAdministrator) throw this.errors.USER_FORBIDDEN()
 
       // --- Create user and workspace and save them in a transaction in the database.
       const { user: userToCreate, workspace } = await createUser.call(this, { username, email })

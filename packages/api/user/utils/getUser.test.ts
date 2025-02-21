@@ -142,7 +142,7 @@ describe.concurrent<Context>('getUser', () => {
         const { user } = await createUser('jdoe')
         await createUser('bob', { deletedAt: new Date() })
         const shouldReject = getUser.call(moduleUser, { user, username: 'bob', withDeleted: true })
-        const error = moduleUser.errors.USER_NOT_ALLOWED()
+        const error = moduleUser.errors.USER_FORBIDDEN()
         await expect(shouldReject).rejects.toEqual(error)
       })
 
@@ -150,7 +150,7 @@ describe.concurrent<Context>('getUser', () => {
         const { user } = await createUser('jdoe')
         await createUser('bob', { disabledAt: new Date() })
         const shouldReject = getUser.call(moduleUser, { user, username: 'bob', withDisabled: true })
-        const error = moduleUser.errors.USER_NOT_ALLOWED()
+        const error = moduleUser.errors.USER_FORBIDDEN()
         await expect(shouldReject).rejects.toEqual(error)
       })
     })
@@ -198,7 +198,7 @@ describe.concurrent<Context>('getUser', () => {
       it('should throw an error when "withDeleted" is true', async({ moduleUser, createUser }) => {
         await createUser('bob', { deletedAt: new Date() })
         const shouldReject = getUser.call(moduleUser, { username: 'bob', withDeleted: true })
-        const error = moduleUser.errors.USER_NOT_ALLOWED()
+        const error = moduleUser.errors.USER_FORBIDDEN()
         await expect(shouldReject).rejects.toEqual(error)
       })
 
@@ -206,7 +206,7 @@ describe.concurrent<Context>('getUser', () => {
         await createUser('jdoe')
         await createUser('bob', { disabledAt: new Date() })
         const shouldReject = getUser.call(moduleUser, { username: 'bob', withDisabled: true })
-        const error = moduleUser.errors.USER_NOT_ALLOWED()
+        const error = moduleUser.errors.USER_FORBIDDEN()
         await expect(shouldReject).rejects.toEqual(error)
       })
     })

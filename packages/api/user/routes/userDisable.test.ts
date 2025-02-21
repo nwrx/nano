@@ -51,13 +51,13 @@ describe.concurrent('userDisable', () => {
       expect(result).toMatchObject({ username: 'paul', disabledAt: undefined })
     })
 
-    it('should respond with a USER_NOT_ALLOWED error', async({ createUser, application }) => {
+    it('should respond with a USER_FORBIDDEN error', async({ createUser, application }) => {
       const { headers } = await createUser('jdoe')
       await createUser('paul')
       const response = await application.fetch('/api/users/paul/disable', { method: 'PATCH', headers })
       const data = await response.json() as Record<string, string>
       expect(response.status).toBe(403)
-      expect(data).toMatchObject({ data: { name: 'E_USER_NOT_ALLOWED' } })
+      expect(data).toMatchObject({ data: { name: 'E_USER_FORBIDDEN' } })
     })
   })
 
@@ -71,11 +71,11 @@ describe.concurrent('userDisable', () => {
       expect(result).toMatchObject({ username: 'paul', disabledAt: undefined })
     })
 
-    it('should respond with a USER_NOT_AUTHENTICATED error', async({ application }) => {
+    it('should respond with a USER_UNAUTHORIZED error', async({ application }) => {
       const response = await application.fetch('/api/users/jdoe/disable', { method: 'PATCH' })
       const data = await response.json() as Record<string, string>
       expect(response.status).toBe(401)
-      expect(data).toMatchObject({ data: { name: 'E_USER_NOT_AUTHENTICATED' } })
+      expect(data).toMatchObject({ data: { name: 'E_USER_UNAUTHORIZED' } })
     })
   })
 }, 1000)

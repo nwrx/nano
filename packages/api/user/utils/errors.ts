@@ -29,6 +29,20 @@ export const ERRORS = {
     message: 'The user is already signed in',
   }),
 
+  // Generic
+  USER_UNAUTHORIZED: () => createError({
+    name: 'E_USER_UNAUTHORIZED',
+    statusCode: 401,
+    statusMessage: 'Unauthorized',
+    message: 'The user is not authenticated',
+  }),
+  USER_FORBIDDEN: () => createError({
+    name: 'E_USER_FORBIDDEN',
+    statusCode: 403,
+    statusMessage: 'Forbidden',
+    message: 'The user is not allowed to perform this operation',
+  }),
+
   // Auth
   USER_BAD_CREDENTIALS: () => createError({
     name: 'E_USER_BAD_CREDENTIALS',
@@ -53,18 +67,6 @@ export const ERRORS = {
     statusCode: 401,
     statusMessage: 'Unauthorized',
     message: 'The user is not verified',
-  }),
-  USER_NOT_AUTHENTICATED: () => createError({
-    name: 'E_USER_NOT_AUTHENTICATED',
-    statusCode: 401,
-    statusMessage: 'Unauthorized',
-    message: 'The user is not authenticated',
-  }),
-  USER_NOT_ALLOWED: () => createError({
-    name: 'E_USER_NOT_ALLOWED',
-    statusCode: 403,
-    statusMessage: 'Forbidden',
-    message: 'The user is not allowed to perform this operation',
   }),
   USER_UNABLE_TO_DELETE_SUPER_ADMIN: () => createError({
     name: 'E_USER_UNABLE_TO_DELETE_SUPER_ADMIN',

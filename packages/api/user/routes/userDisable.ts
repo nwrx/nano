@@ -17,7 +17,7 @@ export function userDisable(this: ModuleUser) {
       const { username } = parameters
 
       // --- Only super administrators can disable users.
-      if (!user.isSuperAdministrator) throw this.errors.USER_NOT_ALLOWED()
+      if (!user.isSuperAdministrator) throw this.errors.USER_FORBIDDEN()
       const userToDisable = await getUser.call(this, {
         user,
         username,

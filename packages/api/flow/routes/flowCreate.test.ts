@@ -132,7 +132,7 @@ describe.concurrent('flowCreate', () => {
       expect(response.status).toBe(401)
     })
 
-    it('should respond with a E_USER_NOT_AUTHENTICATED error', async({ application, createWorkspace, createProject }) => {
+    it('should respond with a E_USER_UNAUTHORIZED error', async({ application, createWorkspace, createProject }) => {
       const { workspace } = await createWorkspace('test-workspace')
       const { project } = await createProject('test-project', workspace)
       const body = JSON.stringify({
@@ -144,7 +144,7 @@ describe.concurrent('flowCreate', () => {
       })
       const response = await application.fetch('/api/flows', { method: 'POST', body })
       const data = await response.json() as Record<string, any>
-      expect(data.data.name).toBe('E_USER_NOT_AUTHENTICATED')
+      expect(data.data.name).toBe('E_USER_UNAUTHORIZED')
     })
   })
 }, 1000)

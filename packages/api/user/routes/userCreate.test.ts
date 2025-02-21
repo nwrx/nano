@@ -121,33 +121,33 @@ describe.concurrent('userCreate', () => {
       expect(result).toBeNull()
     })
 
-    it('should respond with a E_USER_NOT_ALLOWED error', async({ createUser, application }) => {
+    it('should respond with a E_USER_FORBIDDEN error', async({ createUser, application }) => {
       const { headers } = await createUser('jdoe')
       const body = JSON.stringify({ email: 'paul@example.com', username: 'paul' })
       const response = await application.fetch('/api/users', { method: 'POST', body, headers })
       const data = await response.json() as Record<string, string>
       expect(response.status).toBe(403)
-      expect(data).toMatchObject({ data: { name: 'E_USER_NOT_ALLOWED' } })
+      expect(data).toMatchObject({ data: { name: 'E_USER_FORBIDDEN' } })
     })
 
-    it('should respond with a E_USER_NOT_ALLOWED error if the email is already taken', async({ createUser, application }) => {
+    it('should respond with a E_USER_FORBIDDEN error if the email is already taken', async({ createUser, application }) => {
       await createUser('paul', { email: 'paul@example.com' })
       const { headers } = await createUser('jdoe')
       const body = JSON.stringify({ email: 'paul@example.com', username: 'not-paul' })
       const response = await application.fetch('/api/users', { method: 'POST', body, headers })
       const data = await response.json() as Record<string, string>
       expect(response.status).toBe(403)
-      expect(data).toMatchObject({ data: { name: 'E_USER_NOT_ALLOWED' } })
+      expect(data).toMatchObject({ data: { name: 'E_USER_FORBIDDEN' } })
     })
 
-    it('should respond with a E_USER_NOT_ALLOWED error if the username is already taken', async({ createUser, application }) => {
+    it('should respond with a E_USER_FORBIDDEN error if the username is already taken', async({ createUser, application }) => {
       await createUser('paul', { email: 'paul@example.com' })
       const { headers } = await createUser('jdoe')
       const body = JSON.stringify({ email: 'not-paul@example.com', username: 'paul' })
       const response = await application.fetch('/api/users', { method: 'POST', body, headers })
       const data = await response.json() as Record<string, string>
       expect(response.status).toBe(403)
-      expect(data).toMatchObject({ data: { name: 'E_USER_NOT_ALLOWED' } })
+      expect(data).toMatchObject({ data: { name: 'E_USER_FORBIDDEN' } })
     })
   })
 
@@ -159,12 +159,12 @@ describe.concurrent('userCreate', () => {
       expect(result).toBeNull()
     })
 
-    it('should respond with a E_USER_NOT_AUTHENTICATED error', async({ application }) => {
+    it('should respond with a E_USER_UNAUTHORIZED error', async({ application }) => {
       const body = JSON.stringify({ email: 'paul@example.com', username: 'paul' })
       const response = await application.fetch('/api/users', { method: 'POST', body })
       const data = await response.json() as Record<string, string>
       expect(response.status).toBe(401)
-      expect(data).toMatchObject({ data: { name: 'E_USER_NOT_AUTHENTICATED' } })
+      expect(data).toMatchObject({ data: { name: 'E_USER_UNAUTHORIZED' } })
     })
   })
 }, 1000)

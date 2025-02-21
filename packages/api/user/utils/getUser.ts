@@ -40,8 +40,8 @@ export async function getUser(this: ModuleUser, options: GetUserOptions): Promis
 
   // --- Only super administrators can resolve disabled users.
   if (!user?.isSuperAdministrator) {
-    if (withDisabled) throw this.errors.USER_NOT_ALLOWED()
-    if (withDeleted) throw this.errors.USER_NOT_ALLOWED()
+    if (withDisabled) throw this.errors.USER_FORBIDDEN()
+    if (withDeleted) throw this.errors.USER_FORBIDDEN()
   }
 
   // --- Find the user by the username.

@@ -18,7 +18,7 @@ export function userEnable(this: ModuleUser) {
       const { username } = parameters
 
       // --- Only super administrators can enable users.
-      if (!user.isSuperAdministrator) throw this.errors.USER_NOT_ALLOWED()
+      if (!user.isSuperAdministrator) throw this.errors.USER_FORBIDDEN()
       const userToEnable = await getUser.call(this, {
         user,
         username,

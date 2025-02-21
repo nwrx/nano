@@ -18,7 +18,7 @@ export function storageUpload(this: ModuleStorage) {
       const { file } = formData
 
       // --- Only the super-admin can upload files.
-      if (!user.isSuperAdministrator) throw userModule.errors.USER_NOT_ALLOWED()
+      if (!user.isSuperAdministrator) throw userModule.errors.USER_FORBIDDEN()
 
       // --- Create an abort signal to cancel the upload.
       const abortController = new AbortController()

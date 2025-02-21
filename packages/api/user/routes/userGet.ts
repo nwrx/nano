@@ -23,7 +23,7 @@ export function userGet(this: ModuleUser) {
 
       // --- Check if the user is allowed to make the request.
       const withProtected = user.username === username || Boolean(user.isSuperAdministrator)
-      if (withSessions && !withProtected) throw this.errors.USER_NOT_ALLOWED()
+      if (withSessions && !withProtected) throw this.errors.USER_FORBIDDEN()
 
       // --- Fetch the user with the given ID.
       const found = await User.findOne({

@@ -24,7 +24,7 @@ export function userSearch(this: ModuleUser) {
       // --- Check if the user is allowed to make the request.
       const isPrivilegedQuery = withSessions
       const isPrivilegedUser = user.isSuperAdministrator
-      if (isPrivilegedQuery && !isPrivilegedUser) throw this.errors.USER_NOT_ALLOWED()
+      if (isPrivilegedQuery && !isPrivilegedUser) throw this.errors.USER_FORBIDDEN()
 
       // --- Get the users.
       const { User } = this.getRepositories()

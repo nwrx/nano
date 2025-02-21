@@ -24,7 +24,7 @@ export function fileDownload(this: ModuleStorage) {
       const { download: isAttachment } = query
 
       // --- Only the super-admin can download files by ID.
-      if (!user.isSuperAdministrator) throw userModule.errors.USER_NOT_ALLOWED()
+      if (!user.isSuperAdministrator) throw userModule.errors.USER_FORBIDDEN()
 
       // --- Abort the download if the request is aborted.
       const abortController = new AbortController()

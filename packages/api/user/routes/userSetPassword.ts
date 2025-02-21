@@ -23,7 +23,7 @@ export function userSetPassword(this: ModuleUser) {
 
       // --- If the request is made by a user other than the super administrator, return an error.
       if (user.username !== username && !user.isSuperAdministrator)
-        throw this.errors.USER_NOT_ALLOWED()
+        throw this.errors.USER_FORBIDDEN()
 
       // --- Check the old password.
       if (newPassword !== newPasswordConfirm) throw this.errors.USER_PASSWORD_MISMATCH()
