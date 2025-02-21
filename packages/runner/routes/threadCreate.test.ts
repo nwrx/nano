@@ -24,7 +24,7 @@ describe.concurrent<Context>('POST /threads', { timeout: 300 }, () => {
 
   describe<Context>('createThread', (it) => {
     it('should respond with status 200', async({ headers, application }) => {
-      const body = JSON.stringify({ version: '1' })
+      const body = JSON.stringify({ flow: { version: '1' } })
       const response = await application.fetch('/threads', { method: 'POST', body, headers })
       const data = await response.json() as Record<string, unknown>
       expect(response).toMatchObject({ status: 200, statusText: 'OK' })
@@ -34,7 +34,7 @@ describe.concurrent<Context>('POST /threads', { timeout: 300 }, () => {
 
   describe<Context>('error', (it) => {
     it('should fail with "E_UNAUTHORIZED" when token is invalid', async({ application }) => {
-      const body = JSON.stringify({ version: '1' })
+      const body = JSON.stringify({ flow: { version: '1' } })
       const response = await application.fetch('/threads', { method: 'POST', body })
       expect(response).toMatchObject({ status: 401, statusText: 'Unauthorized' })
       const data = await response.json() as Record<string, unknown>
@@ -42,7 +42,7 @@ describe.concurrent<Context>('POST /threads', { timeout: 300 }, () => {
     })
 
     it('should fail with "E_FLOW_VERSION_UNSUPPORTED" when version is invalid', async({ headers, application }) => {
-      const body = JSON.stringify({ version: '0' })
+      const body = JSON.stringify({ flow: { version: '0' } })
       const response = await application.fetch('/threads', { method: 'POST', body, headers })
       expect(response).toMatchObject({ status: 400, statusText: 'Bad Request' })
       const data = await response.json() as Record<string, unknown>

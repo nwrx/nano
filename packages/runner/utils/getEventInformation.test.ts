@@ -45,11 +45,10 @@ describe.concurrent<Context>('getEventInformation', () => {
       expect(result.token).toStrictEqual('token')
     })
 
-    it('should throw if the Authorization header is missing', ({ expect, moduleRunner }) => {
+    it('should return token undefined when the Authorization header is missing', ({ expect, moduleRunner }) => {
       const event = createTestEvent({ headers: {} })
-      const shouldThrow = () => getEventInformation.call(moduleRunner, event)
-      const error = moduleRunner.errors.UNAUTHORIZED()
-      expect(shouldThrow).toThrow(error)
+      const result = getEventInformation.call(moduleRunner, event)
+      expect(result.token).toBeUndefined()
     })
 
     it('should return all the information', ({ expect, moduleRunner }) => {
@@ -79,17 +78,22 @@ describe.concurrent<Context>('getEventInformation', () => {
       expect(result.token).toStrictEqual('token')
     })
 
+    it('should get the token from the query string when the Authorization header is missing', ({ expect, moduleRunner }) => {
+      const peer = createTestPeer({ url: 'ws://localhost:3000/threads/id?token=token' })
+      const result = getEventInformation.call(moduleRunner, peer)
+      expect(result.token).toStrictEqual('token')
+    })
+
     it('should handle whitespace in the Authorization header', ({ expect, moduleRunner }) => {
       const peer = createTestPeer({ headers: { authorization: 'Bearer   token' } })
       const result = getEventInformation.call(moduleRunner, peer)
       expect(result.token).toStrictEqual('token')
     })
 
-    it('should throw if the Authorization header is missing', ({ expect, moduleRunner }) => {
+    it('should return token undefined when the Authorization header is missing', ({ expect, moduleRunner }) => {
       const peer = createTestPeer({ headers: {} })
-      const shouldThrow = () => getEventInformation.call(moduleRunner, peer)
-      const error = moduleRunner.errors.UNAUTHORIZED()
-      expect(shouldThrow).toThrow(error)
+      const result = getEventInformation.call(moduleRunner, peer)
+      expect(result.token).toBeUndefined()
     })
 
     it('should return all the information', ({ expect, moduleRunner }) => {
