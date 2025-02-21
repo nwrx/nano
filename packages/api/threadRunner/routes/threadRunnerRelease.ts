@@ -1,6 +1,6 @@
 import type { ModuleThreadRunner } from '../index'
 import { createHttpRoute } from '@unserved/server'
-import { assertStringUuid, createSchema } from '@unshared/validation'
+import { assertStringNotEmpty, createSchema } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 
 export function releaseThreadRunner(this: ModuleThreadRunner) {
@@ -8,7 +8,7 @@ export function releaseThreadRunner(this: ModuleThreadRunner) {
     {
       name: 'DELETE /api/runners/:identity',
       parseParameters: createSchema({
-        identity: assertStringUuid,
+        identity: assertStringNotEmpty,
       }),
     },
     async({ event, parameters }) => {
