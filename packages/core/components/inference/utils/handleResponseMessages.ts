@@ -53,7 +53,6 @@ export async function handleResponseMessages(context: LanguageModelRequestContex
       catch (error) {
         thread.dispatch('nodeToolError', nodeId, { id, error: error as Error } )
         context.messages.push(message, { role: 'tool_result', id, isError: true, result: { error: (error as Error).message } })
-        throw error
       }
     }
     else {
