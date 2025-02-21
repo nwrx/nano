@@ -7,6 +7,7 @@ import * as ROUTES from './routes'
 import * as UTILS from './utils'
 
 export * from './entities'
+export * from './utils/assertProject'
 export * from './utils/assertProjectPermission'
 
 /**
@@ -18,6 +19,21 @@ export class ModuleProject extends ModuleBase {
   errors = UTILS.ERRORS
   routes = ROUTES
   entities = ENTITIES
-  dependencies = [ModuleUser, ModuleWorkspace, ModuleFlow]
+  dependencies = [
+    ModuleUser,
+    ModuleFlow,
+    ModuleWorkspace,
+  ]
+
+  /**
+   * Resolve the {@linkcode Project} with the given name. The function will query the database
+   * for the project with the given name and assert that the user has access to the project.
+   * If the project is not found or the user does not have access to the project, the function
+   * will throw an error.
+   *
+   * @param options The options to find the project with.
+   * @returns The {@linkcode Project} with the given name within the workspace.
+   * @example await getProject({ name: 'my-project', workspace: 'my-workspace', permission: 'Read' }) // Project { ... }
+   */
   getProject = UTILS.getProject.bind(this)
 }

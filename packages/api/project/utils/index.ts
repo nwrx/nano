@@ -1,3 +1,4 @@
+export * from './assertProject'
 export * from './assertProjectPermission'
 export * from './createProject'
 export * from './errors'
