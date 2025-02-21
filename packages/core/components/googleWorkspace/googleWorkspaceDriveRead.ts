@@ -1,4 +1,4 @@
-import { defineComponent, ThreadError } from '@nwrx/core'
+import { defineComponent, ThreadError } from '@nwrx/nano'
 import { file, object, string } from '@nwrx/module-core/types'
 import { google } from 'googleapis'
 import { ReadableStream } from 'node:stream/web'

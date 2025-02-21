@@ -1,5 +1,5 @@
 /* eslint-disable sonarjs/prefer-single-boolean-return */
-import { ThreadError } from '@nwrx/core'
+import { ThreadError } from '@nwrx/nano'
 import { client } from './client'
 
 export interface GetCodesOptions {

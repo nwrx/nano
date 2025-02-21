@@ -1,5 +1,5 @@
 import type { JSONSchema4 } from 'json-schema'
-import { defineComponent, ThreadError } from '@nwrx/core'
+import { defineComponent, ThreadError } from '@nwrx/nano'
 import { languageModelTool, string } from '@nwrx/module-core/types'
 import { dedent } from '@unshared/string'
 import { google } from 'googleapis'
