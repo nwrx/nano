@@ -1,8 +1,6 @@
 import { BaseEntity, transformerDate } from '@unserved/server'
 import { Column, Entity, Index, OneToMany } from 'typeorm'
-import { Project, ProjectObject } from '../../project'
-import { UserObject } from '../../user'
-import { getWorkspaceUserAssignments } from '../utils'
+import { Project } from '../../project'
 import { WorkspaceAssignment } from './WorkspaceAssignment'
 
 /**
@@ -34,15 +32,6 @@ export class Workspace extends BaseEntity {
   isPublic: boolean
 
   /**
-   * Flag to indicate the workspace is the main workspace of a user and therefore can not be
-   * deleted unless the user is deleted.
-   *
-   * @example false
-   */
-  @Column('boolean', { default: false })
-  isUserWorkspace: boolean
-
-  /**
    * Date at which the workspace was archived. If the workspace is archived, it can no longer
    * be edited or viewed by the users. The workspace can be restored by the administrators or
    * owners of the workspace.
@@ -69,42 +58,19 @@ export class Workspace extends BaseEntity {
   assignments: undefined | WorkspaceAssignment[]
 
   /**
-   * @param options The options to use when serializing the object.
    * @returns The object representation of the workspace.
    */
-  serialize(options: SerializeOptions = {}): WorkspaceObject {
-    const assignments = options.withAssignments
-      ? getWorkspaceUserAssignments(this)?.map(assignment => ({
-        user: assignment.user.serialize(),
-        permissions: assignment.permissions,
-      }))
-      : undefined
-
+  serialize(): WorkspaceObject {
     return {
       id: this.id,
       name: this.name,
       isPublic: this.isPublic,
-      isUserWorkspace: this.isUserWorkspace,
-      projects: this.projects?.map(project => project.serialize()),
-      assignments,
     }
   }
-}
-
-interface SerializeOptions {
-  withAssignments?: boolean
-}
-
-export interface WorkspaceAssignmentsByUserObject {
-  user: UserObject
-  permissions: string[]
 }
 
 export interface WorkspaceObject {
   id: string
   name: string
   isPublic: boolean
-  isUserWorkspace: boolean
-  projects?: ProjectObject[]
-  assignments?: WorkspaceAssignmentsByUserObject[]
 }

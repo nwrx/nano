@@ -15,11 +15,10 @@ export function workspaceGet(this: ModuleWorkspace) {
     async({ event, parameters }): Promise<WorkspaceObject> => {
       const userModule = this.getModule(ModuleUser)
       const { user } = await userModule.authenticate(event, { optional: true })
-      const { workspace } = parameters
 
-      // --- Get the workspace and assert the user has access to it
-      const found = await this.getWorkspace({ user, name: workspace, permission: 'Read' })
-      return found.serialize()
+      // --- Get the workspace and assert the user has access to it.
+      const workspace = await this.getWorkspace({ user, name: parameters.workspace, permission: 'Read' })
+      return workspace.serialize()
     },
   )
 }

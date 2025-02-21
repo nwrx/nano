@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 
 import type { Context } from '../../__fixtures__'
-import type { User } from '../../user'
 import type { WorkspacePermission } from './assertWorkspacePermission'
 import { EXP_UUID, ValidationError } from '@unshared/validation'
 import { createTestContext } from '../../__fixtures__'
@@ -9,23 +8,24 @@ import { WORKSPACE_PERMISSIONS } from './assertWorkspacePermission'
 import { ERRORS as E } from './errors'
 import { getWorkspace } from './getWorkspace'
 
-interface CreateResultOptions {
-  user?: User
+interface TestMatrixOptions {
+  isPublic?: boolean
   permission: WorkspacePermission
-  userWorkspacePermission?: WorkspacePermission
-  isWorkspacePublic?: boolean
-  hasReadPermission?: boolean
+  withUser?: boolean
+  withAccess?: WorkspacePermission
+  withPermission?: WorkspacePermission
 }
 
-async function createResult(context: Context, options: CreateResultOptions) {
-  const { permission, user, userWorkspacePermission, isWorkspacePublic, hasReadPermission } = options
-  const { workspace } = await context.createWorkspace('workspace', isWorkspacePublic)
-  if (user && userWorkspacePermission) await context.assignWorkspace(workspace, user, userWorkspacePermission)
-  if (user && hasReadPermission && userWorkspacePermission !== 'Read') await context.assignWorkspace(workspace, user, 'Read')
+async function createResult(context: Context, options: TestMatrixOptions) {
+  const { isPublic, permission, withUser, withAccess, withPermission } = options
+  const { workspace } = await context.createWorkspace('workspace', isPublic)
+  const { user } = withUser ? await context.createUser() : {}
+  if (user && withPermission) await context.assignWorkspace(workspace, user, withPermission)
+  if (user && withAccess && withAccess !== withPermission) await context.assignWorkspace(workspace, user, withAccess)
   return await getWorkspace.call(context.moduleWorkspace, { user, name: workspace.name, permission })
 }
 
-describe.concurrent('getWorkspace', () => {
+describe.concurrent('getWorkspace', { timeout: 300 }, () => {
   beforeEach<Context>(async(context) => {
     await createTestContext(context)
   })
@@ -35,59 +35,42 @@ describe.concurrent('getWorkspace', () => {
   })
 
   describe('permissions', () => {
+    const WORKSPACE_READ_PERMISSIONS = ['Read', 'Owner'] as WorkspacePermission[]
+    const WORKSPACE_EXTRA_PERMISSIONS = WORKSPACE_PERMISSIONS.filter(permission => !WORKSPACE_READ_PERMISSIONS.includes(permission))
 
     // Public or private workspace.
-    for (const isWorkspacePublic of [true, false]) {
-      describe<Context>(isWorkspacePublic ? 'with public workspace' : 'with private workspace', () => {
+    for (const isPublic of [true, false]) {
+      describe<Context>(isPublic ? 'with public workspace' : 'with private workspace', () => {
 
         // With or without read access.
-        for (const hasReadPermission of [true, false]) {
-          describe<Context>(hasReadPermission ? 'with user with read access' : 'with user without read access', () => {
+        for (const withAccess of [...WORKSPACE_READ_PERMISSIONS, undefined]) {
+          describe<Context>(withAccess ? `with user with ${withAccess} access` : 'with user without read access', () => {
 
-            // Iterate over all possible user workspace permissions.
-            for (const userWorkspacePermission of [...WORKSPACE_PERMISSIONS, undefined]) {
-              describe<Context>(`with user with "${userWorkspacePermission}" permission on workspace`, (it) => {
+            // With additional permission or not.
+            for (const withPermission of [...WORKSPACE_EXTRA_PERMISSIONS, undefined]) {
+              describe<Context>(withPermission ? `with user with ${withPermission} permission` : 'with user without additional permission', (it) => {
 
                 // Iterate over all possible request permissions.
                 for (const permission of WORKSPACE_PERMISSIONS) {
-                  const isOwner = userWorkspacePermission === 'Owner'
-                  const hasReadAccess = hasReadPermission || isWorkspacePublic || userWorkspacePermission === 'Read'
-                  const hasAccess = permission === userWorkspacePermission || permission === 'Read' && hasReadAccess
+                  const hasReadAccess = withAccess !== undefined || isPublic
+                  const hasAccess = permission === withPermission || (permission === 'Read' && hasReadAccess) || withAccess === 'Owner'
 
-                  if (!isOwner && !hasReadAccess) {
+                  if (!hasReadAccess) {
                     it(`should throw "WORKSPACE_NOT_FOUND" when the request permission is "${permission}"`, async(context) => {
-                      const { user } = await context.createUser()
-                      const options = { user, userWorkspacePermission, permission, isWorkspacePublic, hasReadPermission }
-                      const shouldReject = createResult(context, options)
+                      const shouldReject = createResult(context, { isPublic, permission, withUser: true, withAccess, withPermission })
                       const error = E.WORKSPACE_NOT_FOUND('workspace')
                       await expect(shouldReject).rejects.toThrow(error)
                     })
                   }
-                  else if (isOwner || hasAccess) {
-                    if (isOwner) {
-                      it(`should resolve with the assignments when the request permission is "${permission}"`, async(context) => {
-                        const { user } = await context.createUser()
-                        const options = { user, userWorkspacePermission, permission, isWorkspacePublic, hasReadPermission }
-                        const result = await createResult(context, options)
-                        expect(result).toMatchObject({ id: expect.stringMatching(EXP_UUID), name: 'workspace' })
-                        expect(result).toMatchObject({ assignments: expect.any(Array) })
-                      })
-                    }
-                    else {
-                      it(`should resolve without the assignments when the request permission is "${permission}"`, async(context) => {
-                        const { user } = await context.createUser()
-                        const options = { user, userWorkspacePermission, permission, isWorkspacePublic, hasReadPermission }
-                        const result = await createResult(context, options)
-                        expect(result).toMatchObject({ id: expect.stringMatching(EXP_UUID), name: 'workspace' })
-                        expect(result).not.toHaveProperty('assignments')
-                      })
-                    }
+                  else if (hasAccess) {
+                    it(`should return the workspace when the request permission is "${permission}"`, async(context) => {
+                      const result = await createResult(context, { isPublic, permission, withUser: true, withAccess, withPermission })
+                      expect(result).toMatchObject({ id: expect.stringMatching(EXP_UUID), name: 'workspace' })
+                    })
                   }
                   else {
                     it(`should throw "WORKSPACE_ACTION_NOT_AUTHORIZED" when the request permission is "${permission}"`, async(context) => {
-                      const { user } = await context.createUser()
-                      const options = { user, userWorkspacePermission, permission, isWorkspacePublic, hasReadPermission }
-                      const shouldReject = createResult(context, options)
+                      const shouldReject = createResult(context, { isPublic, permission, withUser: true, withAccess, withPermission })
                       const error = E.WORKSPACE_ACTION_NOT_AUTHORIZED('workspace')
                       await expect(shouldReject).rejects.toThrow(error)
                     })
@@ -100,22 +83,22 @@ describe.concurrent('getWorkspace', () => {
 
         describe<Context>('without user', (it) => {
           for (const permission of WORKSPACE_PERMISSIONS) {
-            if (isWorkspacePublic && permission === 'Read') {
+            if (isPublic && permission === 'Read') {
               it(`should resolve if the request permission is "${permission}"`, async(context) => {
-                const result = createResult(context, { permission, isWorkspacePublic })
+                const result = createResult(context, { permission, isPublic })
                 await expect(result).resolves.toMatchObject({ id: expect.stringMatching(EXP_UUID), name: 'workspace' })
               })
             }
-            else if (isWorkspacePublic && permission !== 'Read') {
+            else if (isPublic && permission !== 'Read') {
               it(`should throw "WORKSPACE_ACTION_NOT_AUTHORIZED" if the request permission is "${permission}"`, async(context) => {
-                const shouldReject = createResult(context, { permission, isWorkspacePublic })
+                const shouldReject = createResult(context, { permission, isPublic })
                 const error = E.WORKSPACE_ACTION_NOT_AUTHORIZED('workspace')
                 await expect(shouldReject).rejects.toThrow(error)
               })
             }
             else {
               it(`should throw "WORKSPACE_NOT_FOUND" if the request permission is "${permission}"`, async(context) => {
-                const shouldReject = createResult(context, { permission, isWorkspacePublic })
+                const shouldReject = createResult(context, { permission, isPublic })
                 const error = E.WORKSPACE_NOT_FOUND('workspace')
                 await expect(shouldReject).rejects.toThrow(error)
               })
@@ -162,4 +145,4 @@ describe.concurrent('getWorkspace', () => {
       await expect(shouldReject).rejects.toThrowError(ValidationError)
     })
   })
-}, 1000)
+})

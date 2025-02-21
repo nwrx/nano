@@ -42,10 +42,7 @@ export async function getWorkspace(this: ModuleWorkspace, options: ResolveWorksp
 
   // --- Assert that the workspace exists. Quit early if the workspace is public.
   if (!workspace) throw this.errors.WORKSPACE_NOT_FOUND(name)
-  if (!user && permission === 'Read' && workspace.isPublic) {
-    delete workspace.assignments
-    return workspace
-  }
+  if (!user && permission === 'Read' && workspace.isPublic) return workspace
   if (!user) {
     throw workspace.isPublic
       ? this.errors.WORKSPACE_ACTION_NOT_AUTHORIZED(name)
@@ -64,6 +61,5 @@ export async function getWorkspace(this: ModuleWorkspace, options: ResolveWorksp
 
   if (!hasReadAccess) throw this.errors.WORKSPACE_NOT_FOUND(name)
   if (!hasAccess) throw this.errors.WORKSPACE_ACTION_NOT_AUTHORIZED(name)
-  delete workspace.assignments
   return workspace
 }
