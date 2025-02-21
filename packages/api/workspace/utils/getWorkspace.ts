@@ -50,7 +50,7 @@ export async function getWorkspace(this: ModuleWorkspace, options: ResolveWorksp
 
   // --- Assert that the user has an assignment that matches the permission.
   const { WorkspaceAssignment } = this.getRepositories()
-  const assignments = await WorkspaceAssignment.countBy({ user, workspace, permission: In(['Owner', permission]) })
-  if (assignments === 0) throw this.errors.WORKSPACE_UNAUTHORIZED(name)
+  const isAllowed = await WorkspaceAssignment.countBy({ user, workspace, permission: In(['Owner', permission]) })
+  if (!isAllowed) throw this.errors.WORKSPACE_UNAUTHORIZED(name)
   return workspace
 }
