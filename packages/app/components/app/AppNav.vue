@@ -12,7 +12,7 @@ const props = defineProps<{
   userDisplayName?: string
   search?: string
   searchOpen?: boolean
-  locale?: string
+  locale?: typeof LOCALES[number]['language']
   locales?: Array<LocaleObject & { icon: string }>
 }>()
 
