@@ -1,17 +1,32 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 
 import type { Context } from '../../__fixtures__'
-import type { User } from '../../user'
-import type { WorkspacePermission } from '../../workspace'
 import type { ProjectPermission } from './assertProjectPermission'
 import { EXP_UUID, ValidationError } from '@unshared/validation'
 import { createTestContext } from '../../__fixtures__'
-import { WORKSPACE_PERMISSIONS } from '../../workspace'
 import { PROJECT_PERMISSIONS } from './assertProjectPermission'
 import { ERRORS as E } from './errors'
 import { getProject } from './getProject'
 
-describe.concurrent('getProject', () => {
+interface TestMatrixOptions {
+  isPublic?: boolean
+  permission: ProjectPermission
+  withUser?: boolean
+  withAccess?: ProjectPermission
+  withPermission?: ProjectPermission
+}
+
+async function createResult(context: Context, options: TestMatrixOptions) {
+  const { isPublic, permission, withUser, withAccess, withPermission } = options
+  const { workspace } = await context.createWorkspace('workspace')
+  const { project } = await context.createProject('project', workspace, { isPublic })
+  const { user } = withUser ? await context.createUser() : {}
+  if (user && withPermission) await context.assignProject(project, user, withPermission)
+  if (user && withAccess && withAccess !== withPermission) await context.assignProject(project, user, withAccess)
+  return await getProject.call(context.moduleProject, { user, workspace, name: project.name, permission })
+}
+
+describe.concurrent('getProject', { timeout: 300 }, () => {
   beforeEach<Context>(async(context) => {
     await createTestContext(context)
   })
@@ -20,160 +35,125 @@ describe.concurrent('getProject', () => {
     await context.application.destroy()
   })
 
-  interface TestOptions {
-    user?: User
-    permission: ProjectPermission
-    userProjectPermission?: ProjectPermission
-    userWorkspacePermission?: WorkspacePermission
-    isProjectPublic?: boolean
-    isWorkspacePublic?: boolean
-  }
+  const PROJECT_READ_PERMISSIONS = ['Read', 'Owner'] as ProjectPermission[]
+  const PROJECT_EXTRA_PERMISSIONS = PROJECT_PERMISSIONS.filter(permission => !PROJECT_READ_PERMISSIONS.includes(permission))
 
-  async function createResult(context: Context, options: TestOptions) {
-    const { permission, user, userProjectPermission, userWorkspacePermission, isProjectPublic, isWorkspacePublic } = options
-    const { workspace } = await context.createWorkspace('workspace', isWorkspacePublic)
-    const { project } = await context.createProject('project', workspace, { isPublic: isProjectPublic })
-    if (user && userProjectPermission) await context.assignProject(project, user, userProjectPermission)
-    if (user && userWorkspacePermission) await context.assignWorkspace(workspace, user, userWorkspacePermission)
-    return await getProject.call(context.moduleProject, { user, workspace: workspace.name, name: project.name, permission })
-  }
+  // Public or private project
+  for (const isPublic of [true, false]) {
+    describe<Context>(isPublic ? 'with public project' : 'with private project', () => {
 
-  const allWorkspacePermissions = [...WORKSPACE_PERMISSIONS, undefined] as const
-  const allProjectPermissions = [...PROJECT_PERMISSIONS, undefined] as const
+      // With or without read access
+      for (const withAccess of [...PROJECT_READ_PERMISSIONS, undefined]) {
+        describe<Context>(withAccess ? `with user with ${withAccess} access` : 'with user without read access', () => {
 
-  for (const isWorkspacePublic of [true, false]) {
-    describe<Context>(isWorkspacePublic ? 'with public workspace' : 'with private workspace', () => {
-      for (const isProjectPublic of [true, false]) {
-        describe<Context>(isProjectPublic ? 'with public project' : 'with private project', () => {
-          for (const userWorkspacePermission of allWorkspacePermissions) {
-            describe<Context>(`with user with "${userWorkspacePermission}" permission on workspace`, () => {
-              for (const userProjectPermission of allProjectPermissions) {
-                describe<Context>(`with user with "${userProjectPermission}" permission on project`, (it) => {
-                  for (const permission of allProjectPermissions) {
-                    if (!permission) continue
-                    const isPublic = isProjectPublic && isWorkspacePublic
-                    const hasImplicitReadAccess = userWorkspacePermission && userProjectPermission
-                    const hasProjectPermission = userProjectPermission === permission || userProjectPermission === 'Owner'
+          // With additional permission or not
+          for (const withPermission of [...PROJECT_EXTRA_PERMISSIONS, undefined]) {
+            describe<Context>(withPermission ? `with user with ${withPermission} permission` : 'with user without extra permission', (it) => {
 
-                    // --- If the user is the owner of the workspace, bypass all checks.
-                    let error: Error | undefined
-                    if (userWorkspacePermission === 'Owner') {
-                      error = undefined
-                    }
+              // Iterate over all possible request permissions
+              for (const permission of PROJECT_PERMISSIONS) {
+                const isRead = isPublic || PROJECT_READ_PERMISSIONS.includes(withAccess!)
+                const isAllowed = (permission === 'Read' && isRead) || permission === withPermission || withAccess === 'Owner'
 
-                    // --- If the request permission is 'Read', allow public projects within
-                    // --- user-accessible workspaces to be retrieved. In our context, any
-                    // --- permission on a workspace and project implicitly grants 'Read' access.
-                    else if (permission === 'Read') {
-                      if (!isPublic && !hasImplicitReadAccess)
-                        error = E.PROJECT_NOT_FOUND('workspace', 'project')
-                    }
-
-                    // --- For any other permission, the user must have implicit 'Read' access
-                    // --- to the workspace and a matching permission to the project itself.
-                    else if (!hasImplicitReadAccess || !hasProjectPermission) {
-                      error = E.PROJECT_UNAUTHORIZED('workspace', 'project')
-                    }
-
-                    if (error) {
-                      it(`should throw when the request permission is "${permission}"`, async(context) => {
-                        const { user } = await context.createUser()
-                        const options = { user, userProjectPermission, userWorkspacePermission, permission, isProjectPublic, isWorkspacePublic }
-                        const shouldReject = createResult(context, options)
-                        await expect(shouldReject).rejects.toThrow(error)
-                      })
-                    }
-
-                    else {
-                      it(`should resolve if the request permission is "${permission}"`, async(context) => {
-                        const { user } = await context.createUser()
-                        const options = { user, userProjectPermission, userWorkspacePermission, permission, isProjectPublic, isWorkspacePublic }
-                        const result = createResult(context, options)
-                        await expect(result).resolves.toMatchObject({ id: expect.stringMatching(EXP_UUID), name: 'project' })
-                      })
-                    }
-                  }
-                })
+                if (!isRead) {
+                  it(`should throw "PROJECT_NOT_FOUND" when the request permission is "${permission}"`, async(context) => {
+                    const shouldReject = createResult(context, { isPublic, permission, withUser: true, withAccess, withPermission })
+                    const error = E.PROJECT_NOT_FOUND('workspace', 'project')
+                    await expect(shouldReject).rejects.toThrow(error)
+                  })
+                }
+                else if (isAllowed) {
+                  it(`should return the project when the request permission is "${permission}"`, async(context) => {
+                    const result = await createResult(context, { isPublic, permission, withUser: true, withAccess, withPermission })
+                    expect(result).toMatchObject({ id: expect.stringMatching(EXP_UUID), name: 'project' })
+                  })
+                }
+                else {
+                  it(`should throw "PROJECT_UNAUTHORIZED" when the request permission is "${permission}"`, async(context) => {
+                    const shouldReject = createResult(context, { isPublic, permission, withUser: true, withAccess, withPermission })
+                    const error = E.PROJECT_UNAUTHORIZED('workspace', 'project')
+                    await expect(shouldReject).rejects.toThrow(error)
+                  })
+                }
               }
             })
           }
-
-          describe<Context>('without user', (it) => {
-            for (const permission of allProjectPermissions.filter(Boolean)) {
-              if (!permission) continue
-              if (isProjectPublic && isWorkspacePublic && permission === 'Read') {
-                it(`should resolve if the request permission is "${permission}"`, async(context) => {
-                  const result = createResult(context, { permission, isProjectPublic, isWorkspacePublic })
-                  await expect(result).resolves.toMatchObject({ id: expect.stringMatching(EXP_UUID), name: 'project' })
-                })
-              }
-              else if (permission === 'Read') {
-                it(`should throw an error if the request permission is "${permission}"`, async(context) => {
-                  const shouldReject = createResult(context, { permission, isProjectPublic, isWorkspacePublic })
-                  const error = E.PROJECT_NOT_FOUND('workspace', 'project')
-                  await expect(shouldReject).rejects.toThrow(error)
-                })
-              }
-              else {
-                it(`should throw an error if the request permission is "${permission}"`, async(context) => {
-                  const shouldReject = createResult(context, { permission, isProjectPublic, isWorkspacePublic })
-                  const error = E.PROJECT_UNAUTHORIZED('workspace', 'project')
-                  await expect(shouldReject).rejects.toThrow(error)
-                })
-              }
-            }
-          })
         })
       }
+
+      describe<Context>('without user', (it) => {
+        for (const permission of PROJECT_PERMISSIONS) {
+          if (isPublic && permission === 'Read') {
+            it(`should resolve if the request permission is "${permission}"`, async(context) => {
+              const result = createResult(context, { permission, isPublic })
+              await expect(result).resolves.toMatchObject({ id: expect.stringMatching(EXP_UUID), name: 'project' })
+            })
+          }
+          else if (isPublic && permission !== 'Read') {
+            it(`should throw "PROJECT_UNAUTHORIZED" if the request permission is "${permission}"`, async(context) => {
+              const shouldReject = createResult(context, { permission, isPublic })
+              const error = E.PROJECT_UNAUTHORIZED('workspace', 'project')
+              await expect(shouldReject).rejects.toThrow(error)
+            })
+          }
+          else {
+            it(`should throw "PROJECT_NOT_FOUND" if the request permission is "${permission}"`, async(context) => {
+              const shouldReject = createResult(context, { permission, isPublic })
+              const error = E.PROJECT_NOT_FOUND('workspace', 'project')
+              await expect(shouldReject).rejects.toThrow(error)
+            })
+          }
+        }
+      })
     })
   }
 
   describe<Context>('edge cases', (it) => {
-    it('should throw if the project is not found', async({ createWorkspace, moduleProject }) => {
-      await createWorkspace('workspace', true)
-      const shouldReject = getProject.call(moduleProject, { name: 'project', workspace: 'workspace', permission: 'Read' })
-      const error = moduleProject.errors.PROJECT_NOT_FOUND('workspace', 'project')
+    it('should throw "PROJECT_NOT_FOUND" if the project is not found', async({ moduleProject, createWorkspace }) => {
+      const { workspace } = await createWorkspace('workspace')
+      const shouldReject = getProject.call(moduleProject, { workspace, name: 'not-found', permission: 'Read' })
+      const error = moduleProject.errors.PROJECT_NOT_FOUND('workspace', 'not-found')
       await expect(shouldReject).rejects.toThrow(error)
     })
 
-    it('should throw if the workspace is not found', async({ expect, moduleProject }) => {
-      const shouldReject = getProject.call(moduleProject, { name: 'project', workspace: 'not-found', permission: 'Read' })
-      const error = moduleProject.errors.PROJECT_NOT_FOUND('not-found', 'project')
-      await expect(shouldReject).rejects.toThrow(error)
-    })
-
-    it('should throw if the request permission is not provided', async({ moduleProject }) => {
+    it('should throw a "ValidationError" if the request permission is not provided', async({ moduleProject, createWorkspace }) => {
+      const { workspace } = await createWorkspace('workspace')
       // @ts-expect-error: testing invalid input
-      const shouldReject = getProject.call(moduleProject, { name: 'project', workspace: 'workspace', permission: undefined })
+      const shouldReject = getProject.call(moduleProject, { workspace, name: 'project', permission: undefined })
       await expect(shouldReject).rejects.toThrow(ValidationError)
     })
 
-    it('should throw if the request permission is invalid', async({ moduleProject }) => {
+    it('should throw a "ValidationError" if the request permission is invalid', async({ moduleProject, createWorkspace }) => {
+      const { workspace } = await createWorkspace('workspace')
       // @ts-expect-error: testing invalid input
-      const shouldReject = getProject.call(moduleProject, { name: 'project', workspace: 'not-found', permission: 'Invalid' })
+      const shouldReject = getProject.call(moduleProject, { workspace, name: 'project', permission: 'Invalid' })
       await expect(shouldReject).rejects.toThrow(ValidationError)
     })
 
-    it('should throw if project name is empty', async({ moduleProject }) => {
-      const shouldReject = getProject.call(moduleProject, { name: '', workspace: 'not-found', permission: 'Read' })
+    it('should throw a "ValidationError" if project name is empty', async({ moduleProject, createWorkspace }) => {
+      const { workspace } = await createWorkspace('workspace')
+      const shouldReject = getProject.call(moduleProject, { workspace, name: '', permission: 'Read' })
       await expect(shouldReject).rejects.toThrow(ValidationError)
     })
 
-    it('should throw if workspace name is empty', async({ moduleProject }) => {
-      const shouldReject = getProject.call(moduleProject, { name: 'project', workspace: '', permission: 'Read' })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
-    })
-
-    it('should throw if the user is not provided', async({ moduleProject }) => {
+    it('should throw a "ValidationError" if the user is not provided', async({ moduleProject, createWorkspace }) => {
+      const { workspace } = await createWorkspace('workspace')
       // @ts-expect-error: testing invalid input
-      const shouldReject = getProject.call(moduleProject, { user: null, name: 'project', workspace: 'workspace', permission: 'Read' })
+      const shouldReject = getProject.call(moduleProject, { workspace, user: null, name: 'project', permission: 'Read' })
       await expect(shouldReject).rejects.toThrowError(ValidationError)
     })
 
-    it('should throw if the user does not have an "id" property', async({ moduleProject }) => {
+    it('should throw a "ValidationError" if the user does not have an "id" property', async({ moduleProject, createWorkspace }) => {
+      const { workspace } = await createWorkspace('workspace')
       // @ts-expect-error: testing invalid input
-      const shouldReject = getProject.call(moduleProject, { user: {}, name: 'project', workspace: 'workspace', permission: 'Read' })
+      const shouldReject = getProject.call(moduleProject, { workspace, user: {}, name: 'project', permission: 'Read' })
       await expect(shouldReject).rejects.toThrowError(ValidationError)
+    })
+
+    it('should throw a "ValidationError" if workspace is not provided', async({ moduleProject }) => {
+      // @ts-expect-error: testing invalid input
+      const shouldReject = getProject.call(moduleProject, { name: 'project', permission: 'Read' })
+      await expect(shouldReject).rejects.toThrow(ValidationError)
     })
   })
-}, 1000)
+})
