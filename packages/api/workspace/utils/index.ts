@@ -1,3 +1,4 @@
+export * from './assertWorkspace'
 export * from './assertWorkspacePermission'
 export * from './assignWorkspace'
 export * from './createWorkspace'

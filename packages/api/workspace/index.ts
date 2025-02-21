@@ -6,6 +6,7 @@ import * as ROUTES from './routes'
 import * as UTILS from './utils'
 
 export * from './entities'
+export * from './utils/assertWorkspace'
 export * from './utils/assertWorkspacePermission'
 
 export class ModuleWorkspace extends ModuleBase {
