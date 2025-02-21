@@ -18,7 +18,7 @@ describe.concurrent<Context>('claim', { timeout: 300 }, () => {
     await application.destroy()
   })
 
-  describe<Context>('getToken', (it) => {
+  describe<Context>('POST /claim', (it) => {
     it('should respond with status 200', async({ expect, application }) => {
       const response = await application.fetch('/claim', { method: 'POST' })
       expect(response).toMatchObject({ status: 200, statusText: 'OK' })

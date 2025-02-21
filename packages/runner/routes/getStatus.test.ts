@@ -9,7 +9,7 @@ interface Context {
   moduleRunner: ModuleRunner
 }
 
-describe.concurrent<Context>('getStatus', { timeout: 300 }, () => {
+describe.concurrent<Context>('GET /status', { timeout: 300 }, () => {
   beforeEach<Context>(async(context) => {
     context.application = await createTestApplication([ModuleRunner])
     context.moduleRunner = context.application.getModule(ModuleRunner)
