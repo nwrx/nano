@@ -5,6 +5,6 @@ import { getEventInformation } from './getEventInformation'
 
 export function authorize(this: ModuleRunner, event: H3Event | Peer) {
   const { token, address } = getEventInformation.call(this, event)
-  if (token !== this.runnerToken) throw this.errors.NOT_AUTHORIZED()
-  if (address !== this.runnerMasterAddress) throw this.errors.NOT_AUTHORIZED()
+  if (token !== this.runnerToken) throw this.errors.UNAUTHORIZED()
+  if (address !== this.runnerMasterAddress) throw this.errors.UNAUTHORIZED()
 }

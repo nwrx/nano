@@ -87,7 +87,7 @@ describe.concurrent<Context>('GET /status', { timeout: 300 }, () => {
       const response = await application.fetch('/status', { method: 'GET' })
       const data = await response.json() as Record<string, string>
       expect(data).toMatchObject({
-        data: { message: 'Not authorized', name: 'E_NOT_AUTHORIZED' },
+        data: { message: 'Not authorized', name: 'E_UNAUTHORIZED' },
         stack: [],
         statusCode: 401,
         statusMessage: 'Unauthorized',

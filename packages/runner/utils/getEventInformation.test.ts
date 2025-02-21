@@ -48,7 +48,7 @@ describe.concurrent<Context>('getEventInformation', () => {
     it('should throw if the Authorization header is missing', ({ expect, moduleRunner }) => {
       const event = createTestEvent({ headers: {} })
       const shouldThrow = () => getEventInformation.call(moduleRunner, event)
-      const error = moduleRunner.errors.NOT_AUTHORIZED()
+      const error = moduleRunner.errors.UNAUTHORIZED()
       expect(shouldThrow).toThrow(error)
     })
 
@@ -88,7 +88,7 @@ describe.concurrent<Context>('getEventInformation', () => {
     it('should throw if the Authorization header is missing', ({ expect, moduleRunner }) => {
       const peer = createTestPeer({ headers: {} })
       const shouldThrow = () => getEventInformation.call(moduleRunner, peer)
-      const error = moduleRunner.errors.NOT_AUTHORIZED()
+      const error = moduleRunner.errors.UNAUTHORIZED()
       expect(shouldThrow).toThrow(error)
     })
 

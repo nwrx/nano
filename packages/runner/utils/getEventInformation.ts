@@ -22,7 +22,7 @@ export function getEventInformation(this: ModuleRunner, event: H3Event | Peer) {
   // --- If the event is an H3 event, extract the address and user agent from the request.
   if (isEvent(event)) {
     const authorization = getHeader(event, 'Authorization')
-    if (!authorization) throw this.errors.NOT_AUTHORIZED()
+    if (!authorization) throw this.errors.UNAUTHORIZED()
     result.token = authorization.replace(/^Bearer +/, '')
     result.address = this.runnerTrustProxy ? getRequestHeader(event, 'X-Forwarded-For') : getRequestIP(event)
   }
@@ -37,7 +37,7 @@ export function getEventInformation(this: ModuleRunner, event: H3Event | Peer) {
   ) {
     const headers = event.request.headers
     const authorization = headers.get('Authorization')
-    if (!authorization) throw this.errors.NOT_AUTHORIZED()
+    if (!authorization) throw this.errors.UNAUTHORIZED()
     result.token = authorization.replace(/^Bearer +/, '')
     result.address = this.runnerTrustProxy ? headers.get('X-Forwarded-For')! : event.remoteAddress
   }

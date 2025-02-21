@@ -47,7 +47,7 @@ describe.concurrent<Context>('getEventInformation', () => {
         remoteAddress: moduleRunner.runnerMasterAddress,
       })
       const shouldThrow = () => authorize.call(moduleRunner, event)
-      const error = moduleRunner.errors.NOT_AUTHORIZED()
+      const error = moduleRunner.errors.UNAUTHORIZED()
       expect(shouldThrow).toThrowError(error)
     })
 
@@ -57,7 +57,7 @@ describe.concurrent<Context>('getEventInformation', () => {
         remoteAddress: '0.0.0.0',
       })
       const shouldThrow = () => authorize.call(moduleRunner, event)
-      const error = moduleRunner.errors.NOT_AUTHORIZED()
+      const error = moduleRunner.errors.UNAUTHORIZED()
       expect(shouldThrow).toThrowError(error)
     })
   })
@@ -90,7 +90,7 @@ describe.concurrent<Context>('getEventInformation', () => {
         remoteAddress: moduleRunner.runnerMasterAddress,
       })
       const shouldThrow = () => authorize.call(moduleRunner, peer)
-      const error = moduleRunner.errors.NOT_AUTHORIZED()
+      const error = moduleRunner.errors.UNAUTHORIZED()
       expect(shouldThrow).toThrowError(error)
     })
 
@@ -100,7 +100,7 @@ describe.concurrent<Context>('getEventInformation', () => {
         remoteAddress: '0.0.0.0',
       })
       const shouldThrow = () => authorize.call(moduleRunner, peer)
-      const error = moduleRunner.errors.NOT_AUTHORIZED()
+      const error = moduleRunner.errors.UNAUTHORIZED()
       expect(shouldThrow).toThrowError(error)
     })
   })

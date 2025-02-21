@@ -12,7 +12,7 @@ export function claim(this: ModuleRunner) {
 
       // --- Claim the runner and assign the request's remote address as the master address.
       const address = this.runnerTrustProxy ? getRequestHeader(event, 'X-Forwarded-For') : getRequestIP(event)
-      if (!address) throw this.errors.NOT_AUTHORIZED()
+      if (!address) throw this.errors.UNAUTHORIZED()
       this.runnerIsClaimed = true
       this.runnerMasterAddress = address
 
