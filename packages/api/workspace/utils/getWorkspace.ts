@@ -1,17 +1,17 @@
 import type { Loose } from '@unshared/types'
 import type { Workspace } from '../entities'
 import type { ModuleWorkspace } from '../index'
-import { assertStringNotEmpty, assertStringUuid, assertUndefined, createSchema } from '@unshared/validation'
+import { assert, createSchema } from '@unshared/validation'
 import { assertWorkspacePermission } from './assertWorkspacePermission'
 
 /** The parser fuction for the {@linkcode getWorkspace} function. */
 const GET_WORKSPACE_OPTIONS = createSchema({
 
   /** The `name` of the {@linkcode Workspace} to find. */
-  name: assertStringNotEmpty,
+  name: assert.stringNotEmpty,
 
   /** The `User` responsible for the request. */
-  user: [[assertUndefined], [createSchema({ id: assertStringUuid })]],
+  user: [[assert.undefined], [createSchema({ id: assert.stringUuid })]],
 
   /** The permissions required to access the workspace. */
   permission: assertWorkspacePermission,
@@ -52,6 +52,7 @@ export async function getWorkspace(this: ModuleWorkspace, options: ResolveWorksp
       : this.errors.WORKSPACE_NOT_FOUND(name)
   }
 
+  // --- Assert that the user has the right permissions.
   let hasAccess = permission === 'Read' && workspace.isPublic
   let hasReadAccess = workspace.isPublic
   for (const assignment of workspace.assignments!) {
