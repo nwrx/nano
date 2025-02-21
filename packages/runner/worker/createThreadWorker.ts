@@ -71,11 +71,26 @@ export class ThreadWorker {
     })
   }
 
-  dispose() {
+  async dispose() {
+    await this.abort()
     this.port.close()
   }
 }
 
+/**
+ * Create a new thread worker for the given flow. This will initialize a new
+ * thread in a worker thread (thread-ception) and return a wrapper around the
+ * `MessagePort` that allows us to interact with the thread.
+ *
+ * @param flow The flow to create a thread for.
+ * @returns A new thread worker instance.
+ * @example
+ * // Create a new thread worker for the given flow.
+ * const thread = await createThreadWorker(flow)
+ *
+ * // Start the thread with the given input object.
+ * const result = await thread.start({ input: 'object' })
+ */
 export async function createThreadWorker(this: ModuleRunner, flow: FlowV1) {
   type Module = typeof import('./createThreadWorker.worker.mjs').createThreadWorker
   const moduleId = new URL('createThreadWorker.worker.mjs', import.meta.url).pathname

@@ -18,15 +18,23 @@ export function threadSession(this: ModuleRunner) {
         authorize.call(this, peer)
         const thread = this.runnerSessions.get(parameters.id)
         if (!thread) throw this.errors.THREAD_NOT_FOUND(parameters.id)
+        thread.port.on('message', message => peer.send(message))
       },
-      onError: ({ peer, error }) => {
-        peer.send({ event: 'error', data: [error] } as ThreadWorkerMessage)
-      },
-      onMessage: async({ message, parameters }) => {
+      onMessage: async({ peer, message, parameters }) => {
+        authorize.call(this, peer)
         const thread = this.runnerSessions.get(parameters.id)
         if (!thread) throw this.errors.THREAD_NOT_FOUND(parameters.id)
         if (message.event === 'start') await thread.start(message.data)
         if (message.event === 'abort') await thread.abort()
+      },
+      onClose: async({ parameters }) => {
+        const thread = this.runnerSessions.get(parameters?.id)
+        if (!thread) return
+        await thread.dispose()
+        this.runnerSessions.delete(parameters.id)
+      },
+      onError: ({ peer, error }) => {
+        peer.send({ event: 'error', data: [error] } as ThreadWorkerMessage)
       },
     },
   )
