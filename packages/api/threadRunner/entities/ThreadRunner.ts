@@ -1,8 +1,9 @@
 import { BaseEntity, transformerDate } from '@unserved/server'
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm'
 import { User, UserObject } from '../../user'
 
 @Entity({ name: 'ThreadRunner' })
+@Unique(['address', 'deletedAt'])
 export class ThreadRunner extends BaseEntity {
 
   /**
@@ -12,7 +13,7 @@ export class ThreadRunner extends BaseEntity {
    *
    * @example "localhost:3000"
    */
-  @Column('varchar', { length: 255, nullable: false, unique: true })
+  @Column('varchar', { length: 255, nullable: false })
   address: string
 
   /**
@@ -53,7 +54,7 @@ export class ThreadRunner extends BaseEntity {
    */
   @JoinColumn()
   @ManyToOne(() => User, { nullable: false })
-  createdBy: User
+  createdBy: undefined | User
 
   /**
    * @returns The serialized representation of the thread runner.
@@ -74,5 +75,5 @@ export interface ThreadRunnerObject {
   identity: string
   createdAt: string
   lastSeenAt: string
-  createdBy?: UserObject
+  createdBy: undefined | UserObject
 }

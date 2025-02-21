@@ -5,7 +5,7 @@ import { setResponseStatus } from 'h3'
 import { ModuleUser } from '../../user'
 import { registerThreadRunner } from '../utils/registerThreadRunner'
 
-export function claimThreadRunner(this: ModuleThreadRunner) {
+export function threadRunnerClaim(this: ModuleThreadRunner) {
   return createHttpRoute(
     {
       name: 'POST /api/runners',

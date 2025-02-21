@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import type { Context } from '../../__fixtures__'
 import { createTestContext } from '../../__fixtures__'
-import { ThreadRunner } from '../utils'
 
-describe.sequential<Context>('claim', () => {
+describe.sequential<Context>('POST /api/runners', { timeout: 300 }, () => {
   beforeEach<Context>(async(context) => {
     await createTestContext(context)
     await context.application.createTestServer()
@@ -37,7 +36,7 @@ describe.sequential<Context>('claim', () => {
       const body = JSON.stringify({ address: 'http://localhost' })
       await application.fetch('/api/runners', { method: 'POST', body, headers })
       const runner = moduleThreadRunner.threadRunners.entries().next().value![1]
-      expect(runner).toBeInstanceOf(ThreadRunner)
+      expect(runner).toMatchObject({ address: 'http://localhost' })
     })
 
     it('should store the thread runner in the database', async({ createUser, application, moduleThreadRunner }) => {
@@ -47,7 +46,11 @@ describe.sequential<Context>('claim', () => {
       const { ThreadRunner } = moduleThreadRunner.getRepositories()
       const runners = await ThreadRunner.find()
       expect(runners).toHaveLength(1)
-      expect(runners[0]).toMatchObject({ address: 'http://localhost', token: expect.any(String) })
+      expect(runners[0]).toMatchObject({
+        address: 'http://localhost',
+        token: expect.any(String),
+        identity: expect.any(String),
+      })
     })
   })
 
