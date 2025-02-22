@@ -8,7 +8,7 @@ describe('encrypt', () => {
   it('should encrypt a value', async() => {
     const result = await encrypt(value, secret, 'aes-256-gcm')
     const EXP_B64 = /^[\d+/A-Za-z]*={0,2}$/
-    expect(result).toMatchObject({
+    expect(result).toStrictEqual({
       iv: expect.stringMatching(EXP_B64),
       tag: expect.stringMatching(EXP_B64),
       salt: expect.stringMatching(EXP_B64),

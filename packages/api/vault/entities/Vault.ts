@@ -1,4 +1,4 @@
-import type { Encrypted } from '../utils'
+import type { Encrypted } from '../../utils'
 import { BaseEntity, transformerJson } from '@unserved/server'
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, Unique } from 'typeorm'
 import { User } from '../../user'

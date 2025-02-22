@@ -1,10 +1,10 @@
 import type { ModuleVault } from '..'
+import type { Encrypted } from '../../utils'
 import type { VaultAdapter, VaultAwsOptions, VaultAzureOptions, VaultHashicorpOptions, VaultLocalOptions } from '../adapters'
 import type { Vault } from '../entities'
 import type { VaultType } from './assertVaultType'
-import type { Encrypted } from './encrypt'
+import { decrypt } from '../../utils'
 import { createVaultHashicorp, createVaultLocal } from '../adapters'
-import { decrypt } from './decrypt'
 
 export type VaultConfiguration<T extends VaultType = VaultType> =
   T extends 'aws' ? VaultAwsOptions
