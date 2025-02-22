@@ -1,9 +1,9 @@
 import type { Peer } from 'crossws'
 import type { H3Event } from 'h3'
+import type { UUID } from 'node:crypto'
 import type { User, UserSession } from '../entities'
 import type { ModuleUser } from '../index'
-import { EXP_UUID } from '@unshared/validation'
-import { createDecipheriv, createHash, type UUID } from 'node:crypto'
+import { decrypt } from '../../utils'
 import { getEventInformation } from './getEventInformation'
 
 export interface AuthenticateOptions<U extends boolean = boolean> {
@@ -31,14 +31,12 @@ export async function authenticate(this: ModuleUser, event: H3Event | Peer, opti
 export async function authenticate(this: ModuleUser, event: H3Event | Peer, options?: AuthenticateOptions): Promise<Partial<AuthenticateResult>>
 export async function authenticate(this: ModuleUser, event: H3Event | Peer, options: AuthenticateOptions = {}): Promise<Partial<AuthenticateResult>> {
   const { optional = false } = options
-  const { token, address, userAgent } = getEventInformation(event, {
-    cookieName: this.userSessionCookieName,
-    trustProxy: this.userTrustProxy,
-  })
+  const { sessionId, sessionToken, address, userAgent } = getEventInformation.call(this, event)
 
   // --- Extract and decrypt the token from the cookie.
   try {
-    if (!token) throw this.errors.USER_UNAUTHORIZED()
+    if (!sessionId) throw this.errors.USER_UNAUTHORIZED()
+    if (!sessionToken) throw this.errors.USER_UNAUTHORIZED()
     if (!address) throw this.errors.USER_ADDRESS_NOT_RESOLVED()
     if (!userAgent) throw this.errors.USER_MISSING_USER_AGENT_HEADER()
   }
@@ -47,24 +45,26 @@ export async function authenticate(this: ModuleUser, event: H3Event | Peer, opti
     throw error
   }
 
-  // --- Decrypt the token to get the user session id.
-  const iv = Buffer.alloc(16, 0)
-  const key = createHash('sha256').update(this.userSecretKey).digest()
-  const id = createDecipheriv(this.userCypherAlgorithm, key, iv).update(token, 'hex', 'utf8').toString()
-  const isUuid = EXP_UUID.test(id)
-  if (!isUuid) throw this.errors.USER_SESSION_NOT_FOUND()
-
   // --- Find the user session by the token.
   const { UserSession } = this.getRepositories()
   const userSession = await UserSession.findOne({
-    where: { id: id as UUID },
+    where: { id: sessionId as UUID },
     relations: { user: true },
     withDeleted: true,
   })
 
+  // --- Decrypt the token to get the user session id.
+  if (!userSession) throw this.errors.USER_SESSION_NOT_FOUND()
+  try {
+    const deciphered = await decrypt({ cipher: sessionToken, ...userSession.secret }, this.userSecretKey)
+    if (deciphered !== userSession.id) throw this.errors.USER_SESSION_NOT_FOUND()
+  }
+  catch {
+    throw this.errors.USER_SESSION_NOT_FOUND()
+  }
+
   // --- Assert the session exists and the user is not soft deleted.
   const now = new Date()
-  if (!userSession) throw this.errors.USER_SESSION_NOT_FOUND()
   if (userSession.deletedAt) throw this.errors.USER_SESSION_NOT_FOUND()
   if (!userSession.user) throw this.errors.USER_SESSION_NOT_FOUND()
   if (userSession.user.deletedAt) throw this.errors.USER_SESSION_NOT_FOUND()
