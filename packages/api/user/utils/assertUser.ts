@@ -1,6 +1,7 @@
-import { assertStringNotEmpty, assertStringUuid, createSchema } from '@unshared/validation'
+import { assert, createSchema } from '@unshared/validation'
 
 export const assertUser = createSchema({
-  id: assertStringUuid,
-  username: assertStringNotEmpty,
+  id: assert.stringUuid,
+  username: assert.stringNotEmpty,
+  isSuperAdministrator: [[assert.nil], [assert.boolean]],
 })

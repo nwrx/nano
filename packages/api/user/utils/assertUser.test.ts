@@ -7,7 +7,31 @@ describe('assertUser', () => {
     it('should assert and return a valid user with minimal fields', () => {
       const user = { id: randomUUID(), username: 'john.doe', extra: 'field' }
       const result = assertUser(user)
-      expect(result).toStrictEqual({ id: user.id, username: user.username })
+      expect(result).toStrictEqual({
+        id: user.id,
+        username: user.username,
+        isSuperAdministrator: undefined,
+      })
+    })
+
+    it('should assert and return a valid user with all fields', () => {
+      const user = { id: randomUUID(), username: 'john.doe', isSuperAdministrator: true }
+      const result = assertUser(user)
+      expect(result).toStrictEqual({
+        id: user.id,
+        username: user.username,
+        isSuperAdministrator: user.isSuperAdministrator,
+      })
+    })
+
+    it('should allow isSuperAdministrator to be null', () => {
+      const user = { id: randomUUID(), username: 'john.doe', isSuperAdministrator: null }
+      const result = assertUser(user)
+      expect(result).toStrictEqual({
+        id: user.id,
+        username: user.username,
+        isSuperAdministrator: null,
+      })
     })
   })
 

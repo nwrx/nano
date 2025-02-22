@@ -1,28 +1,26 @@
 import type { Loose } from '@unshared/types'
 import type { ModuleUser } from '..'
 import type { User } from '../entities'
-import { assertBoolean, assertNil, assertNull, assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
+import { assert, createSchema } from '@unshared/validation'
+import { assertUser } from './assertUser'
 
 /** The options to resolve the user. */
 const GET_USER_OPTIONS_SCHEMA = createSchema({
 
   /** The username of the user to resolve. */
-  username: assertStringNotEmpty,
+  username: assert.stringNotEmpty,
 
   /** The user responsible for resolving the user. */
-  user: [[assertUndefined], [createSchema({
-    username: assertStringNotEmpty,
-    isSuperAdministrator: [[assertNull], [assertBoolean]],
-  })]],
+  user: [[assert.undefined], [assertUser]],
 
   /** Also resolve deleted users. */
-  withDeleted: [[assertNil], [assertBoolean]],
+  withDeleted: [[assert.undefined], [assert.boolean]],
 
   /** Also resolve disabled users. */
-  withDisabled: [[assertNil], [assertBoolean]],
+  withDisabled: [[assert.undefined], [assert.boolean]],
 
   /** Also resolve the user's profile. */
-  withProfile: [[assertNil], [assertBoolean]],
+  withProfile: [[assert.undefined], [assert.boolean]],
 })
 
 /** The options to resolve the user. */
@@ -39,7 +37,7 @@ export async function getUser(this: ModuleUser, options: GetUserOptions): Promis
   const { username, user, withDisabled, withDeleted, withProfile } = GET_USER_OPTIONS_SCHEMA(options)
 
   // --- Only super administrators can resolve disabled users.
-  if (!user?.isSuperAdministrator) {
+  if (user?.isSuperAdministrator !== true) {
     if (withDisabled) throw this.errors.USER_FORBIDDEN()
     if (withDeleted) throw this.errors.USER_FORBIDDEN()
   }
