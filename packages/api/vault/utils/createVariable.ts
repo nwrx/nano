@@ -1,14 +1,14 @@
 import type { Loose } from '@unshared/types'
 import type { ModuleVault } from '../index'
-import type { Encrypted } from './encrypt'
-import { assertObjectStrict, assertStringNotEmpty, assertStringUuid, createSchema } from '@unshared/validation'
-import { assertVaultType } from './assertVaultType'
+import { assertStringNotEmpty, createSchema } from '@unshared/validation'
+import { assertUser } from '../../user'
+import { assertVault } from './assertVault'
 import { getVaultAdapter } from './getVaultAdapter'
 
 export const CREATE_VARIABLE_OPTIONS_SCHEMA = createSchema({
 
   /** The user that created the variable. */
-  user: createSchema({ id: assertStringUuid }),
+  user: assertUser,
 
   /** The name of the variable. */
   name: assertStringNotEmpty,
@@ -17,11 +17,7 @@ export const CREATE_VARIABLE_OPTIONS_SCHEMA = createSchema({
   value: assertStringNotEmpty,
 
   /** The vault that the variable belongs to. */
-  vault: createSchema({
-    id: assertStringUuid,
-    type: assertVaultType,
-    configuration: assertObjectStrict as (value: unknown) => Encrypted,
-  }),
+  vault: assertVault,
 })
 
 /** The options for creating a variable. */

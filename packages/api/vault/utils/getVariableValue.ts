@@ -1,23 +1,17 @@
 import type { Loose } from '@unshared/types'
 import type { ModuleVault } from '../index'
-import type { Encrypted } from './encrypt'
-import { assertObjectStrict, assertStringNotEmpty, assertStringUuid, createSchema } from '@unshared/validation'
-import { assertVaultType } from './assertVaultType'
+import { assert, createSchema } from '@unshared/validation'
+import { assertVault } from './assertVault'
 import { getVaultAdapter } from './getVaultAdapter'
 
 /** The schema for the getVariableValue options. */
 export const GET_VARIABLE_VALUE_OPTIONS_SCHEMA = createSchema({
 
   /** The vault containing the variable */
-  vault: createSchema({
-    id: assertStringUuid,
-    name: assertStringNotEmpty,
-    type: assertVaultType,
-    configuration: assertObjectStrict as (value: unknown) => Encrypted,
-  }),
+  vault: assertVault,
 
   /** The name of the variable to retrieve */
-  name: assertStringNotEmpty,
+  name: assert.stringNotEmpty,
 })
 
 /** Options for getting a variable value */

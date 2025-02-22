@@ -2,45 +2,46 @@ import type { Loose } from '@unshared/types'
 import type { ModuleVault } from '..'
 import type { Vault } from '../entities'
 import type { VaultConfiguration } from './getVaultAdapter'
-import { assertObjectStrict, assertString, assertStringNotEmpty, assertStringUuid, assertUndefined, createSchema } from '@unshared/validation'
+import { assert, createSchema } from '@unshared/validation'
+import { assertUser } from '../../user'
+import { encrypt } from '../../utils'
+import { assertWorkspace } from '../../workspace'
 import { assertVaultType } from './assertVaultType'
-import { encrypt } from './encrypt'
 
 const CREATE_VAULT_OPTIONS_SCHEMA = createSchema({
 
   /** The user that created the key vault. */
-  user: createSchema({ id: assertStringUuid }),
-
-  /** The type of key vault. */
-  type: assertVaultType,
-
-  /** The name of the key vault. */
-  name: assertStringNotEmpty,
-
-  /** The description of the key vault. */
-  description: [[assertUndefined], [assertString]],
+  user: assertUser,
 
   /** The workspace that the key vault belongs to. */
-  workspace: createSchema({ id: assertStringUuid, name: assertStringNotEmpty }),
+  workspace: assertWorkspace,
+
+  /** The type of key vault. */
+  type: [[assert.undefined], [assertVaultType]],
+
+  /** The name of the key vault. */
+  name: [[assert.undefined], [assert.stringNotEmpty]],
 
   /** The configuration for the key vault. */
-  configuration: assertObjectStrict as (value: unknown) => VaultConfiguration,
+  configuration: assert.objectStrict as (value: unknown) => asserts value is VaultConfiguration,
 })
 
 /** The options for creating the key vault. */
 export type CreateVaultOptions = Loose<ReturnType<typeof CREATE_VAULT_OPTIONS_SCHEMA>>
 
 /**
- * Creates a new key vault for storing variables.
+ * Creates a new key vault for storing variables. The function will create a new `Vault` entity
+ * with the given options and assign the user to the vault with full access. The function will
+ * throw an error if the vault already exists in the workspace.
  *
  * @param options The options for creating the key vault
- * @returns The created key vault
+ * @returns The newly created `Vault` entity.
  */
 export async function createVault(this: ModuleVault, options: CreateVaultOptions): Promise<Vault> {
-  const { Vault, VaultAssignment } = this.getRepositories()
-  const { user, name, type, workspace, description, configuration } = CREATE_VAULT_OPTIONS_SCHEMA(options)
+  const { user, workspace, configuration, name = 'default', type = 'local' } = CREATE_VAULT_OPTIONS_SCHEMA(options)
 
   // --- Assert that no vault with the same name exists in the workspace.
+  const { Vault } = this.getRepositories()
   const exists = await Vault.countBy({ name, workspace })
   if (exists > 0) throw this.errors.VAULT_ALREADY_EXISTS(name, workspace.name)
 
@@ -52,21 +53,15 @@ export async function createVault(this: ModuleVault, options: CreateVaultOptions
     this.vaultConfigurationAlgorithm,
   )
 
-  // --- Create the key vault.
-  const vault = Vault.create({
+  // --- Create the vault and assign the user to it.
+  const { VaultAssignment } = this.getRepositories()
+  const assignment = VaultAssignment.create({ user, permission: 'Owner', createdBy: user })
+  return Vault.create({
     createdBy: user,
     type,
     name,
     workspace,
-    description,
     configuration: configurationEncrypted,
+    assignments: [assignment],
   })
-
-  // --- Assign the user as the owner of the key vault.
-  const assignment = VaultAssignment.create({ user, vault, permission: 'Owner', createdBy: user })
-  vault.assignments = [assignment]
-
-  // --- Save the vault to the database.
-  await Vault.save(vault)
-  return vault
 }

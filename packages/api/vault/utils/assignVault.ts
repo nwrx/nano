@@ -1,19 +1,21 @@
 import type { Loose } from '@unshared/types'
 import type { ModuleVault } from '../index'
-import { assertStringUuid, createSchema } from '@unshared/validation'
+import { createSchema } from '@unshared/validation'
+import { assertUser } from '../../user'
+import { assertVault } from './assertVault'
 import { assertVaultPermission } from './assertVaultPermission'
 
 /** The schema for assigning a vault to a user. */
 export const ASSIGN_VAULT_OPTIONS_SCHEMA = createSchema({
 
   /** The user responsible for assigning the vault. */
-  user: createSchema({ id: assertStringUuid }),
+  user: assertUser,
 
   /** The user to assign the vault to. */
-  assignee: createSchema({ id: assertStringUuid }),
+  assignee: assertUser,
 
   /** The vault to assign to the user. */
-  vault: createSchema({ id: assertStringUuid }),
+  vault: assertVault,
 
   /** The permission to assign to the user. */
   permission: assertVaultPermission,

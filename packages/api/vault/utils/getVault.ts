@@ -1,7 +1,9 @@
 import type { Loose } from '@unshared/types'
 import type { ModuleVault } from '..'
 import type { Vault } from '../entities'
-import { assertBoolean, assertStringNotEmpty, assertStringUuid, assertUndefined, createSchema } from '@unshared/validation'
+import { assertBoolean, assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
+import { assertUser } from '../../user'
+import { assertWorkspace } from '../../workspace'
 import { assertVaultPermission } from './assertVaultPermission'
 
 /** The schema for the getVault options. */
@@ -11,10 +13,10 @@ const GET_VAULT_OPTIONS_SCHEMA = createSchema({
   name: assertStringNotEmpty,
 
   /** The `User` responsible for the request. */
-  user: [createSchema({ id: assertStringUuid })],
+  user: assertUser,
 
   /** The `Workspace` where the vault is located. */
-  workspace: createSchema({ id: assertStringUuid }),
+  workspace: assertWorkspace,
 
   /** The permissions required to access the vault. */
   permission: assertVaultPermission,
