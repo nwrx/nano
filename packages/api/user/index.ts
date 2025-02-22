@@ -1,3 +1,4 @@
+import type { CipherGCMTypes } from 'node:crypto'
 import { ModuleBase } from '@unserved/server'
 import { randomBytes } from 'node:crypto'
 import { ModuleFlow } from '../flow'
@@ -39,16 +40,23 @@ export interface ModuleUserOptions {
    *
    * @default 'aes-256-gcm'
    */
-  userCypherAlgorithm?: string
+  userCypherAlgorithm?: CipherGCMTypes
+
+  /**
+   * The cookie name used to store the id of the user session
+   * and authenticate the user.
+   *
+   * @default '__Host-Session-Id'
+   */
+  userSessionIdCookieName?: string
 
   /**
    * The cookie name used to store the user session token
-   * and authenticate the user. It can be any name but it
-   * should be unique.
+   * and authenticate the user.
    *
    * @default '__Host-Session-Token'
    */
-  userSessionCookieName?: string
+  userSessionTokenCookieName?: string
 
   /**
    * The time in milliseconds that the user session token
@@ -91,7 +99,7 @@ export class ModuleUser extends ModuleBase implements ModuleUserOptions {
     if (options.userTrustProxy) this.userTrustProxy = options.userTrustProxy
     if (options.userSecretKey) this.userSecretKey = options.userSecretKey
     if (options.userCypherAlgorithm) this.userCypherAlgorithm = options.userCypherAlgorithm
-    if (options.userSessionCookieName) this.userSessionCookieName = options.userSessionCookieName
+    if (options.userSessionTokenCookieName) this.userSessionTokenCookieName = options.userSessionTokenCookieName
     if (options.userSessionDuration) this.userSessionDuration = options.userSessionDuration
     if (options.userRecoveryDuration) this.userRecoveryDuration = options.userRecoveryDuration
   }
@@ -99,12 +107,29 @@ export class ModuleUser extends ModuleBase implements ModuleUserOptions {
   // --- Parameters.
   userTrustProxy = true
   userSecretKey = randomBytes(64).toString('hex')
-  userCypherAlgorithm = 'aes-256-gcm'
-  userSessionCookieName = '__Host-Session-Token'
-  userSessionDuration = 1000 * 60 * 60 * 24
-  userRecoveryDuration = 1000 * 60 * 30
+  userCypherAlgorithm: CipherGCMTypes = 'aes-256-gcm'
+  userSessionIdCookieName = '__Host-Session-Id'
+  userSessionTokenCookieName = '__Host-Session-Token'
+  userSessionDuration = 3600 * 24
+  userRecoveryDuration = 600
 
-  // --- Methods.
+  /**
+   * Given a username, resolve the user entity. This is used to find the user
+   *
+   * @param options The options to resolve the user.
+   * @returns The resolved user entity.
+   * @example const user = await resolveUser({ username: 'alice', user })
+   */
   getUser = UTILS.getUser.bind(this)
+
+  /**
+   * Authenticate the user by the token contained in the request's cookie payload
+   * and return it's associated `User` entity. If the user is not authenticated, it
+   * will throw an error. If the `optional` option is set to `true`, it will return
+   * `undefined` instead of throwing an error.
+   *
+   * @param event The H3 event to authenticate the user from.
+   * @returns The user associated with the user session.
+   */
   authenticate = UTILS.authenticate.bind(this) as typeof UTILS.authenticate
 }

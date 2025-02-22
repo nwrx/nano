@@ -1,16 +1,13 @@
 import type { Peer } from 'crossws'
 import type { H3Event } from 'h3'
+import type { ModuleUser } from '..'
 import { getCookie, getHeader, getRequestIP, isEvent } from 'h3'
 
 export interface EventInformation {
-  token?: string
   address?: string
   userAgent?: string
-}
-
-export interface GetEventInformationOptions {
-  cookieName: string
-  trustProxy: boolean
+  sessionId?: string
+  sessionToken?: string
 }
 
 /**
@@ -19,18 +16,17 @@ export interface GetEventInformationOptions {
  * route or a WebSocket route.
  *
  * @param event The event to get the information from.
- * @param options The options to get the information with.
  * @returns The address and user agent from the event.
  */
-export function getEventInformation(event: H3Event | Peer, options: GetEventInformationOptions): EventInformation {
-  const { cookieName, trustProxy } = options
+export function getEventInformation(this: ModuleUser, event: H3Event | Peer): EventInformation {
   const result: EventInformation = {}
 
   // --- If the event is an H3 event, extract the address and user agent from the request.
   if (isEvent(event)) {
-    result.token = getCookie(event, cookieName)
-    result.address = getRequestIP(event, { xForwardedFor: trustProxy }) ?? undefined
+    result.address = getRequestIP(event, { xForwardedFor: this.userTrustProxy })
     result.userAgent = getHeader(event, 'User-Agent')
+    result.sessionId = getCookie(event, this.userSessionIdCookieName)
+    result.sessionToken = getCookie(event, this.userSessionTokenCookieName)
   }
 
   // --- If the event is a peer, extract the address and user agent from the peer.
@@ -45,9 +41,10 @@ export function getEventInformation(event: H3Event | Peer, options: GetEventInfo
     const cookiesValue = headers.get('cookie') ?? ''
     const cookiesEntries = cookiesValue.split(';').map(x => x.trim().split('=').map(x => x.trim()))
     const cookies = Object.fromEntries(cookiesEntries) as Record<string, string>
-    result.token = cookies[cookieName]
-    result.address = (trustProxy ? headers.get('X-Forwarded-For') : undefined) ?? event.remoteAddress
+    result.address = (this.userTrustProxy ? headers.get('X-Forwarded-For') : undefined) ?? event.remoteAddress
     result.userAgent = headers.get('User-Agent') ?? undefined
+    result.sessionId = cookies[this.userSessionIdCookieName]
+    result.sessionToken = cookies[this.userSessionTokenCookieName]
   }
 
   // --- Return the event information.
