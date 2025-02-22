@@ -3,7 +3,7 @@ import type { User } from '../entities'
 import type { UserSession } from '../entities'
 import type { ModuleUser } from '../index'
 import { setCookie } from 'h3'
-import { randomBytes, randomUUID } from 'node:crypto'
+import { randomUUID } from 'node:crypto'
 import { encrypt } from '../../utils'
 import { getEventInformation } from './getEventInformation'
 
@@ -33,13 +33,15 @@ export async function createSession(this: ModuleUser, event: H3Event, options: C
   if (!address) throw this.errors.USER_ADDRESS_NOT_RESOLVED()
   if (!userAgent) throw this.errors.USER_MISSING_USER_AGENT_HEADER()
 
-  // --- Create the session entity and encrypt the secret.
+  // --- Compute all time-based values now to avoid any drift.
   const now = Date.now()
   const expiresAt = new Date(now + duration * 1000)
+  const maxAge = (expiresAt.getTime() - now) / 1000
+
+  // --- Create the session entity and encrypt the secret.
   const sessionId = randomUUID()
-  const sessionSecret = randomBytes(32).toString('hex')
   const { cipher, ...secret } = await encrypt(
-    sessionSecret,
+    sessionId,
     this.userSecretKey,
     this.userCypherAlgorithm,
   )
@@ -51,7 +53,7 @@ export async function createSession(this: ModuleUser, event: H3Event, options: C
     httpOnly: true,
     sameSite: 'strict',
     expires: expiresAt,
-    maxAge: (expiresAt.getTime() - now) / 1000,
+    maxAge,
   })
 
   // --- Set the session cookie in the response headers.
@@ -61,7 +63,7 @@ export async function createSession(this: ModuleUser, event: H3Event, options: C
     httpOnly: true,
     sameSite: 'strict',
     expires: expiresAt,
-    maxAge: (expiresAt.getTime() - now) / 1000,
+    maxAge,
   })
 
   const { UserSession } = this.getRepositories()
