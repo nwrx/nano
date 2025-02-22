@@ -74,7 +74,7 @@ export class User extends BaseEntity {
    *
    * @example [UserPassword { ... }]
    */
-  @OneToMany(() => UserPassword, password => password.user, { cascade: true })
+  @OneToMany(() => UserPassword, password => password.user)
   passwords: undefined | UserPassword[]
 
   /**
@@ -83,7 +83,7 @@ export class User extends BaseEntity {
    *
    * @example [UserSession { ... }]
    */
-  @OneToMany(() => UserSession, session => session.user, { cascade: true })
+  @OneToMany(() => UserSession, session => session.user)
   sessions: undefined | UserSession[]
 
   /**
@@ -92,7 +92,7 @@ export class User extends BaseEntity {
    *
    * @example [UserRecovery { ... }]
    */
-  @OneToMany(() => UserRecovery, recovery => recovery.user, { cascade: true })
+  @OneToMany(() => UserRecovery, recovery => recovery.user)
   recoveries: undefined | UserRecovery[]
 
   /**
