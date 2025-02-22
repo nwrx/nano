@@ -20,9 +20,9 @@ export async function decrypt(encrypted: Encrypted, secret: string): Promise<str
   if (encrypted.algorithm === 'aes-192-gcm') keyLength = 24
   if (encrypted.algorithm === 'aes-128-gcm') keyLength = 16
 
-  // --- Decode the iv, salt, and tag from base64.
-  const iv = Buffer.from(encrypted.iv, 'base64')
-  const salt = Buffer.from(encrypted.salt, 'base64')
+  // --- Decode the iv, salt, and tag from hex.
+  const iv = Buffer.from(encrypted.iv, 'hex')
+  const salt = Buffer.from(encrypted.salt, 'hex')
   const key = await new Promise<Buffer>((resolve, reject) => {
     scrypt(secret, salt, keyLength, (error, key) => {
       if (error) return reject(error)
@@ -30,10 +30,10 @@ export async function decrypt(encrypted: Encrypted, secret: string): Promise<str
     })
   })
 
-  const tag = Buffer.from(encrypted.tag, 'base64')
+  const tag = Buffer.from(encrypted.tag, 'hex')
   const decipher = createDecipheriv(encrypted.algorithm, key, iv)
   decipher.setAuthTag(tag)
-  const d1 = decipher.update(encrypted.cipher, 'base64', 'utf8')
+  const d1 = decipher.update(encrypted.cipher, 'hex', 'utf8')
   const d2 = decipher.final('utf8')
   return d1 + d2
 }

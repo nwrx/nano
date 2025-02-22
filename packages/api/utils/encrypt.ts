@@ -41,12 +41,12 @@ export async function encrypt(value: string, secret: string, algorithm: CipherGC
 
   // --- Create a cipher using the algorithm, key, and iv.
   const cipher = createCipheriv(algorithm, key, iv)
-  const d1 = cipher.update(value, 'utf8', 'base64')
-  const d2 = cipher.final('base64')
+  const d1 = cipher.update(value, 'utf8', 'hex')
+  const d2 = cipher.final('hex')
   return {
-    iv: iv.toString('base64'),
-    tag: cipher.getAuthTag().toString('base64'),
-    salt: salt.toString('base64'),
+    iv: iv.toString('hex'),
+    tag: cipher.getAuthTag().toString('hex'),
+    salt: salt.toString('hex'),
     cipher: d1 + d2,
     algorithm,
   }
