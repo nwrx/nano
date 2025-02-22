@@ -1,9 +1,6 @@
 import { BaseEntity, transformerDate } from '@unserved/server'
-import { Column, Entity, Index, OneToMany, OneToOne } from 'typeorm'
-import { UserPassword } from './UserPassword'
+import { Column, Entity, Index, OneToOne } from 'typeorm'
 import { UserProfile, UserProfileObject } from './UserProfile'
-import { UserRecovery } from './UserRecovery'
-import { UserSession } from './UserSession'
 
 /**
  * A user of the application. It can be a customer, an employee, an administrator, etc.
@@ -70,48 +67,6 @@ export class User extends BaseEntity {
   profile: undefined | UserProfile
 
   /**
-   * The list of passwords associated with the user. It is used to store the history of all passwords of the user.
-   *
-   * @example [UserPassword { ... }]
-   */
-  @OneToMany(() => UserPassword, password => password.user)
-  passwords: undefined | UserPassword[]
-
-  /**
-   * The list of sessions associated with the user. It is used to determine the devices
-   * and browsers that the user is using to access the application.
-   *
-   * @example [UserSession { ... }]
-   */
-  @OneToMany(() => UserSession, session => session.user)
-  sessions: undefined | UserSession[]
-
-  /**
-   * The list of recovery requests associated with the user. It is used to recover the
-   * password of the user by sending a special token to the user by email or phone.
-   *
-   * @example [UserRecovery { ... }]
-   */
-  @OneToMany(() => UserRecovery, recovery => recovery.user)
-  recoveries: undefined | UserRecovery[]
-
-  /**
-   * Get the most recent session used by the user. It is used to determine the last time
-   * the user was seen in the application. It is also used to determine if the user is
-   * currently online or offline.
-   *
-   * @returns The most recent session.
-   * @example UserSession { ... }
-   */
-  get lastSession(): undefined | UserSession {
-    if (!this.sessions) return undefined
-    let session: undefined | UserSession = undefined
-    for (const x of this.sessions)
-      if (!session || x.lastUsedAt > session.lastUsedAt) session = x
-    return session
-  }
-
-  /**
    * Return a copy if the exposed properties of the user. It is used to send the user
    * data to the client without exposing sensitive information.
    *
@@ -127,7 +82,6 @@ export class User extends BaseEntity {
       disabledAt: options.withProtected ? this.disabledAt?.toISOString() : undefined,
       createdAt: options.withProtected ? this.createdAt?.toISOString() : undefined,
       updatedAt: options.withProtected ? this.updatedAt?.toISOString() : undefined,
-      lastSeenAt: this.lastSession?.lastUsedAt?.toISOString(),
     }
   }
 }
@@ -143,5 +97,4 @@ export interface UserObject extends Partial<UserProfileObject> {
   disabledAt?: string
   createdAt?: string
   updatedAt?: string
-  lastSeenAt?: string
 }
