@@ -15,7 +15,7 @@ describe.concurrent('authenticate', () => {
     await context.application.destroy()
   })
 
-  describe<Context>('createSession', (it) => {
+  describe<Context>('result', (it) => {
     it('should create a UserSession instance', async({ moduleUser }) => {
       const user = await createUser.call(moduleUser, FIXTURE_USER_BASIC)
       const event = createTestEvent({ headers: { 'User-Agent': 'Mozilla/5.0' } })
@@ -65,7 +65,7 @@ describe.concurrent('authenticate', () => {
     })
   })
 
-  describe<Context>('saving', (it) => {
+  describe<Context>('database', (it) => {
     it('should save the session in the database', async({ moduleUser }) => {
       const user = await createUser.call(moduleUser, FIXTURE_USER_BASIC)
       const event = createTestEvent({ headers: { 'User-Agent': 'Mozilla/5.0' } })

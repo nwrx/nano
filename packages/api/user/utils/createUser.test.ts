@@ -13,7 +13,7 @@ describe.concurrent('authenticate', () => {
     await context.application.destroy()
   })
 
-  describe<Context>('createUser', (it) => {
+  describe<Context>('result', (it) => {
     it('should create a user with valid options', async({ moduleUser }) => {
       const user = await createUser.call(moduleUser, FIXTURE_USER_BASIC)
       expect({ ...user }).toStrictEqual({
@@ -48,7 +48,7 @@ describe.concurrent('authenticate', () => {
     })
   })
 
-  describe<Context>('save', (it) => {
+  describe<Context>('database', (it) => {
     it('should save the user and cascade the profile', async({ moduleUser }) => {
       const { User, UserProfile } = moduleUser.getRepositories()
       const user = await createUser.call(moduleUser, FIXTURE_USER_BASIC)

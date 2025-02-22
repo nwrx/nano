@@ -15,7 +15,7 @@ describe.concurrent('authenticate', () => {
     await context.application.destroy()
   })
 
-  describe<Context>('hashing', (it) => {
+  describe<Context>('result', (it) => {
     it('should return the hash of the password', async({ moduleUser }) => {
       const user = await createUser.call(moduleUser, FIXTURE_USER_BASIC)
       const { hash } = await createPassword.call(moduleUser, { user, password: 'password' })
@@ -64,7 +64,7 @@ describe.concurrent('authenticate', () => {
     })
   })
 
-  describe<Context>('saving', (it) => {
+  describe<Context>('database', (it) => {
     it('should save the password hash in the database', async({ moduleUser }) => {
       const { User, UserPassword } = moduleUser.getRepositories()
       const user = await createUser.call(moduleUser, FIXTURE_USER_BASIC)
