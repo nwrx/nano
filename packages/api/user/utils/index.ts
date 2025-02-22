@@ -1,3 +1,4 @@
+export * from './assertUser'
 export * from './authenticate'
 export * from './checkPassword'
 export * from './createPassword'
