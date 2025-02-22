@@ -1,5 +1,5 @@
 import { BaseEntity, transformerDate } from '@unserved/server'
-import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm'
+import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm'
 import { User } from './User'
 
 /**
@@ -8,7 +8,7 @@ import { User } from './User'
  * is sent to the user by email and is used to verify the identity of the user.
  */
 @Entity('UserRecovery')
-@Unique('UserRecovery_user', ['user', 'consumedAt'])
+@Index(['user', 'consumedAt'])
 export class UserRecovery extends BaseEntity {
 
   /**
@@ -18,8 +18,8 @@ export class UserRecovery extends BaseEntity {
    * @example User { ... }
    */
   @JoinColumn()
-  @ManyToOne(() => User, { nullable: false, onDelete: 'CASCADE' })
-  user?: User
+  @ManyToOne(() => User, { nullable: false })
+  user: null | User
 
   /**
    * The date at which the recovery request was created. It is used to determine the
@@ -27,7 +27,7 @@ export class UserRecovery extends BaseEntity {
    *
    * @example Date { ... }
    */
-  @Column('varchar', { length: 255, transformer: transformerDate })
+  @Column('varchar', { transformer: transformerDate })
   expiredAt: Date
 
   /**
@@ -36,6 +36,6 @@ export class UserRecovery extends BaseEntity {
    *
    * @example Date { ... }
    */
-  @Column('varchar', { length: 255, nullable: true, transformer: transformerDate })
-  consumedAt?: Date | null
+  @Column('varchar', { nullable: true, transformer: transformerDate })
+  consumedAt: Date | null
 }

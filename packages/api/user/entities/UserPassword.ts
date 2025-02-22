@@ -1,4 +1,4 @@
-import type { PasswordOptions } from '../utils'
+import type { CreatePasswordOptions } from '../utils'
 import { BaseEntity, transformerDate, transformerJson } from '@unserved/server'
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
 import { User } from './User'
@@ -13,7 +13,7 @@ export class UserPassword extends BaseEntity {
    * The user associated with this password.
    */
   @JoinColumn()
-  @ManyToOne(() => User, user => user.passwords)
+  @ManyToOne(() => User, user => user.passwords, { nullable: false })
   user: User
 
   /**
@@ -25,13 +25,13 @@ export class UserPassword extends BaseEntity {
   /**
    * The options used to hash the current password of the user.
    */
-  @Column('text', { transformer: transformerJson, nullable: true })
-  options: PasswordOptions
+  @Column('text', { transformer: transformerJson })
+  options: CreatePasswordOptions
 
   /**
    * The expiration date of the password. It is used to determine when the password
    * will expire and the user will have to change it.
    */
-  @Column('varchar', { length: 255, nullable: true, transformer: transformerDate })
+  @Column('varchar', { nullable: true, transformer: transformerDate })
   expiredAt?: Date
 }

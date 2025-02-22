@@ -19,16 +19,16 @@ export class UserSession extends BaseEntity {
    *
    * @example User { ... }
    */
-  @ManyToOne(() => User, user => user.sessions, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => User, user => user.sessions, { nullable: false })
   @JoinColumn()
-  user?: User
+  user: null | User
 
   /**
    * The address of the session. It is used to bind the session to a specific device.
    *
    * @example '192.168.1.1'
    */
-  @Column('varchar', { length: 255 })
+  @Column('varchar')
   address: string
 
   /**
@@ -37,7 +37,7 @@ export class UserSession extends BaseEntity {
    *
    * @example 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
    */
-  @Column('varchar', { length: 255 })
+  @Column('varchar')
   userAgent: string
 
   /**
@@ -47,7 +47,7 @@ export class UserSession extends BaseEntity {
    *
    * @example '2022-12-31T23:59:59.999Z'
    */
-  @Column('varchar', { transformer: transformerDate, length: 255 })
+  @Column('varchar', { transformer: transformerDate })
   expiresAt: Date
 
   /**
@@ -56,7 +56,7 @@ export class UserSession extends BaseEntity {
    *
    * @example '2022-12-31T23:59:59.999Z'
    */
-  @Column('varchar', { transformer: transformerDate, length: 255 })
+  @Column('varchar', { transformer: transformerDate })
   lastUsedAt = new Date()
 
   /**

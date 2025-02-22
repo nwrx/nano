@@ -1,9 +1,9 @@
 import { BaseEntity, transformerDate } from '@unserved/server'
-import { UUID } from 'node:crypto'
-import { Column, Entity, OneToMany, OneToOne } from 'typeorm'
+import { Column, Entity, Index, OneToMany, OneToOne } from 'typeorm'
 import { UserPassword } from './UserPassword'
 import { UserProfile, UserProfileObject } from './UserProfile'
-import { UserSession, UserSessionObject } from './UserSession'
+import { UserRecovery } from './UserRecovery'
+import { UserSession } from './UserSession'
 
 /**
  * A user of the application. It can be a customer, an employee, an administrator, etc.
@@ -16,6 +16,8 @@ import { UserSession, UserSessionObject } from './UserSession'
  * An administrator can do everything.
  */
 @Entity({ name: 'User' })
+@Index(['email', 'deletedAt'], { unique: true })
+@Index(['username', 'deletedAt'], { unique: true })
 export class User extends BaseEntity {
 
   /**
@@ -32,13 +34,13 @@ export class User extends BaseEntity {
    *
    * @example 'john.doe@acme.com'
    */
-  @Column('varchar', { unique: true, length: 255 })
+  @Column('varchar')
   email: string
 
   /**
    * Email or username address of the user. It is unique and used to login.
    */
-  @Column('varchar', { unique: true, length: 255 })
+  @Column('varchar')
   username: string
 
   /**
@@ -47,8 +49,8 @@ export class User extends BaseEntity {
    *
    * @example Date { ... }
    */
-  @Column('varchar', { length: 255, nullable: true, transformer: transformerDate })
-  disabledAt?: Date | null
+  @Column('varchar', { nullable: true, transformer: transformerDate })
+  disabledAt: Date | null
 
   /**
    * Date at which the user was verified. It is used to determine if the user has
@@ -56,8 +58,16 @@ export class User extends BaseEntity {
    *
    * @example Date { ... }
    */
-  @Column('varchar', { length: 255, nullable: true, transformer: transformerDate })
-  verifiedAt?: Date | null
+  @Column('varchar', { nullable: true, transformer: transformerDate })
+  verifiedAt: Date | null
+
+  /**
+   * The list of profiles associated with the user. It is used to store additional information about the user.
+   *
+   * @example UserProfile { ... }
+   */
+  @OneToOne(() => UserProfile, profile => profile.user, { nullable: false, cascade: true })
+  profile: undefined | UserProfile
 
   /**
    * The list of passwords associated with the user. It is used to store the history of all passwords of the user.
@@ -65,7 +75,7 @@ export class User extends BaseEntity {
    * @example [UserPassword { ... }]
    */
   @OneToMany(() => UserPassword, password => password.user, { cascade: true })
-  passwords?: UserPassword[]
+  passwords: undefined | UserPassword[]
 
   /**
    * The list of sessions associated with the user. It is used to determine the devices
@@ -74,15 +84,16 @@ export class User extends BaseEntity {
    * @example [UserSession { ... }]
    */
   @OneToMany(() => UserSession, session => session.user, { cascade: true })
-  sessions?: UserSession[]
+  sessions: undefined | UserSession[]
 
   /**
-   * The list of profiles associated with the user. It is used to store additional information about the user.
+   * The list of recovery requests associated with the user. It is used to recover the
+   * password of the user by sending a special token to the user by email or phone.
    *
-   * @example UserProfile { ... }
+   * @example [UserRecovery { ... }]
    */
-  @OneToOne(() => UserProfile, profile => profile.user, { nullable: false, cascade: true })
-  profile?: UserProfile
+  @OneToMany(() => UserRecovery, recovery => recovery.user, { cascade: true })
+  recoveries: undefined | UserRecovery[]
 
   /**
    * Get the most recent session used by the user. It is used to determine the last time
@@ -109,50 +120,28 @@ export class User extends BaseEntity {
    */
   serialize(options: SerializeOptions = {}): UserObject {
     return {
-
-      // Public properties.
       ...this.profile?.serialize(),
       username: this.username,
-      displayName: this.profile?.displayName ?? this.username,
-      avatarUrl: `/api/users/${this.username}/avatar`,
-
-      // Protected properties.
-      id: options.withProtected ? this.id : undefined,
       email: options.withProtected ? this.email : undefined,
       verifiedAt: options.withProtected ? this.verifiedAt?.toISOString() : undefined,
       disabledAt: options.withProtected ? this.disabledAt?.toISOString() : undefined,
       createdAt: options.withProtected ? this.createdAt?.toISOString() : undefined,
       updatedAt: options.withProtected ? this.updatedAt?.toISOString() : undefined,
-
-      // Sessions.
       lastSeenAt: this.lastSession?.lastUsedAt?.toISOString(),
-      sessions: options.withSessions
-        ? this.sessions
-          ?.filter(session => session.expiresAt > new Date())
-          .filter(session => !session.deletedAt)
-          .map(session => session.serialize())
-        : undefined,
     }
   }
 }
 
 interface SerializeOptions {
   withProtected?: boolean
-  withSessions?: boolean
 }
 
-export interface UserObject extends UserProfileObject {
+export interface UserObject extends Partial<UserProfileObject> {
   username: string
-  displayName: string
-  avatarUrl: string
-
-  id?: UUID
   email?: string
   verifiedAt?: string
   disabledAt?: string
   createdAt?: string
   updatedAt?: string
-
   lastSeenAt?: string
-  sessions?: UserSessionObject[]
 }
