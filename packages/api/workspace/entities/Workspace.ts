@@ -1,6 +1,6 @@
 import { BaseEntity, transformerDate } from '@unserved/server'
-import { Column, Entity, Index, OneToMany } from 'typeorm'
-import { Project } from '../../project'
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from 'typeorm'
+import { User } from '../../user'
 import { WorkspaceAssignment } from './WorkspaceAssignment'
 
 /**
@@ -9,6 +9,7 @@ import { WorkspaceAssignment } from './WorkspaceAssignment'
  * the projects and flows that are related to the same topic.
  */
 @Entity({ name: 'Workspace' })
+@Index(['name', 'deletedAt'], { unique: true })
 export class Workspace extends BaseEntity {
 
   /**
@@ -17,8 +18,7 @@ export class Workspace extends BaseEntity {
    *
    * @example 'my-workspace'
    */
-  @Index({ unique: true })
-  @Column('varchar', { length: 255, unique: true })
+  @Column('varchar')
   name: string
 
   /**
@@ -28,8 +28,8 @@ export class Workspace extends BaseEntity {
    *
    * @example false
    */
-  @Column('boolean', { default: false })
-  isPublic: boolean
+  @Column('boolean')
+  isPublic = false
 
   /**
    * Date at which the workspace was archived. If the workspace is archived, it can no longer
@@ -38,23 +38,25 @@ export class Workspace extends BaseEntity {
    *
    * @example Date { ... }
    */
-  @Column('varchar', { length: 255, nullable: true, transformer: transformerDate })
+  @Column('varchar', { nullable: true, transformer: transformerDate })
   archivedAt: Date | null
 
   /**
-   * The projects that are part of the workspace.
+   * The user who created the workspace. Note that this user is not necessarily the owner of
+   * the workspace. This field has no impact on the permissions of the workspace.
    *
-   * @example [Project, Project, Project]
+   * @example User { ... }
    */
-  @OneToMany(() => Project, project => project.workspace, { cascade: true, onDelete: 'CASCADE' })
-  projects: Project[] | undefined
+  @JoinColumn()
+  @ManyToOne(() => User, { nullable: false })
+  createdBy: undefined | User
 
   /**
    * The assignments of the workspace to the users.
    *
    * @example [WorkspaceAssignment, WorkspaceAssignment, WorkspaceAssignment]
    */
-  @OneToMany(() => WorkspaceAssignment, assignment => assignment.workspace, { cascade: true, onDelete: 'CASCADE' })
+  @OneToMany(() => WorkspaceAssignment, assignment => assignment.workspace, { cascade: true })
   assignments: undefined | WorkspaceAssignment[]
 
   /**
