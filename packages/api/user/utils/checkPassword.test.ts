@@ -53,4 +53,4 @@ describe.concurrent('checkPassword', () => {
       expect(result).toBe(false)
     })
   })
-}, 1000)
+})
