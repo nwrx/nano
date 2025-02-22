@@ -20,7 +20,7 @@ export class ProjectAssignment extends BaseEntity {
    */
   @JoinColumn()
   @ManyToOne(() => User, { onDelete: 'CASCADE', nullable: false })
-  user?: User
+  user: undefined | User
 
   /**
    * The project that is assigned to the user.
@@ -29,7 +29,7 @@ export class ProjectAssignment extends BaseEntity {
    */
   @JoinColumn()
   @ManyToOne(() => Project, project => project.assignments, { onDelete: 'CASCADE', nullable: false })
-  project?: Project
+  project: Project | undefined
 
   /**
    * The permission that the user has on the project assigned. The permission
