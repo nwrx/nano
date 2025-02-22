@@ -2,12 +2,12 @@
 import type { TestContext } from 'vitest'
 import type { Flow, FlowPermission } from '../flow'
 import type { Project, ProjectPermission } from '../project'
-import type { User, UserSession } from '../user'
-import type { Vault } from '../vault'
+import type { User } from '../user'
+import type { RegisterUserOptions } from '../user/utils'
 import type { Workspace, WorkspacePermission } from '../workspace'
 import { ModuleRunner } from '@nwrx/nano-runner'
-import { createTestApplication } from '@unserved/server'
-import { createCipheriv, createHash, randomBytes } from 'node:crypto'
+import { createTestApplication, createTestEvent } from '@unserved/server'
+import { randomBytes } from 'node:crypto'
 import { ModuleFlow } from '../flow'
 import { ModuleProject } from '../project'
 import { ModuleStorage } from '../storage'
@@ -15,10 +15,10 @@ import { createStoragePoolFs } from '../storage/utils'
 import { ModuleThread } from '../thread'
 import { ModuleThreadRunner } from '../threadRunner'
 import { ModuleUser } from '../user'
-import { createUser } from '../user/utils'
+import { createSession, registerUser } from '../user/utils'
 import { ModuleVault } from '../vault'
-import { encrypt } from '../vault/utils'
 import { ModuleWorkspace } from '../workspace'
+import { FIXTURE_USER_BASIC } from './entities'
 
 export type Context = Awaited<ReturnType<typeof createTestContext>>
 
@@ -40,7 +40,6 @@ export async function createTestContext(testContext: TestContext) {
   })
 
   const runner = await createTestApplication([ModuleRunner])
-
   const context = {
     application,
     runner,
@@ -63,71 +62,35 @@ export async function createTestContext(testContext: TestContext) {
     /* User module utilities.                       */
     /************************************************/
 
-    createUser: async(name = 'jdoe', options: Partial<User> = {}) => {
-      const userModule = application.getModule(ModuleUser)
-      const workspaceModule = application.getModule(ModuleWorkspace)
-      const password = randomBytes(16).toString('hex')
-      let { user, workspace } = await createUser.call(userModule, {
-        email: `${name}@acme.com`,
-        username: name,
-        password,
-      })
+    setupUser: async(options: RegisterUserOptions = FIXTURE_USER_BASIC) => {
+      const moduleUser = application.getModule(ModuleUser)
+      const { user, workspace /* vault */ } = await registerUser.call(moduleUser, options)
 
-      // --- Assign the super administrator role.
+      // --- Assign extra options to the user.
       // @ts-expect-error: allow unsafe assignment.
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       for (const property in options) user[property] = options[property]
+      await moduleUser.getRepositories().User.save(user)
 
-      // --- Create the session entity.
-      const { UserSession } = userModule.getRepositories()
-      const session = UserSession.create({
-        user,
-        address: '127.0.0.1',
-        userAgent: 'Mozilla/5.0',
-        expiresAt: new Date(Date.now() + 1000 * 60 * 60),
+      // --- Create the session for the user.
+      const event = createTestEvent({ headers: { 'user-agent': 'Mozilla/5.0' } })
+      const session = await createSession.call(moduleUser, event, { user })
+      await moduleUser.getRepositories().UserSession.save(session)
+
+      // --- Extract the cookies from the response headers so we can reuse the session.
+      const setCookie = event.node.res.getHeader('set-cookie') as string[]
+      const entries = setCookie.map((cookie) => {
+        const name = cookie.split('=')[0]
+        const value = cookie.split('=')[1].split(';')[0]
+        return `${name}=${value}`
       })
-
-      // --- Create the token for the session.
-      const iv = Buffer.alloc(16, 0)
-      const key = createHash('sha256').update(userModule.userSecretKey).digest()
-      const token = createCipheriv(userModule.userCypherAlgorithm, key, iv).update(session.id).toString('hex')
-
-      // --- Create the cookie header.
-      const cookie = `${userModule.userSessionCookieName}=${token}`
-      const headers = { cookie, 'user-agent': 'Mozilla/5.0' } as Record<string, string>
-
-      // --- Save the user and workspace.
-      const { User } = userModule.getRepositories()
-      const { Workspace } = workspaceModule.getRepositories()
-      user = await User.save(user)
-      await UserSession.save(session)
-      workspace = await Workspace.save(workspace)
+      const headers = {
+        'cookie': entries.join('; '),
+        'user-agent': 'Mozilla/5.0',
+      }
 
       // --- Return all the created entities and the headers to use in requests.
-      return { user, session, headers, password, workspace }
-    },
-
-    createSession: async(user: User, options: Partial<UserSession> = {}) => {
-      const userModule = application.getModule(ModuleUser)
-      const { UserSession } = userModule.getRepositories()
-      const session = UserSession.create({
-        user,
-        address: '127.0.0.1',
-        userAgent: 'Mozilla/5.0',
-        expiresAt: new Date(Date.now() + 1000 * 60 * 60),
-        ...options,
-      })
-
-      // --- Create the token for the session.
-      const iv = Buffer.alloc(16, 0)
-      const key = createHash('sha256').update(userModule.userSecretKey).digest()
-      const token = createCipheriv(userModule.userCypherAlgorithm, key, iv).update(session.id).toString('hex')
-
-      // --- Create the cookie header.
-      const cookie = `${userModule.userSessionCookieName}=${token}`
-      const headers = { cookie, 'user-agent': session.userAgent } as Record<string, string>
-      await UserSession.save(session)
-      return { session, headers }
+      return { user, workspace, /* vault, */ session, headers }
     },
 
     createAvatar: async(user: User, data?: Buffer) => {
@@ -171,29 +134,29 @@ export async function createTestContext(testContext: TestContext) {
     /* Vault                                        */
     /************************************************/
 
-    createVault: async(name = 'my-vault', user: User, workspace: Workspace, options: Partial<Vault> = {}) => {
-      const moduleVault = application.getModule(ModuleVault)
-      const { Vault } = moduleVault.getRepositories()
+    // createVault: async(name = 'my-vault', user: User, workspace: Workspace, options: Partial<Vault> = {}) => {
+    //   const moduleVault = application.getModule(ModuleVault)
+    //   const { Vault } = moduleVault.getRepositories()
 
-      // --- Encrypt the configuration using the module's encryption key.
-      const configurationJson = JSON.stringify({ algorithm: 'aes-256-gcm', secret: 'secret-key' })
-      const configurationEncrypted = await encrypt(
-        configurationJson,
-        moduleVault.vaultConfigurationSecretKey,
-        moduleVault.vaultConfigurationAlgorithm,
-      )
+    //   // --- Encrypt the configuration using the module's encryption key.
+    //   const configurationJson = JSON.stringify({ algorithm: 'aes-256-gcm', secret: 'secret-key' })
+    //   const configurationEncrypted = await encrypt(
+    //     configurationJson,
+    //     moduleVault.vaultConfigurationSecretKey,
+    //     moduleVault.vaultConfigurationAlgorithm,
+    //   )
 
-      const vault = Vault.create({
-        createdBy: user,
-        name,
-        type: 'local',
-        workspace,
-        configuration: configurationEncrypted,
-        ...options,
-      })
+    //   const vault = Vault.create({
+    //     createdBy: user,
+    //     name,
+    //     type: 'local',
+    //     workspace,
+    //     configuration: configurationEncrypted,
+    //     ...options,
+    //   })
 
-      return { vault: await Vault.save(vault) }
-    },
+    //   return { vault: await Vault.save(vault) }
+    // },
 
     /************************************************/
     /* Project                                      */
