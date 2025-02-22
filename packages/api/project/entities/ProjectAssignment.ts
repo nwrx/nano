@@ -1,6 +1,6 @@
 import type { ProjectPermission } from '../utils'
 import { BaseEntity } from '@unserved/server'
-import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm'
+import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm'
 import { User } from '../../user'
 import { Project } from './Project'
 
@@ -10,7 +10,7 @@ import { Project } from './Project'
  * delete, and share the project with other users.
  */
 @Entity({ name: 'ProjectAssignment' })
-@Unique(['user', 'project', 'permission'])
+@Index(['user', 'project', 'permission'])
 export class ProjectAssignment extends BaseEntity {
 
   /**
@@ -37,6 +37,6 @@ export class ProjectAssignment extends BaseEntity {
    *
    * @example 'Read'
    */
-  @Column('varchar', { length: 32 })
+  @Column('varchar')
   permission: ProjectPermission
 }

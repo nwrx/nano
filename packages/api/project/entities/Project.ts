@@ -1,9 +1,6 @@
 import { BaseEntity } from '@unserved/server'
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from 'typeorm'
-import { Flow, FlowObject } from '../../flow'
-import { UserObject } from '../../user'
 import { Workspace } from '../../workspace'
-import { ProjectPermission } from '../utils'
 import { ProjectAssignment } from './ProjectAssignment'
 
 /**
@@ -21,7 +18,7 @@ export class Project extends BaseEntity {
    *
    * @example 'resume-article'
    */
-  @Column('varchar', { length: 255 })
+  @Column('varchar')
   name: string
 
   /**
@@ -29,7 +26,7 @@ export class Project extends BaseEntity {
    *
    * @example 'Resume Article'
    */
-  @Column('varchar', { length: 255 })
+  @Column('varchar')
   title: string
 
   /**
@@ -37,7 +34,7 @@ export class Project extends BaseEntity {
    *
    * @example 'This project is used to resume an article.'
    */
-  @Column('text', { default: '' })
+  @Column('text')
   description = ''
 
   /**
@@ -47,16 +44,8 @@ export class Project extends BaseEntity {
    *
    * @example false
    */
-  @Column('boolean', { default: false })
+  @Column('boolean')
   isPublic = false
-
-  /**
-   * The flows that are part of the project.
-   *
-   * @example [Flow, Flow, Flow]
-   */
-  @OneToMany(() => Flow, flow => flow.project, { cascade: true })
-  flows: Flow[] | undefined
 
   /**
    * The users assigned to the project. They can have specific permissions on the project.
@@ -72,7 +61,7 @@ export class Project extends BaseEntity {
    * @example Workspace { ... }
    */
   @JoinColumn()
-  @ManyToOne(() => Workspace, workspace => workspace.projects, { onDelete: 'CASCADE', nullable: false })
+  @ManyToOne(() => Workspace, { nullable: false })
   workspace: undefined | Workspace
 
   /**
@@ -83,19 +72,14 @@ export class Project extends BaseEntity {
       name: this.name,
       title: this.title,
       description: this.description,
-      flows: this.flows?.map(flow => flow.serialize()),
+      isPublic: this.isPublic,
     }
   }
-}
-
-export interface ProjectUserPermissionsObject {
-  user: UserObject
-  permissions: ProjectPermission[]
 }
 
 export interface ProjectObject {
   name: string
   title: string
   description: string
-  flows?: FlowObject[]
+  isPublic: boolean
 }
