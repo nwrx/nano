@@ -51,6 +51,18 @@ describe.concurrent('authenticate', () => {
     })
   })
 
+  describe<Context>('save', (it) => {
+    it('should save the user and cascade the profile', async({ moduleUser }) => {
+      const user = await createUser.call(moduleUser, { username: 'jdoe', email: 'jdoe@acme.com' })
+      await moduleUser.getRepositories().User.save(user)
+      const { User, UserProfile } = moduleUser.getRepositories()
+      const savedUser = await User.countBy({ username: 'jdoe' })
+      const savedProfile = await UserProfile.countBy({ displayName: 'jdoe' })
+      expect(savedUser).toBe(1)
+      expect(savedProfile).toBe(1)
+    })
+  })
+
   describe<Context>('errors', (it) => {
     it('should throw an error if the username is already taken', async({ moduleUser }) => {
       const user = await createUser.call(moduleUser, { username: 'jdoe', email: 'jdoe@acme.com' })
