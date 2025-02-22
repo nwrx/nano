@@ -1,6 +1,6 @@
-import { BaseEntity, transformerDate } from '@unserved/server'
-import { default as DeviceDetector } from 'node-device-detector'
+import { BaseEntity, transformerDate, transformerJson } from '@unserved/server'
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
+import { Encrypted } from '../../utils'
 import { User } from './User'
 
 /**
@@ -19,7 +19,7 @@ export class UserSession extends BaseEntity {
    *
    * @example User { ... }
    */
-  @ManyToOne(() => User, user => user.sessions, { nullable: false })
+  @ManyToOne(() => User, { nullable: false })
   @JoinColumn()
   user: null | User
 
@@ -51,6 +51,16 @@ export class UserSession extends BaseEntity {
   expiresAt: Date
 
   /**
+   * An object that contains the IV, salt, tag and algorithm used to encrypt the secret.
+   * This object is used to authenticate the user and authorize the user to access protected
+   * resources as the user associated with the session.
+   *
+   * @example { iv: '...', salt: '...', tag: '...', algorithm: 'aes-256-gcm' }
+   */
+  @Column('text', { transformer: transformerJson })
+  secret: Omit<Encrypted, 'cipher'>
+
+  /**
    * The last time the session was used. It is used to determine if the session is still
    * active or not.
    *
@@ -58,41 +68,4 @@ export class UserSession extends BaseEntity {
    */
   @Column('varchar', { transformer: transformerDate })
   lastUsedAt = new Date()
-
-  /**
-   * Parse the user agent and extract the device information.
-   *
-   * @returns The device information of the session.
-   */
-  get device(): UserSessionDevice {
-    const deviceDetector = new DeviceDetector()
-    const { os, client, device } = deviceDetector.detect(this.userAgent)
-    return {
-      os: os.name,
-      browser: client.name,
-      device: [device.brand, device.model].filter(Boolean).join(' '),
-    }
-  }
-
-  /**
-   * @returns The serialized object of the entity.
-   */
-  serialize(): UserSessionObject {
-    return {
-      ...this.device,
-      address: this.address,
-      lastUsedAt: this.lastUsedAt.toISOString(),
-    }
-  }
-}
-
-export interface UserSessionDevice {
-  os: string
-  device: string
-  browser: string
-}
-
-export interface UserSessionObject extends UserSessionDevice {
-  address: string
-  lastUsedAt: string
 }

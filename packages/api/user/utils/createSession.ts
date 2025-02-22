@@ -2,6 +2,9 @@ import type { H3Event } from 'h3'
 import type { User } from '../entities'
 import type { UserSession } from '../entities'
 import type { ModuleUser } from '../index'
+import { setCookie } from 'h3'
+import { randomBytes, randomUUID } from 'node:crypto'
+import { encrypt } from '../../utils'
 import { getEventInformation } from './getEventInformation'
 
 export interface CreateSessionOptions {
@@ -22,13 +25,12 @@ export interface CreateSessionOptions {
  * @param options The options to create the session with.
  * @returns The user session.
  */
-export function createSession(this: ModuleUser, event: H3Event, options: CreateSessionOptions): UserSession {
-  const { UserSession } = this.getRepositories()
+export async function createSession(this: ModuleUser, event: H3Event, options: CreateSessionOptions): Promise<UserSession> {
   const { user, duration = this.userSessionDuration } = options
 
   // --- Get the IP address and user agent from the request.
   const { address, userAgent } = getEventInformation(event, {
-    cookieName: this.userSessionCookieName,
+    cookieName: this.userSessionTokenCookieName,
     trustProxy: this.userTrustProxy,
   })
 
@@ -36,7 +38,43 @@ export function createSession(this: ModuleUser, event: H3Event, options: CreateS
   if (!address) throw this.errors.USER_ADDRESS_NOT_RESOLVED()
   if (!userAgent) throw this.errors.USER_MISSING_USER_AGENT_HEADER()
 
-  // --- Create the session entity.
-  const expiresAt = new Date(Date.now() + duration)
-  return UserSession.create({ user, address, userAgent, expiresAt })
+  // --- Create the session entity and encrypt the secret.
+  const expiresAt = new Date(Date.now() + duration * 1000)
+  const sessionId = randomUUID()
+  const sessionSecret = randomBytes(32).toString('hex')
+  const { cipher, ...secret } = await encrypt(
+    sessionSecret,
+    this.userSecretKey,
+    this.userCypherAlgorithm,
+  )
+
+  // --- Set the session ID in the response headers.
+  setCookie(event, this.userSessionIdCookieName, sessionId, {
+    path: '/',
+    secure: true,
+    httpOnly: true,
+    sameSite: 'strict',
+    expires: expiresAt,
+    maxAge: (expiresAt.getTime() - Date.now()) / 1000,
+  })
+
+  // --- Set the session cookie in the response headers.
+  setCookie(event, this.userSessionTokenCookieName, cipher, {
+    path: '/',
+    secure: true,
+    httpOnly: true,
+    sameSite: 'strict',
+    expires: expiresAt,
+    maxAge: (expiresAt.getTime() - Date.now()) / 1000,
+  })
+
+  const { UserSession } = this.getRepositories()
+  return UserSession.create({
+    id: sessionId,
+    user,
+    address,
+    userAgent,
+    expiresAt,
+    secret,
+  })
 }
