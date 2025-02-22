@@ -1,5 +1,4 @@
 import type { ScryptOptions } from 'node:crypto'
-import type { User } from '../entities'
 import type { ModuleUser } from '../index'
 import { randomBytes, scrypt } from 'node:crypto'
 
@@ -7,13 +6,13 @@ import { randomBytes, scrypt } from 'node:crypto'
  * Options to hash the password of the user. It includes the length of the
  * hash that will be generated.
  */
-export interface PasswordOptions extends ScryptOptions {
+export interface CreatePasswordOptions extends ScryptOptions {
 
   /**
-   * The user to create the password for. If provided, the password will be
-   * associated with the user and can be used to authenticate the user.
+   * The clear text password to hash. It will be hashed using the Scrypt
+   * algorithm and the options provided.
    */
-  user?: User
+  password: string
 
   /**
    * Length of the hash that will be generated. It is recommended to use
@@ -21,7 +20,7 @@ export interface PasswordOptions extends ScryptOptions {
    *
    * @default 512
    */
-  keylen: number
+  keylen?: number
 
   /**
    * Encoding of the hash when stored in the database. It can be any
@@ -29,7 +28,7 @@ export interface PasswordOptions extends ScryptOptions {
    *
    * @default 'hex'
    */
-  encoding: BufferEncoding
+  encoding?: BufferEncoding
 
   /**
    * The salt to hash the password. By default, a random salt is generated
@@ -38,7 +37,7 @@ export interface PasswordOptions extends ScryptOptions {
    *
    * @default randomBytes(32).toString(encoding)
    */
-  salt: string
+  salt?: string
 
   /**
    * The duration time in milliseconds for the password. If the password
@@ -55,15 +54,14 @@ export interface PasswordOptions extends ScryptOptions {
  * salt and hashes the password using the options provided. The default options
  * are provided by OWASP and are recommended for password hashing.
  *
- * @param password The password to hash.
  * @param options The options to hash the password.
  * @returns The salt, hash, and options used to hash the password.
  * @see https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#scrypt
  * @example await createPassword('password', USER_HASH_OPTIONS) // => { salt, hash, options }
  */
-export async function createPassword(this: ModuleUser, password: string, options: Partial<PasswordOptions> = {}) {
+export async function createPassword(this: ModuleUser, options: CreatePasswordOptions) {
   const {
-    user,
+    password,
     keylen = 512,
     encoding = 'hex',
     N = 16384,
@@ -85,6 +83,8 @@ export async function createPassword(this: ModuleUser, password: string, options
   // --- Return the new password entity.
   const expiredAt = duration > 0 ? new Date(Date.now() + duration) : undefined
   const passwordOptions = { algorithm: 'scrypt', ...hashOptions, keylen, encoding, salt }
+
+  // --- Return the password entity.
   const { UserPassword } = this.getRepositories()
-  return UserPassword.create({ user, hash, expiredAt, options: passwordOptions })
+  return UserPassword.create({ hash, expiredAt, options: passwordOptions })
 }
