@@ -4,9 +4,10 @@ import { assertUser } from './assertUser'
 
 describe('assertUser', () => {
   describe('pass', () => {
-    it('should assert a valid user', () => {
-      const shouldPass = () => assertUser({ id: randomUUID(), username: 'john.doe' })
-      expect(shouldPass).not.toThrow()
+    it('should assert and return a valid user with minimal fields', () => {
+      const user = { id: randomUUID(), username: 'john.doe', extra: 'field' }
+      const result = assertUser(user)
+      expect(result).toStrictEqual({ id: user.id, username: user.username })
     })
   })
 
