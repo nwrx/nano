@@ -19,7 +19,7 @@ describe.concurrent('authenticate', () => {
   beforeEach<Context>(async(context) => {
     await createTestContext(context)
     await context.application.createTestServer()
-    vi.useFakeTimers({ now: new Date('2020-01-01T00:00:00Z') })
+    vi.useFakeTimers({ now: new Date('2020-01-01T00:00:00Z'), toFake: ['Date'] })
   })
 
   afterEach<Context>(async(context) => {
@@ -60,7 +60,7 @@ describe.concurrent('authenticate', () => {
       const user = await createUser.call(moduleUser, FIXTURE_USER_BASIC)
       const event = createTestEvent({ headers: { 'User-Agent': 'Mozilla/5.0' } })
       const session = await createSession.call(moduleUser, event, { user, duration: 3600 })
-      const expected = new Date('2020-01-01T00:00:03.600Z')
+      const expected = new Date('2020-01-01T01:00:00.000Z')
       expect(session.expiresAt).toStrictEqual(expected)
     })
 

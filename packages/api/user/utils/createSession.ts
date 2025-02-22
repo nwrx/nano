@@ -28,18 +28,14 @@ export interface CreateSessionOptions {
 export async function createSession(this: ModuleUser, event: H3Event, options: CreateSessionOptions): Promise<UserSession> {
   const { user, duration = this.userSessionDuration } = options
 
-  // --- Get the IP address and user agent from the request.
-  const { address, userAgent } = getEventInformation(event, {
-    cookieName: this.userSessionTokenCookieName,
-    trustProxy: this.userTrustProxy,
-  })
-
   // --- Throw an error if address or user agent is missing.
+  const { address, userAgent } = getEventInformation.call(this, event)
   if (!address) throw this.errors.USER_ADDRESS_NOT_RESOLVED()
   if (!userAgent) throw this.errors.USER_MISSING_USER_AGENT_HEADER()
 
   // --- Create the session entity and encrypt the secret.
-  const expiresAt = new Date(Date.now() + duration * 1000)
+  const now = Date.now()
+  const expiresAt = new Date(now + duration * 1000)
   const sessionId = randomUUID()
   const sessionSecret = randomBytes(32).toString('hex')
   const { cipher, ...secret } = await encrypt(
@@ -55,7 +51,7 @@ export async function createSession(this: ModuleUser, event: H3Event, options: C
     httpOnly: true,
     sameSite: 'strict',
     expires: expiresAt,
-    maxAge: (expiresAt.getTime() - Date.now()) / 1000,
+    maxAge: (expiresAt.getTime() - now) / 1000,
   })
 
   // --- Set the session cookie in the response headers.
@@ -65,7 +61,7 @@ export async function createSession(this: ModuleUser, event: H3Event, options: C
     httpOnly: true,
     sameSite: 'strict',
     expires: expiresAt,
-    maxAge: (expiresAt.getTime() - Date.now()) / 1000,
+    maxAge: (expiresAt.getTime() - now) / 1000,
   })
 
   const { UserSession } = this.getRepositories()
