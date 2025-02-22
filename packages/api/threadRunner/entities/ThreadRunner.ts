@@ -1,9 +1,9 @@
 import { BaseEntity, transformerDate } from '@unserved/server'
-import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm'
+import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm'
 import { User, UserObject } from '../../user'
 
 @Entity({ name: 'ThreadRunner' })
-@Unique(['address', 'deletedAt'])
+@Index(['address', 'deletedAt'], { unique: true })
 export class ThreadRunner extends BaseEntity {
 
   /**
@@ -13,7 +13,7 @@ export class ThreadRunner extends BaseEntity {
    *
    * @example "localhost:3000"
    */
-  @Column('varchar', { length: 255, nullable: false })
+  @Column('varchar')
   address: string
 
   /**
@@ -23,7 +23,7 @@ export class ThreadRunner extends BaseEntity {
    *
    * @example "runner-eu-west-1-1"
    */
-  @Column('varchar', { length: 255 })
+  @Column('varchar')
   identity: string
 
   /**
@@ -33,7 +33,7 @@ export class ThreadRunner extends BaseEntity {
    *
    * @example "00000000-0000-0000-0000-000000000000"
    */
-  @Column('varchar', { length: 255 })
+  @Column('varchar')
   token: string
 
   /**
@@ -42,7 +42,7 @@ export class ThreadRunner extends BaseEntity {
    * runner does not respond to a ping request within a certain time frame, it
    * is considered dead and will be removed from the list of active runners.
    */
-  @Column('varchar', { transformer: transformerDate, length: 255 })
+  @Column('varchar', { transformer: transformerDate })
   lastSeenAt: Date
 
   /**
