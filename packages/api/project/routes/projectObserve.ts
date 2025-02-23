@@ -29,15 +29,15 @@ export function flowSubscribe(this: ModuleProject) {
         const flows = await moduleFlow.searchFlow({ project, user, page: 1, limit: 100 })
 
         // --- Check if the project listener already exists.
-        const listener = this.observers.get(project.id)
+        let listener = this.observers.get(project.id)
         if (!listener) {
-          const listener = new ProjectObserver()
+          listener = new ProjectObserver()
           this.observers.set(project.id, listener)
         }
 
         // --- Subscribe the peer to the project.
-        listener!.subscribe(peer)
-        listener!.send(peer, { event: 'flows', flows: flows.map(flow => flow.serialize()) })
+        listener.subscribe(peer)
+        listener.send(peer, { event: 'flows', flows: flows.map(flow => flow.serialize()) })
       },
     },
   )
