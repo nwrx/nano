@@ -1,6 +1,6 @@
 import type { ModuleProject } from '../index'
 import { createHttpRoute } from '@unserved/server'
-import { assertStringNotEmpty, createSchema } from '@unshared/validation'
+import { assert, createSchema } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
 import { getProject } from '../utils'
@@ -10,8 +10,8 @@ export function projectGet(this: ModuleProject) {
     {
       name: 'GET /api/workspaces/:workspace/projects/:project',
       parseParameters: createSchema({
-        project: assertStringNotEmpty,
-        workspace: assertStringNotEmpty,
+        project: assert.stringNotEmpty,
+        workspace: assert.stringNotEmpty,
       }),
     },
     async({ event, parameters }) => {
