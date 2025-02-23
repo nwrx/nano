@@ -21,8 +21,8 @@ describe.sequential<Context>('DELETE /api/runners/:identity', { timeout: 300 }, 
   })
 
   describe<Context>('release', (it) => {
-    it('should release a thread runner successfully', async({ createUser, application, moduleThreadRunner }) => {
-      const { headers } = await createUser('admin', { isSuperAdministrator: true })
+    it('should release a thread runner successfully', async({ setupUser, application, moduleThreadRunner }) => {
+      const { headers } = await setupUser({ isSuperAdministrator: true })
       const body = JSON.stringify({ address: 'http://localhost' })
       await application.fetch('/api/runners', { method: 'POST', body, headers })
       const { ThreadRunner } = moduleThreadRunner.getRepositories()
@@ -36,14 +36,14 @@ describe.sequential<Context>('DELETE /api/runners/:identity', { timeout: 300 }, 
   })
 
   describe<Context>('errors', (it) => {
-    it('should fail with status 404 when runner is not found', async({ createUser, application }) => {
-      const { headers } = await createUser('admin', { isSuperAdministrator: true })
+    it('should fail with status 404 when runner is not found', async({ setupUser, application }) => {
+      const { headers } = await setupUser({ isSuperAdministrator: true })
       const response = await application.fetch('/api/runners/not-found', { method: 'DELETE', headers })
       expect(response).toMatchObject({ status: 404, statusText: 'Not Found' })
     })
 
-    it('should fail with status 403 when user is not a super administrator', async({ createUser, application }) => {
-      const { headers } = await createUser('admin', { isSuperAdministrator: false })
+    it('should fail with status 403 when user is not a super administrator', async({ setupUser, application }) => {
+      const { headers } = await setupUser({ isSuperAdministrator: false })
       const response = await application.fetch('/api/runners/runner-identity', { method: 'DELETE', headers })
       expect(response).toMatchObject({ status: 403, statusText: 'Forbidden' })
     })

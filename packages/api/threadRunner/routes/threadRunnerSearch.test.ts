@@ -23,8 +23,8 @@ describe<Context>('GET /api/runners', { timeout: 300 }, () => {
   })
 
   describe<Context>('success', (it) => {
-    it('should return status of all registered runners', async({ application, createUser }) => {
-      const { headers } = await createUser('admin', { isSuperAdministrator: true })
+    it('should return status of all registered runners', async({ application, setupUser }) => {
+      const { headers } = await setupUser({ isSuperAdministrator: true })
       const body = JSON.stringify({ address: 'http://localhost' })
       await application.fetch('/api/runners', { method: 'POST', body, headers })
       const response = await application.fetch('/api/runners', { method: 'GET', headers })
@@ -43,8 +43,8 @@ describe<Context>('GET /api/runners', { timeout: 300 }, () => {
       })
     })
 
-    it('should handle unreachable runners in the list', async({ application, createUser, moduleThreadRunner }) => {
-      const { headers } = await createUser('admin', { isSuperAdministrator: true })
+    it('should handle unreachable runners in the list', async({ application, setupUser, moduleThreadRunner }) => {
+      const { headers } = await setupUser({ isSuperAdministrator: true })
       const body = JSON.stringify({ address: 'http://localhost' })
       await application.fetch('/api/runners', { method: 'POST', body, headers })
       const { ThreadRunner } = moduleThreadRunner.getRepositories()
@@ -69,8 +69,8 @@ describe<Context>('GET /api/runners', { timeout: 300 }, () => {
   })
 
   describe<Context>('errors', (it) => {
-    it('should fail with status 403 when user is not a super administrator', async({ application, createUser }) => {
-      const { headers } = await createUser('admin', { isSuperAdministrator: false })
+    it('should fail with status 403 when user is not a super administrator', async({ application, setupUser }) => {
+      const { headers } = await setupUser({ isSuperAdministrator: false })
       const response = await application.fetch('/api/runners', { method: 'GET', headers })
       expect(response).toMatchObject({ status: 403, statusText: 'Forbidden' })
     })

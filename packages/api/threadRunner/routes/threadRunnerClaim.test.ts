@@ -24,23 +24,23 @@ describe.sequential<Context>('POST /api/runners', { timeout: 300 }, () => {
   })
 
   describe<Context>('claim', (it) => {
-    it('should respond with status 204', async({ createUser, application }) => {
-      const { headers } = await createUser('admin', { isSuperAdministrator: true })
+    it('should respond with status 204', async({ setupUser, application }) => {
+      const { headers } = await setupUser({ isSuperAdministrator: true })
       const body = JSON.stringify({ address: 'http://localhost' })
       const response = await application.fetch('/api/runners', { method: 'POST', body, headers })
       expect(response).toMatchObject({ status: 201, statusText: 'Created' })
     })
 
-    it('should register the thread runner', async({ createUser, application, moduleThreadRunner }) => {
-      const { headers } = await createUser('admin', { isSuperAdministrator: true })
+    it('should register the thread runner', async({ setupUser, application, moduleThreadRunner }) => {
+      const { headers } = await setupUser({ isSuperAdministrator: true })
       const body = JSON.stringify({ address: 'http://localhost' })
       await application.fetch('/api/runners', { method: 'POST', body, headers })
       const runner = moduleThreadRunner.threadRunners.entries().next().value![1]
       expect(runner).toMatchObject({ address: 'http://localhost' })
     })
 
-    it('should store the thread runner in the database', async({ createUser, application, moduleThreadRunner }) => {
-      const { headers } = await createUser('admin', { isSuperAdministrator: true })
+    it('should store the thread runner in the database', async({ setupUser, application, moduleThreadRunner }) => {
+      const { headers } = await setupUser({ isSuperAdministrator: true })
       const body = JSON.stringify({ address: 'http://localhost' })
       await application.fetch('/api/runners', { method: 'POST', body, headers })
       const { ThreadRunner } = moduleThreadRunner.getRepositories()
@@ -55,15 +55,15 @@ describe.sequential<Context>('POST /api/runners', { timeout: 300 }, () => {
   })
 
   describe<Context>('schema', (it) => {
-    it('should throw an error when the body is not an object', async({ createUser, application }) => {
-      const { headers } = await createUser('admin', { isSuperAdministrator: true })
+    it('should throw an error when the body is not an object', async({ setupUser, application }) => {
+      const { headers } = await setupUser({ isSuperAdministrator: true })
       const body = JSON.stringify('http://localhost')
       const response = await application.fetch('/api/runners', { method: 'POST', body, headers })
       expect(response).toMatchObject({ status: 400, statusText: 'Validation Error' })
     })
 
-    it('should throw an error when the body is missing the baseUrl', async({ createUser, application }) => {
-      const { headers } = await createUser('admin', { isSuperAdministrator: true })
+    it('should throw an error when the body is missing the baseUrl', async({ setupUser, application }) => {
+      const { headers } = await setupUser({ isSuperAdministrator: true })
       const body = JSON.stringify({})
       const response = await application.fetch('/api/runners', { method: 'POST', body, headers })
       expect(response).toMatchObject({ status: 400, statusText: 'Validation Error' })
@@ -71,16 +71,16 @@ describe.sequential<Context>('POST /api/runners', { timeout: 300 }, () => {
   })
 
   describe<Context>('errors', (it) => {
-    it('should respond with status 409 when already claimed', async({ createUser, application, moduleRunner }) => {
+    it('should respond with status 409 when already claimed', async({ setupUser, application, moduleRunner }) => {
       moduleRunner.runnerIsClaimed = true
-      const { headers } = await createUser('admin', { isSuperAdministrator: true })
+      const { headers } = await setupUser({ isSuperAdministrator: true })
       const body = JSON.stringify({ address: 'http://localhost' })
       const response = await application.fetch('/api/runners', { method: 'POST', body, headers })
       expect(response).toMatchObject({ status: 409, statusText: 'Conflict' })
     })
 
-    it('should respond with status 403 when user is not a super administrator', async({ createUser, application }) => {
-      const { headers } = await createUser('admin', { isSuperAdministrator: false })
+    it('should respond with status 403 when user is not a super administrator', async({ setupUser, application }) => {
+      const { headers } = await setupUser({ isSuperAdministrator: false })
       const body = JSON.stringify({ address: 'http://localhost' })
       const response = await application.fetch('/api/runners', { method: 'POST', body, headers })
       expect(response).toMatchObject({ status: 403, statusText: 'Forbidden' })
