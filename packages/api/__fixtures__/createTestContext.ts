@@ -1,9 +1,7 @@
 // eslint-disable-next-line n/no-extraneous-import
 import type { TestContext } from 'vitest'
-import type { Flow, FlowPermission } from '../flow'
-import type { Project, ProjectPermission } from '../project'
+import type { ProjectPermission } from '../project'
 import type { User } from '../user'
-import type { RegisterUserOptions } from '../user/utils'
 import type { Workspace, WorkspacePermission } from '../workspace'
 import { ModuleRunner } from '@nwrx/nano-runner'
 import { createTestApplication, createTestEvent } from '@unserved/server'
@@ -18,9 +16,28 @@ import { ModuleUser } from '../user'
 import { createSession, registerUser } from '../user/utils'
 import { ModuleVault } from '../vault'
 import { ModuleWorkspace } from '../workspace'
-import { FIXTURE_USER_BASIC } from './entities'
+
+export const FIXTURE_USER = {
+  username: randomBytes(4).toString('hex'),
+  email: `${randomBytes(4).toString('hex')}@acme.com`,
+}
 
 export type Context = Awaited<ReturnType<typeof createTestContext>>
+
+export interface SetupWorkspaceOptions {
+  user?: User
+  name?: string
+  isPublic?: boolean
+  assignments?: Array<[undefined | User, ...Array<undefined | WorkspacePermission>]>
+}
+
+export interface SetupProjectOptions {
+  user?: User
+  name?: string
+  isPublic?: boolean
+  workspace?: Workspace
+  assignments?: Array<[undefined | User, ...Array<ProjectPermission | undefined>]>
+}
 
 export async function createTestContext(testContext: TestContext) {
   const application = await createTestApplication([
@@ -45,7 +62,7 @@ export async function createTestContext(testContext: TestContext) {
     runner,
 
     /************************************************/
-    /* Modules                                      */
+    /* Module getters                               */
     /************************************************/
 
     get moduleUser() { return application.getModule(ModuleUser) },
@@ -59,17 +76,23 @@ export async function createTestContext(testContext: TestContext) {
     get moduleRunner() { return runner.getModule(ModuleRunner) },
 
     /************************************************/
-    /* User module utilities.                       */
+    /* Context creation utilities                   */
     /************************************************/
 
-    setupUser: async(options: RegisterUserOptions = FIXTURE_USER_BASIC) => {
+    setupUser: async(options: Partial<User> = {}) => {
+      const {
+        username = randomBytes(4).toString('hex'),
+        email = `${randomBytes(4).toString('hex')}@acme.com`,
+        ...properties
+      } = options
+
       const moduleUser = application.getModule(ModuleUser)
-      const { user, workspace /* vault */ } = await registerUser.call(moduleUser, options)
+      const { user, workspace /* vault */ } = await registerUser.call(moduleUser, { username, email })
 
       // --- Assign extra options to the user.
       // @ts-expect-error: allow unsafe assignment.
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      for (const property in options) user[property] = options[property]
+      for (const property in properties) user[property] = properties[property]
       await moduleUser.getRepositories().User.save(user)
 
       // --- Create the session for the user.
@@ -77,7 +100,7 @@ export async function createTestContext(testContext: TestContext) {
       const session = await createSession.call(moduleUser, event, { user })
       await moduleUser.getRepositories().UserSession.save(session)
 
-      // --- Extract the cookies from the response headers so we can reuse the session.
+      // --- Extract the "Set-Cookie" headers so we can reuse the session.
       const setCookie = event.node.res.getHeader('set-cookie') as string[]
       const entries = setCookie.map((cookie) => {
         const name = cookie.split('=')[0]
@@ -93,105 +116,69 @@ export async function createTestContext(testContext: TestContext) {
       return { user, workspace, /* vault, */ session, headers }
     },
 
-    createAvatar: async(user: User, data?: Buffer) => {
-      const storageModule = application.getModule(ModuleStorage)
-      const { UserProfile } = application.getModule(ModuleUser).getRepositories()
-      if (!data) data = randomBytes(1024)
-      const avatar = await storageModule.upload({
-        pool: 'default',
-        size: data.length,
-        type: 'image/png',
-        data,
-        name: 'avatar.png',
-        origin: 'test',
-      })
-      user.profile!.avatar = avatar
-      await UserProfile.save(user.profile!)
-      return {
-        data: new Uint8Array(data),
-        avatar,
+    setupWorkspace: async(options: SetupWorkspaceOptions = {}) => {
+      const moduleWorkspace = application.getModule(ModuleWorkspace)
+
+      // --- Create the workspace with the given options.
+      const { Workspace, WorkspaceAssignment } = moduleWorkspace.getRepositories()
+      const { assignments, isPublic, user, name = randomBytes(8).toString('hex') } = options
+      const workspace = Workspace.create({ name, isPublic, createdBy: user, assignments: [] })
+
+      // --- Assign the user to the workspace with the given permissions.
+      if (assignments) {
+        for (const assignment of assignments) {
+          const [user, ...permissions] = assignment
+          if (!user) continue
+          const permissionsUnique = [...new Set(permissions)].filter(Boolean)
+          for (const permission of permissionsUnique) {
+            const assignment = WorkspaceAssignment.create({ workspace, user, permission })
+            workspace.assignments!.push(assignment)
+          }
+        }
       }
+
+      // --- If no user was provided, create one and set it as the creator.
+      if (!user) {
+        const { user } = await context.setupUser()
+        workspace.createdBy = user
+      }
+
+      // --- Save the workspace and assignments.
+      await Workspace.save(workspace)
+      return { workspace }
     },
 
-    /************************************************/
-    /* Workspace                                    */
-    /************************************************/
+    setupProject: async(options: SetupProjectOptions = {}) => {
+      const moduleProject = application.getModule(ModuleProject)
 
-    createWorkspace: async(name = 'my-workspace', isPublic = false) => {
-      const { Workspace } = application.getModule(ModuleWorkspace).getRepositories()
-      const workspace = Workspace.create({ name, isPublic })
-      return { workspace: await Workspace.save(workspace) }
+      // --- Create the project with the given options.
+      const { Project, ProjectAssignment } = moduleProject.getRepositories()
+      const { assignments, workspace, isPublic, user, name = randomBytes(8).toString('hex') } = options
+      const project = Project.create({ name, workspace, title: name, isPublic, createdBy: user, assignments: [] })
+
+      // --- Assign the user to the project with the given permissions.
+      if (assignments) {
+        for (const assignment of assignments) {
+          const [user, ...permissions] = assignment
+          if (!user) continue
+          const permissionsUnique = [...new Set(permissions)].filter(Boolean)
+          for (const permission of permissionsUnique) {
+            const assignment = ProjectAssignment.create({ project, user, permission })
+            project.assignments!.push(assignment)
+          }
+        }
+      }
+
+      // --- If no user was provided, create one and set it as the creator.
+      if (!user) {
+        const { user } = await context.setupUser()
+        project.createdBy = user
+      }
+
+      // --- Save the project and assignments.
+      await Project.save(project)
+      return { project }
     },
-
-    assignWorkspace: async(workspace: Workspace, user: User, permission?: WorkspacePermission) => {
-      if (!permission) return { assignment: undefined }
-      const { WorkspaceAssignment } = application.getModule(ModuleWorkspace).getRepositories()
-      const assignment = WorkspaceAssignment.create({ workspace, user, permission })
-      return { assignment: await WorkspaceAssignment.save(assignment) }
-    },
-
-    /************************************************/
-    /* Vault                                        */
-    /************************************************/
-
-    // createVault: async(name = 'my-vault', user: User, workspace: Workspace, options: Partial<Vault> = {}) => {
-    //   const moduleVault = application.getModule(ModuleVault)
-    //   const { Vault } = moduleVault.getRepositories()
-
-    //   // --- Encrypt the configuration using the module's encryption key.
-    //   const configurationJson = JSON.stringify({ algorithm: 'aes-256-gcm', secret: 'secret-key' })
-    //   const configurationEncrypted = await encrypt(
-    //     configurationJson,
-    //     moduleVault.vaultConfigurationSecretKey,
-    //     moduleVault.vaultConfigurationAlgorithm,
-    //   )
-
-    //   const vault = Vault.create({
-    //     createdBy: user,
-    //     name,
-    //     type: 'local',
-    //     workspace,
-    //     configuration: configurationEncrypted,
-    //     ...options,
-    //   })
-
-    //   return { vault: await Vault.save(vault) }
-    // },
-
-    /************************************************/
-    /* Project                                      */
-    /************************************************/
-
-    createProject: async(name = 'my-project', workspace: Workspace, options: Partial<Project> = {}) => {
-      const { Project } = application.getModule(ModuleProject).getRepositories()
-      const project = Project.create({ name, title: name, workspace, ...options })
-      return { project: await Project.save(project) }
-    },
-
-    assignProject: async(project: Project, user: User, permission?: ProjectPermission) => {
-      if (!permission) return { assignment: undefined }
-      const { ProjectAssignment } = application.getModule(ModuleProject).getRepositories()
-      const assignment = ProjectAssignment.create({ project, user, permission })
-      return { assignment: await ProjectAssignment.save(assignment) }
-    },
-
-    /************************************************/
-    /* Flow                                         */
-    /************************************************/
-
-    createFlow: async(name = 'my-flow', project: Project, options: Partial<Flow> = {}) => {
-      const { Flow } = application.getModule(ModuleFlow).getRepositories()
-      const flow = Flow.create({ name, title: name, project, ...options })
-      return { flow: await Flow.save(flow) }
-    },
-
-    assignFlow: async(flow: Flow, user: User, permission?: FlowPermission) => {
-      if (!permission) return { assignment: undefined }
-      const { FlowAssignment } = application.getModule(ModuleFlow).getRepositories()
-      const assignment = FlowAssignment.create({ flow, user, permission })
-      return { assignment: await FlowAssignment.save(assignment) }
-    },
-
   }
 
   Object.assign(testContext, context)
