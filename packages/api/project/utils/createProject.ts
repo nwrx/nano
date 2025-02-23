@@ -6,20 +6,10 @@ import { assertUser } from '../../user'
 import { assertWorkspace } from '../../workspace'
 
 const CREATE_PROJECT_OPTIONS = createSchema({
-
-  /** The `User` responsible for the request. */
-  user: assertUser,
-
-  /** The name of the project to create. */
-  name: assert.stringNotEmpty,
-
-  /** The name of the project to create. */
-  title: [[assert.undefined], [assert.stringNotEmpty]],
-
-  /** The workspace to create the project in. */
   workspace: assertWorkspace,
-
-  /** Whether the project is public or private. */
+  user: assertUser,
+  name: assert.stringNotEmpty,
+  title: [[assert.undefined], [assert.stringNotEmpty]],
   isPublic: [[assert.undefined], [assert.boolean]],
 })
 

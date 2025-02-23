@@ -9,17 +9,9 @@ import { assertProjectPermission } from './assertProjectPermission'
 
 /** The parser function for the {@linkcode getProject} function. */
 const GET_PROJECT_OPTIONS_SCHEMA = createSchema({
-
-  /** The `User` responsible for the request. */
-  user: [[assert.undefined], [assertUser]],
-
-  /** The `name` of the {@linkcode Project} to find. */
-  name: assert.stringNotEmpty,
-
-  /** The name of the `Workspace` where the project is located. */
   workspace: assertWorkspace,
-
-  /** At least one permission required to access the project. */
+  user: [[assert.undefined], [assertUser]],
+  name: assert.stringNotEmpty,
   permission: assertProjectPermission,
 })
 

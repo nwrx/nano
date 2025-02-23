@@ -8,8 +8,8 @@ import { assertUser } from '../../user'
 import { assertWorkspace } from '../../workspace'
 
 export const SEARCH_PROJECTS_OPTIONS_SCHEMA = createSchema({
-  search: [[assert.undefined], [assert.string]],
   workspace: assertWorkspace,
+  search: [[assert.undefined], [assert.string]],
   user: [[assert.undefined], [assertUser]],
   page: [[assert.undefined], [assert.number]],
   limit: [[assert.undefined], [assert.number]],
