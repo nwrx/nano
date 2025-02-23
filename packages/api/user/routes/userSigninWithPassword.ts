@@ -1,7 +1,7 @@
 import type { ModuleUser } from '../index'
 import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, createSchema } from '@unshared/validation'
-import { checkPassword, createSession, setSessionCookie } from '../utils'
+import { checkPassword, createSession } from '../utils'
 
 export function userSigninWithPassword(this: ModuleUser) {
   return createHttpRoute(
@@ -33,15 +33,8 @@ export function userSigninWithPassword(this: ModuleUser) {
 
       // --- Create a session for the user.
       const { UserSession } = this.getRepositories()
-      const session = createSession.call(this, event, { user })
+      const session = await createSession.call(this, event, { user })
       await UserSession.save(session)
-
-      // --- Set the response status, content type, and user session cookie.
-      setSessionCookie(event, session, {
-        secretKey: this.userSecretKey,
-        cookieName: this.userSessionCookieName,
-        cypherAlgorithm: this.userCypherAlgorithm,
-      })
     },
   )
 }

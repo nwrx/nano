@@ -1,6 +1,6 @@
 import type { ModuleUser } from '../index'
 import { createHttpRoute } from '@unserved/server'
-import { deleteCookie, setResponseStatus } from 'h3'
+import { deleteCookie } from 'h3'
 
 export function userSignout(this: ModuleUser) {
   return createHttpRoute(
@@ -8,15 +8,15 @@ export function userSignout(this: ModuleUser) {
       name: 'DELETE /api/session',
     },
     async({ event }) => {
-      const { UserSession } = this.getRepositories()
       const session = await this.authenticate(event)
+
+      // --- Soft-remove the session.
+      const { UserSession } = this.getRepositories()
       await UserSession.softRemove(session)
-      setResponseStatus(event, 204)
-      deleteCookie(event, this.userSessionCookieName, {
-        httpOnly: true,
-        sameSite: 'strict',
-        secure: true,
-      })
+
+      // --- Delete the session cookies.
+      deleteCookie(event, this.userSessionIdCookieName, { httpOnly: true, sameSite: 'strict', secure: true })
+      deleteCookie(event, this.userSessionTokenCookieName, { httpOnly: true, sameSite: 'strict', secure: true })
     },
   )
 }
