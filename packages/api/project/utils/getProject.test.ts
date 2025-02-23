@@ -44,26 +44,26 @@ describe('getProject', () => {
 
               // Iterate over all possible request permissions
               for (const permission of PROJECT_PERMISSIONS) {
-                const isRead = isPublic || PROJECT_READ_PERMISSIONS.includes(withAccess!)
-                const isAllowed = (permission === 'Read' && isRead) || permission === withPermission || withAccess === 'Owner'
+                const canRead = isPublic || PROJECT_READ_PERMISSIONS.includes(withAccess!)
+                const canAccess = (permission === 'Read' && canRead) || permission === withPermission || withAccess === 'Owner'
 
-                if (!isRead) {
-                  it(`should throw "PROJECT_NOT_FOUND" when the request permission is "${permission}"`, async(context) => {
-                    const shouldReject = createResult(context, { isPublic, permission, withUser: true, withAccess, withPermission })
-                    const error = E.PROJECT_NOT_FOUND('workspace', 'project')
-                    await expect(shouldReject).rejects.toThrow(error)
-                  })
-                }
-                else if (isAllowed) {
+                if (canRead && canAccess) {
                   it(`should return the project when the request permission is "${permission}"`, async(context) => {
                     const result = await createResult(context, { isPublic, permission, withUser: true, withAccess, withPermission })
                     expect(result).toMatchObject({ id: expect.stringMatching(EXP_UUID), name: 'project' })
                   })
                 }
-                else {
+                else if (canRead) {
                   it(`should throw "PROJECT_FORBIDDEN" when the request permission is "${permission}"`, async(context) => {
                     const shouldReject = createResult(context, { isPublic, permission, withUser: true, withAccess, withPermission })
                     const error = E.PROJECT_FORBIDDEN('workspace', 'project')
+                    await expect(shouldReject).rejects.toThrow(error)
+                  })
+                }
+                else {
+                  it(`should throw "PROJECT_NOT_FOUND" when the request permission is "${permission}"`, async(context) => {
+                    const shouldReject = createResult(context, { isPublic, permission, withUser: true, withAccess, withPermission })
+                    const error = E.PROJECT_NOT_FOUND('workspace', 'project')
                     await expect(shouldReject).rejects.toThrow(error)
                   })
                 }
