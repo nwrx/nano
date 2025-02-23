@@ -19,5 +19,23 @@ export class ModuleFlow extends ModuleBase {
   routes = ROUTES
   entities = ENTITIES
   dependencies = [ModuleUser, ModuleProject]
+
+  /**
+   * Resolves a flow by its name, project, and workspace.
+   *
+   * @param options The options to resolve the flow with.
+   * @returns The resolved flow.
+   */
   getFlow = UTILS.getFlow.bind(this)
+
+  /**
+   * Search for the `Flow` with the given name. The function will query the database
+   * for the project with the given name and assert that the user has access to the project.
+   * If the project is not found or the user does not have access to the project, the function
+   * will throw an error.
+   *
+   * @param options The options to find the project with.
+   * @returns The `Flow` with the given name.
+   */
+  searchFlow = UTILS.searchFlow.bind(this)
 }
