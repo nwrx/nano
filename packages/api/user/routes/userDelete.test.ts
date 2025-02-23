@@ -1,7 +1,7 @@
 import type { Context } from '../../__fixtures__'
 import { createTestContext } from '../../__fixtures__'
 
-describe.concurrent('userDelete', () => {
+describe.concurrent('DELETE /api/users/:username', () => {
   beforeEach<Context>(async(context) => {
     await createTestContext(context)
     await context.application.createTestServer()

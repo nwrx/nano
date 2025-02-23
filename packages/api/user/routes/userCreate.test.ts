@@ -3,7 +3,7 @@ import type { Context } from '../../__fixtures__'
 import { createTestContext, FIXTURE_USER } from '../../__fixtures__'
 import { Workspace } from '../../workspace'
 
-describe.concurrent('userCreate', () => {
+describe.concurrent('POST /api/users', () => {
   beforeEach<Context>(async(context) => {
     await createTestContext(context)
     await context.application.createTestServer()

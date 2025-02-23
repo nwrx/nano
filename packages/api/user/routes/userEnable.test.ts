@@ -1,7 +1,7 @@
 import type { Context } from '../../__fixtures__'
 import { createTestContext } from '../../__fixtures__'
 
-describe.concurrent('userEnable', () => {
+describe.concurrent('PATCH /api/users/:username/enable', () => {
   beforeEach<Context>(async(context) => {
     await createTestContext(context)
     await context.application.createTestServer()
