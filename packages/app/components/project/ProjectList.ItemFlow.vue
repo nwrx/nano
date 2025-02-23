@@ -13,22 +13,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-
-function getFlowRoute(workspace: string, project: string, flow: string) {
-  if (!workspace || !project || !flow) return
-  return {
-    name: 'ProjectFlowEditor',
-    params: { workspace, project, flow },
-  }
-}
-
-function getChatRoute(workspace: string, project: string, flow: string) {
-  if (!workspace || !project || !flow) return
-  return {
-    name: 'WorkspaceChat',
-    params: { workspace, project, flow, thread: 'new' },
-  }
-}
+const routes = useRouteLocation()
 </script>
 
 <template>
@@ -51,7 +36,7 @@ function getChatRoute(workspace: string, project: string, flow: string) {
           eager
           icon="i-carbon:flow"
           :label="title"
-          :to="getFlowRoute(workspace, project, name)"
+          :to="routes.getFlowRoute(workspace, project, name)"
           class="font-medium text-left whitespace-nowrap"
         />
       </div>
@@ -85,13 +70,13 @@ function getChatRoute(workspace: string, project: string, flow: string) {
             :label="t('menu.chat')"
             icon="i-carbon:chat-bot"
             keybind="Enter"
-            :to="getChatRoute(workspace, project, name)"
+            :to="routes.getChatRoute(workspace, project, name)"
           />
           <ContextMenuItem
             :label="t('menu.edit')"
             icon="i-carbon:edit"
             keybind="Ctrl + E"
-            :to="getFlowRoute(workspace, project, name)"
+            :to="routes.getFlowRoute(workspace, project, name)"
           />
           <ContextMenuItem
             :label="t('menu.delete')"
