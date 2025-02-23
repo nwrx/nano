@@ -1,6 +1,10 @@
 import type { Context } from '../../__fixtures__'
+import type { User } from '../entities'
 import { dedent } from '@unshared/string'
+import { randomBytes } from 'node:crypto'
+import { ModuleUser } from '..'
 import { createTestContext } from '../../__fixtures__'
+import { ModuleStorage } from '../../storage'
 
 function createAvatarSvg(initials: string) {
   return dedent(`
@@ -13,7 +17,26 @@ function createAvatarSvg(initials: string) {
   `)
 }
 
-describe.sequential('userGetAvatar', () => {
+async function setupUserAvatar(application: Context['application'], user: User) {
+  const moduleStorage = application.getModule(ModuleStorage)
+  const moduleUser = application.getModule(ModuleUser)
+  const data = randomBytes(1024)
+  const avatar = await moduleStorage.upload({
+    pool: 'default',
+    size: data.length,
+    type: 'image/png',
+    data,
+    name: 'avatar.png',
+    origin: 'test',
+  })
+  const { UserProfile } = moduleUser.getRepositories()
+  const profile = await UserProfile.findOneByOrFail({ user })
+  profile.avatar = avatar
+  await UserProfile.save(profile)
+  return { data: new Uint8Array(data), avatar }
+}
+
+describe.sequential('GET /api/users/:username/avatar', () => {
   beforeEach<Context>(async(context) => {
     await createTestContext(context)
     await context.application.createTestServer()
@@ -25,9 +48,9 @@ describe.sequential('userGetAvatar', () => {
 
   describe('with unauthenticated user', () => {
     describe<Context>('of user having no avatar', (it) => {
-      it('should return an SVG placeholder', async({ createUser, application }) => {
-        await createUser('jdoe')
-        const response = await application.fetch('/api/users/jdoe/avatar')
+      it('should return an SVG placeholder', async({ setupUser, application }) => {
+        const { user } = await setupUser({ username: 'jdoe' })
+        const response = await application.fetch(`/api/users/${user.username}/avatar`)
         const content = await response.text()
         expect(response.status).toBe(200)
         expect(response.headers.get('content-type')).toBe('image/svg+xml')
@@ -37,9 +60,9 @@ describe.sequential('userGetAvatar', () => {
         expect(content).toEqual(createAvatarSvg('J'))
       })
 
-      it('should set the attachment header when download=true', async({ createUser, application }) => {
-        await createUser('jdoe')
-        const response = await application.fetch('/api/users/jdoe/avatar?download=true')
+      it('should set the attachment header when download=true', async({ setupUser, application }) => {
+        const { user } = await setupUser({ username: 'jdoe' })
+        const response = await application.fetch(`/api/users/${user.username}/avatar?download=true`)
         const content = await response.text()
         expect(response.status).toBe(200)
         expect(response.headers.get('content-type')).toBe('image/svg+xml')
@@ -51,10 +74,10 @@ describe.sequential('userGetAvatar', () => {
     })
 
     describe<Context>('of user having an avatar', (it) => {
-      it('should return the avatar file', async({ createUser, createAvatar, application }) => {
-        const { user } = await createUser('jdoe')
-        const { data } = await createAvatar(user)
-        const response = await application.fetch('/api/users/jdoe/avatar')
+      it('should return the avatar file', async({ setupUser, application }) => {
+        const { user } = await setupUser()
+        const { data } = await setupUserAvatar(application, user)
+        const response = await application.fetch(`/api/users/${user.username}/avatar`)
         const content = await response.bytes()
         expect(response.status).toBe(200)
         expect(response.headers.get('content-type')).toBe('image/png')
@@ -64,32 +87,32 @@ describe.sequential('userGetAvatar', () => {
         expect(content).toStrictEqual(data)
       })
 
-      it('should set content-disposition when download=true', async({ createUser, createAvatar, application }) => {
-        const { user } = await createUser('jdoe')
-        await createAvatar(user)
-        const response = await application.fetch('/api/users/jdoe/avatar?download=true')
+      it('should set content-disposition when download=true', async({ setupUser, application }) => {
+        const { user } = await setupUser()
+        const { data } = await setupUserAvatar(application, user)
+        const response = await application.fetch(`/api/users/${user.username}/avatar?download=true`)
         const content = await response.bytes()
         expect(response.status).toBe(200)
         expect(response.headers.get('content-type')).toBe('image/png')
         expect(response.headers.get('content-length')).toBe('1024')
         expect(response.headers.get('cache-control')).toBeNull()
         expect(response.headers.get('content-disposition')).toBe('attachment; filename="avatar.png"')
-        expect(content).toStrictEqual(content)
+        expect(content).toStrictEqual(data)
       })
     })
 
     describe<Context>('edge cases', (it) => {
-      it('should return 404 when getting avatar of deleted user', async({ createUser, application }) => {
-        await createUser('jdoe', { deletedAt: new Date() })
-        const response = await application.fetch('/api/users/jdoe/avatar')
+      it('should return 404 when getting avatar of deleted user', async({ setupUser, application }) => {
+        const { user } = await setupUser({ deletedAt: new Date() })
+        const response = await application.fetch(`/api/users/${user.username}/avatar`)
         const data = await response.json() as Record<string, string>
         expect(response.status).toBe(404)
         expect(data).toMatchObject({ data: { name: 'E_USER_NOT_FOUND' } })
       })
 
-      it('should return 404 when getting avatar of disabled user', async({ createUser, application }) => {
-        await createUser('jdoe', { disabledAt: new Date() })
-        const response = await application.fetch('/api/users/jdoe/avatar')
+      it('should return 404 when getting avatar of disabled user', async({ setupUser, application }) => {
+        const { user } = await setupUser({ disabledAt: new Date() })
+        const response = await application.fetch(`/api/users/${user.username}/avatar`)
         const data = await response.json() as Record<string, string>
         expect(response.status).toBe(404)
         expect(data).toMatchObject({ data: { name: 'E_USER_NOT_FOUND' } })
@@ -104,12 +127,12 @@ describe.sequential('userGetAvatar', () => {
     })
   })
 
-  describe('with superadministrator', () => {
+  describe('with administrator', () => {
     describe<Context>('of user having no avatar', (it) => {
-      it('should return an SVG placeholder', async({ createUser, application }) => {
-        await createUser('jdoe')
-        const { headers } = await createUser('admin', { isSuperAdministrator: true })
-        const response = await application.fetch('/api/users/jdoe/avatar', { headers })
+      it('should return an SVG placeholder', async({ setupUser, application }) => {
+        const { headers } = await setupUser({ isSuperAdministrator: true })
+        const { user } = await setupUser({ username: 'jdoe' })
+        const response = await application.fetch(`/api/users/${user.username}/avatar`, { headers })
         const content = await response.text()
         expect(response.status).toBe(200)
         expect(response.headers.get('content-type')).toBe('image/svg+xml')
@@ -119,10 +142,10 @@ describe.sequential('userGetAvatar', () => {
         expect(content).toEqual(createAvatarSvg('J'))
       })
 
-      it('should set the attachment header when download=true', async({ createUser, application }) => {
-        await createUser('jdoe')
-        const { headers } = await createUser('admin', { isSuperAdministrator: true })
-        const response = await application.fetch('/api/users/jdoe/avatar?download=true', { headers })
+      it('should set the attachment header when download=true', async({ setupUser, application }) => {
+        const { headers } = await setupUser({ isSuperAdministrator: true })
+        const { user } = await setupUser({ username: 'jdoe' })
+        const response = await application.fetch(`/api/users/${user.username}/avatar?download=true`, { headers })
         const content = await response.text()
         expect(response.status).toBe(200)
         expect(response.headers.get('content-type')).toBe('image/svg+xml')
@@ -134,11 +157,11 @@ describe.sequential('userGetAvatar', () => {
     })
 
     describe<Context>('of user having an avatar', (it) => {
-      it('should return the avatar file', async({ createUser, createAvatar, application }) => {
-        const { user } = await createUser('jdoe')
-        const { data } = await createAvatar(user)
-        const { headers } = await createUser('admin', { isSuperAdministrator: true })
-        const response = await application.fetch('/api/users/jdoe/avatar', { headers })
+      it('should return the avatar file', async({ setupUser, application }) => {
+        const { headers } = await setupUser({ isSuperAdministrator: true })
+        const { user } = await setupUser({ username: 'jdoe' })
+        const { data } = await setupUserAvatar(application, user)
+        const response = await application.fetch(`/api/users/${user.username}/avatar`, { headers })
         const content = await response.bytes()
         expect(response.status).toBe(200)
         expect(response.headers.get('content-type')).toBe('image/png')
@@ -148,26 +171,26 @@ describe.sequential('userGetAvatar', () => {
         expect(content).toStrictEqual(data)
       })
 
-      it('should set content-disposition when download=true', async({ createUser, createAvatar, application }) => {
-        const { user } = await createUser('jdoe')
-        await createAvatar(user)
-        const { headers } = await createUser('admin', { isSuperAdministrator: true })
-        const response = await application.fetch('/api/users/jdoe/avatar?download=true', { headers })
+      it('should set content-disposition when download=true', async({ setupUser, application }) => {
+        const { headers } = await setupUser({ isSuperAdministrator: true })
+        const { user } = await setupUser({ username: 'jdoe' })
+        const { data } = await setupUserAvatar(application, user)
+        const response = await application.fetch(`/api/users/${user.username}/avatar?download=true`, { headers })
         const content = await response.bytes()
         expect(response.status).toBe(200)
         expect(response.headers.get('content-type')).toBe('image/png')
         expect(response.headers.get('content-length')).toBe('1024')
         expect(response.headers.get('cache-control')).toBeNull()
         expect(response.headers.get('content-disposition')).toBe('attachment; filename="avatar.png"')
-        expect(content).toStrictEqual(content)
+        expect(content).toStrictEqual(data)
       })
     })
 
     describe<Context>('edge cases', (it) => {
-      it('should return the avatar of deleted user', async({ createUser, application }) => {
-        await createUser('jdoe', { deletedAt: new Date() })
-        const { headers } = await createUser('admin', { isSuperAdministrator: true })
-        const response = await application.fetch('/api/users/jdoe/avatar', { headers })
+      it('should return the avatar of deleted user', async({ setupUser, application }) => {
+        const { headers } = await setupUser({ isSuperAdministrator: true })
+        const { user } = await setupUser({ username: 'jdoe', deletedAt: new Date() })
+        const response = await application.fetch(`/api/users/${user.username}/avatar`, { headers })
         const content = await response.text()
         expect(response.status).toBe(200)
         expect(response.headers.get('content-type')).toBe('image/svg+xml')
@@ -177,10 +200,10 @@ describe.sequential('userGetAvatar', () => {
         expect(content).toEqual(createAvatarSvg('J'))
       })
 
-      it('should return the avatar of disabled user', async({ createUser, application }) => {
-        await createUser('jdoe', { disabledAt: new Date() })
-        const { headers } = await createUser('admin', { isSuperAdministrator: true })
-        const response = await application.fetch('/api/users/jdoe/avatar', { headers })
+      it('should return the avatar of disabled user', async({ setupUser, application }) => {
+        const { headers } = await setupUser({ isSuperAdministrator: true })
+        const { user } = await setupUser({ username: 'jdoe', disabledAt: new Date() })
+        const response = await application.fetch(`/api/users/${user.username}/avatar`, { headers })
         const content = await response.text()
         expect(response.status).toBe(200)
         expect(response.headers.get('content-type')).toBe('image/svg+xml')
@@ -190,11 +213,11 @@ describe.sequential('userGetAvatar', () => {
         expect(content).toEqual(createAvatarSvg('J'))
       })
 
-      it('should return 404 when getting avatar of non-existent user', async({ createUser, application }) => {
-        const { headers } = await createUser('admin', { isSuperAdministrator: true })
+      it('should return 404 when getting avatar of non-existent user', async({ setupUser, application }) => {
+        const { headers } = await setupUser({ isSuperAdministrator: true })
         const response = await application.fetch('/api/users/non-existent/avatar', { headers })
         const data = await response.json() as Record<string, string>
-        expect(response.status).toBe(404)
+        expect(response).toMatchObject({ status: 404, statusText: 'Not Found' })
         expect(data).toMatchObject({ data: { name: 'E_USER_NOT_FOUND' } })
       })
     })

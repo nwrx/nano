@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import type { Context } from '../../__fixtures__'
 import { EXP_UUID } from '@unshared/validation'
+import { randomBytes } from 'node:crypto'
 import { createTestContext } from '../../__fixtures__'
 import { ERRORS } from '../utils'
 
 function createFormData(type: string, headers: Record<string, string>): string {
   const extension = type.split('/')[1]
-  const boundary = '12345'
+  const boundary = randomBytes(16).toString('hex')
   headers['Content-Type'] = `multipart/form-data; boundary=${boundary}`
   return [
     `--${boundary}`,
@@ -19,7 +20,7 @@ function createFormData(type: string, headers: Record<string, string>): string {
   ].join('\r\n')
 }
 
-describe('userSetAvatar', () => {
+describe('PUT /api/users/:username/avatar', () => {
   beforeEach<Context>(async(context) => {
     await createTestContext(context)
     await context.application.createTestServer()
@@ -31,18 +32,17 @@ describe('userSetAvatar', () => {
 
   describe<Context>('with super administrator', () => {
     describe<Context>('own user', (it) => {
-      it('should call the download function and return its result', async({ createUser, application }) => {
-        const { headers } = await createUser('admin', { isSuperAdministrator: true })
+      it('should call the download function and return its result', async({ setupUser, application }) => {
+        const { user, headers } = await setupUser({ isSuperAdministrator: true })
         const body = createFormData('image/png', headers)
-        const response = await application.fetch('/api/users/admin/avatar', { method: 'PUT', headers, body })
-        expect(response.status).toBe(201)
-        expect(response.statusText).toBe('Created')
+        const response = await application.fetch(`/api/users/${user.username}/avatar`, { method: 'PUT', headers, body })
+        expect(response).toMatchObject({ status: 201, statusText: 'Created' })
       })
 
-      it('should store the avatar\'s file entity in the database', async({ createUser, moduleUser, application }) => {
-        const { user, headers } = await createUser('admin', { isSuperAdministrator: true })
+      it('should store the avatar\'s file entity in the database', async({ setupUser, moduleUser, application }) => {
+        const { user, headers } = await setupUser({ isSuperAdministrator: true })
         const body = createFormData('image/png', headers)
-        await application.fetch('/api/users/admin/avatar', { method: 'PUT', headers, body })
+        await application.fetch(`/api/users/${user.username}/avatar`, { method: 'PUT', headers, body })
         const profile = await moduleUser.getRepositories().UserProfile.findOneOrFail({
           where: { user: { id: user.id } },
           relations: { avatar: true },
@@ -53,7 +53,7 @@ describe('userSetAvatar', () => {
           size: 4,
           pool: 'default',
           type: 'image/png',
-          name: 'avatar-admin',
+          name: `avatar-${user.username}`,
           origin: `user:${user.id}`,
           hash: 'c97c29c7a71b392b437ee03fd17f09bb10b75e879466fc0eb757b2c4a78ac938',
           createdAt: expect.any(Date),
@@ -62,10 +62,10 @@ describe('userSetAvatar', () => {
         })
       })
 
-      it('should store the avatar\'s file content in the storage pool', async({ createUser, moduleUser, moduleStorage, application }) => {
-        const { user, headers } = await createUser('admin', { isSuperAdministrator: true })
+      it('should store the avatar\'s file content in the storage pool', async({ setupUser, moduleUser, moduleStorage, application }) => {
+        const { user, headers } = await setupUser({ isSuperAdministrator: true })
         const body = createFormData('image/png', headers)
-        await application.fetch('/api/users/admin/avatar', { method: 'PUT', headers, body })
+        await application.fetch(`/api/users/${user.username}/avatar`, { method: 'PUT', headers, body })
         const profile = await moduleUser.getRepositories().UserProfile.findOneOrFail({
           where: { user: { id: user.id } },
           relations: { avatar: true },
@@ -77,20 +77,19 @@ describe('userSetAvatar', () => {
     })
 
     describe<Context>('other user', (it) => {
-      it('should call the download function and return its result', async({ createUser, application }) => {
-        const { headers } = await createUser('admin', { isSuperAdministrator: true })
-        await createUser('jdoe')
+      it('should call the download function and return its result', async({ setupUser, application }) => {
+        const { headers } = await setupUser({ isSuperAdministrator: true })
+        const { user } = await setupUser()
         const body = createFormData('image/png', headers)
-        const response = await application.fetch('/api/users/jdoe/avatar', { method: 'PUT', headers, body })
-        expect(response.status).toBe(201)
-        expect(response.statusText).toBe('Created')
+        const response = await application.fetch(`/api/users/${user.username}/avatar`, { method: 'PUT', headers, body })
+        expect(response).toMatchObject({ status: 201, statusText: 'Created' })
       })
 
-      it('should store the avatar\'s file entity in the database', async({ createUser, moduleUser, application }) => {
-        const { headers } = await createUser('admin', { isSuperAdministrator: true })
-        const { user } = await createUser('jdoe')
+      it('should store the avatar\'s file entity in the database', async({ setupUser, moduleUser, application }) => {
+        const { headers } = await setupUser({ isSuperAdministrator: true })
+        const { user } = await setupUser()
         const body = createFormData('image/png', headers)
-        await application.fetch('/api/users/jdoe/avatar', { method: 'PUT', headers, body })
+        await application.fetch(`/api/users/${user.username}/avatar`, { method: 'PUT', headers, body })
         const profile = await moduleUser.getRepositories().UserProfile.findOneOrFail({
           where: { user: { id: user.id } },
           relations: { avatar: true },
@@ -101,7 +100,7 @@ describe('userSetAvatar', () => {
           size: 4,
           pool: 'default',
           type: 'image/png',
-          name: 'avatar-jdoe',
+          name: `avatar-${user.username}`,
           origin: `user:${user.id}`,
           hash: 'c97c29c7a71b392b437ee03fd17f09bb10b75e879466fc0eb757b2c4a78ac938',
           createdAt: expect.any(Date),
@@ -110,11 +109,11 @@ describe('userSetAvatar', () => {
         })
       })
 
-      it('should store the avatar\'s file content in the storage pool', async({ createUser, moduleUser, moduleStorage, application }) => {
-        const { headers } = await createUser('admin', { isSuperAdministrator: true })
-        const { user } = await createUser('jdoe')
+      it('should store the avatar\'s file content in the storage pool', async({ setupUser, moduleUser, moduleStorage, application }) => {
+        const { headers } = await setupUser({ isSuperAdministrator: true })
+        const { user } = await setupUser()
         const body = createFormData('image/png', headers)
-        await application.fetch('/api/users/jdoe/avatar', { method: 'PUT', headers, body })
+        await application.fetch(`/api/users/${user.username}/avatar`, { method: 'PUT', headers, body })
         const profile = await moduleUser.getRepositories().UserProfile.findOneOrFail({
           where: { user: { id: user.id } },
           relations: { avatar: true },
@@ -128,18 +127,17 @@ describe('userSetAvatar', () => {
 
   describe<Context>('with authenticated user', () => {
     describe<Context>('own user', (it) => {
-      it('should call the download function and return its result', async({ createUser, application }) => {
-        const { headers } = await createUser('jdoe')
+      it('should call the download function and return its result', async({ setupUser, application }) => {
+        const { user, headers } = await setupUser()
         const body = createFormData('image/png', headers)
-        const response = await application.fetch('/api/users/jdoe/avatar', { method: 'PUT', headers, body })
-        expect(response.status).toBe(201)
-        expect(response.statusText).toBe('Created')
+        const response = await application.fetch(`/api/users/${user.username}/avatar`, { method: 'PUT', headers, body })
+        expect(response).toMatchObject({ status: 201, statusText: 'Created' })
       })
 
-      it('should store the avatar\'s file entity in the database', async({ createUser, moduleUser, application }) => {
-        const { user, headers } = await createUser('jdoe')
+      it('should store the avatar\'s file entity in the database', async({ setupUser, moduleUser, application }) => {
+        const { user, headers } = await setupUser()
         const body = createFormData('image/png', headers)
-        await application.fetch('/api/users/jdoe/avatar', { method: 'PUT', headers, body })
+        await application.fetch(`/api/users/${user.username}/avatar`, { method: 'PUT', headers, body })
         const profile = await moduleUser.getRepositories().UserProfile.findOneOrFail({
           where: { user: { id: user.id } },
           relations: { avatar: true },
@@ -150,7 +148,7 @@ describe('userSetAvatar', () => {
           size: 4,
           pool: 'default',
           type: 'image/png',
-          name: 'avatar-jdoe',
+          name: `avatar-${user.username}`,
           origin: `user:${user.id}`,
           hash: 'c97c29c7a71b392b437ee03fd17f09bb10b75e879466fc0eb757b2c4a78ac938',
           createdAt: expect.any(Date),
@@ -159,10 +157,10 @@ describe('userSetAvatar', () => {
         })
       })
 
-      it('should store the avatar\'s file content in the storage pool', async({ createUser, moduleUser, moduleStorage, application }) => {
-        const { user, headers } = await createUser('jdoe')
+      it('should store the avatar\'s file content in the storage pool', async({ setupUser, moduleUser, moduleStorage, application }) => {
+        const { user, headers } = await setupUser()
         const body = createFormData('image/png', headers)
-        await application.fetch('/api/users/jdoe/avatar', { method: 'PUT', headers, body })
+        await application.fetch(`/api/users/${user.username}/avatar`, { method: 'PUT', headers, body })
         const profile = await moduleUser.getRepositories().UserProfile.findOneOrFail({
           where: { user: { id: user.id } },
           relations: { avatar: true },
@@ -174,11 +172,11 @@ describe('userSetAvatar', () => {
     })
 
     describe<Context>('other user', (it) => {
-      it('should throw an error if the user is not a super administrator', async({ createUser, application }) => {
-        const { headers } = await createUser('user')
-        await createUser('jdoe')
+      it('should throw an error if the user is not a super administrator', async({ setupUser, application }) => {
+        const { headers } = await setupUser()
+        const { user } = await setupUser()
         const body = createFormData('image/png', headers)
-        const response = await application.fetch('/api/users/jdoe/avatar', { method: 'PUT', headers, body })
+        const response = await application.fetch(`/api/users/${user.username}/avatar`, { method: 'PUT', headers, body })
         const text = await response.text()
         const error = ERRORS.USER_FORBIDDEN()
         expect(response.status).toBe(403)
@@ -188,14 +186,13 @@ describe('userSetAvatar', () => {
     })
 
     describe<Context>('invalid file', (it) => {
-      it('should throw an error if the file is not an image', async({ createUser, application }) => {
-        const { headers } = await createUser('jdoe')
+      it('should throw an error if the file is not an image', async({ setupUser, application }) => {
+        const { user, headers } = await setupUser()
         const body = createFormData('text/plain', headers)
-        const response = await application.fetch('/api/users/jdoe/avatar', { method: 'PUT', headers, body })
+        const response = await application.fetch(`/api/users/${user.username}/avatar`, { method: 'PUT', headers, body })
         const text = await response.text()
         const error = ERRORS.USER_AVATAR_NOT_IMAGE()
-        expect(response.status).toBe(400)
-        expect(response.statusText).toBe('Bad Request')
+        expect(response).toMatchObject({ status: 400, statusText: 'Bad Request' })
         expect(text).toContain(error.message)
       })
     })
@@ -208,9 +205,8 @@ describe('userSetAvatar', () => {
       const response = await application.fetch('/api/users/jdoe/avatar', { method: 'PUT', headers, body })
       const text = await response.text()
       const error = ERRORS.USER_UNAUTHORIZED()
-      expect(response.status).toBe(401)
-      expect(response.statusText).toBe('Unauthorized')
+      expect(response).toMatchObject({ status: 401, statusText: 'Unauthorized' })
       expect(text).toContain(error.message)
     })
   })
-}, 1000)
+})

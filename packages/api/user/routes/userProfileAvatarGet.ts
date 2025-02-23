@@ -28,16 +28,13 @@ export function userGetAvatar(this: ModuleUser) {
         user,
         username,
         withProfile: true,
-        withDeleted: user?.isSuperAdministrator,
-        withDisabled: user?.isSuperAdministrator,
+        withDeleted: Boolean(user?.isSuperAdministrator),
+        withDisabled: Boolean(user?.isSuperAdministrator),
       })
 
       // --- Redirect to the avatar file.
-      if (found.profile?.avatar) {
-        return storageModule.respondWith(event, found.profile.avatar, {
-          isAttachment: download,
-        })
-      }
+      if (found.profile?.avatar)
+        return storageModule.respondWith(event, found.profile.avatar, { isAttachment: download })
 
       // --- If the user does not have an avatar, return a simple SVG.
       setResponseHeader(event, 'Cache-Control', 'no-cache')
