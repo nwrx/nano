@@ -1,28 +1,26 @@
 import type { Loose } from '@unshared/types'
 import type { Project } from '../entities'
 import type { ModuleProject } from '../index'
-import { assertBoolean, assertString, assertStringNotEmpty, assertStringUuid, assertUndefined, createSchema } from '@unshared/validation'
+import { assert, createSchema } from '@unshared/validation'
+import { assertUser } from '../../user'
 import { assertWorkspace } from '../../workspace'
 
 const CREATE_PROJECT_OPTIONS = createSchema({
 
   /** The `User` responsible for the request. */
-  user: createSchema({ id: assertStringUuid }),
+  user: assertUser,
 
   /** The name of the project to create. */
-  name: assertStringNotEmpty,
+  name: assert.stringNotEmpty,
+
+  /** The name of the project to create. */
+  title: [[assert.undefined], [assert.stringNotEmpty]],
 
   /** The workspace to create the project in. */
   workspace: assertWorkspace,
 
-  /** The title of the project to create. */
-  title: [[assertUndefined], [assertString]],
-
-  /** The description of the project to create. */
-  description: [[assertUndefined], [assertString]],
-
   /** Whether the project is public or private. */
-  isPublic: [[assertUndefined], [assertBoolean]],
+  isPublic: [[assert.undefined], [assert.boolean]],
 })
 
 /** The options to create the project with. */
@@ -39,7 +37,7 @@ export type CreateProjectOptions = Loose<ReturnType<typeof CREATE_PROJECT_OPTION
  */
 export async function createProject(this: ModuleProject, options: CreateProjectOptions): Promise<Project> {
   const { Project, ProjectAssignment } = this.getRepositories()
-  const { user, name, title = name, description, workspace, isPublic } = CREATE_PROJECT_OPTIONS(options)
+  const { user, name, title = name, workspace, isPublic } = CREATE_PROJECT_OPTIONS(options)
 
   // --- Check if the project already exists in the workspace.
   const exists = await Project.countBy({ name, workspace })
@@ -47,6 +45,5 @@ export async function createProject(this: ModuleProject, options: CreateProjectO
 
   // --- Create the project and assign the user as the owner.
   const assignment = ProjectAssignment.create({ user, permission: 'Owner' })
-  const project = Project.create({ name, title, description, workspace, isPublic, assignments: [assignment] })
-  return await Project.save(project)
+  return Project.create({ name, title, workspace, isPublic, createdBy: user, assignments: [assignment] })
 }

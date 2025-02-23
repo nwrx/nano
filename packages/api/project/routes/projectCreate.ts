@@ -1,7 +1,7 @@
-import type { ModuleProject, ProjectObject } from '../index'
+import type { ModuleProject } from '../index'
 import { createHttpRoute } from '@unserved/server'
 import { toSlug } from '@unshared/string'
-import { assertString, assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
+import { assert, createSchema } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
 import { createProject } from '../utils'
@@ -11,24 +11,31 @@ export function projectCreate(this: ModuleProject) {
     {
       name: 'POST /api/workspaces/:workspace/projects',
       parseParameters: createSchema({
-        workspace: assertStringNotEmpty,
+        workspace: assert.stringNotEmpty,
       }),
       parseBody: createSchema({
-        name: [assertStringNotEmpty, toSlug],
-        title: [[assertUndefined], [assertString]],
-        description: [[assertUndefined], [assertString]],
+        name: [[assert.undefined], [assert.stringNotEmpty]],
+        title: [[assert.undefined], [assert.stringNotEmpty]],
       }),
     },
-    async({ event, parameters, body }): Promise<ProjectObject> => {
+    async({ event, parameters, body }): Promise<void> => {
       const moduleUser = this.getModule(ModuleUser)
       const moduleWorkspace = this.getModule(ModuleWorkspace)
       const { user } = await moduleUser.authenticate(event)
-      const { name, title, description } = body
 
-      // --- Get the workspace and create the project.
+      // --- Parse the options.
+      let { name, title } = body
+      if (!name && title) name = title
+      else if (!title && name) title = toSlug(name)
+      else throw new Error('E_PROJECT_NAME_OR_TITLE_REQUIRED')
+
+      // --- Create the project in the workspace.
       const workspace = await moduleWorkspace.getWorkspace({ name: parameters.workspace, user, permission: 'Write' })
-      const project = await createProject.call(this, { name, title, description, workspace, user })
-      return project.serialize()
+      const project = await createProject.call(this, { name, title, workspace, user })
+
+      // --- Save the project to the database.
+      const { Project } = this.getRepositories()
+      await Project.save(project)
     },
   )
 }
