@@ -1,6 +1,7 @@
 // eslint-disable-next-line n/no-extraneous-import
 import type { TestContext } from 'vitest'
-import type { ProjectPermission } from '../project'
+import type { FlowPermission } from '../flow'
+import type { Project, ProjectPermission } from '../project'
 import type { User } from '../user'
 import type { Workspace, WorkspacePermission } from '../workspace'
 import { ModuleRunner } from '@nwrx/nano-runner'
@@ -37,6 +38,14 @@ export interface SetupProjectOptions {
   isPublic?: boolean
   workspace?: Workspace
   assignments?: Array<[undefined | User, ...Array<ProjectPermission | undefined>]>
+}
+
+export interface SetupFlowOptions {
+  user?: User
+  name?: string
+  project?: Project
+  isPublic?: boolean
+  assignments?: Array<[undefined | User, ...Array<FlowPermission | undefined>]>
 }
 
 export async function createTestContext(testContext: TestContext) {
@@ -178,6 +187,38 @@ export async function createTestContext(testContext: TestContext) {
       // --- Save the project and assignments.
       await Project.save(project)
       return { project }
+    },
+
+    setupFlow: async(options: SetupFlowOptions = {}) => {
+      const moduleFlow = application.getModule(ModuleFlow)
+
+      // --- Create the flow with the given options.
+      const { Flow, FlowAssignment } = moduleFlow.getRepositories()
+      const { assignments, project, isPublic, user, name = randomBytes(8).toString('hex') } = options
+      const flow = Flow.create({ name, project, title: name, isPublic, createdBy: user, assignments: [] })
+
+      // --- Assign the user to the flow with the given permissions.
+      if (assignments) {
+        for (const assignment of assignments) {
+          const [user, ...permissions] = assignment
+          if (!user) continue
+          const permissionsUnique = [...new Set(permissions)].filter(Boolean)
+          for (const permission of permissionsUnique) {
+            const assignment = FlowAssignment.create({ flow, user, permission })
+            flow.assignments!.push(assignment)
+          }
+        }
+      }
+
+      // --- If no user was provided, create one and set it as the creator.
+      if (!user) {
+        const { user } = await context.setupUser()
+        flow.createdBy = user
+      }
+
+      // --- Save the flow and assignments.
+      await Flow.save(flow)
+      return { flow }
     },
   }
 
