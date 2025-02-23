@@ -7,14 +7,11 @@ definePageMeta({
 })
 
 const user = useSession()
+const { setAvatar, setProfile, setUsername } = useUser(user.data.username)
 
-const {
-  setAvatar,
-  setProfile,
-  setUsername,
-} = useUser(user.data.username)
-
-onMounted(user.refresh)
+onMounted(async() => {
+  await user.getSession()
+})
 </script>
 
 <template>

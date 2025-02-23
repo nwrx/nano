@@ -10,8 +10,7 @@ const session = useSession()
 const user = useUser(session.data.username)
 
 onMounted(async() => {
-  await session.refresh()
-  await user.refresh()
+  await user.getUser()
 })
 </script>
 

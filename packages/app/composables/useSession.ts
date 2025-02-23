@@ -14,7 +14,7 @@ export const useSession = createSharedComposable(() => {
   const alerts = useAlerts()
   const session = ref<Partial<UserObject>>({})
 
-  const refresh = async(force = false) => {
+  const getSession = async(force = false) => {
     if (!force && session.value.username) return session.value
     return await client.request('GET /api/session', {
       onData: data => session.value = data ?? {},
@@ -23,22 +23,8 @@ export const useSession = createSharedComposable(() => {
 
   return {
     data: toReactive(session),
+    getSession,
 
-    /**
-     * Refresh the current session data. This will fetch the session data from the API
-     * and update the session object with the new data. If the session data is already
-     * available, this will not fetch the data again unless the `force` parameter is set.
-     *
-     * @param force Whether to force the refresh even if the session data is already available.
-     * @returns The current session data.
-     */
-    refresh,
-
-    /**
-     * Sign-up the user with the provided credentials.
-     *
-     * @param credentials The credentials to sign-up with.
-     */
     signupWithPassword: async(credentials: SignupCredentials) => {
       await useClient().requestAttempt('POST /api/signup', {
         data: {
@@ -47,7 +33,7 @@ export const useSession = createSharedComposable(() => {
           password: credentials.password,
           passwordConfirm: credentials.passwordConfirm,
         },
-        onData: async() => {
+        onSuccess: async() => {
           const redirect = useRoute().query.redirect as string | undefined
           session.value = { username: credentials.username }
           await router.replace(redirect ?? { name: 'Workspace', params: { workspace: session.value.username } })
@@ -56,11 +42,6 @@ export const useSession = createSharedComposable(() => {
       })
     },
 
-    /**
-     * Sign-in the user with the provided credentials.
-     *
-     * @param credentials The credentials to sign-in with.
-     */
     signinWithPassword: async(credentials: SigninCredentials) => {
       await useClient().requestAttempt('POST /api/session', {
         data: {
@@ -69,19 +50,13 @@ export const useSession = createSharedComposable(() => {
         },
         onSuccess: async() => {
           const redirect = useRoute().query.redirect as string | undefined
-          await refresh(true)
+          await getSession(true)
           await router.replace(redirect ?? { name: 'Workspace', params: { workspace: session.value.username } })
           alerts.success('Logged in successfully')
         },
       })
     },
 
-    /**
-     * Sign-out the current user and redirect to the authentication page.
-     * This will also display a success message to the user.
-     *
-     * @returns The result of the sign-out request.
-     */
     signout: async() => {
       await client.requestAttempt('DELETE /api/session', {
         onSuccess: () => {
