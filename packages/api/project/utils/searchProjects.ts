@@ -1,67 +1,22 @@
+import type { Loose } from '@unshared/types'
 import type { FindOptionsOrder, FindOptionsWhere } from 'typeorm'
-import type { User } from '../../user'
 import type { Project } from '../entities'
 import type { ModuleProject } from '../index'
+import { assert, createSchema } from '@unshared/validation'
 import { ILike, In } from 'typeorm'
+import { assertUser } from '../../user'
+import { assertWorkspace } from '../../workspace'
 
-/** The options to search the project with. */
-export interface SearchProjectsOptions {
+export const SEARCH_PROJECTS_OPTIONS_SCHEMA = createSchema({
+  search: [[assert.undefined], [assert.string]],
+  workspace: assertWorkspace,
+  user: [[assert.undefined], [assertUser]],
+  page: [[assert.undefined], [assert.number]],
+  limit: [[assert.undefined], [assert.number]],
+  order: [[assert.undefined], [assert.objectStrict as (value: unknown) => asserts value is FindOptionsOrder<Project>]],
+})
 
-  /**
-   * The search query to find the project with. The search query will be used to search
-   * for the project with the given name or title. The search query will be sanitized to
-   * ensure that only alphanumeric characters are used.
-   */
-  search?: string
-
-  /**
-   * The name of the workspace to search for the project in. If the workspace is not provided,
-   * the function will search for the project in the user's workspace.
-   */
-  workspace?: string
-
-  /**
-   * The `User` responsible for the request. The user will be used to determine if the
-   * user has access to the project. If the user is not provided, the function will only
-   * search for public projects.
-   */
-  user?: User
-
-  /**
-   * The page number to search for the projects.
-   *
-   * @default 1
-   */
-  page?: number
-
-  /**
-   * The limit of projects to return per page.
-   *
-   * @default 10
-   */
-  limit?: number
-
-  /**
-   * Include the flows that are part of the project.
-   *
-   * @default false
-   */
-  withFlows?: boolean
-
-  /**
-   * Include the assignments between the user and the project.
-   *
-   * @default false
-   */
-  withAssignments?: boolean
-
-  /**
-   * The order to sort the projects by.
-   *
-   * @default { name: 'ASC' }
-   */
-  order?: FindOptionsOrder<Project>
-}
+export type SearchProjectsOptions = Loose<ReturnType<typeof SEARCH_PROJECTS_OPTIONS_SCHEMA>>
 
 /**
  * Search for the `Project` with the given name. The function will query the database
@@ -76,12 +31,11 @@ export async function searchProjects(this: ModuleProject, options: SearchProject
   const {
     search = '',
     user,
-    workspace, /* withAssignments, */
-    withFlows,
+    workspace,
     page = 1,
     limit = 10,
     order = { name: 'ASC' },
-  } = options
+  } = SEARCH_PROJECTS_OPTIONS_SCHEMA(options)
 
   // --- Get the repositories to query the database.
   const { Project } = this.getRepositories()
@@ -90,64 +44,15 @@ export async function searchProjects(this: ModuleProject, options: SearchProject
 
   // --- Search for all public projects within public workspaces.
   const where: Array<FindOptionsWhere<Project>> = [
-    { name: searchOperator, workspace: { name: workspace, isPublic: true }, isPublic: true },
-    { title: searchOperator, workspace: { name: workspace, isPublic: true }, isPublic: true },
+    { name: searchOperator, workspace, isPublic: true },
+    { title: searchOperator, workspace, isPublic: true },
   ]
-
-  // --- If a user is provided but does not have an ID, throw an error.
-  if (user && !user.id) throw new Error('User ID is required to search for projects.')
 
   // --- If a user is provided, also search for projects the user has access to.
   if (user) {
     where.push(
-
-      // --- If the user is the owner of the workspace, can access all projects.
-      {
-        name: searchOperator,
-        workspace: { name: workspace, assignments: { user, permission: 'Owner' } },
-      },
-      {
-        title: searchOperator,
-        workspace: { name: workspace, assignments: { user, permission: 'Owner' } },
-      },
-
-      // --- If the user has read access to the workspace, can access all public projects
-      // --- and all projects the user has at least read access to.
-      {
-        name: searchOperator,
-        isPublic: true,
-        workspace: [
-          { name: workspace, isPublic: true },
-          { name: workspace, assignments: { user, permission: 'Read' } },
-        ],
-      },
-      {
-        title: searchOperator,
-        isPublic: true,
-        workspace: [
-          { name: workspace, isPublic: true },
-          { name: workspace, assignments: { user, permission: 'Read' } },
-        ],
-      },
-
-      // --- If the user has read access to the workspace, can access all public projects
-      // --- and all projects the user has at least read access to.
-      {
-        name: searchOperator,
-        assignments: { user, permission: In(['Owner', 'Read']) },
-        workspace: [
-          { name: workspace, isPublic: true },
-          { name: workspace, assignments: { user, permission: 'Read' } },
-        ],
-      },
-      {
-        title: searchOperator,
-        assignments: { user, permission: In(['Owner', 'Read']) },
-        workspace: [
-          { name: workspace, isPublic: true },
-          { name: workspace, assignments: { user, permission: 'Read' } },
-        ],
-      },
+      { name: searchOperator, workspace, assignments: { user, permission: In(['Owner', 'Read']) } },
+      { title: searchOperator, workspace, assignments: { user, permission: In(['Owner', 'Read']) } },
     )
   }
 
@@ -157,10 +62,5 @@ export async function searchProjects(this: ModuleProject, options: SearchProject
     order,
     take: limit,
     skip: (page - 1) * limit,
-    relations: {
-      flows: withFlows,
-      workspace: { assignments: { user: true } },
-      assignments: { user: true },
-    },
   })
 }
