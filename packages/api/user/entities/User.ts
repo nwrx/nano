@@ -82,6 +82,7 @@ export class User extends BaseEntity {
       disabledAt: options.withProtected ? this.disabledAt?.toISOString() : undefined,
       createdAt: options.withProtected ? this.createdAt?.toISOString() : undefined,
       updatedAt: options.withProtected ? this.updatedAt?.toISOString() : undefined,
+      deletedAt: options.withProtected ? this.deletedAt?.toISOString() : undefined,
     }
   }
 }
@@ -97,4 +98,5 @@ export interface UserObject extends Partial<UserProfileObject> {
   disabledAt?: string
   createdAt?: string
   updatedAt?: string
+  deletedAt?: string
 }
