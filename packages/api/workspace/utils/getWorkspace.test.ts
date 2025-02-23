@@ -18,21 +18,13 @@ interface TestMatrixOptions {
 
 async function createResult(context: Context, options: TestMatrixOptions) {
   const { isPublic, permission, withUser, withAccess, withPermission } = options
-  const { workspace } = await context.createWorkspace('workspace', isPublic)
-  const { user } = withUser ? await context.createUser() : {}
-  if (user && withPermission) await context.assignWorkspace(workspace, user, withPermission)
-  if (user && withAccess && withAccess !== withPermission) await context.assignWorkspace(workspace, user, withAccess)
+  const { user } = withUser ? await context.setupUser() : {}
+  const { workspace } = await context.setupWorkspace({ name: 'workspace', isPublic, assignments: [[user, withAccess, withPermission]] })
   return await getWorkspace.call(context.moduleWorkspace, { user, name: workspace.name, permission })
 }
 
-describe.concurrent('getWorkspace', { timeout: 300 }, () => {
-  beforeEach<Context>(async(context) => {
-    await createTestContext(context)
-  })
-
-  afterEach<Context>(async(context) => {
-    await context.application.destroy()
-  })
+describe('getWorkspace', { timeout: 300 }, () => {
+  beforeEach<Context>(createTestContext)
 
   const WORKSPACE_READ_PERMISSIONS = ['Read', 'Owner'] as WorkspacePermission[]
   const WORKSPACE_EXTRA_PERMISSIONS = WORKSPACE_PERMISSIONS.filter(permission => !WORKSPACE_READ_PERMISSIONS.includes(permission))

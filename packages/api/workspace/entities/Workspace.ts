@@ -64,7 +64,6 @@ export class Workspace extends BaseEntity {
    */
   serialize(): WorkspaceObject {
     return {
-      id: this.id,
       name: this.name,
       isPublic: this.isPublic,
     }
@@ -72,7 +71,6 @@ export class Workspace extends BaseEntity {
 }
 
 export interface WorkspaceObject {
-  id: string
   name: string
   isPublic: boolean
 }

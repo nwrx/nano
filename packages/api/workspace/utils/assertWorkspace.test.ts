@@ -1,6 +1,11 @@
 import { ValidationError } from '@unshared/validation'
 import { assertWorkspace } from './assertWorkspace'
 
+const VALID_USER = {
+  id: '00000000-0000-0000-0000-000000000000',
+  username: 'user',
+}
+
 describe('assertWorkspace', () => {
   describe('pass', () => {
     it('should assert a workspace with empty assignments', () => {
@@ -17,8 +22,8 @@ describe('assertWorkspace', () => {
         id: '00000000-0000-0000-0000-000000000000',
         name: 'workspace',
         assignments: [
-          { user: { id: '00000000-0000-0000-0000-000000000000' }, permission: 'Read' },
-          { user: { id: '00000000-0000-0000-0000-000000000000' }, permission: 'Write' },
+          { user: VALID_USER, permission: 'Read' },
+          { user: VALID_USER, permission: 'Write' },
         ],
       })
       expect(shouldPass).not.toThrow()
@@ -57,7 +62,7 @@ describe('assertWorkspace', () => {
       const shouldThrow = () => assertWorkspace({
         id: '00000000-0000-0000-0000-000000000000',
         name: 'workspace',
-        assignments: [{ user: { id: 'invalid' }, permission: 'Read' }],
+        assignments: [{ user: { ...VALID_USER, id: 'invalid' }, permission: 'Read' }],
       })
       expect(shouldThrow).toThrow(ValidationError)
     })
@@ -66,7 +71,7 @@ describe('assertWorkspace', () => {
       const shouldThrow = () => assertWorkspace({
         id: '00000000-0000-0000-0000-000000000000',
         name: 'workspace',
-        assignments: [{ user: { id: '00000000-0000-0000-0000-000000000000' }, permission: 'Invalid' }],
+        assignments: [{ user: VALID_USER, permission: 'Invalid' }],
       })
       expect(shouldThrow).toThrow(ValidationError)
     })

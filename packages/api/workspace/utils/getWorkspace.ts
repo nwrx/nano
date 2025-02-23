@@ -3,6 +3,7 @@ import type { Workspace } from '../entities'
 import type { ModuleWorkspace } from '../index'
 import { assert, createSchema } from '@unshared/validation'
 import { In } from 'typeorm'
+import { assertUser } from '../../user/utils/assertUser'
 import { assertWorkspacePermission } from './assertWorkspacePermission'
 
 /** The parser fuction for the {@linkcode getWorkspace} function. */
@@ -12,7 +13,7 @@ const GET_WORKSPACE_OPTIONS = createSchema({
   name: assert.stringNotEmpty,
 
   /** The `User` responsible for the request. */
-  user: [[assert.undefined], [createSchema({ id: assert.stringUuid })]],
+  user: [[assert.undefined], [assertUser]],
 
   /** The permissions required to access the workspace. */
   permission: assertWorkspacePermission,

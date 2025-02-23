@@ -11,7 +11,7 @@ const CREATE_WORKSPACE_OPTIONS_SCHEMA = createSchema({
   user: assertUser,
 
   /** The name of the workspace to create. */
-  name: [[assert.undefined], [assert.stringNotEmpty]],
+  name: assert.stringNotEmpty,
 
   /** Whether the workspace is public or private. */
   isPublic: [[assert.undefined], [assert.boolean]],
@@ -29,7 +29,7 @@ export type CreateWorkspaceOptions = Loose<ReturnType<typeof CREATE_WORKSPACE_OP
  * @returns The newly created `Workspace` entity.
  */
 export async function createWorkspace(this: ModuleWorkspace, options: CreateWorkspaceOptions): Promise<Workspace> {
-  const { user, name = user.username, isPublic = false } = CREATE_WORKSPACE_OPTIONS_SCHEMA(options)
+  const { user, name, isPublic = false } = CREATE_WORKSPACE_OPTIONS_SCHEMA(options)
 
   // --- Assert the user does not already have a workspace with the same name.
   const { Workspace } = this.getRepositories()
