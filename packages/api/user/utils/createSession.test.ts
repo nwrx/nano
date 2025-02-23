@@ -16,15 +16,21 @@ function getCookiesObject(event: H3Event) {
 }
 
 describe.concurrent('authenticate', () => {
+  beforeAll(() => {
+    vi.useFakeTimers({ now: new Date('2020-01-01T00:00:00Z'), toFake: ['Date'] })
+  })
+
+  afterAll(() => {
+    vi.useRealTimers()
+  })
+
   beforeEach<Context>(async(context) => {
     await createTestContext(context)
     await context.application.createTestServer()
-    vi.useFakeTimers({ now: new Date('2020-01-01T00:00:00Z'), toFake: ['Date'] })
   })
 
   afterEach<Context>(async(context) => {
     await context.application.destroy()
-    vi.useRealTimers()
   })
 
   describe<Context>('result', (it) => {
