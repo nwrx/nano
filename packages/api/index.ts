@@ -1,6 +1,7 @@
 export * from './application'
 export * from './chat'
 export * from './flow'
+export * from './flowEditor'
 export * from './project'
 export * from './storage'
 export * from './thread'

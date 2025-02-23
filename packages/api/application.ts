@@ -2,6 +2,7 @@ import { Application, createHttpRoute, ModuleBase } from '@unserved/server'
 import Consola from 'consola'
 import { ModuleChat } from './chat'
 import { ModuleFlow } from './flow'
+import { ModuleFlowEditor } from './flowEditor'
 import { ModuleProject } from './project'
 import { ModuleStorage } from './storage'
 import { createStoragePoolFs } from './storage/utils'
@@ -25,6 +26,7 @@ export const application = new Application(
   [
     ModuleUser,
     ModuleFlow,
+    ModuleFlowEditor,
     ModuleWorkspace,
     ModuleVault,
     ModuleProject,
