@@ -1,7 +1,6 @@
 import type { ModuleUser } from '../index'
 import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, createSchema } from '@unshared/validation'
-import { setResponseStatus } from 'h3'
 import { ModuleWorkspace } from '../../workspace'
 import { getUser } from '../utils'
 
@@ -29,7 +28,11 @@ export function userDelete(this: ModuleUser) {
       // --- Find the user to remove.
       const { User } = this.getRepositories()
       const { Workspace } = workspaceModule.getRepositories()
-      const userToRemove = await getUser.call(this, { user, username, withDisabled: user.isSuperAdministrator })
+      const userToRemove = await getUser.call(this, {
+        user,
+        username,
+        withDisabled: Boolean(user.isSuperAdministrator),
+      })
 
       // --- Find the workspace associated with the user and archive it.
       const workspaceToArchive = await Workspace.findOneByOrFail({ name: username })
@@ -40,9 +43,6 @@ export function userDelete(this: ModuleUser) {
         await User.softRemove(userToRemove)
         await Workspace.save(workspaceToArchive)
       })
-
-      // --- Respond with a 204 status code.
-      setResponseStatus(event, 204)
     },
   )
 }

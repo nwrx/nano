@@ -2,7 +2,6 @@
 import type { ModuleUser } from '..'
 import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, createSchema } from '@unshared/validation'
-import { setResponseStatus } from 'h3'
 import { getUser } from '../utils'
 
 export function userEnable(this: ModuleUser) {
@@ -31,7 +30,6 @@ export function userEnable(this: ModuleUser) {
       const { User } = this.getRepositories()
       userToEnable.disabledAt = null
       await User.save(userToEnable)
-      setResponseStatus(event, 204)
     },
   )
 }

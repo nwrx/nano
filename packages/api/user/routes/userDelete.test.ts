@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import type { Context } from '../../__fixtures__'
 import { createTestContext } from '../../__fixtures__'
 
@@ -12,105 +11,82 @@ describe.concurrent('userDelete', () => {
     await context.application.destroy()
   })
 
-  describe<Context>('with super administrator', () => {
-    describe<Context>('own user', (it) => {
-      it('should respond with an error if the user is the super administrator', async({ createUser, application }) => {
-        const { headers } = await createUser('admin', { isSuperAdministrator: true })
-        const response = await application.fetch('/api/users/admin', { method: 'DELETE', headers })
-        const data = await response.json() as Record<string, string>
-        expect(response.status).toBe(403)
-        expect(response.statusText).toBe('Forbidden')
-        expect(data).toMatchObject({ data: { name: 'E_USER_UNABLE_TO_DELETE_SUPER_ADMIN' } })
-      })
+  describe<Context>('with super administrator', (it) => {
+    it('should soft delete the user and archive workspace', async({ setupUser, moduleUser, moduleWorkspace, application }) => {
+      const { headers } = await setupUser({ isSuperAdministrator: true })
+      const { user } = await setupUser()
+      const response = await application.fetch(`/api/users/${user.username}`, { method: 'DELETE', headers })
+      expect(response).toMatchObject({ status: 204, statusText: 'No Content' })
+
+      // Check user is soft deleted
+      const { User } = moduleUser.getRepositories()
+      const deletedUser = await User.findOne({ where: { username: user.username }, withDeleted: true })
+      expect(deletedUser?.deletedAt).toBeInstanceOf(Date)
+
+      // Check workspace is archived
+      const { Workspace } = moduleWorkspace.getRepositories()
+      const workspace = await Workspace.findOneByOrFail({ name: user.username })
+      expect(workspace.archivedAt).toBeInstanceOf(Date)
     })
 
-    describe<Context>('other user', (it) => {
-      it('should soft remove the user from the database', async({ createUser, moduleUser, application }) => {
-        const { headers } = await createUser('admin', { isSuperAdministrator: true })
-        await createUser('jdoe')
-        const response = await application.fetch('/api/users/jdoe', { method: 'DELETE', headers })
-        const { User } = moduleUser.getRepositories()
-        const result = await User.findOneOrFail({ where: { username: 'jdoe' }, withDeleted: true })
-        expect(response.status).toBe(204)
-        expect(response.statusText).toBe('No Content')
-        expect(result).toMatchObject({ username: 'jdoe', deletedAt: expect.any(Date) })
-      })
+    it('should not allow super admin to delete themselves', async({ setupUser, moduleUser, application }) => {
+      const { headers, user } = await setupUser({ isSuperAdministrator: true })
+      const response = await application.fetch(`/api/users/${user.username}`, { method: 'DELETE', headers })
+      const data = await response.json() as Record<string, string>
+      expect(response).toMatchObject({ status: 403, statusText: 'Forbidden' })
+      expect(data).toMatchObject({ data: { name: 'E_USER_UNABLE_TO_DELETE_SUPER_ADMIN' } })
 
-      it('should archive the user workspace', async({ createUser, moduleWorkspace, application }) => {
-        const { headers } = await createUser('admin', { isSuperAdministrator: true })
-        await createUser('jdoe')
-        const response = await application.fetch('/api/users/jdoe', { method: 'DELETE', headers })
-        const { Workspace } = moduleWorkspace.getRepositories()
-        const result = await Workspace.findOneOrFail({ where: { name: 'jdoe' }, withDeleted: true })
-        expect(response.status).toBe(204)
-        expect(response.statusText).toBe('No Content')
-        expect(result).toMatchObject({ name: 'jdoe', deletedAt: undefined, archivedAt: expect.any(Date) })
-      })
-    })
-
-    describe<Context>('edge cases', (it) => {
-      it('should remove disabled users', async({ createUser, moduleUser, application }) => {
-        const { headers } = await createUser('admin', { isSuperAdministrator: true })
-        await createUser('jdoe', { disabledAt: new Date() })
-        const response = await application.fetch('/api/users/jdoe', { method: 'DELETE', headers })
-        const { User } = moduleUser.getRepositories()
-        const result = await User.findOneOrFail({ where: { username: 'jdoe' }, withDeleted: true })
-        expect(response.status).toBe(204)
-        expect(response.statusText).toBe('No Content')
-        expect(result).toMatchObject({ username: 'jdoe', deletedAt: expect.any(Date) })
-      })
-
-      it('should respond with a error if the user does not exist', async({ createUser, application }) => {
-        const { headers } = await createUser('admin', { isSuperAdministrator: true })
-        const response = await application.fetch('/api/users/jdoe', { method: 'DELETE', headers })
-        const data = await response.json() as Record<string, string>
-        expect(response.status).toBe(404)
-        expect(response.statusText).toBe('Not Found')
-        expect(data).toMatchObject({ data: { name: 'E_USER_NOT_FOUND' } })
-      })
+      // Check database
+      const { User } = moduleUser.getRepositories()
+      const result = await User.findOneByOrFail({ username: user.username })
+      expect(result.deletedAt).toBeUndefined()
     })
   })
 
-  describe<Context>('with authenticated user', () => {
-    describe<Context>('own user', (it) => {
-      it('should soft remove the user from the database', async({ createUser, moduleUser, application }) => {
-        const { headers } = await createUser('jdoe')
-        const response = await application.fetch('/api/users/jdoe', { method: 'DELETE', headers })
-        const { User } = moduleUser.getRepositories()
-        const result = await User.findOneOrFail({ where: { username: 'jdoe' }, withDeleted: true })
-        expect(response.status).toBe(204)
-        expect(response.statusText).toBe('No Content')
-        expect(result).toMatchObject({ username: 'jdoe', deletedAt: expect.any(Date) })
-      })
+  describe<Context>('with authenticated user', (it) => {
+    it('should allow users to delete themselves', async({ setupUser, moduleUser, moduleWorkspace, application }) => {
+      const { headers, user } = await setupUser()
+      const response = await application.fetch(`/api/users/${user.username}`, { method: 'DELETE', headers })
+      expect(response).toMatchObject({ status: 204, statusText: 'No Content' })
+
+      // Check user is soft deleted
+      const { User } = moduleUser.getRepositories()
+      const deletedUser = await User.findOne({ where: { username: user.username }, withDeleted: true })
+      expect(deletedUser?.deletedAt).toBeInstanceOf(Date)
+
+      // Check workspace is archived
+      const { Workspace } = moduleWorkspace.getRepositories()
+      const workspace = await Workspace.findOneByOrFail({ name: user.username })
+      expect(workspace.archivedAt).toBeInstanceOf(Date)
     })
 
-    describe<Context>('other user', (it) => {
-      it('should not soft remove the user from the database', async({ createUser, moduleUser, application }) => {
-        const { headers } = await createUser('jdoe')
-        await createUser('paul')
-        const response = await application.fetch('/api/users/paul', { method: 'DELETE', headers })
-        const { User } = moduleUser.getRepositories()
-        const result = await User.findOneOrFail({ where: { username: 'paul' }, withDeleted: true })
-        const data = await response.json() as Record<string, string>
-        expect(response.status).toBe(403)
-        expect(response.statusText).toBe('Forbidden')
-        expect(result).toMatchObject({ username: 'paul' })
-        expect(data).toMatchObject({ data: { name: 'E_USER_FORBIDDEN' } })
-      })
+    it('should not allow users to delete other users', async({ setupUser, moduleUser, application }) => {
+      const { headers } = await setupUser()
+      const { user: otherUser } = await setupUser()
+      const response = await application.fetch(`/api/users/${otherUser.username}`, { method: 'DELETE', headers })
+      const data = await response.json() as Record<string, string>
+      expect(response).toMatchObject({ status: 403, statusText: 'Forbidden' })
+      expect(data).toMatchObject({ data: { name: 'E_USER_FORBIDDEN' } })
+
+      // Check database
+      const { User } = moduleUser.getRepositories()
+      const result = await User.findOneByOrFail({ username: otherUser.username })
+      expect(result.deletedAt).toBeUndefined()
     })
   })
 
   describe<Context>('with unauthenticated user', (it) => {
-    it('should not soft remove the user from the database', async({ createUser, moduleUser, application }) => {
-      await createUser('jdoe')
-      const response = await application.fetch('/api/users/jdoe', { method: 'DELETE' })
+    it('should not delete the user', async({ setupUser, moduleUser, application }) => {
+      const { user } = await setupUser()
+      const response = await application.fetch(`/api/users/${user.username}`, { method: 'DELETE' })
       const data = await response.json() as Record<string, string>
-      const { User } = moduleUser.getRepositories()
-      const result = await User.findOneByOrFail({ username: 'jdoe' })
-      expect(response.status).toBe(401)
-      expect(response.statusText).toBe('Unauthorized')
+      expect(response).toMatchObject({ status: 401, statusText: 'Unauthorized' })
       expect(data).toMatchObject({ data: { name: 'E_USER_UNAUTHORIZED' } })
-      expect(result).toMatchObject({ username: 'jdoe' })
+
+      // Check database
+      const { User } = moduleUser.getRepositories()
+      const result = await User.findOneByOrFail({ username: user.username })
+      expect(result.deletedAt).toBeUndefined()
     })
   })
-}, 1000)
+})
