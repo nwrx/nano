@@ -1,6 +1,7 @@
 import type { ModuleUser } from '../index'
 import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, createSchema } from '@unshared/validation'
+import { deleteCookie } from 'h3'
 import { ModuleWorkspace } from '../../workspace'
 import { getUser } from '../utils'
 
@@ -12,7 +13,7 @@ export function userDelete(this: ModuleUser) {
         username: assertStringNotEmpty,
       }),
     },
-    async({ event, parameters }) => {
+    async({ event, parameters }) => this.withTransaction(async() => {
       const workspaceModule = this.getModule(ModuleWorkspace)
       const { user } = await this.authenticate(event)
       const { username } = parameters
@@ -39,10 +40,14 @@ export function userDelete(this: ModuleUser) {
       workspaceToArchive.archivedAt = new Date()
 
       // --- Soft-remove the user and workspace.
-      await this.withTransaction(async() => {
-        await User.softRemove(userToRemove)
-        await Workspace.save(workspaceToArchive)
-      })
-    },
+      await User.softRemove(userToRemove)
+      await Workspace.save(workspaceToArchive)
+
+      // --- In case the user is deleting itself, delete the session cookies.
+      if (user.username === username) {
+        deleteCookie(event, this.userSessionIdCookieName, { httpOnly: true, sameSite: 'strict', secure: true })
+        deleteCookie(event, this.userSessionTokenCookieName, { httpOnly: true, sameSite: 'strict', secure: true })
+      }
+    }),
   )
 }
