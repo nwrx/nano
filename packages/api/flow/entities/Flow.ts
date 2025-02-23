@@ -2,6 +2,7 @@ import type { FlowV1 } from '@nwrx/nano'
 import { BaseEntity, transformerJson } from '@unserved/server'
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from 'typeorm'
 import { Project } from '../../project'
+import { User } from '../../user'
 import { FlowAssignment } from './FlowAssignment'
 
 /**
@@ -20,7 +21,7 @@ export class Flow extends BaseEntity {
    */
   @JoinColumn()
   @ManyToOne(() => Project, { nullable: false })
-  project?: Project
+  project: Project | undefined
 
   /**
    * The URL slug of the flow. The slug is used to generate the URL of the flow.
@@ -56,10 +57,29 @@ export class Flow extends BaseEntity {
   data: FlowV1 = { version: '1', nodes: {}, metadata: {} }
 
   /**
+   * Whether the flow is public or not. If the flow is public, it can be accessed
+   * by anyone having read access to the project.
+   *
+   * @example true
+   */
+  @Column('boolean')
+  isPublic = false
+
+  /**
+   * The user who created the project. Note that this user is not necessarily the owner of
+   * the project. This field has no impact on the permissions of the project.
+   *
+   * @example User { ... }
+   */
+  @JoinColumn()
+  @ManyToOne(() => User, { nullable: false })
+  createdBy: undefined | User
+
+  /**
    * The assignments for this flow.
    */
-  @OneToMany(() => FlowAssignment, assignment => assignment.flow)
-  assignments?: FlowAssignment[]
+  @OneToMany(() => FlowAssignment, assignment => assignment.flow, { cascade: ['insert'] })
+  assignments: FlowAssignment[] | undefined
 
   /**
    * @returns The object representation of the icon.
@@ -69,8 +89,7 @@ export class Flow extends BaseEntity {
       name: this.name,
       title: this.title,
       description: this.description,
-      workspace: this.project?.workspace?.name,
-      project: this.project?.name,
+      isPublic: this.isPublic,
     }
   }
 }
@@ -79,6 +98,5 @@ export interface FlowObject {
   name: string
   title: string
   description?: string
-  workspace?: string
-  project?: string
+  isPublic?: boolean
 }
