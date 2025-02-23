@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { CreateProjectOptions } from '~/composables/useWorkspace'
+import type { InputText } from '#components'
+import type { ComponentInstance } from 'vue'
 import { toSlug } from '@unshared/string/toSlug'
 
 const props = defineProps<{
@@ -9,93 +10,61 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  'submit': [options: CreateProjectOptions]
+  'submit': [title: string]
 }>()
 
 const { t } = useI18n()
-const model = useVModel(props, 'modelValue', emit, { passive: true })
-const options = ref<CreateProjectOptions>({
-  name: '',
-  title: '',
-  description: '',
+const isOpen = useVModel(props, 'modelValue', emit, { passive: true })
+const title = ref<string>('')
+const input = ref<ComponentInstance<typeof InputText>>()
+
+// --- When the dialog is opened, focus the input. Since the `input`
+// --- element is nested inside `InputText`, we need to go several
+// --- levels deep to find it.
+watchEffect(async() => {
+  if (!isOpen.value) return
+  if (!input.value) return
+  await nextTick()
+  const inputElementContainer = input.value.$el as HTMLInputElement
+  const inputElement = inputElementContainer.querySelector('input')
+  if (inputElement) inputElement.focus()
 })
+
+function submit() {
+  emit('submit', title.value)
+  isOpen.value = false
+}
 </script>
 
 <template>
   <AppDialog
-    v-model="model"
-    variant="success"
-    class-hint="hint-success"
-    class-content="space-y-md"
-    icon="i-carbon:flow"
-    :title="t('title', { workspace })"
-    :text="t('text')"
-    :label-cancel="t('cancel')"
-    :label-confirm="t('confirm')"
-    @confirm="() => emit('submit', options)">
-    <InputText
-      v-model="options.name"
-      :text-before="`${baseUrl}/${workspace}/`"
-      :parse="toSlug"
-      :placeholder="t('name.placeholder')"
-      :hint="t('name.hint')"
-    />
-    <InputText
-      v-model="options.title"
-      :placeholder="t('title.placeholder')"
-    />
-    <InputText
-      v-model="options.description"
-      :placeholder="t('description.placeholder')"
-      type="textarea"
-    />
+    v-model="isOpen"
+    class-container="!w-4xl"
+    @confirm="() => emit('submit', title)">
+
+    <template #container>
+      <InputText
+        ref="input"
+        v-model="title"
+        :parse="toSlug"
+        :placeholder="t('placeholder')"
+        class-input="h-24 !text-4xl px-xl"
+        @keydown.enter="() => submit()"
+      />
+    </template>
+
   </AppDialog>
 </template>
 
 <i18n lang="yaml">
 en:
-  title: Create a new project in the **{workspace}** workspace
-  text: Get started by creating a new project in your workspace.
-  cancel: Abort project creation
-  confirm: Create project
-  name.hint: The project name is used in the URL and must be unique.
-  name.placeholder: project-name
-  title.placeholder: Give your project a title
-  description.placeholder: A short description of the project.
+  placeholder: Give your project a name
 fr:
-  title: Créez un nouveau projet dans l'espace de travail **{workspace}**
-  text: Commencez par créer un nouveau projet dans votre espace de travail.
-  cancel: Annuler la création du projet
-  confirm: Créer le projet
-  name.hint: Le nom du projet est utilisé dans l'URL et doit être unique.
-  name.placeholder: nom-du-projet
-  title.placeholder: Donnez un titre à votre projet
-  description.placeholder: Une courte description du projet.
+  placeholder: Donnez un nom à votre projet
 de:
-  title: Erstellen Sie ein neues Projekt im Arbeitsbereich **{workspace}**
-  text: Legen Sie los, indem Sie ein neues Projekt in Ihrem Arbeitsbereich erstellen.
-  cancel: Projekt erstellen abbrechen
-  confirm: Projekt erstellen
-  name.hint: Der Projektname wird in der URL verwendet und muss eindeutig sein.
-  name.placeholder: projekt-name
-  title.placeholder: Geben Sie Ihrem Projekt einen Titel
-  description.placeholder: Eine kurze Beschreibung des Projekts.
+  placeholder: Geben Sie Ihrem Projekt einen Namen
 es:
-  title: Crear un nuevo proyecto en el espacio de trabajo **{workspace}**
-  text: Comience creando un nuevo proyecto en su espacio de trabajo.
-  cancel: Cancelar la creación del proyecto
-  confirm: Crear proyecto
-  name.hint: El nombre del proyecto se utiliza en la URL y debe ser único.
-  name.placeholder: nombre-del-proyecto
-  title.placeholder: Dale un título a tu proyecto
-  description.placeholder: Una breve descripción del proyecto.
+  placeholder: Dale un nombre a tu proyecto
 zh:
-  title: 在 **{workspace}** 工作区中创建新项目
-  text: 通过在工作区中创建新项目开始。
-  cancel: 中止项目创建
-  confirm: 创建项目
-  name.hint: 项目名称用于 URL 中，必须是唯一的。
-  name.placeholder: xiang-mu-ming
-  title.placeholder: 为您的项目命名
-  description.placeholder: 项目的简短描述。
+  placeholder: 为您的项目命名
 </i18n>
