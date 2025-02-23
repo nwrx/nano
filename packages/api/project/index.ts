@@ -1,3 +1,4 @@
+import type { UUID } from 'node:crypto'
 import { ModuleBase } from '@unserved/server'
 import { ModuleFlow } from '../flow'
 import { ModuleUser } from '../user'
@@ -24,6 +25,9 @@ export class ModuleProject extends ModuleBase {
     ModuleFlow,
     ModuleWorkspace,
   ]
+
+  /** A map of project listeners that can be used to listen to project events. */
+  observers = new Map<UUID, UTILS.ProjectObserver>()
 
   /**
    * Resolve the {@linkcode Project} with the given name. The function will query the database

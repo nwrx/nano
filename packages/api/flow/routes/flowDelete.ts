@@ -28,6 +28,10 @@ export function flowDelete(this: ModuleFlow) {
       const project = await moduleProject.getProject({ name: parameters.project, workspace, user, permission: 'Write' })
       const flow = await getFlow.call(this, { user, workspace, project, name: parameters.name, permission: 'Owner' })
 
+      // --- Broadcast the flow deletion to the project's peers.
+      const observer = moduleProject.observers.get(project.id)
+      if (observer) observer.broadcast({ event: 'flowDeleted', name: flow.name })
+
       // --- Resolve the workspace and project and assert the user has access to them.
       const { Flow } = this.getRepositories()
       await Flow.softRemove(flow)

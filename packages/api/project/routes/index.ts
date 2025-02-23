@@ -1,5 +1,6 @@
 export * from './projectCreate'
 export * from './projectGet'
+export * from './projectObserve'
 export * from './projectRemove'
 export * from './projectSearch'
 export * from './projectSetName'

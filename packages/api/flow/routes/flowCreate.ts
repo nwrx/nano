@@ -36,9 +36,13 @@ export function flowCreate(this: ModuleFlow) {
       if (exists) throw this.errors.FLOW_NAME_TAKEN(workspace.name, project.name, name)
 
       // --- Create the flow and it's assignment.
-      const flow = Flow.create({ name, title: name, project })
+      const flow = Flow.create({ name, title: name, createdBy: user, project })
       const assignment = FlowAssignment.create({ user, flow, permission: 'Owner' })
       flow.assignments = [assignment]
+
+      // --- Broadcast the flow creation to the project's peers.
+      const observer = moduleProject.observers.get(project.id)
+      if (observer) observer.broadcast({ event: 'flowCreated', flow: flow.serialize() })
 
       // --- Save the flow and return the serialized flow.
       await Flow.save(flow)

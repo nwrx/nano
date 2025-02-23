@@ -1,6 +1,7 @@
 export * from './assertProject'
 export * from './assertProjectPermission'
 export * from './createProject'
+export * from './createProjectObserver'
 export * from './errors'
 export * from './getProject'
 export * from './searchProjects'
