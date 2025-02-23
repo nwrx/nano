@@ -5,6 +5,7 @@ import { assert, assertString, assertStringNotEmpty, assertUndefined, createSche
 import * as YAML from 'yaml'
 import { ModuleProject } from '../../project'
 import { ModuleUser } from '../../user'
+import { ModuleWorkspace } from '../../workspace'
 import { getRandomName } from '../utils'
 
 export function flowImport(this: ModuleFlow) {
@@ -20,19 +21,15 @@ export function flowImport(this: ModuleFlow) {
       }),
     },
     async({ event, formData, parameters }) => {
-      const userModule = this.getModule(ModuleUser)
-      const workspaceModule = this.getModule(ModuleProject)
-      const { user } = await userModule.authenticate(event)
-      const { workspace, project: projectName } = parameters
+      const moduleUser = this.getModule(ModuleUser)
+      const moduleProject = this.getModule(ModuleProject)
+      const moduleWorkspace = this.getModule(ModuleWorkspace)
+      const { user } = await moduleUser.authenticate(event)
       const { file } = formData
 
       // --- Resolve the workspace and project and assert the user has access to them.
-      const project = await workspaceModule.getProject({
-        user,
-        workspace,
-        name: projectName,
-        permission: 'Write',
-      })
+      const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Read' })
+      const project = await moduleProject.getProject({ user, workspace, name: parameters.project, permission: 'Write' })
 
       // --- Parse the file content.
       const text = await file.text()

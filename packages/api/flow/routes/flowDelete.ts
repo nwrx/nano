@@ -1,45 +1,35 @@
 import type { ModuleFlow } from '../index'
 import { createHttpRoute } from '@unserved/server'
-import { assertStringUuid, createParser } from '@unshared/validation'
+import { assertStringNotEmpty, createParser } from '@unshared/validation'
 import { setResponseStatus } from 'h3'
 import { ModuleProject } from '../../project'
 import { ModuleUser } from '../../user'
+import { ModuleWorkspace } from '../../workspace'
+import { getFlow } from '../utils'
 
 export function flowDelete(this: ModuleFlow) {
   return createHttpRoute(
     {
-      name: 'DELETE /api/flows/:id',
+      name: 'DELETE /api/workspaces/:workspace/projects/:project/flows/:name',
       parseParameters: createParser({
-        id: assertStringUuid,
+        workspace: assertStringNotEmpty,
+        project: assertStringNotEmpty,
+        name: assertStringNotEmpty,
       }),
     },
     async({ event, parameters }) => {
-      const userModule = this.getModule(ModuleUser)
-      const workspaceModule = this.getModule(ModuleProject)
-      const { Flow } = this.getRepositories()
-      const { user } = await userModule.authenticate(event)
-      const { id } = parameters
-
-      // --- Find the flow and get it's project and workspace.
-      const flow = await Flow.findOne({
-        where: { id },
-        relations: {
-          project: {
-            workspace: true,
-          },
-        },
-      })
+      const moduleUser = this.getModule(ModuleUser)
+      const moduleProject = this.getModule(ModuleProject)
+      const moduleWorkspace = this.getModule(ModuleWorkspace)
+      const { user } = await moduleUser.authenticate(event)
 
       // --- Resolve the workspace and project and assert the user has access to them.
-      if (!flow) throw this.errors.FLOW_NOT_FOUND_BY_ID(id)
-      await workspaceModule.getProject({
-        user,
-        name: flow.project!.name,
-        workspace: flow.project!.workspace!.name,
-        permission: 'Write',
-      })
+      const workspace = await moduleWorkspace.getWorkspace({ name: parameters.workspace, user, permission: 'Read' })
+      const project = await moduleProject.getProject({ name: parameters.project, workspace, user, permission: 'Write' })
+      const flow = await getFlow.call(this, { user, workspace, project, name: parameters.name, permission: 'Owner' })
 
-      // --- Soft remove the flow.
+      // --- Resolve the workspace and project and assert the user has access to them.
+      const { Flow } = this.getRepositories()
       await Flow.softRemove(flow)
       setResponseStatus(event, 204)
     },

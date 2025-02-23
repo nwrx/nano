@@ -1,42 +1,50 @@
 import type { ModuleFlow } from '..'
 import { createHttpRoute } from '@unserved/server'
-import { assertStringNotEmpty, createSchema } from '@unshared/validation'
+import { parseBoolean } from '@unshared/string'
+import { assert, createSchema } from '@unshared/validation'
 import { setResponseHeader } from 'h3'
 import * as YAML from 'yaml'
+import { ModuleProject } from '../../project'
 import { ModuleUser } from '../../user'
+import { ModuleWorkspace } from '../../workspace'
 import { getFlow } from '../utils'
 
 export function flowGet(this: ModuleFlow) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/projects/:project/flows/:nameAndExtension',
+      name: 'GET /api/workspaces/:workspace/projects/:project/flows/:name',
       parseParameters: createSchema({
-        workspace: assertStringNotEmpty,
-        project: assertStringNotEmpty,
-        nameAndExtension: assertStringNotEmpty,
+        workspace: assert.stringNotEmpty,
+        project: assert.stringNotEmpty,
+        name: assert.stringNotEmpty,
+      }),
+      parseQuery: createSchema({
+        format: [[assert.undefined], [assert.stringEnum('json', 'yaml')]],
+        download: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],
       }),
     },
-    async({ event, parameters }) => {
-      const userModule = this.getModule(ModuleUser)
-      const { user } = await userModule.authenticate(event)
-      const { workspace, project, nameAndExtension } = parameters
+    async({ event, parameters, query }) => {
+      const moduleUser = this.getModule(ModuleUser)
+      const moduleProject = this.getModule(ModuleProject)
+      const moduleWorkspace = this.getModule(ModuleWorkspace)
+      const { user } = await moduleUser.authenticate(event)
 
       // --- Extract the name and optional extension from the parameters.
-      const [name, extension] = /^([^.]*)\.(json|yaml)$/.exec(nameAndExtension)?.slice(1) as [string, 'json' | 'yaml']
-      const flow = await getFlow.call(this, { user, workspace, project, name, permission: 'Read' })
+      const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Read' })
+      const project = await moduleProject.getProject({ user, workspace, name: parameters.project, permission: 'Read' })
+      const flow = await getFlow.call(this, { user, workspace, project, name: parameters.name, permission: 'Read' })
 
-      // --- Return as YAML if requested.
-      if (extension === 'yaml') {
+      if (query.format === 'yaml') {
         const data = YAML.stringify(flow.data)
         setResponseHeader(event, 'Content-Type', 'application/yaml')
-        setResponseHeader(event, 'Content-Disposition', `attachment; filename="${name}.yaml"`)
+        // setResponseHeader(event, 'Content-Disposition', `attachment; filename="${parameters.name}.yaml"`)
         return data
       }
 
       // --- Return as JSON if requested.
-      if (extension === 'json') {
+      if (query.format === 'json') {
         setResponseHeader(event, 'Content-Type', 'application/json')
-        setResponseHeader(event, 'Content-Disposition', `attachment; filename="${name}.json"`)
+        // setResponseHeader(event, 'Content-Disposition', `attachment; filename="${parameters.name}.json"`)
         return flow.data
       }
 
