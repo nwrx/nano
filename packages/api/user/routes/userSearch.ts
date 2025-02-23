@@ -1,7 +1,6 @@
 import type { ModuleUser, UserObject } from '../index'
 import { createHttpRoute } from '@unserved/server'
-import { parseBoolean } from '@unshared/string'
-import { assertNumberPositiveStrict, assertString, assertStringNotEmpty, assertStringNumber, assertUndefined, createSchema } from '@unshared/validation'
+import { assertNumberPositiveStrict, assertString, assertStringNumber, assertUndefined, createSchema } from '@unshared/validation'
 import { ILike } from 'typeorm'
 
 export function userSearch(this: ModuleUser) {
@@ -12,33 +11,18 @@ export function userSearch(this: ModuleUser) {
         search: [[assertUndefined], [assertString]],
         page: [[assertUndefined], [assertStringNumber, Number.parseInt, assertNumberPositiveStrict]],
         limit: [[assertUndefined], [assertStringNumber, Number.parseInt, assertNumberPositiveStrict]],
-        withProfile: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
-        withSessions: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
       }),
     },
 
-    async({ event, query }): Promise<UserObject[]> => {
-      const { user } = await this.authenticate(event)
-      const { search, page = 1, limit = 10, withProfile = false, withSessions = false } = query
-
-      // --- Check if the user is allowed to make the request.
-      const isPrivilegedQuery = withSessions
-      const isPrivilegedUser = user.isSuperAdministrator
-      if (isPrivilegedQuery && !isPrivilegedUser) throw this.errors.USER_FORBIDDEN()
+    async({ query }): Promise<UserObject[]> => {
+      const { search, page = 1, limit = 10 } = query
 
       // --- Get the users.
       const { User } = this.getRepositories()
       const users = await User.find({
         where: search
-          ? [
-            { username: ILike(`%${search}%`) },
-            { profile: { displayName: ILike(`%${search}%`) } },
-          ]
+          ? [{ username: ILike(`%${search}%`) }, { profile: { displayName: ILike(`%${search}%`) } }]
           : undefined,
-        relations: {
-          profile: withProfile,
-          sessions: withSessions,
-        },
         order: {
           createdAt: 'DESC',
         },
@@ -47,10 +31,7 @@ export function userSearch(this: ModuleUser) {
       })
 
       // --- Return the users.
-      return users.map(user => user.serialize({
-        withProtected: isPrivilegedQuery,
-        withSessions: isPrivilegedQuery,
-      }))
+      return users.map(user => user.serialize())
     },
   )
 }

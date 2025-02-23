@@ -3,7 +3,7 @@ import type { ModuleUser } from '../index'
 import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, createSchema, EXP_UUID } from '@unshared/validation'
 import { createDecipheriv, createHash } from 'node:crypto'
-import { createPassword, createSession, setSessionCookie } from '../utils'
+import { createPassword, createSession } from '../utils'
 
 export function userRecover(this: ModuleUser) {
   return createHttpRoute(
@@ -18,7 +18,7 @@ export function userRecover(this: ModuleUser) {
         newPasswordConfirm: assertStringNotEmpty,
       }),
     },
-    async({ event, parameters, body }) => {
+    async({ event, parameters, body }) => this.withTransaction(async() => {
       const { username } = parameters
       const { token, newPassword, newPasswordConfirm } = body
 
@@ -47,20 +47,15 @@ export function userRecover(this: ModuleUser) {
       if (recovery.user.username !== username) throw this.errors.USER_RECOVERY_INVALID()
       if (recovery.expiredAt < new Date()) throw this.errors.USER_RECOVERY_EXPIRED()
       recovery.consumedAt = new Date()
+      await UserRecovery.save(recovery)
 
       // --- Set the new password for the user.
-      const password = await createPassword.call(this, newPassword, { user: recovery.user })
-      const session = createSession.call(this, event, { user: recovery.user })
+      const { UserPassword } = this.getRepositories()
+      const password = await createPassword.call(this, { password: newPassword, user: recovery.user })
+      await UserPassword.save(password)
 
-      const { UserPassword, UserSession } = this.getRepositories()
-      await this.withTransaction(async() => {
-        await UserSession.save(session)
-        await UserPassword.save(password)
-        await UserRecovery.save(recovery)
-      })
-
-      // --- Set the response status, content type, and user session cookie.
-      setSessionCookie.call(this, event, session)
-    },
+      // --- Create a new session for the user and sign them in.
+      await createSession.call(this, event, { user: recovery.user })
+    }),
   )
 }

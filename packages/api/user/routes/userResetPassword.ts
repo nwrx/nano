@@ -15,12 +15,11 @@ export function userResetPassword(this: ModuleUser) {
     },
 
     async({ parameters }) => {
-      const { username } = parameters
 
       // --- Create a recovery request for the user.
-      const { UserRecovery } = this.getRepositories()
-      const user = await getUser.call(this, { username })
+      const user = await getUser.call(this, parameters)
       const expiredAt = new Date(Date.now() + this.userRecoveryDuration)
+      const { UserRecovery } = this.getRepositories()
       const request = UserRecovery.create({ user, expiredAt })
 
       // --- Create a token for the recovery request.
