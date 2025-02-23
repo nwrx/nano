@@ -1,5 +1,6 @@
 import type { application, ProjectObject } from '@nwrx/nano-api'
 import type { RouteRequestData } from '@unserved/client'
+import type { WorkspaceObject } from '../../api/workspace'
 import { useAlerts, useClient } from '#imports'
 
 type UseProjectOptions = Omit<RouteRequestData<typeof application, 'GET /api/workspaces/:workspace/projects'>, 'workspace'>
@@ -15,83 +16,37 @@ export type CreateProjectOptions = Omit<RouteRequestData<typeof application, 'PO
 export function useWorkspace(workspace: MaybeRef<string>, options: UseProjectOptions = {}) {
   const client = useClient()
   const alerts = useAlerts()
-  const data = ref<ProjectObject[]>([])
+  const data = ref<WorkspaceObject>({ name: '', isPublic: false })
+  const projects = ref<ProjectObject[]>([])
 
-  const refresh = async() => {
-    await client.request('GET /api/workspaces/:workspace/projects', {
-      onData: project => data.value = project,
+  const getWorkspace = async() => {
+    await client.request('GET /api/workspaces/:workspace', {
+      onData: workspace => data.value = workspace,
       data: { workspace: unref(workspace), ...options },
+    })
+  }
+
+  const searchProjects = async(query?: string) => {
+    await client.request('GET /api/workspaces/:workspace/projects', {
+      data: { workspace: unref(workspace), query },
+      onData: data => projects.value = data,
     })
   }
 
   return {
     data,
-    refresh,
+    projects,
+    getWorkspace,
+    searchProjects,
 
-    /**
-     * Create a new project within the workspace.
-     *
-     * @param options The options to create the project with.
-     * @returns The created project object.
-     */
-    createProject: async(options: CreateProjectOptions) =>
+    createProject: async(title: string) => {
       await client.requestAttempt('POST /api/workspaces/:workspace/projects', {
+        data: { workspace: unref(workspace), title },
         onSuccess: () => alerts.success('Project created successfully'),
-        onEnd: () => void refresh(),
-        data: { workspace: unref(workspace), ...options },
-      }),
-
-    /**
-     * Create a new flow within the given project.
-     *
-     * @param project The name of the project to create the flow in.
-     * @returns The created flow object.
-     */
-    createFlow: async(project: string) =>
-      await client.requestAttempt('POST /api/flows', {
-        onSuccess: () => alerts.success('Flow created successfully'),
-        onEnd: () => void refresh(),
-        data: { workspace: unref(workspace), project },
-      }),
-
-    /**
-     * Import a flow from the given `File` object into the given project.
-     * The file should either be a JSON or YAML file containing the flow data.
-     *
-     * @param project The name of the project to import the flow into.
-     * @param file The file to import the flow from.
-     */
-    importFlow: async(project: string, file: File) => {
-      const formData = new FormData()
-      formData.append('file', file)
-      await client.requestAttempt('POST /api/workspaces/:workspace/projects/:project/import', {
-        onSuccess: () => alerts.success('Flow imported successfully'),
-        onEnd: () => void refresh(),
-        data: { workspace: unref(workspace), project, file },
+        onEnd: () => void searchProjects(),
       })
     },
 
-    /**
-     * Delete the given flow from the given project.
-     *
-     * @param project The name of the project to delete the flow from.
-     * @param flow The name of the flow to delete.
-     * @returns A promise that resolves when the flow is deleted.
-     */
-    // deleteFlow: async(project: string, flow: string) =>
-    //   await client.requestAttempt('DELETE /api/workspaces/:workspace/projects/:project/:flow', {
-    //     onError: error => alerts.error(error),
-    //     onSuccess: () => alerts.success('Flow deleted successfully'),
-    //     onEnd: () => void refresh(),
-    //     data: { workspace: unref(workspace), project, flow },
-    //   }),
-
-    /**
-     * Delete a project from the workspace.
-     *
-     * @param project The name of the project to delete.
-     * @returns A promise that resolves when the project is deleted.
-     */
     // deleteProject: async(project: string) =>
     //   await client.requestAttempt('DELETE /api/workspaces/:workspace/projects/:project', {
     //     onError: error => alerts.error(error),

@@ -1,8 +1,10 @@
-import type { application, ProjectObject, ProjectPermission } from '@nwrx/nano-api'
-import type { RouteRequestData } from '@unserved/client'
+import type { application, FlowObject, ProjectObject, ProjectPermission } from '@nwrx/nano-api'
+import type { ChannelConnectOptions, RouteRequestData } from '@unserved/client'
+import type { WebSocketChannel } from '@unshared/client/websocket'
 import { useAlerts, useClient, useRouter } from '#imports'
 
 /** The options to pass to the {@linkcode useProject} composable. */
+export type UseProjectChannel = WebSocketChannel<ChannelConnectOptions<typeof application, 'WS /ws/workspaces/:workspace/projects/:project'>>
 export type UseProjectOptions = Omit<RouteRequestData<typeof application, 'GET /api/workspaces/:workspace/projects/:project'>, 'project' | 'workspace'>
 export type SetSettingsOptions = Omit<RouteRequestData<typeof application, 'PUT /api/workspaces/:workspace/projects/:project'>, 'project' | 'workspace'>
 
@@ -19,8 +21,15 @@ export function useProject(workspace: MaybeRef<string>, project: MaybeRef<string
   const router = useRouter()
   const client = useClient()
   const data = ref<ProjectObject>({} as ProjectObject)
+  const flows = ref<FlowObject[]>([])
 
-  const refresh = async() => {
+  let channel: undefined | UseProjectChannel
+  tryOnScopeDispose(() => {
+    if (!channel) return
+    void channel.close()
+  })
+
+  const getProject = async() => {
     await client.requestAttempt('GET /api/workspaces/:workspace/projects/:project', {
       data: {
         workspace: unref(workspace),
@@ -34,17 +43,11 @@ export function useProject(workspace: MaybeRef<string>, project: MaybeRef<string
   }
 
   return {
-    data: toReactive(data) as ProjectObject,
-    refresh,
+    data,
+    flows,
+    getProject,
 
-    /**
-     * Rename the project to the given name. This will update the project name in the
-     * database and redirect to the new project URL if the project was renamed successfully.
-     *
-     * @param name The new name of the project.
-     * @returns A promise that resolves when the project is renamed.
-     */
-    setName: async(name: string) =>
+    setName: async(name: string) => {
       await client.requestAttempt('PUT /api/workspaces/:workspace/projects/:project/name', {
         data: {
           workspace: unref(workspace),
@@ -55,15 +58,10 @@ export function useProject(workspace: MaybeRef<string>, project: MaybeRef<string
           await router.replace({ name: 'ProjectSettings', params: { workspace: unref(workspace), project: name } })
           alerts.success('Project renamed successfully')
         },
-      }),
+      })
+    },
 
-    /**
-     * Update the project settings such as the name and description.
-     *
-     * @param data The project settings to update.
-     * @returns A promise that resolves when the project is updated.
-     */
-    setSettings: async(data: SetSettingsOptions) =>
+    setSettings: async(data: SetSettingsOptions) => {
       await client.requestAttempt('PUT /api/workspaces/:workspace/projects/:project', {
         data: {
           workspace: unref(workspace),
@@ -72,18 +70,12 @@ export function useProject(workspace: MaybeRef<string>, project: MaybeRef<string
         },
         onSuccess: () => {
           alerts.success('Project updated successfully')
-          void refresh()
+          void getProject()
         },
-      }),
+      })
+    },
 
-    /**
-     * Update the permissions of a user assigned to the project.
-     *
-     * @param username The username of the user to update.
-     * @param permissions The permissions to assign to the user.
-     * @returns The updated project object.
-     */
-    setUserAssignments: async(username: string, permissions: ProjectPermission[]) =>
+    setUserAssignments: async(username: string, permissions: ProjectPermission[]) => {
       await client.requestAttempt('PUT /api/workspaces/:workspace/projects/:project/assignments/:username', {
         data: {
           project: unref(project),
@@ -93,16 +85,12 @@ export function useProject(workspace: MaybeRef<string>, project: MaybeRef<string
         },
         onSuccess: () => {
           alerts.success('User assigned successfully')
-          void refresh()
+          void getProject()
         },
-      }),
+      })
+    },
 
-    /**
-     * Remove the project from the database and go back to the projects page.
-     *
-     * @returns A promise that resolves when the project is deleted.
-     */
-    remove: async() =>
+    remove: async() => {
       await client.requestAttempt('DELETE /api/workspaces/:workspace/projects/:project', {
         onSuccess: async() => {
           alerts.success('Project deleted successfully')
@@ -113,6 +101,71 @@ export function useProject(workspace: MaybeRef<string>, project: MaybeRef<string
           workspace: unref(workspace),
           project: unref(project),
         },
-      }),
+      })
+    },
+
+    /***************************************************************************/
+    /* Flows                                                                   */
+    /***************************************************************************/
+
+    createFlow: async() => {
+      await client.requestAttempt('POST /api/workspaces/:workspace/projects/:project/flows', {
+        data: {
+          workspace: unref(workspace),
+          project: unref(project),
+        },
+        onSuccess: () => {
+          alerts.success('Flow created successfully')
+        },
+      })
+    },
+
+    removeFlow: async(flow: string) => {
+      await client.requestAttempt('DELETE /api/workspaces/:workspace/projects/:project/flows/:flow', {
+        data: {
+          workspace: unref(workspace),
+          project: unref(project),
+          flow,
+        },
+        onSuccess: () => {
+          alerts.success('Flow deleted successfully')
+        },
+      })
+    },
+
+    // importFlow: async(project: string, file: File) => {
+    //   const formData = new FormData()
+    //   formData.append('file', file)
+    //   await client.requestAttempt('POST /api/workspaces/:workspace/projects/:project/import', {
+    //     onSuccess: () => alerts.success('Flow imported successfully'),
+    //     onEnd: () => void refresh(),
+    //     data: { workspace: unref(workspace), project, file },
+    //   })
+    // },
+
+    /***************************************************************************/
+    /* Subscriptions                                                           */
+    /***************************************************************************/
+
+    subscribe: async() => {
+      if (channel) return
+      channel = await client.connect('WS /ws/workspaces/:workspace/projects/:project', {
+        data: {
+          workspace: unref(workspace),
+          project: unref(project),
+        },
+        onMessage: (message) => {
+          if (message.event === 'flows') flows.value = message.flows
+          if (message.event === 'flowCreated') flows.value = [...flows.value, message.flow]
+          if (message.event === 'flowDeleted') flows.value = flows.value.filter(flow => flow.name !== message.name)
+        },
+      })
+    },
+
+    unsubscribe: async() => {
+      if (!channel) return
+      await channel.close()
+      channel = undefined
+    },
   }
 }

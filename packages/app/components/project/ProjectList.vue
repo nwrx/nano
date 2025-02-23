@@ -31,11 +31,6 @@ const model = useVModel(props, 'modelValue', emit, {
       v-bind="project"
       :workspace="workspace"
       class="pb-md"
-      @delete="() => emit('projectDelete', project.name)"
-      @flow-create="() => emit('flowCreate', project.name)"
-      @flow-import="file => emit('flowImport', project.name, file)"
-      @flow-delete="flow => emit('flowDelete', project.name, flow)"
-      @flow-duplicate="flow => emit('flowDuplicate', project.name, flow)"
     />
   </div>
 </template>

@@ -1,3 +1,5 @@
+<!-- eslint-disable unicorn/prefer-ternary -->
+<!-- eslint-disable vue/no-setup-props-reactivity-loss -->
 <script setup lang="ts">
 import type { ProjectObject } from '@nwrx/nano-api'
 
@@ -18,18 +20,9 @@ const emit = defineEmits<{
 
 // --- Localize & VModel
 const { t } = useI18n()
-const model = useVModel(props, 'modelValue', emit, {
-  passive: true,
-})
-
-// --- Safely get the project route.
-function getProjectRoute(workspace: string, project: string) {
-  if (!workspace || !project) return
-  return {
-    name: 'ProjectSettings',
-    params: { workspace, project },
-  }
-}
+const routes = useRouteLocation()
+const project = useProject(props.workspace, props.name)
+const model = useVModel(props, 'modelValue', emit, { passive: true })
 
 // --- Dropzone for importing flows.
 const dropzone = ref<HTMLDivElement>()
@@ -40,6 +33,11 @@ const { isOverDropZone } = useDropZone(dropzone, {
     emit('flowImport', files[0])
   },
 })
+
+watch(model, async value => (
+  value
+    ? project.subscribe()
+    : project.unsubscribe()), { immediate: true })
 </script>
 
 <template>
@@ -77,7 +75,7 @@ const { isOverDropZone } = useDropZone(dropzone, {
       </div>
 
       <!-- Collaborators -->
-      <ProjectListItemAssigments :assignments="assignments" />
+      <!-- <ProjectListItemAssigments :assignments="assignments" /> -->
 
       <!-- CTA -->
       <ContextMenu x="right" y="top" @mousedown.stop>
@@ -86,14 +84,14 @@ const { isOverDropZone } = useDropZone(dropzone, {
             :label="t('menu.settings')"
             icon="i-carbon:settings"
             keybind="Ctrl + Shift + S"
-            :to="getProjectRoute(workspace, name)"
+            :to="routes.getProjectSettingsRoute(workspace, name)"
             @click="() => close()"
           />
           <ContextMenuItem
             :label="t('menu.access')"
             icon="i-carbon:group"
             keybind="Ctrl + Shift + C"
-            :to="getProjectRoute(workspace, name)"
+            :to="routes.getProjectSettingsRoute(workspace, name)"
             @click="() => close()"
           />
           <ContextMenuDivider />
@@ -116,16 +114,16 @@ const { isOverDropZone } = useDropZone(dropzone, {
       class="b-l b-app ml-lg pl-lg transition-all duration-slow">
       <div class="space-y-md py-md">
         <ProjectListItemFlow
-          v-for="flow in flows"
+          v-for="flow in project.flows.value"
           :key="flow.name"
           v-bind="flow"
           :workspace="workspace"
           :project="name"
           icon="i-carbon:flow"
           class="shrink-0"
-          @delete="() => emit('flowDelete', flow.name)"
-          @download="() => emit('flowDownload', flow.name)"
-          @duplicate="() => emit('flowDuplicate', flow.name)"
+          @delete="() => project.removeFlow(flow.name)"
+          @download="() => project.downloadFlow(flow.name)"
+          @duplicate="() => project.duplicateFlow(flow.name)"
         />
 
         <!-- Create flow button -->
@@ -135,7 +133,7 @@ const { isOverDropZone } = useDropZone(dropzone, {
           icon-prepend="i-carbon:flow"
           icon-append="i-carbon:chevron-right"
           icon-expand
-          @click="() => emit('flowCreate')"
+          @click="() => project.createFlow()"
         />
       </div>
     </BaseCollapse>

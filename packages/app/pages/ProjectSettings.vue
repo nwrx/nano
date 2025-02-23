@@ -34,7 +34,7 @@ async function searchUsers(search: string) {
   })
 }
 
-onMounted(project.refresh)
+onMounted(project.getProject)
 </script>
 
 <template>

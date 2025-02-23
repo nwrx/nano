@@ -25,7 +25,7 @@ useHead(() => ({
   description: project.data.description,
 }))
 
-onMounted(project.refresh)
+onMounted(project.getProject)
 </script>
 
 <template>

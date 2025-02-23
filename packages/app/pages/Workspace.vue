@@ -13,22 +13,22 @@ useHead(() => ({
 
 const route = useRoute()
 const workspaceName = computed(() => route.params.workspace as string)
-const workspace = useWorkspace(workspaceName, {
-  withFlows: true,
-  withAssignments: true,
-})
+const workspace = useWorkspace(workspaceName)
 
 const isDialogCreateProjectOpen = ref(false)
 const localSettings = useLocalSettings()
-onMounted(workspace.refresh)
+onMounted(async() => {
+  await workspace.getWorkspace()
+  await workspace.searchProjects()
+})
 
-const bookmarkFlows = computed(() => workspace.data.value
-  ?.flatMap(project => (project.flows ?? []).map(flow => ({
-    ...flow,
-    workspace: workspaceName.value,
-    project: project.name,
-  })))
-  ?.slice(0, 3) ?? [])
+// const bookmarkFlows = computed(() => workspace.data.value
+//   ?.flatMap(project => (project.flows ?? []).map(flow => ({
+//     ...flow,
+//     workspace: workspaceName.value,
+//     project: project.name,
+//   })))
+//   ?.slice(0, 3) ?? [])
 </script>
 
 <template>
@@ -49,11 +49,8 @@ const bookmarkFlows = computed(() => workspace.data.value
       <ProjectList
         v-model="localSettings.workspaceOpenProjects"
         :workspace="workspaceName"
-        :projects="workspace.data.value"
+        :projects="workspace.projects.value"
         :base-url="CONSTANTS.appHost"
-        @flow-create="(project) => workspace.createFlow(project)"
-        @flow-import="(project, file) => workspace.importFlow(project, file)"
-        @flow-delete="(project, flow) => workspace.deleteFlow(project, flow)"
       />
 
       <!-- Create project button -->
