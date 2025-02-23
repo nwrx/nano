@@ -113,38 +113,5 @@ export const NAV_DRAWER_START = computed<NavItem[]>(() => {
         },
       ],
     },
-    {
-      label: localize({
-        en: 'Settings',
-        fr: 'Paramètres',
-        de: 'Einstellungen',
-        es: 'Configuración',
-        zh: '设置',
-      }),
-      items: [
-        {
-          icon: 'i-carbon:user',
-          to: { name: 'AdminUsers' },
-          label: localize({
-            en: 'Users',
-            fr: 'Utilisateurs',
-            de: 'Benutzer',
-            es: 'Usuarios',
-            zh: '用户',
-          }),
-        },
-        {
-          icon: 'i-carbon:settings',
-          // to: { name: 'AdminConfiguration' },
-          label: localize({
-            en: 'Configuration',
-            fr: 'Configuration',
-            de: 'Konfiguration',
-            es: 'Configuración',
-            zh: '配置',
-          }),
-        },
-      ],
-    },
   ]
 })
