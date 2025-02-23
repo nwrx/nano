@@ -5,12 +5,6 @@ describe('decrypt', () => {
   const secret = 'test-secret-key'
   const value = 'test-value'
 
-  it('should decrypt an encrypted value', async() => {
-    const encrypted = await encrypt(value, secret, 'aes-256-gcm')
-    const decrypted = await decrypt(encrypted, secret)
-    expect(decrypted).toBe(value)
-  })
-
   it.each(['aes-256-gcm', 'aes-192-gcm', 'aes-128-gcm'] as const)('should decrypt using %s', async(algorithm) => {
     const encrypted = await encrypt(value, secret, algorithm)
     const decrypted = await decrypt(encrypted, secret)
