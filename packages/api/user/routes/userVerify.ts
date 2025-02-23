@@ -1,7 +1,6 @@
 import type { ModuleUser } from '..'
 import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, createSchema } from '@unshared/validation'
-import { setResponseStatus } from 'h3'
 import { getUser } from '../utils'
 
 export function userVerify(this: ModuleUser) {
@@ -18,8 +17,6 @@ export function userVerify(this: ModuleUser) {
 
       // --- Only super administrators can verify users.
       if (!user.isSuperAdministrator) throw this.errors.USER_FORBIDDEN()
-
-      // --- Resolve the user to verify.
       const userToVerify = await getUser.call(this, {
         user,
         username,
@@ -27,16 +24,11 @@ export function userVerify(this: ModuleUser) {
         withDisabled: true,
       })
 
-      // --- If the user is already verified, throw an error.
-      if (userToVerify.verifiedAt) throw this.errors.USER_ALREADY_VERIFIED()
-
       // --- Verify the user and save the changes.
+      if (userToVerify.verifiedAt) throw this.errors.USER_ALREADY_VERIFIED()
       const { User } = this.getRepositories()
       userToVerify.verifiedAt = new Date()
       await User.save(userToVerify)
-
-      // --- Respond with a 204 status code.
-      setResponseStatus(event, 204)
     },
   )
 }
