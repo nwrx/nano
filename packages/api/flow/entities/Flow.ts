@@ -1,6 +1,6 @@
 import type { FlowV1 } from '@nwrx/nano'
 import { BaseEntity, transformerJson } from '@unserved/server'
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, Unique } from 'typeorm'
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from 'typeorm'
 import { Project } from '../../project'
 import { FlowAssignment } from './FlowAssignment'
 
@@ -10,7 +10,7 @@ import { FlowAssignment } from './FlowAssignment'
  * the nodes and the order in which they are executed.
  */
 @Entity({ name: 'Flow' })
-@Unique(['project', 'name'])
+@Index(['project', 'name', 'deletedAt'], { unique: true })
 export class Flow extends BaseEntity {
 
   /**
@@ -19,7 +19,7 @@ export class Flow extends BaseEntity {
    * @example Project { ... }
    */
   @JoinColumn()
-  @ManyToOne(() => Project, project => project.flows, { nullable: false })
+  @ManyToOne(() => Project, { nullable: false })
   project?: Project
 
   /**
@@ -28,7 +28,7 @@ export class Flow extends BaseEntity {
    *
    * @example 'resume-article'
    */
-  @Column('varchar', { unique: false })
+  @Column('varchar')
   name: string
 
   /**
@@ -36,7 +36,7 @@ export class Flow extends BaseEntity {
    *
    * @example 'Resume Article'
    */
-  @Column('varchar', { length: 255, default: '' })
+  @Column('varchar')
   title = ''
 
   /**
@@ -44,7 +44,7 @@ export class Flow extends BaseEntity {
    *
    * @example 'This flow is used to resume an article.'
    */
-  @Column('text', { default: '' })
+  @Column('text')
   description = ''
 
   /**
@@ -52,7 +52,7 @@ export class Flow extends BaseEntity {
    *
    * @example { version: '1', nodes: {}, metadata: {} }
    */
-  @Column('json', { default: '{"version":"1"}', transformer: transformerJson })
+  @Column('json', { transformer: transformerJson })
   data: FlowV1 = { version: '1', nodes: {}, metadata: {} }
 
   /**
