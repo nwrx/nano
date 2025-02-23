@@ -1,12 +1,6 @@
 import { createError } from '@unserved/server'
 
 export const ERRORS = {
-  FLOW_NOT_FOUND_BY_ID: (id: string) => createError({
-    name: 'E_FLOW_NOT_FOUND',
-    statusCode: 404,
-    statusMessage: 'Not Found',
-    message: `Flow "${id}" was not found in the database`,
-  }),
   FLOW_NOT_FOUND: (workspace: string, project: string, name: string) => createError({
     name: 'E_FLOW_NOT_FOUND',
     statusCode: 404,
@@ -14,6 +8,21 @@ export const ERRORS = {
     message: `Flow "${workspace}/${project}/${name}" was not found in the database or the user does not have access to it`,
     data: { workspace, project, name },
   }),
+  FLOW_FORBIDDEN: (workspace: string, project: string, name: string) => createError({
+    name: 'E_FLOW_UNAUTHORIZED',
+    statusCode: 403,
+    statusMessage: 'Forbidden',
+    message: `User does not have access to the flow "${workspace}/${project}/${name}"`,
+    data: { workspace, project, name },
+  }),
+  FLOW_UNAUTHORIZED: (workspace: string, project: string, name: string) => createError({
+    name: 'E_FLOW_UNAUTHORIZED',
+    statusCode: 401,
+    statusMessage: 'Unauthorized',
+    message: `User does not have access to the flow "${workspace}/${project}/${name}"`,
+    data: { workspace, project, name },
+  }),
+
   FLOW_NAME_TAKEN: (workspace: string, project: string, name: string) => createError({
     name: 'E_FLOW_NAME_TAKEN',
     statusCode: 409,
