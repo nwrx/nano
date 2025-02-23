@@ -1,30 +1,24 @@
 import type { Loose } from '@unshared/types'
+import type { Flow } from '../entities'
 import type { ModuleFlow } from '../index'
-import { assertStringNotEmpty, assertStringUuid, createSchema } from '@unshared/validation'
-import { ModuleProject } from '../../project'
-import { assertProjectPermission } from '../../project/utils'
+import { assert, createSchema } from '@unshared/validation'
+import { In } from 'typeorm'
+import { assertProject } from '../../project/utils/assertProject'
+import { assertUser } from '../../user/utils/assertUser'
+import { assertWorkspace } from '../../workspace/utils/assertWorkspace'
+import { assertFlowPermission } from './assertFlowPermission'
 
-/** The parser fuction for the {@linkcode resolveProject} function. */
-const RESOLVE_FLOW_ENTITY_OPTIONS = createSchema({
-
-  /** The `User` entity trying to resolve the flow. */
-  user: createSchema({ id: assertStringUuid }),
-
-  /** The `name` of the `Project` to find. */
-  name: assertStringNotEmpty,
-
-  /** The `Project` to find the flow in. */
-  project: assertStringNotEmpty,
-
-  /** The `Workspace` to find the project in. */
-  workspace: assertStringNotEmpty,
-
-  /** The project permission to assert. */
-  permission: assertProjectPermission,
+/** The parser fuction for the {@linkcode getFlow} function. */
+const GET_FLOW_OPTIONS_SCHEMA = createSchema({
+  user: [[assert.undefined], [assertUser]],
+  name: assert.stringNotEmpty,
+  workspace: assertWorkspace,
+  project: assertProject,
+  permission: assertFlowPermission,
 })
 
 /** The options to resolve the project with. */
-export type ResolveFlowOptions = Loose<ReturnType<typeof RESOLVE_FLOW_ENTITY_OPTIONS>>
+export type GetFlowOptions = Loose<ReturnType<typeof GET_FLOW_OPTIONS_SCHEMA>>
 
 /**
  * Resolves a flow by its name, project, and workspace.
@@ -32,30 +26,25 @@ export type ResolveFlowOptions = Loose<ReturnType<typeof RESOLVE_FLOW_ENTITY_OPT
  * @param options The options to resolve the flow with.
  * @returns The resolved flow.
  */
-export async function getFlow(this: ModuleFlow, options: ResolveFlowOptions) {
-  const { user, name, project: projectName, workspace, permission = 'Read' } = RESOLVE_FLOW_ENTITY_OPTIONS(options)
-  const workspaceModule = this.getModule(ModuleProject)
+export async function getFlow(this: ModuleFlow, options: GetFlowOptions): Promise<Flow> {
+  const { user, workspace, project, name, permission } = GET_FLOW_OPTIONS_SCHEMA(options)
 
-  const project = await workspaceModule.getProject({
-    user,
-    workspace,
-    name: projectName,
-    permission,
-  })
-
-  // --- Find the flow in the workspace.
+  // --- Get the flow.
   const { Flow } = this.getRepositories()
-  const result = await Flow.findOne({
-    where: { name, project },
-    relations: {
-      project: {
-        secrets: true,
-        variables: true,
-      },
-    },
+  const flow = await Flow.findOne({
+    where: user
+      ? [{ name, project, isPublic: true }, { name, project, assignments: { user, permission: In(['Owner', 'Read']) } }]
+      : [{ name, project, isPublic: true }],
   })
 
-  // --- Throw an error if the flow was not found.
-  if (!result) throw this.errors.FLOW_NOT_FOUND(workspace, project.name, name)
-  return result
+  // --- Return the project if it is public and no user is provided.
+  if (!flow) throw this.errors.FLOW_NOT_FOUND(workspace.name, project.name, name)
+  if (permission === 'Read') return flow
+  if (!user) throw this.errors.FLOW_UNAUTHORIZED(workspace.name, project.name, name)
+
+  // --- Assert that the user has an assignment that matches the permission.
+  const { FlowAssignment } = this.getRepositories()
+  const isAllowed = await FlowAssignment.countBy({ user, flow: { id: flow.id }, permission: In(['Owner', permission]) })
+  if (!isAllowed) throw this.errors.FLOW_FORBIDDEN(workspace.name, project.name, name)
+  return flow
 }
