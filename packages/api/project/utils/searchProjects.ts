@@ -7,6 +7,7 @@ import { ILike, In } from 'typeorm'
 import { assertUser } from '../../user'
 import { assertWorkspace } from '../../workspace'
 
+/** The parser function for the `searchProjects` function. */
 export const SEARCH_PROJECTS_OPTIONS_SCHEMA = createSchema({
   workspace: assertWorkspace,
   search: [[assert.undefined], [assert.string]],
@@ -16,6 +17,7 @@ export const SEARCH_PROJECTS_OPTIONS_SCHEMA = createSchema({
   order: [[assert.undefined], [assert.objectStrict as (value: unknown) => asserts value is FindOptionsOrder<Project>]],
 })
 
+/** The options to search for projects. */
 export type SearchProjectsOptions = Loose<ReturnType<typeof SEARCH_PROJECTS_OPTIONS_SCHEMA>>
 
 /**
@@ -28,14 +30,7 @@ export type SearchProjectsOptions = Loose<ReturnType<typeof SEARCH_PROJECTS_OPTI
  * @returns The `Project` with the given name.
  */
 export async function searchProjects(this: ModuleProject, options: SearchProjectsOptions): Promise<Project[]> {
-  const {
-    search = '',
-    user,
-    workspace,
-    page = 1,
-    limit = 10,
-    order = { name: 'ASC' },
-  } = SEARCH_PROJECTS_OPTIONS_SCHEMA(options)
+  const { search = '', user, workspace, page = 1, limit = 10, order = { name: 'ASC' } } = SEARCH_PROJECTS_OPTIONS_SCHEMA(options)
 
   // --- Get the repositories to query the database.
   const { Project } = this.getRepositories()
