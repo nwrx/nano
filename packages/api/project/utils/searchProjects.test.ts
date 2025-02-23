@@ -19,7 +19,7 @@ async function createResult(context: Context, options: TestMatrixOptions) {
   return await searchProjects.call(context.moduleProject, { user, workspace })
 }
 
-describe.concurrent('searchProjects', () => {
+describe('searchProjects', () => {
   beforeEach<Context>(createTestContext)
 
   // Public or private project

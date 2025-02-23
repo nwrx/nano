@@ -24,7 +24,7 @@ async function createResult(context: Context, options: TestMatrixOptions) {
   return await getProject.call(context.moduleProject, { user, workspace, name: project.name, permission })
 }
 
-describe.concurrent('getProject', () => {
+describe('getProject', () => {
   beforeEach<Context>(createTestContext)
 
   const PROJECT_READ_PERMISSIONS = ['Read', 'Owner'] as ProjectPermission[]
