@@ -1,5 +1,6 @@
 import { BaseEntity } from '@unserved/server'
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from 'typeorm'
+import { User } from '../../user'
 import { Workspace } from '../../workspace'
 import { ProjectAssignment } from './ProjectAssignment'
 
@@ -11,6 +12,15 @@ import { ProjectAssignment } from './ProjectAssignment'
 @Entity({ name: 'Project' })
 @Index(['workspace', 'name'], { unique: true })
 export class Project extends BaseEntity {
+
+  /**
+   * The workspace that the project is part of.
+   *
+   * @example Workspace { ... }
+   */
+  @JoinColumn()
+  @ManyToOne(() => Workspace, { nullable: false })
+  workspace: undefined | Workspace
 
   /**
    * The URL slug of the project. The slug is used to generate the URL of the project.
@@ -39,7 +49,7 @@ export class Project extends BaseEntity {
 
   /**
    * Flag to declare the project as public. If the project is public, it can be viewed
-   * by anyone without the need to authenticate to the workspace. By default, the project
+   * by anyone without the need to authenticate to the project. By default, the project
    * is private and only the users assigned to the project can view it.
    *
    * @example false
@@ -48,21 +58,22 @@ export class Project extends BaseEntity {
   isPublic = false
 
   /**
+   * The user who created the project. Note that this user is not necessarily the owner of
+   * the project. This field has no impact on the permissions of the project.
+   *
+   * @example User { ... }
+   */
+  @JoinColumn()
+  @ManyToOne(() => User, { nullable: false })
+  createdBy: undefined | User
+
+  /**
    * The users assigned to the project. They can have specific permissions on the project.
    *
    * @example ProjectAssignment { ... }
    */
   @OneToMany(() => ProjectAssignment, assigment => assigment.project, { cascade: true })
   assignments: ProjectAssignment[] | undefined
-
-  /**
-   * The workspace that the project is part of.
-   *
-   * @example Workspace { ... }
-   */
-  @JoinColumn()
-  @ManyToOne(() => Workspace, { nullable: false })
-  workspace: undefined | Workspace
 
   /**
    * @returns The object representation of the workspace project.
