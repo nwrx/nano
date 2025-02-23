@@ -3,6 +3,7 @@ import type { Project } from '../entities'
 import type { ModuleProject } from '../index'
 import { assert, createSchema } from '@unshared/validation'
 import { In } from 'typeorm'
+import { assertUser } from '../../user/utils/assertUser'
 import { assertWorkspace } from '../../workspace'
 import { assertProjectPermission } from './assertProjectPermission'
 
@@ -10,7 +11,7 @@ import { assertProjectPermission } from './assertProjectPermission'
 const GET_PROJECT_OPTIONS_SCHEMA = createSchema({
 
   /** The `User` responsible for the request. */
-  user: [[assert.undefined], [createSchema({ id: assert.stringUuid })]],
+  user: [[assert.undefined], [assertUser]],
 
   /** The `name` of the {@linkcode Project} to find. */
   name: assert.stringNotEmpty,

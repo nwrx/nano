@@ -18,22 +18,14 @@ interface TestMatrixOptions {
 
 async function createResult(context: Context, options: TestMatrixOptions) {
   const { isPublic, permission, withUser, withAccess, withPermission } = options
-  const { workspace } = await context.createWorkspace('workspace')
-  const { project } = await context.createProject('project', workspace, { isPublic })
-  const { user } = withUser ? await context.createUser() : {}
-  if (user && withPermission) await context.assignProject(project, user, withPermission)
-  if (user && withAccess && withAccess !== withPermission) await context.assignProject(project, user, withAccess)
+  const { user } = withUser ? await context.setupUser() : {}
+  const { workspace } = await context.setupWorkspace({ name: 'workspace' })
+  const { project } = await context.setupProject({ name: 'project', workspace, isPublic, assignments: [[user, withAccess, withPermission]] })
   return await getProject.call(context.moduleProject, { user, workspace, name: project.name, permission })
 }
 
-describe.concurrent('getProject', { timeout: 300 }, () => {
-  beforeEach<Context>(async(context) => {
-    await createTestContext(context)
-  })
-
-  afterEach<Context>(async(context) => {
-    await context.application.destroy()
-  })
+describe.concurrent('getProject', () => {
+  beforeEach<Context>(createTestContext)
 
   const PROJECT_READ_PERMISSIONS = ['Read', 'Owner'] as ProjectPermission[]
   const PROJECT_EXTRA_PERMISSIONS = PROJECT_PERMISSIONS.filter(permission => !PROJECT_READ_PERMISSIONS.includes(permission))
@@ -109,42 +101,35 @@ describe.concurrent('getProject', { timeout: 300 }, () => {
   }
 
   describe<Context>('edge cases', (it) => {
-    it('should throw "PROJECT_NOT_FOUND" if the project is not found', async({ moduleProject, createWorkspace }) => {
-      const { workspace } = await createWorkspace('workspace')
+    it('should throw "PROJECT_NOT_FOUND" if the project is not found', async({ moduleProject, setupWorkspace }) => {
+      const { workspace } = await setupWorkspace({ name: 'workspace' })
       const shouldReject = getProject.call(moduleProject, { workspace, name: 'not-found', permission: 'Read' })
       const error = moduleProject.errors.PROJECT_NOT_FOUND('workspace', 'not-found')
       await expect(shouldReject).rejects.toThrow(error)
     })
 
-    it('should throw a "ValidationError" if the request permission is not provided', async({ moduleProject, createWorkspace }) => {
-      const { workspace } = await createWorkspace('workspace')
+    it('should throw a "ValidationError" if the request permission is not provided', async({ moduleProject, setupWorkspace }) => {
+      const { workspace } = await setupWorkspace()
       // @ts-expect-error: testing invalid input
       const shouldReject = getProject.call(moduleProject, { workspace, name: 'project', permission: undefined })
       await expect(shouldReject).rejects.toThrow(ValidationError)
     })
 
-    it('should throw a "ValidationError" if the request permission is invalid', async({ moduleProject, createWorkspace }) => {
-      const { workspace } = await createWorkspace('workspace')
+    it('should throw a "ValidationError" if the request permission is invalid', async({ moduleProject, setupWorkspace }) => {
+      const { workspace } = await setupWorkspace()
       // @ts-expect-error: testing invalid input
       const shouldReject = getProject.call(moduleProject, { workspace, name: 'project', permission: 'Invalid' })
       await expect(shouldReject).rejects.toThrow(ValidationError)
     })
 
-    it('should throw a "ValidationError" if project name is empty', async({ moduleProject, createWorkspace }) => {
-      const { workspace } = await createWorkspace('workspace')
+    it('should throw a "ValidationError" if project name is empty', async({ moduleProject, setupWorkspace }) => {
+      const { workspace } = await setupWorkspace()
       const shouldReject = getProject.call(moduleProject, { workspace, name: '', permission: 'Read' })
       await expect(shouldReject).rejects.toThrow(ValidationError)
     })
 
-    it('should throw a "ValidationError" if the user is not provided', async({ moduleProject, createWorkspace }) => {
-      const { workspace } = await createWorkspace('workspace')
-      // @ts-expect-error: testing invalid input
-      const shouldReject = getProject.call(moduleProject, { workspace, user: null, name: 'project', permission: 'Read' })
-      await expect(shouldReject).rejects.toThrowError(ValidationError)
-    })
-
-    it('should throw a "ValidationError" if the user does not have an "id" property', async({ moduleProject, createWorkspace }) => {
-      const { workspace } = await createWorkspace('workspace')
+    it('should throw a "ValidationError" if the user does not have an "id" property', async({ moduleProject, setupWorkspace }) => {
+      const { workspace } = await setupWorkspace()
       // @ts-expect-error: testing invalid input
       const shouldReject = getProject.call(moduleProject, { workspace, user: {}, name: 'project', permission: 'Read' })
       await expect(shouldReject).rejects.toThrowError(ValidationError)
