@@ -1,3 +1,4 @@
+export * from './assertFlow'
 export * from './assertFlowPermission'
 export * from './errors'
 export * from './getFlow'
