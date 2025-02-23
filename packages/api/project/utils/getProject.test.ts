@@ -61,9 +61,9 @@ describe('getProject', () => {
                   })
                 }
                 else {
-                  it(`should throw "PROJECT_UNAUTHORIZED" when the request permission is "${permission}"`, async(context) => {
+                  it(`should throw "PROJECT_FORBIDDEN" when the request permission is "${permission}"`, async(context) => {
                     const shouldReject = createResult(context, { isPublic, permission, withUser: true, withAccess, withPermission })
-                    const error = E.PROJECT_UNAUTHORIZED('workspace', 'project')
+                    const error = E.PROJECT_FORBIDDEN('workspace', 'project')
                     await expect(shouldReject).rejects.toThrow(error)
                   })
                 }

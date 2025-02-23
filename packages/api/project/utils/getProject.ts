@@ -47,6 +47,6 @@ export async function getProject(this: ModuleProject, options: GetProjectOptions
   // --- Assert that the user has an assignment that matches the permission.
   const { ProjectAssignment } = this.getRepositories()
   const isAllowed = await ProjectAssignment.countBy({ user, project, permission: In(['Owner', permission]) })
-  if (!isAllowed) throw this.errors.PROJECT_UNAUTHORIZED(workspace.name, name)
+  if (!isAllowed) throw this.errors.PROJECT_FORBIDDEN(workspace.name, name)
   return project
 }
