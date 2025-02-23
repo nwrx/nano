@@ -1,15 +1,15 @@
 <script setup lang="ts">
 definePageMeta({
   name: 'ProjectFlowEditor',
-  path: '/:workspace/:project/:flow',
+  path: '/:workspace/:project/:name',
   middleware: ['redirect-when-guest', 'abort-reserved'],
 })
 
 const route = useRoute()
-const flow = computed(() => route.params.flow as string)
+const name = computed(() => route.params.name as string)
 const project = computed(() => route.params.project as string)
 const workspace = computed(() => route.params.workspace as string)
-const editor = useFlowEditor(workspace, project, flow)
+const editor = useFlowEditor(workspace, project, name)
 
 useHead(() => ({
   title: editor.data.name,
