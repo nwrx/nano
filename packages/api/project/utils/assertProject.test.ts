@@ -2,6 +2,11 @@ import { ValidationError } from '@unshared/validation'
 import { randomUUID } from 'node:crypto'
 import { assertProject } from './assertProject'
 
+const VALID_USER = {
+  id: '00000000-0000-0000-0000-000000000000',
+  username: 'user',
+}
+
 describe('assertProject', () => {
   describe('pass', () => {
     it('should assert a project with empty assignments', () => {
@@ -18,8 +23,8 @@ describe('assertProject', () => {
         id: randomUUID(),
         name: 'my-project',
         assignments: [
-          { user: { id: randomUUID() }, permission: 'Read' },
-          { user: { id: randomUUID() }, permission: 'Write' },
+          { user: VALID_USER, permission: 'Read' },
+          { user: VALID_USER, permission: 'Write' },
         ],
       })
       expect(shouldPass).not.toThrow()
@@ -58,7 +63,7 @@ describe('assertProject', () => {
       const shouldThrow = () => assertProject({
         id: randomUUID(),
         name: 'my-project',
-        assignments: [{ user: { id: 'invalid' }, permission: 'Read' }],
+        assignments: [{ user: { ...VALID_USER, id: 'invalid' }, permission: 'Read' }],
       })
       expect(shouldThrow).toThrow(ValidationError)
     })
@@ -67,7 +72,7 @@ describe('assertProject', () => {
       const shouldThrow = () => assertProject({
         id: randomUUID(),
         name: 'my-project',
-        assignments: [{ user: { id: randomUUID() }, permission: 'Invalid' }],
+        assignments: [{ user: VALID_USER, permission: 'Invalid' }],
       })
       expect(shouldThrow).toThrow(ValidationError)
     })
