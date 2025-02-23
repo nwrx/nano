@@ -69,7 +69,7 @@ describe.concurrent('authenticate', () => {
       const event = createTestEvent({ headers: { 'User-Agent': 'Mozilla/5.0' } })
       const session = await createSession.call(moduleUser, event, { user })
       const expected = new Date('2020-01-02T00:00:00.000Z')
-      expect(session.expiresAt).toStrictEqual(expected)
+      expect(session.expiresAt.getTime()).toBeCloseTo(expected.getTime())
     })
 
     it('should store the secret properties in the session', async({ moduleUser }) => {
