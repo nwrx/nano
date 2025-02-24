@@ -10,55 +10,57 @@ useHead(() => ({
 </script>
 
 <template>
-  <AppPage>
+  <AppLayout>
+    <AppPage>
 
-    <!-- Header -->
-    <AppPageHeader
-      icon="i-carbon:user"
-      :title="[t('title'), title]"
-      :description="t('description')"
-    />
+      <!-- Header -->
+      <AppPageHeader
+        icon="i-carbon:user"
+        :title="[t('title'), title]"
+        :description="t('description')"
+      />
 
-    <!-- Side menu -->
-    <div class="flex w-full h-full gap-lg overflow-x-hidden overflow-y-auto">
-      <AppPageNav class="shrink h-full sticky top-0 overflow-y-auto">
-        <AppPageNavGroup>
-          <AppPageNavItem :label="t('title.UserSettingsAccount')" icon="i-carbon:settings" :to="{ name: 'UserSettingsAccount' }" />
-          <AppPageNavItem :label="t('title.UserSettingsNotifications')" icon="i-carbon:notification" to="/settings/notifications" />
-          <AppPageNavItem :label="t('title.UserSettingsCustomizations')" icon="i-carbon:paint-brush" to="/settings/customizations" />
-        </AppPageNavGroup>
+      <!-- Side menu -->
+      <div class="flex w-full h-full gap-lg overflow-x-hidden overflow-y-auto">
+        <AppPageNav class="shrink h-full sticky top-0 overflow-y-auto">
+          <AppPageNavGroup>
+            <AppPageNavItem :label="t('title.UserSettingsAccount')" icon="i-carbon:settings" :to="{ name: 'UserSettingsAccount' }" />
+            <AppPageNavItem :label="t('title.UserSettingsNotifications')" icon="i-carbon:notification" to="/settings/notifications" />
+            <AppPageNavItem :label="t('title.UserSettingsCustomizations')" icon="i-carbon:paint-brush" to="/settings/customizations" />
+          </AppPageNavGroup>
 
-        <!-- Security -->
-        <AppPageNavGroup :label="t('title.UserSettingsSecurity')">
-          <AppPageNavItem :label="t('title.UserSettingsPassword')" icon="i-carbon:security" :to="{ name: 'UserSettingsPassword' }" />
-          <AppPageNavItem :label="t('title.UserSettingsSso')" icon="i-carbon:credentials" to="/settings/security/api-keys" />
-          <AppPageNavItem :label="t('title.UserSettingsApiKeys')" icon="i-carbon:api-key" to="/settings/security/api-keys" />
-          <AppPageNavItem :label="t('title.UserSettingsSessions')" icon="i-carbon:mobile-session" :to="{ name: 'UserSettingsSessions' }" />
-        </AppPageNavGroup>
+          <!-- Security -->
+          <AppPageNavGroup :label="t('title.UserSettingsSecurity')">
+            <AppPageNavItem :label="t('title.UserSettingsPassword')" icon="i-carbon:security" :to="{ name: 'UserSettingsPassword' }" />
+            <AppPageNavItem :label="t('title.UserSettingsSso')" icon="i-carbon:credentials" to="/settings/security/api-keys" />
+            <AppPageNavItem :label="t('title.UserSettingsApiKeys')" icon="i-carbon:api-key" to="/settings/security/api-keys" />
+            <AppPageNavItem :label="t('title.UserSettingsSessions')" icon="i-carbon:mobile-session" :to="{ name: 'UserSettingsSessions' }" />
+          </AppPageNavGroup>
 
-        <!-- Billing -->
-        <AppPageNavGroup :label="t('title.UserSettingsBilling')">
-          <AppPageNavItem :label="t('title.UserSettingsUpgrade')" to="/settings/billing/upgrade" icon="i-carbon:upgrade" />
-          <AppPageNavItem :label="t('title.UserSettingsSubscription')" to="/settings/billing/subscription" icon="i-carbon:document" />
-          <AppPageNavItem :label="t('title.UserSettingsInvoices')" to="/settings/billing/invoices" icon="i-carbon:document-multiple-01" />
-          <AppPageNavItem :label="t('title.UserSettingsUsage')" to="/settings/billing/usage" icon="i-carbon:analytics" />
-          <AppPageNavItem :label="t('title.UserSettingsPaymentMethods')" to="/settings/billing/payment-methods" icon="i-carbon:money" />
-        </AppPageNavGroup>
+          <!-- Billing -->
+          <AppPageNavGroup :label="t('title.UserSettingsBilling')">
+            <AppPageNavItem :label="t('title.UserSettingsUpgrade')" to="/settings/billing/upgrade" icon="i-carbon:upgrade" />
+            <AppPageNavItem :label="t('title.UserSettingsSubscription')" to="/settings/billing/subscription" icon="i-carbon:document" />
+            <AppPageNavItem :label="t('title.UserSettingsInvoices')" to="/settings/billing/invoices" icon="i-carbon:document-multiple-01" />
+            <AppPageNavItem :label="t('title.UserSettingsUsage')" to="/settings/billing/usage" icon="i-carbon:analytics" />
+            <AppPageNavItem :label="t('title.UserSettingsPaymentMethods')" to="/settings/billing/payment-methods" icon="i-carbon:money" />
+          </AppPageNavGroup>
 
-        <!-- Support -->
-        <AppPageNavGroup :label="t('title.UserSettingsSupport')">
-          <AppPageNavItem :label="t('title.UserSettingsHelpCenter')" to="/settings/support/help-center" icon="i-carbon:help" />
-          <AppPageNavItem :label="t('title.UserSettingsContact')" to="/settings/support/contact" icon="i-carbon:chat" />
-          <AppPageNavItem :label="t('title.UserSettingsChat')" to="/settings/support/chat" icon="i-carbon:chat-bot" />
-        </AppPageNavGroup>
-      </AppPageNav>
+          <!-- Support -->
+          <AppPageNavGroup :label="t('title.UserSettingsSupport')">
+            <AppPageNavItem :label="t('title.UserSettingsHelpCenter')" to="/settings/support/help-center" icon="i-carbon:help" />
+            <AppPageNavItem :label="t('title.UserSettingsContact')" to="/settings/support/contact" icon="i-carbon:chat" />
+            <AppPageNavItem :label="t('title.UserSettingsChat')" to="/settings/support/chat" icon="i-carbon:chat-bot" />
+          </AppPageNavGroup>
+        </AppPageNav>
 
-      <!-- Content -->
-      <AppPageContainer contained>
-        <slot />
-      </AppPageContainer>
-    </div>
-  </AppPage>
+        <!-- Content -->
+        <AppPageContainer contained>
+          <NuxtPage transition />
+        </AppPageContainer>
+      </div>
+    </AppPage>
+  </AppLayout>
 </template>
 
 <i18n lang="yaml">

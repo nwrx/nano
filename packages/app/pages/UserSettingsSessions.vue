@@ -3,6 +3,7 @@ definePageMeta({
   name: 'UserSettingsSessions',
   path: '/settings/sessions',
   middleware: 'redirect-when-guest',
+  layout: 'user-settings',
 })
 
 // --- Get the session and user data.
@@ -16,7 +17,7 @@ onMounted(async() => {
 </script>
 
 <template>
-  <UserSettings>
+  <AppPageContainer contained>
     <UserSettingsSessions
       :sessions="user.data.sessions"
       @submit="(profile) => user.setProfile(profile)"
@@ -25,5 +26,5 @@ onMounted(async() => {
       :sessions-length="user.data.sessions?.length ?? 0"
       @submit-signout="() => session.signout()"
     />
-  </UserSettings>
+  </AppPageContainer>
 </template>

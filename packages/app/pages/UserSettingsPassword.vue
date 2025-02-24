@@ -3,6 +3,7 @@ definePageMeta({
   name: 'UserSettingsPassword',
   path: '/settings/password',
   middleware: 'redirect-when-guest',
+  layout: 'user-settings',
 })
 
 // --- Get the session and user data.
@@ -16,7 +17,7 @@ onMounted(async() => {
 </script>
 
 <template>
-  <UserSettings>
+  <AppPageContainer contained>
     <UserSettingsPassword
       @submit="(oldPassword, newPassword, newPasswordConfirm) => user.setPassword({
         oldPassword,
@@ -24,5 +25,5 @@ onMounted(async() => {
         newPasswordConfirm,
       })"
     />
-  </UserSettings>
+  </AppPageContainer>
 </template>

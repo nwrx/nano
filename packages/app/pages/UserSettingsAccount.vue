@@ -4,6 +4,7 @@ definePageMeta({
   path: '/settings',
   alias: '/settings/account',
   middleware: 'redirect-when-guest',
+  layout: 'user-settings',
 })
 
 const user = useSession()
@@ -15,7 +16,7 @@ onMounted(async() => {
 </script>
 
 <template>
-  <UserSettings>
+  <AppPageContainer contained>
     <UserSettingsAvatar
       :avatar-url="`/api/users/${user.data.username}/avatar`"
       @submit="(avatar) => setAvatar({ file: avatar })"
@@ -34,5 +35,5 @@ onMounted(async() => {
       @submit-username="(newUsername) => setUsername(newUsername)"
       @submit-delete="() => $router.push('/logout')"
     />
-  </UserSettings>
+  </AppPageContainer>
 </template>

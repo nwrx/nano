@@ -3,6 +3,7 @@ definePageMeta({
   name: 'UserSettingsNotifications',
   path: '/settings/notifications',
   middleware: 'redirect-when-guest',
+  layout: 'user-settings',
 })
 
 // --- Get the session and user data.
@@ -15,7 +16,7 @@ onMounted(async() => {
 </script>
 
 <template>
-  <UserSettings>
+  <AppPageContainer contained>
     <UserSettingsNotifications @submit="(data) => user.setNotifications(data)" />
-  </UserSettings>
+  </AppPageContainer>
 </template>
