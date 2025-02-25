@@ -3,9 +3,6 @@ import { defineComponent } from '../../utils/defineComponent'
 export const input = defineComponent(
   {
     isTrusted: true,
-    title: 'Input',
-    icon: 'https://api.iconify.design/carbon:arrow-down.svg',
-    description: 'A value generated from an entrypoint in the flow. The value can be any type of data, such as a string, number, or boolean and is provided as an input to the flow.',
     inputs: {
       name: {
         'type': 'string',

@@ -19,9 +19,6 @@ function normalizeMessage(message: LanguageModelMessage | string): LanguageModel
 export const inference = defineComponent(
   {
     isTrusted: true,
-    title: 'Inference',
-    icon: 'https://api.iconify.design/majesticons:sparkles-line.svg',
-    description: 'Generates a completion based on a language model.',
     inputs: {
       model: {
         title: 'Model',

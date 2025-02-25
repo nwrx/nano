@@ -4,9 +4,6 @@ import { defineComponent } from '../../utils/defineComponent'
 export const stringify = defineComponent(
   {
     isTrusted: true,
-    title: 'Stringify JSON/YAML',
-    icon: 'https://api.iconify.design/carbon:data-format.svg',
-    description: 'This node serializes an object into a JSON or YAML formatted string. Users can specify the format of the output string, which can be either JSON or YAML. The input object is expected to be a key-value map object.',
     inputs: {
       format: {
         'title': 'Format',

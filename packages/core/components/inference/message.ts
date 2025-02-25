@@ -3,9 +3,6 @@ import { languageModelMessageSchema } from './utils/languageModelMessageSchema'
 
 export const message = defineComponent(
   {
-    title: 'Message',
-    icon: 'https://api.iconify.design/majesticons:sparkles-line.svg',
-    description: 'Creates a message to generate a completion for.',
     inputs: {
       role: {
         title: 'Role',

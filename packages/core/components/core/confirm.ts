@@ -12,9 +12,6 @@ export interface EventConfirmRequest {
 export const confirm = defineComponent(
   {
     isTrusted: true,
-    title: 'Confirm',
-    icon: 'https://api.iconify.design/mdi:check-circle-outline.svg',
-    description: 'Ask for user confirmation and await the response. This will interrupt the flow until the user provides a response.',
     inputs: {
       question: {
         type: 'string',

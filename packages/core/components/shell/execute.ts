@@ -4,9 +4,6 @@ import { defineComponent } from '../../utils/defineComponent'
 export const execute = defineComponent(
   {
     isTrusted: true,
-    title: 'Execute',
-    icon: 'https://api.iconify.design/mdi:console.svg',
-    description: 'The **Execute** component is designed to execute a process at the given path. Effectively allowing you to run shell commands and file operations.',
     inputs: {
       executable: {
         type: 'string',

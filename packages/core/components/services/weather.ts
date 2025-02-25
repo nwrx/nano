@@ -2,9 +2,6 @@ import { defineComponent } from '../../utils/defineComponent'
 
 export const weather = defineComponent(
   {
-    title: 'Weather',
-    icon: 'https://api.iconify.design/carbon:sun.svg',
-    description: 'The **Weather Tool** node is designed to fetch the current weather information for a given location. The node requires a location as input and returns the current weather information for that location.',
     inputs: {
       location: {
         type: 'string',

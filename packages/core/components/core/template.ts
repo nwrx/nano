@@ -1,24 +1,8 @@
-import { dedent } from '@unshared/string'
 import { defineComponent } from '../../utils/defineComponent'
 
 export const template = defineComponent(
   {
     isTrusted: true,
-    title: 'Template',
-    icon: 'https://api.iconify.design/carbon:text-indent.svg',
-    description: dedent(`
-      This node generates a templated string based on the provided input. Specifically, it replaces special "{{ Variable }}" placeholders in the template with corresponding values from the input data.
-
-      \`\`\`
-      Hello, {{ name }}! You are {{ age }} years old.
-      \`\`\`
-
-      You can mark a variable as optional by appending a "?" to the variable name, like so: "{{ name? }}". If the variable is not provided, the placeholder will be removed from the output string. Additionally, you can provide default values for variables by using the "??", like so: "{{ name ?? 'John' }}". If the variable is not provided, the default value will be used instead.
-
-      \`\`\`
-      Hello, {{ name ?? 'John' }}! You are {{ age ?? "some" }} years old.
-      \`\`\`
-    `),
     inputs: {
       template: {
         'type': 'string',

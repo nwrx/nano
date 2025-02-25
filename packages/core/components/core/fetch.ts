@@ -28,9 +28,6 @@ export interface EventRequestError {
 export const client = defineComponent(
   {
     isTrusted: true,
-    title: 'Request',
-    icon: 'https://api.iconify.design/carbon:connect.svg',
-    description: 'Retrieve data from a remote HTTP resource and return the response as a string.',
     inputs: {
       url: {
         'type': 'string',

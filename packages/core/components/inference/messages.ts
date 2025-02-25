@@ -7,9 +7,6 @@ export const messages = defineComponent(
   {
     isTrusted: true,
     isToolSet: true,
-    title: 'Messages',
-    icon: 'https://api.iconify.design/majesticons:sparkles-line.svg',
-    description: 'A collection of messages that can be interacted with. The messages can be from the user, assistant, or system. The messages can be used to generate completions, responses, or other interactions.',
     inputs: {
       title: {
         'type': 'string',

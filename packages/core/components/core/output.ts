@@ -3,9 +3,6 @@ import { defineComponent } from '../../utils/defineComponent'
 export const output = defineComponent(
   {
     isTrusted: true,
-    title: 'Output',
-    icon: 'https://api.iconify.design/carbon:arrow-up.svg',
-    description: 'Defines an an output of the flow.',
     inputs: {
       name: {
         'type': 'string',

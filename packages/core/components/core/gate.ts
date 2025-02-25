@@ -3,9 +3,6 @@ import { defineComponent } from '../../utils/defineComponent'
 export const gate = defineComponent(
   {
     isTrusted: true,
-    title: 'Gate',
-    icon: 'https://api.iconify.design/tabler:logic-and.svg',
-    description: 'Routes a value based on a condition.',
     inputs: {
       condition: {
         'title': 'Condition',

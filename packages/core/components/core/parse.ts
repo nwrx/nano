@@ -4,9 +4,6 @@ import { defineComponent } from '../../utils/defineComponent'
 export const parse = defineComponent(
   {
     isTrusted: true,
-    title: 'Parse JSON/YAML',
-    icon: 'https://api.iconify.design/carbon:data-format.svg',
-    description: 'This node parses a given string into an object. It supports both JSON and YAML formats, allowing users to specify the format of the input string. The parsed result is returned as a key-value map object.',
     inputs: {
       format: {
         'title': 'Format',

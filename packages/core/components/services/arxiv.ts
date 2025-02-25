@@ -3,9 +3,6 @@ import { defineComponent } from '../../utils'
 export const arxiv = defineComponent(
   {
     isTrusted: true,
-    title: 'Arxiv',
-    icon: 'https://api.iconify.design/mdi:book-open-page-variant.svg',
-    description: 'The **Arxiv Tool** node is designed to fetch research papers from arXiv based on a search query. The node requires a search query as input and returns a list of research papers matching the query.',
     inputs: {
       searchQuery: {
         type: 'string',

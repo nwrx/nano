@@ -6,9 +6,6 @@ import { defineComponent } from '../../utils/defineComponent'
 export const script = defineComponent(
   {
     isTrusted: true,
-    title: 'Script',
-    icon: 'https://api.iconify.design/mdi:script-text-outline.svg',
-    description: 'Execute a JavaScript or TypeScript script and return the result.',
     inputs: {
       language: {
         'title': 'Language',

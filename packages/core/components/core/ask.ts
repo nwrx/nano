@@ -29,9 +29,6 @@ export interface EventResponse {
 export const ask = defineComponent(
   {
     isTrusted: true,
-    title: 'Ask',
-    icon: 'https://api.iconify.design/mdi:comment-question-outline.svg',
-    description: 'Ask for user input and await the response. This will interrupt the flow until the user provides a response.',
     inputs: {
       question: {
         type: 'string',

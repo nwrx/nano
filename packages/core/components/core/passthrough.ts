@@ -3,9 +3,6 @@ import { defineComponent } from '../../utils/defineComponent'
 export const passthrough = defineComponent(
   {
     isTrusted: true,
-    title: 'Passthrough',
-    icon: 'https://api.iconify.design/carbon:arrow-right.svg',
-    description: 'A value that is passed through the flow without modification. Use for debugging purposes.',
     inputs: {
       value: {
         title: 'Value',
