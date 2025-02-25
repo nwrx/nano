@@ -1,5 +1,7 @@
+import type { RegistryCategoryType } from '../utils'
 import { BaseEntity } from '@unserved/server'
-import { Column, Entity } from 'typeorm'
+import { Column, Entity, Index, JoinTable, ManyToMany } from 'typeorm'
+import { RegistryComponent, RegistryComponentObject } from './RegistryComponent'
 
 /**
  * A `RegistryCategory` is a category that is used to classify the components, templates
@@ -14,6 +16,7 @@ import { Column, Entity } from 'typeorm'
  * stable during the lifetime of the application.
  */
 @Entity({ name: 'RegistryCategory' })
+@Index(['name', 'deletedAt'], { unique: true })
 export class RegistryCategory extends BaseEntity {
 
   /**
@@ -21,15 +24,22 @@ export class RegistryCategory extends BaseEntity {
    *
    * @example 'storage'
    */
-  @Column('varchar', { length: 255, unique: true })
+  @Column('varchar')
   name: string
+
+  /**
+   * The type of the category. This allows for more granular classification of
+   * the components in the registry.
+   */
+  @Column('varchar')
+  type: RegistryCategoryType
 
   /**
    * The title of the category.
    *
    * @example 'Storage'
    */
-  @Column('varchar', { length: 255 })
+  @Column('varchar')
   title: string
 
   /**
@@ -37,22 +47,66 @@ export class RegistryCategory extends BaseEntity {
    *
    * @example 'https://example.com/icon.png'
    */
-  @Column('varchar', { length: 255, default: '' })
-  icon: string
+  @Column('varchar')
+  icon = ''
 
   /**
    * The description of the category.
    *
    * @example 'This category is used to classify components that are used to store data.'
    */
-  @Column('text', { default: '' })
-  description: string
+  @Column('text')
+  description = ''
 
   /**
    * The color of the category.
    *
    * @example '#888888'
    */
-  @Column('varchar', { length: 255, default: '#888888' })
+  @Column('varchar')
+  color = '#888888'
+
+  /**
+   * The components that belong to this category.
+   *
+   * @example [RegistryComponent, RegistryComponent, ...]
+   */
+  @JoinTable({ name: 'RegistryComponentCategory' })
+  @ManyToMany(() => RegistryComponent, component => component.categories)
+  components: RegistryComponent[] | undefined
+
+  /**
+   * @param options The properties to include in the result.
+   * @returns The serialized representation of the category.
+   */
+  serialize(options: SerializeOptions = {}): RegistryCategoryObject {
+    const { withComponents, ...serializeComponentsOptions } = options
+    return {
+      name: this.name,
+      type: this.type,
+      title: this.title,
+      icon: this.icon,
+      description: this.description,
+      color: this.color,
+      components: withComponents ? this.components?.map(component => component.serialize(serializeComponentsOptions)) : undefined,
+    }
+  }
+}
+
+interface SerializeOptions {
+  withComponents?: boolean
+  withInputs?: boolean
+  withOutputs?: boolean
+  withCollection?: boolean
+  withWorkspace?: boolean
+}
+
+export interface RegistryCategoryObject {
+  name: string
+  type: RegistryCategoryType
+  title: string
+  icon: string
+  description: string
   color: string
+  components?: RegistryComponentObject[]
 }

@@ -9,6 +9,7 @@ import { createTestApplication, createTestEvent } from '@unserved/server'
 import { randomBytes } from 'node:crypto'
 import { ModuleFlow } from '../flow'
 import { ModuleProject } from '../project'
+import { ModuleRegistry } from '../registry'
 import { ModuleStorage } from '../storage'
 import { createStoragePoolFs } from '../storage/utils'
 import { ModuleThread } from '../thread'
@@ -48,6 +49,12 @@ export interface SetupFlowOptions {
   assignments?: Array<[undefined | User, ...Array<FlowPermission | undefined>]>
 }
 
+export interface SetupRegistryCollectionOptions {
+  user?: User
+  name?: string
+  workspace?: Workspace
+}
+
 export async function createTestContext(testContext: TestContext) {
   const application = await createTestApplication([
     ModuleUser,
@@ -58,6 +65,7 @@ export async function createTestContext(testContext: TestContext) {
     ModuleVault,
     ModuleThread,
     ModuleThreadRunner,
+    ModuleRegistry,
   ], {
     storagePools: new Map([['default', createStoragePoolFs()]] as const),
     vaultConfigurationAlgorithm: 'aes-256-gcm',
@@ -82,6 +90,7 @@ export async function createTestContext(testContext: TestContext) {
     get moduleVault() { return application.getModule(ModuleVault) },
     get moduleThread() { return application.getModule(ModuleThread) },
     get moduleThreadRunner() { return application.getModule(ModuleThreadRunner) },
+    get moduleRegistry() { return application.getModule(ModuleRegistry) },
     get moduleRunner() { return runner.getModule(ModuleRunner) },
 
     /************************************************/
@@ -219,6 +228,25 @@ export async function createTestContext(testContext: TestContext) {
       // --- Save the flow and assignments.
       await Flow.save(flow)
       return { flow }
+    },
+
+    setupRegistryCollection: async(options: SetupRegistryCollectionOptions = {}) => {
+      const moduleRegistry = application.getModule(ModuleRegistry)
+
+      // --- Create the collection with the given options.
+      const { RegistryCollection } = moduleRegistry.getRepositories()
+      const { user, workspace, name = randomBytes(8).toString('hex') } = options
+      const collection = RegistryCollection.create({ name, title: name, workspace, createdBy: user })
+
+      // --- If no user was provided, create one and set it as the creator.
+      if (!collection.createdBy) {
+        const { user } = await context.setupUser()
+        collection.createdBy = user
+      }
+
+      // --- Save the collection.
+      await RegistryCollection.save(collection)
+      return { collection }
     },
   }
 

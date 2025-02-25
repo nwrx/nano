@@ -1,11 +1,19 @@
-import { Schema } from '@nwrx/nano/utils'
+import type { Schema } from '@nwrx/nano/utils'
 import { BaseEntity, transformerJson } from '@unserved/server'
-import { Column, Entity, ManyToOne, Unique } from 'typeorm'
+import { Column, Entity, Index, JoinTable, ManyToMany, ManyToOne } from 'typeorm'
 import { User } from '../../user'
+import { RegistryCategory, RegistryCategoryObject } from './RegistryCategory'
 import { RegistryCollection } from './RegistryCollection'
 
+export type RegistryComponentEnvironment =
+  | 'builtin'
+  | 'ecmascript2024'
+  | 'nanoflow1'
+  | 'python39'
+  | 'typescript'
+
 @Entity({ name: 'RegistryComponent' })
-@Unique(['collection', 'name', 'version'])
+@Index(['collection', 'name', 'version', 'deletedAt'], { unique: true })
 export class RegistryComponent extends BaseEntity {
 
   /**
@@ -13,15 +21,32 @@ export class RegistryComponent extends BaseEntity {
    *
    * @example Collection { name: 'notion', title: 'Notion', ... }
    */
-  @ManyToOne(() => RegistryCollection, { onDelete: 'CASCADE', nullable: false })
+  @ManyToOne(() => RegistryCollection, { nullable: false })
   collection: RegistryCollection
+
+  /**
+   * The categories that the component is associated with.
+   *
+   * @example RegistryCategory { name: 'storage', ... }
+   */
+  @JoinTable({ name: 'RegistryComponentCategory' })
+  @ManyToMany(() => RegistryCategory)
+  categories: RegistryCategory[] | undefined
+
+  /**
+   * The author of the component.
+   *
+   * @example User { ... }
+   */
+  @ManyToOne(() => User)
+  createdBy: null | undefined | User
 
   /**
    * The name of the component.
    *
    * @example 'notion-get-block'
    */
-  @Column('varchar', { length: 255, unique: true })
+  @Column('varchar')
   name: string
 
   /**
@@ -32,15 +57,15 @@ export class RegistryComponent extends BaseEntity {
    *
    * @example '1.0.0'
    */
-  @Column('varchar', { length: 255, default: 'draft' })
-  version: string
+  @Column('varchar')
+  version = 'draft'
 
   /**
    * The title of the component.
    *
    * @example 'Get Block'
    */
-  @Column('varchar', { length: 255 })
+  @Column('varchar')
   title: string
 
   /**
@@ -48,40 +73,32 @@ export class RegistryComponent extends BaseEntity {
    *
    * @example 'This component is used to get a block from Notion.'
    */
-  @Column('text', { default: '' })
-  description: string
+  @Column('text')
+  description = ''
 
   /**
    * The icon of the component.
    *
    * @example 'https://example.com/icon.png'
    */
-  @Column('varchar', { length: 255, default: '' })
-  icon: string
+  @Column('varchar')
+  icon = ''
 
   /**
    * The input properties of the component.
    *
    * @example { blockId: { type: 'string', required: true } }
    */
-  @Column('text', { default: '{}', transformer: transformerJson })
-  inputs: Schema
+  @Column('text', { transformer: transformerJson })
+  inputs: Record<string, Schema> = {}
 
   /**
    * The output properties of the component.
    *
    * @example { block: { type: 'object', required: true } }
    */
-  @Column('text', { default: '{}', transformer: transformerJson })
-  outputs: Schema
-
-  /**
-   * The author of the component.
-   *
-   * @example User { ... }
-   */
-  @ManyToOne(() => User, { nullable: false })
-  createdBy: User
+  @Column('text', { transformer: transformerJson })
+  outputs: Record<string, Schema> = {}
 
   /**
    * The environment used in the code of the component. Additionally, the `environment`
@@ -90,8 +107,8 @@ export class RegistryComponent extends BaseEntity {
    *
    * @example 'javascript'
    */
-  @Column('varchar', { default: 'javascript' })
-  environment: 'builtin' | 'javascript' | 'typescript'
+  @Column('varchar')
+  environment: RegistryComponentEnvironment = 'builtin'
 
   /**
    * The code of the component. This code will be executed in an isolated environment
@@ -100,6 +117,43 @@ export class RegistryComponent extends BaseEntity {
    *
    * @example 'console.log("Hello, world!")'
    */
-  @Column('text', { default: '' })
-  code: string
+  @Column('text')
+  code = '<BUILTIN>'
+
+  /**
+   * @param options The serialization options.
+   * @returns The serialized representation of the component.
+   */
+  serialize(options: SerializeOptions = {}): RegistryComponentObject {
+    const { withInputs, withOutputs, withCategories } = options
+    return {
+      name: this.name,
+      version: this.version,
+      title: this.title,
+      description: this.description,
+      icon: this.icon,
+      environment: this.environment,
+      inputs: withInputs ? this.inputs : undefined,
+      outputs: withOutputs ? this.outputs : undefined,
+      categories: withCategories ? this.categories?.map(category => category.serialize()) : undefined,
+    }
+  }
+}
+
+interface SerializeOptions {
+  withInputs?: boolean
+  withOutputs?: boolean
+  withCategories?: boolean
+}
+
+export interface RegistryComponentObject {
+  name: string
+  version: string
+  title: string
+  description: string
+  icon: string
+  environment: RegistryComponentEnvironment
+  inputs?: Record<string, Schema>
+  outputs?: Record<string, Schema>
+  categories?: RegistryCategoryObject[]
 }

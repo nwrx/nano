@@ -4,6 +4,7 @@ import { ModuleChat } from './chat'
 import { ModuleFlow } from './flow'
 import { ModuleFlowEditor } from './flowEditor'
 import { ModuleProject } from './project'
+import { ModuleRegistry } from './registry'
 import { ModuleStorage } from './storage'
 import { createStoragePoolFs } from './storage/utils'
 import { ModuleThread } from './thread'
@@ -35,6 +36,7 @@ export const application = new Application(
     ModuleHealth,
     ModuleThread,
     ModuleThreadRunner,
+    ModuleRegistry,
   ],
   {
     prefix: 'NANO',
