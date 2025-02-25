@@ -24,6 +24,13 @@ export type SchemaControl =
   | 'tags'
   | 'variable'
 
+export type SchemaXType =
+  | 'stream'
+  | 'function'
+  | 'file'
+  | OpenAPIV3_1.NonArraySchemaObjectType
+  | OpenAPIV3_1.ArraySchemaObjectType
+
 export interface SchemaOption {
   value: unknown
   label: string
@@ -38,7 +45,7 @@ export type Schema = Omit<OpenAPIV3_1.SchemaObject, 'additionalProperties' | 'an
   additionalProperties?: boolean | Schema
   items?: Schema
   'x-icon'?: string
-  'x-type'?: 'stream' | 'function' | 'file' | SchemaType
+  'x-type'?: SchemaXType | SchemaType
   'x-default'?: () => any
   'x-yields'?: Schema
   'x-takes'?: readonly Schema[]
@@ -152,9 +159,6 @@ export interface ComponentOptions<
   Outputs extends Record<string, Schema> = Record<string, Schema>,
   IsTrusted extends boolean = boolean,
 > {
-  icon?: string
-  title?: string
-  description?: string
   inputs?: Inputs
   outputs?: Outputs
 
@@ -191,9 +195,6 @@ export function defineComponent<
 ): Component<Inputs, Outputs, IsTrusted> {
   return {
     ['@instanceOf']: SYMBOL_COMPONENT,
-    icon: options.icon,
-    title: options.title,
-    description: options.description,
     inputs: options.inputs,
     outputs: options.outputs,
     isTrusted: options.isTrusted,
