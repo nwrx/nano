@@ -20,7 +20,7 @@ const model = ref('')
 
 watch(() => props.isOpen, () => {
   model.value = props.modelValue ?? ''
-})
+}, { immediate: true })
 
 function onTextAreaInput(event: Event) {
   const target = event.target as HTMLTextAreaElement
@@ -34,111 +34,87 @@ function confirm() {
 </script>
 
 <template>
-  <Teleport to="#editor" defer>
+  <AppDialog
+    v-model="isOpen"
+    teleport="#editor"
+    class-container="
+      flex flex-col !w-full h-full max-w-page max-h-4xl cursor-auto
+      pointer-events-auto b b-editor text-app !bg-editor-node bg-op-80 overflow-hidden rd
+    ">
 
-    <!-- Dialog -->
-    <Transition name="slide">
-      <LazyBaseDialog
-        v-if="isOpen"
-        v-model="isOpen"
-        as="div"
-        class="
-          absolute inset-0 p-8xl transition duration-slow cursor-pointer
-          flex items-center justify-center backdrop-blur-2xl z-1000 rounded-app
-        "
-        @mousedown.stop.left="() => isOpen = false"
-        @wheel.stop>
+    <!-- Content -->
+    <template #container>
+      <div class="flex items-center b-b b-editor p-sm space-x-sm">
+        <EditorNodeSocketTextareaDialogButton
+          icon="i-carbon:close"
+          @click="() => isOpen = false"
+        />
+        <span class="text-base font-medium ml-md select-text">
+          {{ name }}
+        </span>
+        <!-- Divider -->
+        <BaseIcon icon="i-carbon:dot-mark" class="size-3" />
+        <!-- Description -->
+        <span class="text-subtle text-sm select-text">
+          {{ description }}
+        </span>
+        <!-- Spacer -->
+        <div class="flex-1" />
+        <!-- Preview -->
+        <EditorNodeSocketTextareaDialogButton
+          icon="i-carbon:text-long-paragraph"
+          :label="t('preview')"
+          :is-active="settings.editorNodeTextareaShowPreview"
+          @click="() => settings.editorNodeTextareaShowPreview = !settings.editorNodeTextareaShowPreview"
+        />
+      </div>
 
-        <!-- Content -->
+      <!-- Text and Preview -->
+      <div class="flex grow overflow-hidden w-full h-full relative">
+        <textarea
+          v-model="model"
+          spellcheck="false"
+          class="flex-1 h-full p-lg resize-none bg-transparent outline-none font-mono text-sm"
+          rows="10"
+          @input="event => onTextAreaInput(event)"
+        />
+
+        <!-- Preview -->
         <div
-          class="
-            flex flex-col w-full h-full max-w-page max-h-4xl cursor-auto
-            pointer-events-auto b b-editor text-app bg-editor-node bg-op-80 overflow-hidden rd
-          "
-          @mousedown.stop>
-
-          <!-- Toolbar -->
-          <div class="flex items-center b-b b-editor p-sm space-x-sm">
-
-            <!-- Close -->
-            <EditorNodeSocketTextareaDialogButton
-              icon="i-carbon:close"
-              @click="() => isOpen = false"
-            />
-
-            <!-- Name and Description -->
-            <span class="text-base font-medium ml-md select-text">
-              {{ name }}
-            </span>
-
-            <!-- Divider -->
-            <BaseIcon icon="i-carbon:dot-mark" class="size-3" />
-
-            <!-- Description -->
-            <span class="text-subtle text-sm select-text">
-              {{ description }}
-            </span>
-
-            <!-- Spacer -->
-            <div class="flex-1" />
-
-            <!-- Preview -->
-            <EditorNodeSocketTextareaDialogButton
-              icon="i-carbon:text-long-paragraph"
-              :label="t('preview')"
-              :is-active="settings.editorNodeTextareaShowPreview"
-              @click="() => settings.editorNodeTextareaShowPreview = !settings.editorNodeTextareaShowPreview"
-            />
-          </div>
-
-          <!-- Text and Preview -->
-          <div class="flex overflow-hidden w-full h-full relative">
-            <textarea
-              v-model="model"
-              spellcheck="false"
-              class="flex-1 h-full p-lg resize-none bg-transparent outline-none font-mono text-sm"
-              rows="10"
-              @input="event => onTextAreaInput(event)"
-            />
-
-            <!-- Preview -->
-            <div
-              :class="{
-                'op-0 w-0': !settings.editorNodeTextareaShowPreview,
-                'op-100 w-1/2': settings.editorNodeTextareaShowPreview,
-              }"
-              class="overflow-hidden transition-all duration-slow">
-              <div
-                :key="model"
-                v-markdown="model"
-                class="
+          :class="{
+            'op-0 w-0': !settings.editorNodeTextareaShowPreview,
+            'op-100 w-1/2': settings.editorNodeTextareaShowPreview,
+          }"
+          class="overflow-hidden transition-all duration-slow">
+          <div
+            :key="model"
+            v-markdown="model"
+            class="
                 markdown w-1/2 h-full b-l b-editor p-lg text-app
                 overflow-y-auto transition absolute select-text
               "
-              />
-            </div>
-          </div>
-
-          <!-- Confirm -->
-          <div class="flex items-center justify-end b-t b-editor p-sm space-x-sm">
-            <Hyperlink
-              :label="t('cancel')"
-              icon-append="i-carbon:close"
-              class="text-sm ml-sm"
-              @click="() => isOpen = false"
-            />
-            <div class="grow" />
-            <Button
-              :label="t('confirm')"
-              class="button-success"
-              icon-append="i-carbon:checkmark"
-              @click="() => confirm()"
-            />
-          </div>
+          />
         </div>
-      </LazyBaseDialog>
-    </Transition>
-  </Teleport>
+      </div>
+
+      <!-- Confirm -->
+      <div class="flex items-center justify-end b-t b-editor p-sm space-x-sm">
+        <Hyperlink
+          :label="t('cancel')"
+          icon-append="i-carbon:close"
+          class="text-sm ml-sm"
+          @click="() => isOpen = false"
+        />
+        <div class="grow" />
+        <Button
+          :label="t('confirm')"
+          class="button-success"
+          icon-append="i-carbon:checkmark"
+          @click="() => confirm()"
+        />
+      </div>
+    </template>
+  </AppDialog>
 </template>
 
 <i18n lang="yaml">
