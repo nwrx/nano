@@ -64,23 +64,23 @@ describe('DEFAULT_REFERENCE_RESOLVER', () => {
       const result = await DEFAULT_REFERENCE_RESOLVER.call(thread, 'Nodes', nodeId)
       expect(result).toStrictEqual({
         call: expect.any(Function),
-        name: nodeId,
+        name: 'core/example',
         nodeId,
-        description: '',
+        description: undefined,
         parameters: expect.any(Object),
       })
     })
 
-    it('should use the title as the tool name if provided', async() => {
+    it('should use the title as the metadata comment if provided', async() => {
       const thread = createThread()
-      const component = defineComponent({ title: 'Example Tool Component' }, () => ({ result: 'Hello, World!' }))
-      const nodeId = addNode(thread, 'example', { component })
+      const component = defineComponent({}, () => ({ result: 'Hello, World!' }))
+      const nodeId = addNode(thread, 'example', { component, metadata: { comment: 'Tool Description' } })
       const result = await DEFAULT_REFERENCE_RESOLVER.call(thread, 'Nodes', nodeId)
       expect(result).toStrictEqual({
         call: expect.any(Function),
-        name: 'example-tool-component',
+        name: 'core/example',
         nodeId,
-        description: '',
+        description: 'Tool Description',
         parameters: expect.any(Object),
       })
     })

@@ -1,10 +1,10 @@
 import type { ObjectLike } from '@unshared/types'
 import type { Thread } from '../thread'
 import type { ReferenceType } from './createReference'
-import { toKebabCase } from '@unshared/string'
 import { getNode, getNodeComponent, getNodeOutputSocket, startNode } from '../thread'
 import { defineTool } from './defineTool'
 import { ERRORS as E } from './errors'
+import { serializeSpecifier } from './serializeSpecifier'
 
 export async function DEFAULT_REFERENCE_RESOLVER(this: Thread, type: ReferenceType, ...values: string[]) {
   if (type !== 'Nodes') return
@@ -20,12 +20,13 @@ export async function DEFAULT_REFERENCE_RESOLVER(this: Thread, type: ReferenceTy
 
   // --- If name is not provided, it is a reference to a tool.
   else {
+    const node = getNode(this, sourceId)
     const component = await getNodeComponent(this, sourceId)
     if (typeof component.process !== 'function')
       throw E.REFERENCE_TO_TOOL_BUT_NO_PROCESS_FUNCTION(sourceId)
     return defineTool(sourceId, {
-      name: component.title ? toKebabCase(component.title) : sourceId,
-      description: component.description ?? '',
+      name: node.metadata.label ?? serializeSpecifier(node),
+      description: node.metadata.comment,
       properties: component.inputs ?? {},
       call: (data: ObjectLike) => startNode(this, sourceId, data),
     })

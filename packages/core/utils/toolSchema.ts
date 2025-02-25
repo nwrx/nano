@@ -9,7 +9,6 @@ export const toolSchema = {
   additionalProperties: false,
   required: [
     'name',
-    'description',
     'parameters',
     'call',
   ],
@@ -26,9 +25,10 @@ export const toolSchema = {
       description: 'The name of the tool to identify it in the list of tools.',
     },
     description: {
-      type: 'string',
-      title: 'Description',
-      description: 'The description of the tool to provide additional information about it to LLM. It allows the LLM to understand the purpose of the tool and how, when, and where to use it.',
+      'type': 'string',
+      'title': 'Description',
+      'description': 'The description of the tool to provide additional information about it to LLM. It allows the LLM to understand the purpose of the tool and how, when, and where to use it.',
+      'x-optional': true,
     },
     parameters: {
       type: 'object',

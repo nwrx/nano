@@ -4,7 +4,7 @@ import type { Tool } from './toolSchema'
 
 export interface ToolOptions {
   name: string
-  description: string
+  description?: string
   properties: Record<string, Schema>
   call: (parameters: any) => MaybePromise<ObjectLike>
 }
