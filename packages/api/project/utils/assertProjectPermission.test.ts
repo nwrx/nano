@@ -1,51 +1,22 @@
 import type { ProjectPermission } from './assertProjectPermission'
 import { ValidationError } from '@unshared/validation'
-import { assertProjectPermission } from './assertProjectPermission'
+import { assertProjectPermission, PROJECT_PERMISSIONS } from './assertProjectPermission'
 
 describe('assertProjectPermission', () => {
-  it('should assert a permission is Owner', () => {
-    const shouldPass = () => assertProjectPermission('Owner')
-    expect(shouldPass).not.toThrow()
-  })
-
-  it('should assert a permission is Write', () => {
-    const shouldPass = () => assertProjectPermission('Write')
-    expect(shouldPass).not.toThrow()
-  })
-
-  it('should assert a permission is VaultRead', () => {
-    const shouldPass = () => assertProjectPermission('VaultRead')
-    expect(shouldPass).not.toThrow()
-  })
-
-  it('should assert a permission is VaultWrite', () => {
-    const shouldPass = () => assertProjectPermission('VaultWrite')
-    expect(shouldPass).not.toThrow()
-  })
-
-  it('should assert a permission is Execute', () => {
-    const shouldPass = () => assertProjectPermission('Execute')
-    expect(shouldPass).not.toThrow()
-  })
-
-  it('should assert a permission is Read', () => {
-    const shouldPass = () => assertProjectPermission('Read')
+  it.each(PROJECT_PERMISSIONS)('should assert a permission is %s', (permission) => {
+    const shouldPass = () => assertProjectPermission(permission)
     expect(shouldPass).not.toThrow()
   })
 
   it('should throw an error if the permission is not valid', () => {
     const shouldThrow = () => assertProjectPermission('Invalid' as any)
+    const values = PROJECT_PERMISSIONS.map(value => `'${value}'`).join(', ')
     expect(shouldThrow).toThrow(ValidationError)
+    expect(shouldThrow).toThrow(`String is not one of the values: ${values}`)
   })
 
   it('should infer the permission type', () => {
-    expectTypeOf<ProjectPermission>().toEqualTypeOf<
-      | 'Execute'
-      | 'Owner'
-      | 'Read'
-      | 'VaultRead'
-      | 'VaultWrite'
-      | 'Write'
-    >()
+    type Expected = typeof PROJECT_PERMISSIONS[number]
+    expectTypeOf<ProjectPermission>().toEqualTypeOf<Expected>()
   })
 })
