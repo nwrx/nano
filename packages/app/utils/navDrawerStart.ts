@@ -28,7 +28,7 @@ export const NAV_DRAWER_START = computed<NavItem[]>(() => {
         },
         {
           icon: 'i-carbon:integration',
-          to: { name: 'Modules' },
+          to: { name: 'Registry' },
           label: localize({
             en: 'Integrations',
             fr: 'Intégrations',

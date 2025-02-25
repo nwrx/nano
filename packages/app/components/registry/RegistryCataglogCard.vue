@@ -1,15 +1,7 @@
 <script setup lang="ts">
-defineProps<{
-  icon: string
-  title: string
-  description: string
-  maintainer: string
-  rating: number
-  ratingCount: number
-  isCurated?: boolean
-  isOfficial?: boolean
-  categories?: string[]
-}>()
+import type { RegistryCollectionObject } from '@nwrx/nano-api'
+
+defineProps<RegistryCollectionObject>()
 </script>
 
 <template>
