@@ -21,8 +21,8 @@ useHead(() => ({
       />
 
       <!-- Side menu -->
-      <div class="flex w-full h-full gap-lg overflow-x-hidden overflow-y-auto">
-        <AppPageNav class="shrink h-full sticky top-0 overflow-y-auto">
+      <div class="flex w-full h-full overflow-x-hidden overflow-y-auto">
+        <AppPageNav class="shrink-0 h-full sticky top-0 overflow-y-auto">
           <AppPageNavGroup>
             <AppPageNavItem :label="t('title.UserSettingsAccount')" icon="i-carbon:settings" :to="{ name: 'UserSettingsAccount' }" />
             <AppPageNavItem :label="t('title.UserSettingsNotifications')" icon="i-carbon:notification" to="/settings/notifications" />
@@ -55,9 +55,7 @@ useHead(() => ({
         </AppPageNav>
 
         <!-- Content -->
-        <AppPageContainer contained>
-          <NuxtPage transition />
-        </AppPageContainer>
+        <NuxtPage transition />
       </div>
     </AppPage>
   </AppLayout>
