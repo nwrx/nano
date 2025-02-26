@@ -26,9 +26,6 @@ export function defineLanguageModel(options: LanguageModelOptions) {
   return defineComponent(
     {
       isTrusted: true,
-      icon: options.icon,
-      title: options.title,
-      description: options.description,
       inputs: {
         baseUrl: {
           'type': 'string',

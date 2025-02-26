@@ -7,7 +7,7 @@ import { INFERENCE_ERRORS as E } from './errors'
 export interface EventToolRequest {
   id: string
   name: string
-  description: string
+  description?: string
   parameters: ObjectLike
 }
 
