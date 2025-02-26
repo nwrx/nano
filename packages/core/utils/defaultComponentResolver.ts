@@ -3,7 +3,8 @@ import type { SpecifierObject } from './parseSpecifier'
 import { components } from '../components/components'
 
 export function DEFAULT_COMPONENT_RESOLVER(specifier: SpecifierObject): Component | undefined {
-  if (specifier.collection !== 'core') return
+  if (specifier.workspace !== 'default') return
+  if (specifier.collection !== 'default') return
   if (specifier.registry !== 'default') return
   if (specifier.tag !== 'latest') return
 

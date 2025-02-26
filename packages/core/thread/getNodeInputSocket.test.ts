@@ -25,7 +25,13 @@ describe('getNodeInputSocket', () => {
     const thread = createThread()
     const id = addNode(thread, 'example')
     const shouldReject = getNodeInputSocket(thread, id, 'input')
-    const error = E.COMPONENT_NOT_RESOLVED({ collection: 'core', name: 'example', registry: 'default', tag: 'latest' })
+    const error = E.COMPONENT_NOT_RESOLVED({
+      workspace: 'default',
+      collection: 'default',
+      registry: 'default',
+      name: 'example',
+      tag: 'latest',
+    })
     await expect(shouldReject).rejects.toThrow(error)
   })
 })

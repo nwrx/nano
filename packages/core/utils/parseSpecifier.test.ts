@@ -2,63 +2,83 @@ import { ERRORS as E } from './errors'
 import { parseSpecifier } from './parseSpecifier'
 
 describe('parseSpecifier', () => {
-  describe('with provider name', () => {
-    it('should parse a specifier with collection, version, and name', () => {
-      const result = parseSpecifier('example.com:my-collection/my-component@1')
+  describe('with registry', () => {
+    it('should parse a full specifier with registry, workspace, collection, name and tag', () => {
+      const result = parseSpecifier('example.com:workspace/collection/component@1.0.0')
       expect(result).toStrictEqual({
-        tag: '1',
-        name: 'my-component',
-        collection: 'my-collection',
         registry: 'example.com',
+        workspace: 'workspace',
+        collection: 'collection',
+        name: 'component',
+        tag: '1.0.0',
       })
     })
 
-    it('should parse a specifier with collection and name', () => {
-      const result = parseSpecifier('example.com:my-collection/my-component')
+    it('should parse a specifier with registry, collection and name', () => {
+      const result = parseSpecifier('example.com:collection/component')
       expect(result).toStrictEqual({
+        registry: 'example.com',
+        workspace: 'default',
+        collection: 'collection',
+        name: 'component',
         tag: 'latest',
-        name: 'my-component',
-        collection: 'my-collection',
-        registry: 'example.com',
       })
     })
 
-    it('should throw an error if the specifier is invalid', () => {
-      const shouldThrow = () => parseSpecifier('example.com:my-collection')
-      const error = E.COMPONENT_INVALID_SPECIFIER_FORMAT('example.com:my-collection')
-      expect(shouldThrow).toThrow(error)
+    it('should parse a specifier with only registry and name', () => {
+      const result = parseSpecifier('example.com:component')
+      expect(result).toStrictEqual({
+        registry: 'example.com',
+        workspace: 'default',
+        collection: 'default',
+        name: 'component',
+        tag: 'latest',
+      })
+    })
+
+    it('should throw an error if the specifier is empty after registry', () => {
+      const shouldThrow = () => parseSpecifier('example.com:')
+      expect(shouldThrow).toThrow(E.COMPONENT_INVALID_SPECIFIER_FORMAT('example.com:'))
     })
   })
 
-  describe('without provider name', () => {
-    it('should parse a specifier with collection, version, and name', () => {
-      const result = parseSpecifier('my-collection/my-component@1')
+  describe('without registry', () => {
+    it('should parse a specifier with workspace, collection, name and tag', () => {
+      const result = parseSpecifier('workspace/collection/component@1.0.0')
       expect(result).toStrictEqual({
-        tag: '1',
-        name: 'my-component',
-        collection: 'my-collection',
         registry: 'default',
+        workspace: 'workspace',
+        collection: 'collection',
+        name: 'component',
+        tag: '1.0.0',
       })
     })
 
     it('should parse a specifier with collection and name', () => {
-      const result = parseSpecifier('my-collection/my-component')
+      const result = parseSpecifier('collection/component')
       expect(result).toStrictEqual({
-        tag: 'latest',
-        name: 'my-component',
-        collection: 'my-collection',
         registry: 'default',
+        workspace: 'default',
+        collection: 'collection',
+        name: 'component',
+        tag: 'latest',
       })
     })
 
-    it('should default to the core collection if no collection is provided', () => {
-      const result = parseSpecifier('my-component')
+    it('should parse a specifier with just name', () => {
+      const result = parseSpecifier('component')
       expect(result).toStrictEqual({
-        tag: 'latest',
-        name: 'my-component',
-        collection: 'core',
         registry: 'default',
+        workspace: 'default',
+        collection: 'default',
+        name: 'component',
+        tag: 'latest',
       })
+    })
+
+    it('should throw an error if the specifier is empty', () => {
+      const shouldThrow = () => parseSpecifier('')
+      expect(shouldThrow).toThrow(E.COMPONENT_INVALID_SPECIFIER_FORMAT(''))
     })
   })
 })

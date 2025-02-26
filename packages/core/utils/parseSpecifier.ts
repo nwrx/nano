@@ -1,38 +1,65 @@
 import { ERRORS as E } from './errors'
 
 export interface SpecifierObject {
-  tag: string
   registry: string
+  workspace: string
   collection: string
   name: string
+  tag: string
 }
 
-/** The regular expression that is used to parse a component specifier. */
-const EXP_COMPONENT_SPECIFIER = /^(((?<registry>[.a-z-]+):)?(?<collection>[a-z-]+)\/)?(?<name>[a-z-]+)(@(?<tag>[\da-z-]+))?$/
-
 /**
- * The function that is used to parse a component specifier. The parse function
- * is used to parse the specifier into its module, name, and version.
+ * Parse a component specifier into its parts. The specifier should be in the format
+ * of `registry:workspace/collection/component@tag`. Note that all parts are optional
+ * except for the name.
  *
- * @param specifier The specifier of the component to parse.
- * @returns The parsed component specifier.
- * @example
- *
- * // Parse with version and provider.
- * parseSpecifier('provider:module/name@1') // { collection: 'module', version: '1', component: 'name' }
- *
- * // Parse with version.
- * parseSpecifier('module/name@1') // { collection: 'module', version: '1', component: 'name' }
- *
- * // Parse without version.
- * parseSpecifier('module/name') // { collection: 'module', version: 'latest', component: 'name' }
- *
- * // Parse with version and no module (Core module).
- * parseSpecifier('name') // { collection: 'core', version: 'latest', component: 'name' }
+ * @param specifier The serialized specifier to parse.
+ * @returns The parsed specifier object.
+ * @example parseSpecifier('example.com:workspace/collection/component@1.0.0')
+ * // {
+ * //   registry: 'example.com',
+ * //   workspace: 'workspace',
+ * //   collection: 'collection',
+ * //   name: 'component',
+ * //   tag: '1.0.0',
+ * // }
  */
 export function parseSpecifier(specifier: string): SpecifierObject {
-  const match = EXP_COMPONENT_SPECIFIER.exec(specifier)
-  if (!match?.groups) throw E.COMPONENT_INVALID_SPECIFIER_FORMAT(specifier)
-  const { registry = 'default', collection = 'core', tag = 'latest', name } = match.groups
-  return { registry, collection, tag, name }
+  let registry = 'default'
+  let workspace = 'default'
+  let collection = 'default'
+  let tag = 'latest'
+  let name: string | undefined
+
+  // --- Split by @ to separate tag
+  const [mainPart, tagPart] = specifier.split('@')
+  if (tagPart) tag = tagPart
+
+  // --- Handle registry and remaining parts based on the number of colons.
+  // --- 3 -> registry:workspace/collection/name
+  // --- 2 -> registry:collection/name
+  // --- 1 -> registry:name
+  const registryParts = mainPart.split(':')
+  if (registryParts.length > 1) {
+    registry = registryParts[0]
+    const pathParts = registryParts[1].split('/')
+    if (pathParts.length === 3) [workspace, collection, name] = pathParts
+    else if (pathParts.length === 2) [collection, name] = pathParts
+    else if (pathParts.length === 1) name = pathParts[0]
+  }
+
+  // --- If no registry is provided, handle the remaining parts.
+  // --- 2 -> workspace/collection/name
+  // --- 1 -> collection/name
+  // --- 0 -> name
+  else {
+    const pathParts = mainPart.split('/')
+    if (pathParts.length === 3) [workspace, collection, name] = pathParts
+    else if (pathParts.length === 2) [collection, name] = pathParts
+    else name = mainPart
+  }
+
+  // --- Return the parsed specifier object if the name is valid.
+  if (!name) throw E.COMPONENT_INVALID_SPECIFIER_FORMAT(specifier)
+  return { registry, workspace, collection, tag, name }
 }

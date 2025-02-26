@@ -28,9 +28,10 @@ describe('getNodeOutputSocket', () => {
     const id = addNode(thread, 'example')
     const shouldReject = getNodeOutputSocket(thread, id, 'output')
     const error = ERRORS.COMPONENT_NOT_RESOLVED({
-      collection: 'core',
-      name: 'example',
+      workspace: 'default',
+      collection: 'default',
       registry: 'default',
+      name: 'example',
       tag: 'latest',
     })
     await expect(shouldReject).rejects.toThrow(error)

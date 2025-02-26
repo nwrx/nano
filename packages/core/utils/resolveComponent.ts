@@ -22,9 +22,10 @@ export type ComponentResolver = (specifier: SpecifierObject) => MaybePromise<Com
  */
 export async function resolveComponent(specifier: SpecifierObject, resolvers: ComponentResolver[]): Promise<Component> {
   const specifierObject = {
+    registry: specifier.registry,
+    workspace: specifier.workspace,
     collection: specifier.collection,
     name: specifier.name,
-    registry: specifier.registry,
     tag: specifier.tag,
   }
   for (const resolve of resolvers) {

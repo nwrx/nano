@@ -64,7 +64,7 @@ describe('DEFAULT_REFERENCE_RESOLVER', () => {
       const result = await DEFAULT_REFERENCE_RESOLVER.call(thread, 'Nodes', nodeId)
       expect(result).toStrictEqual({
         call: expect.any(Function),
-        name: 'core/example',
+        name: 'example',
         nodeId,
         description: undefined,
         parameters: expect.any(Object),
@@ -78,7 +78,7 @@ describe('DEFAULT_REFERENCE_RESOLVER', () => {
       const result = await DEFAULT_REFERENCE_RESOLVER.call(thread, 'Nodes', nodeId)
       expect(result).toStrictEqual({
         call: expect.any(Function),
-        name: 'core/example',
+        name: 'example',
         nodeId,
         description: 'Tool Description',
         parameters: expect.any(Object),

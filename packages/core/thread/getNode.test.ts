@@ -9,12 +9,13 @@ describe('getComponentInstance', () => {
     const id = addNode(thread, 'example')
     const result = getNode(thread, id)
     expect(result).toStrictEqual({
-      collection: 'core',
+      collection: 'default',
       component: undefined,
       input: {},
       metadata: {},
       name: 'example',
       result: {},
+      workspace: 'default',
       registry: 'default',
       startedAt: 0,
       state: 'idle',

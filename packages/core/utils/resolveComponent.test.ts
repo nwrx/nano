@@ -5,12 +5,13 @@ import { ERRORS as E } from './errors'
 import { resolveComponent } from './resolveComponent'
 
 describe('resolveComponent', () => {
-  const component = defineComponent({ title: 'Example' })
+  const component = defineComponent({})
   const specifier: SpecifierObject = {
-    tag: 'latest',
     registry: 'example.com',
+    workspace: 'my-workspace',
     collection: 'my-collection',
     name: 'my-component',
+    tag: 'latest',
   }
 
   it('should resolve a valid component', async() => {

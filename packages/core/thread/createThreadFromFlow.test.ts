@@ -13,24 +13,26 @@ describe('createThreadFromFlow', () => {
       })
       expect([...thread.nodes]).toStrictEqual([
         ['node1', {
-          collection: 'core',
+          collection: 'default',
           component: undefined,
           input: { message: 'Hello' },
           metadata: { meta: 'metadata' },
           name: 'passthrough',
           registry: 'default',
+          workspace: 'default',
           result: {},
           startedAt: 0,
           state: 'idle',
           tag: 'latest',
         }],
         ['node2', {
-          collection: 'core',
+          collection: 'default',
           component: undefined,
           input: { message: 'World' },
           metadata: { meta: 'metadata' },
           name: 'passthrough',
           registry: 'default',
+          workspace: 'default',
           result: {},
           startedAt: 0,
           state: 'idle',

@@ -36,7 +36,13 @@ describe('getNodeComponent', () => {
     const thread = createThread({ componentResolvers: [() => undefined] })
     const id = addNode(thread, 'example')
     const shouldReject = getNodeComponent(thread, id)
-    const error = ERRORS.COMPONENT_NOT_RESOLVED({ collection: 'core', tag: 'latest', name: 'example', registry: 'default' })
+    const error = ERRORS.COMPONENT_NOT_RESOLVED({
+      workspace: 'default',
+      collection: 'default',
+      tag: 'latest',
+      name: 'example',
+      registry: 'default',
+    })
     await expect(shouldReject).rejects.toThrow(error)
   })
 })
