@@ -70,13 +70,11 @@ const { t } = useI18n()
       </template>
 
       <!-- Cell / Actions -->
-      <template #cell.status="{ username, displayName, avatarUrl, createdAt, lastSeenAt, disabledAt }">
+      <template #cell.status="{ username, displayName, createdAt, disabledAt }">
         <AdminUsersTableCellStatus
           :username="username"
           :display-name="displayName"
-          :avatar-url="avatarUrl"
           :created-at="createdAt"
-          :last-seen-at="lastSeenAt"
           :disabled-at="disabledAt"
           @submit-impersonate="() => emit('submitImpersonate', username)"
           @submit-verify="() => emit('submitVerify', username)"

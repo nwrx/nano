@@ -1,7 +1,7 @@
 <script setup lang="ts">
 defineProps<{
   username: string
-  displayName: string
+  displayName?: string
   avatarUrl: string
   createdAt?: string
   lastSeenAt?: string
