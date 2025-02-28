@@ -8,6 +8,7 @@ describe('assertRegistryCategory', () => {
       const shouldPass = () => assertRegistryCategory({
         id: randomUUID(),
         name: 'test-category',
+        type: 'Purpose',
       })
       expect(shouldPass).not.toThrow()
     })
