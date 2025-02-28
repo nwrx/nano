@@ -1,4 +1,5 @@
 import type { Encrypted } from '../../utils'
+import type { Vault } from '../entities'
 import { assert, createArrayParser, createSchema } from '@unshared/validation'
 import { assertUser } from '../../user'
 import { assertVaultPermission } from './assertVaultPermission'
@@ -17,4 +18,4 @@ export const assertVault = createSchema({
       permission: assertVaultPermission,
     })],
   ],
-})
+}) as (value: unknown) => asserts value is Vault
