@@ -9,7 +9,7 @@ definePageMeta({
 const route = useRoute()
 const name = computed(() => route.params.project as string)
 const workspace = computed(() => route.params.workspace as string)
-const { data, getProject, setSettings, setName, remove } = useProject(workspace, name)
+const { data, getProject, update, rename, remove } = useProject(workspace, name)
 onMounted(getProject)
 </script>
 
@@ -20,14 +20,13 @@ onMounted(getProject)
       :title="data.title"
       :description="data.description"
       :workspace="workspace"
-      @submit="(options) => setSettings(options)"
+      @submit="(options) => update(options)"
     />
     <ProjectSettingsDangerZone
       :workspace="workspace"
       :project="name"
-      @submit-name="name => setName(name)"
+      @submit-name="name => rename(name)"
       @submit-delete="() => remove()"
-      @submit-transfer="username => setName(username)"
     />
   </AppPageContainer>
 </template>
