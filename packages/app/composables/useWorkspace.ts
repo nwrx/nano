@@ -40,17 +40,17 @@ export function useWorkspace(name: MaybeRef<string>, options: UseWorkspaceOption
     getAssignments,
     searchProjects,
 
-    rename: async(name: string) => {
-      await client.requestAttempt('PATCH /api/workspaces/:workspace', {
-        data: { workspace: unref(name) },
+    rename: async(newName: string) => {
+      await client.requestAttempt('PUT /api/workspaces/:workspace/name', {
+        data: { workspace: unref(name), name: newName },
         onSuccess: async() => {
           await getWorkspace()
           alerts.success(localize({
-            en: `The workspace has been renamed to "${name}"`,
-            fr: `L'espace de travail a été renommé en "${name}"`,
-            de: `Der Arbeitsbereich wurde in "${name}" umbenannt`,
-            es: `El espacio de trabajo se ha renombrado a "${name}"`,
-            zh: `工作区已重命名为 "${name}"`,
+            en: `The workspace has been renamed to "${newName}"`,
+            fr: `L'espace de travail a été renommé en "${newName}"`,
+            de: `Der Arbeitsbereich wurde in "${newName}" umbenannt`,
+            es: `El espacio de trabajo se ha renombrado a "${newName}"`,
+            zh: `工作区已重命名为 "${newName}"`,
           }))
         },
       })
