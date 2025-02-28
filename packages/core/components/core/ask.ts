@@ -31,10 +31,11 @@ export const ask = defineComponent(
     isTrusted: true,
     inputs: {
       question: {
-        type: 'string',
-        title: 'Question',
-        description: 'The question to ask the user.',
-        example: 'What is your name?',
+        'type': 'string',
+        'title': 'Question',
+        'description': 'The question to ask the user.',
+        'example': 'What is your name?',
+        'x-control': 'text',
       },
       text: {
         'type': 'string',
@@ -45,7 +46,7 @@ export const ask = defineComponent(
       },
       choices: {
         'type': 'array',
-        'title': 'If provided, the response must be one of the following choices.',
+        'title': 'Choices',
         'description': 'The choices for the response.',
         'x-optional': true,
         'items': {
