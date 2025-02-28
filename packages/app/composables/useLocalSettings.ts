@@ -4,6 +4,8 @@ export interface LocalSettings {
   workspaceOpenProjects?: Record<string, boolean>
   monitoringEventNames?: string[]
   monitoringEventTypes?: string[]
+
+  // Editor states
   editorPanelTab?: string
   editorPanelOpen?: boolean
   editorPanelWidth?: number
@@ -13,6 +15,8 @@ export interface LocalSettings {
   editorPanelNodeOutputOpen?: boolean
   editorPanelNodeMetadataOpen?: boolean
   editorNodeTextareaShowPreview?: boolean
+
+  // Chat states
   chatPanelOpen?: boolean
 }
 
