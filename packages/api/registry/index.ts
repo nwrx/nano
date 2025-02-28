@@ -8,16 +8,10 @@ export type * from './utils/assertRegistryCategory'
 export type * from './utils/assertRegistryCollection'
 export type * from './utils/assertRegistryComponent'
 
-/**
- * The `ModuleFlow` module is used to manage the workflows and modules in the
- * application. The module is used to create, import, edit, and delete workflows and
- * modules in the application.
- */
 export class ModuleRegistry extends ModuleBase {
   entities = ENTITIES
   errors = UTILS.ERRORS
   routes = ROUTES
-  initialize(): Promise<void> {
-    return UTILS.initialize.call(this)
-  }
+  initialize = UTILS.initialize.bind(this)
+  resolveComponent = UTILS.resolveComponent.bind(this)
 }
