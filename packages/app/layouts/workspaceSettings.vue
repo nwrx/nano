@@ -5,7 +5,7 @@ const { t } = useI18n()
 // --- Define the sidebar navigation.
 const NAV_ITEMS = [
   { name: 'WorkspaceSettings', icon: 'i-carbon:settings' },
-  // { name: 'WorkspaceSettingsMembers', icon: 'i-carbon:user' },
+  { name: 'WorkspaceSettingsAssignments', icon: 'i-carbon:group' },
 ]
 
 // --- Extract route name, title, and description.
@@ -61,6 +61,6 @@ useHead(() => ({
 en:
   WorkspaceSettings.title: Settings
   WorkspaceSettings.description: Manage workspace settings.
-  WorkspaceSettingsMembers.title: Members
-  WorkspaceSettingsMembers.description: Manage workspace members and their permissions.
+  WorkspaceSettingsAssignments.title: Assignments
+  WorkspaceSettingsAssignments.description: Manage user assignments.
 </i18n>
