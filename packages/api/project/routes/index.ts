@@ -1,6 +1,6 @@
+export * from './projectAssignments'
 export * from './projectCreate'
 export * from './projectGet'
-export * from './projectGetAssignments'
 export * from './projectObserve'
 export * from './projectRemove'
 export * from './projectRename'

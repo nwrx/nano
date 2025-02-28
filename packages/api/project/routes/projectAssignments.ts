@@ -6,7 +6,7 @@ import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
 import { getProject, getProjectAssignments } from '../utils'
 
-export function projectGetAssignments(this: ModuleProject) {
+export function projectAssignments(this: ModuleProject) {
   return createHttpRoute(
     {
       name: 'GET /api/workspaces/:workspace/projects/:project/assignments',
