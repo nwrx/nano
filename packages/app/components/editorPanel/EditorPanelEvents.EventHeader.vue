@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { ComponentInstanceJSON, EditorSessionServerMessage } from '@nwrx/nano-api'
+import type { EditorNodeObject, EditorSessionServerMessage } from '@nwrx/nano-api'
 
 const props = defineProps<{
   event: EditorSessionServerMessage
-  node?: ComponentInstanceJSON
+  node?: EditorNodeObject
   isOpen: boolean
 }>()
 

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { ComponentInstanceJSON, EditorSessionServerMessage } from '@nwrx/nano-api'
+import type { EditorNodeObject, EditorSessionServerMessage } from '@nwrx/nano-api'
 
 defineProps<{
   event?: EditorSessionServerMessage & { event: 'thread:nodeEnd' }
-  node?: ComponentInstanceJSON
+  node?: EditorNodeObject
 }>()
 
 const { t } = useI18n()

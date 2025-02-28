@@ -9,22 +9,9 @@ const props = defineProps<{
   step?: number
 }>()
 
-const emit = defineEmits<{
-  'update:modelValue': [value: number]
-}>()
-
 const isDragging = ref(false)
-const model = useVModel(props, 'modelValue', emit, {
-  passive: true,
-  eventName: 'update:modelValue',
-})
+const model = useVModel(props, 'modelValue')
 
-/**
- * When the slider is clicked or dragged, update the model value
- * based on the mouse position and the `min`, `max`, and `step` props.
- *
- * @param event The mouse event that triggered the change.
- */
 function handleSliderChange(event: MouseEvent) {
   if (!isDragging.value) return
   if (event.buttons !== 1) return

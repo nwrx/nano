@@ -1,68 +1,39 @@
 <script setup lang="ts">
+import type { EditorNodeObject } from '@nwrx/nano-api'
 import { vMarkdown } from '#imports'
-
-const props = defineProps<{
-  text?: string
-  kind?: string
-  title?: string
-  description?: string
-  icon?: string
-  color?: string
-  isRunning?: boolean
-  isSelected?: boolean
-  isDragging?: boolean
-}>()
-
-const emit = defineEmits<{
-  start: []
-  abort: []
-  handleGrab: [event: MouseEvent]
-  handleRelease: [event: MouseEvent]
-}>()
-
-const isRunning = computed(() => props.isRunning)
-const isRunningThrottled = refThrottled(isRunning, 200)
-
-function handleGrab(event: MouseEvent) {
-  if ((event.target as HTMLElement).closest('.cursor-auto')) return
-  if (event.button !== 0) return
-  emit('handleGrab', event)
-}
+defineProps<{ editor: Editor; node: EditorNodeObject }>()
 </script>
 
 <template>
   <div
-    :style="{ backgroundColor: `${color}!important` }"
-    :class="{ 'cursor-grabbing': isDragging, 'cursor-pointer': !isDragging }"
+    :style="{
+      backgroundColor: getNodeColor(node),
+      cursor: editor.view.nodeDragging ? 'grabbing' : 'pointer',
+    }"
     class="flex justify-start items-center h-8 pr-sm rd-t"
-    @mousedown.stop="(event) => handleGrab(event)"
-    @mouseup="(event) => emit('handleRelease', event)">
+    @mouseup="() => editor.view.onNodeHandleRelease()"
+    @mousedown.stop="(event) => editor.view.onNodeHandleGrab(event, node.id)">
 
     <!-- Tooltip -->
     <EditorTooltip class="h-8 flex items-center justify-center">
-
-      <!-- Circle/icon -->
-      <div class="w-8 h-8 flex items-center justify-center">
-        <template v-if="icon">
-          <img v-if="!icon.endsWith('.svg')" :src="icon" class="w-6 h-6 rd">
-          <BaseIcon v-else :icon="icon" class="size-4 text-white rd" load />
-        </template>
+      <div v-if="node.icon" class="size-8 flex items-center justify-center">
+        <BaseIcon :icon="node.icon" class="size-5 text-white rd" load />
       </div>
 
       <!-- Title -->
-      <p class="font-medium text-white" v-text="title" />
+      <p class="font-medium text-white" v-text="node.label ?? node.name" />
 
       <!-- Tooltip content -->
       <template #tooltip>
         <div class="w-99 divide-y divide-editor">
           <p
-            v-if="description"
-            v-markdown.html="description"
+            v-if="node.description"
+            v-markdown.html="node.description"
             class="p-md text-app max-h-80 overflow-y-auto markdown"
             @wheel.stop
           />
           <p class="px-md py-sm font-medium text-app">
-            (node): {{ kind }}
+            (node): {{ node.specifier }}
           </p>
         </div>
       </template>
@@ -71,24 +42,12 @@ function handleGrab(event: MouseEvent) {
     <!-- Spacer -->
     <div class="flex-1" />
 
-    <!-- Debug ID -->
-    <!-- <p v-if="text" class="text-sm truncate shrink text-white" v-text="text" /> -->
-
     <!-- Run button / play icon -->
-    <BaseButton
-      eager
-      @mousedown.stop
-      @click="() => isRunning ? emit('abort') : emit('start')">
+    <BaseButton eager @mousedown.stop>
       <BaseIcon
-        :icon="isRunningThrottled ? 'i-line-md:loading-loop' : 'i-carbon:circle-outline'"
+        :icon="editor.model.isRunning ? 'i-line-md:loading-loop' : 'i-carbon:circle-outline'"
         class="size-4 text-white"
       />
     </BaseButton>
   </div>
 </template>
-
-<i18n lang="yaml">
-en:
-  menu.delete: Delete
-  menu.duplicate: Duplicate
-</i18n>

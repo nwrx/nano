@@ -1,20 +1,9 @@
 <script setup lang="ts">
-defineProps<{
-  name?: string
-  isRunning?: boolean
-  isBookmarked?: boolean
-}>()
-
-const emit = defineEmits<{
-  start: []
-  abort: []
-  bookmark: []
-  download: []
-}>()
-
 const router = useRouter()
 const route = useRoute()
 const { t } = useI18n()
+
+const session = useEditor()
 </script>
 
 <template>
@@ -22,14 +11,16 @@ const { t } = useI18n()
 
     <!-- Name -->
     <h1 class="text-base line-clamp-1 ml-sm select-text">
-      {{ name }}
+      {{ session.data.name }}
     </h1>
 
     <!-- Favorite -->
-    <EditorFab
+    <!--
+      <EditorFab
       :icon="isBookmarked ? 'i-carbon:bookmark-add' : 'i-carbon:bookmark'"
       @click="() => emit('bookmark')"
-    />
+      />
+    -->
 
     <!-- Divider -->
     <div class="h-full border-r border-editor" />

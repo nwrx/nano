@@ -1,11 +1,8 @@
 <script setup lang="ts">
-import type { CategoryJSON } from '@nwrx/nano-api'
+import type { RegistryCategoryObject } from '@nwrx/nano-api'
 
-defineProps<{
-  categories?: CategoryJSON[]
-}>()
-
-const activeCategory = ref<CategoryJSON>()
+defineProps<{ categories?: RegistryCategoryObject[] }>()
+const activeCategory = ref<RegistryCategoryObject>()
 </script>
 
 <template>
@@ -15,7 +12,7 @@ const activeCategory = ref<CategoryJSON>()
     <div class="bg-editor-panel rounded border border-editor backdrop-blur-2xl max-w-16">
       <div
         v-for="category in categories"
-        :key="category.kind"
+        :key="category.name"
         :class="activeCategory === category ? 'op-100' : 'op-50'"
         class="w-16 py-3 last:pb-4 first:pt-4 flex items-center justify-center transition  cursor-pointer"
         @mouseenter="() => activeCategory = category">
@@ -40,15 +37,15 @@ const activeCategory = ref<CategoryJSON>()
       <!-- Title -->
       <div
         class="text-xs font-medium text-subtle uppercase"
-        v-text="activeCategory.name"
+        v-text="activeCategory.title"
       />
 
       <!-- Nodes -->
       <div class="flex flex-col space-y-1 mt-4">
         <EditorDrawerItem
-          v-for="node in activeCategory.components"
-          :key="node.kind"
-          v-bind="node"
+          v-for="component in activeCategory.components"
+          :key="component.name"
+          :component="component"
         />
       </div>
     </div>

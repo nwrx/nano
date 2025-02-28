@@ -45,7 +45,7 @@ function confirm() {
     <!-- Content -->
     <template #container>
       <div class="flex items-center b-b b-editor p-sm space-x-sm">
-        <EditorNodeSocketTextareaDialogButton
+        <EditorNodeInputTextareaDialogButton
           icon="i-carbon:close"
           @click="() => isOpen = false"
         />
@@ -61,7 +61,7 @@ function confirm() {
         <!-- Spacer -->
         <div class="flex-1" />
         <!-- Preview -->
-        <EditorNodeSocketTextareaDialogButton
+        <EditorNodeInputTextareaDialogButton
           icon="i-carbon:text-long-paragraph"
           :label="t('preview')"
           :is-active="settings.editorNodeTextareaShowPreview"

@@ -16,7 +16,6 @@ const props = defineProps<BaseButtonProps & {
     :class="{ 'text-white !bg-primary-500': isActive }"
     class="flex items-center justify-center size-8 rounded hover:bg-prominent transition">
 
-    <!-- Icon -->
     <slot>
       <BaseIcon
         v-if="icon"

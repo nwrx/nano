@@ -1,31 +1,28 @@
 <script setup lang="ts">
-import type { ComponentJSON } from '@nwrx/nano-api'
+import type { RegistryComponentObject } from '@nwrx/nano-api'
 import type { DropPayload } from '~/utils/types'
 
-const props = defineProps<ComponentJSON>()
+const props = defineProps<{
+  component: RegistryComponentObject
+}>()
+
+const specifier = computed(() => [
+  props.component?.collection?.workspace?.name,
+  props.component?.collection?.name,
+  props.component?.name,
+].join('/'))
 
 // --- Drag start event handler.
 function onDragStart(event: DragEvent) {
   if (!event.dataTransfer) return
   event.dataTransfer.setData('application/json', JSON.stringify(({
     type: 'createNode',
-    kind: props.kind,
+    kind: specifier.value,
   } as DropPayload)))
 }
 
 // --- Collect all colors from the data and result schema.
-const colors = computed(() => {
-  const colors = new Set<string>()
-  if (props.inputSchema) {
-    for (const socket of props.inputSchema)
-      if (socket.typeColor) colors.add(socket.typeColor)
-  }
-  if (props.outputSchema) {
-    for (const socket of props.outputSchema)
-      if (socket.typeColor) colors.add(socket.typeColor)
-  }
-  return [...colors]
-})
+const colors = computed(() => getComponentTypeColors(props.component))
 </script>
 
 <template>
@@ -41,15 +38,15 @@ const colors = computed(() => {
 
     <!-- Icon -->
     <div class="flex items-start space-x-sm">
-      <template v-if="icon">
-        <img v-if="!icon.endsWith('.svg')" :src="icon" class="size-6 rd">
-        <BaseIcon v-else :icon="icon" class="size-6" load />
+      <template v-if="component.icon">
+        <img v-if="!component.icon.endsWith('.svg')" :src="component.icon" class="size-6 rd">
+        <BaseIcon v-else :icon="component.icon" class="size-6" load />
       </template>
 
       <!-- Name & Description -->
       <div class="w-full">
         <div class="text-base font-medium flex items-center w-full space-x-sm">
-          <span class="mr-auto" v-text="name" />
+          <span class="mr-auto" v-text="component.title" />
           <BaseIcon
             v-for="color in colors"
             :key="color"

@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { type ComponentInstanceJSON } from '@nwrx/nano-api'
+import { type EditorNodeObject } from '@nwrx/nano-api'
 
 const props = defineProps<{
   id?: unknown
   name?: string
   path?: string
-  nodes?: ComponentInstanceJSON[]
+  nodes?: EditorNodeObject[]
 }>()
 
 const { t } = useI18n()

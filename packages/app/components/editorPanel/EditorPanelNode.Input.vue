@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { SocketListOption } from '@nwrx/nano'
-import type { ComponentInstanceJSON } from '@nwrx/nano-api'
+import type { EditorNodeObject } from '@nwrx/nano-api'
+import type { SchemaOption } from '@nwrx/nano/utils'
 
 const props = defineProps<{
   isOpen?: boolean
-  node?: ComponentInstanceJSON
-  nodes?: ComponentInstanceJSON[]
-  getOptions?: (search: string) => Promise<Array<SocketListOption<unknown>>>
+  node?: EditorNodeObject
+  nodes?: EditorNodeObject[]
+  getOptions?: (search: string) => Promise<Array<SchemaOption<unknown>>>
 }>()
 
 const emit = defineEmits<{
@@ -24,18 +24,18 @@ const isOpen = useVModel(props, 'isOpen', emit, { passive: true })
     :title="t('title')"
     :text="t('text')">
     <EditorPanelDataContainer>
-      <template v-if="node && node.inputSchema">
+      <template v-if="node && node.inputs">
         <EditorPanelData
-          v-for="socket in node?.inputSchema"
-          :key="socket.key"
-          :model-value="node?.input[socket.key]"
+          v-for="(socket, name) in node?.inputs"
+          :key="name"
+          :model-value="node?.input[name]"
           :socket="socket"
           :nodes="nodes"
           :node="node"
           is-clearable
           is-editable
-          @clear="() => emit('setValue', socket.key, undefined)"
-          @update:model-value="(value: unknown) => emit('setValue', socket.key, value)"
+          @clear="() => emit('setValue', name, undefined)"
+          @update:model-value="(value: unknown) => emit('setValue', name, value)"
         />
       </template>
       <EditorPanelDataText v-else>

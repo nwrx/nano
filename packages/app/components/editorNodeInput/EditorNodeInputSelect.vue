@@ -1,25 +1,28 @@
 <!-- eslint-disable vue/prop-name-casing -->
 <script setup lang="ts">
-import type { SocketListOption } from '@nwrx/nano'
+import type { EditorNodeObject } from '@nwrx/nano-api'
+import type { SchemaOption } from '@nwrx/nano/utils'
 
 const props = defineProps<{
-  name?: string
-  modelValue: unknown
-  defaultValue?: unknown
-  options?: SocketListOption[]
-  getOptions?: (query: string) => Promise<SocketListOption[]>
-}>()
-
-const emit = defineEmits<{
-  'update:modelValue': [value: string]
+  editor: Editor
+  node: EditorNodeObject
+  name: string
 }>()
 
 const { t } = useI18n()
 const isOpen = ref(false)
 const search = ref('')
-const searchOptions = ref<SocketListOption[]>([])
+const searchOptions = ref<SchemaOption[]>([])
 const input = ref<HTMLInputElement>()
-const model = useVModel(props, 'modelValue', emit, { passive: true })
+const schema = computed(() => props.node.inputs[props.name])
+const model = computed({
+  get: () => props.node.input[props.name],
+  set: (value: any) => props.editor.model.setNodesInputValue({
+    id: props.node.id,
+    name: props.name,
+    value,
+  }),
+})
 
 const options = computed(() => {
   if (searchOptions.value.length > 0) return searchOptions.value
@@ -35,7 +38,7 @@ const currentValue = computed(() => {
     .find(option => JSON.stringify(option.value) === JSON.stringify(model.value))
 })
 
-function isOptionSelected(option: SocketListOption<unknown>) {
+function isOptionSelected(option: SchemaOption<unknown>) {
   return JSON.stringify(option.value) === JSON.stringify(model.value)
 }
 
@@ -65,20 +68,20 @@ function focus() {
   void startSearch()
 }
 
-function setOption(option: SocketListOption<unknown>) {
+function setOption(option: SchemaOption<unknown>) {
   model.value = option.value
   if (input.value) input.value.blur()
 }
 </script>
 
 <template>
-  <EditorNodeSocketGroup
+  <EditorNodeInputGroup
     class="flex items-center relative cursor-pointer"
     :class="{ '!b-editor-active': isOpen }"
     @mousedown.prevent="() => focus()">
 
     <!-- Label -->
-    <EditorNodeSocketLabel :label="name" />
+    <EditorNodeInputLabel :label="name" />
 
     <!-- Current value label -->
     <p
@@ -128,7 +131,7 @@ function setOption(option: SocketListOption<unknown>) {
 
         <!-- Otherwise, show the list of options. -->
         <template v-else>
-          <EditorNodeSocketSelectItem
+          <EditorNodeInputSelectItem
             v-for="(option, index) in options"
             :key="index"
             :icon="option.icon"
@@ -140,7 +143,7 @@ function setOption(option: SocketListOption<unknown>) {
         </template>
       </div>
     </Transition>
-  </EditorNodeSocketGroup>
+  </EditorNodeInputGroup>
 </template>
 
 <i18n lang="yaml">

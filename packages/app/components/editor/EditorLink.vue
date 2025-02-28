@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { FlowLinkProps } from '~/composables/useFlowEditorView'
+import type { FlowLinkProps } from '~/composables/useEditorView'
 
-const props = defineProps<{ zoom?: number } & FlowLinkProps>()
+const props = defineProps<FlowLinkProps & { zoom?: number }>()
 const id = useId()
 
 const offset = computed(() => {

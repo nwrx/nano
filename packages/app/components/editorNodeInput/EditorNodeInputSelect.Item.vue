@@ -24,12 +24,8 @@ defineProps<{
 
     <!-- Name -->
     <div class="grow">
-      <p class="text-sm break-all line-clamp-1">
-        {{ label }}
-      </p>
-      <p class="text-xs text-subtle break-all line-clamp-2">
-        {{ description }}
-      </p>
+      <p class="text-sm break-all line-clamp-1" v-text="label" />
+      <p class="text-xs text-subtle break-all line-clamp-2" v-text="description" />
     </div>
 
     <!-- Checkmark -->

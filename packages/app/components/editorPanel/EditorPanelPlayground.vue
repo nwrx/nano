@@ -1,11 +1,11 @@
 <!-- eslint-disable sonarjs/no-nested-assignment -->
 <script setup lang="ts">
 import type { FlowSessionEventName } from '@nwrx/nano-api'
-import { type ComponentInstanceJSON, type EditorSessionServerMessage } from '@nwrx/nano-api'
+import { type EditorNodeObject, type EditorSessionServerMessage } from '@nwrx/nano-api'
 
 const props = defineProps<{
   events?: EditorSessionServerMessage[]
-  nodes?: ComponentInstanceJSON[]
+  nodes?: EditorNodeObject[]
 }>()
 
 const emit = defineEmits<{

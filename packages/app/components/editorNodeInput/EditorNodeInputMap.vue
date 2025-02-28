@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { isReferenceLink } from '#imports'
 import { ref } from 'vue'
 
 const props = defineProps<{
@@ -48,10 +47,10 @@ watch(modelEntries, (modelEntries) => {
   <div class="w-full">
 
     <!-- Label -->
-    <EditorNodeSocketGroup
+    <EditorNodeInputGroup
       class="flex items-center justify-start w-full cursor-pointer group"
       @mousedown.stop="() => isOpen = !isOpen">
-      <EditorNodeSocketLabel :label="label" />
+      <EditorNodeInputLabel :label="label" />
       <Badge
         class="badge-primary badge-sm"
         label="Object"
@@ -63,7 +62,7 @@ watch(modelEntries, (modelEntries) => {
         class="size-5 transition-transform transform op-0 group-hover:op-100"
         :class="{ 'rotate-180': isOpen }"
       />
-    </EditorNodeSocketGroup>
+    </EditorNodeInputGroup>
 
     <BaseCollapse
       vertical
@@ -81,7 +80,7 @@ watch(modelEntries, (modelEntries) => {
         @mouseleave.stop="() => emit('linkUnassign')">
 
         <!-- Pin -->
-        <EditorNodeSocketPin
+        <EditorNodeInputPin
           :id="id"
           :name="name"
           :color="color"
@@ -101,7 +100,7 @@ watch(modelEntries, (modelEntries) => {
 
         <!-- testé aussi avec JSON.parse(model)[index][key] -->
         <input
-          v-if="!isReferenceLink(entry[1])"
+          v-if="false"
           v-model="entry[1]"
           :placeholder="t('value')"
           :class="{ 'text-editor-node italic': !entry[1] }"

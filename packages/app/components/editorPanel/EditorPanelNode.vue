@@ -1,15 +1,15 @@
 <!-- eslint-disable vue/no-setup-props-reactivity-loss -->
 <script setup lang="ts">
-import type { SocketListOption } from '@nwrx/nano'
-import type { ComponentInstanceJSON } from '@nwrx/nano-api'
+import type { EditorNodeObject } from '@nwrx/nano-api'
+import type { SchemaOption } from '@nwrx/nano/utils'
 
 const props = defineProps<{
-  node?: ComponentInstanceJSON
-  nodes?: ComponentInstanceJSON[]
+  node?: EditorNodeObject
+  nodes?: EditorNodeObject[]
   isInputOpen?: boolean
   isOutputOpen?: boolean
   isMetadataOpen?: boolean
-  getOptions?: (search: string) => Promise<Array<SocketListOption<unknown>>>
+  getOptions?: (search: string) => Promise<SchemaOption[]>
 }>()
 
 const emit = defineEmits<{
@@ -29,12 +29,12 @@ const isMetadataOpen = useVModel(props, 'isMetadataOpen', emit, { passive: true 
 </script>
 
 <template>
-  <div>
+  <div v-if="node">
 
     <!-- Title & Desscription -->
     <EditorPanelHeader
-      :name="node?.label ?? node?.name"
-      :description="node?.comment"
+      :name="node.label ?? node.name"
+      :description="node.comment"
       :placeholder-name="t('label')"
       :placeholder-description="t('comment')"
       @update:name="label => emit('setLabel', label)"
@@ -43,7 +43,7 @@ const isMetadataOpen = useVModel(props, 'isMetadataOpen', emit, { passive: true 
 
     <!-- Error Hint -->
     <EditorPanelError
-      v-if="node?.error"
+      v-if="node.error"
       :message="node.error"
       :name="node.errorName"
       :context="node.errorContext"

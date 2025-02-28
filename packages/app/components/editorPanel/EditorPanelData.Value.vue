@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import type { ComponentInstanceJSON, InputJSON } from '@nwrx/nano-api'
-import { isReferenceLink } from '#imports'
+import type { EditorNodeObject, InputJSON } from '@nwrx/nano-api'
 
 const props = defineProps<{
   name?: string
-  node?: ComponentInstanceJSON
-  nodes?: ComponentInstanceJSON[]
+  node?: EditorNodeObject
+  nodes?: EditorNodeObject[]
   socket?: InputJSON
   modelValue?: unknown
   isOpen?: boolean
@@ -29,7 +28,7 @@ const defaultValue = computed(() => {
 
 <template>
   <EditorPanelDataValueLink
-    v-if="isReferenceLink(model)"
+    v-if="false"
     :id="model.$fromNode.id"
     :name="model.$fromNode.name"
     :path="model.$fromNode.path"

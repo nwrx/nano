@@ -1,11 +1,10 @@
 <!-- eslint-disable vue/no-extra-parens -->
 <script setup lang="ts">
-import type { ComponentInstanceJSON, InputJSON } from '@nwrx/nano-api'
-import { isReferenceLink } from '#imports'
+import type { EditorNodeObject, InputJSON } from '@nwrx/nano-api'
 
 const props = defineProps<{
-  node?: ComponentInstanceJSON
-  nodes?: ComponentInstanceJSON[]
+  node?: EditorNodeObject
+  nodes?: EditorNodeObject[]
   socket?: InputJSON
   modelValue?: unknown
   isEditable?: boolean
@@ -26,7 +25,6 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
   <div class="w-full">
     <!-- Reference/Link -->
     <EditorPanelDataDetail
-      v-if="isReferenceLink(model)"
       :depth="depth"
       :model-value="{
         [t('linkNode')]: model.$fromNode.id,

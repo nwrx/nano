@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { SocketListOption } from '@nwrx/nano'
+import type { SchemaOption } from '@nwrx/nano/utils'
 
 const props = defineProps<{
   name?: string
   modelValue?: unknown
-  options?: SocketListOption[]
+  options?: SchemaOption[]
   defaultValue?: unknown
 }>()
 

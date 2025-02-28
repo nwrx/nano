@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { type ComponentInstanceJSON } from '@nwrx/nano-api'
+import { type EditorNodeObject } from '@nwrx/nano-api'
 
 const props = defineProps<{
   modelValue?: unknown
-  nodes?: ComponentInstanceJSON[]
+  nodes?: EditorNodeObject[]
 }>()
 
 const emit = defineEmits<{

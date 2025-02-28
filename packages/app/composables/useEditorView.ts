@@ -1,12 +1,8 @@
 /* eslint-disable unicorn/prevent-abbreviations */
-import type { ComponentInstanceJSON, EditorParticipantJSON, LinkJSON } from '@nwrx/nano-api'
+import type { Link } from '@nwrx/nano'
+import type { EditorNodeObject, EditorParticipantJSON } from '@nwrx/nano-api'
 import type { Position } from '@vueuse/core'
-import type { CSSProperties } from 'vue'
-import { isReferenceLink } from '#imports'
-
-export interface FlowLinkSocket extends LinkJSON {
-  isOutput?: boolean
-}
+import type { CSSProperties, VNodeRef } from 'vue'
 
 export interface FlowLinkProps {
   sourceX: number
@@ -17,129 +13,21 @@ export interface FlowLinkProps {
   targetColor: string
 }
 
-export interface UseFlowEditorOptions {
+export type EditorView = ReturnType<typeof useEditorView>
 
-  /**
-   * The ID of the current user that is connected to the flow session.
-   */
-  peerId: Ref<string>
+export function useEditorView(model: EditorModel) {
+  const settings = useLocalSettings()
 
-  /**
-   * The list of users that are currently connected to the flow session.
-   *
-   * @default []
-   */
-  peers: Ref<EditorParticipantJSON[]>
-
-  /**
-   * The list of nodes instances that are currently in the flow editor.
-   *
-   * @default []
-   */
-  nodes: Ref<ComponentInstanceJSON[]>
-
-  /**
-   * The width of the sidebar panel.
-   *
-   * @default 512
-   */
-  panelWidth: Ref<number>
-
-  /**
-   * The size of the viewplane that contains the nodes and links.
-   *
-   * @default 1000
-   */
-  viewSize: number
-
-  /**
-   * The function to call when a new node is created in the flow editor.
-   *
-   * @param node The node that was created.
-   */
-  onNodeCreate?: (kind: string, x: number, y: number) => void
-
-  /**
-   * The function to call when one or multiple nodes are duplicated in the flow editor.
-   *
-   * @param nodeIds The list of node IDs that were duplicated.
-   */
-  onNodeDuplicate?: (nodeId: string, x: number, y: number) => void
-
-  /**
-   * The function to call when the node selection changes in the flow editor.
-   *
-   * @param nodes The list of selected nodes in the flow editor.
-   */
-  onNodesSelect?: (nodes: ComponentInstanceJSON[]) => void
-
-  /**
-   * The function to call when one or more nodes are moved in the flow editor.
-   *
-   * @param nodes The list of nodes that were moved and their new positions.
-   */
-  onNodesSetPosition?: (nodes: FlowNodePosition[]) => void
-
-  /**
-   * The function to call when a node is removed from the flow editor.
-   *
-   * @param id The ID of the node that was removed.
-   */
-  onNodesRemove?: (ids: string[]) => void
-
-  /**
-   * The function to call when a link is dropped on the flow editor.
-   *
-   * @param source The source socket of the link.
-   * @param target The target socket of the link.
-   */
-  onLinkCreate?: (source: LinkJSON, target: LinkJSON) => void
-
-  /**
-   * The function to call when a link is removed from the flow editor.
-   *
-   * @param link The source node of the link.
-   */
-  onLinkRemove?: (link: LinkJSON) => void
-
-  /**
-   * The function to call when the current user moves in the flow editor.
-   *
-   * @param x The x position of the user.
-   * @param y The y position of the user.
-   */
-  onUserSetPosition?: (x: number, y: number) => void
-}
-
-/**
- * The `useFlowEditor` composable provides the logic to interact with the flow editor.
- * This includes the ability to move the viewplane, zoom in and out and create new nodes.
- * The composable is used in the `FlowEditor` component to provide the logic to interact
- * with the flow editor.
- *
- * @param options The options to configure the flow editor.
- * @returns The reactive state and methods to interact with the flow editor.
- */
-export function useFlowEditorView(options: UseFlowEditorOptions) {
-  const {
-    peerId,
-    peers,
-    nodes,
-    panelWidth = ref(512),
-    viewSize = 1000,
-    onNodeCreate = () => {},
-    onNodeDuplicate = () => {},
-    onNodesSelect = () => {},
-    onNodesSetPosition = () => {},
-    onNodesRemove = () => {},
-    onLinkCreate = () => {},
-    onLinkRemove = () => {},
-    onUserSetPosition = () => {},
-  } = options
-
-  // --- View state.
+  // --- View references.
   const view = ref<HTMLDivElement>()
   const viewContainer = ref<HTMLDivElement>()
+  const viewNodes = ref<Record<string, HTMLDivElement>>({})
+  const setView: VNodeRef = (element) => { view.value = element as HTMLDivElement }
+  const setViewContainer: VNodeRef = (element) => { viewContainer.value = element as HTMLDivElement }
+  const setViewNode = (id: string, component: HTMLDivElement) => viewNodes.value[id] = component
+
+  // --- View states.
+  const viewSize = 10e4
   const viewContainerRectRefs = useElementBounding(viewContainer, { immediate: true })
   const viewContainerRect = toReactive(viewContainerRectRefs)
   const viewPosition = ref({ x: 0, y: 0 })
@@ -155,9 +43,15 @@ export function useFlowEditorView(options: UseFlowEditorOptions) {
   const cursorClient = ref({ x: 0, y: 0 })
   const cursorView = ref({ x: 0, y: 0 })
   const cursorWorld = ref({ x: 0, y: 0 })
-  const cursorPeers = computed(() => peers.value.filter(peer => peer.id !== peerId.value))
+
+  // --- Editor Peers.
+  const peers = computed(() => model.peers.filter(peer => peer.id !== model.peerId))
 
   // --- Panel state.
+  const panelWidth = computed({
+    get: () => settings.value.editorPanelWidth ?? 512,
+    set: value => settings.value.editorPanelWidth = value,
+  })
   const panelResizeOrigin = ref(0)
   const panelResizeInitial = ref(0)
   const isPanelResizing = ref(false)
@@ -168,13 +62,37 @@ export function useFlowEditorView(options: UseFlowEditorOptions) {
   })
 
   // --- Node(s) state.
-  const nodeComponents = ref<Record<string, ComponentPublicInstance>>({})
+  const nodes = computed(() => model.nodes)
   const nodeDragging = ref(false)
   const nodeDragOriginWorld = ref<Record<string, Position>>({})
   const nodeDragOriginScreen = ref({ x: 0, y: 0 })
   const nodeSelectedIds = ref(new Set<string>())
   const nodeSelected = computed(() => nodes.value.filter(node => nodeSelectedIds.value.has(node.id)))
-  watch(nodeSelected, onNodesSelect)
+  // watch(nodeSelected, () => session.sele)
+
+  // --- Initialize the drag link state.
+  const links = computed(() => model.links)
+  const linksProps = ref<FlowLinkProps[]>([])
+  const linkDragFrom = ref<Partial<Link>>()
+  const linkDragTo = ref<Partial<Link>>()
+  watch([links, nodes, viewZoom], ([links, nodes]) => setTimeout(() => {
+    linksProps.value = links.map((link) => {
+      const nodeSource = nodes.find(node => node.id === link.sourceId)
+      const nodeTarget = nodes.find(node => node.id === link.targetId)
+      if (!nodeSource || !nodeTarget) return console.error('Node not found')
+      const pinSource = getPinAttributes(link, 'source')
+      const pinTarget = getPinAttributes(link, 'target')
+      if (!pinSource || !pinTarget) return console.error('Pin not found')
+      return {
+        sourceX: pinSource.position.x,
+        sourceY: pinSource.position.y,
+        targetX: pinTarget.position.x,
+        targetY: pinTarget.position.y,
+        sourceColor: pinSource.color,
+        targetColor: pinTarget.color,
+      }
+    }).filter(Boolean) as FlowLinkProps[]
+  }, 1), { immediate: true, deep: true })
 
   // --- Handle the z-index of the nodes. Each time a node is clicked, the z-index
   // --- is increased to bring the node to the front. This is done by incrementing
@@ -183,15 +101,8 @@ export function useFlowEditorView(options: UseFlowEditorOptions) {
   const zIndexMap = reactive<Record<string, number>>({})
   watch(nodeSelectedIds, () => {
     if (zIndexCounter.value === -1) zIndexCounter.value = nodes.value.length
-    for (const id of nodeSelectedIds.value)
-      zIndexMap[id] = zIndexCounter.value++
+    for (const id of nodeSelectedIds.value) zIndexMap[id] = zIndexCounter.value++
   }, { deep: true })
-
-  // --- Initialize the drag link state.
-  const linksProps = ref<FlowLinkProps[]>([])
-  const linkDragProps = ref<FlowLinkProps>()
-  const linkDragFrom = ref<FlowLinkSocket>()
-  const linkDragTo = ref<FlowLinkSocket>()
 
   // --- Compute the position of the cursor in the world coordinates.
   function screenToWorld(position: Position) {
@@ -217,10 +128,12 @@ export function useFlowEditorView(options: UseFlowEditorOptions) {
   }
 
   // --- Get the pin element based on the link ID.
-  function getPinAttributes(link?: FlowLinkSocket) {
+  function getPinAttributes(link?: Partial<Link>, type?: 'source' | 'target') {
     if (!link) return
-    const pinType = link.isOutput ? 'out' : 'in'
-    const pinSelectorDataId = ['pin', pinType, link.id, link.name, link.path].filter(Boolean).join('-')
+    if (!link.sourceId && !link.targetId) return
+    const pinSelectorDataId = type === 'source'
+      ? ['pin', type, link.sourceId, link.sourceName, link.sourcePath].filter(Boolean).join('-')
+      : ['pin', type, link.targetId, link.targetName, link.targetPath].filter(Boolean).join('-')
     const pinSelector = `[data-id="${pinSelectorDataId}"]`
     const pinElement = document.querySelector<HTMLDivElement>(pinSelector)
     if (!pinElement) return
@@ -228,69 +141,24 @@ export function useFlowEditorView(options: UseFlowEditorOptions) {
     // --- Get the position and color of the pin.
     const { x, y, width, height } = pinElement.getBoundingClientRect()
     return {
-      color: pinElement.style.backgroundColor,
-      position: screenToView({
-        x: x + width / 2,
-        y: y + height / 2,
-      }),
+      color: pinElement.dataset.color ?? 'black',
+      position: screenToView({ x: x + width / 2, y: y + height / 2 }),
     }
   }
 
-  // --- Compute the position of the cursor in the screen coordinates.
-  function setLinkProps() {
-    setTimeout(() => {
-      const result = [] as FlowLinkProps[]
-
-      // --- Helper function to collect the link based on the value.
-      function collectLink(node: ComponentInstanceJSON, value: unknown, targetName: string, targetPath?: string) {
-        if (!isReferenceLink(value)) return
-        const { id, name, path } = value.$fromNode
-        const pinSource = getPinAttributes({ id, name, path, isOutput: true })
-        const pinTarget = getPinAttributes({ id: node.id, name: targetName, path: targetPath, isOutput: false })
-        if (!pinTarget || !pinSource) return
-        result.push({
-          sourceX: pinSource.position.x,
-          sourceY: pinSource.position.y,
-          targetX: pinTarget.position.x,
-          targetY: pinTarget.position.y,
-          sourceColor: pinSource.color,
-          targetColor: pinTarget.color,
-        })
-      }
-
-      // --- Inspect every input value of every nodes and collect the links.
-      for (const node of nodes.value) {
-        for (const key in node.input) {
-          const value = node.input[key]
-          if (value === undefined) continue
-          if (isReferenceLink(value)) {
-            collectLink(node, value, key)
-          }
-          else if (Array.isArray(value)) {
-            for (const item of value)
-              collectLink(node, item, key)
-          }
-          else if (typeof value === 'object' && value !== null) {
-            const values = Object.entries(value)
-            for (const [path, value] of values)
-              collectLink(node, value, key, path)
-          }
-        }
-      }
-
-      // --- Return the computed links.
-      linksProps.value = result
-    }, 1)
-  }
-
-  // --- Watch the links and update the link properties when the links change.
-  watch([nodes, viewZoom], setLinkProps, { immediate: true, deep: true })
-
   return toReactive({
+    setView,
+    setViewContainer,
+    setViewNode,
+
+    worldToView,
+    screenToWorld,
+    screenToView,
+
     view,
     viewContainer,
     viewPosition,
-    viewZoom,
+    zoom: viewZoom,
     viewMoving,
     viewDragOriginScreen,
     viewDragOriginWorld,
@@ -301,11 +169,12 @@ export function useFlowEditorView(options: UseFlowEditorOptions) {
 
     cursorView,
     cursorWorld,
-    cursorPeers,
+    peers,
 
+    nodes,
     nodeSelectedIds,
     nodeSelected,
-    nodeComponents,
+    viewNodes,
     nodeDragging,
     nodeDragOriginScreen,
     nodeDragOriginWorld,
@@ -314,16 +183,10 @@ export function useFlowEditorView(options: UseFlowEditorOptions) {
     linkDragFrom,
     linkDragTo,
 
-    /**
-     * The style of the editor element that contains the viewplane.
-     */
     viewContainerStyle: computed<CSSProperties>(() => ({
       cursor: viewMoving.value ? 'grabbing' : 'auto',
     })),
 
-    /**
-     * The style of the viewplane element that contains the nodes and links.
-     */
     viewStyle: computed<CSSProperties>(() => {
 
       // --- Compute the position of the viewplane based on the view position and the zoom level.
@@ -342,9 +205,6 @@ export function useFlowEditorView(options: UseFlowEditorOptions) {
       }
     }),
 
-    /**
-     * The style of the selection box that is drawn when selecting multiple nodes.
-     */
     viewSelectorStyle: computed<CSSProperties>(() => {
       if (!viewSelecting.value) return {}
       const { x, y } = viewContainerRect
@@ -360,40 +220,19 @@ export function useFlowEditorView(options: UseFlowEditorOptions) {
       }
     }),
 
-    /**
-     * Resolve the style of the node based on the position and the local z-index map.
-     *
-     * @param node The node that should be styled.
-     * @returns The style object that should be applied to the node.
-     */
-    getNodeStyle: (node: ComponentInstanceJSON): CSSProperties => {
+    getNodeStyle: (node: EditorNodeObject): CSSProperties => {
       const { x, y } = worldToView(node.position)
+      const color = getNodeColor(node)
       const isSelected = nodeSelectedIds.value.has(node.id)
+      const isRunning = node.state === 'processing'
       return {
-        position: 'absolute',
-        left: `${x}px`,
-        top: `${y}px`,
-        zIndex: zIndexMap[node.id] ?? 1,
-        transition: isSelected ? 'none' : 'transform 0.1s ease',
-      }
-    },
-
-    /**
-     * Resolve the style of a peer based on it's position and color. The peer
-     * is styled as a small circle that is positioned on the viewplane.
-     *
-     * @param peer The peer that should be styled.
-     * @returns The style object that should be applied to the peer.
-     */
-    getPeerStyle: (peer: EditorParticipantJSON): CSSProperties => {
-      const { x, y } = worldToView(peer.position)
-      return {
-        position: 'absolute',
-        left: `${x}px`,
-        top: `${y}px`,
-        pointerEvents: 'none',
-        transition: 'transform 0.1s ease',
-        zIndex: 9999,
+        'position': 'absolute',
+        'left': `${x}px`,
+        'top': `${y}px`,
+        'zIndex': zIndexMap[node.id] ?? 1,
+        'transition': isSelected ? 'none' : 'transform 0.1s ease',
+        '--un-ring-color': isRunning || isSelected ? color ?? 'transparent' : 'transparent',
+        '--un-ring-width': `${(isRunning || isSelected ? 3 : 5) / (viewZoom.value ?? 1)}px`,
       }
     },
 
@@ -401,13 +240,6 @@ export function useFlowEditorView(options: UseFlowEditorOptions) {
     /* Screen                                                                  */
     /***************************************************************************/
 
-    /**
-     * On mouse down on the editor, drag the viewplane accross the screen.
-     * This is done by setting the `cursor: grabbing` style on the editor
-     * element and updating the transform based on the mouse movement.
-     *
-     * @param event The mouse down event that contains the initial position.
-     */
     onScreenMouseDown: (event: MouseEvent) => {
       if (event.button === 0) {
         viewSelecting.value = true
@@ -426,18 +258,12 @@ export function useFlowEditorView(options: UseFlowEditorOptions) {
       if (globalThis.getSelection) globalThis.getSelection()?.removeAllRanges()
     },
 
-    /**
-     * When the mouse moves over the editor, update the cursor position and if the
-     * `isMoving` flag is set, update the viewplane position based on the mouse movement.
-     *
-     * @param event The mouse move event that contains the new position.
-     */
     onScreenMouseMove: (event: MouseEvent) => {
       cursorClient.value = { x: event.clientX, y: event.clientY }
       cursorView.value = screenToView({ x: event.clientX, y: event.clientY })
       cursorWorld.value = screenToWorld({ x: event.clientX, y: event.clientY })
-      const userPosition = screenToWorld({ x: event.clientX, y: event.clientY })
-      onUserSetPosition(userPosition.x, userPosition.y)
+      // const userPosition = screenToWorld({ x: event.clientX, y: event.clientY })
+      // model.setUserPosition(userPosition.x, userPosition.y)
 
       // --- If the viewplane is moving, update the position based on the mouse movement.
       if (viewMoving.value) {
@@ -458,11 +284,8 @@ export function useFlowEditorView(options: UseFlowEditorOptions) {
         const selectLeft = Math.min(selectFrom.x, selectTo.x)
         const selectBottom = Math.max(selectFrom.y, selectTo.y)
         const selectRight = Math.max(selectFrom.x, selectTo.x)
-        const selectedIds = Object.entries(nodeComponents.value)
-          .filter(([, component]) => {
-            if (!component) return false
-            const element = component.$el as HTMLElement | undefined
-            if (!element) return false
+        const selectedIds = Object.entries(viewNodes.value)
+          .filter(([, element]) => {
             const node = element.getBoundingClientRect()
             return (
               node.top < selectBottom
@@ -489,27 +312,8 @@ export function useFlowEditorView(options: UseFlowEditorOptions) {
         }
 
         // --- Update the position of the selected nodes.
-        onNodesSetPosition(nodeSelected.value.map(node => ({
-          id: node.id,
-          x: node.position.x,
-          y: node.position.y,
-        })))
-      }
-
-      // --- If dragging a link, update the link position based on the mouse movement.
-      else if (linkDragFrom.value) {
-        const pin = getPinAttributes(linkDragFrom.value)
-        if (!pin) return
-
-        const target = screenToView({ x: event.clientX, y: event.clientY })
-        linkDragProps.value = {
-          sourceX: pin.position.x,
-          sourceY: pin.position.y,
-          targetX: target.x,
-          targetY: target.y,
-          sourceColor: pin.color,
-          targetColor: pin.color,
-        }
+        const positions = nodeSelected.value.map(node => ({ id: node.id, x: node.position.x, y: node.position.y }))
+        model.setNodesPosition(...positions)
       }
 
       // --- If resizing the panel, update the panel width based on the mouse movement.
@@ -520,14 +324,7 @@ export function useFlowEditorView(options: UseFlowEditorOptions) {
       }
     },
 
-    /**
-     * On mouse up on the editor, stop dragging the viewplane.
-     * This is done by resetting the `cursor` style and the `isMoving` flag.
-     *
-     * When dropping a link, emit the `nodeLink` event trigger the parent
-     * component to link the two nodes together and broadcast the new link.
-     */
-    onScreenMouseUp: () => {
+    onScreenMouseUp: (event: MouseEvent) => {
       if (!view.value) return
       viewMoving.value = false
       viewSelecting.value = false
@@ -536,27 +333,20 @@ export function useFlowEditorView(options: UseFlowEditorOptions) {
 
       // --- If a drag link is active, emit a link remove event.
       if (linkDragFrom.value && !linkDragTo.value) {
-        onLinkRemove(linkDragFrom.value)
+        model.removeLink(linkDragFrom.value)
         linkDragFrom.value = undefined
-        linkDragTo.value = undefined
+        event.stopPropagation()
       }
 
       // --- If dragFrom and dragTo are set, emit the link create event.
       else if (linkDragFrom.value && linkDragTo.value) {
-        const from = linkDragFrom.value
-        const to = linkDragTo.value
+        model.createLink({ ...linkDragFrom.value, ...linkDragTo.value })
         linkDragFrom.value = undefined
         linkDragTo.value = undefined
-        if (from.isOutput) onLinkCreate(from, to)
-        else if (to.isOutput) onLinkCreate(to, from)
+        event.stopPropagation()
       }
     },
 
-    /**
-     * On mouse scroll, zoom in or out of the viewplane.
-     *
-     * @param event The mouse scroll event that contains the delta.
-     */
     onScreenWheel: (event: WheelEvent) => {
       const oldCursor = screenToView({ x: event.clientX, y: event.clientY })
       viewZoom.value = viewZoom.value - event.deltaY / 1000
@@ -575,13 +365,6 @@ export function useFlowEditorView(options: UseFlowEditorOptions) {
       viewPosition.value.y += (newCursor.y - oldCursor.y)
     },
 
-    /**
-     * When dropping an `application/json` file, emit the `createNode` event
-     * to trigger the parent component to create a new node based on the
-     * dropped JSON data.
-     *
-     * @param event The drop event that contains the JSON data.
-     */
     onScreenDrop: (event: DragEvent) => {
       if (!event.dataTransfer) return
       const json = event.dataTransfer.getData('application/json')
@@ -592,15 +375,10 @@ export function useFlowEditorView(options: UseFlowEditorOptions) {
       if (data.type === 'createNode') {
         if (!view.value) return
         const { x, y } = screenToWorld({ x: event.clientX, y: event.clientY })
-        onNodeCreate(data.kind, x, y)
+        model.createNodes({ specifier: data.kind, x, y })
       }
     },
 
-    /**
-     * When a key is pressed, handle the event accordingly.
-     *
-     * @param event The key event that contains the key code.
-     */
     onScreenKeyDown: (event: KeyboardEvent) => {
       const isInputActive
         = document.activeElement instanceof HTMLInputElement
@@ -613,9 +391,9 @@ export function useFlowEditorView(options: UseFlowEditorOptions) {
       // --- Handle the duplicate key to duplicate the selected nodes.
       if (nodeSelectedIds.value.size === 1 && event.key === 'd' && event.ctrlKey) {
         event.preventDefault()
-        const nodeId = [...nodeSelectedIds.value][0]
+        const id = [...nodeSelectedIds.value][0]
         const { x, y } = cursorWorld.value
-        onNodeDuplicate(nodeId, x, y)
+        model.cloneNodes({ id, x, y })
         return
       }
 
@@ -624,7 +402,7 @@ export function useFlowEditorView(options: UseFlowEditorOptions) {
 
         // --- Handle the delete key to remove the selected nodes.
         if (event.key === 'Delete' || event.key === 'Backspace')
-          onNodesRemove([...nodeSelectedIds.value])
+          model.removeNodes(...nodeSelectedIds.value)
 
         // --- Handle the move key to move the selected nodes.
         if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
@@ -636,14 +414,14 @@ export function useFlowEditorView(options: UseFlowEditorOptions) {
           if (event.key === 'ArrowRight') offset.x += factor
 
           // --- Update the position of the selected nodes.
-          const payload = nodeSelected.value.map(node => ({
+          const positions = nodeSelected.value.map(node => ({
             id: node.id,
             x: node.position.x + offset.x,
             y: node.position.y + offset.y,
           }))
 
           // --- Update the position of the selected nodes.
-          onNodesSetPosition(payload)
+          model.setNodesPosition(...positions)
         }
       }
     },
@@ -652,21 +430,14 @@ export function useFlowEditorView(options: UseFlowEditorOptions) {
     /* Nodes                                                                   */
     /***************************************************************************/
 
-    /**
-     * When clicking on the header of a node, select the node and start the
-     * drag operation to move the node around the viewplane.
-     *
-     * @param event The mouse event that contains the initial position.
-     * @param nodeId The ID of the node that is being dragged.
-     */
-    onNodeHandleGrab: (event: MouseEvent, nodeId: string) => {
+    onNodeHandleGrab: (event: MouseEvent, id: string) => {
       event.stopPropagation()
       nodeDragging.value = true
 
       // --- If multiple nodes are selected, only move the selected nodes.
       if (!event.ctrlKey && nodeSelectedIds.value.size === 1)
-        nodeSelectedIds.value = new Set([nodeId])
-      nodeSelectedIds.value.add(nodeId)
+        nodeSelectedIds.value = new Set([id])
+      nodeSelectedIds.value.add(id)
 
       // --- Update the drag origin to the current mouse position so the node
       // --- stays next to the cursor when dragging it around the viewplane.
@@ -674,95 +445,55 @@ export function useFlowEditorView(options: UseFlowEditorOptions) {
       nodeDragOriginWorld.value = Object.fromEntries(nodeSelected.value.map(node => [node.id, { ...node.position }]))
     },
 
-    /**
-     * When releasing the mouse button, stop dragging the node so it stays in place.
-     */
     onNodeHandleRelease: () => {
       nodeDragging.value = false
       // nodeDragOffset.value = { x: 0, y: 0 }
     },
 
-    /**
-     * When a node is clicked, select the node and update the selected node ID.
-     * If the `ctrl` or `shift` key is pressed, add the node to the selection.
-     * If the `shift` key is pressed, remove the node from the selection.
-     *
-     * @param event The mouse event that contains the key modifiers.
-     * @param nodeId The ID of the node that was clicked.
-     */
     onNodeClick: (event: MouseEvent, nodeId: string) => {
       if (event.ctrlKey && nodeSelectedIds.value.has(nodeId)) nodeSelectedIds.value.delete(nodeId)
       else if (event.ctrlKey && !nodeSelectedIds.value.has(nodeId)) nodeSelectedIds.value.add(nodeId)
       else nodeSelectedIds.value = new Set([nodeId])
     },
 
-    /**
-     * Check if the node with the given ID is selected.
-     *
-     * @param nodeId The ID of the node to check.
-     * @returns `true` if the node is selected, otherwise `false`.
-     */
-    isNodeSelected: (nodeId: string): boolean => nodeSelectedIds.value.has(nodeId),
+    isNodeSelected: (id: string): boolean => nodeSelectedIds.value.has(id),
 
     /***************************************************************************/
     /* Links                                                                   */
     /***************************************************************************/
 
-    /**
-     * When a socket is being dragged, update the `dragLinkTo` state to the socket
-     * that is being dragged to.
-     *
-     * @param link The socket that is being dragged to.
-     */
-    onLinkGrab: (link: FlowLinkSocket) => {
+    onLinkGrab: (link: Partial<Link>) => {
       linkDragFrom.value = link
     },
 
-    /**
-     * When a socket is being dragged onto another socket, update the `dragLinkTo` state
-     * to the socket that is being dragged to.
-     *
-     * @param link The socket that is being dragged to.
-     */
-    onLinkAssign: (link: FlowLinkSocket) => {
+    onLinkAssign: (link: Partial<Link>) => {
       if (!linkDragFrom.value) return
-      if (link.id === linkDragFrom.value.id) return
       linkDragTo.value = link
     },
 
-    /**
-     * When a socket is being dragged and the cursor leaves the socket, reset the
-     * `dragLinkTo` state to `undefined`.
-     */
     onLinkUnassign: () => {
+      if (!linkDragFrom.value) return
       linkDragTo.value = undefined
     },
 
-    /**
-     * Compute the link that is being dragged from one node to another.
-     * This link is computed based on the position of the mouse and the node
-     * that is being dragged from.
-     */
     linkDragProps: computed((): FlowLinkProps | undefined => {
       if (!linkDragFrom.value) return
+      const { sourceId } = linkDragFrom.value
 
       // --- Get the element of the pin that is being dragged from.
-      const { id, name, path, isOutput } = linkDragFrom.value
-      const pin = getPinAttributes({ id, name, path, isOutput })
-      if (!pin) return
-
-      // --- Compute the target color if present.
-      const pinTarget = getPinAttributes(linkDragTo.value)
-      const pinTargetcolor = pinTarget ? pinTarget.color : pin.color
+      const isOutput = Boolean(sourceId)
+      const pinFrom = getPinAttributes(linkDragFrom.value, isOutput ? 'source' : 'target')
+      const pinTo = getPinAttributes(linkDragTo.value, isOutput ? 'target' : 'source')
+      if (!pinFrom) return
 
       // --- Return the computed link properties.
       return {
-        sourceX: isOutput ? pin.position.x : cursorView.value.x,
-        sourceY: isOutput ? pin.position.y : cursorView.value.y,
-        targetX: isOutput ? cursorView.value.x : pin.position.x,
-        targetY: isOutput ? cursorView.value.y : pin.position.y,
-        sourceColor: isOutput ? pin.color : pinTargetcolor,
-        targetColor: isOutput ? pinTargetcolor : pin.color,
+        sourceX: isOutput ? pinFrom.position.x : cursorView.value.x,
+        sourceY: isOutput ? pinFrom.position.y : cursorView.value.y,
+        targetX: isOutput ? cursorView.value.x : pinFrom.position.x,
+        targetY: isOutput ? cursorView.value.y : pinFrom.position.y,
+        sourceColor: isOutput ? pinFrom.color : pinTo?.color ?? pinFrom.color,
+        targetColor: isOutput ? pinTo?.color ?? pinFrom.color : pinFrom.color,
       }
     }),
   })
