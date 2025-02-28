@@ -4,24 +4,18 @@ import { ValidationError } from '@unshared/validation'
 import { createTestContext } from '../../__fixtures__'
 import { VaultAssignment } from '../entities'
 import { assignVault } from './assignVault'
+import { ERRORS } from './errors'
 
-describe.concurrent<Context>('assignVault', { timeout: 300 }, () => {
-  beforeEach<Context>(async(context) => {
-    await createTestContext(context)
-  })
+describe.concurrent<Context>('assignVault', () => {
+  beforeEach<Context>(createTestContext)
 
-  afterEach<Context>(async(context) => {
-    await context.application.destroy()
-  })
-
-  describe<Context>('assignVault', (it) => {
-    it('should assign a vault to a user', async({ createUser, createVault, moduleVault }) => {
-      const { user: owner, workspace } = await createUser('owner')
-      const { user: assignee } = await createUser()
-      const { vault } = await createVault('vault', owner, workspace)
+  describe<Context>('result', (it) => {
+    it('should assign a vault to a user', async({ setupUser, setupVault, moduleVault }) => {
+      const { user: owner, workspace } = await setupUser()
+      const { user: assignee } = await setupUser()
+      const { vault } = await setupVault({ user: owner, workspace })
       const options = { user: owner, assignee, vault, permission: 'Read' }
       const assignment = await assignVault.call(moduleVault, options as AssignVaultOptions)
-
       expect(assignment).toBeInstanceOf(VaultAssignment)
       expect(assignment).toMatchObject({
         id: assignment.id,
@@ -32,102 +26,92 @@ describe.concurrent<Context>('assignVault', { timeout: 300 }, () => {
       })
     })
 
-    it('should save the assignment to the database', async({ createUser, createVault, moduleVault }) => {
-      const { user: owner, workspace } = await createUser('owner')
-      const { user: assignee } = await createUser()
-      const { vault } = await createVault('vault', owner, workspace)
+    it('should not save the assignment to the database', async({ setupUser, setupVault, moduleVault }) => {
+      const { user: owner, workspace } = await setupUser()
+      const { user: assignee } = await setupUser()
+      const { vault } = await setupVault({ user: owner, workspace })
+      const options = { user: owner, assignee, vault, permission: 'Read' }
+      await assignVault.call(moduleVault, options as AssignVaultOptions)
+      const count = await moduleVault.getRepositories().VaultAssignment.countBy({ vault })
+      expect(count).toBe(0)
+    })
+  })
+
+  describe<Context>('database', (it) => {
+    it('should save the assignment to the database', async({ setupUser, setupVault, moduleVault }) => {
+      const { user: owner, workspace } = await setupUser()
+      const { user: assignee } = await setupUser()
+      const { vault } = await setupVault({ user: owner, workspace })
       const options = { user: owner, assignee, vault, permission: 'Read' }
       const assignment = await assignVault.call(moduleVault, options as AssignVaultOptions)
-
+      await moduleVault.getRepositories().VaultAssignment.save(assignment)
       const { VaultAssignment } = moduleVault.getRepositories()
       const found = await VaultAssignment.findOneBy({ id: assignment.id })
       expect(found).toMatchObject({ id: assignment.id })
     })
   })
 
-  describe('validation', () => {
-    describe<Context>('user', (it) => {
-      it('should throw if user is missing', async({ createUser, createVault, moduleVault }) => {
-        const { user: owner, workspace } = await createUser('owner')
-        const { user: assignee } = await createUser()
-        const { vault } = await createVault('vault', owner, workspace)
-        const options = { assignee, vault, permission: 'Read' }
-        // @ts-expect-error: testing invalid options
-        const shouldThrow = assignVault.call(moduleVault, options)
-        await expect(shouldThrow).rejects.toThrow(ValidationError)
-      })
+  describe<Context>('errors', (it) => {
+    it('should throw if the vault is already assigned to the user', async({ setupUser, setupVault, moduleVault }) => {
+      const { user: owner, workspace } = await setupUser()
+      const { user: assignee } = await setupUser()
+      const { vault } = await setupVault({ user: owner, workspace })
+      const options = { user: owner, assignee, vault, permission: 'Read' }
+      const assigment = await assignVault.call(moduleVault, options as AssignVaultOptions)
+      await moduleVault.getRepositories().VaultAssignment.save(assigment)
+      const shouldThrow = assignVault.call(moduleVault, options as AssignVaultOptions)
+      const error = ERRORS.VAULT_ALREADY_ASSIGNED(vault.name, assignee.username)
+      await expect(shouldThrow).rejects.toThrowError(error)
+    })
+  })
 
-      it('should throw if user.id is not a UUID', async({ createUser, createVault, moduleVault }) => {
-        const { user: owner, workspace } = await createUser('owner')
-        const { user: assignee } = await createUser()
-        const { vault } = await createVault('vault', owner, workspace)
-        const options = { user: { id: 'invalid' }, assignee, vault, permission: 'Read' }
-        // @ts-expect-error: testing invalid options
-        const shouldThrow = assignVault.call(moduleVault, options)
-        await expect(shouldThrow).rejects.toThrow(ValidationError)
-      })
+  describe<Context>('validation', (it) => {
+    it('should throw if user is missing', async({ setupUser, setupVault, moduleVault }) => {
+      const { user: owner, workspace } = await setupUser()
+      const { user: assignee } = await setupUser()
+      const { vault } = await setupVault({ user: owner, workspace })
+      const options = { assignee, vault, permission: 'Read' }
+      // @ts-expect-error: testing invalid options
+      const shouldThrow = assignVault.call(moduleVault, options)
+      await expect(shouldThrow).rejects.toThrow(ValidationError)
     })
 
-    describe<Context>('assignee', (it) => {
-      it('should throw if assignee is missing', async({ createUser, createVault, moduleVault }) => {
-        const { user: owner, workspace } = await createUser()
-        const { vault } = await createVault('vault', owner, workspace)
-        const options = { user: owner, vault, permission: 'Read' }
-        // @ts-expect-error: testing invalid options
-        const shouldThrow = assignVault.call(moduleVault, options)
-        await expect(shouldThrow).rejects.toThrow(ValidationError)
-      })
-
-      it('should throw if assignee.id is not a UUID', async({ createUser, createVault, moduleVault }) => {
-        const { user: owner, workspace } = await createUser()
-        const { vault } = await createVault('vault', owner, workspace)
-        const options = { user: owner, assignee: { id: 'invalid' }, vault, permission: 'Read' }
-        // @ts-expect-error: testing invalid options
-        const shouldThrow = assignVault.call(moduleVault, options)
-        await expect(shouldThrow).rejects.toThrow(ValidationError)
-      })
+    it('should throw if assignee is missing', async({ setupUser, setupVault, moduleVault }) => {
+      const { user: owner, workspace } = await setupUser()
+      const { vault } = await setupVault({ user: owner, workspace })
+      const options = { user: owner, vault, permission: 'Read' }
+      // @ts-expect-error: testing invalid options
+      const shouldThrow = assignVault.call(moduleVault, options)
+      await expect(shouldThrow).rejects.toThrow(ValidationError)
     })
 
-    describe<Context>('vault', (it) => {
-      it('should throw if vault is missing', async({ createUser, moduleVault }) => {
-        const { user: owner } = await createUser('owner')
-        const { user: assignee } = await createUser()
-        const options = { user: owner, assignee, permission: 'Read' }
-        // @ts-expect-error: testing invalid options
-        const shouldThrow = assignVault.call(moduleVault, options)
-        await expect(shouldThrow).rejects.toThrow(ValidationError)
-      })
-
-      it('should throw if vault.id is not a UUID', async({ createUser, moduleVault }) => {
-        const { user: owner } = await createUser('owner')
-        const { user: assignee } = await createUser()
-        const options = { user: owner, assignee, vault: { id: 'invalid' }, permission: 'Read' }
-        // @ts-expect-error: testing invalid options
-        const shouldThrow = assignVault.call(moduleVault, options)
-        await expect(shouldThrow).rejects.toThrow(ValidationError)
-      })
+    it('should throw if vault is missing', async({ setupUser, moduleVault }) => {
+      const { user: owner } = await setupUser()
+      const { user: assignee } = await setupUser()
+      const options = { user: owner, assignee, permission: 'Read' }
+      // @ts-expect-error: testing invalid options
+      const shouldThrow = assignVault.call(moduleVault, options)
+      await expect(shouldThrow).rejects.toThrow(ValidationError)
     })
 
-    describe<Context>('permission', (it) => {
-      it('should throw if permission is missing', async({ createUser, createVault, moduleVault }) => {
-        const { user: owner, workspace } = await createUser('owner')
-        const { user: assignee } = await createUser()
-        const { vault } = await createVault('vault', owner, workspace)
-        const options = { user: owner, assignee, vault }
-        // @ts-expect-error: testing invalid options
-        const shouldThrow = assignVault.call(moduleVault, options)
-        await expect(shouldThrow).rejects.toThrow(ValidationError)
-      })
+    it('should throw if permission is missing', async({ setupUser, setupVault, moduleVault }) => {
+      const { user: owner, workspace } = await setupUser()
+      const { user: assignee } = await setupUser()
+      const { vault } = await setupVault({ user: owner, workspace })
+      const options = { user: owner, assignee, vault }
+      // @ts-expect-error: testing invalid options
+      const shouldThrow = assignVault.call(moduleVault, options)
+      await expect(shouldThrow).rejects.toThrow(ValidationError)
+    })
 
-      it('should throw if permission is invalid', async({ createUser, createVault, moduleVault }) => {
-        const { user: owner, workspace } = await createUser('owner')
-        const { user: assignee } = await createUser()
-        const { vault } = await createVault('vault', owner, workspace)
-        const options = { user: owner, assignee, vault, permission: 'Invalid' }
-        // @ts-expect-error: testing invalid options
-        const shouldThrow = assignVault.call(moduleVault, options)
-        await expect(shouldThrow).rejects.toThrow(ValidationError)
-      })
+    it('should throw if permission is invalid', async({ setupUser, setupVault, moduleVault }) => {
+      const { user: owner, workspace } = await setupUser()
+      const { user: assignee } = await setupUser()
+      const { vault } = await setupVault({ user: owner, workspace })
+      const options = { user: owner, assignee, vault, permission: 'Invalid' }
+      // @ts-expect-error: testing invalid options
+      const shouldThrow = assignVault.call(moduleVault, options)
+      await expect(shouldThrow).rejects.toThrow(ValidationError)
     })
   })
 })

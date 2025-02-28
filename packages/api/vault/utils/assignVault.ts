@@ -7,17 +7,9 @@ import { assertVaultPermission } from './assertVaultPermission'
 
 /** The schema for assigning a vault to a user. */
 export const ASSIGN_VAULT_OPTIONS_SCHEMA = createSchema({
-
-  /** The user responsible for assigning the vault. */
   user: assertUser,
-
-  /** The user to assign the vault to. */
   assignee: assertUser,
-
-  /** The vault to assign to the user. */
   vault: assertVault,
-
-  /** The permission to assign to the user. */
   permission: assertVaultPermission,
 })
 
@@ -33,9 +25,13 @@ export type AssignVaultOptions = Loose<ReturnType<typeof ASSIGN_VAULT_OPTIONS_SC
  * @example assignVault(options) // VaultAssignment { user, assignee, vault, permission }
  */
 export async function assignVault(this: ModuleVault, options: AssignVaultOptions) {
-  const { VaultAssignment } = this.getRepositories()
   const { user, assignee, vault, permission } = ASSIGN_VAULT_OPTIONS_SCHEMA(options)
-  const assignment = VaultAssignment.create({ createdBy: user, user: assignee, vault, permission })
-  await VaultAssignment.save(assignment)
-  return assignment
+
+  // --- Check if the user is already assigned with the permission.
+  const { VaultAssignment } = this.getRepositories()
+  const exists = await VaultAssignment.countBy({ user: assignee, vault, permission })
+  if (exists) throw this.errors.VAULT_ALREADY_ASSIGNED(vault.name, assignee.username)
+
+  // --- Create and return the vault assignment.
+  return VaultAssignment.create({ createdBy: user, user: assignee, vault, permission })
 }

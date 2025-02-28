@@ -30,6 +30,15 @@ export const ERRORS = {
     message: 'The vault name is invalid',
   }),
 
+  // Assignments
+  VAULT_ALREADY_ASSIGNED: (name: string, assignee: string) => createError({
+    name: 'E_VAULT_ALREADY_ASSIGNED',
+    statusCode: 409,
+    statusMessage: 'Conflict',
+    message: `The vault "${name}" is already assigned to the user "${assignee}"`,
+    data: { name, assignee },
+  }),
+
   // Variables
   VAULT_VARIABLE_NOT_FOUND: (name: string, vault: string) => createError({
     name: 'E_VAULT_VARIABLE_NOT_FOUND',

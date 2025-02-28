@@ -9,20 +9,10 @@ import { assertWorkspace } from '../../workspace'
 import { assertVaultType } from './assertVaultType'
 
 const CREATE_VAULT_OPTIONS_SCHEMA = createSchema({
-
-  /** The user that created the key vault. */
   user: assertUser,
-
-  /** The workspace that the key vault belongs to. */
   workspace: assertWorkspace,
-
-  /** The type of key vault. */
   type: [[assert.undefined], [assertVaultType]],
-
-  /** The name of the key vault. */
   name: [[assert.undefined], [assert.stringNotEmpty]],
-
-  /** The configuration for the key vault. */
   configuration: assert.objectStrict as (value: unknown) => asserts value is VaultConfiguration,
 })
 

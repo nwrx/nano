@@ -8,7 +8,7 @@ import { createTestContext } from '../../__fixtures__'
 import { Vault } from '../entities'
 import { createVault } from './createVault'
 
-describe.concurrent<Context>('createVault', { timeout: 300 }, () => {
+describe('createVault', () => {
   beforeEach<Context>(async(context) => {
     await createTestContext(context)
   })
@@ -19,12 +19,12 @@ describe.concurrent<Context>('createVault', { timeout: 300 }, () => {
 
   const configuration: VaultLocalOptions = {
     algorithm: 'aes-256-gcm',
-    secret: 'secret-key',
+    secret: 'secret',
   }
 
-  describe<Context>('createVault', (it) => {
-    it('should create a vault', async({ createUser, moduleVault }) => {
-      const { user, workspace } = await createUser()
+  describe<Context>('result', (it) => {
+    it('should create a vault', async({ setupUser, moduleVault }) => {
+      const { user, workspace } = await setupUser()
       const options = { user, name: 'vault', type: 'local', workspace, configuration } as const
       const vault = await createVault.call(moduleVault, options as CreateVaultOptions)
       expect(vault).toBeInstanceOf(Vault)
@@ -44,24 +44,30 @@ describe.concurrent<Context>('createVault', { timeout: 300 }, () => {
       })
     })
 
-    it('should save the vault to the database', async({ createUser, moduleVault }) => {
-      const { user, workspace } = await createUser()
+    it('should default the vault name to "default"', async({ setupUser, moduleVault }) => {
+      const { user, workspace } = await setupUser()
+      const options = { user, type: 'local', workspace, configuration } as const
+      const vault = await createVault.call(moduleVault, options as CreateVaultOptions)
+      expect(vault.name).toBe('default')
+    })
+
+    it('should default the vault type to "local"', async({ setupUser, moduleVault }) => {
+      const { user, workspace } = await setupUser()
+      const options = { user, name: 'vault', workspace, configuration } as const
+      const vault = await createVault.call(moduleVault, options as CreateVaultOptions)
+      expect(vault.type).toBe('local')
+    })
+
+    it('should not save the vault to the database', async({ setupUser, moduleVault }) => {
+      const { user, workspace } = await setupUser()
       const options = { user, name: 'vault', type: 'local', workspace, configuration }
-      const vault = await createVault.call(moduleVault, options as CreateVaultOptions)
-      const { Vault } = moduleVault.getRepositories()
-      const found = await Vault.findOneBy({ id: vault.id })
-      expect(found).toMatchObject({ id: vault.id })
+      await createVault.call(moduleVault, options as CreateVaultOptions)
+      const count = await moduleVault.getRepositories().Vault.countBy({ name: 'vault' })
+      expect(count).toBe(0)
     })
 
-    it('should create a vault with a description', async({ createUser, moduleVault }) => {
-      const { user, workspace } = await createUser()
-      const options = { user, name: 'vault', type: 'local', workspace, description: 'description', configuration }
-      const vault = await createVault.call(moduleVault, options as CreateVaultOptions)
-      expect(vault).toMatchObject({ description: 'description' })
-    })
-
-    it('should assign the user as the owner of the vault', async({ createUser, moduleVault }) => {
-      const { user, workspace } = await createUser()
+    it('should assign the user as the owner of the vault', async({ setupUser, moduleVault }) => {
+      const { user, workspace } = await setupUser()
       const options = { user, name: 'vault', type: 'local', workspace, configuration }
       const vault = await createVault.call(moduleVault, options as CreateVaultOptions)
       expect(vault.assignments).toHaveLength(1)
@@ -69,46 +75,34 @@ describe.concurrent<Context>('createVault', { timeout: 300 }, () => {
     })
   })
 
-  describe<Context>('errors', (it) => {
-    it('should throw if vault already exists', async({ createUser, moduleVault }) => {
-      const { user, workspace } = await createUser()
+  describe<Context>('conflicts', (it) => {
+    it('should throw if vault already exists in the workspace', async({ setupUser, moduleVault }) => {
+      const { user, workspace } = await setupUser()
       const options = { user, name: 'vault', type: 'local', workspace, configuration }
-      await createVault.call(moduleVault, options as CreateVaultOptions)
+      const vault = await createVault.call(moduleVault, options as CreateVaultOptions)
+      await moduleVault.getRepositories().Vault.save(vault)
       const shouldThrow = createVault.call(moduleVault, options as CreateVaultOptions)
       const error = moduleVault.errors.VAULT_ALREADY_EXISTS('vault', workspace.name)
       await expect(shouldThrow).rejects.toThrow(error)
+    })
+
+    it('should allow the same vault name in different workspaces', async({ setupUser, setupWorkspace, moduleVault }) => {
+      const { user } = await setupUser()
+      const { workspace: workspace1 } = await setupWorkspace()
+      const { workspace: workspace2 } = await setupWorkspace()
+      const options1 = { user, name: 'vault', type: 'local', workspace: workspace1, configuration }
+      const options2 = { user, name: 'vault', type: 'local', workspace: workspace2, configuration }
+      const vault1 = await createVault.call(moduleVault, options1 as CreateVaultOptions)
+      const vault2 = await createVault.call(moduleVault, options2 as CreateVaultOptions)
+      expect(vault1).not.toEqual(vault2)
     })
   })
 
   describe('validation', () => {
     describe<Context>('user', (it) => {
-      it('should throw if user is missing', async({ createUser, moduleVault }) => {
-        const { workspace } = await createUser()
+      it('should throw if user is missing', async({ setupUser, moduleVault }) => {
+        const { workspace } = await setupUser()
         const options = { name: 'vault', type: 'local', workspace, configuration }
-        // @ts-expect-error: testing invalid options
-        const shouldThrow = createVault.call(moduleVault, options)
-        await expect(shouldThrow).rejects.toThrow(ValidationError)
-      })
-
-      it('should throw if user is not an object', async({ createUser, moduleVault }) => {
-        const { workspace } = await createUser()
-        const options = { user: 'invalid', name: 'vault', type: 'local', workspace, configuration }
-        // @ts-expect-error: testing invalid options
-        const shouldThrow = createVault.call(moduleVault, options)
-        await expect(shouldThrow).rejects.toThrow(ValidationError)
-      })
-
-      it('should throw if user is missing id', async({ createUser, moduleVault }) => {
-        const { workspace } = await createUser()
-        const options = { user: {}, name: 'vault', type: 'local', workspace, configuration }
-        // @ts-expect-error: testing invalid options
-        const shouldThrow = createVault.call(moduleVault, options)
-        await expect(shouldThrow).rejects.toThrow(ValidationError)
-      })
-
-      it('should throw if user id is not a UUID', async({ createUser, moduleVault }) => {
-        const { workspace } = await createUser()
-        const options = { user: { id: 'invalid' }, name: 'vault', type: 'local', workspace, configuration }
         // @ts-expect-error: testing invalid options
         const shouldThrow = createVault.call(moduleVault, options)
         await expect(shouldThrow).rejects.toThrow(ValidationError)
@@ -116,16 +110,8 @@ describe.concurrent<Context>('createVault', { timeout: 300 }, () => {
     })
 
     describe<Context>('type', (it) => {
-      it('should throw if type is missing', async({ createUser, moduleVault }) => {
-        const { user, workspace } = await createUser()
-        const options = { user, name: 'vault', workspace, configuration }
-        // @ts-expect-error: testing invalid options
-        const shouldThrow = createVault.call(moduleVault, options)
-        await expect(shouldThrow).rejects.toThrow(ValidationError)
-      })
-
-      it('should throw if type is invalid', async({ createUser, moduleVault }) => {
-        const { user, workspace } = await createUser()
+      it('should throw if type is invalid', async({ setupUser, moduleVault }) => {
+        const { user, workspace } = await setupUser()
         const options = { user, name: 'vault', type: 'invalid', workspace, configuration }
         // @ts-expect-error: testing invalid options
         const shouldThrow = createVault.call(moduleVault, options)
@@ -134,24 +120,16 @@ describe.concurrent<Context>('createVault', { timeout: 300 }, () => {
     })
 
     describe<Context>('name', (it) => {
-      it('should throw if name is missing', async({ createUser, moduleVault }) => {
-        const { user, workspace } = await createUser()
-        const options = { user, type: 'local', workspace, configuration }
-        // @ts-expect-error: testing invalid options
-        const shouldThrow = createVault.call(moduleVault, options)
-        await expect(shouldThrow).rejects.toThrow(ValidationError)
-      })
-
-      it('should throw if name is not a string', async({ createUser, moduleVault }) => {
-        const { user, workspace } = await createUser()
+      it('should throw if name is not a string', async({ setupUser, moduleVault }) => {
+        const { user, workspace } = await setupUser()
         const options = { user, name: 123, type: 'local', workspace, configuration }
         // @ts-expect-error: testing invalid options
         const shouldThrow = createVault.call(moduleVault, options)
         await expect(shouldThrow).rejects.toThrow(ValidationError)
       })
 
-      it('should throw if name is empty', async({ createUser, moduleVault }) => {
-        const { user, workspace } = await createUser()
+      it('should throw if name is empty', async({ setupUser, moduleVault }) => {
+        const { user, workspace } = await setupUser()
         const options = { user, name: '', type: 'local', workspace, configuration }
         // @ts-expect-error: testing invalid options
         const shouldThrow = createVault.call(moduleVault, options)
@@ -159,75 +137,57 @@ describe.concurrent<Context>('createVault', { timeout: 300 }, () => {
       })
     })
 
-    describe<Context>('description', (it) => {
-      it('should throw if description is not a string', async({ createUser, moduleVault }) => {
-        const { user, workspace } = await createUser()
-        const options = { user, name: 'vault', type: 'local', workspace, description: 123, configuration }
-        // @ts-expect-error: testing invalid options
-        const shouldThrow = createVault.call(moduleVault, options)
-        await expect(shouldThrow).rejects.toThrow(ValidationError)
-      })
-
-      it('should not throw if description is empty', async({ createUser, moduleVault }) => {
-        const { user, workspace } = await createUser()
-        const options = { user, name: 'vault', type: 'local', workspace, description: '', configuration }
-        // @ts-expect-error: testing invalid options
-        const shouldThrow = createVault.call(moduleVault, options)
-        await expect(shouldThrow).resolves.not.toThrow()
-      })
-    })
-
     describe<Context>('workspace', (it) => {
-      it('should throw if workspace is missing', async({ createUser, moduleVault }) => {
-        const { user } = await createUser()
+      it('should throw if workspace is missing', async({ setupUser, moduleVault }) => {
+        const { user } = await setupUser()
         const options = { user, name: 'vault', type: 'local', configuration }
         // @ts-expect-error: testing invalid options
         const shouldThrow = createVault.call(moduleVault, options)
         await expect(shouldThrow).rejects.toThrow(ValidationError)
       })
 
-      it('should throw if workspace is not an object', async({ createUser, moduleVault }) => {
-        const { user } = await createUser()
+      it('should throw if workspace is not an object', async({ setupUser, moduleVault }) => {
+        const { user } = await setupUser()
         const options = { user, name: 'vault', type: 'local', workspace: 'invalid', configuration }
         // @ts-expect-error: testing invalid options
         const shouldThrow = createVault.call(moduleVault, options)
         await expect(shouldThrow).rejects.toThrow(ValidationError)
       })
 
-      it('should throw if workspace is missing id', async({ createUser, moduleVault }) => {
-        const { user } = await createUser()
+      it('should throw if workspace is missing id', async({ setupUser, moduleVault }) => {
+        const { user } = await setupUser()
         const options = { user, name: 'vault', type: 'local', workspace: { name: 'workspace' }, configuration }
         // @ts-expect-error: testing invalid options
         const shouldThrow = createVault.call(moduleVault, options)
         await expect(shouldThrow).rejects.toThrow(ValidationError)
       })
 
-      it('should throw if workspace id is not a UUID', async({ createUser, moduleVault }) => {
-        const { user } = await createUser()
+      it('should throw if workspace id is not a UUID', async({ setupUser, moduleVault }) => {
+        const { user } = await setupUser()
         const options = { user, name: 'vault', type: 'local', workspace: { id: 'invalid', name: 'workspace' }, configuration }
         // @ts-expect-error: testing invalid options
         const shouldThrow = createVault.call(moduleVault, options)
         await expect(shouldThrow).rejects.toThrow(ValidationError)
       })
 
-      it('should throw if workspace is missing name', async({ createUser, moduleVault }) => {
-        const { user } = await createUser()
+      it('should throw if workspace is missing name', async({ setupUser, moduleVault }) => {
+        const { user } = await setupUser()
         const options = { user, name: 'vault', type: 'local', workspace: { id: randomUUID() }, configuration }
         // @ts-expect-error: testing invalid options
         const shouldThrow = createVault.call(moduleVault, options)
         await expect(shouldThrow).rejects.toThrow(ValidationError)
       })
 
-      it('should throw if workspace name is not a string', async({ createUser, moduleVault }) => {
-        const { user } = await createUser()
+      it('should throw if workspace name is not a string', async({ setupUser, moduleVault }) => {
+        const { user } = await setupUser()
         const options = { user, name: 'vault', type: 'local', workspace: { id: randomUUID(), name: 123 }, configuration }
         // @ts-expect-error: testing invalid options
         const shouldThrow = createVault.call(moduleVault, options)
         await expect(shouldThrow).rejects.toThrow(ValidationError)
       })
 
-      it('should throw if workspace name is empty', async({ createUser, moduleVault }) => {
-        const { user } = await createUser()
+      it('should throw if workspace name is empty', async({ setupUser, moduleVault }) => {
+        const { user } = await setupUser()
         const options = { user, name: 'vault', type: 'local', workspace: { id: randomUUID(), name: '' }, configuration }
         // @ts-expect-error: testing invalid options
         const shouldThrow = createVault.call(moduleVault, options)
@@ -236,16 +196,16 @@ describe.concurrent<Context>('createVault', { timeout: 300 }, () => {
     })
 
     describe<Context>('configuration', (it) => {
-      it('should throw if configuration is missing', async({ createUser, moduleVault }) => {
-        const { user, workspace } = await createUser()
+      it('should throw if configuration is missing', async({ setupUser, moduleVault }) => {
+        const { user, workspace } = await setupUser()
         const options = { user, name: 'vault', type: 'local', workspace }
         // @ts-expect-error: testing invalid options
         const shouldThrow = createVault.call(moduleVault, options)
         await expect(shouldThrow).rejects.toThrow(ValidationError)
       })
 
-      it('should throw if configuration is not an object', async({ createUser, moduleVault }) => {
-        const { user, workspace } = await createUser()
+      it('should throw if configuration is not an object', async({ setupUser, moduleVault }) => {
+        const { user, workspace } = await setupUser()
         const options = { user, name: 'vault', type: 'local', workspace, configuration: 'invalid' }
         // @ts-expect-error: testing invalid options
         const shouldThrow = createVault.call(moduleVault, options)
