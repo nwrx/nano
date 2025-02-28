@@ -13,7 +13,7 @@ function getSpecifier(component: RegistryComponentObject) {
 
   return [
     workspace === 'nanoworks' ? undefined : workspace,
-    collection === 'nano' ? undefined : collection,
+    collection === 'core' ? undefined : collection,
     component.name,
   ].filter(Boolean).join('/')
 }
@@ -49,7 +49,7 @@ function getSpecifier(component: RegistryComponentObject) {
 
           <div class="flex gap-xs">
             <BaseIcon
-              v-for="color in getComponentSocketColors(component)"
+              v-for="color in getComponentTypeColors(component)"
               :key="color"
               :style="{ color }"
               icon="i-carbon:circle-solid"
