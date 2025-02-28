@@ -8,26 +8,12 @@ import { assertVaultPermission } from './assertVaultPermission'
 
 /** The schema for the getVault options. */
 const GET_VAULT_OPTIONS_SCHEMA = createSchema({
-
-  /** The `name` of the {@linkcode Vault} to find. */
   name: assertStringNotEmpty,
-
-  /** The `User` responsible for the request. */
   user: assertUser,
-
-  /** The `Workspace` where the vault is located. */
   workspace: assertWorkspace,
-
-  /** The permissions required to access the vault. */
   permission: assertVaultPermission,
-
-  /** Weather to include the deleted vaults in the response. */
   withDeleted: [[assertUndefined], [assertBoolean]],
-
-  /** Whether to include the vault variables in the response. */
   withVariables: [[assertUndefined], [assertBoolean]],
-
-  /** Whether to include the vault configuration in the response. */
   withConfiguration: [[assertUndefined], [assertBoolean]],
 })
 
