@@ -1,19 +1,18 @@
 import type { application, ProjectObject } from '@nwrx/nano-api'
-import type { RouteRequestData } from '@unserved/client'
+import type { RouteRequestQuery } from '@unserved/client'
 import type { WorkspaceObject } from '../../api/workspace'
 import { useAlerts, useClient } from '#imports'
 
-type UseProjectOptions = Omit<RouteRequestData<typeof application, 'GET /api/workspaces/:workspace/projects'>, 'workspace'>
-export type CreateProjectOptions = Omit<RouteRequestData<typeof application, 'POST /api/workspaces/:workspace/projects'>, 'workspace'>
+type UseWorkspaceOptions = RouteRequestQuery<typeof application, 'GET /api/workspaces/:workspace/projects'>
 
 /**
  * Fetch the project data from the API and provide methods to interact with it.
  *
- * @param workspace The name of the workspace that the project belongs to.
+ * @param name The name of the workspace that the project belongs to.
  * @param options The options to pass to the request.
  * @returns The project data and methods to interact with it.
  */
-export function useWorkspace(workspace: MaybeRef<string>, options: UseProjectOptions = {}) {
+export function useWorkspace(name: MaybeRef<string>, options: UseWorkspaceOptions = {}) {
   const client = useClient()
   const alerts = useAlerts()
   const data = ref<WorkspaceObject>({ name: '', isPublic: false })
@@ -22,13 +21,13 @@ export function useWorkspace(workspace: MaybeRef<string>, options: UseProjectOpt
   const getWorkspace = async() => {
     await client.request('GET /api/workspaces/:workspace', {
       onData: workspace => data.value = workspace,
-      data: { workspace: unref(workspace), ...options },
+      data: { workspace: unref(name), ...options },
     })
   }
 
   const searchProjects = async(query?: string) => {
     await client.request('GET /api/workspaces/:workspace/projects', {
-      data: { workspace: unref(workspace), query },
+      data: { workspace: unref(name), query },
       onData: data => projects.value = data,
     })
   }
@@ -37,22 +36,42 @@ export function useWorkspace(workspace: MaybeRef<string>, options: UseProjectOpt
     data,
     projects,
     getWorkspace,
-    searchProjects,
 
+    /***************************************************************************/
+    /* Projects                                                                */
+    /***************************************************************************/
+
+    searchProjects,
     createProject: async(title: string) => {
       await client.requestAttempt('POST /api/workspaces/:workspace/projects', {
-        data: { workspace: unref(workspace), title },
-        onSuccess: () => alerts.success('Project created successfully'),
-        onEnd: () => void searchProjects(),
+        data: { workspace: unref(name), title },
+        onSuccess: async() => {
+          await searchProjects()
+          alerts.success(localize({
+            en: `The "${title}" project has been created successfully`,
+            fr: `Le projet "${title}" a été créé avec succès`,
+            de: `Das Projekt "${title}" wurde erfolgreich erstellt`,
+            es: `El proyecto "${title}" se ha creado correctamente`,
+            zh: `"${title}" 项目已成功创建`,
+          }))
+        },
       })
     },
 
-    // deleteProject: async(project: string) =>
-    //   await client.requestAttempt('DELETE /api/workspaces/:workspace/projects/:project', {
-    //     onError: error => alerts.error(error),
-    //     onSuccess: () => alerts.success('Project deleted successfully'),
-    //     onEnd: () => { void refresh() },
-    //     data: { workspace: unref(workspace), project },
-    //   }),
+    deleteProject: async(name: string) => {
+      await client.requestAttempt('DELETE /api/workspaces/:workspace/projects/:project', {
+        onEnd: () => void searchProjects(),
+        onSuccess: async() => {
+          await searchProjects()
+          alerts.success(localize({
+            en: `The "${name}" project has been deleted successfully`,
+            fr: `Le projet "${name}" a été supprimé avec succès`,
+            de: `Das Projekt "${name}" wurde erfolgreich gelöscht`,
+            es: `El proyecto "${name}" se ha eliminado correctamente`,
+            zh: `"${name}" 项目已成功删除`,
+          }))
+        },
+      })
+    },
   }
 }
