@@ -6,7 +6,6 @@ import { toSlug } from '@unshared/string/toSlug'
 const props = defineProps<{
   modelValue: boolean
   workspace: string
-  baseUrl: string
 }>()
 
 const emit = defineEmits<{
@@ -39,7 +38,7 @@ function submit() {
 <template>
   <AppDialog
     v-model="isOpen"
-    class-container="!w-4xl"
+    class-container="max-w-3xl !w-3/4"
     @confirm="() => emit('submit', title)">
 
     <template #container>
@@ -48,7 +47,7 @@ function submit() {
         v-model="title"
         :parse="toSlug"
         :placeholder="t('placeholder')"
-        class-input="h-24 !text-4xl px-xl"
+        class-input="h-24 text-3xl sm:text-4xl px-xl"
         @keydown.enter="() => submit()"
       />
     </template>
