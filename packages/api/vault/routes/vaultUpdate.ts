@@ -27,24 +27,12 @@ export function vaultUpdate(this: ModuleVault) {
       const { name /* , configuration */ } = body
 
       // --- Get the workspace and check write permission
-      const workspace = await moduleWorkspace.getWorkspace({
-        user,
-        name: parameters.workspace,
-        permission: 'Write',
-      })
-
-      // --- Get and update the vault
-      const vault = await getVault.call(this, {
-        user,
-        name: parameters.vault,
-        workspace,
-        permission: 'Write',
-      })
+      const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Write' })
+      const vault = await getVault.call(this, { user, name: parameters.vault, workspace, permission: 'Write' })
 
       // --- Update the vault properties and save.
       if (name) vault.name = name
       await Vault.save(vault)
-      return vault.serialize()
     }),
   )
 }

@@ -14,29 +14,18 @@ export function vaultRemove(this: ModuleVault) {
         vault: assertStringNotEmpty,
       }),
     },
-    async({ event, parameters }) => this.withTransaction(async() => {
+    async({ event, parameters }): Promise<void> => {
       const moduleUser = this.getModule(ModuleUser)
       const moduleWorkspace = this.getModule(ModuleWorkspace)
       const { user } = await moduleUser.authenticate(event)
 
-      // --- Get the workspace
-      const workspace = await moduleWorkspace.getWorkspace({
-        user,
-        name: parameters.workspace,
-        permission: 'Read',
-      })
+      // --- Get the workspace/vault and check read permission.
+      const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Read' })
+      const vault = await getVault.call(this, { user, name: parameters.vault, workspace, permission: 'Read' })
 
-      // --- Get the vault and remove user's access
-      const vault = await getVault.call(this, {
-        user,
-        name: parameters.vault,
-        workspace,
-        permission: 'Read',
-      })
-
-      // --- Remove the assignment
+      // --- Soft remove the vault.
       const { Vault } = this.getRepositories()
       await Vault.softRemove(vault)
-    }),
+    },
   )
 }

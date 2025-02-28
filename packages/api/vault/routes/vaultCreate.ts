@@ -20,31 +20,22 @@ export function vaultCreate(this: ModuleVault) {
         configuration: assertObjectStrict as (value: unknown) => VaultConfiguration,
       }),
     },
-    async({ event, body, parameters }) => {
+    async({ event, body, parameters }): Promise<void> => {
       const moduleUser = this.getModule(ModuleUser)
       const moduleWorkspace = this.getModule(ModuleWorkspace)
       const { user } = await moduleUser.authenticate(event)
       const { name, type, configuration } = body
 
-      // --- Get the workspace with write permission.
-      const workspace = await moduleWorkspace.getWorkspace({
-        user,
-        name: parameters.workspace,
-        permission: 'Write',
-      })
+      // --- Create a new entry in the workspace.
+      const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Owner' })
+      const vault = await createVault.call(this, { user, name, type, workspace, configuration })
 
-      // --- Create the vault entity.
-      const vault = await createVault.call(this, {
-        user,
-        name,
-        type,
-        workspace,
-        configuration,
-      })
+      // --- Save the vault to the database.
+      const { Vault } = this.getRepositories()
+      await Vault.save(vault)
 
       // --- Return the serialized vault.
       setResponseStatus(event, 201)
-      return vault.serialize()
     },
   )
 }

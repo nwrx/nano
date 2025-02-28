@@ -1,4 +1,5 @@
 import type { ModuleVault } from '..'
+import type { VaultObject } from '../entities'
 import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, createSchema } from '@unshared/validation'
 import { ModuleUser } from '../../user'
@@ -14,25 +15,14 @@ export function vaultGet(this: ModuleVault) {
         vault: assertStringNotEmpty,
       }),
     },
-    async({ event, parameters }) => {
+    async({ event, parameters }): Promise<VaultObject> => {
       const moduleUser = this.getModule(ModuleUser)
       const moduleWorkspace = this.getModule(ModuleWorkspace)
       const { user } = await moduleUser.authenticate(event)
 
       // --- Get the workspace and check read permission
-      const workspace = await moduleWorkspace.getWorkspace({
-        user,
-        name: parameters.workspace,
-        permission: 'Read',
-      })
-
-      // --- Get the vault entity
-      const vault = await getVault.call(this, {
-        user,
-        name: parameters.vault,
-        workspace,
-        permission: 'Read',
-      })
+      const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Read' })
+      const vault = await getVault.call(this, { user, name: parameters.vault, workspace, permission: 'Read' })
 
       // --- Return the serialized vault.
       return vault.serialize()
