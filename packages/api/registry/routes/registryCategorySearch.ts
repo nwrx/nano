@@ -16,10 +16,11 @@ export function registryCategorySearch(this: ModuleRegistry) {
         page: [[assert.undefined], [assert.stringNotEmpty, Number.parseInt]],
         limit: [[assert.undefined], [assert.stringNotEmpty, Number.parseInt]],
         order: [[assert.undefined], [assert.objectStrict as (value: unknown) => asserts value is FindOptionsOrder<RegistryComponent>]],
+        withWorkspace: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],
+        withCollection: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],
         withComponents: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],
         withInputs: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],
         withOutputs: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],
-        withWorkspace: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],
       }),
     },
     async({ query }): Promise<RegistryCategoryObject[]> => {
@@ -32,6 +33,7 @@ export function registryCategorySearch(this: ModuleRegistry) {
         limit: query.limit,
         order: query.order,
         withComponents: query.withComponents,
+        withCollection: query.withCollection,
         withWorkspace: query.withWorkspace,
       })
 
@@ -41,6 +43,7 @@ export function registryCategorySearch(this: ModuleRegistry) {
         withInputs: query.withInputs,
         withOutputs: query.withOutputs,
         withWorkspace: query.withWorkspace,
+        withCollection: query.withCollection,
       }))
     },
   )
