@@ -13,11 +13,16 @@ export function userSearch(this: ModuleUser) {
         page: [[assertUndefined], [assertStringNumber, Number.parseInt, assertNumberPositiveStrict]],
         limit: [[assertUndefined], [assertStringNumber, Number.parseInt, assertNumberPositiveStrict]],
         withProfile: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
+        withProtected: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
       }),
     },
 
-    async({ query }): Promise<UserObject[]> => {
-      const { search, page = 1, limit = 10, withProfile } = query
+    async({ event, query }): Promise<UserObject[]> => {
+      const { user } = await this.authenticate(event)
+      const { search, page = 1, limit = 10, withProfile, withProtected } = query
+
+      // --- Only super administrators can search for users.
+      if (!user.isSuperAdministrator) throw this.errors.USER_FORBIDDEN()
 
       // --- Get the users.
       const { User } = this.getRepositories()
@@ -36,7 +41,9 @@ export function userSearch(this: ModuleUser) {
       })
 
       // --- Return the users.
-      return users.map(user => user.serialize())
+      return users.map(user => user.serialize({
+        withProtected,
+      }))
     },
   )
 }
