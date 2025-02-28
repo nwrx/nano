@@ -6,7 +6,7 @@ import { createTestContext } from '../../__fixtures__'
 import { WORKSPACE_PERMISSIONS } from './assertWorkspacePermission'
 import { assignWorkspace } from './assignWorkspace'
 
-describe.concurrent<Context>('assignWorkspace', { timeout: 300 }, () => {
+describe.concurrent<Context>('assignWorkspace', () => {
   beforeEach<Context>(createTestContext)
 
   describe<Context>('assign', (it) => {

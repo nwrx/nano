@@ -23,7 +23,7 @@ async function createResult(context: Context, options: TestMatrixOptions) {
   return await getWorkspace.call(context.moduleWorkspace, { user, name: workspace.name, permission })
 }
 
-describe('getWorkspace', { timeout: 300 }, () => {
+describe('getWorkspace', () => {
   beforeEach<Context>(createTestContext)
 
   const WORKSPACE_READ_PERMISSIONS = ['Read', 'Owner'] as WorkspacePermission[]
