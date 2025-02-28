@@ -1,35 +1,18 @@
 <script setup lang="ts">
-import type { SocketListOption } from '@nwrx/nano'
+import type { SchemaOption } from '@nwrx/nano/utils'
 
 const props = defineProps<{
   modelValue?: unknown
-  options?: SocketListOption[]
+  options?: SchemaOption[]
 }>()
 
-const emit = defineEmits<{
-  'update:modelValue': [value: string]
-}>()
-
-const model = useVModel(props, 'modelValue', emit, {
-  passive: true,
-})
+const model = useVModel(props, 'modelValue')
 </script>
 
 <template>
-  <!-- Generate a two state inline radio selector -->
-  <div
-    class="flex items-center grow  bg-red"
-    :class="{ 'cursor-pointer': emit }">
-
-    <!-- Radio / Iterate over options -->
-    <div
-      v-for="(option, index) in options"
-      :key="index"
-      class="flex items-center space-x-xs grow">
-
-      <!-- Label -->
+  <div class="flex items-center grow  bg-red" :class="{ 'cursor-pointer': model }">
+    <div v-for="(option, index) in options" :key="index" class="flex items-center space-x-xs grow">
       <p v-text="option.label" />
     </div>
-
   </div>
 </template>

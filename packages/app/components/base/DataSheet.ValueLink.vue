@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { type ComponentInstanceJSON } from '@nwrx/nano-api'
+import type { EditorNodeObject } from '@nwrx/nano-api'
 
 const props = defineProps<{
   id?: unknown
   name?: string
   path?: string
-  nodes?: ComponentInstanceJSON[]
+  nodes?: EditorNodeObject[]
 }>()
 
 const { t } = useI18n()
@@ -27,20 +27,22 @@ const label = computed(() => `${node.value?.label ?? node.value?.name} (${socket
       />
     </template>
     <template v-else>
-      <span class="text-subtle italic">{{ t('noLink') }}</span>
+      <span class="text-subtle italic">
+        {{ t('placeholder') }}
+      </span>
     </template>
   </div>
 </template>
 
 <i18n lang="yaml">
 en:
-  noLink: No input link
+  placeholder: No input link
 fr:
-  noLink: Pas de lien d'entrée
+  placeholder: Pas de lien d'entrée
 de:
-  noLink: Kein Eingangslink
+  placeholder: Kein Eingangslink
 es:
-  noLink: Sin enlace de entrada
+  placeholder: Sin enlace de entrada
 zh:
-  noLink: 没有输入链接
+  placeholder: 没有输入链接
 </i18n>

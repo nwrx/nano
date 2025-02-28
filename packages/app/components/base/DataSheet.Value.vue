@@ -9,12 +9,8 @@ const props = defineProps<{
   isClearable?: boolean
 }>()
 
-const emit = defineEmits<{
-  'update:modelValue': [value: string]
-}>()
-
 const { t } = useI18n()
-const model = useVModel(props, 'modelValue', emit, { passive: true })
+const model = useVModel(props, 'modelValue')
 </script>
 
 <template>
@@ -41,7 +37,7 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
     v-model="model"
     class="px-sm line-clamp-1 font-mono bg-transparent outline-none transition grow"
     :class="{ 'opacity-50': isOpen, 'cursor-default italic': !model && !placeholder }"
-    :placeholder="placeholder ?? t('noDefault')">
+    :placeholder="placeholder ?? t('placeholder')">
 
   <!-- Text -->
   <span
@@ -55,17 +51,17 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
 <i18n lang="yaml">
 en:
   object: Object
-  noDefault: No default value
+  placeholder: No default value
 fr:
   object: Objet
-  noDefault: Aucune valeur par défaut
+  placeholder: Aucune valeur par défaut
 de:
   object: Objekt
-  noDefault: Kein Standardwert
+  placeholder: Kein Standardwert
 es:
   object: Objeto
-  noDefault: Sin valor predeterminado
+  placeholder: Sin valor predeterminado
 zh:
   object: 对象
-  noDefault: 没有默认值
+  placeholder: 没有默认值
 </i18n>

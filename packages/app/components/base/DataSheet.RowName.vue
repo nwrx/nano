@@ -5,13 +5,7 @@ const props = defineProps<{
   depth?: number
 }>()
 
-const emit = defineEmits<{
-  'update:modelValue': [value: string]
-}>()
-
-const model = useVModel(props, 'modelValue', emit, {
-  passive: true,
-})
+const model = useVModel(props, 'modelValue')
 </script>
 
 <template>
