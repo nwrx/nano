@@ -1,6 +1,6 @@
 import type { CipherGCMTypes } from 'node:crypto'
 import type { ModuleVault, VaultVariable } from '..'
-import type { Encrypted } from '../utils'
+import type { Encrypted } from '../../utils'
 import type { VaultAdapter } from './createVaultAdapter'
 import { decrypt, encrypt } from '../../utils'
 import { createVaultAdapter } from './createVaultAdapter'

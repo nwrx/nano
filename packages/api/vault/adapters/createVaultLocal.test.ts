@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import type { Encrypted } from '../../utils'
 import type { VaultVariable } from '../entities'
-import type { Encrypted } from '../utils'
 import type { VaultLocalOptions } from './createVaultLocal'
 import { ModuleVault } from '../index'
 import { createVaultLocal } from './createVaultLocal'
