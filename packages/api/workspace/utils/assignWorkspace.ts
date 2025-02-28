@@ -8,14 +8,8 @@ import { assertWorkspacePermission } from './assertWorkspacePermission'
 
 /** The parsed options to assign the user to the workspace with. */
 export const ASSIGN_USER_TO_WORKSPACE_OPTIONS = createSchema({
-
-  /** The `User` instance of the user responsible for the request. */
   user: assertUser,
-
-  /** The `name` of the `Workspace` to assign the user to. */
   workspace: assertWorkspace,
-
-  /** The permission to assign to the user. */
   permission: assertWorkspacePermission,
 })
 
