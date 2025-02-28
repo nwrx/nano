@@ -7,13 +7,6 @@ export type SetProfileOptions = Omit<RouteRequestData<typeof application, 'PUT /
 export type SetAvatarOptions = Omit<RouteRequestData<typeof application, 'PUT /api/users/:username/avatar'>, 'username'>
 export type SetPasswordOptions = Omit<RouteRequestData<typeof application, 'PUT /api/users/:username/password'>, 'username'>
 
-/**
- * Fetch the current user data from the API and provide methods to interact with it.
- *
- * @param username The username of the user to fetch.
- * @param options The options to pass to the request.
- * @returns The user data and methods to interact with it.
- */
 export function useUser(username: MaybeRef<string | undefined>, options: UseUsersOptions = {}) {
   const client = useClient()
   const alerts = useAlerts()
@@ -39,7 +32,13 @@ export function useUser(username: MaybeRef<string | undefined>, options: UseUser
         },
         onSuccess: async() => {
           await getUser()
-          alerts.success('Profile updated successfully.')
+          alerts.success(localize({
+            en: 'Profile updated successfully.',
+            fr: 'Profil mis à jour avec succès.',
+            de: 'Profil erfolgreich aktualisiert.',
+            es: 'Perfil actualizado con éxito.',
+            zh: '个人资料更新成功。',
+          }))
         },
       })
     },
@@ -52,7 +51,13 @@ export function useUser(username: MaybeRef<string | undefined>, options: UseUser
         },
         onSuccess: async() => {
           await getUser()
-          alerts.success('Username updated successfully.')
+          alerts.success(localize({
+            en: 'Username updated successfully.',
+            fr: 'Nom d\'utilisateur mis à jour avec succès.',
+            de: 'Benutzername erfolgreich aktualisiert.',
+            es: 'Nombre de usuario actualizado con éxito.',
+            zh: '用户名更新成功。',
+          }))
         },
       })
     },
@@ -65,7 +70,13 @@ export function useUser(username: MaybeRef<string | undefined>, options: UseUser
         },
         onSuccess: async() => {
           await getUser()
-          alerts.success('Avatar updated successfully.')
+          alerts.success(localize({
+            en: 'Avatar uploaded successfully.',
+            fr: 'Avatar téléchargé avec succès.',
+            de: 'Avatar erfolgreich hochgeladen.',
+            es: 'Avatar subido con éxito.',
+            zh: '头像上传成功。',
+          }))
         },
       })
     },
@@ -78,7 +89,13 @@ export function useUser(username: MaybeRef<string | undefined>, options: UseUser
         },
         onSuccess: async() => {
           await getUser()
-          alerts.success('Password updated successfully.')
+          alerts.success(localize({
+            en: 'Password updated successfully.',
+            fr: 'Mot de passe mis à jour avec succès.',
+            de: 'Passwort erfolgreich aktualisiert.',
+            es: 'Contraseña actualizada con éxito.',
+            zh: '密码更新成功。',
+          }))
         },
       })
     },
