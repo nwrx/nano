@@ -3,6 +3,8 @@ import type { TestContext } from 'vitest'
 import type { FlowPermission } from '../flow'
 import type { Project, ProjectPermission } from '../project'
 import type { User } from '../user'
+import type { VaultPermission } from '../vault'
+import type { VaultConfiguration } from '../vault/utils'
 import type { Workspace, WorkspacePermission } from '../workspace'
 import { ModuleRunner } from '@nwrx/nano-runner'
 import { createTestApplication, createTestEvent } from '@unserved/server'
@@ -17,6 +19,7 @@ import { ModuleThreadRunner } from '../threadRunner'
 import { ModuleUser } from '../user'
 import { createSession, registerUser } from '../user/utils'
 import { ModuleVault } from '../vault'
+import { createVault } from '../vault/utils'
 import { ModuleWorkspace } from '../workspace'
 
 export const FIXTURE_USER = {
@@ -39,6 +42,14 @@ export interface SetupProjectOptions {
   isPublic?: boolean
   workspace?: Workspace
   assignments?: Array<[undefined | User, ...Array<ProjectPermission | undefined>]>
+}
+
+export interface SetupVaultOptions {
+  user?: User
+  name?: string
+  workspace?: Workspace
+  configuration?: VaultConfiguration
+  assignments?: Array<[undefined | User, ...Array<undefined | VaultPermission>]>
 }
 
 export interface SetupFlowOptions {
@@ -196,6 +207,36 @@ export async function createTestContext(testContext: TestContext) {
       // --- Save the project and assignments.
       await Project.save(project)
       return { project }
+    },
+
+    setupVault: async(options: SetupVaultOptions = {}) => {
+      const moduleVault = application.getModule(ModuleVault)
+
+      // --- Create the vault with the given options.
+      const { Vault, VaultAssignment } = moduleVault.getRepositories()
+      const vault = await createVault.call(moduleVault, {
+        user: options.user! ?? await context.setupUser().then(x => x.user),
+        workspace: options.workspace! ?? await context.setupWorkspace().then(x => x.workspace),
+        configuration: options.configuration ?? { algorithm: 'aes-256-gcm', secret: 'SECRET' },
+        name: options.name ?? randomBytes(8).toString('hex'),
+      })
+
+      // --- Assign the user to the vault with the given permissions.
+      if (options.assignments) {
+        for (const assignment of options.assignments) {
+          const [user, ...permissions] = assignment
+          if (!user) continue
+          const permissionsUnique = [...new Set(permissions)].filter(Boolean)
+          for (const permission of permissionsUnique) {
+            const assignment = VaultAssignment.create({ vault, user, permission })
+            vault.assignments!.push(assignment)
+          }
+        }
+      }
+
+      // --- Save the vault and assignments.
+      await Vault.save(vault)
+      return { vault }
     },
 
     setupFlow: async(options: SetupFlowOptions = {}) => {
