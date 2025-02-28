@@ -66,7 +66,7 @@ export function useProject(workspace: MaybeRef<string>, project: MaybeRef<string
     getProject,
     getAssignments,
 
-    setName: async(name: string) => {
+    rename: async(name: string) => {
       await client.requestAttempt('PUT /api/workspaces/:workspace/projects/:project/name', {
         data: {
           workspace: unref(workspace),
@@ -75,21 +75,33 @@ export function useProject(workspace: MaybeRef<string>, project: MaybeRef<string
         },
         onSuccess: async() => {
           await router.replace({ name: 'ProjectSettings', params: { workspace: unref(workspace), project: name } })
-          alerts.success('Project renamed successfully')
+          alerts.success(localize({
+            en: 'Project renamed successfully',
+            fr: 'Projet renommé avec succès',
+            de: 'Projekt erfolgreich umbenannt',
+            es: 'Proyecto renombrado con éxito',
+            zh: '项目重命名成功',
+          }))
         },
       })
     },
 
-    setSettings: async(data: SetSettingsOptions) => {
+    update: async(data: SetSettingsOptions) => {
       await client.requestAttempt('PUT /api/workspaces/:workspace/projects/:project', {
         data: {
           workspace: unref(workspace),
           project: unref(project),
           ...data,
         },
-        onSuccess: () => {
-          alerts.success('Project updated successfully')
-          void getProject()
+        onSuccess: async() => {
+          await getProject()
+          alerts.success(localize({
+            en: 'Project settings updated successfully',
+            fr: 'Paramètres du projet mis à jour avec succès',
+            de: 'Projekteinstellungen erfolgreich aktualisiert',
+            es: 'Configuración del proyecto actualizada correctamente',
+            zh: '项目设置已成功更新',
+          }))
         },
       })
     },
@@ -102,23 +114,35 @@ export function useProject(workspace: MaybeRef<string>, project: MaybeRef<string
           username,
           permissions,
         },
-        onSuccess: () => {
-          alerts.success('User assigned successfully')
-          void getProject()
+        onSuccess: async() => {
+          await getProject()
+          alerts.success(localize({
+            en: 'User permissions updated successfully',
+            fr: 'Permissions de l\'utilisateur mises à jour avec succès',
+            de: 'Benutzerberechtigungen erfolgreich aktualisiert',
+            es: 'Permisos de usuario actualizados correctamente',
+            zh: '用户权限已成功更新',
+          }))
         },
       })
     },
 
     remove: async() => {
       await client.requestAttempt('DELETE /api/workspaces/:workspace/projects/:project', {
-        onSuccess: async() => {
-          alerts.success('Project deleted successfully')
-          if (router.currentRoute.value.name === 'ProjectSettings')
-            await router.replace({ name: 'Workspace', params: { name: unref(workspace) } })
-        },
         data: {
           workspace: unref(workspace),
           project: unref(project),
+        },
+        onSuccess: async() => {
+          if (router.currentRoute.value.name === 'ProjectSettings')
+            await router.replace({ name: 'Workspace', params: { name: unref(workspace) } })
+          alerts.success(localize({
+            en: 'Project deleted successfully',
+            fr: 'Projet supprimé avec succès',
+            de: 'Projekt erfolgreich gelöscht',
+            es: 'Proyecto eliminado con éxito',
+            zh: '项目已成功删除',
+          }))
         },
       })
     },
@@ -134,7 +158,13 @@ export function useProject(workspace: MaybeRef<string>, project: MaybeRef<string
           project: unref(project),
         },
         onSuccess: () => {
-          alerts.success('Flow created successfully')
+          alerts.success(localize({
+            en: 'Flow created successfully',
+            fr: 'Flux créé avec succès',
+            de: 'Flow erfolgreich erstellt',
+            es: 'Flujo creado con éxito',
+            zh: '流程创建成功',
+          }))
         },
       })
     },
@@ -147,7 +177,13 @@ export function useProject(workspace: MaybeRef<string>, project: MaybeRef<string
           flow,
         },
         onSuccess: () => {
-          alerts.success('Flow deleted successfully')
+          alerts.success(localize({
+            en: 'Flow deleted successfully',
+            fr: 'Flux supprimé avec succès',
+            de: 'Flow erfolgreich gelöscht',
+            es: 'Flujo eliminado con éxito',
+            zh: '流程已成功删除',
+          }))
         },
       })
     },
