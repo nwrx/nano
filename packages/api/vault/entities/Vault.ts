@@ -19,7 +19,7 @@ export class Vault<T extends VaultType = VaultType> extends BaseEntity {
    *
    * @example 'aws-secrets-manager-production-eu-west-1'
    */
-  @Column('varchar', { length: 255 })
+  @Column('varchar')
   name: string
 
   /**
@@ -28,14 +28,14 @@ export class Vault<T extends VaultType = VaultType> extends BaseEntity {
    *
    * @example 'Production secrets manager for the EU West 1 region.'
    */
-  @Column('text', { default: '' })
+  @Column('text')
   description = ''
 
   /**
    * The type of vault used to store the variables. The type of vault
    * determines how the variables are stored and accessed.
    */
-  @Column('varchar', { length: 255 })
+  @Column('varchar')
   type: T
 
   /**
@@ -52,7 +52,7 @@ export class Vault<T extends VaultType = VaultType> extends BaseEntity {
    * @example Workspace { ... }
    */
   @JoinColumn()
-  @ManyToOne(() => Workspace, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => Workspace, { nullable: false })
   workspace?: Workspace
 
   /**
@@ -61,7 +61,7 @@ export class Vault<T extends VaultType = VaultType> extends BaseEntity {
    * @example User { ... }
    */
   @JoinColumn()
-  @ManyToOne(() => User, { nullable: false, onDelete: 'RESTRICT' })
+  @ManyToOne(() => User, { nullable: false })
   createdBy?: User
 
   /**

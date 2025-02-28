@@ -15,7 +15,7 @@ export class VaultAssignment extends BaseEntity {
    * @example Vault { name: 'my-vault', ... }
    */
   @JoinColumn()
-  @ManyToOne(() => Vault, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => Vault, { nullable: false })
   vault: Vault
 
   /**
@@ -25,7 +25,7 @@ export class VaultAssignment extends BaseEntity {
    * @example User { name: 'my-user', ... }
    */
   @JoinColumn()
-  @ManyToOne(() => User, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => User, { nullable: false })
   user: User
 
   /**
@@ -33,7 +33,7 @@ export class VaultAssignment extends BaseEntity {
    * used to track who made the assignment.
    */
   @JoinColumn()
-  @ManyToOne(() => User, { nullable: false, onDelete: 'RESTRICT' })
+  @ManyToOne(() => User, { nullable: false })
   createdBy: User
 
   /**
