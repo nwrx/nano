@@ -3,7 +3,7 @@
 import type { Context } from '../../__fixtures__'
 import { createTestContext } from '../../__fixtures__'
 
-describe<Context>('GET /api/runners', { timeout: 300 }, () => {
+describe<Context>('GET /api/runners', () => {
   beforeEach<Context>(async(context) => {
     await createTestContext(context)
     await context.application.createTestServer()

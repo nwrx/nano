@@ -1,7 +1,7 @@
 import type { Context } from '../../__fixtures__'
 import { createTestContext } from '../../__fixtures__'
 
-describe.sequential<Context>('DELETE /api/runners/:identity', { timeout: 300 }, () => {
+describe.sequential<Context>('DELETE /api/runners/:identity', () => {
   beforeEach<Context>(async(context) => {
     await createTestContext(context)
     await context.application.createTestServer()
