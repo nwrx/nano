@@ -1,70 +1,33 @@
 <script setup lang="ts">
-import { useClient } from '#imports'
-
 definePageMeta({
   name: 'ProjectSettings',
   path: '/:workspace/:project/settings',
   middleware: 'redirect-when-guest',
+  layout: 'project-settings',
 })
 
-// --- Extract route parameters.
 const route = useRoute()
-const client = useClient()
-const alerts = useAlerts()
 const name = computed(() => route.params.project as string)
 const workspace = computed(() => route.params.workspace as string)
-
-// --- Remote data.
-const project = useProject(workspace, name, {
-  withSecrets: true,
-  withVariables: true,
-  withAssignments: true,
-})
-
-// --- Set the page title and description.
-useHead(() => ({
-  title: project.data.title,
-  description: project.data.description,
-}))
-
-async function searchUsers(search: string) {
-  return await client.request('GET /api/users', {
-    data: { search, limit: 5, withProfile: true },
-    onError: error => alerts.error(error),
-  })
-}
-
-onMounted(project.getProject)
+const { data, getProject, setSettings, setName, remove } = useProject(workspace, name)
+onMounted(getProject)
 </script>
 
 <template>
-  <ProjectSettings :workspace="workspace" :project="name">
+  <AppPageContainer contained>
     <ProjectSettingsGeneral
       :project="name"
-      :title="project.data.title"
-      :description="project.data.description"
+      :title="data.title"
+      :description="data.description"
       :workspace="workspace"
-      @submit="({ title, description }) => project.setSettings({ title, description })"
+      @submit="(options) => setSettings(options)"
     />
-    <!--
-      <ProjectSettingsAssigments
-      v-if="project.data.assignments"
-      :workspace="workspace"
-      :project="name"
-      :title="project.data.title"
-      :assigments="project.data.assignments"
-      :search-users="searchUsers"
-      @submit="(username, permissions) => project.setUserAssignments(username, permissions)"
-      />
-    -->
     <ProjectSettingsDangerZone
-      :search-users="searchUsers"
       :workspace="workspace"
       :project="name"
-      :title="project.data.title"
-      @submit-name="name => project.setName(name)"
-      @submit-delete="() => project.remove()"
-      @submit-transfer="username => project.setName(username)"
+      @submit-name="name => setName(name)"
+      @submit-delete="() => remove()"
+      @submit-transfer="username => setName(username)"
     />
-  </ProjectSettings>
+  </AppPageContainer>
 </template>
