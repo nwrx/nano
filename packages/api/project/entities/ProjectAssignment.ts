@@ -39,4 +39,21 @@ export class ProjectAssignment extends BaseEntity {
    */
   @Column('varchar')
   permission: ProjectPermission
+
+  /**
+   * @returns The serialized representation of the project assignment.
+   */
+  serialize(): ProjectAssignmentObject {
+    return {
+      username: this.user?.username,
+      displayName: this.user?.profile?.displayName,
+      permission: this.permission,
+    }
+  }
+}
+
+export interface ProjectAssignmentObject {
+  username?: string
+  displayName?: string
+  permission: ProjectPermission
 }

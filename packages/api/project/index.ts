@@ -10,6 +10,7 @@ import * as UTILS from './utils'
 export * from './entities'
 export * from './utils/assertProject'
 export * from './utils/assertProjectPermission'
+export * from './utils/getProjectAssignments'
 
 /**
  * The `ModuleWorkspace` module is used to manage the workflows and modules in the
