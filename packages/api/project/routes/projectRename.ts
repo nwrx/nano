@@ -29,7 +29,7 @@ export function projectRename(this: ModuleProject) {
       const project = await getProject.call(this, { name: parameters.project, workspace, user, permission: 'Owner' })
 
       // --- Update and save the project name
-      const updatedProject = await renameProject.call(this, { project, name: body.name, workspace, user })
+      const updatedProject = await renameProject.call(this, { workspace, project, name: body.name })
       await Project.save(updatedProject)
     },
   )
