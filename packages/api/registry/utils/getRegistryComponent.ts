@@ -40,7 +40,14 @@ export async function getRegistryComponent(this: ModuleRegistry, options: GetReg
   // --- Get the component.
   const { RegistryComponent } = this.getRepositories()
   const component = await RegistryComponent.findOne({
-    where: { name, version },
+    where: {
+      name,
+      version: version === 'latest' ? undefined : version,
+      collection,
+    },
+    order: {
+      createdAt: 'DESC',
+    },
     relations: {
       categories: withCategories,
       collection: (withCollection || withWorkspace)

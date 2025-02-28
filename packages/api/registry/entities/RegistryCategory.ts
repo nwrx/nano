@@ -72,7 +72,7 @@ export class RegistryCategory extends BaseEntity {
    * @example [RegistryComponent, RegistryComponent, ...]
    */
   @JoinTable({ name: 'RegistryComponentCategory' })
-  @ManyToMany(() => RegistryComponent, component => component.categories)
+  @ManyToMany(() => RegistryComponent)
   components: RegistryComponent[] | undefined
 
   /**
