@@ -1,26 +1,25 @@
 import type { application, UserObject } from '@nwrx/nano-api'
-import type { RouteRequestData } from '@unserved/client'
+import type { RouteRequestBody, RouteRequestQuery } from '@unserved/client'
 import { useAlerts, useClient } from '#imports'
 
-export type UseUserOptions = RouteRequestData<typeof application, 'GET /api/users'>
-export type UserCreateOptions = RouteRequestData<typeof application, 'POST /api/users'>
+export type UseUserOptions = RouteRequestQuery<typeof application, 'GET /api/users'>
+export type UserCreateOptions = RouteRequestBody<typeof application, 'POST /api/users'>
 
-export function useUsers(options: UseUserOptions = {}) {
+export function useUsers(options: MaybeRef<UseUserOptions>) {
   const client = useClient()
   const alerts = useAlerts()
   const users = ref([]) as Ref<UserObject[]>
 
   const getUsers = async() => {
     await client.requestAttempt('GET /api/users', {
-      onError: error => showError(error),
+      data: { ... unref(options) },
       onData: data => users.value = data,
-      data: { ...options },
     })
   }
 
   return {
-    data: users,
-    refresh: getUsers,
+    users,
+    getUsers,
 
     create: async(options: UserCreateOptions) => {
       await client.requestAttempt('POST /api/users', {
@@ -99,13 +98,6 @@ export function useUsers(options: UseUserOptions = {}) {
             zh: `"${username}" 用户已成功验证`,
           }))
         },
-      })
-    },
-
-    search: async(query: string) => {
-      await client.request('GET /api/users', {
-        onError: error => alerts.error(error),
-        data: { query },
       })
     },
   }

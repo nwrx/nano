@@ -1,11 +1,8 @@
 <script setup lang="ts">
-import type { UserObject } from '@nwrx/nano-api'
-
 const props = defineProps<{
+  modelValue: boolean
   workspace: string
   project: string
-  modelValue: boolean
-  searchUsers?: (search: string) => Promise<UserObject[]>
 }>()
 
 const emit = defineEmits<{
@@ -14,16 +11,15 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const search = ref('')
 const model = useVModel(props, 'modelValue', emit, { passive: true })
-const users = ref<UserObject[]>([])
-const username = ref<string>()
+const search = ref<string>('')
+const username = ref<string[]>([])
 
-watch(search, async() => {
-  if (!search.value) return
-  if (!props.searchUsers) return
-  users.value = await props.searchUsers(search.value)
-}, { immediate: true })
+// --- Reset when dialog is closed/opened.
+watch(model, () => {
+  search.value = ''
+  username.value = []
+})
 </script>
 
 <template>
@@ -36,25 +32,14 @@ watch(search, async() => {
     :text="t('text', { workspace, project })"
     :label-cancel="t('button.cancel')"
     :label-confirm="t('button.confirm')"
-    @confirm="() => emit('submit', username!)">
+    :disabled="username.length === 0"
+    @confirm="() => emit('submit', username[0])">
 
     <!-- Search -->
-    <InputText
-      v-model="search"
-      icon="i-carbon:user"
-      :label="t('search.label')"
+    <UserSearch
+      v-model="username"
+      v-model:search="search"
     />
-
-    <!-- Results -->
-    <BaseCollapse vertical as="div" :is-open="true" class="transition-all mt-4 w-full">
-      <UserCard
-        v-for="user in users"
-        :key="user.username"
-        :display-name="user.displayName"
-        :username="user.username"
-        @click="() => username = user.username"
-      />
-    </BaseCollapse>
   </AppDialog>
 </template>
 
