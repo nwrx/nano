@@ -8,14 +8,8 @@ import { assertWorkspacePermission } from './assertWorkspacePermission'
 
 /** The parser fuction for the {@linkcode getWorkspace} function. */
 const GET_WORKSPACE_OPTIONS = createSchema({
-
-  /** The `name` of the {@linkcode Workspace} to find. */
   name: assert.stringNotEmpty,
-
-  /** The `User` responsible for the request. */
   user: [[assert.undefined], [assertUser]],
-
-  /** The permissions required to access the workspace. */
   permission: assertWorkspacePermission,
 })
 
