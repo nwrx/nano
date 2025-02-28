@@ -13,7 +13,7 @@ export class VaultProjectAssignment extends BaseEntity {
    * The vault that is assigned to the project.
    */
   @JoinColumn()
-  @ManyToOne(() => Vault, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => Vault, { nullable: false })
   vault: Vault
 
   /**
@@ -21,14 +21,14 @@ export class VaultProjectAssignment extends BaseEntity {
    * on this project will be able to access the vault's variables.
    */
   @JoinColumn()
-  @ManyToOne(() => Project, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => Project, { nullable: false })
   project: Project
 
   /**
    * The user that created the assignment.
    */
   @JoinColumn()
-  @ManyToOne(() => User, { nullable: false, onDelete: 'RESTRICT' })
+  @ManyToOne(() => User, { nullable: false })
   createdBy: User
 
   /**
