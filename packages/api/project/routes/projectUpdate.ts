@@ -5,7 +5,7 @@ import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
 import { getProject } from '../utils'
 
-export function projectSetSettings(this: ModuleProject) {
+export function projectUpdate(this: ModuleProject) {
   return createHttpRoute(
     {
       name: 'PUT /api/workspaces/:workspace/projects/:project',

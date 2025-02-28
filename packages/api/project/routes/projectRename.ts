@@ -4,12 +4,12 @@ import { toSlug } from '@unshared/string'
 import { assertStringNotEmpty, createSchema } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
-import { getProject } from '../utils'
+import { getProject, renameProject } from '../utils'
 
-export function projectSetName(this: ModuleProject) {
+export function projectRename(this: ModuleProject) {
   return createHttpRoute(
     {
-      name: 'PUT /api/workspaces/:workspace/projects/:project/name',
+      name: 'PATCH /api/workspaces/:workspace/projects/:project',
       parseParameters: createSchema({
         workspace: assertStringNotEmpty,
         project: assertStringNotEmpty,
@@ -21,16 +21,16 @@ export function projectSetName(this: ModuleProject) {
     async({ event, parameters, body }): Promise<void> => {
       const moduleUser = this.getModule(ModuleUser)
       const moduleWorkspace = this.getModule(ModuleWorkspace)
+      const { Project } = this.getRepositories()
       const { user } = await moduleUser.authenticate(event)
 
       // --- Get the workspace and project.
       const workspace = await moduleWorkspace.getWorkspace({ name: parameters.workspace, user, permission: 'Read' })
       const project = await getProject.call(this, { name: parameters.project, workspace, user, permission: 'Owner' })
 
-      // --- Rename the project and save to the database.
-      project.name = body.name
-      const { Project } = this.getRepositories()
-      await Project.save(project)
+      // --- Update and save the project name
+      const updatedProject = await renameProject.call(this, { project, name: body.name, workspace, user })
+      await Project.save(updatedProject)
     },
   )
 }

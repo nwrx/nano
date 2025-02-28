@@ -183,7 +183,14 @@ export async function createTestContext(testContext: TestContext) {
       // --- Create the project with the given options.
       const { Project, ProjectAssignment } = moduleProject.getRepositories()
       const { assignments, workspace, isPublic, user, name = randomBytes(8).toString('hex') } = options
-      const project = Project.create({ name, workspace, title: name, isPublic, createdBy: user, assignments: [] })
+      const project = Project.create({
+        name,
+        title: name,
+        isPublic,
+        workspace: workspace ?? await context.setupWorkspace().then(x => x.workspace),
+        createdBy: user ?? await context.setupUser().then(x => x.user),
+        assignments: [],
+      })
 
       // --- Assign the user to the project with the given permissions.
       if (assignments) {
@@ -196,12 +203,6 @@ export async function createTestContext(testContext: TestContext) {
             project.assignments!.push(assignment)
           }
         }
-      }
-
-      // --- If no user was provided, create one and set it as the creator.
-      if (!user) {
-        const { user } = await context.setupUser()
-        project.createdBy = user
       }
 
       // --- Save the project and assignments.
@@ -229,7 +230,8 @@ export async function createTestContext(testContext: TestContext) {
           const permissionsUnique = [...new Set(permissions)].filter(Boolean)
           for (const permission of permissionsUnique) {
             const assignment = VaultAssignment.create({ vault, user, permission })
-            vault.assignments!.push(assignment)
+            vault.assignments = vault.assignments ?? []
+            vault.assignments.push(assignment)
           }
         }
       }
