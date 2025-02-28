@@ -9,7 +9,7 @@ import { getProject, renameProject } from '../utils'
 export function projectRename(this: ModuleProject) {
   return createHttpRoute(
     {
-      name: 'PATCH /api/workspaces/:workspace/projects/:project',
+      name: 'PUT /api/workspaces/:workspace/projects/:project/name',
       parseParameters: createSchema({
         workspace: assertStringNotEmpty,
         project: assertStringNotEmpty,
