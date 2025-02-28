@@ -29,7 +29,7 @@ export function getSchemaTypeColor(socket?: Schema) {
   if (typeRaw === 'stream') return '#FFA500'
   if (typeRaw === 'function') return '#FF0000'
   if (typeRaw === 'file') return '#EEDCFF'
-  return '#000000'
+  return '#888'
 }
 
 export function getComponentTypeColors(component: RegistryComponentObject) {
