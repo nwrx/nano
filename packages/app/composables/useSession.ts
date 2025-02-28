@@ -4,10 +4,6 @@ import type { RouteRequestData } from '@unserved/client'
 type SigninCredentials = RouteRequestData<typeof application, 'POST /api/session'>
 type SignupCredentials = RouteRequestData<typeof application, 'POST /api/signup'>
 
-/**
- * Fetch the current session data from the API and provide methods to
- * sign-in, sign-out, and refresh the session data.
- */
 export const useSession = createSharedComposable(() => {
   const client = useClient()
   const router = useRouter()
@@ -36,8 +32,14 @@ export const useSession = createSharedComposable(() => {
         onSuccess: async() => {
           const redirect = useRoute().query.redirect as string | undefined
           session.value = { username: credentials.username }
-          await router.replace(redirect ?? { name: 'Workspace', params: { workspace: session.value.username } })
-          alerts.success('Account created successfully')
+          await router.replace(redirect ?? { name: 'Workspace', params: { workspace: credentials.username } })
+          alerts.success(localize({
+            en: 'You have been signed up successfully',
+            fr: 'Vous avez été inscrit avec succès',
+            de: 'Sie wurden erfolgreich angemeldet',
+            es: 'Te has registrado correctamente',
+            zh: '您已成功注册',
+          }))
         },
       })
     },
@@ -51,20 +53,32 @@ export const useSession = createSharedComposable(() => {
         onSuccess: async() => {
           const redirect = useRoute().query.redirect as string | undefined
           await getSession(true)
-          await router.replace(redirect ?? { name: 'Workspace', params: { workspace: session.value.username } })
-          alerts.success('Logged in successfully')
+          await router.replace(redirect ?? { name: 'Workspace', params: { workspace: credentials.username } })
+          alerts.success(localize({
+            en: 'You have been signed in successfully',
+            fr: 'Vous avez été connecté avec succès',
+            de: 'Sie wurden erfolgreich angemeldet',
+            es: 'Has iniciado sesión correctamente',
+            zh: '您已成功登录',
+          }))
         },
       })
     },
 
     signout: async() => {
       await client.requestAttempt('DELETE /api/session', {
-        onSuccess: () => {
-          alerts.success('You have been signed out')
-        },
         onEnd: async() => {
           session.value = {}
           await router.push({ name: 'Authentication' })
+        },
+        onSuccess: () => {
+          alerts.success(localize({
+            en: 'You have been signed out successfully',
+            fr: 'Vous avez été déconnecté avec succès',
+            de: 'Sie wurden erfolgreich abgemeldet',
+            es: 'Has cerrado sesión correctamente',
+            zh: '您已成功退出',
+          }))
         },
       })
     },
