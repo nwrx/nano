@@ -1,7 +1,7 @@
-import type { ModuleVault } from '..'
 import type { Encrypted } from '../../utils'
 import type { VaultAdapter, VaultAwsOptions, VaultAzureOptions, VaultHashicorpOptions, VaultLocalOptions } from '../adapters'
 import type { Vault } from '../entities'
+import type { ModuleVault } from '../index'
 import type { VaultType } from './assertVaultType'
 import { decrypt } from '../../utils'
 import { createVaultHashicorp, createVaultLocal } from '../adapters'
@@ -52,5 +52,5 @@ export async function getVaultAdapter(this: ModuleVault, vault: Pick<Vault, 'con
     return createVaultLocal.call(this, configuration) as unknown as VaultAdapter<Encrypted>
   }
 
-  throw this.errors.VAULT_ACTION_NOT_ALLOWED(vault.type)
+  throw this.errors.VAULT_ADAPTER_NOT_IMPLEMENTED(vault.type)
 }
