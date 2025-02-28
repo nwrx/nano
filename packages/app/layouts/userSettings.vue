@@ -24,7 +24,7 @@ useHead(() => ({
       <div class="flex w-full h-full overflow-x-hidden overflow-y-auto">
         <AppPageNav class="shrink-0 h-full sticky top-0 overflow-y-auto">
           <AppPageNavGroup>
-            <AppPageNavItem :label="t('title.UserSettingsAccount')" icon="i-carbon:settings" :to="{ name: 'UserSettingsAccount' }" />
+            <AppPageNavItem :label="t('title.UserSettings')" icon="i-carbon:settings" :to="{ name: 'UserSettings' }" />
             <AppPageNavItem :label="t('title.UserSettingsNotifications')" icon="i-carbon:notification" to="/settings/notifications" />
             <AppPageNavItem :label="t('title.UserSettingsCustomizations')" icon="i-carbon:paint-brush" to="/settings/customizations" />
           </AppPageNavGroup>
@@ -65,7 +65,7 @@ useHead(() => ({
 en:
   title: Settings
   title.UserSettingsProfile: Profile
-  title.UserSettingsAccount: Account
+  title.UserSettings: Account
   title.UserSettingsNotifications: Notifications
   title.UserSettingsCustomizations: Customizations
   title.UserSettingsSecurity: Security
@@ -86,7 +86,7 @@ en:
 fr:
   title: Paramètres
   title.UserSettingsProfile: Profil
-  title.UserSettingsAccount: Compte
+  title.UserSettings: Compte
   title.UserSettingsNotifications: Notifications
   title.UserSettingsCustomizations: Personnalisation
   title.UserSettingsSecurity: Sécurité
@@ -107,7 +107,7 @@ fr:
 de:
   title: Einstellungen
   title.UserSettingsProfile: Profil
-  title.UserSettingsAccount: Konto
+  title.UserSettings: Konto
   title.UserSettingsNotifications: Benachrichtigungen
   title.UserSettingsCustomizations: Anpassungen
   title.UserSettingsSecurity: Sicherheit
@@ -128,7 +128,7 @@ de:
 es:
   title: Ajustes
   title.UserSettingsProfile: Perfil
-  title.UserSettingsAccount: Cuenta
+  title.UserSettings: Cuenta
   title.UserSettingsNotifications: Notificaciones
   title.UserSettingsCustomizations: Personalizaciones
   title.UserSettingsSecurity: Seguridad
@@ -149,7 +149,7 @@ es:
 zh:
   title: 设置
   title.UserSettingsProfile: 档案
-  title.UserSettingsAccount: 帐户
+  title.UserSettings: 帐户
   title.UserSettingsNotifications: 通知
   title.UserSettingsCustomizations: 自定义
   title.UserSettingsSecurity: 安全

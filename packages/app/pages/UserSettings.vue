@@ -1,6 +1,6 @@
 <script setup lang="ts">
 definePageMeta({
-  name: 'UserSettingsAccount',
+  name: 'UserSettings',
   path: '/settings',
   alias: '/settings/account',
   middleware: 'redirect-when-guest',

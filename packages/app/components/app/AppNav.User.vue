@@ -43,7 +43,7 @@ const isOpen = ref(false)
       <ContextMenuItem
         label="Account"
         icon="i-carbon:settings"
-        :to="{ name: 'UserSettingsAccount' }"
+        :to="{ name: 'UserSettings' }"
         @click="() => close()"
       />
       <ContextMenuItem
