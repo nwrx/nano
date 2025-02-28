@@ -15,25 +15,23 @@ const routeLocation = useRouteLocation()
 
 <template>
   <AppPageHeader
+    v-if="workspace"
     :icon="icon"
     :title="[workspace, project, title].filter(Boolean) as string[]"
     :description="description">
 
     <!-- Tabs -->
     <AppPageHeaderTab
-      v-if="workspace"
       :label="t('projects')"
       icon="i-carbon:flow"
       :to="routeLocation.getWorkspaceRoute(workspace)"
     />
     <AppPageHeaderTab
-      v-if="workspace"
       :label="t('chat')"
       icon="i-carbon:chat"
       :to="routeLocation.getWorkspaceChatRoute(workspace)"
     />
     <AppPageHeaderTab
-      v-if="workspace"
       :label="t('monitoring')"
       icon="i-carbon:cloud-monitoring"
       :to="routeLocation.getWorkspaceMonitoringRoute(workspace)"
@@ -45,6 +43,7 @@ const routeLocation = useRouteLocation()
     <AppPageHeaderTab
       :label="t('settings')"
       icon="i-carbon:settings"
+      :to="routeLocation.getWorkspaceSettingsRoute(workspace)"
     />
   </AppPageHeader>
 </template>
