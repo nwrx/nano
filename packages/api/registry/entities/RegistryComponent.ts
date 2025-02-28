@@ -3,7 +3,7 @@ import { BaseEntity, transformerJson } from '@unserved/server'
 import { Column, Entity, Index, JoinTable, ManyToMany, ManyToOne } from 'typeorm'
 import { User } from '../../user'
 import { RegistryCategory, RegistryCategoryObject } from './RegistryCategory'
-import { RegistryCollection } from './RegistryCollection'
+import { RegistryCollection, RegistryCollectionObject } from './RegistryCollection'
 
 export type RegistryComponentEnvironment =
   | 'builtin'
@@ -58,7 +58,7 @@ export class RegistryComponent extends BaseEntity {
    * @example '1.0.0'
    */
   @Column('varchar')
-  version = 'draft'
+  version = '1.0.0'
 
   /**
    * The title of the component.
@@ -102,7 +102,7 @@ export class RegistryComponent extends BaseEntity {
 
   /**
    * The environment used in the code of the component. Additionally, the `environment`
-   * property may reference built-in components using the `<native/core/component-name>`
+   * property may reference built-in components using the `<nanoworks/core/component-name>`
    * syntax.
    *
    * @example 'javascript'
@@ -125,7 +125,7 @@ export class RegistryComponent extends BaseEntity {
    * @returns The serialized representation of the component.
    */
   serialize(options: SerializeOptions = {}): RegistryComponentObject {
-    const { withInputs, withOutputs, withCategories } = options
+    const { withInputs, withOutputs, withCategories, withCollection, ...serializeCollectionOptions } = options
     return {
       name: this.name,
       version: this.version,
@@ -135,6 +135,7 @@ export class RegistryComponent extends BaseEntity {
       environment: this.environment,
       inputs: withInputs ? this.inputs : undefined,
       outputs: withOutputs ? this.outputs : undefined,
+      collection: withCollection ? this.collection.serialize(serializeCollectionOptions) : undefined,
       categories: withCategories ? this.categories?.map(category => category.serialize()) : undefined,
     }
   }
@@ -144,6 +145,7 @@ interface SerializeOptions {
   withInputs?: boolean
   withOutputs?: boolean
   withCategories?: boolean
+  withCollection?: boolean
 }
 
 export interface RegistryComponentObject {
@@ -155,5 +157,6 @@ export interface RegistryComponentObject {
   environment: RegistryComponentEnvironment
   inputs?: Record<string, Schema>
   outputs?: Record<string, Schema>
+  collection?: RegistryCollectionObject
   categories?: RegistryCategoryObject[]
 }
