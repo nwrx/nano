@@ -1,27 +1,27 @@
-import type { application, ProjectObject } from '@nwrx/nano-api'
+import type { application, ProjectObject, WorkspaceObject, WorkspaceUserPermissions } from '@nwrx/nano-api'
 import type { RouteRequestQuery } from '@unserved/client'
-import type { WorkspaceObject } from '../../api/workspace'
 import { useAlerts, useClient } from '#imports'
 
 type UseWorkspaceOptions = RouteRequestQuery<typeof application, 'GET /api/workspaces/:workspace/projects'>
 
-/**
- * Fetch the project data from the API and provide methods to interact with it.
- *
- * @param name The name of the workspace that the project belongs to.
- * @param options The options to pass to the request.
- * @returns The project data and methods to interact with it.
- */
 export function useWorkspace(name: MaybeRef<string>, options: UseWorkspaceOptions = {}) {
   const client = useClient()
   const alerts = useAlerts()
   const data = ref<WorkspaceObject>({ name: '', isPublic: false })
   const projects = ref<ProjectObject[]>([])
+  const assignments = ref<WorkspaceUserPermissions[]>([])
 
   const getWorkspace = async() => {
     await client.request('GET /api/workspaces/:workspace', {
       onData: workspace => data.value = workspace,
       data: { workspace: unref(name), ...options },
+    })
+  }
+
+  const getAssignments = async() => {
+    await client.request('GET /api/workspaces/:workspace/assignments', {
+      onData: data => assignments.value = data,
+      data: { workspace: unref(name) },
     })
   }
 
@@ -35,13 +35,31 @@ export function useWorkspace(name: MaybeRef<string>, options: UseWorkspaceOption
   return {
     data,
     projects,
+    assignments,
     getWorkspace,
+    getAssignments,
+    searchProjects,
+
+    rename: async(name: string) => {
+      await client.requestAttempt('PATCH /api/workspaces/:workspace', {
+        data: { workspace: unref(name) },
+        onSuccess: async() => {
+          await getWorkspace()
+          alerts.success(localize({
+            en: `The workspace has been renamed to "${name}"`,
+            fr: `L'espace de travail a été renommé en "${name}"`,
+            de: `Der Arbeitsbereich wurde in "${name}" umbenannt`,
+            es: `El espacio de trabajo se ha renombrado a "${name}"`,
+            zh: `工作区已重命名为 "${name}"`,
+          }))
+        },
+      })
+    },
 
     /***************************************************************************/
     /* Projects                                                                */
     /***************************************************************************/
 
-    searchProjects,
     createProject: async(title: string) => {
       await client.requestAttempt('POST /api/workspaces/:workspace/projects', {
         data: { workspace: unref(name), title },
