@@ -8,7 +8,7 @@ import { getWorkspace, renameWorkspace } from '../utils'
 export function workspaceSetName(this: ModuleWorkspace) {
   return createHttpRoute(
     {
-      name: 'PATCH /api/workspaces/:workspace',
+      name: 'PUT /api/workspaces/:workspace/name',
       parseParameters: createSchema({
         workspace: assertStringNotEmpty,
       }),
