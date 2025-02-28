@@ -229,7 +229,7 @@ export async function createTestContext(testContext: TestContext) {
           if (!user) continue
           const permissionsUnique = [...new Set(permissions)].filter(Boolean)
           for (const permission of permissionsUnique) {
-            const assignment = VaultAssignment.create({ vault, user, permission })
+            const assignment = VaultAssignment.create({ vault, user, permission, createdBy: vault.createdBy })
             vault.assignments = vault.assignments ?? []
             vault.assignments.push(assignment)
           }
