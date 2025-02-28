@@ -40,6 +40,13 @@ describe.concurrent<Context>('createProject', () => {
       const project = await createProject.call(moduleProject, { user, name: 'project', workspace, isPublic: true })
       expect(project).toMatchObject({ isPublic: true })
     })
+
+    it('should not save the project to the database yet', async({ setupUser, moduleProject }) => {
+      const { user, workspace } = await setupUser()
+      await createProject.call(moduleProject, { user, name: 'project', workspace })
+      const count = await moduleProject.getRepositories().Project.countBy({ name: 'project' })
+      expect(count).toBe(0)
+    })
   })
 
   describe<Context>('database', (it) => {
