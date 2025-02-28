@@ -7,7 +7,7 @@ interface Context {
   moduleRunner: ModuleRunner
 }
 
-describe.concurrent<Context>('claim', { timeout: 300 }, () => {
+describe.concurrent<Context>('claim', () => {
   beforeEach<Context>(async(context) => {
     context.application = await createTestApplication([ModuleRunner])
     context.moduleRunner = context.application.getModule(ModuleRunner)

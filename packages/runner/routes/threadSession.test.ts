@@ -42,7 +42,7 @@ async function startThread(ws: WebSocket, data: Record<string, unknown>) {
   })
 }
 
-describe<Context>('WS /threads/:id', { timeout: 300 }, () => {
+describe<Context>('WS /threads/:id', () => {
   beforeEach<Context>(async(context) => {
     context.application = await createTestApplication([ModuleRunner])
     context.moduleRunner = context.application.getModule(ModuleRunner)

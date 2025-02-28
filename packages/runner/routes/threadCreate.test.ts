@@ -10,7 +10,7 @@ interface Context {
   headers: Record<string, string>
 }
 
-describe.concurrent<Context>('POST /threads', { timeout: 300 }, () => {
+describe.concurrent<Context>('POST /threads', () => {
   beforeEach<Context>(async(context) => {
     context.application = await createTestApplication([ModuleRunner])
     context.moduleRunner = context.application.getModule(ModuleRunner)
