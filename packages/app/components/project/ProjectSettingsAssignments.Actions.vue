@@ -2,15 +2,15 @@
 import type { ProjectPermission } from '@nwrx/nano-api'
 
 defineProps<{
-  workspace?: string
-  project?: string
-  title?: string
-  username?: string
-  userDisplayName?: string
+  workspace: string
+  project: string
+  username: string
+  displayName: string
+  permissions: ProjectPermission[]
 }>()
 
 const emit = defineEmits<{
-  submitSetPermissions: [permissions: ProjectPermission[]]
+  submitPermissions: [ProjectPermission[]]
   submitUnassign: []
 }>()
 
@@ -39,24 +39,23 @@ const isDialogUnassignOpen = ref(false)
     </ContextMenu>
 
     <!-- Manage Dialog -->
-    <ProjectSettingsAssignmentDialogEdit
+    <ProjectSettingsAssignmentsDialogEdit
       v-model="isDialogManageOpen"
       :workspace="workspace"
       :project="project"
-      :title="title"
       :username="username"
-      :user-display-name="userDisplayName"
-      @submit="(permissions) => emit('submitSetPermissions', permissions)"
+      :display-name="displayName"
+      :permissions="permissions"
+      @submit="(permissions) => emit('submitPermissions', permissions)"
     />
 
     <!-- Unassign Dialog -->
-    <ProjectSettingsAssignmentDialogUnassign
+    <ProjectSettingsAssignmentsDialogUnassign
       v-model="isDialogUnassignOpen"
       :workspace="workspace"
       :project="project"
-      :title="title"
       :username="username"
-      :user-display-name="userDisplayName"
+      :display-name="displayName"
       @submit="() => emit('submitUnassign')"
     />
   </div>

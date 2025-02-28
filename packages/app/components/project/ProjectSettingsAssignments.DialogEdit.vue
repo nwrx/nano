@@ -2,13 +2,12 @@
 import type { ProjectPermission } from '@nwrx/nano-api'
 
 const props = defineProps<{
-  modelValue?: boolean
-  workspace?: string
-  project?: string
-  title?: string
-  username?: string
-  userDisplayName?: string
-  permissions?: ProjectPermission[]
+  modelValue: boolean
+  workspace: string
+  project: string
+  username: string
+  displayName: string
+  permissions: ProjectPermission[]
 }>()
 
 const emit = defineEmits<{
@@ -35,8 +34,8 @@ watch(() => props.permissions, (permissions) => {
     icon="i-carbon:label"
     class-hint="hint-warning"
     class-button="button-warning"
-    :title="t('title', { userDisplayName })"
-    :text="t('text')"
+    :title="t('title', { workspace, project, username })"
+    :text="t('text', { workspace, project, username })"
     :label-cancel="t('cancel')"
     :label-confirm="t('confirm')"
     @confirm="() => emit('submit', [role, ...access])">
@@ -64,37 +63,12 @@ watch(() => props.permissions, (permissions) => {
         type="radio"
       />
     </div>
-
-    <!-- Access -->
-    <div class="space-y-4 mt-8 pt-8 border-t border-app">
-      <AppDialogToggle
-        v-model="access"
-        value="WriteVariables"
-        :label="t('variables.label')"
-        :text="t('variables.text')"
-        type="checkbox"
-      />
-      <AppDialogToggle
-        v-model="access"
-        value="VaultRead"
-        :label="t('secrets.label')"
-        :text="t('secrets.text')"
-        type="checkbox"
-      />
-      <AppDialogToggle
-        v-model="access"
-        value="VaultWrite"
-        :label="t('apiKeys.label')"
-        :text="t('apiKeys.text')"
-        type="checkbox"
-      />
-    </div>
   </AppDialog>
 </template>
 
 <i18n lang="yaml">
 en:
-  title: Manage project access of for **{userDisplayName}**
+  title: Manage project access of for **{username}** for the **{workspace}/{project}** project
   text: Members with the **Owner** role have full access to the project, including the ability to manage the project settings and members of the project. Be careful when assigning this role to a team member.
   owner.label: Owner
   owner.text: Gives full access to the project, including the ability to manage members.
@@ -111,7 +85,7 @@ en:
   confirm: Apply permissions
   cancel: Keep the current permissions
 fr:
-  title: Gérer l'accès au projet pour **{userDisplayName}**
+  title: Gérer l'accès au projet de **{username}** pour le projet **{workspace}/{project}**
   text: Les membres avec le rôle **Propriétaire** ont un accès complet au projet, y compris la possibilité de gérer les paramètres du projet et les membres du projet. Soyez prudent lors de l'attribution de ce rôle à un membre de l'équipe.
   owner.label: Propriétaire
   owner.text: Donne un accès complet au projet, y compris la possibilité de gérer les membres.
@@ -128,7 +102,7 @@ fr:
   confirm: Appliquer les permissions
   cancel: Conserver les autorisations actuelles
 de:
-  title: Projektzugriff für **{userDisplayName}** verwalten
+  title: Projektzugriff für **{username}** für das Projekt **{workspace}/{project}** verwalten
   text: Mitglieder mit der Rolle **Eigentümer** haben vollen Zugriff auf das Projekt, einschließlich der Möglichkeit, die Projekteinstellungen und Mitglieder des Projekts zu verwalten. Seien Sie vorsichtig, wenn Sie diese Rolle einem Teammitglied zuweisen.
   owner.label: Eigentümer
   owner.text: Gibt vollen Zugriff auf das Projekt, einschließlich der Möglichkeit, Mitglieder zu verwalten.
@@ -145,7 +119,7 @@ de:
   confirm: Berechtigungen anwenden
   cancel: Aktuelle Berechtigungen beibehalten
 es:
-  title: Gestionar el acceso al proyecto para **{userDisplayName}**
+  title: Gestionar el acceso al proyecto de **{username}** para el proyecto **{workspace}/{project}**
   text: Los miembros con el rol de **Propietario** tienen acceso completo al proyecto, incluida la capacidad de gestionar la configuración del proyecto y los miembros del proyecto. Tenga cuidado al asignar este rol a un miembro del equipo.
   owner.label: Propietario
   owner.text: Da acceso completo al proyecto, incluida la capacidad de gestionar miembros.
@@ -162,7 +136,7 @@ es:
   confirm: Aplicar permisos
   cancel: Mantener los permisos actuales
 zh:
-  title: 管理 **{userDisplayName}** 的项目访问权限
+  title: 管理 **{username}** 对 **{workspace}/{project}** 项目的访问权限
   text: 拥有 **所有者** 角色的成员对项目拥有完全访问权限，包括管理项目设置和项目成员的能力。分配此角色给团队成员时请小心。
   owner.label: 所有者
   owner.text: 赋予对项目的完全访问权限，包括管理成员的能力。

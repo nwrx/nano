@@ -1,6 +1,7 @@
-import type { application, FlowObject, ProjectObject, ProjectPermission } from '@nwrx/nano-api'
+import type { ProjectUserPermissions } from '@nwrx/nano-api'
 import type { ChannelConnectOptions, RouteRequestData } from '@unserved/client'
 import type { WebSocketChannel } from '@unshared/client/websocket'
+import { type application, type FlowObject, type ProjectObject, type ProjectPermission } from '@nwrx/nano-api'
 import { useAlerts, useClient, useRouter } from '#imports'
 
 /** The options to pass to the {@linkcode useProject} composable. */
@@ -20,9 +21,13 @@ export function useProject(workspace: MaybeRef<string>, project: MaybeRef<string
   const alerts = useAlerts()
   const router = useRouter()
   const client = useClient()
+
+  // --- Data
   const data = ref<ProjectObject>({} as ProjectObject)
   const flows = ref<FlowObject[]>([])
+  const assignments = ref<ProjectUserPermissions[]>([])
 
+  // --- Subscription WebSocket channel
   let channel: undefined | UseProjectChannel
   tryOnScopeDispose(() => {
     if (!channel) return
@@ -42,10 +47,24 @@ export function useProject(workspace: MaybeRef<string>, project: MaybeRef<string
     })
   }
 
+  const getAssignments = async() => {
+    await client.requestAttempt('GET /api/workspaces/:workspace/projects/:project/assignments', {
+      data: {
+        workspace: unref(workspace),
+        project: unref(project),
+      },
+      onData: (data) => {
+        assignments.value = data
+      },
+    })
+  }
+
   return {
     data,
     flows,
+    assignments,
     getProject,
+    getAssignments,
 
     setName: async(name: string) => {
       await client.requestAttempt('PUT /api/workspaces/:workspace/projects/:project/name', {

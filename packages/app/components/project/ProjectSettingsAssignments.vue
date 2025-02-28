@@ -1,28 +1,24 @@
 <script setup lang="ts">
-import type { ProjectPermission, ProjectUserPermissionsObject, UserObject } from '@nwrx/nano-api'
-import ProjectSettingsAssignmentsPermissions from './ProjectSettings.AssignmentsPermissions.vue'
+import type { ProjectPermission, ProjectUserPermissions } from '@nwrx/nano-api'
 
-const props = defineProps<{
-  workspace?: string
-  project?: string
-  title?: string
-  assignments?: ProjectUserPermissionsObject[]
-  searchUsers?: (search: string) => Promise<UserObject[]>
+defineProps<{
+  workspace: string
+  project: string
+  assignments: ProjectUserPermissions[]
 }>()
 
 const emit = defineEmits<{
-  submitAssign: [username: string]
-  submitUnassign: [username: string]
-  submitSetPermissions: [username: string, permissions: ProjectPermission[]]
+  submitAssign: [string]
+  submitUnassign: [string]
+  submitPermissions: [string, ProjectPermission[]]
 }>()
 
 const { t } = useI18n()
-const assignments = useVModel(props, 'assignments', emit, { passive: true })
 const isAssignDialogOpen = ref(false)
 </script>
 
 <template>
-  <AppPageForm :title="t('title')">
+  <AppPageForm vertical :title="t('title')">
 
     <!-- Text -->
     <template #text>
@@ -54,28 +50,23 @@ const isAssignDialogOpen = ref(false)
         </template>
 
         <!-- Cell / User -->
-        <template #cell.user="{ user }">
-          <UserCard
-            :avatar-url="user.avatarUrl"
-            :display-name="user.displayName"
-            :username="user.username"
-          />
+        <template #cell.user="{ username, displayName }">
+          <UserCard :display-name="displayName" :username="username" />
         </template>
 
         <template #cell.permissions="{ permissions }">
           <ProjectSettingsAssignmentsPermissions :permissions="permissions" />
         </template>
 
-        <template #cell.actions="{ user, permissions }">
-          <ProjectSettingsAssignmentActions
+        <template #cell.actions="{ username, displayName, permissions }">
+          <ProjectSettingsAssignmentsActions
             :workspace="workspace"
             :project="project"
-            :title="title"
-            :username="user.username"
-            :user-display-name="user.displayName"
+            :username="username"
+            :display-name="displayName"
             :permissions="permissions"
-            @submit-unassign="() => emit('submitUnassign', user.username)"
-            @submit-set-permissions="(permissions) => emit('submitSetPermissions', user.username, permissions)"
+            @submit-unassign="() => emit('submitUnassign', username)"
+            @submit-permissions="(permissions) => emit('submitPermissions', username, permissions)"
           />
         </template>
       </BaseTable>
@@ -92,12 +83,10 @@ const isAssignDialogOpen = ref(false)
     </div>
 
     <!-- Assign dialog -->
-    <ProjectSettingsAssignmentDialogAssign
+    <ProjectSettingsAssignmentsDialogAssign
       v-model="isAssignDialogOpen"
       :workspace="workspace"
       :project="project"
-      :title="title"
-      :search-users="searchUsers"
       @submit="(username) => emit('submitAssign', username)"
     />
   </AppPageForm>
@@ -105,23 +94,23 @@ const isAssignDialogOpen = ref(false)
 
 <i18n lang="yaml">
 en:
-  title: Members
+  title: Assignments
   text: Define who can access and manage the project. You can add or remove team members, and assign them different permissions. For more information, please refer to the {documentation}.
   text.documentation: documentation
-  button.addMember: Add a team member
+  button.addMember: Assign a member to the project
   header.user: User
   header.permissions: Permissions
   header.actions: ''
 fr:
-  title: Membres
+  title: Assignations
   text: Définissez qui peut accéder et gérer le projet. Vous pouvez ajouter ou supprimer des membres de l'équipe et leur attribuer différentes autorisations. Pour plus d'informations, veuillez vous référer à la {documentation}.
   text.documentation: documentation
-  button.addMember: Ajouter un membre à l'équipe
+  button.addMember: Ajouter un membre au projet
   header.user: Utilisateur
   header.permissions: Permissions
   header.actions: ''
 de:
-  title: Mitglieder
+  title: Zuweisungen
   text: Legen Sie fest, wer auf das Projekt zugreifen und es verwalten kann. Sie können Teammitglieder hinzufügen oder entfernen und ihnen verschiedene Berechtigungen zuweisen. Weitere Informationen finden Sie in der {documentation}.
   text.documentation: documentation
   button.addMember: Teammitglied hinzufügen
@@ -129,18 +118,18 @@ de:
   header.permissions: Berechtigungen
   header.actions: ''
 es:
-  title: Miembros
+  title: Asignaciones
   text: Define quién puede acceder y administrar el proyecto. Puede agregar o eliminar miembros del equipo y asignarles diferentes permisos. Para obtener más información, consulte la {documentation}.
   text.documentation: documentación
-  button.addMember: Agregar un miembro del equipo
+  button.addMember: Asignar un miembro al proyecto
   header.user: Usuario
   header.permissions: Permisos
   header.actions: ''
 zh:
-  title: 成员
+  title: 分配
   text: 定义谁可以访问和管理项目。您可以添加或删除团队成员，并为他们分配不同的权限。有关更多信息，请参阅 {documentation}。
   text.documentation: 文档
-  button.addMember: 添加团队成员
+  button.addMember: 将成员分配给项目
   header.user: 用户
   header.permissions: 权限
   header.actions: ''
