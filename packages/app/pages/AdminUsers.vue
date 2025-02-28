@@ -7,20 +7,18 @@ definePageMeta({
 
 const users = useUsers({
   withProfile: true,
-  withSessions: true,
+  withProtected: true,
 })
 
-onMounted(async() => {
-  await users.refresh()
-})
+onMounted(users.getUsers)
 </script>
 
 <template>
   <AdminLayout>
     <AdminUsers
-      :users="users.data.value"
+      :users="users.users.value"
       @submit-enable="(username) => users.enable(username)"
-      @submit-delete="(username) => users.delete(username)"
+      @submit-delete="(username) => users.remove(username)"
       @submit-disable="(username) => users.disable(username)"
       @submit-verify="(username) => users.verify(username)"
     />

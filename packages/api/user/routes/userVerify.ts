@@ -6,7 +6,7 @@ import { getUser } from '../utils'
 export function userVerify(this: ModuleUser) {
   return createHttpRoute(
     {
-      name: 'PATCH /api/users/:username/verify',
+      name: 'POST /api/users/:username/verify',
       parseParameters: createSchema({
         username: assertStringNotEmpty,
       }),

@@ -38,7 +38,7 @@ export function useUsers(options: MaybeRef<UseUserOptions>) {
     },
 
     disable: async(username: string) => {
-      await client.requestAttempt('PATCH /api/users/:username/disable', {
+      await client.requestAttempt('POST /api/users/:username/disable', {
         parameters: { username },
         onSuccess: async() => {
           await getUsers()
@@ -54,7 +54,7 @@ export function useUsers(options: MaybeRef<UseUserOptions>) {
     },
 
     enable: async(username: string) => {
-      await client.requestAttempt('PATCH /api/users/:username/enable', {
+      await client.requestAttempt('POST /api/users/:username/enable', {
         parameters: { username },
         onSuccess: async() => {
           await getUsers()
@@ -69,7 +69,7 @@ export function useUsers(options: MaybeRef<UseUserOptions>) {
       })
     },
 
-    delete: async(username: string) => {
+    remove: async(username: string) => {
       await client.requestAttempt('DELETE /api/users/:username', {
         parameters: { username },
         onSuccess: async() => {
@@ -86,7 +86,7 @@ export function useUsers(options: MaybeRef<UseUserOptions>) {
     },
 
     verify: async(username: string) => {
-      await client.requestAttempt('PATCH /api/users/:username/verify', {
+      await client.requestAttempt('POST /api/users/:username/verify', {
         parameters: { username },
         onSuccess: async() => {
           await getUsers()
