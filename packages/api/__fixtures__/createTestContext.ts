@@ -216,10 +216,10 @@ export async function createTestContext(testContext: TestContext) {
       // --- Create the vault with the given options.
       const { Vault, VaultAssignment } = moduleVault.getRepositories()
       const vault = await createVault.call(moduleVault, {
+        name: options.name ?? randomBytes(8).toString('hex'),
         user: options.user! ?? await context.setupUser().then(x => x.user),
         workspace: options.workspace! ?? await context.setupWorkspace().then(x => x.workspace),
         configuration: options.configuration ?? { algorithm: 'aes-256-gcm', secret: 'SECRET' },
-        name: options.name ?? randomBytes(8).toString('hex'),
       })
 
       // --- Assign the user to the vault with the given permissions.
