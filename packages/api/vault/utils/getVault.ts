@@ -1,20 +1,19 @@
 import type { Loose } from '@unshared/types'
 import type { ModuleVault } from '..'
 import type { Vault } from '../entities'
-import { assertBoolean, assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
-import { assertUser } from '../../user'
-import { assertWorkspace } from '../../workspace'
+import { assert, createSchema } from '@unshared/validation'
+import { In } from 'typeorm'
+import { assertUser } from '../../user/utils/assertUser'
+import { assertWorkspace } from '../../workspace/utils/assertWorkspace'
 import { assertVaultPermission } from './assertVaultPermission'
 
 /** The schema for the getVault options. */
 const GET_VAULT_OPTIONS_SCHEMA = createSchema({
-  name: assertStringNotEmpty,
   user: assertUser,
   workspace: assertWorkspace,
+  name: assert.stringNotEmpty,
   permission: assertVaultPermission,
-  withDeleted: [[assertUndefined], [assertBoolean]],
-  withVariables: [[assertUndefined], [assertBoolean]],
-  withConfiguration: [[assertUndefined], [assertBoolean]],
+  withDeleted: [[assert.undefined], [assert.boolean]],
 })
 
 /** The options to get a vault by name. */
@@ -28,51 +27,29 @@ export type GetVaultOptions = Loose<ReturnType<typeof GET_VAULT_OPTIONS_SCHEMA>>
  * @returns The vault
  */
 export async function getVault(this: ModuleVault, options: GetVaultOptions): Promise<Vault> {
-  const {
-    name,
-    user,
-    workspace,
-    permission,
-    withDeleted,
-    withVariables,
-    withConfiguration,
-  } = GET_VAULT_OPTIONS_SCHEMA(options)
+  const { user, workspace, name, permission, withDeleted } = GET_VAULT_OPTIONS_SCHEMA(options)
 
   // --- Get the vault entity.
   const { Vault } = this.getRepositories()
   const vault = await Vault.findOne({
-    where: [
-      { name, workspace: { assignments: { user, permission: 'Owner' } } },
-      { name, workspace, assignments: { user } },
-      { name, workspace, flowAssignments: { flow: { assignments: { user } } } },
-      { name, workspace, projectAssignments: { project: { assignments: { user } } } },
-    ],
+    where: {
+      name,
+      workspace,
+      assignments: { user, permission: In(['Owner', 'Read']) },
+    },
     relations: {
-      workspace: { assignments: { user: true } },
       assignments: { user: true },
-      flowAssignments: { flow: { assignments: { user: true } } },
-      projectAssignments: { project: { assignments: { user: true } } },
-      variables: withVariables,
-      configuration: withConfiguration,
     },
     withDeleted,
   })
 
-  // --- Assert that the vault exists and the user has access.
-  if (!vault) throw this.errors.VAULT_NOT_FOUND(name)
-  if (user && permission === 'Read') {
-    delete vault.assignments
-    delete vault.variables
-    return vault
-  }
+  // --- Return early if the user has read access.
+  if (!vault) throw this.errors.VAULT_NOT_FOUND(workspace.name, name)
+  if (permission === 'Read') return vault
 
-  if (!user) throw this.errors.VAULT_ACTION_NOT_ALLOWED(name)
-  for (const assignment of vault.assignments!) {
-    if (assignment.user.id !== user.id) continue
-    if (assignment.permission === 'Owner') return vault
-    if (assignment.permission === permission) return vault
-  }
-
-  // --- Ensure the vault exists and return it.
-  throw this.errors.VAULT_ACTION_NOT_ALLOWED(name)
+  // --- Assert that the user has an assignment that matches the permission.
+  const { VaultAssignment } = this.getRepositories()
+  const isAllowed = await VaultAssignment.countBy({ user, vault, permission: In(['Owner', permission]) })
+  if (!isAllowed) throw this.errors.VAULT_FORBIDDEN(workspace.name, name)
+  return vault
 }
