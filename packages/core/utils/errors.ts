@@ -1,5 +1,5 @@
 import type { SpecifierObject } from './parseSpecifier'
-import { dedent } from '@unshared/string'
+import { dedent } from '@unshared/string/dedent'
 import { createError } from './createError'
 import { serializeSpecifier } from './serializeSpecifier'
 
