@@ -1,24 +1,12 @@
 import type { Loose } from '@unshared/types'
 import type { ModuleVault } from '../index'
-import type { Encrypted } from './encrypt'
-import { assertObjectStrict, assertStringNotEmpty, assertStringUuid, createSchema } from '@unshared/validation'
-import { assertVaultType } from './assertVaultType'
+import { assertStringNotEmpty, createSchema } from '@unshared/validation'
+import { assertVault } from './assertVault'
 import { getVaultAdapter } from './getVaultAdapter'
 
 export const SET_VARIABLE_VALUE_OPTIONS_SCHEMA = createSchema({
-
-  /** The vault containing the variable */
-  vault: createSchema({
-    id: assertStringUuid,
-    name: assertStringNotEmpty,
-    type: assertVaultType,
-    configuration: assertObjectStrict as (value: unknown) => Encrypted,
-  }),
-
-  /** The name of the variable to update */
+  vault: assertVault,
   name: assertStringNotEmpty,
-
-  /** The new value to set */
   value: assertStringNotEmpty,
 })
 

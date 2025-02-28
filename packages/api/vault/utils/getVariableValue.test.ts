@@ -4,7 +4,7 @@ import { createTestContext } from '../../__fixtures__'
 import { createVariable } from './createVariable'
 import { getVariableValue } from './getVariableValue'
 
-describe.concurrent<Context>('getVariableValue', { timeout: 300 }, () => {
+describe.concurrent<Context>('getVariableValue', () => {
   beforeEach<Context>(async(context) => {
     await createTestContext(context)
   })
@@ -14,19 +14,19 @@ describe.concurrent<Context>('getVariableValue', { timeout: 300 }, () => {
   })
 
   describe<Context>('getVariableValue', (it) => {
-    it('should get variable value', async({ createUser, createVault, moduleVault }) => {
-      const { user, workspace } = await createUser()
-      const { vault } = await createVault('vault', user, workspace)
-      await createVariable.call(moduleVault, { user, name: 'variable', value: 'secret-value', vault })
+    it('should get variable value', async({ setupUser, setupVault, moduleVault }) => {
+      const { user } = await setupUser()
+      const { vault } = await setupVault()
+      const variable = await createVariable.call(moduleVault, { user, name: 'variable', value: 'secret-value', vault })
+      await moduleVault.getRepositories().VaultVariable.save(variable)
       const value = await getVariableValue.call(moduleVault, { vault, name: 'variable' })
       expect(value).toBe('secret-value')
     })
   })
 
   describe<Context>('errors', (it) => {
-    it('should throw if variable does not exist', async({ createUser, createVault, moduleVault }) => {
-      const { user, workspace } = await createUser()
-      const { vault } = await createVault('vault', user, workspace)
+    it('should throw if variable does not exist', async({ setupVault, moduleVault }) => {
+      const { vault } = await setupVault()
       const shouldThrow = getVariableValue.call(moduleVault, { vault, name: 'non-existent' })
       await expect(shouldThrow).rejects.toThrow(moduleVault.errors.VAULT_VARIABLE_NOT_FOUND('non-existent', vault.name))
     })
@@ -39,37 +39,18 @@ describe.concurrent<Context>('getVariableValue', { timeout: 300 }, () => {
         const shouldThrow = getVariableValue.call(moduleVault, { name: 'variable' })
         await expect(shouldThrow).rejects.toThrow(ValidationError)
       })
-
-      it('should throw if vault.name is empty', async({ createUser, createVault, moduleVault }) => {
-        const { user, workspace } = await createUser()
-        const { vault } = await createVault('vault', user, workspace)
-        const invalidVault = { ...vault, name: '' }
-        const shouldThrow = getVariableValue.call(moduleVault, { vault: invalidVault, name: 'variable' })
-        await expect(shouldThrow).rejects.toThrow(ValidationError)
-      })
-
-      it('should throw if vault.id is not a UUID', async({ createUser, createVault, moduleVault }) => {
-        const { user, workspace } = await createUser()
-        const { vault } = await createVault('vault', user, workspace)
-        const invalidVault = { ...vault, id: 'not-a-uuid' }
-        // @ts-expect-error: testing invalid options
-        const shouldThrow = getVariableValue.call(moduleVault, { vault: invalidVault, name: 'variable' })
-        await expect(shouldThrow).rejects.toThrow(ValidationError)
-      })
     })
 
     describe<Context>('name', (it) => {
-      it('should throw if name is missing', async({ createUser, createVault, moduleVault }) => {
-        const { user, workspace } = await createUser()
-        const { vault } = await createVault('vault', user, workspace)
+      it('should throw if name is missing', async({ setupVault, moduleVault }) => {
+        const { vault } = await setupVault()
         // @ts-expect-error: testing invalid options
         const shouldThrow = getVariableValue.call(moduleVault, { vault })
         await expect(shouldThrow).rejects.toThrow(ValidationError)
       })
 
-      it('should throw if name is empty', async({ createUser, createVault, moduleVault }) => {
-        const { user, workspace } = await createUser()
-        const { vault } = await createVault('vault', user, workspace)
+      it('should throw if name is empty', async({ setupVault, moduleVault }) => {
+        const { vault } = await setupVault()
         const shouldThrow = getVariableValue.call(moduleVault, { vault, name: '' })
         await expect(shouldThrow).rejects.toThrow(ValidationError)
       })

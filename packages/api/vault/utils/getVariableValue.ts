@@ -6,11 +6,7 @@ import { getVaultAdapter } from './getVaultAdapter'
 
 /** The schema for the getVariableValue options. */
 export const GET_VARIABLE_VALUE_OPTIONS_SCHEMA = createSchema({
-
-  /** The vault containing the variable */
   vault: assertVault,
-
-  /** The name of the variable to retrieve */
   name: assert.stringNotEmpty,
 })
 
