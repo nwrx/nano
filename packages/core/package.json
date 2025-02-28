@@ -74,9 +74,9 @@
     "target": "node20",
     "dts": true,
     "shims": true,
-    "splitting": true,
+    "splitting": false,
     "sourcemap": true,
-    "treeshaking": true,
+    "treeshaking": false,
     "experimental-dts": true
   }
 }
