@@ -1,7 +1,8 @@
+<!-- eslint-disable vue/prop-name-casing -->
 <script setup lang="ts" generic="T">
 import type { BaseInputTextProps } from '@unshared/vue'
 
-const props = defineProps<{
+const props = defineProps<BaseInputTextProps<T> & {
   label?: string
   hint?: string
   icon?: string
@@ -12,7 +13,7 @@ const props = defineProps<{
   classIcon?: string
   classInput?: string
   classGroup?: string
-} & BaseInputTextProps<T>>()
+}>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: T]
