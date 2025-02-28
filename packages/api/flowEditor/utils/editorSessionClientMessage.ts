@@ -9,7 +9,7 @@ export const EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA = createRuleSet(
 
   [createSchema({
     event: assert.stringEquals('start'),
-    input: assertObjectStrict<ObjectLike>,
+    data: createArrayParser(assertObjectStrict<ObjectLike>),
   })],
 
   [createSchema({
@@ -17,13 +17,13 @@ export const EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA = createRuleSet(
   })],
 
   [createSchema({
-    event: assert.stringEquals('startNode'),
-    id: assert.stringNotEmpty,
+    event: assert.stringEquals('startNodes'),
+    data: createArrayParser(assert.stringNotEmpty),
   })],
 
   [createSchema({
     event: assert.stringEquals('abortNode'),
-    id: assert.stringNotEmpty,
+    data: createArrayParser(assert.stringNotEmpty),
   })],
 
   /***************************************************************************/
@@ -31,47 +31,11 @@ export const EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA = createRuleSet(
   /***************************************************************************/
 
   [createSchema({
-    event: assert.stringEquals('setMetaValue'),
-    name: assert.stringNotEmpty,
-    value: assert.notNull,
-  })],
-
-  /***************************************************************************/
-  /* Secrets & Variables                                                     */
-  /***************************************************************************/
-
-  [createSchema({
-    event: assert.stringEquals('createVariable'),
-    name: [assert.stringNotEmpty, assert.stringConstantCase],
-    value: assert.stringNotEmpty,
-  })],
-
-  [createSchema({
-    event: assert.stringEquals('updateVariable'),
-    name: [assert.stringNotEmpty, assert.stringConstantCase],
-    value: assert.stringNotEmpty,
-  })],
-
-  [createSchema({
-    event: assert.stringEquals('removeVariable'),
-    name: [assert.stringNotEmpty, assert.stringConstantCase],
-  })],
-
-  [createSchema({
-    event: assert.stringEquals('createSecret'),
-    name: [assert.stringNotEmpty, assert.stringConstantCase],
-    value: assert.stringNotEmpty,
-  })],
-
-  [createSchema({
-    event: assert.stringEquals('updateSecret'),
-    name: [assert.stringNotEmpty, assert.stringConstantCase],
-    value: assert.stringNotEmpty,
-  })],
-
-  [createSchema({
-    event: assert.stringEquals('removeSecret'),
-    name: [assert.stringNotEmpty, assert.stringConstantCase],
+    event: assert.stringEquals('setMetaValues'),
+    data: createArrayParser({
+      name: assert.stringNotEmpty,
+      value: assert.notNull,
+    }),
   })],
 
   /***************************************************************************/
@@ -79,39 +43,17 @@ export const EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA = createRuleSet(
   /***************************************************************************/
 
   [createSchema({
-    event: assert.stringEquals('createNode'),
-    specifier: assert.stringNotEmpty,
-    x: assert.number,
-    y: assert.number,
+    event: assert.stringEquals('createNodes'),
+    data: createArrayParser({
+      specifier: assert.stringNotEmpty,
+      x: assert.number,
+      y: assert.number,
+    }),
   })],
 
   [createSchema({
     event: assert.stringEquals('cloneNodes'),
-    id: assert.stringNotEmpty,
-    x: assert.number,
-    y: assert.number,
-  })],
-
-  [createSchema({
-    event: assert.stringEquals('removeNodes'),
-    ids: createArrayParser(assert.stringNotEmpty),
-  })],
-
-  [createSchema({
-    event: assert.stringEquals('setNodeLabel'),
-    id: assert.stringNotEmpty,
-    label: assert.string,
-  })],
-
-  [createSchema({
-    event: assert.stringEquals('setNodeComment'),
-    id: assert.stringNotEmpty,
-    comment: assert.string,
-  })],
-
-  [createSchema({
-    event: assert.stringEquals('setNodesPosition'),
-    positions: createArrayParser({
+    data: createArrayParser({
       id: assert.stringNotEmpty,
       x: assert.number,
       y: assert.number,
@@ -119,17 +61,51 @@ export const EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA = createRuleSet(
   })],
 
   [createSchema({
-    event: assert.stringEquals('setNodeInputValue'),
-    id: assert.stringNotEmpty,
-    name: assert.stringNotEmpty,
-    value: assert.notNull,
+    event: assert.stringEquals('removeNodes'),
+    data: createArrayParser(assert.stringNotEmpty),
   })],
 
   [createSchema({
-    event: assert.stringEquals('setNodeInputVisibility'),
-    id: assert.stringNotEmpty,
-    name: assert.stringNotEmpty,
-    visible: assert.boolean,
+    event: assert.stringEquals('setNodesLabel'),
+    data: createArrayParser({
+      id: assert.stringNotEmpty,
+      label: assert.string,
+    }),
+  })],
+
+  [createSchema({
+    event: assert.stringEquals('setNodesComment'),
+    data: createArrayParser({
+      id: assert.stringNotEmpty,
+      comment: assert.string,
+    }),
+  })],
+
+  [createSchema({
+    event: assert.stringEquals('setNodesPosition'),
+    data: createArrayParser({
+      id: assert.stringNotEmpty,
+      x: assert.number,
+      y: assert.number,
+    }),
+  })],
+
+  [createSchema({
+    event: assert.stringEquals('setNodesInputValue'),
+    data: createArrayParser({
+      id: assert.stringNotEmpty,
+      name: assert.stringNotEmpty,
+      value: assert.notNull,
+    }),
+  })],
+
+  [createSchema({
+    event: assert.stringEquals('setNodesInputVisibility'),
+    data: createArrayParser({
+      id: assert.stringNotEmpty,
+      name: assert.stringNotEmpty,
+      visible: assert.boolean,
+    }),
   })],
 
   [createSchema({
@@ -145,19 +121,26 @@ export const EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA = createRuleSet(
 
   [createSchema({
     event: assert.stringEquals('createLink'),
-    sourceId: assert.stringNotEmpty,
-    sourceName: assert.stringNotEmpty,
-    sourcePath: [[assert.undefined], [assert.stringNotEmpty]],
-    targetId: assert.stringNotEmpty,
-    targetName: assert.stringNotEmpty,
-    targetPath: [[assert.undefined], [assert.stringNotEmpty]],
+    data: createArrayParser({
+      sourceId: assert.stringNotEmpty,
+      sourceName: assert.stringNotEmpty,
+      sourcePath: [[assert.undefined], [assert.stringNotEmpty]],
+      targetId: assert.stringNotEmpty,
+      targetName: assert.stringNotEmpty,
+      targetPath: [[assert.undefined], [assert.stringNotEmpty]],
+    }),
   })],
 
   [createSchema({
     event: assert.stringEquals('removeLink'),
-    id: assert.stringNotEmpty,
-    name: assert.stringNotEmpty,
-    path: [[assert.undefined], [assert.stringNotEmpty]],
+    data: createArrayParser({
+      sourceId: [[assert.undefined], [assert.stringNotEmpty]],
+      sourceName: [[assert.undefined], [assert.stringNotEmpty]],
+      sourcePath: [[assert.undefined], [assert.stringNotEmpty]],
+      targetId: [[assert.undefined], [assert.stringNotEmpty]],
+      targetName: [[assert.undefined], [assert.stringNotEmpty]],
+      targetPath: [[assert.undefined], [assert.stringNotEmpty]],
+    }),
   })],
 
   /***************************************************************************/
@@ -166,8 +149,7 @@ export const EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA = createRuleSet(
 
   [createSchema({
     event: assert.stringEquals('setUserPosition'),
-    x: assert.number,
-    y: assert.number,
+    data: createArrayParser(assert.number),
   })],
 
   [createSchema({

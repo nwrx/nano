@@ -5,12 +5,9 @@ import { ModuleUser } from '../user'
 import * as ROUTES from './routes'
 import * as UTILS from './utils'
 
+export type * from './utils/editorSessionClientMessage'
 export type * from './utils/editorSessionServerMessage'
-export type * from './utils/searchCategories'
-export type * from './utils/serializeComponent'
-export type * from './utils/serializeComponentInstance'
-export type * from './utils/serializeInputSchema'
-export type * from './utils/serializeOutputSchema'
+export type * from './utils/serializeNode'
 export type * from './utils/serializeSession'
 
 /**

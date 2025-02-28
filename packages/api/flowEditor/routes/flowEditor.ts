@@ -1,10 +1,17 @@
-import type { ModuleFlow } from '../../flow'
+import type { ModuleFlowEditor } from '..'
 import { createWebSocketRoute } from '@unserved/server'
 import { assert, createSchema } from '@unshared/validation'
+import { ModuleFlow } from '../../flow'
+import { ModuleProject } from '../../project'
 import { ModuleUser } from '../../user'
-import { EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA, getEditorSession, resolveSessionByPeer } from '../utils'
+import { ModuleWorkspace } from '../../workspace'
+import {
+  EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA,
+  EDITOR_SESSION_SERVER_MESSAGE_SCHEMA,
+  getEditorSession,
+} from '../utils'
 
-export function flowEditor(this: ModuleFlow) {
+export function flowEditor(this: ModuleFlowEditor) {
   return createWebSocketRoute(
     {
       name: 'WS /ws/workspaces/:workspace/projects/:project/flows/:name/editor',
@@ -14,35 +21,41 @@ export function flowEditor(this: ModuleFlow) {
         name: assert.stringNotEmpty.with('Flow name is required.'),
       }),
       parseClientMessage: EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA,
+      parseServerMessage: EDITOR_SESSION_SERVER_MESSAGE_SCHEMA,
     },
     {
       onOpen: async({ peer, parameters }) => {
-        try {
-          const userModule = this.getModule(ModuleUser)
-          const { user } = await userModule.authenticate(peer)
-          const session = await getEditorSession.call(this, { ...parameters, user })
-          await session.subscribe(peer, user)
-        }
-        catch (error) {
-          const message = error instanceof Error ? error.message : String(error)
-          peer.send({ event: 'error', message: `Error while opening session: ${message}` })
-          console.error(error)
-        }
-      },
+        const moduleUser = this.getModule(ModuleUser)
+        const moduleFlow = this.getModule(ModuleFlow)
+        const moduleProject = this.getModule(ModuleProject)
+        const moduleWorkspace = this.getModule(ModuleWorkspace)
+        const { user } = await moduleUser.authenticate(peer)
 
-      onError: ({ peer, error }) => {
-        peer.send({ event: 'error', message: error.message })
-      },
+        // --- Resolve the flow and assert the user has access to it.
+        const workspace = await moduleWorkspace.getWorkspace({ name: parameters.workspace, user, permission: 'Read' })
+        const project = await moduleProject.getProject({ name: parameters.project, workspace, user, permission: 'Read' })
+        const flow = await moduleFlow.getFlow({ name: parameters.name, workspace, project, user, permission: 'Read' })
 
-      onClose: ({ peer }) => {
-        const session = resolveSessionByPeer.call(this, peer)
-        session.unsubscribe(peer)
+        // --- Get the editor session and subscribe the peer.
+        const session = getEditorSession.call(this, { flow, user })
+        await session.subscribe(peer, user)
       },
 
       onMessage: async({ peer, message }) => {
-        const session = resolveSessionByPeer.call(this, peer)
-        peer.send({ event: 'message', message: 'Received message.' })
+        const session = getEditorSession.call(this, { peer })
         await session.onMessage(peer, message)
+      },
+
+      onClose: ({ peer }) => {
+        const session = getEditorSession.call(this, { peer })
+        session.unsubscribe(peer)
+      },
+
+      onError: ({ peer, error }) => {
+        peer.send({
+          event: 'error',
+          message: error.message,
+        })
       },
     },
   )
