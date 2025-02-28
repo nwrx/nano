@@ -82,7 +82,7 @@ describe('createVault', () => {
       const vault = await createVault.call(moduleVault, options as CreateVaultOptions)
       await moduleVault.getRepositories().Vault.save(vault)
       const shouldThrow = createVault.call(moduleVault, options as CreateVaultOptions)
-      const error = moduleVault.errors.VAULT_ALREADY_EXISTS('vault', workspace.name)
+      const error = moduleVault.errors.VAULT_ALREADY_EXISTS(workspace.name, 'vault')
       await expect(shouldThrow).rejects.toThrow(error)
     })
 

@@ -33,7 +33,7 @@ export async function createVault(this: ModuleVault, options: CreateVaultOptions
   // --- Assert that no vault with the same name exists in the workspace.
   const { Vault } = this.getRepositories()
   const exists = await Vault.countBy({ name, workspace })
-  if (exists > 0) throw this.errors.VAULT_ALREADY_EXISTS(name, workspace.name)
+  if (exists > 0) throw this.errors.VAULT_ALREADY_EXISTS(workspace.name, name)
 
   // --- Encrypt the configuration using the module's encryption key.
   const configurationJson = JSON.stringify(configuration)

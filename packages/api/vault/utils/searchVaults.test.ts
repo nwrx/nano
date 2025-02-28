@@ -81,7 +81,7 @@ describe('searchVaults', () => {
       const { user } = await setupUser()
       const { workspace } = await setupWorkspace()
       await setupVault({ user, workspace, name: 'vault' })
-      const results = await searchVaults.call(moduleVault, { user, workspace, search: 'pro%ject' })
+      const results = await searchVaults.call(moduleVault, { user, workspace, search: 'va!ult' })
       expect(results).toHaveLength(1)
       expect(results[0].name).toBe('vault')
     })
