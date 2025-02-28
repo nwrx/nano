@@ -21,7 +21,7 @@ export function vaultRemove(this: ModuleVault) {
 
       // --- Get the workspace/vault and check read permission.
       const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Read' })
-      const vault = await getVault.call(this, { user, name: parameters.vault, workspace, permission: 'Read' })
+      const vault = await getVault.call(this, { user, workspace, name: parameters.vault, permission: 'Owner' })
 
       // --- Soft remove the vault.
       const { Vault } = this.getRepositories()
