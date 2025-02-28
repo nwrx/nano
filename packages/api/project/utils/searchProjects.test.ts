@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import type { Context } from '../../__fixtures__'
-import { EXP_UUID } from '@unshared/validation'
+import { EXP_UUID, ValidationError } from '@unshared/validation'
 import { createTestContext } from '../../__fixtures__'
 import { PROJECT_PERMISSIONS, type ProjectPermission } from './assertProjectPermission'
 import { searchProjects } from './searchProjects'
@@ -53,7 +53,7 @@ describe('searchProjects', () => {
     })
   }
 
-  describe<Context>('edge cases', (it) => {
+  describe<Context>('filtering', (it) => {
     it('should return empty array when no matches found', async({ setupWorkspace, moduleProject }) => {
       const { workspace } = await setupWorkspace({ isPublic: true })
       const results = await searchProjects.call(moduleProject, { workspace, search: 'project' })
@@ -102,13 +102,54 @@ describe('searchProjects', () => {
       expect(results[0].name).toBe('project 123')
     })
 
-    it('should use ILIKE operator for searches less than 3 characters', async({ setupWorkspace, setupProject, moduleProject }) => {
+    it('should ignore search string with less than 3 characters', async({ setupWorkspace, setupProject, moduleProject }) => {
       const { workspace } = await setupWorkspace({ isPublic: true })
       await setupProject({ workspace, isPublic: true, name: 'project' })
-      const results1 = await searchProjects.call(moduleProject, { workspace, search: 'pr' })
-      const results2 = await searchProjects.call(moduleProject, { workspace, search: 'p' })
-      expect(results1).toHaveLength(1)
-      expect(results2).toHaveLength(1)
+      const results = await searchProjects.call(moduleProject, { workspace, search: 'xx' })
+      expect(results).toHaveLength(1)
+    })
+  })
+
+  describe<Context>('validation', (it) => {
+    it('should throw a "ValidationError" if workspace is not provided', async({ moduleProject }) => {
+      // @ts-expect-error: testing invalid input
+      const shouldReject = () => searchProjects.call(moduleProject, { search: 'project' })
+      await expect(shouldReject).rejects.toThrowError(ValidationError)
+    })
+
+    it('should throw a "ValidationError" if search is invalid', async({ setupWorkspace, moduleProject }) => {
+      const { workspace } = await setupWorkspace({ isPublic: true })
+      // @ts-expect-error: testing invalid input
+      const shouldReject = () => searchProjects.call(moduleProject, { workspace, search: 123 })
+      await expect(shouldReject).rejects.toThrowError(ValidationError)
+    })
+
+    it('should throw a "ValidationError" if search is not a string', async({ setupWorkspace, moduleProject }) => {
+      const { workspace } = await setupWorkspace({ isPublic: true })
+      // @ts-expect-error: testing invalid input
+      const shouldReject = () => searchProjects.call(moduleProject, { workspace, search: ['project'] })
+      await expect(shouldReject).rejects.toThrowError(ValidationError)
+    })
+
+    it('should throw a "ValidationError" if page is invalid', async({ setupWorkspace, moduleProject }) => {
+      const { workspace } = await setupWorkspace({ isPublic: true })
+      // @ts-expect-error: testing invalid input
+      const shouldReject = () => searchProjects.call(moduleProject, { workspace, page: '1' })
+      await expect(shouldReject).rejects.toThrowError(ValidationError)
+    })
+
+    it('should throw a "ValidationError" if limit is invalid', async({ setupWorkspace, moduleProject }) => {
+      const { workspace } = await setupWorkspace({ isPublic: true })
+      // @ts-expect-error: testing invalid input
+      const shouldReject = () => searchProjects.call(moduleProject, { workspace, limit: '10' })
+      await expect(shouldReject).rejects.toThrowError(ValidationError)
+    })
+
+    it('should throw a "ValidationError" if user is invalid', async({ setupWorkspace, moduleProject }) => {
+      const { workspace } = await setupWorkspace({ isPublic: true })
+      // @ts-expect-error: testing invalid input
+      const shouldReject = () => searchProjects.call(moduleProject, { workspace, user: 'user' })
+      await expect(shouldReject).rejects.toThrowError(ValidationError)
     })
   })
 })

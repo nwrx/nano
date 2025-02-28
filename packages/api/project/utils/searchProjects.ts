@@ -35,7 +35,7 @@ export async function searchProjects(this: ModuleProject, options: SearchProject
   // --- Get the repositories to query the database.
   const { Project } = this.getRepositories()
   const searchSafe = search.replaceAll(/[^\d\sa-z]/gi, '')
-  const searchOperator = searchSafe.length < 3 ? ILike(`%${searchSafe}%`) : undefined
+  const searchOperator = searchSafe.length > 2 ? ILike(`%${searchSafe}%`) : undefined
 
   // --- Search for all public projects within public workspaces.
   const where: Array<FindOptionsWhere<Project>> = [
