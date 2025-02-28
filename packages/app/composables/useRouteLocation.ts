@@ -1,44 +1,17 @@
 export const useRouteLocation = createSharedComposable(() => ({
-  getWorkspaceRoute(workspace: string) {
-    return {
-      name: 'Workspace',
-      params: { workspace },
-    }
-  },
 
-  getWorkspaceChatRoute(workspace: string) {
-    return {
-      name: 'WorkspaceChat',
-      params: { workspace },
-    }
-  },
+  // Workspace
+  getWorkspaceRoute: (workspace: string) => ({ name: 'Workspace', params: { workspace } }),
+  getWorkspaceSettingsRoute: (workspace: string) => ({ name: 'WorkspaceSettings', params: { workspace } }),
+  getWorkspaceChatRoute: (workspace: string) => ({ name: 'WorkspaceChat', params: { workspace } }),
+  getWorkspaceMonitoringRoute: (workspace: string) => ({ name: 'WorkspaceMonitoring', params: { workspace } }),
 
-  getWorkspaceMonitoringRoute(workspace: string) {
-    return {
-      name: 'WorkspaceMonitoring',
-      params: { workspace },
-    }
-  },
+  // Project
+  getProjectSettingsRoute: (workspace: string, project: string) => ({ name: 'ProjectSettings', params: { workspace, project } }),
 
-  getProjectSettingsRoute(workspace: string, project: string) {
-    return {
-      name: 'ProjectSettings',
-      params: { workspace, project },
-    }
-  },
+  // Flow
+  getFlowRoute: (workspace: string, project: string, name: string) => ({ name: 'ProjectFlowEditor', params: { workspace, project, name } }),
 
-  getFlowRoute(workspace: string, project: string, name: string) {
-    if (!name || !project || !workspace) return
-    return {
-      name: 'ProjectFlowEditor',
-      params: { workspace, project, name },
-    }
-  },
-
-  getChatRoute(workspace: string, project: string, flow: string) {
-    return {
-      name: 'WorkspaceChat',
-      params: { workspace, project, flow, thread: 'new' },
-    }
-  },
+  // Chat
+  getChatRoute: (workspace: string, project: string, flow: string) => ({ name: 'WorkspaceChat', params: { workspace, project, flow, thread: 'new' } }),
 }))
