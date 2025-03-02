@@ -11,6 +11,7 @@ type Theme =
   & THEME.ThemeHint
   & THEME.ThemeHyperlink
   & THEME.ThemeInput
+  & THEME.ThemeTab
   & ThemeUno
 
 export default defineConfig<Theme>({
@@ -46,6 +47,7 @@ export default defineConfig<Theme>({
     THEME.ruleInput,
     THEME.ruleButton,
     THEME.ruleLink,
+    THEME.ruleTab,
   ],
 
   /**
@@ -413,6 +415,45 @@ export default defineConfig<Theme>({
         opacity: '1',
       },
     },
+
+    // Tab
+    tabColor: {
+      DEFAULT: `${COLORS.primary[900]}80`,
+      hover: COLORS.primary[900],
+      active: COLORS.primary[50],
+      inactive: `${COLORS.primary[900]}80`,
+    },
+    tabBackground: {
+      DEFAULT: 'transparent',
+      hover: 'transparent',
+      active: COLORS.primary[900],
+      inactive: 'transparent',
+    },
+    tabBorderColor: {
+      DEFAULT: 'transparent',
+      hover: COLORS.primary[900],
+      active: 'transparent',
+      inactive: 'transparent',
+    },
+    tabVariant: {
+      DEFAULT: {
+        borderRadius: '0.25rem',
+        fontSize: '0.875rem',
+        borderWidth: '1px',
+        paddingLeft: '0.75rem',
+        paddingRight: '0.75rem',
+        paddingTop: '0.5rem',
+        paddingBottom: '0.5rem',
+      },
+      lg: {
+        fontSize: '1rem',
+        borderWidth: '1px',
+        paddingLeft: '1rem',
+        paddingRight: '1rem',
+        paddingTop: '0.75rem',
+        paddingBottom: '0.75rem',
+      },
+    },
   },
 
   presets: [
@@ -604,6 +645,26 @@ export default defineConfig<Theme>({
           hyperlinkColor: {
             DEFAULT: COLORS.primary[50],
             primary: COLORS.primary[400],
+          },
+
+          // Tab
+          tabColor: {
+            DEFAULT: `${COLORS.primary[50]}80`,
+            hover: COLORS.primary[50],
+            active: COLORS.primary[900],
+            inactive: `${COLORS.primary[50]}80`,
+          },
+          tabBackground: {
+            DEFAULT: 'transparent',
+            hover: 'transparent',
+            active: `${COLORS.primary[50]}FF`,
+            inactive: 'transparent',
+          },
+          tabBorderColor: {
+            DEFAULT: 'transparent',
+            hover: COLORS.primary[50],
+            active: 'transparent',
+            inactive: 'transparent',
           },
         },
       },
