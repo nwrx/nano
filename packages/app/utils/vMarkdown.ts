@@ -1,8 +1,16 @@
 /* eslint-disable sonarjs/slow-regex */
-import type { Directive } from 'vue'
+import type { Directive, DirectiveHook } from 'vue'
 import { escapeHtml } from '@unshared/string/escapeHtml'
 import DOMPurify from 'dompurify'
 import { marked } from 'marked'
+
+const toMarkdown: DirectiveHook<HTMLElement, any, string | undefined, 'html'> = (element, binding) => {
+  if (!binding.value) return
+  const markdown = binding.modifiers.html ? binding.value : escapeHtml(binding.value).replaceAll(/{{([^}]+)}}/g, '`$1`')
+  const html = marked(markdown, { gfm: true, breaks: true }) as string
+  const htmlSafe = DOMPurify.sanitize(html)
+  element.setHTMLUnsafe(htmlSafe)
+}
 
 /**
  * The `v-markdown` directive is used to render markdown content in the UI. It takes a string
@@ -16,11 +24,6 @@ import { marked } from 'marked'
  * </template>
  */
 export const vMarkdown: Directive<HTMLElement, string | undefined, 'html'> = {
-  mounted(element, binding) {
-    if (!binding.value) return
-    const markdown = binding.modifiers.html ? binding.value : escapeHtml(binding.value).replaceAll(/{{([^}]+)}}/g, '`$1`')
-    const html = marked(markdown, { gfm: true, breaks: true }) as string
-    const htmlSafe = DOMPurify.sanitize(html)
-    element.setHTMLUnsafe(htmlSafe)
-  },
+  updated: toMarkdown,
+  mounted: toMarkdown,
 }
