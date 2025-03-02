@@ -1,8 +1,9 @@
 <script setup lang="ts">
 const i18n = useI18n()
+const route = useRoute()
 
-useHead({
-  title: 'Welcome',
+useHead(() => ({
+  title: localize(route.meta.title),
   titleTemplate: `%s • ${CONSTANTS.appTitle}`,
   htmlAttrs: {
     lang: i18n.locale,
@@ -33,6 +34,10 @@ useHead({
   ],
 
   meta: [
+    // Route
+    { hid: 'description', name: 'description', content: localize(route.meta.description) },
+
+    // Generic
     { name: 'msapplication-TileColor', content: COLORS.primary['500'] },
     { name: 'msapplication-TileImage', content: '/mstile-144x144.png' },
     { name: 'theme-color', content: COLORS.primary['500'] },
@@ -56,7 +61,7 @@ useHead({
     { property: 'og:site_name', content: CONSTANTS.appTitle },
     { property: 'og:description', content: CONSTANTS.appDescription },
   ],
-})
+}))
 </script>
 
 <template>
