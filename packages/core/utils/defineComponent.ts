@@ -21,13 +21,19 @@ export type SchemaControl =
   | 'table'
   | 'text'
   | 'textarea'
+  | 'markdown'
+  | 'json'
   | 'tags'
-  | 'variable'
+  | 'vault'
+  | 'language-model'
+  | 'language-model-tool'
 
 export type SchemaXType =
   | 'stream'
   | 'function'
   | 'file'
+  | 'language-model'
+  | 'language-model-tool'
   | OpenAPIV3_1.NonArraySchemaObjectType
   | OpenAPIV3_1.ArraySchemaObjectType
 
