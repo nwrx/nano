@@ -1,14 +1,14 @@
 <script setup lang="ts">
+import { vMarkdown } from '#imports'
+
 defineProps<{
   title?: string
-  text?: string
+  text?: string | string[]
   vertical?: boolean
   label?: string
 }>()
 
-const emit = defineEmits<{
-  submit: []
-}>()
+const emit = defineEmits<{ submit: [] }>()
 </script>
 
 <template>
@@ -30,11 +30,19 @@ const emit = defineEmits<{
           {{ title }}
         </slot>
       </h2>
-      <p class="text-sm text-subtle mt-1">
-        <slot name="text">
-          {{ text }}
-        </slot>
-      </p>
+      <p
+        v-if="typeof text === 'string'"
+        v-markdown.html="text"
+        class="text-sm text-subtle mt-1 markdown"
+      />
+      <div v-else-if="Array.isArray(text)" class="space-y-md">
+        <p
+          v-for="line in text"
+          :key="line"
+          v-markdown.html="line"
+          class="text-sm text-subtle mt-1 markdown"
+        />
+      </div>
     </div>
 
     <!-- Form -->
@@ -42,15 +50,18 @@ const emit = defineEmits<{
       class="flex items-start flex-col gap-md grow lg:basis-2/3 mt-lg"
       :class="{ 'lg:mt-0': !vertical }"
       @submit.prevent="() => emit('submit')">
+
+      <!-- Form content -->
       <slot />
+
+      <!-- Confirm button -->
       <Button
         v-if="label"
-        size="md"
         :label="label"
         icon-prepend="i-carbon:save"
         icon-append="i-carbon:chevron-right"
         icon-expand
-        class="button-success self-end mt-2"
+        class="button-success self-end mt-md"
         type="submit"
       />
     </form>

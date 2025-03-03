@@ -1,6 +1,7 @@
 <!-- eslint-disable vue/prop-name-casing -->
 <script setup lang="ts">
 import type { BaseButtonProps } from '@unshared/vue'
+import { vMarkdown } from '#imports'
 
 defineProps<BaseButtonProps & {
   title: string
@@ -9,9 +10,7 @@ defineProps<BaseButtonProps & {
   classButton?: string
 }>()
 
-const emit = defineEmits<{
-  click: []
-}>()
+const emit = defineEmits<{ click: [] }>()
 </script>
 
 <template>
@@ -26,7 +25,10 @@ const emit = defineEmits<{
       </h3>
       <p class="text-sm text-subtle">
         <slot name="text">
-          {{ text }}
+          <span
+            v-markdown.html="text"
+            class="markdown"
+          />
         </slot>
       </p>
     </div>
@@ -36,8 +38,8 @@ const emit = defineEmits<{
       eager
       :label="label"
       :icon-append="icon"
-      class="shrink-0"
       :class="classButton"
+      class="shrink-0"
       @click="() => emit('click')"
     />
   </div>

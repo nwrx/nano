@@ -2,10 +2,9 @@
   <div
     class="
       flex flex-col w-full h-full
-      absolute top-0 left-0 left-0 right-0
       overflow-x-hidden overflow-y-auto
-      bg-app text-app
-  ">
+      bg-app text-app rd-app
+    ">
     <slot />
   </div>
 </template>
