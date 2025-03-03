@@ -8,6 +8,9 @@ export type Alignment = 'center' | 'left' | 'right'
 
 export type NavItemGroup =
   | 'administration'
+
+  // Project Settings
+  | 'project-billing'
   | 'project-security'
   | 'project-settings'
 
