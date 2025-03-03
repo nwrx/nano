@@ -6,11 +6,6 @@ definePageMeta({
 })
 
 const { t } = useI18n()
-useHead(() => ({
-  title: t('title'),
-  meta: [{ name: 'description', content: t('description') }],
-}))
-
 const route = useRoute()
 const workspaceName = computed(() => route.params.workspace as string)
 const workspace = useWorkspace(workspaceName)
@@ -41,7 +36,7 @@ onMounted(async() => {
     />
 
     <!-- Project list -->
-    <AppPageContainer class="space-y-lg">
+    <AppPageContainer contained class="space-y-lg">
 
       <!-- Bookmarks -->
       <!-- <ProjectBookmarks :flows="bookmarkFlows" /> -->
