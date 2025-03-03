@@ -22,30 +22,10 @@ definePageMeta({
   },
 })
 
-// --- Route and i18n.
-const { t } = useI18n()
 const route = useRoute()
 const workspace = computed(() => route.params.workspace as string)
-
-// --- Data and actions.
-const { data, getWorkspace } = useWorkspace(workspace)
-onMounted(getWorkspace)
 </script>
 
 <template>
-  <AppPageContainer contained>
-    <AppPageForm
-      :title="t('billing.invoices.title')"
-      :text="t('billing.invoices.text')">
-      <!-- Invoice list and download options will go here -->
-    </AppPageForm>
-  </AppPageContainer>
+  <AppPageContainer contained />
 </template>
-
-<i18n lang="yaml">
-en:
-  billing:
-    invoices:
-      title: Invoices
-      text: View and download your billing history.
-</i18n>

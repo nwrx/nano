@@ -22,32 +22,11 @@ definePageMeta({
   },
 })
 
-// --- Route and i18n.
-const { t } = useI18n()
-const route = useRoute()
-const workspace = computed(() => route.params.workspace as string)
-
-// --- Data and actions.
-const { data, getWorkspace } = useWorkspace(workspace)
-onMounted(getWorkspace)
+// const { t } = useI18n()
+// const route = useRoute()
+// const workspace = computed(() => route.params.workspace as string)
 </script>
 
 <template>
-  <AppPageContainer contained>
-    <!-- Project management content will go here -->
-    <AppPageForm
-      :title="t('projects.title')"
-      :text="t('projects.text')">
-      <!-- Project list and management UI will go here -->
-    </AppPageForm>
-  </AppPageContainer>
+  <AppPageContainer contained />
 </template>
-
-<i18n lang="yaml">
-en:
-  projects:
-    title: Projects
-    text: Manage projects in your workspace and their configurations.
-    empty: No projects found in this workspace.
-    create: Create new project
-</i18n>

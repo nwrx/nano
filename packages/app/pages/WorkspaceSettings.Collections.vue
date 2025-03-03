@@ -23,31 +23,10 @@ definePageMeta({
 })
 
 // --- Route and i18n.
-const { t } = useI18n()
 const route = useRoute()
 const workspace = computed(() => route.params.workspace as string)
-
-// --- Data and actions.
-const { data, getWorkspace } = useWorkspace(workspace)
-onMounted(getWorkspace)
 </script>
 
 <template>
-  <AppPageContainer contained>
-    <!-- Collections management content will go here -->
-    <AppPageForm
-      :title="t('collections.title')"
-      :text="t('collections.text')">
-      <!-- Collections list and management UI will go here -->
-    </AppPageForm>
-  </AppPageContainer>
+  <AppPageContainer contained />
 </template>
-
-<i18n lang="yaml">
-en:
-  collections:
-    title: Collections
-    text: Organize your resources into collections for better management and access control.
-    empty: No collections found in this workspace.
-    create: Create new collection
-</i18n>

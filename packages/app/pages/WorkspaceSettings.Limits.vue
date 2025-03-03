@@ -1,17 +1,17 @@
 <script setup lang="ts">
 definePageMeta({
-  name: 'WorkspaceSettingsBillingLimits',
-  path: '/:workspace/settings/billing/limits',
+  name: 'WorkspaceSettingsLimits',
+  path: '/:workspace/settings/limits',
   middleware: 'redirect-when-guest',
   layout: 'workspace-settings',
   group: 'workspace-billing',
   icon: 'i-carbon:chart-maximum',
   title: {
-    en: 'Usage Limits',
-    fr: 'Limites d\'utilisation',
-    de: 'Nutzungslimits',
-    es: 'Límites de uso',
-    zh: '使用限制',
+    en: 'Usage & Limits',
+    fr: 'Utilisation et limites',
+    de: 'Nutzung und Grenzen',
+    es: 'Uso y límites',
+    zh: '使用和限制',
   },
   description: {
     en: 'Configure usage limits and quotas for your workspace.',
@@ -22,14 +22,8 @@ definePageMeta({
   },
 })
 
-// --- Route and i18n.
-const { t } = useI18n()
-const route = useRoute()
-const workspace = computed(() => route.params.workspace as string)
-
-// --- Data and actions.
-const { data, getWorkspace } = useWorkspace(workspace)
-onMounted(getWorkspace)
+// const route = useRoute()
+// const workspace = computed(() => route.params.workspace as string)
 </script>
 
 <template>
@@ -37,9 +31,3 @@ onMounted(getWorkspace)
     <!-- Billing limits content will go here -->
   </AppPageContainer>
 </template>
-
-<i18n lang="yaml">
-en:
-  title: Usage Limits
-  description: Configure usage limits and quotas for your workspace.
-</i18n>

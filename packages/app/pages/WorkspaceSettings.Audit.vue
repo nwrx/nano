@@ -1,6 +1,6 @@
 <script setup lang="ts">
 definePageMeta({
-  name: 'WorkspaceSettingsSecurityAudit',
+  name: 'WorkspaceSettingsAudit',
   path: '/:workspace/settings/security/audit',
   middleware: 'redirect-when-guest',
   layout: 'workspace-settings',
@@ -22,30 +22,10 @@ definePageMeta({
   },
 })
 
-// --- Route and i18n.
-const { t } = useI18n()
-const route = useRoute()
-const workspace = computed(() => route.params.workspace as string)
-
-// --- Data and actions.
-const { data, getWorkspace } = useWorkspace(workspace)
-onMounted(getWorkspace)
+// const route = useRoute()
+// const workspace = computed(() => route.params.workspace as string)
 </script>
 
 <template>
-  <AppPageContainer contained>
-    <AppPageForm
-      :title="t('security.audit.title')"
-      :text="t('security.audit.text')">
-      <!-- Security audit logs and filtering controls will go here -->
-    </AppPageForm>
-  </AppPageContainer>
+  <AppPageContainer contained />
 </template>
-
-<i18n lang="yaml">
-en:
-  security:
-    audit:
-      title: Security Audit Logs
-      text: Review security events and user activities in your workspace.
-</i18n>
