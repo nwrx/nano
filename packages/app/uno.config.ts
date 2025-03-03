@@ -127,7 +127,7 @@ export default defineConfig<Theme>({
     },
 
     borderColor: {
-      'danger': `${COLORS.danger[800]}80`,
+      'danger': COLORS.danger[800],
       'warning': COLORS.warning[800],
       'success': COLORS.success[800],
 
@@ -195,13 +195,13 @@ export default defineConfig<Theme>({
     fontFamily: {
       sans: '"IBM Plex Sans", sans-serif',
       serif: '"IBM Plex Serif", serif',
-      mono: '"Fira Code", monospace',
+      mono: '"JetBrains Mono", monospace',
     },
 
     // Input
     inputColor: {
       'DEFAULT': COLORS.primary[900],
-      'hover': COLORS.primary[900],
+      'hover': `${COLORS.primary[900]}80`,
       'focus': COLORS.primary[900],
       'error': COLORS.danger[600],
       'disabled': `${COLORS.primary[900]}C0`,
@@ -431,7 +431,7 @@ export default defineConfig<Theme>({
     },
     tabBorderColor: {
       DEFAULT: 'transparent',
-      hover: COLORS.primary[900],
+      hover: `${COLORS.primary[900]}80`,
       active: 'transparent',
       inactive: 'transparent',
     },
@@ -662,7 +662,7 @@ export default defineConfig<Theme>({
           },
           tabBorderColor: {
             DEFAULT: 'transparent',
-            hover: COLORS.primary[50],
+            hover: `${COLORS.primary[50]}80`,
             active: 'transparent',
             inactive: 'transparent',
           },

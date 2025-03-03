@@ -106,7 +106,7 @@ export default defineNuxtConfig({
     families: [
       { name: 'IBM Plex Sans', provider: 'google' },
       { name: 'IBM Plex Serif', provider: 'google' },
-      { name: 'Fira Code', provider: 'google' },
+      { name: 'JetBrains Mono', provider: 'google' },
     ],
   },
 
