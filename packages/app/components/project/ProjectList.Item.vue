@@ -1,7 +1,9 @@
 <!-- eslint-disable unicorn/prefer-ternary -->
 <!-- eslint-disable vue/no-setup-props-reactivity-loss -->
 <script setup lang="ts">
-import type { ProjectObject } from '@nwrx/nano-api'
+import type { application, FlowObject, ProjectObject } from '@nwrx/nano-api'
+import type { ChannelConnectOptions } from '@unserved/client'
+import type { WebSocketChannel } from '@unshared/client/websocket'
 
 const props = defineProps<ProjectObject & {
   workspace: string
@@ -21,8 +23,40 @@ const emit = defineEmits<{
 // --- Localize & VModel
 const { t } = useI18n()
 const routes = useRouteLocation()
-const project = useProject(props.workspace, props.name)
+
+// --- Model.
+const client = useClient()
+type UseProjectChannel = WebSocketChannel<ChannelConnectOptions<typeof application, 'WS /ws/workspaces/:workspace/projects/:project'>>
+let channel: undefined | UseProjectChannel
+tryOnScopeDispose(() => {
+  if (!channel) return
+  void channel.close()
+})
+
+const flows = ref<FlowObject[]>([])
+async function subscribe() {
+  if (channel) return
+  channel = await client.connect('WS /ws/workspaces/:workspace/projects/:project', {
+    data: {
+      workspace: props.workspace,
+      project: props.name,
+    },
+    onMessage: (message) => {
+      if (message.event === 'flows') flows.value = message.flows
+      if (message.event === 'flowCreated') flows.value = [...flows.value, message.flow]
+      if (message.event === 'flowDeleted') flows.value = flows.value.filter(flow => flow.name !== message.name)
+    },
+  })
+}
+
+async function unsubscribe() {
+  if (!channel) return
+  await channel.close()
+  channel = undefined
+}
+
 const model = useVModel(props, 'modelValue', emit, { passive: true })
+watch(model, value => (value ? subscribe() : unsubscribe()), { immediate: true })
 
 // --- Dropzone for importing flows.
 const dropzone = ref<HTMLDivElement>()
@@ -33,11 +67,6 @@ const { isOverDropZone } = useDropZone(dropzone, {
     emit('flowImport', files[0])
   },
 })
-
-watch(model, async value => (
-  value
-    ? project.subscribe()
-    : project.unsubscribe()), { immediate: true })
 </script>
 
 <template>
@@ -114,7 +143,7 @@ watch(model, async value => (
       class="b-l b-app ml-lg pl-lg transition-all duration-slow">
       <div class="space-y-md py-md">
         <ProjectListItemFlow
-          v-for="flow in project.flows.value"
+          v-for="flow in flows"
           :key="flow.name"
           v-bind="flow"
           :workspace="workspace"
