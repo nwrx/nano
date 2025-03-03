@@ -4,6 +4,7 @@ definePageMeta({
   path: '/settings/password',
   middleware: 'redirect-when-guest',
   layout: 'user-settings',
+  group: 'user-security',
   icon: 'i-carbon:security',
   title: {
     en: 'Password & MFA',

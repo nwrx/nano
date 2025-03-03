@@ -4,6 +4,7 @@ definePageMeta({
   path: '/settings/notifications',
   middleware: 'redirect-when-guest',
   layout: 'user-settings',
+  group: 'user-settings',
   icon: 'i-carbon:notification',
   title: {
     en: 'Notifications',
