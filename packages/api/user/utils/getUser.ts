@@ -6,20 +6,10 @@ import { assertUser } from './assertUser'
 
 /** The options to resolve the user. */
 const GET_USER_OPTIONS_SCHEMA = createSchema({
-
-  /** The username of the user to resolve. */
   username: assert.stringNotEmpty,
-
-  /** The user responsible for resolving the user. */
   user: [[assert.undefined], [assertUser]],
-
-  /** Also resolve deleted users. */
   withDeleted: [[assert.undefined], [assert.boolean]],
-
-  /** Also resolve disabled users. */
   withDisabled: [[assert.undefined], [assert.boolean]],
-
-  /** Also resolve the user's profile. */
   withProfile: [[assert.undefined], [assert.boolean]],
 })
 
@@ -47,7 +37,7 @@ export async function getUser(this: ModuleUser, options: GetUserOptions): Promis
   const result = await User.findOne({
     where: { username },
     relations: { profile: withProfile ? { avatar: true } : undefined },
-    withDeleted: withDeleted === true,
+    withDeleted,
   })
 
   // --- Throw an error if the user does not exist.
