@@ -14,6 +14,7 @@ export function userGet(this: ModuleUser) {
       parseQuery: createSchema({
         withDeleted: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],
         withDisabled: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],
+        withProfile: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],
       }),
     },
     async({ event, parameters, query }) => {
@@ -25,6 +26,7 @@ export function userGet(this: ModuleUser) {
         username: parameters.username,
         withDeleted: query.withDeleted,
         withDisabled: query.withDisabled,
+        withProfile: query.withProfile,
       })
 
       // --- Serialize the user and return it.
