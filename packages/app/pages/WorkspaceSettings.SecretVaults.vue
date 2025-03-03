@@ -1,0 +1,241 @@
+<script setup lang="ts">
+import type { VaultObject } from '@nwrx/nano-api'
+
+definePageMeta({
+  name: 'WorkspaceSettingsVaults',
+  path: '/:workspace/settings/vaults',
+  middleware: 'redirect-when-guest',
+  layout: 'workspace-settings',
+  group: 'workspace-security',
+  icon: 'i-carbon:locked',
+  title: {
+    en: 'Secrets & Vaults',
+    fr: 'Secrets et coffres',
+    de: 'Geheimnisse und Tresore',
+    es: 'Secretos y bóvedas',
+    zh: '秘密和保险库',
+  },
+  description: {
+    en: 'Manage your workspace vaults and secrets.',
+    fr: 'Gérez les coffres et secrets de votre espace de travail.',
+    de: 'Verwalten Sie Ihre Arbeitsbereichstresore und Geheimnisse.',
+    es: 'Administre las cajas fuertes y secretos de su espacio de trabajo.',
+    zh: '管理您的工作区保险库和秘密。',
+  },
+})
+
+const { t } = useI18n()
+const route = useRoute()
+const routes = useRouteLocation()
+const workspace = computed(() => route.params.workspace as string)
+
+const client = useClient()
+const alerts = useAlerts()
+const vaults = ref([]) as Ref<VaultObject[]>
+async function getVaults() {
+  await client.requestAttempt('GET /api/workspaces/:workspace/vaults', {
+    data: { workspace: unref(workspace) },
+    onData: data => vaults.value = data,
+  })
+}
+
+onMounted(getVaults)
+</script>
+
+<template>
+  <AppPageContainer contained>
+
+    <!-- Vaults Table -->
+    <AppPageForm vertical :title="t('vaults.title')" :text="t('vaults.text')">
+      <Table :rows="vaults" :columns="['name', 'createdAt', 'actions']">
+        <template #header="name">
+          {{ t(`vaults.header.${name}`) }}
+        </template>
+
+        <!-- Name -->
+        <template #cell.name="vault">
+          <VaultCard :vault="vault" />
+        </template>
+
+        <!-- Created At -->
+        <template #cell.createdAt="{ createdAt }">
+          <TableCellDate :created-at="createdAt" />
+        </template>
+
+        <!-- Actions -->
+        <template #cell.actions="vault">
+          <Trigger v-slot="dialogs" :keys="['setDefault', 'remove', 'disable', 'enable', 'health', 'edit']">
+            <ContextMenu x="right" y="top" @mousedown.stop>
+              <template #menu>
+                <ContextMenuItem icon="i-carbon:edit" :label="t('vaults.menu.edit')" />
+                <ContextMenuItem v-if="!vault.isDefault" icon="i-carbon:star" :label="t('vaults.menu.setDefault')" @click="() => dialogs.open('setDefault')" />
+                <ContextMenuItem icon="i-carbon:connect" :label="t('vaults.menu.health')" @click="() => dialogs.open('health')" />
+                <ContextMenuDivider />
+                <ContextMenuItem v-if="!vault.disabledAt" icon="i-carbon:close" :label="t('vaults.menu.disable')" @click="() => dialogs.open('disable')" />
+                <ContextMenuItem v-if="vault.disabledAt" icon="i-carbon:checkmark" :label="t('vaults.menu.enable')" @click="() => dialogs.open('enable')" />
+                <ContextMenuItem v-if="!vault.deletedAt" icon="i-carbon:delete" :label="t('vaults.menu.remove')" @click="() => dialogs.open('remove')" />
+              </template>
+            </ContextMenu>
+
+            <!-- Set Default Dialog -->
+            <Dialog
+              v-model="dialogs.value.setDefault"
+              icon="i-carbon:warning"
+              class-hint="hint-warning"
+              class-button="button-warning"
+              :title="t('vaults.dialog.setDefault.title', { workspace, name: vault.name })"
+              :text="t('vaults.dialog.setDefault.text', { workspace, name: vault.name })"
+              :label-confirm="t('vaults.dialog.setDefault.confirm')"
+              :label-cancel="t('vaults.dialog.setDefault.cancel')"
+              @confirm="() => {
+                client.requestAttempt('PUT /api/workspaces/:workspace/vaults/:name/default', {
+                  data: { workspace, name: vault.name },
+                  onSuccess: async() => {
+                    alerts.success(t('vaults.dialog.setDefault.success', { workspace, name: vault.name }))
+                    await getVaults()
+                  },
+                })
+              }">
+              <VaultCard :vault="vault" />
+            </Dialog>
+
+            <!-- Remove Dialog -->
+            <Ephemeral v-slot="{ value }" :initial-value="{ name: '' }">
+              <Dialog
+                v-model="dialogs.value.remove"
+                icon="i-carbon:delete"
+                class-hint="hint-danger"
+                class-button="button-danger"
+                :title="t('vaults.dialog.remove.title', { workspace, name: vault.name })"
+                :text="t('vaults.dialog.remove.text', { workspace, name: vault.name })"
+                :label-confirm="t('vaults.dialog.remove.confirm')"
+                :label-cancel="t('vaults.dialog.remove.cancel')"
+                :disabled="!value.name || value.name !== vault.name"
+                @confirm="() => {
+                  client.requestAttempt('DELETE /api/workspaces/:workspace/vaults/:name', {
+                    data: { workspace, name: vault.name },
+                    onSuccess: async() => {
+                      alerts.success(t('vaults.dialog.remove.success', { workspace, name: vault.name }))
+                      await getVaults()
+                    },
+                  })
+                }">
+                <InputText
+                  v-model="value.name"
+                  :label="t('vaults.dialog.remove.confirmName', { name: vault.name })"
+                  :placeholder="vault.name"
+                  :text-before="`${CONSTANTS.appHost}/${workspace}`"
+                />
+              </Dialog>
+            </Ephemeral>
+
+            <!-- Disable Dialog -->
+            <Dialog
+              v-model="dialogs.value.disable"
+              icon="i-carbon:close"
+              class-hint="hint-danger"
+              class-button="button-danger"
+              :title="t('vaults.dialog.disable.title', { workspace, name: vault.name })"
+              :text="t('vaults.dialog.disable.text', { workspace, name: vault.name })"
+              :label-confirm="t('vaults.dialog.disable.confirm')"
+              :label-cancel="t('vaults.dialog.disable.cancel')"
+              @confirm="() => {
+                client.requestAttempt('PUT /api/workspaces/:workspace/vaults/:name/disable', {
+                  data: { workspace, name: vault.name },
+                  onSuccess: async() => {
+                    alerts.success(t('vaults.dialog.disable.success', { workspace, name: vault.name }))
+                    await getVaults()
+                  },
+                })
+              }">
+              <VaultCard :vault="vault" />
+            </Dialog>
+
+            <!-- Enable Dialog -->
+            <Dialog
+              v-model="dialogs.value.enable"
+              icon="i-carbon:checkmark"
+              class-hint="hint-success"
+              class-button="button-success"
+              :title="t('vaults.dialog.enable.title', { workspace, name: vault.name })"
+              :text="t('vaults.dialog.enable.text', { workspace, name: vault.name })"
+              :label-confirm="t('vaults.dialog.enable.confirm')"
+              :label-cancel="t('vaults.dialog.enable.cancel')"
+              @confirm="() => {
+                client.requestAttempt('PUT /api/workspaces/:workspace/vaults/:name/enabled', {
+                  data: { workspace, name: vault.name },
+                  onSuccess: async() => {
+                    alerts.success(t('vaults.dialog.enable.success', { workspace, name: vault.name }))
+                    await getVaults()
+                  },
+                })
+              }">
+              <VaultCard :vault="vault" />
+            </Dialog>
+          </Trigger>
+        </template>
+      </Table>
+
+      <!-- Create Button -->
+      <Hyperlink
+        eager
+        class="text-sm ml-auto mb-4"
+        icon="i-carbon:add"
+        icon-append="i-carbon:chevron-right"
+        :label="t('vaults.create')"
+        :to="routes.getWorkspaceSettingsVaultNew(workspace)"
+      />
+    </AppPageForm>
+  </apppagecontainer>
+</template>
+
+<i18n lang="yaml">
+en:
+  vaults:
+    title: Vaults
+    text: View and manage your workspace vaults. Vaults are used to securely store and manage secrets that are used in your flows. Allowing you to securely share and manage your secrets across your workspace.
+    create: Create a new vault for this workspace
+    header:
+      name: Vault Name
+      createdAt: ''
+      actions: ''
+    type:
+      local: Local
+      hashicorp: HashiCorp
+      aws: AWS
+      gcp: GCP
+      azure: Azure
+    menu:
+      edit: Edit
+      setDefault: Set as Default
+      health: Health
+      disable: Disable
+      enable: Enable
+      remove: Remove
+    dialog:
+      setDefault:
+        title: Set the **{name}** vault as the default **{workspace}** vault?
+        text: Setting this vault as default will allow all flows within the **{workspace}** workspace to read and write secrets from this vault. This can ease the management of secrets across your workspace but can also lead to security risks if not managed properly. Use this feature with caution.
+        confirm: Set this vault as default
+        cancel: Keep current default
+        success: The **{workspace}/{name}** vault has been set as the default vault.
+      disable:
+        title: Disable the **{workspace}/{name}** vault?
+        text: Disabling this vault will prevent all flows within the **{workspace}** workspace from reading and writing secrets from this vault. Are you sure you want to proceed?
+        confirm: Disable this vault
+        cancel: Keep this vault
+        success: The **{workspace}/{name}** vault has been disabled.
+      enable:
+        title: Enable the **{workspace}/{name}** vault?
+        text: Enabling this vault will allow all flows within the **{workspace}** workspace to read and write secrets from this vault. Are you sure you want to proceed?
+        confirm: Enable this vault
+        cancel: Keep this vault
+        success: The **{workspace}/{name}** vault has been enabled.
+      remove:
+        title: Remove the **{workspace}/{name}** vault?
+        text: Removing this vault will permanently delete all secrets stored within it. This action cannot be undone. Are you sure you want to proceed?
+        confirm: Remove this vault
+        cancel: Keep this vault
+        confirmName: Confirm the vault name to remove
+        success: The **{workspace}/{name}** vault has been removed.
+</i18n>
