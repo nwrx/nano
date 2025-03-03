@@ -1,3 +1,4 @@
+export * from './vaultAssignments'
 export * from './vaultCreate'
 export * from './vaultDisable'
 export * from './vaultEnable'

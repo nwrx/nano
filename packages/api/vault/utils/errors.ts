@@ -46,12 +46,19 @@ export const ERRORS = {
   }),
 
   // Assignments
-  VAULT_ALREADY_ASSIGNED: (workspace: string, name: string, assignee: string) => createError({
-    name: 'E_VAULT_ALREADY_ASSIGNED',
+  VAULT_USER_ALREADY_ASSIGNED: (workspace: string, name: string, assignee: string) => createError({
+    name: 'E_VAULT_USER_ALREADY_ASSIGNED',
     statusCode: 409,
     statusMessage: 'Conflict',
     message: `The vault "${workspace}/${name}" is already assigned to the user "${assignee}"`,
     data: { workspace, name, assignee },
+  }),
+  VAULT_PROJECT_ALREADY_ASSIGNED: (workspace: string, name: string, project: string) => createError({
+    name: 'E_VAULT_PROJECT_ALREADY_ASSIGNED',
+    statusCode: 409,
+    statusMessage: 'Conflict',
+    message: `The vault "${workspace}/${name}" is already assigned to the project "${project}"`,
+    data: { workspace, name, project },
   }),
 
   // Variables

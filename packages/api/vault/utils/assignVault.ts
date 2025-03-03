@@ -2,6 +2,7 @@ import type { Loose } from '@unshared/types'
 import type { ModuleVault } from '../index'
 import { createSchema } from '@unshared/validation'
 import { assertUser } from '../../user'
+import { assertWorkspace } from '../../workspace'
 import { assertVault } from './assertVault'
 import { assertVaultPermission } from './assertVaultPermission'
 
@@ -9,6 +10,7 @@ import { assertVaultPermission } from './assertVaultPermission'
 export const ASSIGN_VAULT_OPTIONS_SCHEMA = createSchema({
   user: assertUser,
   assignee: assertUser,
+  workspace: assertWorkspace,
   vault: assertVault,
   permission: assertVaultPermission,
 })
@@ -25,12 +27,12 @@ export type AssignVaultOptions = Loose<ReturnType<typeof ASSIGN_VAULT_OPTIONS_SC
  * @example assignVault(options) // VaultAssignment { user, assignee, vault, permission }
  */
 export async function assignVault(this: ModuleVault, options: AssignVaultOptions) {
-  const { user, assignee, vault, permission } = ASSIGN_VAULT_OPTIONS_SCHEMA(options)
+  const { user, assignee, vault, workspace, permission } = ASSIGN_VAULT_OPTIONS_SCHEMA(options)
 
   // --- Check if the user is already assigned with the permission.
   const { VaultAssignment } = this.getRepositories()
   const exists = await VaultAssignment.countBy({ user: assignee, vault, permission })
-  if (exists) throw this.errors.VAULT_ALREADY_ASSIGNED(vault.name, assignee.username)
+  if (exists) throw this.errors.VAULT_USER_ALREADY_ASSIGNED(workspace.name, vault.name, assignee.username)
 
   // --- Create and return the vault assignment.
   return VaultAssignment.create({ createdBy: user, user: assignee, vault, permission })

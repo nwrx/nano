@@ -1,11 +1,11 @@
 import type { VaultPermission } from '../utils'
 import { BaseEntity } from '@unserved/server'
-import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm'
+import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm'
 import { User } from '../../user'
 import { Vault } from './Vault'
 
 @Entity({ name: 'VaultAssignment' })
-@Unique(['vault', 'user', 'permission'])
+@Index(['vault', 'user', 'permission', 'deletedAt'])
 export class VaultAssignment extends BaseEntity {
 
   /**
