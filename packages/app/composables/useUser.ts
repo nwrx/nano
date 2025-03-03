@@ -1,16 +1,16 @@
 import type { application, UserObject } from '@nwrx/nano-api'
-import type { RouteRequestData } from '@unserved/client'
+import type { RouteRequestBody, RouteRequestQuery } from '@unserved/client'
 import { useAlerts, useClient } from '#imports'
 
-export type UseUsersOptions = Omit<RouteRequestData<typeof application, 'GET /api/users/:username'>, 'username'>
-export type SetProfileOptions = Omit<RouteRequestData<typeof application, 'PUT /api/users/:username/profile'>, 'username'>
-export type SetAvatarOptions = Omit<RouteRequestData<typeof application, 'PUT /api/users/:username/avatar'>, 'username'>
-export type SetPasswordOptions = Omit<RouteRequestData<typeof application, 'PUT /api/users/:username/password'>, 'username'>
+export type UseUsersOptions = RouteRequestQuery<typeof application, 'GET /api/users/:username'>
+export type SetProfileOptions = RouteRequestBody<typeof application, 'PUT /api/users/:username/profile'>
+export type SetAvatarOptions = RouteRequestBody<typeof application, 'PUT /api/users/:username/avatar'>
+export type SetPasswordOptions = RouteRequestBody<typeof application, 'PUT /api/users/:username/password'>
 
 export function useUser(username: MaybeRef<string | undefined>, options: UseUsersOptions = {}) {
   const client = useClient()
   const alerts = useAlerts()
-  const data = ref<UserObject>({} as UserObject)
+  const data = ref({} as UserObject) as Ref<UserObject>
 
   const getUser = async() => {
     await client.requestAttempt('GET /api/users/:username', {
@@ -21,7 +21,7 @@ export function useUser(username: MaybeRef<string | undefined>, options: UseUser
   }
 
   return {
-    data: toReactive(data) as UserObject,
+    data,
     getUser,
 
     setProfile: async(options: SetProfileOptions) => {
