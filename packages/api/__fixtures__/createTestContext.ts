@@ -50,6 +50,7 @@ export interface SetupVaultOptions {
   workspace?: Workspace
   configuration?: VaultConfiguration
   assignments?: Array<[undefined | User, ...Array<undefined | VaultPermission>]>
+  projects?: Array<[Project | undefined, ...Array<undefined | VaultPermission>]>
 }
 
 export interface SetupFlowOptions {
@@ -214,7 +215,7 @@ export async function createTestContext(testContext: TestContext) {
       const moduleVault = application.getModule(ModuleVault)
 
       // --- Create the vault with the given options.
-      const { Vault, VaultAssignment } = moduleVault.getRepositories()
+      const { Vault } = moduleVault.getRepositories()
       const vault = await createVault.call(moduleVault, {
         name: options.name ?? randomBytes(8).toString('hex'),
         user: options.user! ?? await context.setupUser().then(x => x.user),
@@ -223,6 +224,7 @@ export async function createTestContext(testContext: TestContext) {
       })
 
       // --- Assign the user to the vault with the given permissions.
+      const { VaultAssignment } = moduleVault.getRepositories()
       if (options.assignments) {
         for (const assignment of options.assignments) {
           const [user, ...permissions] = assignment
@@ -232,6 +234,21 @@ export async function createTestContext(testContext: TestContext) {
             const assignment = VaultAssignment.create({ vault, user, permission, createdBy: vault.createdBy })
             vault.assignments = vault.assignments ?? []
             vault.assignments.push(assignment)
+          }
+        }
+      }
+
+      // --- Assign the projects to the vault with the given permissions.
+      const { VaultProjectAssignment } = moduleVault.getRepositories()
+      if (options.projects) {
+        for (const assignment of options.projects) {
+          const [project, ...permissions] = assignment
+          if (!project) continue
+          const permissionsUnique = [...new Set(permissions)].filter(Boolean)
+          for (const permission of permissionsUnique) {
+            const assignment = VaultProjectAssignment.create({ vault, project, permission, createdBy: vault.createdBy })
+            vault.projects = vault.projects ?? []
+            vault.projects.push(assignment)
           }
         }
       }
