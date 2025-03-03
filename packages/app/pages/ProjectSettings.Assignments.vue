@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import type { ProjectUserPermissions } from '@nwrx/nano-api'
+
 definePageMeta({
   name: 'ProjectSettingsAssignments',
   path: '/:workspace/:project/settings/assignments',
   middleware: 'redirect-when-guest',
   layout: 'project-settings',
+  group: 'project-security',
   icon: 'i-carbon:group',
   title: {
     en: 'Members & Access',
@@ -27,8 +30,22 @@ const route = useRoute()
 const project = computed(() => route.params.project as string)
 const workspace = computed(() => route.params.workspace as string)
 
-// --- Data.
-const { assignments, getAssignments, setUserAssignments } = useProject(workspace, project)
+// --- Model.
+const alerts = useAlerts()
+const client = useClient()
+const assignments = ref<ProjectUserPermissions[]>([])
+async function getAssignments() {
+  await client.requestAttempt('GET /api/workspaces/:workspace/projects/:project/assignments', {
+    data: {
+      workspace: unref(workspace),
+      project: unref(project),
+    },
+    onData: (data) => {
+      assignments.value = data
+    },
+  })
+}
+
 onMounted(getAssignments)
 </script>
 
@@ -38,100 +55,115 @@ onMounted(getAssignments)
       vertical
       :title="localize(route.meta.title)"
       :text="localize(route.meta.description)">
-      <div class="rd w-full b b-app">
-        <BaseTable
-          :columns="['user', 'permissions', 'actions']"
-          :rows="assignments!"
-          class="w-full"
-          class-cell="px-8 py-2"
-          class-header="bg-subtle"
-          class-row="b-t b-app hover:bg-subtle">
+      <Table :columns="['user', 'permissions', 'actions']" :rows="assignments!">
 
-          <!-- Header -->
-          <template #header="name">
-            <div class="w-full font-medium px-lg py-sm text-sm text-start">
-              {{ t(`assignments.table.header.${name}`) }}
-            </div>
-          </template>
+        <!-- Header -->
+        <template #header="name">
+          {{ t(`assignments.table.header.${name}`) }}
+        </template>
 
-          <!-- Cell / User -->
-          <template #cell.user="{ username, displayName }">
-            <UserCard
-              class="!px-0"
-              :display-name="displayName"
-              :username="username"
+        <!-- Cell / User -->
+        <template #cell.user="{ username, displayName }">
+          <UserCard
+            class="!px-0"
+            :display-name="displayName"
+            :username="username"
+          />
+        </template>
+
+        <!-- Cell / Permissions -->
+        <template #cell.permissions="{ permissions }">
+          <div class="flex items-center space-x-sm">
+            <Badge
+              v-for="permission in permissions"
+              :key="permission"
+              :label="t(`assignments.roles.${permission}.label`)"
             />
-          </template>
+          </div>
+        </template>
 
-          <!-- Cell / Permissions -->
-          <template #cell.permissions="{ permissions }">
-            <div class="flex items-center space-x-2">
-              <Badge
-                v-for="permission in permissions"
-                :key="permission"
-                :label="t(`assignments.roles.${permission}.label`)"
-              />
+        <!-- Cell / Actions -->
+        <template #cell.actions="assignment">
+          <Trigger v-slot="dialogs" :keys="['edit', 'unassign']">
+            <div class="flex items-center justify-end space-x-md">
+              <ContextMenu x="right" y="top">
+                <template #menu>
+                  <ContextMenuItem icon="i-carbon:edit" :label="t('assignments.actions.manage')" @click="() => dialogs.open('edit')" />
+                  <ContextMenuItem icon="i-carbon:delete" :label="t('assignments.actions.unassign')" @click="() => dialogs.open('unassign')" />
+                </template>
+              </ContextMenu>
             </div>
-          </template>
 
-          <!-- Cell / Actions -->
-          <template #cell.actions="assignment">
-            <Trigger v-slot="dialogs" :keys="['edit', 'unassign']">
-              <div class="flex items-center justify-end space-x-md">
-                <ContextMenu x="right" y="top">
-                  <template #menu>
-                    <ContextMenuItem icon="i-carbon:edit" :label="t('assignments.actions.manage')" @click="() => dialogs.open('edit')" />
-                    <ContextMenuItem icon="i-carbon:delete" :label="t('assignments.actions.unassign')" @click="() => dialogs.open('unassign')" />
-                  </template>
-                </ContextMenu>
-              </div>
-
-              <!-- Edit dialog -->
-              <Ephemeral v-slot="{ value }" :initial-value="{ permissions: [...assignment.permissions] }">
-                <Dialog
-                  v-model="dialogs.value.edit"
-                  icon="i-carbon:label"
-                  class-hint="hint-warning"
-                  class-button="button-warning"
-                  :title="t('assignments.dialog.edit.title', { workspace, project, username: assignment.username })"
-                  :text="t('assignments.dialog.edit.text', { workspace, project, username: assignment.username })"
-                  :label-cancel="t('assignments.dialog.edit.cancel')"
-                  :label-confirm="t('assignments.dialog.edit.confirm')"
-                  @confirm="() => setUserAssignments(assignment.username, value.permissions)">
-                  <div class="space-y-4">
-                    <AppDialogToggle
-                      v-for="role in ['Owner', 'Write', 'Read'] as const"
-                      :key="role"
-                      v-model="value.permissions"
-                      :value="role"
-                      type="checkbox"
-                      :label="t(`assignments.roles.${role}.label`)"
-                      :text="t(`assignments.roles.${role}.text`)"
-                    />
-                  </div>
-                </Dialog>
-              </Ephemeral>
-
-              <!-- Unassign dialog -->
+            <!-- Edit dialog -->
+            <Ephemeral v-slot="{ value }" :initial-value="{ permissions: [...assignment.permissions] }">
               <Dialog
-                v-model="dialogs.value.unassign"
-                icon="i-carbon:warning"
-                class-hint="hint-danger"
-                class-button="button-danger"
-                :title="t('assignments.dialog.unassign.title', { workspace, project, username: assignment.username })"
-                :text="t('assignments.dialog.unassign.text', { workspace, project, username: assignment.username })"
-                :label-cancel="t('assignments.dialog.unassign.cancel')"
-                :label-confirm="t('assignments.dialog.unassign.confirm')"
-                @confirm="() => setUserAssignments(assignment.username, [])">
-                <UserCard
-                  :display-name="assignment.displayName"
-                  :username="assignment.username"
-                />
+                v-model="dialogs.value.edit"
+                icon="i-carbon:label"
+                class-hint="hint-warning"
+                class-button="button-warning"
+                :title="t('assignments.dialog.edit.title', { workspace, project, username: assignment.username })"
+                :text="t('assignments.dialog.edit.text', { workspace, project, username: assignment.username })"
+                :label-cancel="t('assignments.dialog.edit.cancel')"
+                :label-confirm="t('assignments.dialog.edit.confirm')"
+                @confirm="() => {
+                  client.requestAttempt('PUT /api/workspaces/:workspace/projects/:project/assignments/:username', {
+                    data: {
+                      workspace: unref(workspace),
+                      project: unref(project),
+                      username: assignment.username,
+                      permissions: value.permissions,
+                    },
+                    onSuccess: () => {
+                      getAssignments()
+                      alerts.success(t('assignments.dialog.edit.success'))
+                    },
+                  })
+                }">
+                <div class="space-y-4">
+                  <Checkbox
+                    v-for="role in ['Owner', 'Write', 'Read'] as const"
+                    :key="role"
+                    v-model="value.permissions"
+                    :value="role"
+                    type="checkbox"
+                    :label="t(`assignments.roles.${role}.label`)"
+                    :text="t(`assignments.roles.${role}.text`)"
+                  />
+                </div>
               </Dialog>
-            </Trigger>
-          </template>
-        </BaseTable>
-      </div>
+            </Ephemeral>
+
+            <!-- Unassign dialog -->
+            <Dialog
+              v-model="dialogs.value.unassign"
+              icon="i-carbon:warning"
+              class-hint="hint-danger"
+              class-button="button-danger"
+              :title="t('assignments.dialog.unassign.title', { workspace, project, username: assignment.username })"
+              :text="t('assignments.dialog.unassign.text', { workspace, project, username: assignment.username })"
+              :label-cancel="t('assignments.dialog.unassign.cancel')"
+              :label-confirm="t('assignments.dialog.unassign.confirm')"
+              @confirm="() => {
+                client.requestAttempt('DELETE /api/workspaces/:workspace/projects/:project/assignments/:username', {
+                  data: {
+                    workspace: unref(workspace),
+                    project: unref(project),
+                    username: assignment.username,
+                  },
+                  onSuccess: () => {
+                    getAssignments()
+                    alerts.success(t('assignments.dialog.unassign.success'))
+                  },
+                })
+              }">
+              <UserCard
+                :display-name="assignment.displayName"
+                :username="assignment.username"
+              />
+            </Dialog>
+          </Trigger>
+        </template>
+      </Table>
 
       <Trigger v-slot="dialogs" :keys="['assign']">
         <Hyperlink
@@ -152,7 +184,19 @@ onMounted(getAssignments)
             :text="t('assignments.dialog.assign.text', { workspace, project })"
             :label-cancel="t('assignments.dialog.assign.cancel')"
             :label-confirm="t('assignments.dialog.assign.confirm')"
-            @confirm="() => setUserAssignments(model.value[0], ['Read'])">
+            @confirm="() => {
+              client.requestAttempt('POST /api/workspaces/:workspace/projects/:project/assignments', {
+                data: {
+                  workspace: unref(workspace),
+                  project: unref(project),
+                  usernames: model.value,
+                },
+                onSuccess: () => {
+                  getAssignments()
+                  alerts.success(t('assignments.dialog.assign.success'))
+                },
+              })
+            }">
             <UserSearch v-model="model.value" />
           </Dialog>
         </Ephemeral>
