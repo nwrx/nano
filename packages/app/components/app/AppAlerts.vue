@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Alert } from '@unshared/vue'
-import { useAlerts } from '#imports'
+import { useAlerts, vMarkdown } from '#imports'
 
 const { alerts } = useAlerts()
 
@@ -53,7 +53,7 @@ function getAlertIconColor(alert: Alert) {
         <!-- Title -->
         <div>
           <p v-if="alert.type !== 'success'" class="text-sm font-semibold" v-text="alert.title" />
-          <p class="text-sm" v-text="alert.text" />
+          <p v-markdown="alert.text" class="text-sm" />
         </div>
       </div>
     </TransitionGroup>
