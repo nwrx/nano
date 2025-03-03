@@ -5,8 +5,7 @@ const props = defineProps<{
   theme?: string
   title?: string
   imageUrl?: string
-  itemsStart?: NavItem[]
-  itemsEnd?: NavItem[]
+  items?: NavItem[]
   userEmail?: string
   userUsername?: string
   userDisplayName?: string
@@ -57,16 +56,8 @@ const locale = useVModel(props, 'locale', emit, {
       {{ title }}
     </h1>
 
-    <!-- Items - Start -->
-    <nav class="flex h-full items-center grow">
-      <AppNavItem
-        v-for="item in itemsStart"
-        :key="item.label"
-        :to="item.to"
-        :label="item.label"
-        class="w-full h-full px-xs"
-      />
-    </nav>
+    <!-- Spacer -->
+    <div class="grow" />
 
     <!-- Search -->
     <AppNavSearch
@@ -78,7 +69,7 @@ const locale = useVModel(props, 'locale', emit, {
     <!-- Items - End -->
     <nav class="flex h-full items-center justify-end">
       <AppNavItem
-        v-for="item in itemsEnd"
+        v-for="item in items"
         :key="item.label"
         :to="item.to"
         :label="item.label"
