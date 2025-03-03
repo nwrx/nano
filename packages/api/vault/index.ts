@@ -10,6 +10,8 @@ export type * from './adapters'
 export * from './entities'
 export * from './utils/assertVaultPermission'
 export * from './utils/assertVaultType'
+export type * from './utils/getVaultAssignments'
+export type * from './utils/getVaultProjectAssignments'
 
 export interface ModuleVaultOptions {
 

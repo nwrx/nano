@@ -10,10 +10,10 @@ import { getVault } from '../utils'
 export function vaultGet(this: ModuleVault) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/vaults/:vault',
+      name: 'GET /api/workspaces/:workspace/vaults/:name',
       parseParameters: createSchema({
         workspace: assert.stringNotEmpty,
-        vault: assert.stringNotEmpty,
+        name: assert.stringNotEmpty,
       }),
       parseQuery: createSchema({
         withDeleted: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],
@@ -26,7 +26,7 @@ export function vaultGet(this: ModuleVault) {
 
       // --- Get the workspace and check read permission
       const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Read' })
-      const vault = await getVault.call(this, { user, workspace, name: parameters.vault, permission: 'Read', ...query })
+      const vault = await getVault.call(this, { user, workspace, name: parameters.name, permission: 'Read', ...query })
 
       // --- Return the serialized vault.
       return vault.serialize()
