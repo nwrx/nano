@@ -4,7 +4,6 @@ import type { VaultLocalOptions } from '@nwrx/nano-api'
 defineProps<{ workspace: string; name: string }>()
 
 const { t } = useI18n()
-const routes = useRouteLocation()
 const router = useRouter()
 const client = useClient()
 const alerts = useAlerts()
@@ -21,8 +20,7 @@ const configuration = ref<VaultLocalOptions>({ algorithm: 'aes-256-gcm', secret:
         data: { workspace, name, type: 'local', configuration: unref(configuration) },
         onSuccess: async() => {
           alerts.success(t('vaults.create.success'))
-          const redirect = routes.getWorkspaceSettingsVaults(unref(workspace))
-          await router.push(redirect)
+          await router.push({ name: 'WorkspaceSettingsVaults', params: { workspace } })
         },
       })
     }">
