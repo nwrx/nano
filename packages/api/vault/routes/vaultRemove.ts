@@ -8,10 +8,10 @@ import { getVault } from '../utils'
 export function vaultRemove(this: ModuleVault) {
   return createHttpRoute(
     {
-      name: 'DELETE /api/workspaces/:workspace/vaults/:vault',
+      name: 'DELETE /api/workspaces/:workspace/vaults/:name',
       parseParameters: createSchema({
         workspace: assertStringNotEmpty,
-        vault: assertStringNotEmpty,
+        name: assertStringNotEmpty,
       }),
     },
     async({ event, parameters }): Promise<void> => {
@@ -21,11 +21,13 @@ export function vaultRemove(this: ModuleVault) {
 
       // --- Get the workspace/vault and check read permission.
       const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Read' })
-      const vault = await getVault.call(this, { user, workspace, name: parameters.vault, permission: 'Owner' })
+      const vault = await getVault.call(this, { user, workspace, name: parameters.name, permission: 'Owner' })
 
       // --- Soft remove the vault.
       const { Vault } = this.getRepositories()
-      await Vault.softRemove(vault)
+      vault.deletedBy = user
+      vault.deletedAt = new Date()
+      await Vault.save(vault)
     },
   )
 }

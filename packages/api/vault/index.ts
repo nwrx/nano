@@ -6,8 +6,10 @@ import * as ENTITIES from './entities'
 import * as ROUTES from './routes'
 import * as UTILS from './utils'
 
+export type * from './adapters'
 export * from './entities'
 export * from './utils/assertVaultPermission'
+export * from './utils/assertVaultType'
 
 export interface ModuleVaultOptions {
 

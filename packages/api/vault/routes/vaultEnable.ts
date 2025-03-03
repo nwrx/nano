@@ -1,33 +1,35 @@
+/* eslint-disable unicorn/no-null */
 import type { ModuleVault } from '..'
-import type { VaultConfiguration } from '../utils'
 import { createHttpRoute } from '@unserved/server'
 import { assert, createSchema } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
-import { getVault, updateVault } from '../utils'
+import { getVault } from '../utils'
 
-export function vaultUpdate(this: ModuleVault) {
+export function vaultEnable(this: ModuleVault) {
   return createHttpRoute(
     {
-      name: 'PUT /api/workspaces/:workspace/vaults/:name',
+      name: 'PUT /api/workspaces/:workspace/vaults/:name/enabled',
       parseParameters: createSchema({
         workspace: assert.stringNotEmpty,
         name: assert.stringNotEmpty,
       }),
-      parseBody: assert.objectStrict as unknown as (value: unknown) => VaultConfiguration,
     },
-    async({ event, parameters, body }) => this.withTransaction(async() => {
+    async({ event, parameters }) => this.withTransaction(async() => {
       const moduleUser = this.getModule(ModuleUser)
       const moduleWorkspace = this.getModule(ModuleWorkspace)
-      const { Vault } = this.getRepositories()
       const { user } = await moduleUser.authenticate(event)
+      const { Vault } = this.getRepositories()
 
       // --- Get the workspace and check write permission
-      const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Read' })
+      const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Owner' })
       const vault = await getVault.call(this, { user, workspace, name: parameters.name, permission: 'Write' })
 
-      // --- Update the vault configuration and save.
-      await updateVault.call(this, { user, vault, configuration: body })
+      // --- Throw an error if the vault is already enabled.
+      if (!vault.disabledAt) throw this.errors.VAULT_ALREADY_ENABLED(workspace.name, vault.name)
+
+      // --- Unset the vault as the default.
+      vault.disabledAt = null
       await Vault.save(vault)
     }),
   )

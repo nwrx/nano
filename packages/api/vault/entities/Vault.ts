@@ -1,6 +1,7 @@
+/* eslint-disable unicorn/no-null */
 import type { Encrypted } from '../../utils'
-import { BaseEntity, transformerJson } from '@unserved/server'
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, Unique } from 'typeorm'
+import { BaseEntity, transformerDate, transformerJson } from '@unserved/server'
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from 'typeorm'
 import { User } from '../../user'
 import { Workspace } from '../../workspace'
 import { VaultType } from '../utils'
@@ -8,7 +9,8 @@ import { VaultAssignment } from './VaultAssignment'
 import { VaultVariable } from './VaultVariable'
 
 @Entity({ name: 'Vault' })
-@Unique(['name', 'workspace'])
+@Index(['workspace', 'name', 'deletedAt'])
+@Index(['workspace', 'isDefault', 'deletedAt'])
 export class Vault<T extends VaultType = VaultType> extends BaseEntity {
 
   /**
@@ -54,6 +56,21 @@ export class Vault<T extends VaultType = VaultType> extends BaseEntity {
   workspace?: Workspace
 
   /**
+   * Weather this vault is the default vault for the workspace. Default vaults
+   * will be used when no vault is specified in the variable. This will also
+   * make the vault accessible to all projects and flows within the workspace.
+   */
+  @Column('boolean', { nullable: true })
+  isDefault: boolean | null = null
+
+  /**
+   * The date at witch the vault was disabled. If the vault is disabled, it will
+   * no longer be accessible to the workspace members.
+   */
+  @Column('varchar', { nullable: true, transformer: transformerDate })
+  disabledAt: Date | null = null
+
+  /**
    * The user that created the vault. Mainly for auditing purposes.
    *
    * @example User { ... }
@@ -61,6 +78,33 @@ export class Vault<T extends VaultType = VaultType> extends BaseEntity {
   @JoinColumn()
   @ManyToOne(() => User, { nullable: false })
   createdBy?: User
+
+  /**
+   * The user that updated the vault. Mainly for auditing purposes.
+   *
+   * @example User { ... }
+   */
+  @JoinColumn()
+  @ManyToOne(() => User, { nullable: true })
+  updatedBy?: User
+
+  /**
+   * The user that deleted the vault. Mainly for auditing purposes.
+   *
+   * @example User { ... }
+   */
+  @JoinColumn()
+  @ManyToOne(() => User, { nullable: true })
+  deletedBy?: User
+
+  /**
+   * The user that disabled the vault. Mainly for auditing purposes.
+   *
+   * @example User { ... }
+   */
+  @JoinColumn()
+  @ManyToOne(() => User, { nullable: true })
+  disabledBy?: User
 
   /**
    * The variables stored in the vault. Variables can be assigned to the vault
@@ -85,9 +129,12 @@ export class Vault<T extends VaultType = VaultType> extends BaseEntity {
     return {
       name: this.name,
       type: this.type,
+      isDefault: this.isDefault === true,
       description: this.description,
       createdAt: this.createdAt.toISOString(),
       updatedAt: this.updatedAt.toISOString(),
+      deletedAt: this.deletedAt?.toISOString(),
+      disabledAt: this.disabledAt?.toISOString(),
     }
   }
 }
@@ -95,7 +142,10 @@ export class Vault<T extends VaultType = VaultType> extends BaseEntity {
 export interface VaultObject {
   name: string
   type: VaultType
+  isDefault: boolean
   description: string
   createdAt: string
   updatedAt: string
+  deletedAt?: string
+  disabledAt?: string
 }

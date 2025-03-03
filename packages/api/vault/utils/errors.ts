@@ -23,6 +23,27 @@ export const ERRORS = {
     message: `The vault "${workspace}/${name}" already exists`,
     data: { workspace, name },
   }),
+  VAULT_ALREADY_DEFAULT: (workspace: string, name: string) => createError({
+    name: 'E_VAULT_ALREADY_DEFAULT',
+    statusCode: 409,
+    statusMessage: 'Conflict',
+    message: `The vault "${workspace}/${name}" is already the default vault`,
+    data: { workspace, name },
+  }),
+  VAULT_ALREADY_ENABLED: (workspace: string, name: string) => createError({
+    name: 'E_VAULT_ALREADY_ENABLED',
+    statusCode: 409,
+    statusMessage: 'Conflict',
+    message: `The vault "${workspace}/${name}" is already enabled`,
+    data: { workspace, name },
+  }),
+  VAULT_ALREADY_DISABLED: (workspace: string, name: string) => createError({
+    name: 'E_VAULT_ALREADY_DISABLED',
+    statusCode: 409,
+    statusMessage: 'Conflict',
+    message: `The vault "${workspace}/${name}" is already disabled`,
+    data: { workspace, name },
+  }),
 
   // Assignments
   VAULT_ALREADY_ASSIGNED: (workspace: string, name: string, assignee: string) => createError({
