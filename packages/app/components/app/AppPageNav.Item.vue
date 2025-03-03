@@ -35,7 +35,7 @@ const props = defineProps<BaseButtonProps & {
       v-if="icon"
       :icon="icon"
       class="size-4 aspect-1/1 rd text-app"
-      load
+      :load="icon.startsWith('http')"
     />
 
     <!-- Label -->

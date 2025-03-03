@@ -1,8 +1,18 @@
 <script setup lang="ts">
-defineProps<{
+import type { RouteRecordNormalized } from 'vue-router'
+
+const props = defineProps<{
+  name?: NavItemGroup
   label?: string
-  items?: NavItem[]
+  items?: RouteRecordNormalized[]
 }>()
+
+const router = useRouter()
+const routes = computed(() => {
+  if (props.items) return props.items
+  if (!props.name) return [] as RouteRecordNormalized[]
+  return router.getRoutes().filter(x => x.meta.group === props.name)
+})
 </script>
 
 <template>
@@ -17,11 +27,11 @@ defineProps<{
     <div class="flex flex-col">
       <slot>
         <AppPageNavItem
-          v-for="item in items"
-          :key="item.label"
-          :icon="item.icon"
-          :label="item.label"
-          :to="item.to"
+          v-for="route in routes"
+          :key="route.name"
+          :icon="route.meta.icon"
+          :label="localize(route.meta.title)"
+          :to="{ name: route.name }"
         />
       </slot>
     </div>
