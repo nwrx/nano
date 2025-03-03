@@ -6,6 +6,21 @@ export type Size = 'large' | 'medium' | 'small' | 'xlarge' | 'xsmall'
 export type Variant = MaybeLiteral<keyof typeof COLORS>
 export type Alignment = 'center' | 'left' | 'right'
 
+export type NavItemGroup =
+  | 'administration'
+  | 'project-security'
+  | 'project-settings'
+
+  // User Settings
+  | 'user-billing'
+  | 'user-security'
+  | 'user-settings'
+
+  // Workspace Settings
+  | 'workspace-billing'
+  | 'workspace-security'
+  | 'workspace-settings'
+
 export interface Stringtable {
   fr?: string
   en?: string
@@ -21,30 +36,6 @@ export interface NavItem {
   items?: NavItem[]
 }
 
-export interface FlowDragState {
-  id: string
-  color: string
-  position: { x: number; y: number }
-  kind: 'source' | 'target'
-}
-
-export interface FlowNodePosition {
-  id: string
-  x: number
-  y: number
-}
-
-export interface CardProps {
-  dark?: boolean
-  rounded?: boolean
-  centered?: boolean
-  outlined?: boolean
-  gradient?: boolean
-  variant?: Variant
-  as?: keyof HTMLElementTagNameMap
-  classContainer?: string
-}
-
 export interface DropPayload {
   type: 'createNode'
   kind: string
@@ -56,4 +47,13 @@ export interface ProjectListItem {
   description?: string
   collaborators: Array<{ id: string; name: string; imageUrl: string }>
   flows?: FlowObject[]
+}
+
+declare module 'vue-router' {
+  export interface RouteMeta {
+    icon?: string
+    title?: string | Stringtable
+    description?: string | Stringtable
+    group?: NavItemGroup
+  }
 }
