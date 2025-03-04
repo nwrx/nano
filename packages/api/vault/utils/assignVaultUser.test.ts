@@ -1,12 +1,12 @@
 import type { Context } from '../../__fixtures__'
-import type { AssignVaultOptions } from './assignVault'
+import type { AssignVaultOptions } from './assignVaultUser'
 import { ValidationError } from '@unshared/validation'
 import { createTestContext } from '../../__fixtures__'
 import { VaultAssignment } from '../entities'
-import { assignVault } from './assignVault'
+import { assignVaultUser } from './assignVaultUser'
 import { ERRORS } from './errors'
 
-describe.concurrent<Context>('assignVault', () => {
+describe.concurrent<Context>('assignVaultUser', () => {
   beforeEach<Context>(createTestContext)
 
   describe<Context>('result', (it) => {
@@ -15,7 +15,7 @@ describe.concurrent<Context>('assignVault', () => {
       const { user: assignee } = await setupUser()
       const { vault } = await setupVault({ user: owner, workspace })
       const options = { user: owner, assignee, vault, workspace, permission: 'Read' }
-      const assignment = await assignVault.call(moduleVault, options as AssignVaultOptions)
+      const assignment = await assignVaultUser.call(moduleVault, options as AssignVaultOptions)
       expect(assignment).toBeInstanceOf(VaultAssignment)
       expect(assignment).toMatchObject({
         id: assignment.id,
@@ -31,7 +31,7 @@ describe.concurrent<Context>('assignVault', () => {
       const { user: assignee } = await setupUser()
       const { vault } = await setupVault({ user: owner, workspace })
       const options = { user: owner, assignee, vault, workspace, permission: 'Read' }
-      await assignVault.call(moduleVault, options as AssignVaultOptions)
+      await assignVaultUser.call(moduleVault, options as AssignVaultOptions)
       const count = await moduleVault.getRepositories().VaultAssignment.countBy({ vault })
       expect(count).toBe(0)
     })
@@ -43,7 +43,7 @@ describe.concurrent<Context>('assignVault', () => {
       const { user: assignee } = await setupUser()
       const { vault } = await setupVault({ user: owner, workspace })
       const options = { user: owner, assignee, vault, workspace, permission: 'Read' }
-      const assignment = await assignVault.call(moduleVault, options as AssignVaultOptions)
+      const assignment = await assignVaultUser.call(moduleVault, options as AssignVaultOptions)
       await moduleVault.getRepositories().VaultAssignment.save(assignment)
       const { VaultAssignment } = moduleVault.getRepositories()
       const found = await VaultAssignment.findOneBy({ id: assignment.id })
@@ -57,9 +57,9 @@ describe.concurrent<Context>('assignVault', () => {
       const { user: assignee } = await setupUser()
       const { vault } = await setupVault({ user: owner, workspace })
       const options = { user: owner, assignee, vault, workspace, permission: 'Read' }
-      const assigment = await assignVault.call(moduleVault, options as AssignVaultOptions)
+      const assigment = await assignVaultUser.call(moduleVault, options as AssignVaultOptions)
       await moduleVault.getRepositories().VaultAssignment.save(assigment)
-      const shouldThrow = assignVault.call(moduleVault, options as AssignVaultOptions)
+      const shouldThrow = assignVaultUser.call(moduleVault, options as AssignVaultOptions)
       const error = ERRORS.VAULT_USER_ALREADY_ASSIGNED(workspace.name, vault.name, assignee.username)
       await expect(shouldThrow).rejects.toThrowError(error)
     })
@@ -72,7 +72,7 @@ describe.concurrent<Context>('assignVault', () => {
       const { vault } = await setupVault({ user: owner, workspace })
       const options = { assignee, vault, workspace, permission: 'Read' }
       // @ts-expect-error: testing invalid options
-      const shouldThrow = assignVault.call(moduleVault, options)
+      const shouldThrow = assignVaultUser.call(moduleVault, options)
       await expect(shouldThrow).rejects.toThrow(ValidationError)
     })
 
@@ -81,7 +81,7 @@ describe.concurrent<Context>('assignVault', () => {
       const { vault } = await setupVault({ user: owner, workspace })
       const options = { user: owner, vault, workspace, permission: 'Read' }
       // @ts-expect-error: testing invalid options
-      const shouldThrow = assignVault.call(moduleVault, options)
+      const shouldThrow = assignVaultUser.call(moduleVault, options)
       await expect(shouldThrow).rejects.toThrow(ValidationError)
     })
 
@@ -90,7 +90,7 @@ describe.concurrent<Context>('assignVault', () => {
       const { user: assignee } = await setupUser()
       const options = { user: owner, assignee, workspace, permission: 'Read' }
       // @ts-expect-error: testing invalid options
-      const shouldThrow = assignVault.call(moduleVault, options)
+      const shouldThrow = assignVaultUser.call(moduleVault, options)
       await expect(shouldThrow).rejects.toThrow(ValidationError)
     })
 
@@ -100,7 +100,7 @@ describe.concurrent<Context>('assignVault', () => {
       const { vault } = await setupVault({ user: owner, workspace })
       const options = { user: owner, assignee, workspace, vault }
       // @ts-expect-error: testing invalid options
-      const shouldThrow = assignVault.call(moduleVault, options)
+      const shouldThrow = assignVaultUser.call(moduleVault, options)
       await expect(shouldThrow).rejects.toThrow(ValidationError)
     })
 
@@ -110,7 +110,7 @@ describe.concurrent<Context>('assignVault', () => {
       const { vault } = await setupVault({ user: owner, workspace })
       const options = { user: owner, assignee, vault, workspace, permission: 'Invalid' }
       // @ts-expect-error: testing invalid options
-      const shouldThrow = assignVault.call(moduleVault, options)
+      const shouldThrow = assignVaultUser.call(moduleVault, options)
       await expect(shouldThrow).rejects.toThrow(ValidationError)
     })
   })

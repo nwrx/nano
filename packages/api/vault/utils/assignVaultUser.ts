@@ -24,9 +24,9 @@ export type AssignVaultOptions = Loose<ReturnType<typeof ASSIGN_VAULT_OPTIONS_SC
  *
  * @param options The options for assigning the vault to the user.
  * @returns The vault assignment that was created.
- * @example assignVault(options) // VaultAssignment { user, assignee, vault, permission }
+ * @example assignVaultUser(options) // VaultAssignment { user, assignee, vault, permission }
  */
-export async function assignVault(this: ModuleVault, options: AssignVaultOptions) {
+export async function assignVaultUser(this: ModuleVault, options: AssignVaultOptions) {
   const { user, assignee, vault, workspace, permission } = ASSIGN_VAULT_OPTIONS_SCHEMA(options)
 
   // --- Check if the user is already assigned with the permission.
