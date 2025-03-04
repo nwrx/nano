@@ -78,11 +78,6 @@ export interface ModuleUserOptions {
   userRecoveryDuration?: number
 }
 
-/**
- * The `ModuleUser` class is used to group all the entities and services related to the user
- * together. It provides H3 routes to perform operations such as sign-in, sign-up, sign-out
- * as well as other user operations.
- */
 export class ModuleUser extends ModuleBase implements ModuleUserOptions {
   errors = UTILS.ERRORS
   routes = ROUTES
@@ -113,23 +108,7 @@ export class ModuleUser extends ModuleBase implements ModuleUserOptions {
   userSessionDuration = 3600 * 24
   userRecoveryDuration = 600
 
-  /**
-   * Given a username, resolve the user entity. This is used to find the user
-   *
-   * @param options The options to resolve the user.
-   * @returns The resolved user entity.
-   * @example const user = await resolveUser({ username: 'alice', user })
-   */
+  // --- Methods.
   getUser = UTILS.getUser.bind(this)
-
-  /**
-   * Authenticate the user by the token contained in the request's cookie payload
-   * and return it's associated `User` entity. If the user is not authenticated, it
-   * will throw an error. If the `optional` option is set to `true`, it will return
-   * `undefined` instead of throwing an error.
-   *
-   * @param event The H3 event to authenticate the user from.
-   * @returns The user associated with the user session.
-   */
   authenticate = UTILS.authenticate.bind(this) as typeof UTILS.authenticate
 }
