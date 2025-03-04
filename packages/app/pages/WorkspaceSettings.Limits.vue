@@ -27,7 +27,5 @@ definePageMeta({
 </script>
 
 <template>
-  <AppPageContainer contained>
-    <!-- Billing limits content will go here -->
-  </AppPageContainer>
+  <AppPageContainer contained />
 </template>

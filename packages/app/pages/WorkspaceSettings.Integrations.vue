@@ -22,24 +22,10 @@ definePageMeta({
   },
 })
 
-// --- Route and i18n.
-const { t } = useI18n()
-const route = useRoute()
-const workspace = computed(() => route.params.workspace as string)
-
-// --- Data and actions.
-const { data, getWorkspace } = useWorkspace(workspace)
-onMounted(getWorkspace)
+// const route = useRoute()
+// const workspace = computed(() => route.params.workspace as string)
 </script>
 
 <template>
-  <AppPageContainer contained>
-    <!-- Integrations content will go here -->
-  </AppPageContainer>
+  <AppPageContainer contained />
 </template>
-
-<i18n lang="yaml">
-en:
-  title: Integrations
-  description: Manage third-party integrations and API connections for your workspace.
-</i18n>

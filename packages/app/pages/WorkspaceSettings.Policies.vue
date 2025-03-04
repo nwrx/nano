@@ -22,31 +22,10 @@ definePageMeta({
   },
 })
 
-const route = useRoute()
-const workspace = computed(() => route.params.workspace as string)
+// const route = useRoute()
+// const workspace = computed(() => route.params.workspace as string)
 </script>
 
 <template>
-  <AppPageContainer contained>
-    <!--
-      General security settings for the workspace. This includes those
-      settings that are not covered by the other security settings components.
-      - Enable: Whether the security settings are enabled.
-      - Features: List of security features that can be enabled/disabled.
-      + - SSH access: Enable/disable SSH access to the workspace. (Checkbox)
-      + - API access: Enable/disable API access to the workspace. (Checkbox)
-      + - Email access: Enable/disable email access to the workspace. (Checkbox)
-    -->
-    <WorkspaceSettingsPolicies :name="workspace" />
-
-    <!--
-      Table of ingress and egress network policies. Allows centralized
-      managment of what, where, and how traffic is allowed in and out of
-      the flows within the workspace.
-      - Enable: Whether the network filtering is enabled.
-      - Policies: Table of network policies. Kind of like a firewall.
-      - Create Button: Create a new network policy.
-    -->
-    <WorkspaceSettingsNetworkPolicies :name="workspace" />
-  </AppPageContainer>
+  <AppPageContainer contained />
 </template>

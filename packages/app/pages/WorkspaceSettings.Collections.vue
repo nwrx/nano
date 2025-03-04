@@ -22,9 +22,8 @@ definePageMeta({
   },
 })
 
-// --- Route and i18n.
-const route = useRoute()
-const workspace = computed(() => route.params.workspace as string)
+// const route = useRoute()
+// const workspace = computed(() => route.params.workspace as string)
 </script>
 
 <template>
