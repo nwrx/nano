@@ -14,7 +14,7 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
 </script>
 
 <template>
-  <AppDialog
+  <Dialog
     v-model="model"
     class-hint="hint-warning"
     class-button="button-warning"
@@ -24,13 +24,8 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
     :label-cancel="t('cancel')"
     :label-confirm="t('confirm')"
     @confirm="() => emit('submit')">
-
-    <!-- User Card -->
-    <UserCard
-      :display-name="displayName"
-      :username="username"
-    />
-  </AppDialog>
+    <UserCard :display-name="displayName" :username="username" />
+  </Dialog>
 </template>
 
 <i18n lang="yaml">

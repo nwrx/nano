@@ -5,7 +5,7 @@ export const NAV_DRAWER_END = computed<NavItem[]>(() => [
     items: [
       {
         icon: 'i-carbon:settings',
-        to: { name: 'AdminUsers' },
+        to: { name: 'AdminSettingsUsers' },
         label: localize({
           en: 'Configuration',
           fr: 'Configuration',
