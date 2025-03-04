@@ -1,27 +1,13 @@
 <script setup lang="ts">
-import type { WorkspaceObject } from '@nwrx/nano-api'
-
-const props = defineProps<{ name: string }>()
+defineProps<{ workspace: string }>()
 const { t } = useI18n()
-
-// --- Model.
-const client = useClient()
-const workspace = ref<WorkspaceObject>()
-async function getWorkspace() {
-  await client.request('GET /api/workspaces/:workspace', {
-    data: { workspace: props.name },
-    onData: data => workspace.value = data,
-  })
-}
-
-onMounted(getWorkspace)
 </script>
 
 <template>
   <AppPageForm :title="t('title')" :text="t('text')">
     <InputText
       disabled
-      :model-value="name"
+      :model-value="workspace"
       :text-before="`${CONSTANTS.appHost}/`"
       :hint="t('hint')"
     />
