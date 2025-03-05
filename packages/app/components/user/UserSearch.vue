@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { UserObject } from '@nwrx/nano-api'
+
 const props = defineProps<{
   modelValue: string[]
   multiple?: boolean
@@ -12,10 +14,17 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const search = useVModel(props, 'search', emit, { passive: true, defaultValue: '' })
-const model = useVModel(props, 'modelValue', emit, { passive: true, defaultValue: [] })
-
+const isOpen = useVModel(props, 'modelValue', emit, { passive: true, defaultValue: [] })
 const options = computed(() => ({ search: search.value, limit: 5, withProfile: true }))
-const { users, getUsers } = useUsers(options)
+
+const client = useClient()
+const users = ref([]) as Ref<UserObject[]>
+async function getUsers() {
+  await client.requestAttempt('GET /api/users', {
+    data: { ... unref(options) },
+    onData: data => users.value = data,
+  })
+}
 
 watch(search, (search) => {
   if (search) void getUsers()
@@ -23,8 +32,8 @@ watch(search, (search) => {
 })
 
 function handleSelect(username: string) {
-  if (model.value.includes(username)) model.value = model.value.filter(u => u !== username)
-  else model.value = props.multiple ? [...model.value, username] : [username]
+  if (isOpen.value.includes(username)) isOpen.value = isOpen.value.filter(u => u !== username)
+  else isOpen.value = props.multiple ? [...isOpen.value, username] : [username]
 }
 </script>
 
