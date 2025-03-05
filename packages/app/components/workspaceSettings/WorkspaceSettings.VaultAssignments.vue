@@ -3,19 +3,18 @@ import type { VaultUserPermissions } from '@nwrx/nano-api'
 
 const props = defineProps<{
   workspace: string
-  name: string
+  vault: string
 }>()
 
 const { t } = useI18n()
 const client = useClient()
-const alerts = useAlerts()
 const assignments = ref<VaultUserPermissions[]>([])
 
 async function getAssignments() {
   await client.requestAttempt('GET /api/workspaces/:workspace/vaults/:name/assignments', {
     data: {
       workspace: props.workspace,
-      name: props.name,
+      name: props.vault,
     },
     onData: (data) => {
       assignments.value = data
@@ -57,7 +56,7 @@ onMounted(getAssignments)
 
       <!-- Cell / Actions -->
       <template #cell.actions="assignment">
-        <Trigger v-slot="dialogs" :keys="['edit', 'remove']">
+        <Flags v-slot="dialogs" :keys="['edit', 'remove']">
           <div class="flex items-center justify-end space-x-md">
             <ContextMenu x="right" y="top">
               <template #menu>
@@ -68,77 +67,27 @@ onMounted(getAssignments)
           </div>
 
           <!-- Edit dialog -->
-          <Ephemeral v-slot="{ value }" :initial-value="{ permissions: [...assignment.permissions] }">
-            <Dialog
-              v-model="dialogs.value.edit"
-              icon="i-carbon:edit"
-              class-hint="hint-warning"
-              class-button="button-warning"
-              :title="t('dialog.edit.title', { username: assignment.username, vault: props.name })"
-              :text="t('dialog.edit.text')"
-              :label-cancel="t('dialog.edit.cancel')"
-              :label-confirm="t('dialog.edit.confirm')"
-              @confirm="() => {
-                client.requestAttempt('PUT /api/workspaces/:workspace/vaults/:name/assignments/:username', {
-                  data: {
-                    name: props.name,
-                    workspace: props.workspace,
-                    username: assignment.username,
-                    permissions: value.permissions,
-                  },
-                  onSuccess: () => {
-                    getAssignments()
-                    alerts.success(t('dialog.edit.success'))
-                  },
-                })
-              }">
-              <div class="space-y-4">
-                <Checkbox
-                  v-for="permission in ['Read', 'Write', 'Admin'] as const"
-                  :key="permission"
-                  v-model="value.permissions"
-                  :value="permission"
-                  type="checkbox"
-                  :label="t(`permissions.${permission}`)"
-                  :text="t(`permissionsDescription.${permission}`)"
-                />
-              </div>
-            </Dialog>
-          </Ephemeral>
+          <WorkspaceSettingsVaultAssignmentsEdit
+            v-model="dialogs.value.edit"
+            :workspace="workspace"
+            :vault="vault"
+            :assignment="assignment"
+            @submit="() => getAssignments()"
+          />
 
           <!-- Remove dialog -->
-          <Dialog
+          <WorkspaceSettingsVaultAssignmentsRemove
             v-model="dialogs.value.remove"
-            icon="i-carbon:delete"
-            class-hint="hint-danger"
-            class-button="button-danger"
-            :title="t('dialog.remove.title', { username: assignment.username, vault: props.name })"
-            :text="t('dialog.remove.text')"
-            :label-cancel="t('dialog.remove.cancel')"
-            :label-confirm="t('dialog.remove.confirm')"
-            @confirm="() => {
-              client.requestAttempt('DELETE /api/workspaces/:workspace/vaults/:name/assignments/:username', {
-                data: {
-                  name: props.name,
-                  workspace: props.workspace,
-                  username: assignment.username,
-                },
-                onSuccess: () => {
-                  getAssignments()
-                  alerts.success(t('dialog.remove.success'))
-                },
-              })
-            }">
-            <UserCard
-              :display-name="assignment.displayName"
-              :username="assignment.username"
-            />
-          </Dialog>
-        </Trigger>
+            :workspace="workspace"
+            :vault="vault"
+            :assignment="assignment"
+            @submit="() => getAssignments()"
+          />
+        </Flags>
       </template>
     </Table>
 
-    <Trigger v-slot="dialogs" :keys="['assign']">
+    <Flags v-slot="dialogs" :keys="['assign']">
       <Hyperlink
         eager
         class="text-sm"
@@ -147,49 +96,13 @@ onMounted(getAssignments)
         @click="() => dialogs.open('assign')"
       />
 
-      <Ephemeral v-slot="{ value }" :initial-value="{ users: [], permissions: ['Read'] }">
-        <Dialog
-          v-model="dialogs.value.assign"
-          icon="i-carbon:add"
-          class-hint="hint-success"
-          class-button="button-success"
-          :title="t('dialog.assign.title', { vault: props.name })"
-          :text="t('dialog.assign.text')"
-          :label-cancel="t('dialog.assign.cancel')"
-          :label-confirm="t('dialog.assign.confirm')"
-          @confirm="() => {
-            client.requestAttempt('POST /api/workspaces/:workspace/vaults/:name/assignments', {
-              data: {
-                workspace: props.workspace,
-                name: props.name,
-                usernames: value.users,
-                permissions: value.permissions,
-              },
-              onSuccess: () => {
-                getAssignments()
-                alerts.success(t('dialog.assign.success'))
-              },
-            })
-          }">
-          <UserSearch v-model="value.users" />
-
-          <div class="mt-4 space-y-2">
-            <div class="font-medium">
-              {{ t('dialog.assign.selectPermissions') }}
-            </div>
-            <Checkbox
-              v-for="permission in ['Read', 'Write', 'Admin'] as const"
-              :key="permission"
-              v-model="value.permissions"
-              :value="permission"
-              type="checkbox"
-              :label="t(`permissions.${permission}`)"
-              :text="t(`permissionsDescription.${permission}`)"
-            />
-          </div>
-        </Dialog>
-      </Ephemeral>
-    </Trigger>
+      <WorkspaceSettingsVaultAssignmentsAssign
+        v-model="dialogs.value.assign"
+        :workspace="workspace"
+        :vault="vault"
+        @submit="() => getAssignments()"
+      />
+    </Flags>
   </AppPageForm>
 </template>
 

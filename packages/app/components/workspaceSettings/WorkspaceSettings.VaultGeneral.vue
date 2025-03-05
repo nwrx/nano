@@ -1,15 +1,23 @@
 <script setup lang="ts">
 import type { VaultObject } from '@nwrx/nano-api'
 
-const props = defineProps<{ workspace: string; name: string }>()
+const props = defineProps<{
+  workspace: string
+  vault: string
+}>()
 
 const { t } = useI18n()
 const client = useClient()
-const vault = ref<VaultObject>({} as VaultObject)
+const data = ref<VaultObject>({} as VaultObject)
 async function getVault() {
   await client.requestAttempt('GET /api/workspaces/:workspace/vaults/:name', {
-    data: { workspace: props.workspace, name: props.name },
-    onData: data => vault.value = data,
+    data: {
+      workspace: props.workspace,
+      name: props.vault,
+    },
+    onData: (vault) => {
+      data.value = vault
+    },
   })
 }
 
@@ -19,13 +27,13 @@ onMounted(getVault)
 <template>
   <AppPageForm :title="t('title')" :text="t('text')">
     <InputText
-      :model-value="vault.name"
+      :model-value="vault"
       :text-before="`${CONSTANTS.appHost}/${workspace}/vaults/`"
       :label="t('fields.name')"
       disabled
     />
     <InputText
-      :model-value="t(`type.${vault.type}`)"
+      :model-value="t(`type.${data.type}`)"
       :label="t('fields.type')"
       disabled
     />

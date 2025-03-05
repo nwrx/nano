@@ -23,13 +23,13 @@ definePageMeta({
 
 const route = useRoute()
 const workspace = computed(() => route.params.workspace as string)
-const name = computed(() => route.params.name as string)
+const vault = computed(() => route.params.name as string)
 </script>
 
 <template>
   <AppPageContainer contained>
-    <WorkspaceSettingsVaultGeneral :workspace="workspace" :name="name" />
-    <WorkspaceSettingsVaultAssignments :workspace="workspace" :name="name" />
+    <WorkspaceSettingsVaultGeneral :workspace :vault />
+    <WorkspaceSettingsVaultAssignments :workspace :vault />
     <!-- <WorkspaceSettingsVaultProjectAssignments :workspace="workspace" :name="name" /> -->
   </AppPageContainer>
 </template>

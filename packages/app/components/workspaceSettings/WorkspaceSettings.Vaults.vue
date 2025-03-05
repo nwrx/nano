@@ -37,7 +37,7 @@ onMounted(getVaults)
 
       <!-- Actions -->
       <template #cell.actions="vault">
-        <Trigger v-slot="dialogs" :keys="['setDefault', 'remove', 'disable', 'enable', 'health', 'edit']">
+        <Flags v-slot="dialogs" :keys="['setDefault', 'remove', 'disable', 'enable', 'health', 'edit']">
           <ContextMenu x="right" y="top" @mousedown.stop>
             <template #menu>
               <ContextMenuItem icon="i-carbon:edit" :label="t('menu.edit')" :to="{ name: 'WorkspaceSettingsVaultEdit', params: { workspace, name: vault.name } }" />
@@ -145,7 +145,7 @@ onMounted(getVaults)
             }">
             <VaultCard :vault="vault" />
           </Dialog>
-        </Trigger>
+        </Flags>
       </template>
     </Table>
 
