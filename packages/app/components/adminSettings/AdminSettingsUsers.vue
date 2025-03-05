@@ -88,7 +88,10 @@ onMounted(getUsers)
         :label="t('create')"
         @click="() => dialogs.open('create')"
       />
-      <AdminSettingsUsersDialogCreate v-model="dialogs.value.create" @submit="() => getUsers()" />
+      <AdminSettingsUsersDialogCreate
+        v-model="dialogs.value.create"
+        @submit="() => getUsers()"
+      />
     </Flags>
   </AppPageForm>
 </template>

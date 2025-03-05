@@ -1,30 +1,28 @@
 <script setup lang="ts">
-const props = defineProps<{
-  modelValue: boolean
-  username: string
-  displayName: string
-}>()
+import type { UserObject } from '@nwrx/nano-api'
 
-const emit = defineEmits<{
-  'submit': []
-}>()
+const props = defineProps<{ modelValue?: boolean; user: UserObject }>()
+const emit = defineEmits<{ 'submit': [] }>()
 
 const { t } = useI18n()
-const model = useVModel(props, 'modelValue', emit, { passive: true })
+const isOpen = useVModel(props, 'modelValue', emit, { passive: true })
 </script>
 
 <template>
   <Dialog
-    v-model="model"
+    v-model="isOpen"
     class-hint="hint-warning"
     class-button="button-warning"
     icon="i-carbon:login"
-    :title="t('title', { username: props.username })"
-    :text="t('hint')"
+    :title="t('title', { ...user })"
+    :text="t('hint', { ...user })"
     :label-cancel="t('cancel')"
     :label-confirm="t('confirm')"
     @confirm="() => emit('submit')">
-    <UserCard :display-name="displayName" :username="username" />
+    <UserCard
+      :display-name="user.displayName"
+      :username="user.username"
+    />
   </Dialog>
 </template>
 

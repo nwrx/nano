@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { UserObject } from '@nwrx/nano-api'
 
-const props = defineProps<{ modelValue: boolean; user: UserObject }>()
+const props = defineProps<{ modelValue?: boolean; user: UserObject }>()
 const emit = defineEmits<{ 'submit': [] }>()
 
 const { t } = useI18n()
