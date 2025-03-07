@@ -1,6 +1,6 @@
 <script setup lang="ts">
 definePageMeta({
-  name: 'WorkspaceSettingsVaultEdit',
+  name: 'WorkspaceSettingsVault',
   path: '/:workspace/settings/vaults/:name',
   middleware: 'redirect-when-guest',
   layout: 'workspace-settings',
@@ -30,6 +30,6 @@ const vault = computed(() => route.params.name as string)
   <AppPageContainer contained>
     <WorkspaceSettingsVaultGeneral :workspace :vault />
     <WorkspaceSettingsVaultAssignments :workspace :vault />
-    <!-- <WorkspaceSettingsVaultProjectAssignments :workspace="workspace" :name="name" /> -->
+    <WorkspaceSettingsVaultProjectAssignments :workspace :vault />
   </AppPageContainer>
 </template>
