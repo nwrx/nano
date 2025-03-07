@@ -1,5 +1,5 @@
 import { BaseEntity, transformerJson } from '@unserved/server'
-import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm'
+import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm'
 import { User } from '../../user'
 import { Vault } from './Vault'
 
@@ -9,7 +9,7 @@ import { Vault } from './Vault'
  * Variables can be optionally encrypted for sensitive data storage.
  */
 @Entity({ name: 'VaultVariable' })
-@Unique(['name', 'vault'])
+@Index(['vault', 'name', 'deletedAt'], { unique: true })
 export class VaultVariable<T = any> extends BaseEntity {
 
   /**
