@@ -47,16 +47,13 @@ const isOpen = useVModel(props, 'modelValue', emit)
     :label-cancel="t('cancel')"
     :label-confirm="t('confirm')"
     @confirm="() => removeAccess()">
-    <UserCard
-      :display-name="assignment.displayName"
-      :username="assignment.username"
-    />
+    <UserCard :username="assignment.username" load />
   </Dialog>
 </template>
 
 <i18n lang="yaml">
 en:
-  title: Remove {username}'s access to {vault}
+  title: Remove {username}'s access to the **{workspace}/{vault}** vault
   text: This user will no longer be able to access this vault.
   cancel: Cancel
   confirm: Remove access

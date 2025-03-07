@@ -52,7 +52,7 @@ watch(isOpen, () => permissions.value = [...props.assignment.permissions], { imm
     @confirm="() => updatePermissions()">
     <div class="space-y-4">
       <Checkbox
-        v-for="permission in ['Read', 'Write', 'Admin']"
+        v-for="permission in ['Use', 'Read', 'Write', 'Owner']"
         :key="permission"
         v-model="permissions"
         :value="permission"
@@ -72,13 +72,16 @@ en:
   confirm: Update permissions
   success: Permissions updated successfully
   permissions:
+    Use:
+      label: Use
+      text: Can use secrets from this vault
     Read:
       label: Read
       text: Can view and use secrets from this vault
     Write:
       label: Write
       text: Can add, modify and delete secrets in this vault
-    Admin:
-      label: Admin
+    Owner:
+      label: Owner
       text: Full control over this vault, including managing access
 </i18n>

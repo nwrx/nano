@@ -120,13 +120,10 @@ en:
     edit: Edit permissions
     remove: Remove access
   permissions:
+    Use: Use
     Read: Read
     Write: Write
-    Admin: Admin
-  permissionsDescription:
-    Read: Can view and use secrets from this vault
-    Write: Can add, modify and delete secrets in this vault
-    Admin: Full control over this vault, including managing access
+    Owner: Owner
   dialog:
     assign:
       title: Add users to {vault} vault

@@ -1,0 +1,37 @@
+import type { ModuleVault } from '..'
+import { createHttpRoute } from '@unserved/server'
+import { assert, createArrayParser, createSchema } from '@unshared/validation'
+import { ModuleUser } from '../../user'
+import { ModuleWorkspace } from '../../workspace'
+import { assertVaultPermission, getVault, updateVaultUserPermissions } from '../utils'
+
+export function vaultUserAssign(this: ModuleVault) {
+  return createHttpRoute(
+    {
+      name: 'PUT /api/workspaces/:workspace/vaults/:name/assignments/:username',
+      parseParameters: createSchema({
+        workspace: assert.stringNotEmpty,
+        name: assert.stringNotEmpty,
+        username: assert.stringNotEmpty,
+      }),
+      parseBody: createSchema({
+        permissions: createArrayParser(assertVaultPermission),
+      }),
+    },
+    async({ event, parameters, body }): Promise<void> => {
+      const moduleUser = this.getModule(ModuleUser)
+      const moduleWorkspace = this.getModule(ModuleWorkspace)
+      const { user } = await moduleUser.authenticate(event)
+
+      // --- Get the workspace and check read permission
+      const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Read' })
+      const vault = await getVault.call(this, { user, workspace, name: parameters.name, permission: 'Owner' })
+      const assignee = await moduleUser.getUser({ username: parameters.username })
+
+      // --- Assign the permissions to the user.
+      const assignments = await updateVaultUserPermissions.call(this, { user, assignee, vault, permissions: body.permissions })
+      const { VaultAssignment } = this.getRepositories()
+      await VaultAssignment.save(assignments)
+    },
+  )
+}

@@ -17,11 +17,11 @@ const alerts = useAlerts()
 const users = ref<string[]>([])
 
 async function assignUsers() {
-  await client.requestAttempt('POST /api/workspaces/:workspace/vaults/:name/assignments', {
+  await client.requestAttempt('PUT /api/workspaces/:workspace/vaults/:name/assignments/:username', {
     data: {
       workspace: props.workspace,
       name: props.vault,
-      usernames: users.value,
+      username: users.value[0],
       permissions: ['Read'],
     },
     onSuccess: () => {
@@ -59,14 +59,4 @@ en:
   cancel: Cancel
   confirm: Add user(s)
   success: User(s) successfully added to the vault
-  permissions:
-    Read:
-      label: Read
-      text: Can view and use secrets from this vault
-    Write:
-      label: Write
-      text: Can add, modify and delete secrets in this vault
-    Admin:
-      label: Admin
-      text: Full control over this vault, including managing access
 </i18n>
