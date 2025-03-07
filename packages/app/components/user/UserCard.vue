@@ -1,8 +1,28 @@
 <script setup lang="ts">
-defineProps<{
+import type { UserObject } from '@nwrx/nano-api'
+
+const props = defineProps<{
   username?: string
   displayName?: string
+  load?: boolean
 }>()
+
+const client = useClient()
+const data = ref<UserObject>({} as UserObject)
+
+// --- If `load` is true, load the user profile data from the API
+watch(() => props.username, async() => {
+  if (!props.load || !props.username) return
+  await client.requestAttempt('GET /api/users/:username', {
+    data: {
+      username: props.username,
+      withProfile: true,
+    },
+    onData: (user) => {
+      data.value = user
+    },
+  })
+}, { immediate: true })
 </script>
 
 <template>
@@ -12,7 +32,7 @@ defineProps<{
       class="size-12 rounded-full"
     />
     <div>
-      <p class="font-medium" v-text="displayName" />
+      <p class="font-medium" v-text="displayName ?? data.displayName" />
       <p class="text-sm" v-text="username" />
     </div>
   </div>
