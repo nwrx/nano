@@ -1,7 +1,6 @@
 <script setup lang="ts">
 defineProps<{ workspace: string }>()
 const { t } = useI18n()
-const router = useRouter()
 
 const showRenameDialog = ref(false)
 const showArchiveDialog = ref(false)
@@ -32,14 +31,13 @@ const showArchiveDialog = ref(false)
   </AppPageForm>
 
   <!-- Rename workspace dialog -->
-  <WorkspaceSettingsDangerZoneRename
+  <WorkspaceSettingsDangerZoneDialogRename
     v-model="showRenameDialog"
     :workspace="workspace"
-    @submit="(workspace) => router.replace({ params: { workspace } })"
   />
 
   <!-- Archive workspace dialog -->
-  <WorkspaceSettingsDangerZoneArchive
+  <WorkspaceSettingsDangerZoneDialogArchive
     v-model="showArchiveDialog"
     :workspace="workspace"
   />

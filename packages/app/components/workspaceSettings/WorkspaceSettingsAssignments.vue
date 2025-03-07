@@ -62,7 +62,7 @@ onMounted(getAssignments)
           </ContextMenu>
 
           <!-- Edit dialog -->
-          <WorkspaceSettingsAssignmentsEdit
+          <WorkspaceSettingsAssignmentsDialogEdit
             v-model="dialogs.value.edit"
             :workspace="name"
             :username="assignment.username"
@@ -71,7 +71,7 @@ onMounted(getAssignments)
           />
 
           <!-- Unassign dialog -->
-          <WorkspaceSettingsAssignmentsUnassign
+          <WorkspaceSettingsAssignmentsDialogUnassign
             v-model="dialogs.value.unassign"
             :workspace="name"
             :username="assignment.username"
@@ -91,7 +91,7 @@ onMounted(getAssignments)
         @click="() => dialogs.open('assign')"
       />
 
-      <WorkspaceSettingsAssignmentsAssign
+      <WorkspaceSettingsAssignmentsDialogAssign
         v-model="dialogs.value.assign"
         :workspace="name"
         @submit="() => getAssignments()"

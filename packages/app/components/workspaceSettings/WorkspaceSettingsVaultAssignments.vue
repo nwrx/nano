@@ -67,7 +67,7 @@ onMounted(getAssignments)
           </div>
 
           <!-- Edit dialog -->
-          <WorkspaceSettingsVaultAssignmentsEdit
+          <WorkspaceSettingsVaultAssignmentsDialogEdit
             v-model="dialogs.value.edit"
             :workspace="workspace"
             :vault="vault"
@@ -76,7 +76,7 @@ onMounted(getAssignments)
           />
 
           <!-- Remove dialog -->
-          <WorkspaceSettingsVaultAssignmentsRemove
+          <WorkspaceSettingsVaultAssignmentsDialogRemove
             v-model="dialogs.value.remove"
             :workspace="workspace"
             :vault="vault"
@@ -96,7 +96,7 @@ onMounted(getAssignments)
         @click="() => dialogs.open('assign')"
       />
 
-      <WorkspaceSettingsVaultAssignmentsAssign
+      <WorkspaceSettingsVaultAssignmentsDialogAssign
         v-model="dialogs.value.assign"
         :workspace="workspace"
         :vault="vault"

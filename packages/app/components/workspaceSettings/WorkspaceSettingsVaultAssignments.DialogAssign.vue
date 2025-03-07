@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { VaultPermission } from '@nwrx/nano-api'
-
 const props = defineProps<{
   modelValue?: boolean
   workspace: string
@@ -17,7 +15,6 @@ const { t } = useI18n()
 const client = useClient()
 const alerts = useAlerts()
 const users = ref<string[]>([])
-const permissions = ref<VaultPermission[]>(['Read'])
 
 async function assignUsers() {
   await client.requestAttempt('POST /api/workspaces/:workspace/vaults/:name/assignments', {
@@ -25,7 +22,7 @@ async function assignUsers() {
       workspace: props.workspace,
       name: props.vault,
       usernames: users.value,
-      permissions: permissions.value,
+      permissions: ['Read'],
     },
     onSuccess: () => {
       emit('submit')
@@ -36,10 +33,7 @@ async function assignUsers() {
 
 // --- State.
 const isOpen = useVModel(props, 'modelValue', emit)
-watch(isOpen, () => {
-  users.value = []
-  permissions.value = ['Read']
-}, { immediate: true })
+watch(isOpen, () => { users.value = [] }, { immediate: true })
 </script>
 
 <template>
@@ -54,21 +48,6 @@ watch(isOpen, () => {
     :label-confirm="t('confirm')"
     @confirm="() => assignUsers()">
     <UserSearch v-model="users" />
-
-    <div class="mt-4 space-y-2">
-      <div class="font-medium">
-        {{ t('selectPermissions') }}
-      </div>
-      <Checkbox
-        v-for="permission in ['Read', 'Write', 'Admin']"
-        :key="permission"
-        v-model="permissions"
-        :value="permission"
-        type="checkbox"
-        :label="t(`permissions.${permission}.label`)"
-        :text="t(`permissions.${permission}.text`)"
-      />
-    </div>
   </Dialog>
 </template>
 
