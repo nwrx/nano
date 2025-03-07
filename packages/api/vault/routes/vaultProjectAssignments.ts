@@ -10,10 +10,10 @@ import { getVault, getVaultProjectPermissions } from '../utils'
 export function vaultProjects(this: ModuleVault) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/vaults/:name/projects',
+      name: 'GET /api/workspaces/:workspace/vaults/:vault/projects',
       parseParameters: createSchema({
         workspace: assert.stringNotEmpty,
-        name: assert.stringNotEmpty,
+        vault: assert.stringNotEmpty,
       }),
       parseQuery: createSchema({
         withDeleted: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],
@@ -26,7 +26,7 @@ export function vaultProjects(this: ModuleVault) {
 
       // --- Get the workspace and check read permission
       const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Read' })
-      const vault = await getVault.call(this, { user, workspace, name: parameters.name, permission: 'Owner', ...query })
+      const vault = await getVault.call(this, { user, workspace, name: parameters.vault, permission: 'Owner', ...query })
       return getVaultProjectPermissions.call(this, { vault })
     },
   )
