@@ -13,7 +13,7 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
 </script>
 
 <template>
-  <AppDialog
+  <Dialog
     v-model="model"
     class-hint="hint-warning"
     class-button="button-warning"
@@ -30,7 +30,7 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
         class="font-normal badge-soft badge-primary"
       />
     </div>
-  </AppDialog>
+  </Dialog>
 </template>
 
 <i18n lang="yaml">

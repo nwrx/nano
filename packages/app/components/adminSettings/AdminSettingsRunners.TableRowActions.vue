@@ -14,13 +14,10 @@ const emit = defineEmits<{
   submitEnable: []
 }>()
 
-// --- Load i18n instance.
 const { t } = useI18n()
-
-// --- Dialog states.
-const isDialogReleaseOpen = ref(false)
-const isDialogDisableOpen = ref(false)
-const isDialogEnableOpen = ref(false)
+const showReleaseOpen = ref(false)
+const showDisableOpen = ref(false)
+const showEnableOpen = ref(false)
 </script>
 
 <template>
@@ -37,25 +34,25 @@ const isDialogEnableOpen = ref(false)
           v-if="!isEnabled"
           :label="t('menu.enable')"
           icon="i-carbon:checkmark"
-          @click="() => isDialogEnableOpen = true"
+          @click="() => showEnableOpen = true"
         />
         <ContextMenuItem
           v-if="isEnabled"
           :label="t('menu.disable')"
           icon="i-carbon:close"
-          @click="() => isDialogDisableOpen = true"
+          @click="() => showDisableOpen = true"
         />
         <ContextMenuItem
           :label="t('menu.release')"
           icon="i-carbon:trash-can"
-          @click="() => isDialogReleaseOpen = true"
+          @click="() => showReleaseOpen = true"
         />
       </template>
     </ContextMenu>
 
     <!-- Release Dialog -->
     <AdminServerRunnersDialogRelease
-      v-model="isDialogReleaseOpen"
+      v-model="showReleaseOpen"
       :address="address"
       :identity="identity"
       @submit="() => emit('submitRelease')"
@@ -63,7 +60,7 @@ const isDialogEnableOpen = ref(false)
 
     <!-- Disable Dialog -->
     <AdminServerRunnersDialogDisable
-      v-model="isDialogDisableOpen"
+      v-model="showDisableOpen"
       :address="address"
       :identity="identity"
       @submit="() => emit('submitDisable')"
@@ -71,7 +68,7 @@ const isDialogEnableOpen = ref(false)
 
     <!-- Enable Dialog -->
     <AdminServerRunnersDialogEnable
-      v-model="isDialogEnableOpen"
+      v-model="showEnableOpen"
       :address="address"
       :identity="identity"
       @submit="() => emit('submitEnable')"

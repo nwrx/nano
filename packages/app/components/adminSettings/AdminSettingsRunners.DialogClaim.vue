@@ -18,7 +18,7 @@ function handleSubmit() {
 </script>
 
 <template>
-  <AppDialog
+  <Dialog
     v-model="model"
     class-hint="hint-success"
     class-button="button-success"
@@ -35,7 +35,7 @@ function handleSubmit() {
       :placeholder="t('address.placeholder')"
       :hint="t('address.hint')"
     />
-  </AppDialog>
+  </Dialog>
 </template>
 
 <i18n lang="yaml">

@@ -15,7 +15,7 @@ const confirm = ref('')
 </script>
 
 <template>
-  <AppDialog
+  <Dialog
     v-model="model"
     class-hint="hint-danger"
     class-button="button-danger"
@@ -41,7 +41,7 @@ const confirm = ref('')
       :placeholder="address"
       class="mt-4"
     />
-  </AppDialog>
+  </Dialog>
 </template>
 
 <i18n lang="yaml">

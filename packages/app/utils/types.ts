@@ -7,7 +7,11 @@ export type Variant = MaybeLiteral<keyof typeof COLORS>
 export type Alignment = 'center' | 'left' | 'right'
 
 export type NavItemGroup =
-  | 'administration'
+  | 'admin-analytics'
+  | 'admin-registry'
+  | 'admin-server'
+  | 'admin-settings'
+  | 'admin-users'
 
   // Project Settings
   | 'project-billing'
