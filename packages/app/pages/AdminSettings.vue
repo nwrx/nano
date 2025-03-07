@@ -6,11 +6,11 @@ definePageMeta({
   group: 'admin-server',
   icon: 'i-carbon:settings',
   title: {
-    en: 'Settings',
-    fr: 'Paramètres',
-    de: 'Einstellungen',
-    es: 'Ajustes',
-    zh: '设置',
+    en: 'Server Settings',
+    fr: 'Paramètres du serveur',
+    de: 'Servereinstellungen',
+    es: 'Ajustes del servidor',
+    zh: '服务器设置',
   },
   description: {
     en: 'Configure global system settings.',

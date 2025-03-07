@@ -3,7 +3,7 @@ definePageMeta({
   name: 'AdminSettingsInvoice',
   path: '/admin/invoice',
   layout: 'admin-settings',
-  group: 'admin-server',
+  group: 'admin-settings',
   icon: 'i-carbon:document',
   title: {
     en: 'Invoice',

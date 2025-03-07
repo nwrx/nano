@@ -3,7 +3,7 @@ definePageMeta({
   name: 'AdminSettingsBilling',
   path: '/admin/billing',
   layout: 'admin-settings',
-  group: 'admin-server',
+  group: 'admin-settings',
   icon: 'i-carbon:currency',
   title: {
     en: 'Billing',
