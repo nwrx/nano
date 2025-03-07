@@ -8,10 +8,10 @@ import { getVault, updateVaultUserPermissions } from '../utils'
 export function vaultUserUnassign(this: ModuleVault) {
   return createHttpRoute(
     {
-      name: 'DELETE /api/workspaces/:workspace/vaults/:name/assignments/:username',
+      name: 'DELETE /api/workspaces/:workspace/vaults/:vault/assignments/:username',
       parseParameters: createSchema({
         workspace: assert.stringNotEmpty,
-        name: assert.stringNotEmpty,
+        vault: assert.stringNotEmpty,
         username: assert.stringNotEmpty,
       }),
     },
@@ -22,7 +22,7 @@ export function vaultUserUnassign(this: ModuleVault) {
 
       // --- Get the workspace and check read permission
       const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Read' })
-      const vault = await getVault.call(this, { user, workspace, name: parameters.name, permission: 'Owner' })
+      const vault = await getVault.call(this, { user, workspace, name: parameters.vault, permission: 'Owner' })
       const assignee = await moduleUser.getUser({ username: parameters.username })
 
       // --- Unassign the user from the vault.

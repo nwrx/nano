@@ -8,10 +8,10 @@ import { getVault } from '../utils'
 export function vaultSetDefault(this: ModuleVault) {
   return createHttpRoute(
     {
-      name: 'PUT /api/workspaces/:workspace/vaults/:name/default',
+      name: 'PUT /api/workspaces/:workspace/vaults/:vault/default',
       parseParameters: createSchema({
         workspace: assert.stringNotEmpty,
-        name: assert.stringNotEmpty,
+        vault: assert.stringNotEmpty,
       }),
     },
     async({ event, parameters }) => this.withTransaction(async() => {
@@ -22,7 +22,7 @@ export function vaultSetDefault(this: ModuleVault) {
 
       // --- Get the workspace and check write permission
       const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Owner' })
-      const vault = await getVault.call(this, { user, workspace, name: parameters.name, permission: 'Write' })
+      const vault = await getVault.call(this, { user, workspace, name: parameters.vault, permission: 'Write' })
 
       // --- Throw an error if the vault is already the default.
       if (vault.isDefault) throw this.errors.VAULT_ALREADY_DEFAULT(workspace.name, vault.name)

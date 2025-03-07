@@ -8,10 +8,10 @@ import { assertVaultPermission, getVault, updateVaultUserPermissions } from '../
 export function vaultUserAssign(this: ModuleVault) {
   return createHttpRoute(
     {
-      name: 'PUT /api/workspaces/:workspace/vaults/:name/assignments/:username',
+      name: 'PUT /api/workspaces/:workspace/vaults/:vault/assignments/:username',
       parseParameters: createSchema({
         workspace: assert.stringNotEmpty,
-        name: assert.stringNotEmpty,
+        vault: assert.stringNotEmpty,
         username: assert.stringNotEmpty,
       }),
       parseBody: createSchema({
@@ -25,7 +25,7 @@ export function vaultUserAssign(this: ModuleVault) {
 
       // --- Get the workspace and check read permission
       const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Read' })
-      const vault = await getVault.call(this, { user, workspace, name: parameters.name, permission: 'Owner' })
+      const vault = await getVault.call(this, { user, workspace, name: parameters.vault, permission: 'Owner' })
       const assignee = await moduleUser.getUser({ username: parameters.username })
 
       // --- Assign the permissions to the user.

@@ -9,10 +9,10 @@ import { getVault } from '../utils'
 export function vaultDisable(this: ModuleVault) {
   return createHttpRoute(
     {
-      name: 'PUT /api/workspaces/:workspace/vaults/:name/disable',
+      name: 'PUT /api/workspaces/:workspace/vaults/:vault/disable',
       parseParameters: createSchema({
         workspace: assert.stringNotEmpty,
-        name: assert.stringNotEmpty,
+        vault: assert.stringNotEmpty,
       }),
     },
     async({ event, parameters }) => this.withTransaction(async() => {
@@ -23,9 +23,7 @@ export function vaultDisable(this: ModuleVault) {
 
       // --- Get the workspace and check write permission
       const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Owner' })
-      const vault = await getVault.call(this, { user, workspace, name: parameters.name, permission: 'Write' })
-
-      // --- Throw an error if the vault is already disabled.
+      const vault = await getVault.call(this, { user, workspace, name: parameters.vault, permission: 'Write' })
       if (vault.disabledAt) throw this.errors.VAULT_ALREADY_DISABLED(workspace.name, vault.name)
 
       // --- Unset the vault as the default.

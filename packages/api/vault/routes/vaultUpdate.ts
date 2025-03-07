@@ -9,10 +9,10 @@ import { getVault, updateVault } from '../utils'
 export function vaultUpdate(this: ModuleVault) {
   return createHttpRoute(
     {
-      name: 'PUT /api/workspaces/:workspace/vaults/:name',
+      name: 'PUT /api/workspaces/:workspace/vaults/:vault',
       parseParameters: createSchema({
         workspace: assert.stringNotEmpty,
-        name: assert.stringNotEmpty,
+        vault: assert.stringNotEmpty,
       }),
       parseBody: assert.objectStrict as unknown as (value: unknown) => VaultConfiguration,
     },
@@ -24,7 +24,7 @@ export function vaultUpdate(this: ModuleVault) {
 
       // --- Get the workspace and check write permission
       const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Read' })
-      const vault = await getVault.call(this, { user, workspace, name: parameters.name, permission: 'Write' })
+      const vault = await getVault.call(this, { user, workspace, name: parameters.vault, permission: 'Write' })
 
       // --- Update the vault configuration and save.
       await updateVault.call(this, { user, vault, configuration: body })
