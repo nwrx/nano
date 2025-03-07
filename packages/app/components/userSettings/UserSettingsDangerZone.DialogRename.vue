@@ -2,7 +2,6 @@
 const props = defineProps<{
   modelValue?: boolean
   username: string
-  displayName?: string
 }>()
 
 const emit = defineEmits<{
@@ -44,10 +43,7 @@ async function changeUsername() {
     :label-cancel="t('cancel')"
     :label-confirm="t('confirm')"
     @confirm="() => changeUsername()">
-    <UserCard
-      :username="username"
-      :display-name="displayName"
-    />
+    <UserCard :username load />
     <InputText
       v-model="newUsername"
       class="mt-md"

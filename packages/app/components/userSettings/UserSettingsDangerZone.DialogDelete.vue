@@ -2,7 +2,6 @@
 const props = defineProps<{
   modelValue?: boolean
   username: string
-  displayName?: string
 }>()
 
 const emit = defineEmits<{
@@ -44,10 +43,7 @@ async function deleteUser() {
     :label-confirm="t('confirm')"
     :disabled="confirmUsername !== username"
     @confirm="() => deleteUser()">
-    <UserCard
-      :username="username"
-      :display-name="displayName"
-    />
+    <UserCard :username load />
     <InputText
       v-model="confirmUsername"
       class="mt-md"
