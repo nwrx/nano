@@ -4,6 +4,7 @@ import type { UserObject } from '@nwrx/nano-api'
 const { t } = useI18n()
 const client = useClient()
 const users = ref<UserObject[]>([])
+const showCreate = ref(false)
 
 async function getUsers() {
   await client.requestAttempt('GET /api/users', {
@@ -27,7 +28,10 @@ onMounted(getUsers)
 
       <!-- Cell / Name -->
       <template #cell.name="user">
-        <UserCard :display-name="user.displayName" :username="user.username" />
+        <UserCard
+          :display-name="user.displayName"
+          :username="user.username"
+        />
       </template>
 
       <!-- Cell / Email -->
@@ -58,41 +62,28 @@ onMounted(getUsers)
 
       <!-- Cell / Actions -->
       <template #cell.status="user">
-        <Flags v-slot="dialogs" :keys="['delete', 'disable', 'enable', 'verify', 'impersonate']">
-          <ContextMenu x="right" y="top" @mousedown.stop>
-            <template #menu>
-              <ContextMenuItem :label="t('menu.impersonate')" icon="i-carbon:login" @click="() => dialogs.open('impersonate')" />
-              <ContextMenuItem :label="t('menu.verify')" icon="i-carbon:checkmark-outline" @click="() => dialogs.open('verify')" />
-              <ContextMenuDivider />
-              <ContextMenuItem v-if="!user.disabledAt" :label="t('menu.disable')" icon="i-carbon:close" @click="() => dialogs.open('disable')" />
-              <ContextMenuItem v-if="user.disabledAt" :label="t('menu.enable')" icon="i-carbon:checkmark" @click="() => dialogs.open('enable')" />
-              <ContextMenuItem :label="t('menu.delete')" icon="i-carbon:trash-can" @click="() => dialogs.open('delete')" />
-            </template>
-          </ContextMenu>
-          <AdminSettingsUsersDialogImpersonate v-model="dialogs.value.impersonate" :user @submit="() => getUsers()" />
-          <AdminSettingsUsersDialogDelete v-model="dialogs.value.delete" :user @submit="() => getUsers()" />
-          <AdminSettingsUsersDialogDisable v-model="dialogs.value.disable" :user @submit="() => getUsers()" />
-          <AdminSettingsUsersDialogEnable v-model="dialogs.value.enable" :user @submit="() => getUsers()" />
-          <AdminSettingsUsersDialogVerify v-model="dialogs.value.verify" :user @submit="() => getUsers()" />
-        </Flags>
+        <AdminSettingsUsersActions
+          :user="user"
+          @submit="() => getUsers()"
+        />
       </template>
     </Table>
 
     <!-- Create Button -->
-    <Flags v-slot="dialogs" :keys="['create']">
-      <Hyperlink
-        eager
-        class="text-sm ml-auto mb-4"
-        icon="i-carbon:add"
-        icon-append="i-carbon:chevron-right"
-        :label="t('create')"
-        @click="() => dialogs.open('create')"
-      />
-      <AdminSettingsUsersDialogCreate
-        v-model="dialogs.value.create"
-        @submit="() => getUsers()"
-      />
-    </Flags>
+    <Hyperlink
+      eager
+      class="text-sm ml-auto mb-4"
+      icon="i-carbon:add"
+      icon-append="i-carbon:chevron-right"
+      :label="t('create')"
+      @click="() => showCreate = true"
+    />
+
+    <!-- Create Dialog -->
+    <AdminSettingsUsersDialogCreate
+      v-model="showCreate"
+      @submit="() => getUsers()"
+    />
   </AppPageForm>
 </template>
 
