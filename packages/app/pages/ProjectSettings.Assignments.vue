@@ -84,7 +84,7 @@ onMounted(getAssignments)
 
         <!-- Cell / Actions -->
         <template #cell.actions="assignment">
-          <Trigger v-slot="dialogs" :keys="['edit', 'unassign']">
+          <Flags v-slot="dialogs" :keys="['edit', 'unassign']">
             <div class="flex items-center justify-end space-x-md">
               <ContextMenu x="right" y="top">
                 <template #menu>
@@ -161,11 +161,11 @@ onMounted(getAssignments)
                 :username="assignment.username"
               />
             </Dialog>
-          </Trigger>
+          </Flags>
         </template>
       </Table>
 
-      <Trigger v-slot="dialogs" :keys="['assign']">
+      <Flags v-slot="dialogs" :keys="['assign']">
         <Hyperlink
           eager
           class="text-sm"
@@ -200,7 +200,7 @@ onMounted(getAssignments)
             <UserSearch v-model="model.value" />
           </Dialog>
         </Ephemeral>
-      </Trigger>
+      </Flags>
     </AppPageForm>
   </AppPageContainer>
 </template>
