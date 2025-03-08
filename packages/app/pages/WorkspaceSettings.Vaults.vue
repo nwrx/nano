@@ -29,5 +29,6 @@ const workspace = computed(() => route.params.workspace as string)
 <template>
   <AppPageContainer contained>
     <WorkspaceSettingsVaults :workspace="workspace" />
+    <WorkspaceSettingsVariables :workspace="workspace" />
   </AppPageContainer>
 </template>
