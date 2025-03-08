@@ -24,8 +24,8 @@ const permissions = ref<VaultPermission[]>([])
 async function updatePermissions() {
   await client.requestAttempt('PUT /api/workspaces/:workspace/vaults/:vault/assignments/:username', {
     data: {
-      workspace: props.workspace,
       vault: props.vault,
+      workspace: props.workspace,
       username: props.username,
       permissions: permissions.value,
     },

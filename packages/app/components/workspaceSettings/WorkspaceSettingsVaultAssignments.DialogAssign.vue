@@ -19,8 +19,8 @@ const users = ref<string[]>([])
 async function assignUsers() {
   await client.requestAttempt('PUT /api/workspaces/:workspace/vaults/:vault/assignments/:username', {
     data: {
-      workspace: props.workspace,
       vault: props.vault,
+      workspace: props.workspace,
       username: users.value[0],
       permissions: ['Read'],
     },

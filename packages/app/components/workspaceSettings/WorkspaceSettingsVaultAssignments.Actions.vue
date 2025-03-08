@@ -13,7 +13,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const showEditDialog = ref(false)
+const showUpdateDialog = ref(false)
 const showRemoveDialog = ref(false)
 </script>
 
@@ -24,7 +24,7 @@ const showRemoveDialog = ref(false)
         <ContextMenuItem
           icon="i-carbon:edit"
           :label="t('actions.edit')"
-          @click="() => showEditDialog = true"
+          @click="() => showUpdateDialog = true"
         />
         <ContextMenuItem
           icon="i-carbon:delete"
@@ -34,9 +34,9 @@ const showRemoveDialog = ref(false)
       </template>
     </ContextMenu>
 
-    <!-- Edit dialog -->
-    <WorkspaceSettingsVaultAssignmentsDialogEdit
-      v-model="showEditDialog"
+    <!-- Update dialog -->
+    <WorkspaceSettingsVaultAssignmentsDialogUpdate
+      v-model="showUpdateDialog"
       :workspace="workspace"
       :vault="vault"
       :username="username"
