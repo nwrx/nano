@@ -1,11 +1,13 @@
+<!-- eslint-disable vue/no-dupe-keys -->
 <script setup lang="ts">
-import type { VaultPermission, VaultUserPermissions } from '@nwrx/nano-api'
+import type { VaultPermission } from '@nwrx/nano-api'
 
 const props = defineProps<{
   modelValue?: boolean
   workspace: string
   vault: string
-  assignment: VaultUserPermissions
+  username: string
+  permissions: VaultPermission[]
 }>()
 
 const emit = defineEmits<{
@@ -20,11 +22,11 @@ const alerts = useAlerts()
 const permissions = ref<VaultPermission[]>([])
 
 async function updatePermissions() {
-  await client.requestAttempt('PUT /api/workspaces/:workspace/vaults/:name/assignments/:username', {
+  await client.requestAttempt('PUT /api/workspaces/:workspace/vaults/:vault/assignments/:username', {
     data: {
-      name: props.vault,
       workspace: props.workspace,
-      username: props.assignment.username,
+      vault: props.vault,
+      username: props.username,
       permissions: permissions.value,
     },
     onSuccess: () => {
@@ -36,7 +38,7 @@ async function updatePermissions() {
 
 // --- State.
 const isOpen = useVModel(props, 'modelValue', emit)
-watch(isOpen, () => permissions.value = [...props.assignment.permissions], { immediate: true })
+watch(isOpen, () => permissions.value = [...props.permissions], { immediate: true })
 </script>
 
 <template>
@@ -45,8 +47,8 @@ watch(isOpen, () => permissions.value = [...props.assignment.permissions], { imm
     icon="i-carbon:edit"
     class-hint="hint-warning"
     class-button="button-warning"
-    :title="t('title', { ...assignment, workspace, vault })"
-    :text="t('text', { ...assignment, workspace, vault })"
+    :title="t('title', { username, workspace, vault })"
+    :text="t('text', { username, workspace, vault })"
     :label-cancel="t('cancel')"
     :label-confirm="t('confirm')"
     @confirm="() => updatePermissions()">

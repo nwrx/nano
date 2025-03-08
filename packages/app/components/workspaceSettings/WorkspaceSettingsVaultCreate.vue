@@ -19,32 +19,14 @@ const name = useVModel(props, 'name')
       type="radio"
       :hint="t('type.hint')"
       :options="[
-        {
-          value: 'local',
-          icon: 'i-carbon:cloud',
-        },
-        {
-          value: 'hashicorp',
-          icon: 'i-simple-icons:hashicorp',
-        },
-        {
-          value: 'aws',
-          icon: 'i-simple-icons:awssecretsmanager',
-          disabled: true,
-        },
-        {
-          value: 'gcp',
-          icon: 'i-simple-icons:googlecloud',
-          disabled: true,
-        },
-        {
-          value: 'azure',
-          icon: 'i-simple-icons:microsoftazure',
-          disabled: true,
-        },
+        { value: 'local' },
+        { value: 'hashicorp' },
+        { value: 'aws', disabled: true },
+        { value: 'gcp', disabled: true },
+        { value: 'azure', disabled: true },
       ]"
       :option-value="(option) => option.value"
-      :option-icon="(option) => option.icon"
+      :option-icon="(option) => getVaultTypeIcon(option.value)"
       :option-label="(option) => t(`type.options.${option.value}.label`)"
       :option-text="(option) => t(`type.options.${option.value}.text`)"
       :option-filter="(search, option) => option.value.toLowerCase().includes(search.toLowerCase())"

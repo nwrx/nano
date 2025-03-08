@@ -50,3 +50,11 @@ export function getComponentTypeColors(component: RegistryComponentObject) {
   }
   return [...colors]
 }
+
+export function getVaultTypeIcon(type: string) {
+  if (type === 'hashicorp') return 'i-simple-icons:hashicorp'
+  if (type === 'aws') return 'i-simple-icons:awssecretsmanager'
+  if (type === 'gcp') return 'i-simple-icons:googlecloud'
+  if (type === 'azure') return 'i-simple-icons:microsoftazure'
+  return 'i-carbon:locked'
+}

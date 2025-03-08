@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { VaultUserPermissions } from '@nwrx/nano-api'
+import type { VaultPermission } from '@nwrx/nano-api'
 
 const props = defineProps<{
   workspace: string
@@ -8,16 +8,20 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const client = useClient()
-const assignments = ref<VaultUserPermissions[]>([])
+const assignments = ref<Array<{ username: string; permissions: VaultPermission[] }>>([])
+const showAssignDialog = ref(false)
 
 async function getAssignments() {
-  await client.requestAttempt('GET /api/workspaces/:workspace/vaults/:name/assignments', {
+  await client.requestAttempt('GET /api/workspaces/:workspace/vaults/:vault/assignments', {
     data: {
       workspace: props.workspace,
-      name: props.vault,
+      vault: props.vault,
     },
     onData: (data) => {
-      assignments.value = data
+      assignments.value = Object.entries(data).map(([username, permissions]) => ({
+        username,
+        permissions,
+      }))
     },
   })
 }
@@ -31,16 +35,12 @@ onMounted(getAssignments)
 
       <!-- Header -->
       <template #header="header">
-        {{ t(`table.header.${header}`) }}
+        {{ t(`header.${header}`) }}
       </template>
 
       <!-- Cell / User -->
-      <template #cell.user="{ username, displayName }">
-        <UserCard
-          class="!px-0"
-          :display-name="displayName"
-          :username="username"
-        />
+      <template #cell.user="{ username }">
+        <UserCard :username load />
       </template>
 
       <!-- Cell / Permissions -->
@@ -56,92 +56,48 @@ onMounted(getAssignments)
 
       <!-- Cell / Actions -->
       <template #cell.actions="assignment">
-        <Flags v-slot="dialogs" :keys="['edit', 'remove']">
-          <div class="flex items-center justify-end space-x-md">
-            <ContextMenu x="right" y="top">
-              <template #menu>
-                <ContextMenuItem icon="i-carbon:edit" :label="t('actions.edit')" @click="() => dialogs.open('edit')" />
-                <ContextMenuItem icon="i-carbon:delete" :label="t('actions.remove')" @click="() => dialogs.open('remove')" />
-              </template>
-            </ContextMenu>
-          </div>
-
-          <!-- Edit dialog -->
-          <WorkspaceSettingsVaultAssignmentsDialogEdit
-            v-model="dialogs.value.edit"
-            :workspace="workspace"
-            :vault="vault"
-            :assignment="assignment"
-            @submit="() => getAssignments()"
-          />
-
-          <!-- Remove dialog -->
-          <WorkspaceSettingsVaultAssignmentsDialogRemove
-            v-model="dialogs.value.remove"
-            :workspace="workspace"
-            :vault="vault"
-            :assignment="assignment"
-            @submit="() => getAssignments()"
-          />
-        </Flags>
+        <WorkspaceSettingsVaultAssignmentsActions
+          :workspace="workspace"
+          :vault="vault"
+          :username="assignment.username"
+          :permissions="assignment.permissions"
+          @submit="() => getAssignments()"
+        />
       </template>
     </Table>
 
-    <Flags v-slot="dialogs" :keys="['assign']">
-      <Hyperlink
-        eager
-        class="text-sm"
-        icon="i-carbon:add"
-        :label="t('actions.addUser')"
-        @click="() => dialogs.open('assign')"
-      />
+    <!-- Add user CTA -->
+    <Hyperlink
+      eager
+      class="text-sm"
+      icon="i-carbon:add"
+      :label="t('actions.assign')"
+      @click="() => showAssignDialog = true"
+    />
 
-      <WorkspaceSettingsVaultAssignmentsDialogAssign
-        v-model="dialogs.value.assign"
-        :workspace="workspace"
-        :vault="vault"
-        @submit="() => getAssignments()"
-      />
-    </Flags>
+    <!-- Assign dialog -->
+    <WorkspaceSettingsVaultAssignmentsDialogAssign
+      v-model="showAssignDialog"
+      :workspace="workspace"
+      :vault="vault"
+      @submit="() => getAssignments()"
+    />
   </AppPageForm>
 </template>
 
 <i18n lang="yaml">
 en:
-  title: User Access
-  text: Manage which users can access this vault and their permission levels.
-  table:
-    header:
-      user: User
-      permissions: Permissions
-      actions: ''
-  actions:
-    addUser: Add user access
-    edit: Edit permissions
-    remove: Remove access
+  title: Vault Access Management
+  text: Control who can access this vault and set appropriate permission levels for each user. Properly managing permissions ensures data security while enabling effective team collaboration.
+  header:
+    user: User
+    permissions: Permissions
+    actions: ''
   permissions:
     Use: Use
     Read: Read
     Write: Write
     Owner: Owner
-  dialog:
-    assign:
-      title: Add users to {vault} vault
-      text: Select users and assign appropriate permission levels.
-      selectPermissions: Select permissions to grant
-      cancel: Cancel
-      confirm: Add user(s)
-      success: User(s) successfully added to the vault
-    edit:
-      title: Edit {username}'s access to {vault}
-      text: Modify the permission levels for this user.
-      cancel: Cancel
-      confirm: Update permissions
-      success: Permissions updated successfully
-    remove:
-      title: Remove {username}'s access to {vault}
-      text: This user will no longer be able to access this vault.
-      cancel: Cancel
-      confirm: Remove access
-      success: User access removed successfully
+  actions:
+    assign: Assign a new user to this vault
 </i18n>

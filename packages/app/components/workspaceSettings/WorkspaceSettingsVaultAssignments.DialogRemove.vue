@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import type { VaultUserPermissions } from '@nwrx/nano-api'
-
 const props = defineProps<{
   modelValue?: boolean
   workspace: string
   vault: string
-  assignment: VaultUserPermissions
+  username: string
 }>()
 
 const emit = defineEmits<{
@@ -19,11 +17,11 @@ const client = useClient()
 const alerts = useAlerts()
 
 async function removeAccess() {
-  await client.requestAttempt('DELETE /api/workspaces/:workspace/vaults/:name/assignments/:username', {
+  await client.requestAttempt('DELETE /api/workspaces/:workspace/vaults/:vault/assignments/:username', {
     data: {
       name: props.vault,
       workspace: props.workspace,
-      username: props.assignment.username,
+      username: props.username,
     },
     onSuccess: () => {
       emit('submit')
@@ -42,12 +40,12 @@ const isOpen = useVModel(props, 'modelValue', emit)
     icon="i-carbon:delete"
     class-hint="hint-danger"
     class-button="button-danger"
-    :title="t('title', { ...assignment, workspace, vault })"
-    :text="t('text')"
+    :title="t('title', { username, workspace, vault })"
+    :text="t('text', { username, workspace, vault })"
     :label-cancel="t('cancel')"
     :label-confirm="t('confirm')"
     @confirm="() => removeAccess()">
-    <UserCard :username="assignment.username" load />
+    <UserCard :username load />
   </Dialog>
 </template>
 

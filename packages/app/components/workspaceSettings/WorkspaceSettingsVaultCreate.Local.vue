@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import type { VaultLocalOptions } from '@nwrx/nano-api'
 
-defineProps<{ workspace: string; name: string }>()
+defineProps<{
+  workspace: string
+  name: string
+}>()
 
 const { t } = useI18n()
 const router = useRouter()

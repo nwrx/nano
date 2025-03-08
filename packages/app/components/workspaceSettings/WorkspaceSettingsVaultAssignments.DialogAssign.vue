@@ -17,10 +17,10 @@ const alerts = useAlerts()
 const users = ref<string[]>([])
 
 async function assignUsers() {
-  await client.requestAttempt('PUT /api/workspaces/:workspace/vaults/:name/assignments/:username', {
+  await client.requestAttempt('PUT /api/workspaces/:workspace/vaults/:vault/assignments/:username', {
     data: {
       workspace: props.workspace,
-      name: props.vault,
+      vault: props.vault,
       username: users.value[0],
       permissions: ['Read'],
     },
@@ -42,8 +42,8 @@ watch(isOpen, () => { users.value = [] }, { immediate: true })
     icon="i-carbon:add"
     class-hint="hint-success"
     class-button="button-success"
-    :title="t('title', { vault })"
-    :text="t('text')"
+    :title="t('title', { workspace, vault })"
+    :text="t('text', { workspace, vault })"
     :label-cancel="t('cancel')"
     :label-confirm="t('confirm')"
     @confirm="() => assignUsers()">
@@ -53,7 +53,7 @@ watch(isOpen, () => { users.value = [] }, { immediate: true })
 
 <i18n lang="yaml">
 en:
-  title: Add users to {vault} vault
+  title: Add users to **{workspace}/{vault}** vault
   text: Select users and assign appropriate permission levels.
   selectPermissions: Select permissions to grant
   cancel: Cancel
