@@ -2,7 +2,7 @@
 definePageMeta({
   name: 'WorkspaceSettingsVault',
   parent: 'WorkspaceSettingsVaults',
-  path: '/:workspace/settings/vaults/:name',
+  path: '/:workspace/settings/vaults/:vault',
   middleware: 'redirect-when-guest',
   layout: 'workspace-settings',
   icon: 'i-carbon:edit',
@@ -24,7 +24,7 @@ definePageMeta({
 
 const route = useRoute()
 const workspace = computed(() => route.params.workspace as string)
-const vault = computed(() => route.params.name as string)
+const vault = computed(() => route.params.vault as string)
 </script>
 
 <template>
