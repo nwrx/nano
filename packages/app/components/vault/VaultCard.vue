@@ -26,7 +26,7 @@ const icon = computed(() => {
     <Hyperlink
       class="text-sm font-bold text-app"
       :label="vault.name"
-      :to="{ name: 'WorkspaceSettingsVaultEdit', params: { name: vault.name } }"
+      :to="{ name: 'WorkspaceSettingsVault', params: { name: vault.name } }"
     />
     <!-- Is Default -->
     <BaseIcon

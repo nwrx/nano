@@ -38,7 +38,7 @@ onMounted(getVaults)
         <Flags v-slot="dialogs" :keys="['setDefault', 'remove', 'disable', 'enable', 'health', 'edit']">
           <ContextMenu x="right" y="top" @mousedown.stop>
             <template #menu>
-              <ContextMenuItem icon="i-carbon:edit" :label="t('menu.edit')" :to="{ name: 'WorkspaceSettingsVaultEdit', params: { workspace, vault: vault.name } }" />
+              <ContextMenuItem icon="i-carbon:edit" :label="t('menu.edit')" :to="{ name: 'WorkspaceSettingsVault', params: { workspace, vault: vault.name } }" />
               <ContextMenuItem v-if="!vault.isDefault" icon="i-carbon:star" :label="t('menu.setDefault')" @click="() => dialogs.open('setDefault')" />
               <ContextMenuItem icon="i-carbon:connect" :label="t('menu.health')" @click="() => dialogs.open('health')" />
               <ContextMenuDivider />
