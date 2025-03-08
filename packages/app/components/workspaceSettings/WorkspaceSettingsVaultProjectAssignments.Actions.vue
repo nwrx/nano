@@ -60,4 +60,20 @@ en:
   actions:
     edit: Edit permissions
     remove: Remove access
+fr:
+  actions:
+    edit: Modifier les permissions
+    remove: Supprimer l'accès
+de:
+  actions:
+    edit: Berechtigungen bearbeiten
+    remove: Zugriff entfernen
+es:
+  actions:
+    edit: Editar permisos
+    remove: Eliminar acceso
+zh:
+  actions:
+    edit: 编辑权限
+    remove: 删除访问
 </i18n>

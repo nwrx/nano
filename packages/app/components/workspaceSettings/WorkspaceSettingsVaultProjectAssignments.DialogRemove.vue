@@ -19,7 +19,7 @@ const alerts = useAlerts()
 async function removeAccess() {
   await client.requestAttempt('DELETE /api/workspaces/:workspace/vaults/:vault/projects/:project', {
     data: {
-      name: props.vault,
+      vault: props.vault,
       workspace: props.workspace,
       project: props.project,
     },
