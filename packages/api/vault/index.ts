@@ -60,13 +60,5 @@ export class ModuleVault extends ModuleBase implements ModuleVaultOptions {
     if (options.vaultDefaultLocalSecretKey) this.vaultDefaultLocalSecretKey = options.vaultDefaultLocalSecretKey
   }
 
-  /**
-   * Creates a new key vault for storing variables. The function will create a new `Vault` entity
-   * with the given options and assign the user to the vault with full access. The function will
-   * throw an error if the vault already exists in the workspace.
-   *
-   * @param options The options for creating the key vault
-   * @returns The newly created `Vault` entity.
-   */
   createVault = UTILS.createVault.bind(this)
 }
