@@ -52,9 +52,11 @@ const locale = useVModel(props, 'locale', emit, {
         class="size-8 rounded">
     </div>
 
-    <h1 class="text-sm font-medium font-mono lowercase">
+    <NuxtLink
+      to="/"
+      class="text-sm font-medium font-mono lowercase ring-1.5 ring-white px-1.5">
       {{ title }}
-    </h1>
+    </NuxtLink>
 
     <!-- Spacer -->
     <div class="grow" />
