@@ -11,8 +11,8 @@ const { t, locale } = useI18n()
 <template>
   <div :key="locale" class="lt-md:hidden">
     <p v-if="createdAt" class="flex flex-col">
-      <span class="text-sm text-app" v-text="t('createdAt.date', { date: formatDate(createdAt) })" />
-      <span class="text-xs text-subtle" v-text="formatDateFromNow(createdAt)" />
+      <span class="text-xs text-subtle" v-text="t('createdAt.date', { date: formatDate(createdAt) })" />
+      <span class="text-xs text-app" v-text="t('createdAt.distance', { date: formatDateFromNow(createdAt) })" />
     </p>
   </div>
 </template>
@@ -20,17 +20,22 @@ const { t, locale } = useI18n()
 <i18n lang="yaml">
 en:
   createdAt:
-    date: Created on {date}
+    date: '{date}'
+    distance: created {date}
 fr:
   createdAt:
-    date: Créé le {date}
+    date: '{date}'
+    distance: créé {date}
 de:
   createdAt:
-    date: Erstellt am {date}
+    date: '{date}'
+    distance: erstellt {date}
 es:
   createdAt:
-    date: Creado el {date}
+    date: '{date}'
+    distance: creado {date}
 zh:
   createdAt:
-    date: 创建于 {date}
+    date: '{date}'
+    distance: 创建于 {date}
 </i18n>
