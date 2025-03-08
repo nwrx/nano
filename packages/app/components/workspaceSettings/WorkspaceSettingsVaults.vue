@@ -35,51 +35,7 @@ onMounted(getVaults)
 
       <!-- Actions -->
       <template #cell.actions="vault">
-        <Flags v-slot="dialogs" :keys="['setDefault', 'remove', 'disable', 'enable', 'health', 'edit']">
-          <ContextMenu x="right" y="top" @mousedown.stop>
-            <template #menu>
-              <ContextMenuItem icon="i-carbon:edit" :label="t('menu.edit')" :to="{ name: 'WorkspaceSettingsVault', params: { workspace, vault: vault.name } }" />
-              <ContextMenuItem v-if="!vault.isDefault" icon="i-carbon:star" :label="t('menu.setDefault')" @click="() => dialogs.open('setDefault')" />
-              <ContextMenuItem icon="i-carbon:connect" :label="t('menu.health')" @click="() => dialogs.open('health')" />
-              <ContextMenuDivider />
-              <ContextMenuItem v-if="!vault.disabledAt" icon="i-carbon:close" :label="t('menu.disable')" @click="() => dialogs.open('disable')" />
-              <ContextMenuItem v-if="vault.disabledAt" icon="i-carbon:checkmark" :label="t('menu.enable')" @click="() => dialogs.open('enable')" />
-              <ContextMenuItem v-if="!vault.deletedAt" icon="i-carbon:delete" :label="t('menu.remove')" @click="() => dialogs.open('remove')" />
-            </template>
-          </ContextMenu>
-
-          <!-- Set Default Dialog -->
-          <WorkspaceSettingsVaultsSetDefault
-            v-model="dialogs.value.setDefault"
-            :workspace="workspace"
-            :vault="vault.name"
-            @submit="() => getVaults()"
-          />
-
-          <!-- Remove Dialog -->
-          <WorkspaceSettingsVaultsRemove
-            v-model="dialogs.value.remove"
-            :workspace="workspace"
-            :vault="vault.name"
-            @submit="() => getVaults()"
-          />
-
-          <!-- Disable Dialog -->
-          <WorkspaceSettingsVaultsDisable
-            v-model="dialogs.value.disable"
-            :workspace="workspace"
-            :vault="vault.name"
-            @submit="() => getVaults()"
-          />
-
-          <!-- Enable Dialog -->
-          <WorkspaceSettingsVaultsEnable
-            v-model="dialogs.value.enable"
-            :workspace="workspace"
-            :vault="vault.name"
-            @submit="() => getVaults()"
-          />
-        </Flags>
+        <WorkspaceSettingsVaultsActions :workspace="workspace" :vault="vault" />
       </template>
     </Table>
 
@@ -110,11 +66,4 @@ en:
     aws: AWS
     gcp: GCP
     azure: Azure
-  menu:
-    edit: Edit
-    setDefault: Set as Default
-    health: Health
-    disable: Disable
-    enable: Enable
-    remove: Remove
 </i18n>

@@ -19,7 +19,7 @@ async function disableVault() {
   await client.requestAttempt('PUT /api/workspaces/:workspace/vaults/:vault/disable', {
     data: {
       workspace: props.workspace,
-      name: props.vault,
+      vault: props.vault,
     },
     onSuccess: () => {
       emit('submit')
