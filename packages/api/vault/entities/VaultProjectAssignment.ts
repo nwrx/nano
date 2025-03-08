@@ -6,7 +6,7 @@ import { User } from '../../user'
 import { Vault } from './Vault'
 
 @Entity({ name: 'VaultProjectAssignment' })
-@Index(['vault', 'project', 'permission'], { unique: true })
+@Index(['vault', 'project', 'permission', 'deletedAt'], { unique: true })
 export class VaultProjectAssignment extends BaseEntity {
 
   /**

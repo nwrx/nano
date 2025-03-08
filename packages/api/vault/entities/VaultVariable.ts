@@ -1,7 +1,7 @@
 import { BaseEntity, transformerJson } from '@unserved/server'
 import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm'
 import { User } from '../../user'
-import { Vault } from './Vault'
+import { Vault, VaultObject } from './Vault'
 
 /**
  * A `Variable` is used to store variables that can be assigned to different resources.
@@ -45,19 +45,30 @@ export class VaultVariable<T = any> extends BaseEntity {
   createdBy?: User
 
   /**
+   * @param options The options to use when serializing the variable.
    * @returns The serialized representation of the variable.
    */
-  serialize(): VaultVariableObject {
+  serialize(options: SerializeOptions = {}): VaultVariableObject {
     return {
       name: this.name,
+      createdBy: this.createdBy?.id,
+      deletedAt: this.deletedAt?.toISOString(),
       createdAt: this.createdAt.toISOString(),
       updatedAt: this.updatedAt.toISOString(),
+      vault: options.withVault ? this.vault?.serialize() : undefined,
     }
   }
 }
 
+interface SerializeOptions {
+  withVault?: boolean
+}
+
 export interface VaultVariableObject {
   name: string
+  createdBy?: string
+  deletedAt?: string
   createdAt: string
   updatedAt: string
+  vault?: VaultObject
 }
