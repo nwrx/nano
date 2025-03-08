@@ -62,5 +62,6 @@ declare module 'vue-router' {
     title?: string | Stringtable
     description?: string | Stringtable
     group?: NavItemGroup
+    parent?: string
   }
 }

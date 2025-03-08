@@ -25,7 +25,14 @@ const workspace = computed(() => route.params.workspace as string)
         </AppPageNav>
 
         <!-- Content -->
-        <NuxtPage />
+        <div class="relative w-full">
+          <AppPageFormBreadcrumb
+            v-if="route.meta.parent"
+            class="sticky top-0"
+            :items="[route.meta.parent, route.name as string]"
+          />
+          <NuxtPage />
+        </div>
       </div>
     </AppPage>
   </AppLayout>

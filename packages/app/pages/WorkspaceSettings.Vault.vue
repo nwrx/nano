@@ -1,6 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
   name: 'WorkspaceSettingsVault',
+  parent: 'WorkspaceSettingsVaults',
   path: '/:workspace/settings/vaults/:name',
   middleware: 'redirect-when-guest',
   layout: 'workspace-settings',
