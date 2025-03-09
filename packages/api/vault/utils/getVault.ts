@@ -14,6 +14,8 @@ const GET_VAULT_OPTIONS_SCHEMA = createSchema({
   name: assert.stringNotEmpty,
   permission: assertVaultPermission,
   withDeleted: [[assert.undefined], [assert.boolean]],
+  withProjects: [[assert.undefined], [assert.boolean]],
+  withAssignments: [[assert.undefined], [assert.boolean]],
 })
 
 /** The options to get a vault by name. */
@@ -27,7 +29,15 @@ export type GetVaultOptions = Loose<ReturnType<typeof GET_VAULT_OPTIONS_SCHEMA>>
  * @returns The vault
  */
 export async function getVault(this: ModuleVault, options: GetVaultOptions): Promise<Vault> {
-  const { user, workspace, name, permission, withDeleted } = GET_VAULT_OPTIONS_SCHEMA(options)
+  const {
+    user,
+    workspace,
+    name,
+    permission,
+    withDeleted,
+    withProjects,
+    withAssignments,
+  } = GET_VAULT_OPTIONS_SCHEMA(options)
 
   // --- Get the vault entity.
   const { Vault } = this.getRepositories()
@@ -38,7 +48,8 @@ export async function getVault(this: ModuleVault, options: GetVaultOptions): Pro
       assignments: { user, permission: In(['Owner', 'Read']) },
     },
     relations: {
-      assignments: { user: true },
+      projects: withProjects ? { project: true } : false,
+      assignments: withAssignments ? { user: true } : false,
     },
     withDeleted,
   })
