@@ -72,7 +72,9 @@ watch(registry.search, registry.searchCategories, { immediate: true })
         </AppPageNav>
 
         <!-- Content -->
-        <NuxtPage />
+        <div class="relative w-full">
+          <NuxtPage transition />
+        </div>
       </div>
     </AppPage>
   </AppLayout>

@@ -26,7 +26,9 @@ const project = computed(() => route.params.project as string)
         </AppPageNav>
 
         <!-- Content -->
-        <NuxtPage />
+        <div class="relative w-full">
+          <NuxtPage transition />
+        </div>
       </div>
     </AppPage>
   </AppLayout>

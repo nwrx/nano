@@ -26,7 +26,9 @@ const route = useRoute()
         </AppPageNav>
 
         <!-- Content -->
-        <NuxtPage />
+        <div class="relative w-full">
+          <NuxtPage transition />
+        </div>
       </div>
     </AppPage>
   </AppLayout>

@@ -15,9 +15,14 @@ const route = useRoute()
         :description="localize(route.meta.description)"
       />
 
-      <!-- Side menu -->
       <div class="flex w-full h-full overflow-x-hidden overflow-y-auto divide-x divide-app">
-        <NuxtPage />
+
+        <!-- Content -->
+        <div class="relative w-full">
+          <NuxtPage transition />
+        </div>
+
+        <!-- Side menu -->
         <AppPageNav class="shrink-0 h-full sticky top-0 overflow-y-auto">
           <AppPageNavGroup name="user-settings" />
           <AppPageNavGroup name="user-security" :label="t('security')" />

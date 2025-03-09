@@ -31,7 +31,7 @@ const workspace = computed(() => route.params.workspace as string)
             class="sticky top-0"
             :items="[route.meta.parent, route.name as string]"
           />
-          <NuxtPage />
+          <NuxtPage transition />
         </div>
       </div>
     </AppPage>
