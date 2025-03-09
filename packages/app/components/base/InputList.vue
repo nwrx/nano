@@ -179,10 +179,8 @@ const search = useVModel(props as { search: string }, 'search', emit, { passive:
     </p>
 
     <!-- Hint -->
-    <p v-else-if="$slots.hint || hint" class="text-xs text-subtle mt-xs">
-      <slot name="hint">
-        {{ hint }}
-      </slot>
+    <p v-else-if="hint" class="text-xs text-subtle mt-xs">
+      {{ hint }}
     </p>
   </div>
 </template>
