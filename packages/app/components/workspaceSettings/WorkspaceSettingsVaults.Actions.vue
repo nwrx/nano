@@ -20,7 +20,7 @@ const showRemoveDialog = ref(false)
 <template>
   <div>
     <ContextMenu x="right" y="top" @mousedown.stop>
-      <template #actions>
+      <template #menu>
         <ContextMenuItem
           icon="i-carbon:edit"
           :label="t('actions.edit')"
