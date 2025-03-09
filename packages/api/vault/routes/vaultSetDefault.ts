@@ -24,10 +24,8 @@ export function vaultSetDefault(this: ModuleVault) {
       const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Owner' })
       const vault = await getVault.call(this, { user, workspace, name: parameters.vault, permission: 'Write' })
 
-      // --- Throw an error if the vault is already the default.
-      if (vault.isDefault) throw this.errors.VAULT_ALREADY_DEFAULT(workspace.name, vault.name)
-
       // --- Find the current default vault and unset it.
+      if (vault.isDefault) throw this.errors.VAULT_ALREADY_DEFAULT(workspace.name, vault.name)
       const defaultVault = await Vault.findOne({ where: { workspace, isDefault: true } })
       if (defaultVault) {
         defaultVault.isDefault = false
