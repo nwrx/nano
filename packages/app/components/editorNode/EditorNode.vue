@@ -1,6 +1,20 @@
 <script setup lang="ts">
 import type { EditorNodeObject } from '@nwrx/nano-api'
-defineProps<{ editor: Editor; node: EditorNodeObject }>()
+import type { Schema } from '@nwrx/nano/utils'
+const props = defineProps<{
+  editor: Editor
+  node: EditorNodeObject
+}>()
+
+const visibleInputs = computed(() => {
+  const inputs: Record<string, Schema> = {}
+  const node = props.node
+  if (!node) return inputs
+  if (!node.inputs) return inputs
+  for (const [name, schema] of Object.entries(props.node.inputs))
+    if (schema['x-internal'] !== true) inputs[name] = schema
+  return inputs
+})
 </script>
 
 <template>
@@ -22,8 +36,20 @@ defineProps<{ editor: Editor; node: EditorNodeObject }>()
           mask-to-t-0/120 pointer-events-none
         "
       />
-      <EditorNodeInput v-for="(_, name) in node.inputs" :key="name" :name :node :editor />
-      <EditorNodeOutput v-for="(_, name) in node.outputs" :key="name" :name :node :editor />
+      <EditorNodeInput
+        v-for="(_, name) in visibleInputs"
+        :key="name"
+        :name="name"
+        :node="node"
+        :editor="editor"
+      />
+      <EditorNodeOutput
+        v-for="(_, name) in node.outputs"
+        :key="name"
+        :name="name"
+        :node="node"
+        :editor="editor"
+      />
     </div>
 
   </div>
