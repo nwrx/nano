@@ -65,7 +65,7 @@ watch(isOpen, value => value && emit('open'))
         'pointer-events-none': !isOpen,
       }"
       class="
-        fixed inset-0 bg-transparent z-10
+        fixed inset-0 bg-transparent z-10 p-2xl
         inline-flex items-center justify-center backdrop:bg-transparent
         transition duration-fast dark pointer-events-none
       "
