@@ -24,7 +24,7 @@ export type SchemaControl =
   | 'markdown'
   | 'json'
   | 'tags'
-  | 'vault'
+  | 'variable'
   | 'language-model'
   | 'language-model-tool'
 
