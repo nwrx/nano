@@ -11,7 +11,7 @@ import { VaultVariable } from './VaultVariable'
 
 @Entity({ name: 'Vault' })
 @Index(['workspace', 'name', 'deletedAt'])
-@Index(['workspace', 'isDefault', 'deletedAt'])
+@Index(['workspace', 'isDefault'], { unique: true })
 export class Vault<T extends VaultType = VaultType> extends BaseEntity {
 
   /**

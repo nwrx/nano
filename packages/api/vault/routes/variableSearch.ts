@@ -1,6 +1,7 @@
 import type { ModuleVault } from '..'
 import type { VaultVariableObject } from '../entities'
 import { createHttpRoute } from '@unserved/server'
+import { parseBoolean } from '@unshared/string/parseBoolean'
 import { assert, createSchema } from '@unshared/validation'
 import { ModuleProject } from '../../project'
 import { ModuleUser } from '../../user'
@@ -20,6 +21,7 @@ export function variableSearchByVault(this: ModuleVault) {
         page: [[assert.undefined], [assert.stringNotEmpty, assert.number]],
         limit: [[assert.undefined], [assert.stringNotEmpty, assert.number]],
         order: [[assert.undefined], [assert.stringNotEmpty, assert.objectStrict]],
+        withVault: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],
       }),
     },
     async({ event, query, parameters }): Promise<VaultVariableObject[]> => {
@@ -31,7 +33,7 @@ export function variableSearchByVault(this: ModuleVault) {
       const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Read' })
       const vault = await getVault.call(this, { user, workspace, name: parameters.vault, permission: 'Read' })
       const variables = await searchVariableByVault.call(this, { vault, ...query })
-      return variables.map(variable => variable.serialize())
+      return variables.map(variable => variable.serialize({ withVault: query.withVault }))
     },
   )
 }
@@ -48,6 +50,7 @@ export function variableSearchByWorkspace(this: ModuleVault) {
         page: [[assert.undefined], [assert.stringNotEmpty, assert.number]],
         limit: [[assert.undefined], [assert.stringNotEmpty, assert.number]],
         order: [[assert.undefined], [assert.stringNotEmpty, assert.objectStrict]],
+        withVault: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],
       }),
     },
     async({ event, query, parameters }): Promise<VaultVariableObject[]> => {
@@ -58,7 +61,7 @@ export function variableSearchByWorkspace(this: ModuleVault) {
       // --- Get the workspace with read permission and search the variables.
       const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Read' })
       const variables = await searchVariableByWorkspace.call(this, { workspace, ...query })
-      return variables.map(variable => variable.serialize())
+      return variables.map(variable => variable.serialize({ withVault: query.withVault }))
     },
   )
 }
@@ -76,6 +79,7 @@ export function variableSearchByProject(this: ModuleVault) {
         page: [[assert.undefined], [assert.stringNotEmpty, assert.number]],
         limit: [[assert.undefined], [assert.stringNotEmpty, assert.number]],
         order: [[assert.undefined], [assert.stringNotEmpty, assert.objectStrict]],
+        withVault: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],
       }),
     },
     async({ event, query, parameters }): Promise<VaultVariableObject[]> => {
@@ -88,7 +92,7 @@ export function variableSearchByProject(this: ModuleVault) {
       const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Read' })
       const project = await moduleProject.getProject({ user, workspace, name: parameters.project, permission: 'Read' })
       const variables = await searchVariableByProject.call(this, { project, ...query })
-      return variables.map(variable => variable.serialize())
+      return variables.map(variable => variable.serialize({ withVault: query.withVault }))
     },
   )
 }

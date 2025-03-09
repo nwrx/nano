@@ -1,6 +1,6 @@
 import { BaseEntity, transformerJson } from '@unserved/server'
 import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm'
-import { User } from '../../user'
+import { User, UserObject } from '../../user'
 import { Vault, VaultObject } from './Vault'
 
 /**
@@ -45,13 +45,21 @@ export class VaultVariable<T = any> extends BaseEntity {
   createdBy?: User
 
   /**
+   * The user that last updated the variable.
+   */
+  @JoinColumn()
+  @ManyToOne(() => User, { nullable: true, onDelete: 'RESTRICT' })
+  updatedBy?: User
+
+  /**
    * @param options The options to use when serializing the variable.
    * @returns The serialized representation of the variable.
    */
   serialize(options: SerializeOptions = {}): VaultVariableObject {
     return {
       name: this.name,
-      createdBy: this.createdBy?.id,
+      createdBy: this.createdBy?.serialize(),
+      updatedBy: this.updatedBy?.serialize(),
       deletedAt: this.deletedAt?.toISOString(),
       createdAt: this.createdAt.toISOString(),
       updatedAt: this.updatedAt.toISOString(),
@@ -66,7 +74,8 @@ interface SerializeOptions {
 
 export interface VaultVariableObject {
   name: string
-  createdBy?: string
+  createdBy?: UserObject
+  updatedBy?: UserObject
   deletedAt?: string
   createdAt: string
   updatedAt: string

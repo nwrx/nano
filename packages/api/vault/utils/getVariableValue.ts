@@ -1,14 +1,15 @@
 import type { Loose } from '@unshared/types'
 import type { ModuleVault } from '../index'
 import { assert, createSchema } from '@unshared/validation'
+import { assertProject } from '../../project'
 import { assertWorkspace } from '../../workspace'
-import { assertVault } from './assertVault'
 import { getVaultAdapter } from './getVaultAdapter'
 
 /** The schema for the getVariableValue options. */
 export const GET_VARIABLE_VALUE_OPTIONS_SCHEMA = createSchema({
   workspace: assertWorkspace,
-  vault: assertVault,
+  project: assertProject,
+  vault: assert.stringNotEmpty,
   name: assert.stringNotEmpty,
 })
 
@@ -24,15 +25,20 @@ export type GetVariableValueOptions = Loose<ReturnType<typeof GET_VARIABLE_VALUE
  * @example await getVariableValue({ vault, name: 'MY_SECRET' }) // 'my-secret-value'
  */
 export async function getVariableValue(this: ModuleVault, options: GetVariableValueOptions): Promise<string> {
-  const { workspace, vault, name } = GET_VARIABLE_VALUE_OPTIONS_SCHEMA(options)
+  const { workspace, project, vault, name } = GET_VARIABLE_VALUE_OPTIONS_SCHEMA(options)
+
+  // --- Assert that the project can `Use` the vault.
+  const { VaultProjectAssignment } = this.getRepositories()
+  const count = await VaultProjectAssignment.countBy({ project, vault: { name: vault }, permission: 'Use' })
+  if (count === 0) throw this.errors.VAULT_VARIABLE_NOT_FOUND(workspace.name, vault, name)
 
   // --- Get the variable from the database
   const { VaultVariable } = this.getRepositories()
-  const variable = await VaultVariable.findOneBy({ vault: { id: vault.id }, name })
-  if (!variable) throw this.errors.VAULT_VARIABLE_NOT_FOUND(workspace.name, vault.name, name)
+  const variable = await VaultVariable.findOne({ where: { vault: { name: vault }, name }, relations: { vault: true } })
+  if (!variable) throw this.errors.VAULT_VARIABLE_NOT_FOUND(workspace.name, vault, name)
 
   // --- Get the adapter and retrieve the decrypted value
-  const adapter = await getVaultAdapter.call(this, vault)
+  const adapter = await getVaultAdapter.call(this, variable.vault!)
   await adapter.initialize()
   return adapter.getValue(variable)
 }

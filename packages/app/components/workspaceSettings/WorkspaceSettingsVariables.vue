@@ -15,6 +15,7 @@ async function getVariables() {
   await client.requestAttempt('GET /api/workspaces/:workspace/variables', {
     data: {
       workspace: props.workspace,
+      withVault: true,
     },
     onData: (data) => {
       variables.value = data
@@ -44,7 +45,11 @@ onMounted(getVariables)
 
       <!-- Actions -->
       <template #cell.actions="variable">
-        <WorkspaceSettingsVariablesActions :variable="variable" />
+        <WorkspaceSettingsVariablesActions
+          :workspace="workspace"
+          :variable="variable.name"
+          :vault="variable.vault!.name"
+        />
       </template>
     </Table>
 

@@ -61,5 +61,7 @@ export class ModuleVault extends ModuleBase implements ModuleVaultOptions {
   }
 
   createVault = UTILS.createVault.bind(this)
+  getVault = UTILS.getVault.bind(this)
+  getVariableValue = UTILS.getVariableValue.bind(this)
   searchVariableByProject = UTILS.searchVariableByProject.bind(this)
 }

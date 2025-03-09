@@ -31,10 +31,10 @@ export type CreateVariableOptions = Loose<ReturnType<typeof CREATE_VARIABLE_OPTI
  * const variable = await moduleVault.createVariable({ ..., vault })
  */
 export async function createVariable(this: ModuleVault, options: CreateVariableOptions) {
-  const { VaultVariable } = this.getRepositories()
   const { user, name, value, vault } = CREATE_VARIABLE_OPTIONS_SCHEMA(options)
 
   // --- Create the variable entity and apply the value to the vault.
+  const { VaultVariable } = this.getRepositories()
   const variable = VaultVariable.create({ name, vault, createdBy: user })
   const adapter = await getVaultAdapter.call(this, vault)
   await adapter.initialize()
