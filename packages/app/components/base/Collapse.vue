@@ -17,7 +17,7 @@ const model = useVModel(props, 'modelValue', emit, {
     vertical
     :is-open="model"
     :duration="300"
-    :class="{ 'op-0': model !== true }"
+    :class="{ '!h-0 op-0 pointer-events-none': model !== true }"
     class="transition-all duration-slow">
     <slot />
   </BaseCollapse>
