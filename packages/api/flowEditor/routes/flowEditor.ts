@@ -37,7 +37,7 @@ export function flowEditor(this: ModuleFlowEditor) {
         const flow = await moduleFlow.getFlow({ name: parameters.name, workspace, project, user, permission: 'Read' })
 
         // --- Get the editor session and subscribe the peer.
-        const session = getEditorSession.call(this, { flow, user })
+        const session = getEditorSession.call(this, { flow, user, project, workspace })
         await session.subscribe(peer, user)
       },
 
