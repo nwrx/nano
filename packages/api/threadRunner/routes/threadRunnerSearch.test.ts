@@ -36,10 +36,6 @@ describe<Context>('GET /api/runners', () => {
         createdAt: expect.any(String),
         identity: expect.any(String),
         lastSeenAt: expect.any(String),
-        isClaimed: true,
-        isRunning: false,
-        isReachable: true,
-        workerPool: expect.any(Array),
       })
     })
 
@@ -60,10 +56,6 @@ describe<Context>('GET /api/runners', () => {
         createdAt: expect.any(String),
         identity: expect.any(String),
         lastSeenAt: expect.any(String),
-        isClaimed: false,
-        isRunning: false,
-        isReachable: false,
-        workerPool: [],
       })
     })
   })
