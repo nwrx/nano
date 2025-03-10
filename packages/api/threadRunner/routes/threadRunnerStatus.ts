@@ -1,5 +1,5 @@
 import type { ThreadRunnerStatus } from '@nwrx/nano-runner'
-import type { ModuleThreadRunner, ThreadRunnerObject } from '../index'
+import type { ModuleThreadRunner } from '../index'
 import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, createSchema } from '@unshared/validation'
 import { ModuleUser } from '../../user'
@@ -12,7 +12,7 @@ export function threadRunnerStatus(this: ModuleThreadRunner) {
         identity: assertStringNotEmpty,
       }),
     },
-    async({ event, parameters }): Promise<ThreadRunnerObject & ThreadRunnerStatus> => {
+    async({ event, parameters }): Promise<ThreadRunnerStatus> => {
       const moduleUser = this.getModule(ModuleUser)
       const { user } = await moduleUser.authenticate(event)
       const { identity } = parameters
@@ -24,20 +24,11 @@ export function threadRunnerStatus(this: ModuleThreadRunner) {
       const { ThreadRunner } = this.getRepositories()
       const threadRunner = await ThreadRunner.findOneBy({ identity })
       if (!threadRunner) throw this.errors.THREAD_RUNNER_NOT_FOUND(identity)
-      const threadRunnerStatus: ThreadRunnerObject & ThreadRunnerStatus = {
-        ...threadRunner.serialize(),
-        isRunning: false,
-        isClaimed: false,
-        isReachable: false,
-        workerPool: [],
-      }
 
       // --- Retrieve the thread runner client and get its status.
       const runner = this.threadRunners.get(threadRunner.id)
-      if (!runner) return threadRunnerStatus
+      if (!runner) throw this.errors.THREAD_RUNNER_NOT_FOUND(identity)
       return await runner.getStatus()
-        .then(status => ({ ...threadRunnerStatus, ...status }))
-        .catch(() => ({ ...threadRunnerStatus }))
     },
   )
 }
