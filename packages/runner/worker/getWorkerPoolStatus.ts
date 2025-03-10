@@ -1,12 +1,7 @@
 import type { ModuleRunner } from '../application'
+import type { getWorkerPoolStatus as getWorkerPoolStatusWorker } from './getWorkerPoolStatus.worker.mjs'
 
-export interface ThreadRunnerWorkerPoolStatus {
-  threadId: number
-  uptime: number
-  cpuUsage: NodeJS.CpuUsage
-  memoryUsage: NodeJS.MemoryUsage
-  resourceUsage: NodeJS.ResourceUsage
-}
+export type ThreadRunnerWorkerPoolStatus = ReturnType<typeof getWorkerPoolStatusWorker>
 
 export function getWorkerPoolStatus(this: ModuleRunner): Promise<ThreadRunnerWorkerPoolStatus[]> {
   type Module = typeof import('./getWorkerPoolStatus.worker.mjs').getWorkerPoolStatus
