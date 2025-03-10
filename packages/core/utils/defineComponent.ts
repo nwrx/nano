@@ -63,7 +63,7 @@ export type Schema = Omit<OpenAPIV3_1.SchemaObject, 'additionalProperties' | 'an
   'x-slider-min'?: number
   'x-slider-max'?: number
   'x-slider-step'?: number
-  'x-options'?: (data: any, query?: string) => MaybePromise<SchemaOption[]>
+  'x-options'?: (data: ObjectLike, query?: string) => MaybePromise<SchemaOption[]>
   'x-enum-labels'?: string[]
   'x-enum-icons'?: string[]
   'x-enum-descriptions'?: string[]
