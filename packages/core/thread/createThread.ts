@@ -44,8 +44,8 @@ export interface ThreadOptions {
 export class Thread extends Emitter<ThreadEventMap> implements ThreadOptions {
   constructor(options: ThreadOptions = {}) {
     super()
-    if (options.componentResolvers) this.componentResolvers.push(...options.componentResolvers)
-    if (options.referenceResolvers) this.referenceResolvers.push(...options.referenceResolvers)
+    if (options.componentResolvers) this.componentResolvers.unshift(...options.componentResolvers)
+    if (options.referenceResolvers) this.referenceResolvers.unshift(...options.referenceResolvers)
   }
 
   /** The time when the flow thread was started. */
