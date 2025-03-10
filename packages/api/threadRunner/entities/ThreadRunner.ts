@@ -57,6 +57,15 @@ export class ThreadRunner extends BaseEntity {
   createdBy: undefined | User
 
   /**
+   * The date at which the thread runner was disabled. When defined, this
+   * indicates that the thread runner is no longer active and should not be
+   * used to run threads. This is used to disable thread runners without
+   * deleting them from the database.
+   */
+  @Column('varchar', { transformer: transformerDate, nullable: true })
+  disabledAt: Date | null
+
+  /**
    * @returns The serialized representation of the thread runner.
    */
   serialize(): ThreadRunnerObject {
@@ -65,6 +74,7 @@ export class ThreadRunner extends BaseEntity {
       identity: this.identity,
       createdAt: this.createdAt.toISOString(),
       lastSeenAt: this.lastSeenAt.toISOString(),
+      disabledAt: this.disabledAt?.toISOString(),
       createdBy: this.createdBy?.serialize(),
     }
   }
@@ -75,5 +85,6 @@ export interface ThreadRunnerObject {
   identity: string
   createdAt: string
   lastSeenAt: string
+  disabledAt: string | undefined
   createdBy: undefined | UserObject
 }

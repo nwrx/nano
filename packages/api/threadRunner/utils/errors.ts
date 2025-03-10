@@ -36,4 +36,20 @@ export const ERRORS = {
     message: `Thread runner with base URL "${address}" is not reachable: ${code}`,
     data: { address, code },
   }),
+
+  // Enable/Disable
+  THREAD_RUNNER_ALREADY_ENABLED: (identity: string) => createError({
+    name: 'E_THREAD_RUNNER_ALREADY_ENABLED',
+    statusCode: 409,
+    statusMessage: 'Conflict',
+    message: `Thread runner with ID "${identity}" is already enabled`,
+    data: { identity },
+  }),
+  THREAD_RUNNER_ALREADY_DISABLED: (identity: string) => createError({
+    name: 'E_THREAD_RUNNER_ALREADY_DISABLED',
+    statusCode: 409,
+    statusMessage: 'Conflict',
+    message: `Thread runner with ID "${identity}" is already disabled`,
+    data: { identity },
+  }),
 }
