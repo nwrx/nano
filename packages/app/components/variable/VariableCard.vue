@@ -7,15 +7,10 @@ defineProps<{
 </script>
 
 <template>
-  <div class="flex items-center">
-    <div class="i-carbon:password text-lg mr-2" />
-    <div class="flex flex-col">
-      <div class="text-sm font-medium">
-        {{ variable.name }}
-      </div>
-      <div class="text-xs text-gray-500">
-        {{ variable.vault }}
-      </div>
+  <div>
+    <div class="flex items-center space-x-xs">
+      <BaseIcon icon="i-carbon:password" class="size-4" />
+      <div class="text-base font-medium" v-text="variable.name" />
     </div>
   </div>
 </template>
