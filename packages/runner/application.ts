@@ -9,6 +9,8 @@ import * as ROUTES from './routes'
 import { ERRORS } from './utils'
 
 export type { ThreadRunnerStatus } from './routes/getStatus'
+export { THREAD_SERVER_MESSAGE_SCHEMA } from './worker'
+export { THREAD_CLIENT_MESSAGE_SCHEMA } from './worker'
 export type { ThreadRunnerWorkerPoolStatus } from './worker/getWorkerPoolStatus'
 
 export class ModuleRunner extends ModuleBase {

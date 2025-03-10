@@ -1,9 +1,9 @@
 import type { ModuleRunner } from '../application'
 import type { ThreadWorkerMessage } from '../worker'
 import { createWebSocketRoute } from '@unserved/server'
-import { assertObjectStrict, assertStringNotEmpty, assertStringUuid, createParser } from '@unshared/validation'
+import { assertStringNotEmpty, assertStringUuid, createParser } from '@unshared/validation'
 import { authorize } from '../utils'
-import { THREAD_CLIENT_MESSAGE_SCHEMA } from '../worker'
+import { THREAD_CLIENT_MESSAGE_SCHEMA, THREAD_SERVER_MESSAGE_SCHEMA } from '../worker'
 
 export function threadSession(this: ModuleRunner) {
   return createWebSocketRoute(
@@ -12,7 +12,7 @@ export function threadSession(this: ModuleRunner) {
       parseParameters: createParser({ id: assertStringUuid }),
       parseQuery: createParser({ token: assertStringNotEmpty }),
       parseClientMessage: THREAD_CLIENT_MESSAGE_SCHEMA,
-      parseServerMessage: createParser(assertObjectStrict<ThreadWorkerMessage>),
+      parseServerMessage: THREAD_SERVER_MESSAGE_SCHEMA,
     },
     {
       onOpen: ({ peer, parameters }) => {
