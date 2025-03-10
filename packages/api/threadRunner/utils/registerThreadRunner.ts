@@ -1,17 +1,31 @@
+import type { Loose } from '@unshared/types'
 import type { ModuleThreadRunner } from '..'
-import type { User } from '../../user'
-import { createThreadRunner } from './createThreadRunner'
+import { assert, createSchema } from '@unshared/validation'
+import { assertUser } from '../../user'
+import { createThreadRunnerClient } from './createThreadRunner'
 
-export interface RegisterThreadRunnerOptions {
-  user: User
-  address: string
-}
+/** The schema for the register thread runner options. */
+export const REGISTER_THREAD_RUNNER_OPTIONS_SCHEMA = createSchema({
+  user: assertUser,
+  address: assert.stringNotEmpty,
+})
 
+/** The options for the register thread runner. */
+export type RegisterThreadRunnerOptions = Loose<ReturnType<typeof REGISTER_THREAD_RUNNER_OPTIONS_SCHEMA>>
+
+/**
+ * Register a new remote thread runner. This will create a new thread runner
+ * in the database and immediately claim it. This will also instantiate a new
+ * thread runner client that can be used to interact with the thread runner.
+ *
+ * @param options The options to register the thread runner.
+ * @example await registerThreadRunner({ user, address: 'http://localhost:3000' })
+ */
 export async function registerThreadRunner(this: ModuleThreadRunner, options: RegisterThreadRunnerOptions) {
   const { address, user } = options
 
   // --- Assert the user is a super administrator.
-  if (!user?.isSuperAdministrator) throw this.errors.THREAD_RUNNER_FORBIDDEN()
+  if (!user.isSuperAdministrator) throw this.errors.THREAD_RUNNER_FORBIDDEN()
 
   // --- Check if a thread runner with the same base URL already exists
   const { ThreadRunner } = this.getRepositories()
@@ -19,7 +33,7 @@ export async function registerThreadRunner(this: ModuleThreadRunner, options: Re
   if (exists > 0) throw this.errors.THREAD_RUNNER_ALREADY_REGISTERED(address)
 
   // --- Register, claim, and store the thread runner.
-  const client = createThreadRunner.call(this, address)
+  const client = createThreadRunnerClient.call(this, { address })
   const { token, identity } = await client.claim()
   await client.ping()
 

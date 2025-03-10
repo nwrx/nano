@@ -1,4 +1,5 @@
 export * from './createThreadRunner'
 export * from './errors'
+export * from './initialize'
 export * from './registerThreadRunner'
 export * from './requestThreadRunner'

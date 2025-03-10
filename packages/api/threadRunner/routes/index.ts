@@ -1,4 +1,7 @@
 export * from './threadRunnerClaim'
+export * from './threadRunnerDisable'
+export * from './threadRunnerEnable'
 export * from './threadRunnerRelease'
 export * from './threadRunnerSearch'
+export * from './threadRunnerSession'
 export * from './threadRunnerStatus'

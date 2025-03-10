@@ -1,11 +1,11 @@
-import type { ThreadRunner } from './createThreadRunner'
+import type { ThreadRunnerClient } from './createThreadRunner'
 import { type Context, createTestContext } from '../../__fixtures__'
 import { requestThreadRunner } from './requestThreadRunner'
 
 function createMockThreadRunner(cpuUsage: { user: number; system: number }) {
   return {
     getStatus: () => Promise.resolve({ workerPool: [{ cpuUsage }] }),
-  } as unknown as ThreadRunner
+  } as unknown as ThreadRunnerClient
 }
 
 describe<Context>('requestThreadRunner', () => {

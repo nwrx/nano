@@ -5,7 +5,7 @@ import type { Context } from '../../__fixtures__'
 import type { ThreadWorkerMessage } from '../../../runner/worker'
 import { WebSocketChannel } from '@unshared/client/websocket'
 import { createTestContext } from '../../__fixtures__'
-import { createThreadRunner, ThreadRunner } from './createThreadRunner'
+import { createThreadRunnerClient, ThreadRunnerClient } from './createThreadRunner'
 
 const flow: FlowV1 = {
   version: '1',
@@ -61,20 +61,20 @@ describe.sequential<Context>('createThreadRunner', () => {
 
   describe<Context>('instance', (it) => {
     it('should return a ThreadRunner instance', () => {
-      const runner = createThreadRunner('http://localhost')
-      expect(runner).toBeInstanceOf(ThreadRunner)
+      const runner = createThreadRunnerClient({ address: 'http://localhost' })
+      expect(runner).toBeInstanceOf(ThreadRunnerClient)
     })
   })
 
   describe<Context>('claim', (it) => {
     it('should return a ThreadRunner instance', async() => {
-      const runner = createThreadRunner('http://localhost')
+      const runner = createThreadRunnerClient({ address: 'http://localhost' })
       const shouldNotReject = runner.claim()
       await expect(shouldNotReject).resolves.toBeDefined()
     })
 
     it('should throw an error if the thread runner is already claimed', async() => {
-      const runner = createThreadRunner('http://localhost')
+      const runner = createThreadRunnerClient({ address: 'http://localhost' })
       await runner.claim()
       const shouldReject = runner.claim()
       await expect(shouldReject).rejects.toThrow('Runner is already claimed')
@@ -83,7 +83,7 @@ describe.sequential<Context>('createThreadRunner', () => {
 
   describe<Context>('ping', (it) => {
     it('should ping the thread runner', async() => {
-      const runner = createThreadRunner('http://localhost')
+      const runner = createThreadRunnerClient({ address: 'http://localhost' })
       const result = await runner.ping()
       expect(result).toBeUndefined()
     })
@@ -91,7 +91,7 @@ describe.sequential<Context>('createThreadRunner', () => {
 
   describe<Context>('getStatus', (it) => {
     it('should get the status of the thread runner', async() => {
-      const runner = createThreadRunner('http://localhost')
+      const runner = createThreadRunnerClient({ address: 'http://localhost' })
       await runner.claim()
       const result = await runner.getStatus()
       expect(result).toStrictEqual({
@@ -103,7 +103,7 @@ describe.sequential<Context>('createThreadRunner', () => {
     })
 
     it('should throw an error if the thread runner is not claimed', async() => {
-      const runner = createThreadRunner('http://localhost')
+      const runner = createThreadRunnerClient({ address: 'http://localhost' })
       const shouldReject = runner.getStatus()
       await expect(shouldReject).rejects.toThrow('Not authorized')
     })
@@ -112,14 +112,14 @@ describe.sequential<Context>('createThreadRunner', () => {
   describe<Context>('createThread', { timeout: 1000 }, () => {
     describe('instanciation', (it) => {
       it('should create a WebSocket channel', async() => {
-        const runner = createThreadRunner('http://localhost')
+        const runner = createThreadRunnerClient({ address: 'http://localhost' })
         await runner.claim()
         const result = await runner.createThread({ version: '1', nodes: {} })
         expect(result).toBeInstanceOf(WebSocketChannel)
       })
 
       it('should throw an error if the flow file version is unsupported', async() => {
-        const runner = createThreadRunner('http://localhost')
+        const runner = createThreadRunnerClient({ address: 'http://localhost' })
         await runner.claim()
         // @ts-expect-error: intentionally passing an unsupported version
         const shouldReject = runner.createThread({ version: '0' })
@@ -129,7 +129,7 @@ describe.sequential<Context>('createThreadRunner', () => {
 
     describe('events', (it) => {
       it('should start a thread', async() => {
-        const runner = createThreadRunner('http://localhost')
+        const runner = createThreadRunnerClient({ address: 'http://localhost' })
         await runner.claim()
         const thread = await runner.createThread({ version: '1', nodes: {} })
         thread.send({ event: 'start', data: { name: 'Alice' } })
@@ -138,7 +138,7 @@ describe.sequential<Context>('createThreadRunner', () => {
       })
 
       it('should start a thread and return the result', async() => {
-        const runner = createThreadRunner('http://localhost')
+        const runner = createThreadRunnerClient({ address: 'http://localhost' })
         await runner.claim()
         const thread = await runner.createThread(flow)
         thread.send({ event: 'start', data: { name: 'Alice' } })
@@ -147,7 +147,7 @@ describe.sequential<Context>('createThreadRunner', () => {
       })
 
       it('should collect all messages', async() => {
-        const runner = createThreadRunner('http://localhost')
+        const runner = createThreadRunnerClient({ address: 'http://localhost' })
         await runner.claim()
         const thread = await runner.createThread(flow)
         const messages: ThreadWorkerMessage[] = []
