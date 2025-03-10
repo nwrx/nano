@@ -24,6 +24,6 @@ definePageMeta({
 
 <template>
   <AppPageContainer contained>
-    <AdminServerRunners />
+    <AdminSettingsRunners />
   </AppPageContainer>
 </template>

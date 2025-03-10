@@ -1,17 +1,12 @@
 <script setup lang="ts">
+import type { ThreadRunnerObject } from '@nwrx/nano-api'
+
 defineProps<{
-  address: string
-  identity: string
-  isEnabled?: boolean
-  isConnected?: boolean
+  runner: ThreadRunnerObject
 }>()
 
-// --- Define emits.
 const emit = defineEmits<{
-  submitPing: []
-  submitRelease: []
-  submitDisable: []
-  submitEnable: []
+  submit: []
 }>()
 
 const { t } = useI18n()
@@ -27,17 +22,16 @@ const showEnableOpen = ref(false)
         <ContextMenuItem
           :label="t('menu.ping')"
           icon="i-carbon:connection-signal"
-          @click="() => emit('submitPing')"
         />
         <ContextMenuDivider />
         <ContextMenuItem
-          v-if="!isEnabled"
+          v-if="runner.disabledAt"
           :label="t('menu.enable')"
           icon="i-carbon:checkmark"
           @click="() => showEnableOpen = true"
         />
         <ContextMenuItem
-          v-if="isEnabled"
+          v-else
           :label="t('menu.disable')"
           icon="i-carbon:close"
           @click="() => showDisableOpen = true"
@@ -51,27 +45,27 @@ const showEnableOpen = ref(false)
     </ContextMenu>
 
     <!-- Release Dialog -->
-    <AdminServerRunnersDialogRelease
+    <AdminSettingsRunnersDialogRelease
       v-model="showReleaseOpen"
-      :address="address"
-      :identity="identity"
-      @submit="() => emit('submitRelease')"
+      :address="runner.address"
+      :identity="runner.identity"
+      @submit="() => emit('submit')"
     />
 
     <!-- Disable Dialog -->
-    <AdminServerRunnersDialogDisable
+    <AdminSettingsRunnersDialogDisable
       v-model="showDisableOpen"
-      :address="address"
-      :identity="identity"
-      @submit="() => emit('submitDisable')"
+      :address="runner.address"
+      :identity="runner.identity"
+      @submit="() => emit('submit')"
     />
 
     <!-- Enable Dialog -->
-    <AdminServerRunnersDialogEnable
+    <AdminSettingsRunnersDialogEnable
       v-model="showEnableOpen"
-      :address="address"
-      :identity="identity"
-      @submit="() => emit('submitEnable')"
+      :address="runner.address"
+      :identity="runner.identity"
+      @submit="() => emit('submit')"
     />
   </div>
 </template>

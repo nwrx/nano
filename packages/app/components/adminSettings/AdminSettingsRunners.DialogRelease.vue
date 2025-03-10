@@ -10,8 +10,24 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const client = useClient()
+const alerts = useAlerts()
 const model = useVModel(props, 'modelValue', emit, { passive: true })
 const confirm = ref('')
+
+async function releaseRunner() {
+  await client.requestAttempt('DELETE /api/runners/:identity', {
+    data: {
+      identity: props.identity,
+    },
+    onSuccess: () => {
+      emit('submit')
+      alerts.success(t('success', { ...props }))
+    },
+  })
+}
+
+watch(model, () => confirm.value = '', { immediate: true })
 </script>
 
 <template>
@@ -25,7 +41,7 @@ const confirm = ref('')
     :label-cancel="t('cancel')"
     :label-confirm="t('confirm')"
     :disabled="confirm !== address"
-    @confirm="() => emit('submit')">
+    @confirm="() => releaseRunner()">
     <div class="flex items-center space-x-sm">
       <Badge
         size="small"
@@ -46,15 +62,17 @@ const confirm = ref('')
 
 <i18n lang="yaml">
 en:
-  title: Release the {identity} runner
+  title: Release the **{identity}** runner
   text: This will permanently remove the runner from the system. Any running tasks will be interrupted. This action cannot be undone.
   message: Confirm by typing the runner address below
   confirm: Release Runner
-  cancel: Keep Runner
+  success: The **{identity}** runner has been released
+  cancel: Keep runner
 fr:
-  title: Libérer le runner {identity}
-  text: Cela supprimera définitivement le runner du système. Toutes les tâches en cours seront interrompues. Cette action ne peut pas être annulée.
-  message: Confirmez en tapant l'adresse du runner ci-dessous
-  confirm: Libérer le Runner
-  cancel: Garder le Runner
+  title: Libérer le travailleur **{identity}**
+  text: Cela supprimera définitivement le travailleur du système. Toutes les tâches en cours seront interrompues. Cette action ne peut pas être annulée.
+  message: Confirmez en tapant l'adresse du travailleur ci-dessous
+  confirm: Libérer le travailleur
+  success: Le travailleur **{identity}** a été libéré
+  cancel: Garder le travailleur
 </i18n>
