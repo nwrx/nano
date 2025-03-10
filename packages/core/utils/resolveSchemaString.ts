@@ -9,16 +9,24 @@ export function resolveSchemaString(
   if (typeof value !== 'string')
     throw E.INPUT_NOT_STRING(path)
 
+  // --- If string is empty, check if there is a default value.
+  if (value === '') {
+    if (typeof schema.default === 'string')
+      return schema.default
+    if (schema.required)
+      throw E.INPUT_REQUIRED(path)
+  }
+
   // --- Assert pattern.
   if (schema.pattern && !new RegExp(schema.pattern).test(value))
     throw E.INPUT_PATTERN_MISMATCH(path, schema.pattern)
 
   // --- Assert minLength.
-  if (schema.minLength && (value).length < schema.minLength)
+  if (schema.minLength && value.length < schema.minLength)
     throw E.INPUT_TOO_SHORT(path, schema.minLength)
 
   // --- Assert maxLength.
-  if (schema.maxLength && (value).length > schema.maxLength)
+  if (schema.maxLength && value.length > schema.maxLength)
     throw E.INPUT_TOO_LONG(path, schema.maxLength)
 
   return value
