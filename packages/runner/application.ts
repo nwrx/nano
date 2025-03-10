@@ -4,7 +4,7 @@ import { Application, ModuleBase } from '@unserved/server'
 import { createWorkerPool } from '@unshared/process'
 import Consola from 'consola'
 import { randomUUID } from 'node:crypto'
-import { cpus } from 'node:os'
+import { availableParallelism } from 'node:os'
 import * as ROUTES from './routes'
 import { ERRORS } from './utils'
 
@@ -21,7 +21,7 @@ export class ModuleRunner extends ModuleBase {
   runnerIsClaimed = false
 
   runnerWorkerPool: WorkerPool
-  runnerWorkerPoolSize = cpus().length - 1
+  runnerWorkerPoolSize = availableParallelism() - 1
   runnerSessions = new Map<string, ThreadWorker>()
 
   constructor() {
