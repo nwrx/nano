@@ -3,6 +3,7 @@ import type { VaultType } from '@nwrx/nano-api'
 
 definePageMeta({
   name: 'WorkspaceSettingsVaultCreate',
+  parent: 'WorkspaceSettingsVaults',
   path: '/:workspace/settings/vaults/new',
   middleware: 'redirect-when-guest',
   layout: 'workspace-settings',
