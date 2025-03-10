@@ -28,8 +28,12 @@ export async function getNodeInputOptions(thread: Thread, id: string, name: stri
   }
 
   // --- Fallback to the values in `enum` if it exists.
-  if (Array.isArray(socket.enum))
-    return socket.enum.map(value => ({ value: String(value), label: String(value) }))
+  if (Array.isArray(socket.enum)) {
+    return socket.enum.map(value => ({
+      value: String(value),
+      label: String(value),
+    }))
+  }
 
   // --- Fallback to an empty array.
   return []

@@ -38,7 +38,7 @@ export function defineLanguageModel(options: LanguageModelOptions) {
         },
         token: {
           'type': 'string',
-          'name': 'API Key',
+          'title': 'API Key',
           'description': 'The API Key used to authenticate with the inference provider.',
           'x-control': 'variable',
           'x-optional': !options.allowCustomToken,
@@ -46,17 +46,17 @@ export function defineLanguageModel(options: LanguageModelOptions) {
         },
         model: {
           'type': 'string',
-          'name': 'Model',
+          'title': 'Model',
           'description': 'The name of the model to use for generating completions.',
           'default': options.defaultModelId,
           'x-control': options.searchModels ? 'select' : 'text',
           'x-internal': !options.allowCustomModelId && Boolean(options.defaultModelId),
           'x-optional': Boolean(options.defaultModelId),
           'x-options': options.searchModels
-            ? ({ token, baseUrl }, query) => options.searchModels!({
+            ? (data, query) => options.searchModels!({
               pathModels: options.pathModels,
-              baseUrl: baseUrl as string,
-              token: token as string,
+              baseUrl: data.baseUrl as string,
+              token: data.token as string,
               query,
             })
             : undefined,

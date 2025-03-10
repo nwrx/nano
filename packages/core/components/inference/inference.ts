@@ -21,15 +21,17 @@ export const inference = defineComponent(
     isTrusted: true,
     inputs: {
       model: {
-        title: 'Model',
-        description: 'The language model used to generate the completion.',
+        'title': 'Model',
+        'description': 'The language model used to generate the completion.',
+        'x-control': 'language-model',
         ...languageModelSchema,
       },
       tools: {
-        title: 'Tools',
-        description: 'The tools used to generate the completion.',
-        default: [],
-        oneOf: [
+        'title': 'Tools',
+        'description': 'The tools used to generate the completion.',
+        'x-control': 'language-model-tool',
+        'default': [],
+        'oneOf': [
           { type: 'array', items: toolSchema },
           toolSchema,
         ],
@@ -54,9 +56,10 @@ export const inference = defineComponent(
         ],
       },
       parameters: {
-        title: 'Parameters',
-        description: 'The parameters used by the language model to generate the completion. Each LLM provides a different set of parameters that can be used to customize the inference process.',
-        default: {},
+        'title': 'Parameters',
+        'description': 'The parameters used by the language model to generate the completion. Each LLM provides a different set of parameters that can be used to customize the inference process.',
+        'default': {},
+        'x-control': 'table',
         ...languageModelParametersSchema,
       },
     },

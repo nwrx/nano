@@ -1,6 +1,6 @@
 import type { SchemaOption } from '../../../utils'
 import type { LanguageModelSearchModelsOptions } from '../../inference'
-import type { OpenaiModelResponse } from './types'
+import type { OpenAI } from './types'
 import { joinUrl } from '../../inference/utils/joinUrl'
 import { openaiOnResponseError } from './openaiOnResponseError'
 
@@ -34,7 +34,7 @@ export async function openaiSearchModels(options: LanguageModelSearchModelsOptio
   })
   if (!response.ok) throw await openaiOnResponseError(response)
 
-  const models = await response.json() as OpenaiModelResponse
+  const models = await response.json() as OpenAI.ModelResponse
   const queryLower = query?.toLowerCase()
   return models.data
     .filter((x) => {
