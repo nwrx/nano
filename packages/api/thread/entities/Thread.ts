@@ -46,7 +46,7 @@ export class Thread extends BaseEntity {
    * @example [ThreadEvent { ... }]
    */
   @OneToMany(() => ThreadEvent, event => event.thread, { cascade: true })
-  events: ThreadEvent[] | undefined
+  events: null | ThreadEvent[] | undefined
 
   /**
    * @returns The serialize representation of the thread.
