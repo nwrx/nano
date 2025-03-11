@@ -1,6 +1,6 @@
 /* eslint-disable unicorn/prevent-abbreviations */
 import type { Link } from '@nwrx/nano'
-import type { EditorNodeObject, EditorParticipantJSON } from '@nwrx/nano-api'
+import type { EditorNodeObject } from '@nwrx/nano-api'
 import type { Position } from '@vueuse/core'
 import type { CSSProperties, VNodeRef } from 'vue'
 
@@ -385,6 +385,12 @@ export function useEditorView(model: EditorModel) {
         || document.activeElement instanceof HTMLTextAreaElement
         || document.activeElement instanceof HTMLSelectElement
 
+      if (event.key === ' ') {
+        viewMoving.value = true
+        viewDragOriginScreen.value = { x: cursorClient.value.x, y: cursorClient.value.y }
+        viewDragOriginWorld.value = { x: viewPosition.value.x, y: viewPosition.value.y }
+      }
+
       if (isInputActive) return
       if (nodeSelectedIds.value.size === 0) return
 
@@ -397,7 +403,7 @@ export function useEditorView(model: EditorModel) {
         return
       }
 
-      // --- Handle the delete key to remove the selected nodes.
+      // --- When more than one node is selected.
       if (nodeSelectedIds.value.size > 0) {
 
         // --- Handle the delete key to remove the selected nodes.
@@ -424,6 +430,10 @@ export function useEditorView(model: EditorModel) {
           model.setNodesPosition(...positions)
         }
       }
+    },
+
+    onScreenKeyUp: (event: KeyboardEvent) => {
+      if (event.key === ' ') viewMoving.value = false
     },
 
     /***************************************************************************/
