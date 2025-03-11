@@ -16,10 +16,10 @@ interface Context {
 
 async function createConnection(context: Context, flow: FlowV1) {
   const { application, moduleRunner } = context
+  const id = randomUUID()
   const body = JSON.stringify({ flow })
-  const response = await application.fetch('/threads', { method: 'POST', body, headers: { Authorization: `Bearer ${moduleRunner.runnerToken}` } })
-  const data = await response.json() as { id: string }
-  const address = `ws+unix:${application.socketPath}:/threads/${data.id}?token=${moduleRunner.runnerToken}`
+  await application.fetch(`/threads/${id}`, { method: 'POST', body, headers: { Authorization: `Bearer ${moduleRunner.runnerToken}` } })
+  const address = `ws+unix:${application.socketPath}:/threads/${id}?token=${moduleRunner.runnerToken}`
   const ws = new WebSocket(address)
   await new Promise<void>(resolve => ws.on('open', resolve))
   return ws
@@ -78,8 +78,8 @@ describe<Context>('WS /threads/:id', () => {
   describe<Context>('threadSession', (it) => {
     it('should upgrade the connection to a WebSocket', async({ application }) => {
       const body = JSON.stringify(flow)
-      const response = await application.fetch('/threads', { method: 'POST', body })
-      const { id } = await response.json() as { id: string }
+      const id = randomUUID()
+      await application.fetch(`/threads/${id}`, { method: 'POST', body })
       const upgrade = await application.fetch(`/threads/${id}`)
       expect(upgrade).toMatchObject({ status: 426, statusText: 'Upgrade Required' })
     })
@@ -100,7 +100,7 @@ describe<Context>('WS /threads/:id', () => {
   })
 
   describe<Context>('errors', (it) => {
-    it('should fail with "E_THREAD_NOT_FOUND" if the thread does not exist', async({ application, moduleRunner }) => {
+    it('should fail with "E_THREAD_NOT_FOUND" if the thread was not instantiated', async({ application, moduleRunner }) => {
       const id = randomUUID()
       const token = moduleRunner.runnerToken
       const ws = new WebSocket(`ws+unix:${application.socketPath}:/threads/${id}?token=${token}`)

@@ -29,4 +29,10 @@ export const ERRORS = {
     statusCode: 404,
     statusMessage: 'Not Found',
   }),
+  THREAD_ALREADY_INSTANTIATED: (id: string) => createError({
+    name: 'E_THREAD_ALREADY_INSTANTIATED',
+    message: `Thread with ID "${id}" is already instantiated`,
+    statusCode: 409,
+    statusMessage: 'Conflict',
+  }),
 }

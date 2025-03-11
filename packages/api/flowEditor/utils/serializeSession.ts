@@ -16,6 +16,7 @@ export interface EditorParticipantJSON {
 
 export interface EditorSessionObject {
   name: string
+  title: string
   icon: string
   description: string
   links: Link[]
@@ -33,7 +34,8 @@ export async function serializeSession(session: EditorSession, peer: Peer): Prom
   const nodes = await Promise.all(nodePromises)
 
   return {
-    name: session.flow.title ?? 'Untitled Flow',
+    name: session.flow.name,
+    title: session.flow.title,
     icon: 'i-carbon:flow',
     description: session.flow.description ?? '',
     nodes,

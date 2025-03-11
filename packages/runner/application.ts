@@ -1,5 +1,5 @@
 import type { WorkerPool } from '@unshared/process'
-import type { ThreadWorker } from './worker'
+import type { MessagePort } from 'node:worker_threads'
 import { Application, ModuleBase } from '@unserved/server'
 import { createWorkerPool } from '@unshared/process'
 import Consola from 'consola'
@@ -9,8 +9,7 @@ import * as ROUTES from './routes'
 import { ERRORS } from './utils'
 
 export type { ThreadRunnerStatus } from './routes/getStatus'
-export { THREAD_SERVER_MESSAGE_SCHEMA } from './worker'
-export { THREAD_CLIENT_MESSAGE_SCHEMA } from './worker'
+export type { ThreadClientMessage, ThreadServerMessage } from './worker'
 export type { ThreadRunnerWorkerPoolStatus } from './worker/getWorkerPoolStatus'
 
 export class ModuleRunner extends ModuleBase {
@@ -24,7 +23,7 @@ export class ModuleRunner extends ModuleBase {
 
   runnerWorkerPool: WorkerPool
   runnerWorkerPoolSize = availableParallelism() - 1
-  runnerSessions = new Map<string, ThreadWorker>()
+  runnerWorkerPorts = new Map<string, MessagePort>()
 
   constructor() {
     super()

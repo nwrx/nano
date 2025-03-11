@@ -17,22 +17,21 @@ export function threadSession(this: ModuleRunner) {
     {
       onOpen: ({ peer, parameters }) => {
         authorize.call(this, peer)
-        const thread = this.runnerSessions.get(parameters.id)
-        if (!thread) throw this.errors.THREAD_NOT_FOUND(parameters.id)
-        thread.port.on('message', message => peer.send(message))
+        const worker = this.runnerWorkerPorts.get(parameters.id)
+        if (!worker) throw this.errors.THREAD_NOT_FOUND(parameters.id)
+        worker.on('message', (message: ThreadWorkerMessage) => peer.send(message))
       },
-      onMessage: async({ peer, message, parameters }) => {
+      onMessage: ({ peer, message, parameters }) => {
         authorize.call(this, peer)
-        const thread = this.runnerSessions.get(parameters.id)
-        if (!thread) throw this.errors.THREAD_NOT_FOUND(parameters.id)
-        if (message.event === 'start') await thread.start(message.data)
-        if (message.event === 'abort') await thread.abort()
+        const worker = this.runnerWorkerPorts.get(parameters.id)
+        if (!worker) throw this.errors.THREAD_NOT_FOUND(parameters.id)
+        worker.postMessage(message)
       },
-      onClose: async({ parameters }) => {
-        const thread = this.runnerSessions.get(parameters?.id)
-        if (!thread) return
-        await thread.dispose()
-        this.runnerSessions.delete(parameters.id)
+      onClose: ({ parameters }) => {
+        const worker = this.runnerWorkerPorts.get(parameters?.id)
+        if (!worker) return
+        worker.close()
+        this.runnerWorkerPorts.delete(parameters.id)
       },
       onError: ({ peer, error }) => {
         peer.send({ event: 'error', data: [error] } as ThreadWorkerMessage)
