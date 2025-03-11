@@ -560,7 +560,7 @@ export default defineConfig<Theme>({
             warning: COLORS.warning[500],
           },
           badgeBorderColor: {
-            DEFAULT: COLORS.primary[800],
+            DEFAULT: COLORS.primary[850],
             primary: COLORS.primary[600],
             secondary: COLORS.secondary[500],
             success: COLORS.success[500],
@@ -568,7 +568,7 @@ export default defineConfig<Theme>({
             warning: COLORS.warning[500],
           },
           badgeBackgroundColor: {
-            DEFAULT: COLORS.primary[700],
+            DEFAULT: COLORS.primary[850],
             primary: COLORS.primary[500],
             secondary: COLORS.secondary[500],
             success: 'transparent',
