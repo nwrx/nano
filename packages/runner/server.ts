@@ -7,12 +7,15 @@ import { application } from './application'
 const PORT = Number.parseInt(process.env.PORT || '3010', 10)
 const HOST = process.env.HOST ?? '0.0.0.0'
 
+const isDebug = process.env.DEBUG === 'true'
+const isProduction = process.env.NODE_ENV === 'production'
+
 application.initialize()
   .then(() => application.createServer().listen(PORT, HOST, () => {
     Consola.success('Server listening on %s:%d', HOST, PORT)
 
     // Log all routes for debugging.
-    if (process.env.NODE_ENV !== 'production') {
+    if (isDebug && !isProduction) {
       for (const module of application.modules as ModuleBase[]) {
         if (!module.routes) continue
         const moduleName = module.constructor.name
