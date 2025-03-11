@@ -3,6 +3,7 @@ export interface SerializedError {
   message: string
   stack: string
   name: string
+  context?: Record<string, unknown>
 }
 
 /**

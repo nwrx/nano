@@ -1,5 +1,7 @@
 /* eslint-disable jsdoc/no-types */
 
+import { serialize } from './serialize.mjs'
+
 /**
  * @typedef SerializedError
  * @type {import('./deserializeError').SerializedError}
@@ -18,6 +20,8 @@ export function serializeError(error) {
       'message': error.message,
       'stack': error.stack ?? '',
       'name': error.name,
+      // @ts-expect-error: This property is sometimes present.
+      'context': serialize(error.context, []),
     }
   }
   return {
