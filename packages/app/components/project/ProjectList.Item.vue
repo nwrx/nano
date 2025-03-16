@@ -4,6 +4,7 @@
 import type { application, FlowObject, ProjectObject } from '@nwrx/nano-api'
 import type { ChannelConnectOptions } from '@unserved/client'
 import type { WebSocketChannel } from '@unshared/client/websocket'
+type UseProjectChannel = WebSocketChannel<ChannelConnectOptions<typeof application, 'WS /ws/workspaces/:workspace/projects/:project'>>
 
 const props = defineProps<ProjectObject & {
   workspace: string
@@ -20,20 +21,18 @@ const emit = defineEmits<{
   'update:modelValue': [value: boolean]
 }>()
 
-// --- Localize & VModel
 const { t } = useI18n()
 const routes = useRouteLocation()
-
-// --- Model.
 const client = useClient()
-type UseProjectChannel = WebSocketChannel<ChannelConnectOptions<typeof application, 'WS /ws/workspaces/:workspace/projects/:project'>>
+const alerts = useAlerts()
+const flows = ref<FlowObject[]>([])
+
 let channel: undefined | UseProjectChannel
 tryOnScopeDispose(() => {
   if (!channel) return
   void channel.close()
 })
 
-const flows = ref<FlowObject[]>([])
 async function subscribe() {
   if (channel) return
   channel = await client.connect('WS /ws/workspaces/:workspace/projects/:project', {
@@ -67,6 +66,31 @@ const { isOverDropZone } = useDropZone(dropzone, {
     emit('flowImport', files[0])
   },
 })
+
+async function createFlow() {
+  await client.requestAttempt('POST /api/workspaces/:workspace/projects/:project/flows', {
+    data: {
+      workspace: props.workspace,
+      project: props.name,
+    },
+    onSuccess: () => {
+      alerts.success(t('flowCreated'))
+    },
+  })
+}
+
+async function deleteFlow(flow: string) {
+  await client.requestAttempt('DELETE /api/workspaces/:workspace/projects/:project/flows/:flow', {
+    data: {
+      workspace: props.workspace,
+      project: props.name,
+      flow,
+    },
+    onSuccess: () => {
+      alerts.success(t('flowDeleted'))
+    },
+  })
+}
 </script>
 
 <template>
@@ -150,9 +174,6 @@ const { isOverDropZone } = useDropZone(dropzone, {
           :project="name"
           icon="i-carbon:flow"
           class="shrink-0"
-          @delete="() => project.removeFlow(flow.name)"
-          @download="() => project.downloadFlow(flow.name)"
-          @duplicate="() => project.duplicateFlow(flow.name)"
         />
 
         <!-- Create flow button -->
@@ -162,7 +183,7 @@ const { isOverDropZone } = useDropZone(dropzone, {
           icon-prepend="i-carbon:flow"
           icon-append="i-carbon:chevron-right"
           icon-expand
-          @click="() => project.createFlow()"
+          @click="() => createFlow()"
         />
       </div>
     </BaseCollapse>
