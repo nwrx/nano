@@ -82,6 +82,13 @@ describe('template component', () => {
   })
 
   describe('edge cases', () => {
+    it('should handle undefined values', async() => {
+      const thread = createThread()
+      const nodeId = addNode(thread, 'template')
+      const result = await startNode(thread, nodeId, { template: 'Hello, {{ name? }}!' })
+      expect(result).toStrictEqual({ value: 'Hello, !' })
+    })
+
     it('should throw an error if the template is unbalanced', async() => {
       const thread = createThread()
       const nodeId = addNode(thread, 'template')

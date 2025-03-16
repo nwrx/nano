@@ -23,6 +23,7 @@ export const template = defineComponent(
         },
         'description': 'The values for the template variables.',
         'x-control': 'table',
+        'x-optional': true,
       },
     },
     outputs: {
@@ -34,7 +35,7 @@ export const template = defineComponent(
     },
   },
   ({ data }) => {
-    const { template, values } = data
+    const { template, values = {} } = data
     let compiled = ''
     let remaining = template
 
