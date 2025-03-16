@@ -1,8 +1,8 @@
 import type { ThreadWorkerMessage } from './createThreadWorker'
-import { assertObjectStrict, createRuleSet } from '@unshared/validation'
+import { assert, createRuleSet } from '@unshared/validation'
 
 export const THREAD_SERVER_MESSAGE_SCHEMA = createRuleSet(
-  [assertObjectStrict<ThreadWorkerMessage>],
+  [assert.objectStrict as (value: unknown) => asserts value is ThreadWorkerMessage],
 )
 
 /** The message sent from the server to the client in a flow editor session. */

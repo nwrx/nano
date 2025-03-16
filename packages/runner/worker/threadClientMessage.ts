@@ -1,5 +1,5 @@
 import type { ThreadInputObject } from '@nwrx/nano'
-import { assert, assertObjectStrict, createRuleSet, createSchema } from '@unshared/validation'
+import { assert, assertObjectStrict, createArrayParser, createRuleSet, createSchema } from '@unshared/validation'
 
 export const THREAD_CLIENT_MESSAGE_SCHEMA = createRuleSet(
 
@@ -13,8 +13,11 @@ export const THREAD_CLIENT_MESSAGE_SCHEMA = createRuleSet(
   })],
 
   [createSchema({
-    event: assert.stringEquals('getOutputValue'),
-    name: assert.stringNotEmpty,
+    event: assert.stringEquals('worker:resolveReferenceResult'),
+    data: createArrayParser({
+      id: assert.stringUuid,
+      value: (x: unknown) => x,
+    }),
   })],
 )
 
