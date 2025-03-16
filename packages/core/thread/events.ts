@@ -33,6 +33,9 @@ export type ThreadEventMap = {
   'nodeStart': [nodeId: string, data: ObjectLike]
   'nodeDone': [nodeId: string, result: ObjectLike]
   'nodeOutput': [nodeId: string, name: string, value: unknown]
+  'nodeOutputDeltaStart': [nodeId: string, name: string]
+  'nodeOutputDelta': [nodeId: string, name: string, value: string]
+  'nodeOutputDeltaEnd': [nodeId: string, name: string]
 
   // Questions.
   'nodeResponse': [nodeId: string, event: EventResponse]

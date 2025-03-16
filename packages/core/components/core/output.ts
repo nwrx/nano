@@ -33,9 +33,27 @@ export const output = defineComponent(
       },
     },
   },
-  ({ data, thread, nodeId }) => {
+  async({ data, thread, nodeId }) => {
     thread.output[data.name] = data.value
-    thread.dispatch('nodeOutput', nodeId, data.name, data.value)
+
+    // --- If the value is a stream, send the stream as events.
+    if (data.value instanceof ReadableStream) {
+      const reader = data.value.getReader() as ReadableStreamDefaultReader<string>
+      thread.dispatch('nodeOutputDeltaStart', nodeId, data.name)
+      while (true) {
+        const { value, done } = await reader.read()
+        if (value) thread.dispatch('nodeOutputDelta', nodeId, data.name, value)
+        if (done) break
+      }
+      thread.dispatch('nodeOutputDeltaEnd', nodeId, data.name)
+    }
+
+    // --- Otherwise, send back as-is.
+    else {
+      thread.dispatch('nodeOutput', nodeId, data.name, data.value)
+    }
+
+    // --- Empty return.
     return {}
   },
 )
