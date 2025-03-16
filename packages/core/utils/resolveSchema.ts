@@ -19,8 +19,9 @@ export async function resolveSchema(
   resolvers: ReferenceResolver[] = [],
 ): Promise<unknown> {
   if (isReference(value)) {
-    value = await resolveReference(value, resolvers)
-    if (value === undefined) throw E.REFERENCE_NOT_RESOLVED(path)
+    const resolved = await resolveReference(value, resolvers)
+    if (resolved === undefined) throw E.REFERENCE_NOT_RESOLVED(path, value)
+    value = resolved
   }
   if (value === undefined || value === null)
     return resolveSchemaUndefinedOrNull(path, schema)

@@ -1,3 +1,4 @@
+import type { Reference } from './createReference'
 import type { SpecifierObject } from './parseSpecifier'
 import { dedent } from '@unshared/string/dedent'
 import { createError } from './createError'
@@ -102,10 +103,10 @@ export const ERRORS = {
   /* Reference errors.                                                       */
   /***************************************************************************/
 
-  REFERENCE_NOT_RESOLVED: (ref: string) => createError({
-    message: 'The reference could not be resolved',
+  REFERENCE_NOT_RESOLVED: (path: string, reference: Reference) => createError({
+    message: `The reference "${reference.$ref}" at "${path}" could not be resolved`,
     name: 'E_REFERENCE_NOT_RESOLVED',
-    context: { ref },
+    context: { path, reference },
   }),
   REFERENCE_INVALID_FORMAT: () => createError({
     message: 'The reference format is invalid',
