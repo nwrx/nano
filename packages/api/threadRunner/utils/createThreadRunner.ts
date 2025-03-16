@@ -1,10 +1,10 @@
-import type { FlowV1 } from '@nwrx/nano'
 import type { ModuleRunner } from '@nwrx/nano-runner'
 import type { ChannelConnectOptions } from '@unserved/client'
 import type { ServerErrorName } from '@unserved/server'
 import type { WebSocketChannel } from '@unshared/client/websocket'
 import type { ObjectLike } from '@unshared/types'
 import type { Peer } from 'crossws'
+import type { ThreadRunner } from '../entities'
 import { createClient } from '@unserved/client'
 import { createError } from '@unserved/server'
 import { ERRORS } from './errors'
@@ -14,10 +14,11 @@ export type ThreadRunnerChannel = WebSocketChannel<ChannelConnectOptions<ModuleR
 export interface ThreadRunnerClientOptions {
   address: string
   token?: string
+  runner: ThreadRunner
 }
 
 export class ThreadRunnerClient {
-  constructor(public options: ThreadRunnerClientOptions) {
+  constructor(private options: ThreadRunnerClientOptions) {
     const { address, token } = options
     this.client.options.baseUrl = /^https?:\/\//.test(address) ? address : `http://${address}`
     this.client.options.headers = { Authorization: `Bearer ${token}` }
@@ -29,6 +30,10 @@ export class ThreadRunnerClient {
 
   get token() {
     return this.options.token
+  }
+
+  get runner() {
+    return this.options.runner
   }
 
   /***************************************************************************/
@@ -106,20 +111,6 @@ export class ThreadRunnerClient {
 
   async getStatus() {
     return await this.client.request('GET /status')
-  }
-
-  /***************************************************************************/
-  /* Threads                                                                 */
-  /***************************************************************************/
-  async createThread(flow: FlowV1): Promise<ThreadRunnerChannel> {
-    const { id } = await this.client.request('POST /threads', { data: { flow } })
-    // @ts-expect-error: broken inference
-    return await this.client.connect('WS /threads/:id', {
-      data: { id, token: this.token },
-      autoReconnect: true,
-      reconnectDelay: 300,
-      reconnectLimit: 3,
-    })
   }
 }
 

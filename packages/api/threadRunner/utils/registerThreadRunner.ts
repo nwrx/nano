@@ -32,21 +32,23 @@ export async function registerThreadRunner(this: ModuleThreadRunner, options: Re
   const exists = await ThreadRunner.countBy({ address })
   if (exists > 0) throw this.errors.THREAD_RUNNER_ALREADY_REGISTERED(address)
 
-  // --- Register, claim, and store the thread runner.
-  const client = createThreadRunnerClient.call(this, { address })
-  const { token, identity } = await client.claim()
-  await client.ping()
-
   // --- Create the database record.
   const runner = ThreadRunner.create({
-    token,
+    token: 'none',
     address,
-    identity,
+    identity: 'none',
     createdBy: user,
     lastSeenAt: new Date(),
   })
 
+  // --- Register, claim, and store the thread runner.
+  const client = createThreadRunnerClient.call(this, { address, runner })
+  const { token, identity } = await client.claim()
+  await client.ping()
+
   // --- Save the client and database record.
   this.threadRunners.set(runner.id, client)
+  runner.token = token
+  runner.identity = identity
   await ThreadRunner.save(runner)
 }

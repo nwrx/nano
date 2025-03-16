@@ -14,9 +14,9 @@ import { createThreadRunnerClient } from './createThreadRunner'
 
 export async function initialize(this: ModuleThreadRunner) {
   const { ThreadRunner } = this.getRepositories()
-  const threads = await ThreadRunner.findBy({ disabledAt: IsNull() })
-  for (const thread of threads) {
-    const client = createThreadRunnerClient({ address: thread.address, token: thread.token })
-    this.threadRunners.set(thread.id, client)
+  const runners = await ThreadRunner.findBy({ disabledAt: IsNull() })
+  for (const runner of runners) {
+    const client = createThreadRunnerClient({ address: runner.address, token: runner.token, runner })
+    this.threadRunners.set(runner.id, client)
   }
 }
