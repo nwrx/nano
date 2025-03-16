@@ -1,3 +1,5 @@
+import type { SchemaOption } from '@nwrx/nano/utils'
+import type { VaultVariableObject } from '../../vault'
 import type { EditorNodeObject } from './serializeNode'
 import type { EditorSessionObject } from './serializeSession'
 import { assert, assertObjectStrict, createArrayParser, createRuleSet, createSchema } from '@unshared/validation'
@@ -18,27 +20,6 @@ export const EDITOR_SESSION_SERVER_MESSAGE_SCHEMA = createRuleSet(
   [createSchema({
     event: assert.stringEquals('error'),
     message: assert.stringNotEmpty,
-  })],
-
-  /***************************************************************************/
-
-  [createSchema({
-    event: assert.stringEquals('user:join'),
-    id: assert.stringNotEmpty,
-    name: assert.stringNotEmpty,
-    color: assert.stringNotEmpty,
-  })],
-
-  [createSchema({
-    event: assert.stringEquals('user:leave'),
-    id: assert.stringNotEmpty,
-  })],
-
-  [createSchema({
-    event: assert.stringEquals('user:position'),
-    id: assert.stringNotEmpty,
-    x: assert.number,
-    y: assert.number,
   })],
 
   /***************************************************************************/
@@ -78,6 +59,8 @@ export const EDITOR_SESSION_SERVER_MESSAGE_SCHEMA = createRuleSet(
   })],
 
   /***************************************************************************/
+  /* Links                                                                   */
+  /***************************************************************************/
 
   [createSchema({
     event: assert.stringEquals('node:linkCreated'),
@@ -99,7 +82,45 @@ export const EDITOR_SESSION_SERVER_MESSAGE_SCHEMA = createRuleSet(
       // path: [[assert.undefined], [assert.stringNotEmpty]],
     }),
   })],
+
+  /***************************************************************************/
+  /* Requests                                                                */
+  /***************************************************************************/
+
+  [createSchema({
+    event: assert.stringEquals('searchVariablesResult'),
+    data: createArrayParser(assert.object as (value: unknown) => asserts value is VaultVariableObject),
+  })],
+
+  [createSchema({
+    event: assert.stringEquals('searchOptionsResult'),
+    data: createArrayParser(assert.object as (value: unknown) => asserts value is SchemaOption),
+  })],
+
+  /***************************************************************************/
+  /* User                                                                    */
+  /***************************************************************************/
+
+  [createSchema({
+    event: assert.stringEquals('user:join'),
+    id: assert.stringNotEmpty,
+    name: assert.stringNotEmpty,
+    color: assert.stringNotEmpty,
+  })],
+
+  [createSchema({
+    event: assert.stringEquals('user:leave'),
+    id: assert.stringNotEmpty,
+  })],
+
+  [createSchema({
+    event: assert.stringEquals('user:position'),
+    id: assert.stringNotEmpty,
+    x: assert.number,
+    y: assert.number,
+  })],
 )
 
 /** The message sent from the server to the client in a flow editor session. */
 export type EditorSessionServerMessage = ReturnType<typeof EDITOR_SESSION_SERVER_MESSAGE_SCHEMA>
+export type EditorSessionServerMessageEvent = EditorSessionServerMessage['event']

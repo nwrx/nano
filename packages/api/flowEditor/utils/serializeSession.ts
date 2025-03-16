@@ -35,7 +35,7 @@ export async function serializeSession(session: EditorSession, peer: Peer): Prom
 
   return {
     name: session.flow.name,
-    title: session.flow.title,
+    title: session.flow.title ?? session.flow.name,
     icon: 'i-carbon:flow',
     description: session.flow.description ?? '',
     nodes,

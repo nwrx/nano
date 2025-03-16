@@ -1,30 +1,6 @@
-import type { ObjectLike } from '@unshared/types'
-import { assert, assertObjectStrict, createArrayParser, createRuleSet, createSchema } from '@unshared/validation'
+import { assert, createArrayParser, createRuleSet, createSchema } from '@unshared/validation'
 
 export const EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA = createRuleSet(
-
-  /***************************************************************************/
-  /* Execute                                                                 */
-  /***************************************************************************/
-
-  [createSchema({
-    event: assert.stringEquals('start'),
-    data: createArrayParser(assertObjectStrict<ObjectLike>),
-  })],
-
-  [createSchema({
-    event: assert.stringEquals('abort'),
-  })],
-
-  [createSchema({
-    event: assert.stringEquals('startNodes'),
-    data: createArrayParser(assert.stringNotEmpty),
-  })],
-
-  [createSchema({
-    event: assert.stringEquals('abortNode'),
-    data: createArrayParser(assert.stringNotEmpty),
-  })],
 
   /***************************************************************************/
   /* Flow                                                                    */
@@ -108,13 +84,6 @@ export const EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA = createRuleSet(
     }),
   })],
 
-  [createSchema({
-    event: assert.stringEquals('getInputValueOptions'),
-    id: assert.stringNotEmpty,
-    name: assert.stringNotEmpty,
-    query: [[assert.undefined], [assert.string]],
-  })],
-
   /***************************************************************************/
   /* Links                                                                   */
   /***************************************************************************/
@@ -144,6 +113,26 @@ export const EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA = createRuleSet(
   })],
 
   /***************************************************************************/
+  /* Request                                                                 */
+  /***************************************************************************/
+
+  [createSchema({
+    event: assert.stringEquals('searchVariables'),
+    data: createArrayParser({
+      search: [[assert.undefined], [assert.string]],
+    }),
+  })],
+
+  [createSchema({
+    event: assert.stringEquals('searchOptions'),
+    data: createArrayParser({
+      id: assert.stringNotEmpty,
+      name: assert.stringNotEmpty,
+      query: [[assert.undefined], [assert.string]],
+    }),
+  })],
+
+  /***************************************************************************/
   /* User                                                                    */
   /***************************************************************************/
 
@@ -159,3 +148,4 @@ export const EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA = createRuleSet(
 
 /** The message received from the client in a flow session. */
 export type EditorSessionClientMessage = ReturnType<typeof EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA>
+export type EditorSessionClientMessageEvent = EditorSessionClientMessage['event']

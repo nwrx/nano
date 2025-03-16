@@ -1,6 +1,5 @@
 import type { NodeState } from '@nwrx/nano'
 import type { Schema } from '@nwrx/nano/utils'
-import type { RegistryComponentObject } from '../../registry'
 import type { EditorSession } from './createEditorSession'
 import { getNode } from '@nwrx/nano'
 import { serializeSpecifier } from '@nwrx/nano/utils'
@@ -56,21 +55,14 @@ export async function serializeNode(this: EditorSession, id: string): Promise<Ed
 
   return {
     id,
-
     specifier,
+    name: node.name,
     icon: component.icon,
-    label: component.title,
+    label: node.metadata.label ?? component.title,
     inputs: component.inputs,
     outputs: component.outputs,
     description: component.description,
     category: category?.name,
-
-    name: node.name,
-    // categoryKind: registryComponent?.
-    // categoryName: 'Uncategorized',
-    // categoryIcon: 'https://api.iconify.design/carbon:unknown.svg',
-    // categoryColor: '#000000',
-    // categoryDescription: 'No description available.',
 
     state: 'idle',
     error: node.error?.message,
