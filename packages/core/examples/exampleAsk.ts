@@ -27,19 +27,19 @@ async function main() {
       //   model: 'mistral-large-latest',
       //   token: process.env.MISTRALAI_API_KEY,
       // },
-      execute: {
-        component: 'execute',
-      },
+      // execute: {
+      //   component: 'execute',
+      // },
       anthropic: {
         component: 'anthropic',
-        model: 'claude-3-5-sonnet-20241022',
+        model: 'claude-3-7-sonnet',
         token: process.env.ANTHROPIC_API_KEY,
       },
       inference: {
         component: 'inference',
         model: { $ref: '#/Nodes/openai/model' },
         tools: [
-          { $ref: '#/Nodes/execute' },
+          // { $ref: '#/Nodes/execute' },
           { $ref: '#/Nodes/ask' },
         ],
         messages: [
@@ -88,17 +88,17 @@ async function main() {
     },
   })
 
-  thread.on('nodeOutput', async(_, name, value) => {
-    if (name === 'completion') {
-      const stream = value as ReadableStream<string>
-      const reader = stream.getReader()
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) { process.stdout.write('\n'); break }
-        if (value) process.stdout.write(value)
-      }
-    }
-  })
+  // thread.on('nodeOutput', async(_, name, value) => {
+  //   if (name === 'completion') {
+  //     const stream = value as ReadableStream<string>
+  //     const reader = stream.getReader()
+  //     while (true) {
+  //       const { done, value } = await reader.read()
+  //       if (done) { process.stdout.write('\n'); break }
+  //       if (value) process.stdout.write(value)
+  //     }
+  //   }
+  // })
 
   thread.on('nodeQuestionRequest', async(nodeId, event) => {
     const response = event.choices && event.choices.length > 0
@@ -136,8 +136,12 @@ async function main() {
     consola.error(error.name, '\n\n', error.message)
   })
 
-  const output = await start(thread, { Message: 'Hello, world!' })
-  consola.info('The completion is done.', output)
+  thread.on('nodeOutputDeltaStart', (_, name) => { consola.info(`Output delta started for ${name}.`) })
+  thread.on('nodeOutputDelta', (_, name, value) => { process.stdout.write(value) })
+  thread.on('nodeOutputDeltaEnd', () => { process.stdout.write('\n') })
+
+  await start(thread, { Message: 'Hello, world!' })
+  // consola.info('The completion is done.', output)
 }
 
 void main()
