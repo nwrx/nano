@@ -8,12 +8,12 @@ export function getSchemaType(socket?: Schema) {
   if (typeof socket['x-type'] === 'string') return socket['x-type']
 }
 
-export function getNodeColor(node: EditorNodeObject) {
-  if (!node.category) return '#000000'
-  if (node.category === 'control') return '#FF0000'
-  if (node.category === 'models') return '#00FF00'
-  if (node.category === 'processing') return '#0000FF'
-  if (node.category === 'storage') return '#0000FF'
+export function getNodeColor(node?: EditorNodeObject) {
+  if (node?.category === 'control') return '#FF0000'
+  if (node?.category === 'models') return '#00FF00'
+  if (node?.category === 'processing') return '#0000FF'
+  if (node?.category === 'storage') return '#0000FF'
+  return '#fff'
 }
 
 export function getSchemaTypeColor(socket?: Schema) {
