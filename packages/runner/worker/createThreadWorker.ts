@@ -1,5 +1,6 @@
 import type { FlowV1, ThreadEventMap } from '@nwrx/nano'
-import type { ObjectLike } from '@unshared/types'
+import type { ReferenceType } from '@nwrx/nano/utils'
+import type { UUID } from 'node:crypto'
 import type { MessagePort } from 'node:worker_threads'
 import type { ModuleRunner } from '../application'
 import type { SerializedError } from './deserializeError'
@@ -10,10 +11,8 @@ import { deserializeError } from './deserializeError'
 export type ThreadWorkerMessage =
   | { [K in keyof ThreadEventMap]: { event: K; data: ThreadEventMap[K] } }[keyof ThreadEventMap]
   | { event: 'worker:outputValue'; data: [name: string, value: unknown] }
-  | { event: 'worker:ready'; data: [id: string] }
-
-export type ThreadSessionMessage =
-  | { event: 'done'; data: [ObjectLike] }
+  | { event: 'worker:ready' }
+  | { event: 'worker:resolveReference'; data: readonly [id: UUID, type: ReferenceType, values: string[]] }
 
 /**
  * Create a new thread worker for the given flow. This will initialize a new
@@ -45,7 +44,15 @@ export async function createThreadWorker(this: ModuleRunner, flow: FlowV1): Prom
   // --- Wait for the worker to be ready before returning the thread.
   await new Promise<void>((resolve, reject) => {
     const callback = (message: ThreadWorkerMessage) => {
-      if (message.event === 'worker:ready') { port1.off('message', callback); resolve() }
+
+      // --- Wait for the worker to be ready before resolving the promise.
+      if (message.event === 'worker:ready') {
+        port1.off('message', callback)
+        resolve()
+      }
+
+      // --- If the function executed in the worker thread throws an error,
+      // --- we should reject the promise with the error that was thrown.
       if (message.event === 'error') {
         port1.off('message', callback)
         const error = deserializeError(message.data[0] as SerializedError)
