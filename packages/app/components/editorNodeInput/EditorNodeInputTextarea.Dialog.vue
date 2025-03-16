@@ -4,7 +4,7 @@ import { vMarkdown } from '#imports'
 const props = defineProps<{
   name: string
   description?: string
-  modelValue?: string
+  modelValue?: unknown
   isOpen: boolean
 }>()
 
@@ -19,8 +19,10 @@ const isOpen = useVModel(props, 'isOpen', emit, { passive: true })
 const model = ref('')
 
 watch(() => props.isOpen, () => {
-  model.value = props.modelValue ?? ''
-}, { immediate: true })
+  model.value = typeof props.modelValue === 'string'
+    ? props.modelValue
+    : String(props.modelValue)
+})
 
 function onTextAreaInput(event: Event) {
   const target = event.target as HTMLTextAreaElement
@@ -34,12 +36,12 @@ function confirm() {
 </script>
 
 <template>
-  <AppDialog
+  <Dialog
     v-model="isOpen"
     teleport="#editor"
     class-container="
       flex flex-col !w-full h-full max-w-page max-h-4xl cursor-auto
-      pointer-events-auto b b-editor text-app !bg-editor-node bg-op-80 overflow-hidden rd
+      pointer-events-auto b b-editor text-app !bg-editor-node/80 overflow-hidden rd
     ">
 
     <!-- Content -->
@@ -114,7 +116,7 @@ function confirm() {
         />
       </div>
     </template>
-  </AppDialog>
+  </Dialog>
 </template>
 
 <i18n lang="yaml">

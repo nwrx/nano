@@ -7,12 +7,6 @@ definePageMeta({
 
 // --- Parse the route parameters.
 const route = useRoute()
-// const editorPromise = useEditor({
-//   name: route.params.name as string,
-//   project: route.params.project as string,
-//   workspace: route.params.workspace as string,
-// })
-
 const editor = ref<Editor>()
 
 // --- Fetch the categories.
@@ -26,8 +20,8 @@ const categories = useRegistryCategories({
 })
 
 useHead(() => ({
-  title: editor.value?.name,
-  meta: [{ title: 'description', content: editor.value?.description }],
+  title: editor.value?.model.title,
+  meta: [{ title: 'description', content: editor.value?.model.description }],
 }))
 
 onMounted(async() => {
@@ -39,9 +33,10 @@ onMounted(async() => {
   })
 })
 
-// onBeforeRouteLeave(() => {
-//   editor.userLeave()
-// })
+onBeforeRouteLeave(() => {
+  if (!editor.value) return
+  editor.value.model.userLeave()
+})
 </script>
 
 <template>

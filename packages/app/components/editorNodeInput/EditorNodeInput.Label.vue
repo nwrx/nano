@@ -11,7 +11,7 @@ const schema = computed(() => props.node.inputs[props.name])
 </script>
 
 <template>
-  <div class="truncate px-sm py-xs">
-    <span class="text-sm" v-text="schema.title ?? name" />
-  </div>
+  <p class="text-sm truncate text-subtle shrink-0 mr-sm font-mono">
+    {{ schema.title ?? name }} ‒
+  </p>
 </template>

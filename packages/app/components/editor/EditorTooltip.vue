@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const isOpen = ref(false)
-const isOpenDebounced = refDebounced(isOpen, 200)
+const isOpenDebounced = refDebounced(isOpen, 100)
 
 function handleClick(event: MouseEvent) {
   if (event.button !== 0) return
@@ -23,7 +23,13 @@ function handleClick(event: MouseEvent) {
 
     <!-- Content -->
     <template #menu>
-      <Transition>
+      <Transition
+        enter-active-class="transition duration-200"
+        enter-from-class="op-0 scale-98"
+        enter-to-class="op-100"
+        leave-active-class="transition duration-200"
+        leave-from-class="op-100"
+        leave-to-class="op-0 scale-98">
         <div
           v-if="isOpenDebounced"
           class="rd bg-editor-panel b b-editor backdrop-blur-2xl"

@@ -1,22 +1,14 @@
 <script setup lang="ts">
 const props = defineProps<{
-  view: EditorView
+  editor: Editor
 }>()
 
 // const view = useEditorView()
-const session = useEditor()
 const settings = useLocalSettings()
-const view = computed(() => props.view)
-
-const isOpen = computed(() => ({
-  get: () => Boolean(settings.value.editorPanelOpen),
-  set: (value: boolean) => { settings.value.editorPanelOpen = value },
-})) as unknown as Ref<boolean>
-
-// --- Compute tabs based on selected node.
 const selectedTab = ref('flow')
 const tabs = computed(() => {
-  const nodeSelected = view.value.nodeSelected ?? []
+  const view = props.editor.view
+  const nodeSelected = view.nodeSelected ?? []
   const tabs = ['events', 'playground']
   if (nodeSelected.length > 0) tabs.unshift('node')
   else tabs.unshift('flow')
@@ -24,11 +16,11 @@ const tabs = computed(() => {
 })
 
 // --- When a node is selected, switch to the node tab if the flow tab is selected.
-// watch(() => props.nodeSelected, () => {
-//   const nodeSelected = props.nodeSelected ?? []
-//   if (nodeSelected.length > 0 && selectedTab.value === 'flow') selectedTab.value = 'node'
-//   if (nodeSelected.length === 0 && selectedTab.value === 'node') selectedTab.value = 'flow'
-// })
+watch(() => props.editor.view.nodeSelected, () => {
+  const nodeSelected = props.editor.view.nodeSelected ?? []
+  if (nodeSelected.length > 0 && selectedTab.value === 'flow') selectedTab.value = 'node'
+  if (nodeSelected.length === 0 && selectedTab.value === 'node') selectedTab.value = 'flow'
+})
 
 // --- Scroll to bottom if the container is already at the bottom.
 const container = ref<HTMLElement>()
@@ -41,19 +33,16 @@ const container = ref<HTMLElement>()
 //   if (!container.value) return
 //   container.value.scrollTo({ top: scrollHeight, behavior: 'instant' })
 // }
-
-// --- When a new event is added, scroll to the bottom if the container is already at the bottom.
-// watch(() => view.events, scrollToBottom, { deep: true })
 </script>
 
 <template>
   <div
     :style="{
-      width: `${isOpen ? view.panelWidth : 48}px`,
-      height: isOpen ? undefined : '48px',
+      width: `${settings.editorPanelOpen ? editor.view.panelWidth : 48}px`,
+      height: settings.editorPanelOpen ? undefined : '48px',
     }"
     :class="{
-      'transition-all duration-slow': !view.isPanelResizing,
+      'transition-all duration-slow': !editor.view.isPanelResizing,
     }"
     class="
       flex flex-col rd backdrop-blur-2xl overflow-hidden relative
@@ -62,11 +51,16 @@ const container = ref<HTMLElement>()
     @mousedown.stop>
 
     <!-- Resize handle -->
+    <!-- eslint-disable vue/no-mutating-props -->
     <div
-      :class="{ 'pointer-events-none': !isOpen, 'op-0': !view.isPanelResizing, '!op-100': view.isPanelResizing }"
-      class="absolute top-0 bottom-0 left-0 w-4 cursor-ew-resize transition hover:op-50 z-10 py-xs"
-      @mousedown="() => view.isPanelResizing = true"
-      @mouseup="() => view.isPanelResizing = false">
+      :class="{
+        'pointer-events-none': !settings.editorPanelOpen,
+        'op-0': !editor.view.isPanelResizing,
+        '!op-100': editor.view.isPanelResizing,
+      }"
+      class="absolute top-0 bottom-0 left-0 w-4 cursor-ew-resize hover:op-50 z-10 py-xs"
+      @mousedown="() => editor.view.isPanelResizing = true"
+      @mouseup="() => editor.view.isPanelResizing = false">
       <div class="w-px h-full bg-editor-active" />
     </div>
 
@@ -74,34 +68,35 @@ const container = ref<HTMLElement>()
     <EditorPanelTabs
       v-model="selectedTab"
       :values="tabs"
-      :class="{ 'op-0': !isOpen }"
-      class="transition-all"
+      :class="{ 'op-0': !settings.editorPanelOpen }"
     />
 
     <!-- Toggle -->
     <EditorFab
       class="absolute top-0 right-0 mt-2 mr-2 z-10"
-      @click="() => isOpen = !isOpen">
+      @click="() => settings.editorPanelOpen = !settings.editorPanelOpen">
       <BaseIcon
         icon="i-carbon:chevron-left"
-        :class="{ 'rotate-180': isOpen }"
-        class="size-5 shrink-0 transition-all"
+        :class="{ 'rotate-180': settings.editorPanelOpen }"
+        class="size-5 shrink-0 transition"
       />
     </EditorFab>
 
-    <!-- Flow -->
+    <!-- Content -->
     <div
       ref="container"
       class="flex flex-col h-full overflow-y-auto overflow-x-hidden transition"
-      :class="{ 'op-0': !isOpen }">
-      {{ session.data.name }}
-
-      <!--
-        <EditorPanelFlow v-if="selectedTab === 'flow'" />
-        <EditorPanelNode v-else-if="selectedTab === 'node'" />
-        <EditorPanelEvents v-else-if="selectedTab === 'events'" />
-        <EditorPanelPlayground v-else-if="selectedTab === 'playground'" />
-      -->
+      :class="{ 'op-0': !settings.editorPanelOpen }">
+      <KeepAlive :key="selectedTab">
+        <Transition>
+          <template v-if="settings.editorPanelOpen">
+            <LazyEditorPanelFlow v-if="selectedTab === 'flow'" :editor />
+            <LazyEditorPanelNode v-else-if="selectedTab === 'node'" :editor />
+            <!-- <EditorPanelEvents v-else-if="selectedTab === 'events'" :editor /> -->
+            <EditorPanelMessages v-else-if="selectedTab === 'playground'" :editor />
+          </template>
+        </Transition>
+      </KeepAlive>
     </div>
   </div>
 </template>

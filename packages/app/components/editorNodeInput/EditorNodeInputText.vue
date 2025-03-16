@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { EditorNodeObject } from '@nwrx/nano-api'
+
 const props = defineProps<{
   editor: Editor
   node: EditorNodeObject
@@ -30,13 +31,17 @@ const placeholder = computed(() => {
     @click="() => input?.focus()">
 
     <!-- Label -->
-    <EditorNodeInputLabel :label="schema.title ?? name" />
+    <EditorNodeInputLabel
+      :editor="editor"
+      :node="node"
+      :name="name"
+    />
 
     <!-- Field -->
     <input
       ref="input"
       v-model="model"
-      :class="{ 'font-light text-sm italic': !model }"
+      :class="{ 'font-light font-mono text-sm': !model }"
       class="w-full outline-none bg-transparent text-sm"
       :placeholder="placeholder">
   </EditorNodeInputGroup>
@@ -46,11 +51,11 @@ const placeholder = computed(() => {
 en:
   empty: No default value
 fr:
-  empty: Aucune valeur
+  empty: Aucune valeur par défaut
 de:
   empty: Kein Standardwert
 es:
   empty: Sin valor predeterminado
 zh:
-  empty: 无默认值
+  empty: 没有默认值
 </i18n>

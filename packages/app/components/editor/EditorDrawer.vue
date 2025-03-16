@@ -6,7 +6,9 @@ const activeCategory = ref<RegistryCategoryObject>()
 </script>
 
 <template>
-  <div class="flex items-start space-x-md overflow-hidden h-full" @mouseleave="() => activeCategory = undefined">
+  <div
+    class="flex items-start space-x-md overflow-hidden"
+    @mouseleave="() => activeCategory = undefined">
 
     <!-- Categories -->
     <div class="bg-editor-panel rounded border border-editor backdrop-blur-2xl max-w-16">
@@ -14,7 +16,12 @@ const activeCategory = ref<RegistryCategoryObject>()
         v-for="category in categories"
         :key="category.name"
         :class="activeCategory === category ? 'op-100' : 'op-50'"
-        class="w-16 py-3 last:pb-4 first:pt-4 flex items-center justify-center transition  cursor-pointer"
+        class="
+          w-16 py-3 last:pb-4 first:pt-4
+          flex items-center justify-center
+          pointer-events-auto
+          transition cursor-pointer
+        "
         @mouseenter="() => activeCategory = category">
 
         <!-- Trigger -->
@@ -31,7 +38,7 @@ const activeCategory = ref<RegistryCategoryObject>()
       class="
         transition pl-md min-w-64 max-w-96
         p-4 bg-editor-panel rd b b-editor backdrop-blur-md
-        max-h-full overflow-y-auto
+        max-h-full overflow-y-auto h-auto
       ">
 
       <!-- Title -->

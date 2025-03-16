@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import type { RegistryCategoryObject } from '@nwrx/nano-api'
 
-defineProps<{ editor: Editor; categories: RegistryCategoryObject[] }>()
+defineProps<{
+  editor: Editor
+  categories: RegistryCategoryObject[]
+}>()
 </script>
 
 <template>
@@ -14,7 +17,8 @@ defineProps<{ editor: Editor; categories: RegistryCategoryObject[] }>()
     class="w-full h-full bg-editor select-none relative overflow-hidden z-0 select-none transform-gpu"
     @mousemove="(event) => editor.view.onScreenMouseMove(event)"
     @mouseup="(event) => editor.view.onScreenMouseUp(event)"
-    @keydown="(event) => editor.view.onScreenKeyDown(event)">
+    @keydown="(event) => editor.view.onScreenKeyDown(event)"
+    @keyup="(event) => editor.view.onScreenKeyUp(event)">
 
     <!-- Selector box -->
     <EditorSelection :editor />
@@ -29,7 +33,6 @@ defineProps<{ editor: Editor; categories: RegistryCategoryObject[] }>()
       @drop="(event) => editor.view.onScreenDrop(event)"
       @wheel="(event) => editor.view.onScreenWheel(event)"
       @mousedown="(event) => editor.view.onScreenMouseDown(event)">
-
       <EditorBackground />
       <EditorLinks :editor />
       <EditorPeer v-for="peer in editor.view.peers" :key="peer.id" :peer :editor />
@@ -37,11 +40,12 @@ defineProps<{ editor: Editor; categories: RegistryCategoryObject[] }>()
     </div>
 
     <!-- Overlay -->
-    <div class="absolute top-0 left-0 h-full w-full z-1000 pointer-events-none p-md">
+    <div class="absolute top-0 left-0 h-full w-full z-10 pointer-events-none p-md">
       <div class="grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-md w-full h-full">
-        <!-- <LazyEditorToolbar :editor class="pointer-events-auto justify-self-start" /> -->
-        <!-- <LazyEditorPanel :editor class="pointer-events-auto row-span-2 justify-self-end h-full" /> -->
-        <LazyEditorDrawer :editor :categories class="pointer-events-auto self-start justify-self-start" />
+        <EditorToolbar :editor class="pointer-events-auto justify-self-start" />
+        <EditorPanel :editor class="pointer-events-auto row-span-2 justify-self-end h-full" />
+        <EditorDrawer :editor :categories class="pointer-events-auto self-start justify-self-start" />
+        <!-- <EditorConsole :editor class="pointer-events-auto self-start justify-self-start" /> -->
       </div>
     </div>
   </div>

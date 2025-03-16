@@ -1,6 +1,5 @@
 /* eslint-disable sonarjs/todo-tag */
 import type { EditorSessionClientMessage, EditorSessionObject, ModuleFlowEditor } from '@nwrx/nano-api'
-import type { SchemaOption } from '@nwrx/nano/utils'
 import type { ChannelConnectOptions } from '@unserved/client'
 import type { WebSocketChannel } from '@unshared/client/websocket'
 import type { EditorView } from '#imports'
@@ -14,6 +13,7 @@ export interface UseEditorSessionOptions {
 
 export const INITIAL_EDITOR_SESSION: EditorSessionObject = {
   name: '',
+  title: '',
   icon: '',
   description: '',
   nodes: [],
@@ -32,7 +32,14 @@ export type EditorEventPayload<K extends EditorEventName> = EditorSessionClientM
 export type EditorMethodParameters<K extends EditorEventName> = EditorEventPayload<K> extends { data: infer T extends any[] } ? T : []
 export type EditorMethod<K extends EditorEventName> = (...data: EditorMethodParameters<K>) => void
 export type EditorModel = Readonly<EditorSessionObject> & { [K in EditorEventName]: EditorMethod<K> }
-export interface Editor { model: EditorModel; view: EditorView }
+
+export interface Editor {
+  model: EditorModel
+  view: EditorView
+  channel: EditorChannel
+  options: UseEditorSessionOptions
+
+}
 
 export async function useEditor(options: UseEditorSessionOptions): Promise<Editor> {
   const client = useClient()
@@ -44,13 +51,13 @@ export async function useEditor(options: UseEditorSessionOptions): Promise<Edito
   // --- while keeping the state of the editor in sync with the server when other users
   // --- make changes to the flow via the same editor session.
   const channel = await client.connect('WS /ws/workspaces/:workspace/projects/:project/flows/:name/editor', {
-    parameters: options,
+    parameters: { ...options },
     onMessage: (payload) => {
       switch (payload.event) {
 
         // Flow
         case 'init': {
-          data.value = payload.data
+          data.value = { ...data.value, ...payload.data }
           break
         }
         case 'error': {
@@ -60,6 +67,7 @@ export async function useEditor(options: UseEditorSessionOptions): Promise<Edito
         case 'meta': {
           const { name, value } = payload
           if (name === 'name') data.value.name = value as string
+          if (name === 'title') data.value.title = value as string
           if (name === 'icon') data.value.icon = value as string
           if (name === 'description') data.value.description = value as string
           break
@@ -86,16 +94,6 @@ export async function useEditor(options: UseEditorSessionOptions): Promise<Edito
           const node = data.value.nodes.find(n => n.id === id)
           if (!node) return
           node.input[name] = value
-          break
-        }
-        case 'node:inputOptionResult': {
-          const { id, name, options } = payload
-          const node = data.value.nodes.find(n => n.id === id)
-          if (!node) return
-          const socket = node.inputs[name]
-          if (!socket) return
-          socket.options = options as unknown as SchemaOption[]
-          data.value.nodes = [...data.value.nodes]
           break
         }
         case 'node:removed': {
@@ -151,5 +149,5 @@ export async function useEditor(options: UseEditorSessionOptions): Promise<Edito
   // --- Initialize the editor view. This allows us to interact with the Vue components
   // --- that are part of the editor and handle its state and events based on the model.
   const view = useEditorView(model)
-  return { model, view }
+  return { model, view, channel, options }
 }

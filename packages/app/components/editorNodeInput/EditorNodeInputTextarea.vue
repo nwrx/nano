@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import type { EditorNodeObject } from '@nwrx/nano-api'
-const props = defineProps<{ editor: Editor; node: EditorNodeObject; name: string }>()
+
+const props = defineProps<{
+  editor: Editor
+  node: EditorNodeObject
+  name: string
+}>()
 
 const isDialogOpen = ref(false)
 const schema = computed(() => props.node.inputs[props.name])
@@ -16,18 +21,19 @@ const model = computed({
 
 <template>
   <EditorNodeInputGroup
-    class="cursor-pointer pt-0.5 flex items-start"
+    class="flex items-center cursor-text"
     @mousedown.stop="() => isDialogOpen = true">
 
-    <!-- Preview -->
-    <div class="py-xs whitespace-pre-wrap line-clamp-4">
-      <span class="text-subtle text-sm mr-xs">
-        {{ name }}:
-      </span>
-      <span class="text-sm">
-        {{ model ?? schema.default }}
-      </span>
-    </div>
+    <!-- Label -->
+    <EditorNodeInputLabel
+      :editor="editor"
+      :node="node"
+      :name="name"
+    />
+
+    <span class="text-sm">
+      {{ model ?? schema.default }}
+    </span>
   </EditorNodeInputGroup>
 
   <!-- Dialog -->

@@ -1,8 +1,5 @@
-<!-- eslint-disable vue/prop-name-casing -->
 <script setup lang="ts">
-import type { EditorNodeObject } from '@nwrx/nano-api'
-import type { SchemaOption } from '@nwrx/nano/utils'
-
+import type { EditorNodeObject, VaultVariableObject } from '@nwrx/nano-api'
 const props = defineProps<{
   editor: Editor
   node: EditorNodeObject
@@ -10,9 +7,10 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
-const isFocused = ref(false)
 const input = ref<HTMLInputElement>()
 const schema = computed(() => props.node.inputs[props.name])
+const isFocused = ref(false)
+const isLoading = ref(false)
 
 const model = computed({
   get: () => props.node.input[props.name],
@@ -24,8 +22,22 @@ const model = computed({
 })
 
 const search = ref('')
-const options = ref<SchemaOption[]>([])
-const isLoading = ref(false)
+const variables = ref<VaultVariableObject[]>([])
+function searchVariables() {
+  isLoading.value = true
+  props.editor.model.searchVariables({
+    search: search.value,
+  })
+  const stop = props.editor.channel.on('message', (message) => {
+    setTimeout(() => stop(), 100)
+    if (message.event === 'searchVariablesResult') {
+      variables.value = message.data
+      isLoading.value = false
+      stop()
+    }
+  })
+}
+watch(search, searchVariables)
 
 const placeholder = computed(() => {
   if (model.value) return ''
@@ -35,7 +47,7 @@ const placeholder = computed(() => {
 
 function onFocus() {
   isFocused.value = true
-  searchOptions()
+  searchVariables()
 }
 
 function onBlur() {
@@ -43,21 +55,14 @@ function onBlur() {
   search.value = ''
 }
 
-function searchOptions() {
-  isLoading.value = true
-  props.editor.model.searchOptions({
-    id: props.node.id,
-    name: props.name,
-    query: search.value,
-  })
-  const stop = props.editor.channel.on('message', (message) => {
-    setTimeout(() => stop(), 100)
-    if (message.event === 'searchOptionsResult') {
-      options.value = message.data
-      isLoading.value = false
-      stop()
-    }
-  })
+function setOption(variable: VaultVariableObject) {
+  model.value = { $ref: `#/Variables/${variable.vault!.name}/${variable.name}` }
+  search.value = ''
+  isFocused.value = false
+}
+
+function isOptionSelected(variable: VaultVariableObject) {
+  return model.value === variable.name
 }
 </script>
 
@@ -75,17 +80,18 @@ function searchOptions() {
     />
 
     <!-- Current -->
-    <div
-      v-if="!search && model"
-      class="rd text-sm mr-sm font-mono"
-      v-text="String(model)"
+    <EditorReferenceBadge
+      v-if="!isFocused && model"
+      :value="model"
+      class="mr-sm"
     />
 
     <!-- Field -->
     <input
       ref="input"
       v-model="search"
-      class="grow outline-none bg-transparent text-sm w-0 font-mono"
+      :class="{ '!w-0': !isFocused }"
+      class="grow outline-none bg-transparent text-sm font-mono placeholder:text-subtle"
       :placeholder="placeholder"
       @focus="() => onFocus()"
       @blur="() => onBlur()">
@@ -94,18 +100,19 @@ function searchOptions() {
     <BaseIcon
       icon="i-carbon:close"
       class="op-0 group-hover:op-100 size-4 text-app cursor-pointer shrink-0"
-      @click="() => model = undefined"
+      @mousedown.stop
+      @click.stop="() => { model = ''; search = ''; }"
     />
 
     <!-- List -->
-    <EditorMenu :show="isFocused" :is-loading="isLoading" :is-empty="options.length === 0">
+    <EditorMenu :show="isFocused" :is-loading="isLoading" :is-empty="variables.length === 0">
       <EditorMenuItem
-        v-for="(option, index) in options"
+        v-for="(variable, index) in variables"
         :key="index"
-        :icon="option.icon"
-        :label="option.label"
-        :is-selected="model === option.value"
-        @mousedown.stop="() => model = option.value"
+        icon="i-carbon:locked"
+        :label="`${variable.vault!.name}/${variable.name}`"
+        :is-selected="isOptionSelected(variable)"
+        @mousedown.stop="() => setOption(variable)"
       />
     </EditorMenu>
   </EditorNodeInputGroup>

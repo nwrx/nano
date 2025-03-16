@@ -12,7 +12,7 @@ const visibleInputs = computed(() => {
   if (!node) return inputs
   if (!node.inputs) return inputs
   for (const [name, schema] of Object.entries(props.node.inputs))
-    if (schema['x-internal'] !== true) inputs[name] = schema
+    if (!schema['x-internal']) inputs[name] = schema
   return inputs
 })
 </script>
