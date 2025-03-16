@@ -1,4 +1,5 @@
-import type { FlowObject } from '@nwrx/nano-api'
+import type { EditorNodeObject, FlowObject } from '@nwrx/nano-api'
+import type { ThreadServerMessage } from '@nwrx/nano-runner'
 import type { MaybeLiteral } from '@unshared/types'
 import type { RouteLocationRaw } from 'vue-router'
 
@@ -64,4 +65,23 @@ declare module 'vue-router' {
     group?: NavItemGroup
     parent?: string
   }
+}
+
+export type EditorMessageTreeItemLine =
+  | 'close'
+  | 'end'
+  | 'open'
+  | 'start'
+  | 'straight'
+
+export interface EditorMessageTreeItemTree {
+  color: string
+  showPin: boolean
+  showLine: EditorMessageTreeItemLine
+}
+
+export interface EditorMessageTreeItem {
+  message: ThreadServerMessage
+  node?: EditorNodeObject
+  tree?: EditorMessageTreeItemTree[]
 }
