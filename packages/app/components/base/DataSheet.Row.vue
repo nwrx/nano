@@ -100,12 +100,10 @@ function toggle() {
     </div>
 
     <!-- Detail -->
-    <BaseCollapse
+    <Collapse
       v-if="hasDetail"
-      vertical
-      :is-open="isOpen"
-      class="w-full b-t b-editor transition-all overflow-hidden"
-      :class="{ 'op-0 max-h-0 pointer-events-none': !isOpen }">
+      :model-value="isOpen"
+      class="w-full b-t b-editor">
 
       <!-- Content -->
       <LazyDataSheetDetail
@@ -114,6 +112,6 @@ function toggle() {
         :is-clearable="isClearable"
         :depth="depth ? depth + 1 : 1"
       />
-    </BaseCollapse>
+    </Collapse>
   </div>
 </template>

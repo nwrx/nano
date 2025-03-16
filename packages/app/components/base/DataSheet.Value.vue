@@ -35,9 +35,12 @@ const model = useVModel(props, 'modelValue')
   <input
     v-else-if="isEditable"
     v-model="model"
+    :placeholder="placeholder ?? t('placeholder')"
     class="px-sm line-clamp-1 font-mono bg-transparent outline-none transition grow"
-    :class="{ 'opacity-50': isOpen, 'cursor-default italic': !model && !placeholder }"
-    :placeholder="placeholder ?? t('placeholder')">
+    :class="{
+      'opacity-50': isOpen,
+      'cursor-default italic': !model && !placeholder,
+    }">
 
   <!-- Text -->
   <span
