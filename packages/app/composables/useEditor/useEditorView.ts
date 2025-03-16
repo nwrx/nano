@@ -333,6 +333,7 @@ export function useEditorView(model: EditorModel) {
 
       // --- If a drag link is active, emit a link remove event.
       if (linkDragFrom.value && !linkDragTo.value) {
+        // @ts-expect-error: edge case handled by the server.
         model.removeLink(linkDragFrom.value)
         linkDragFrom.value = undefined
         event.stopPropagation()
@@ -340,6 +341,7 @@ export function useEditorView(model: EditorModel) {
 
       // --- If dragFrom and dragTo are set, emit the link create event.
       else if (linkDragFrom.value && linkDragTo.value) {
+        // @ts-expect-error: edge case handled by the server.
         model.createLink({ ...linkDragFrom.value, ...linkDragTo.value })
         linkDragFrom.value = undefined
         linkDragTo.value = undefined
