@@ -1,0 +1,72 @@
+import type { ThreadServerMessage } from '@nwrx/nano-runner'
+import type { Peer } from 'crossws'
+import type { ModuleThread } from '..'
+import type { Flow } from '../../flow'
+import type { Project } from '../../project'
+import type { ThreadRunnerChannel } from '../../threadRunner'
+import type { User } from '../../user'
+import type { Workspace } from '../../workspace'
+import type { Thread } from '../entities'
+import { ModuleThreadRunner } from '../../threadRunner'
+import { ModuleVault } from '../../vault'
+
+export interface ThreadSessionOptions {
+  peer: Peer
+  user: User
+  flow: Flow
+  thread: Thread
+  project: Project
+  workspace: Workspace
+}
+
+export async function getThreadSession(this: ModuleThread, options: ThreadSessionOptions): Promise<ThreadRunnerChannel> {
+  const moduleThreadRunner = this.getModule(ModuleThreadRunner)
+  const moduleVault = this.getModule(ModuleVault)
+  const { peer, /* user, */ thread, workspace, project } = options
+
+  // --- Create a new thread session.
+  const runner = await moduleThreadRunner.requestThreadRunner()
+  await runner.client.requestAttempt('POST /threads/:id', {
+    data: {
+      id: thread.id,
+      flow: thread.data,
+    },
+  })
+
+  // --- Connect to the thread runner via WebSocket.
+  const channel = await runner.client.connect('WS /threads/:id', {
+    parameters: { id: thread.id },
+    query: { token: runner.token! },
+    autoReconnect: true,
+    reconnectDelay: 300,
+    reconnectLimit: 3,
+  })
+
+  // --- Store events in the database.
+  const { ThreadEvent } = this.getRepositories()
+  channel.on('message', async(message) => {
+    if (message.event === 'worker:ready') { return }
+    else if (message.event === 'worker:outputValue') { return }
+    else if (message.event === 'worker:resolveReference') {
+      const [id, type, values] = message.data
+      if (type === 'Variables') {
+        const [vault, name] = values
+        const value = await moduleVault.getVariableValue({ workspace, project, vault, name })
+        channel.send({ event: 'worker:resolveReferenceResult', data: [{ id, value }] })
+      }
+    }
+
+    else {
+      const event = ThreadEvent.create({
+        thread,
+        data: message.data,
+        event: message.event,
+        runner: runner.runner,
+      })
+      await ThreadEvent.save(event)
+    }
+  })
+
+  // --- Return the websocket channel.
+  return channel
+}
