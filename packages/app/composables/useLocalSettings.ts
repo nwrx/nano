@@ -11,9 +11,16 @@ export interface LocalSettings {
   editorPanelWidth?: number
   editorPanelSecretsOpen?: boolean
   editorPanelVariablesOpen?: boolean
+
+  // Flow
+  editorPanelFlowSettingsOpen?: boolean
+
+  // Node
   editorPanelNodeInputOpen?: boolean
   editorPanelNodeOutputOpen?: boolean
   editorPanelNodeMetadataOpen?: boolean
+
+  // Textarea
   editorNodeTextareaShowPreview?: boolean
 
   // Chat states
