@@ -21,27 +21,22 @@ export const inference = defineComponent(
     isTrusted: true,
     inputs: {
       model: {
-        'title': 'Model',
-        'description': 'The language model used to generate the completion.',
-        'x-control': 'language-model',
+        title: 'Model',
+        description: 'The language model used to generate the completion.',
         ...languageModelSchema,
       },
       tools: {
-        'title': 'Tools',
-        'description': 'The tools used to generate the completion.',
-        'x-control': 'language-model-tool',
-        'default': [],
-        'oneOf': [
-          { type: 'array', items: toolSchema },
-          toolSchema,
-        ],
+        title: 'Tools',
+        description: 'The tools used to generate the completion.',
+        default: [],
+        type: 'array',
+        items: toolSchema,
       },
       messages: {
-        'title': 'Messages',
-        'x-control': 'table',
-        'description': 'The message to generate a completion for.',
-        'default': [],
-        'oneOf': [
+        title: 'Messages',
+        description: 'The message to generate a completion for.',
+        default: [],
+        oneOf: [
           {
             type: 'array',
             items: {

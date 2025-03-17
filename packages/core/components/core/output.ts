@@ -6,20 +6,20 @@ export const output = defineComponent(
     inputs: {
       name: {
         'type': 'string',
-        'name': 'Name',
+        'title': 'Name',
         'description': 'The name of the output value.',
         'x-control': 'text',
       },
       description: {
         'type': 'string',
-        'name': 'Description',
+        'title': 'Description',
         'control': 'text',
         'description': 'A short description that explains the purpose of the output value.',
         'x-control': 'textarea',
         'x-optional': true,
       },
       value: {
-        name: 'Value',
+        title: 'Value',
         description: 'The value to send to the ouput.',
         oneOf: [
           { 'x-type': 'stream' },
