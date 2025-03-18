@@ -8,7 +8,6 @@ import EditorNodeOutput from '~/components/editorNodeOutput/EditorNodeOutput.vue
 
 defineProps<{
   node?: FlowNodeObject
-  color?: string
   styleHeader?: CSSProperties
   searchOptions: (name: string, query: string) => Promise<SchemaOption[]>
 }>()
