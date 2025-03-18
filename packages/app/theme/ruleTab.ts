@@ -30,7 +30,6 @@ export const ruleTab: DynamicRule<ThemeTab> = [
         'cursor': 'pointer',
         'user-select': 'none',
         'text-align': 'center',
-        'transition': 'all 150ms ease',
         ...toCSSObject(variant),
       })
     }
