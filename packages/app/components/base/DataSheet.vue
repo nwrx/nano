@@ -1,11 +1,17 @@
-<script setup lang="ts" generic="T extends object">
+<script setup lang="ts" generic="T">
+import DataSheetRow from './DataSheet.Row.vue'
+
 defineProps<{
   title?: string
-  modelValue?: T
-  optionsLabel?: T extends any[]
+  rowName?: T extends any[]
     ? (value: T[number], key: number) => string
     : (value: T[keyof T], key: keyof T) => string
+  rowValue?: T extends any[]
+    ? (value: T[number], key: number) => unknown
+    : (value: T[keyof T], key: keyof T) => unknown
 }>()
+
+const model = defineModel<T>()
 </script>
 
 <template>
@@ -23,10 +29,10 @@ defineProps<{
       <slot>
         <!-- @vue-expect-error: ignore `value` inference issue -->
         <DataSheetRow
-          v-for="(value, key) in modelValue"
+          v-for="(value, key) in model"
           :key="key"
-          :name="optionsLabel ? optionsLabel(value, key) : String(key)"
-          :model-value="value"
+          :name="rowName ? rowName(value, key) : String(key)"
+          :model-value="rowValue ? rowValue(value, key) : value"
           :depth="0"
         />
       </slot>

@@ -1,6 +1,11 @@
 <!-- eslint-disable @typescript-eslint/no-unnecessary-type-assertion -->
 <!-- eslint-disable sonarjs/prefer-single-boolean-return -->
 <script setup lang="ts" generic="T">
+import Collapse from './Collapse.vue'
+import DataSheetDetail from './DataSheet.Detail.vue'
+import DataSheetRowName from './DataSheet.RowName.vue'
+import DataSheetValue from './DataSheet.Value.vue'
+
 const props = defineProps<{
   name?: string
   modelValue?: T
@@ -106,7 +111,8 @@ function toggle() {
       class="w-full b-t b-editor">
 
       <!-- Content -->
-      <LazyDataSheetDetail
+      <DataSheetDetail
+        v-if="isOpen"
         v-model="model"
         :is-editable="isEditable"
         :is-clearable="isClearable"
