@@ -6,6 +6,9 @@ const props = defineProps<BaseInputToggleProps<T, U> & {
   hint?: string
   label?: string
   icon?: string
+  classTab?: string
+  classLabel?: string
+  classIcon?: string
 }>()
 
 const emit = defineEmits<{
@@ -25,26 +28,18 @@ const model = useVModel(props as { modelValue: ToggleValue<T, U> }, 'modelValue'
 
     <!-- Label -->
     <div
-      :class="{
-        '!tab-active': isActive,
-        'tab-inactive': !isActive,
-        'transition-colors': !isActive,
-      }"
-      class="
-        tab flex items-center space-x-sm cursor-pointer
-        w-full px-lg py-xs min-h-10
-        hover:tab-hover
-      ">
+      :class="[classTab, isActive ? '!tab-active' : 'tab-inactive']"
+      class="tab flex items-center space-x-sm w-full hover:tab-hover">
 
       <!-- Icon -->
       <BaseIcon
         v-if="icon"
         :icon="icon"
-        class="text-lg"
+        :class="classIcon"
       />
 
       <!-- Label -->
-      <label class="text-base pointer-events-none select-none">
+      <label class="pointer-events-none select-none" :class="classLabel">
         <slot>{{ label }}</slot>
       </label>
     </div>
