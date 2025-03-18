@@ -1,17 +1,18 @@
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
   show: boolean
   isEmpty?: boolean
   isLoading?: boolean
 }>()
 
 const { t } = useI18n()
-const isLoadingRef = ref(false)
+const isLoadingRef = computed(() => props.isLoading)
 const isLoadingDebounced = refDebounced(isLoadingRef, 100)
 </script>
 
 <template>
   <Transition
+    :duration="100"
     enter-active-class="transition duration-100"
     enter-from-class="-translate-y-lg op-0"
     enter-to-class="translate-y-0 op-100"
@@ -44,6 +45,18 @@ const isLoadingDebounced = refDebounced(isLoadingRef, 100)
 
 <i18n lang="yaml">
 en:
-  loading: Loading...
+  loading: Loading options...
   empty: No options available.
+fr:
+  loading: Chargement des options...
+  empty: Aucune option disponible.
+de:
+  loading: Optionen werden geladen...
+  empty: Keine Optionen verfügbar.
+es:
+  loading: Cargando opciones...
+  empty: No hay opciones disponibles.
+zh:
+  loading: 正在加载选项...
+  empty: 没有可用选项。
 </i18n>

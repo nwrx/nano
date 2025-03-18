@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { EditorNodeObject, InputJSON } from '@nwrx/nano-api'
+import type { FlowNodeObject, InputJSON } from '@nwrx/nano-api'
 
 const props = defineProps<{
   name?: string
-  node?: EditorNodeObject
-  nodes?: EditorNodeObject[]
+  node?: FlowNodeObject
+  nodes?: FlowNodeObject[]
   socket?: InputJSON
   modelValue?: unknown
   isOpen?: boolean
@@ -23,7 +23,7 @@ const emit = defineEmits<{
 // --- Model & state
 const model = useVModel(props, 'modelValue', emit, { passive: true })
 const isOpen = useVModel(props, 'isOpen', emit, { passive: true })
-const name = computed(() => props.socket?.name ?? props.name)
+const path = computed(() => props.socket?.name ?? props.name)
 
 // --- Conditionally show the detail view for complex values.
 const hasDetail = computed(() => {

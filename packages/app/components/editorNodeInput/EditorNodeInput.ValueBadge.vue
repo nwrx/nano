@@ -26,11 +26,7 @@ const values = computed(() => {
 </script>
 
 <template>
-  <div
-    class="
-      flex items-center space-x-xs text-sm font-mono
-      text-app rd
-    ">
+  <div class="flex items-center space-x-xs text-sm font-mono text-app rd">
 
     <!-- Icon -->
     <BaseIcon
@@ -43,10 +39,12 @@ const values = computed(() => {
       <span
         :class="{
           'text-subtle truncate': index !== values.length - 1,
-          'font-normal': index === values.length - 1,
+          'font-normal line-clamp-1': index === values.length - 1,
         }"
         v-text="vText"
       />
+
+      <!-- Separator -->
       <BaseIcon
         v-if="index < values.length - 1"
         icon="i-carbon:chevron-right"

@@ -24,10 +24,10 @@ function handleClick(event: MouseEvent) {
     <!-- Content -->
     <template #menu>
       <Transition
-        enter-active-class="transition duration-200"
+        enter-active-class="transition"
         enter-from-class="op-0 scale-98"
         enter-to-class="op-100"
-        leave-active-class="transition duration-200"
+        leave-active-class="transition"
         leave-from-class="op-100"
         leave-to-class="op-0 scale-98">
         <div

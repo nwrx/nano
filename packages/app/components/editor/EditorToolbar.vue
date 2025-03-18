@@ -1,7 +1,14 @@
 <script setup lang="ts">
+import type { FlowObject } from '@nwrx/nano-api'
+import EditorDownloadDialog from './EditorDownloadDialog.vue'
+import EditorFab from './EditorFab.vue'
+
 defineProps<{
-  editor: Editor
+  flow?: FlowObject
+  getFlowExport?: (format?: 'json' | 'yaml') => Promise<string>
 }>()
+
+const showDownloadDialog = ref(false)
 </script>
 
 <template>
@@ -13,7 +20,7 @@ defineProps<{
 
     <!-- Name -->
     <h1 class="text-base line-clamp-1 px-sm select-text select-none">
-      {{ editor.model.title }}
+      {{ flow?.title || flow?.name || 'MISSING_FLOW_PROP' }}
     </h1>
 
     <!-- Favorite -->
@@ -31,7 +38,10 @@ defineProps<{
     <EditorFab icon="i-carbon:settings" />
 
     <!-- Export -->
-    <EditorFab icon="i-carbon:download" />
+    <EditorFab
+      icon="i-carbon:download"
+      @click="() => showDownloadDialog = true"
+    />
 
     <!-- Chat -->
     <!--
@@ -40,5 +50,11 @@ defineProps<{
       @click="() => router.push(`${route.fullPath}/chat`)"
       />
     -->
+    <!-- Show Flow dialog -->
+    <EditorDownloadDialog
+      v-model:show="showDownloadDialog"
+      :flow="flow"
+      :get-flow-export="getFlowExport"
+    />
   </div>
 </template>

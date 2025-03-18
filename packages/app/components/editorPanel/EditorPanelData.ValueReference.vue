@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { type EditorNodeObject } from '@nwrx/nano-api'
+import { type FlowNodeObject } from '@nwrx/nano-api'
 
 const props = defineProps<{
   modelValue?: unknown
-  nodes?: EditorNodeObject[]
+  nodes?: FlowNodeObject[]
 }>()
 
 const emit = defineEmits<{

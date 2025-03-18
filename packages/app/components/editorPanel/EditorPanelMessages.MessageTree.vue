@@ -1,6 +1,5 @@
 <script setup lang="ts">
 defineProps<{
-  editor?: Editor
   item: EditorMessageTreeItem
   maxConcurrency: number
 }>()

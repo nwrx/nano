@@ -1,109 +1,112 @@
 <script setup lang="ts">
-import type { EditorNodeObject } from '@nwrx/nano-api'
+import type { FlowNodeObject } from '@nwrx/nano-api'
+import type { Schema } from '@nwrx/nano/utils'
+import EditorNodePin from '~/components/editorNode/EditorNodePin.vue'
+import { isReferenceLink } from '~/composables/useEditor/isReferenceLink'
+import EditorNodeInputTablePropertyBoolean from './EditorNodeInputTable.PropertyBoolean.vue'
+import EditorNodeInputTablePropertyName from './EditorNodeInputTable.PropertyName.vue'
+import EditorNodeInputTablePropertyNumber from './EditorNodeInputTable.PropertyNumber.vue'
+import EditorNodeInputTablePropertyString from './EditorNodeInputTable.PropertyString.vue'
 
 const props = defineProps<{
-  editor: Editor
-  node: EditorNodeObject
-  name: string
-  isLast: boolean
-  isFirst: boolean
+  name?: string
+  node?: FlowNodeObject
+  schema?: Schema
+  isLast?: boolean
+  isFirst?: boolean
+  usedProperties?: string[]
 }>()
 
 const emit = defineEmits<{
-  add: []
-  remove: []
+  removeProperty: []
+  addProperty: []
+  grab: []
+  assign: []
+  unassign: []
 }>()
 
-const { t } = useI18n()
-const schema = computed(() => props.node.inputs[props.name])
+const path = defineModel('propertyPath', { default: '' })
+const value = defineModel('propertyValue')
 
-const property = defineModel('property', { default: '' })
+// --- Get the property schema based on the dynamic name.
 const propertySchema = computed(() => {
-  const additionalProperties = typeof schema.value.additionalProperties === 'object' ? schema.value.additionalProperties : {}
-  if (schema.value.properties) return schema.value.properties[property.value] ?? additionalProperties
-  return additionalProperties
+  if (!props.schema) return { type: 'string' } as Schema
+  if (!path.value) return { type: 'string' } as Schema
+  const schemaProperty = props.schema.properties?.[path.value]
+  const schemaAdditional = props.schema.additionalProperties
+  if (schemaProperty) return schemaProperty
+  if (typeof schemaAdditional === 'object') return schemaAdditional
+  return { type: 'string' } as Schema
 })
 
-const value = defineModel('modelValue')
+// --- Only property with a path are linkable.
+const isLinkable = computed(() => !!path.value)
+
+// --- Check if the value is a reference link.
+// const isLinkValue = computed(() => {
+//   if (!props.node) return false
+//   if (!props.name) return false
+//   const model = props.node.input[props.name]
+//   return isReferenceLink(model)
+// })
 </script>
 
 <template>
   <div
     class="
-      flex items-center h-8 b b-transparent b-t-editor bg-emphasized
+      flex items-center h-8 b b-transparent b-t-editor bg-emphasized b-b
       hover:b hover:b-active
     "
-    @mouseenter.stop="() => {}"
-    @mouseleave.stop="() => {}">
+    @mouseenter="() => isLinkable && emit('assign')"
+    @mouseleave="() => isLinkable && emit('unassign')">
+
+    <EditorNodePin
+      :node="node"
+      :name="name"
+      :path="path"
+      :schema="propertySchema"
+      type="target"
+      @mousedown="() => isLinkable && emit('grab')"
+    />
 
     <!-- Select property -->
-    <div class="w-2/5 h-full flex items-center pl-sm mr-sm b-r b-editor text-sm">
-      <input
-        v-if="schema.additionalProperties"
-        v-model="property"
-        :placeholder="t('property')"
-        :class="{ 'text-editor-node italic': !property }"
-        class="cursor-text w-0 grow h-full outline-none bg-transparent">
+    <EditorNodeInputTablePropertyName
+      v-model:path="path"
+      :properties="schema?.properties"
+      :additional-properties="schema?.additionalProperties"
+      :used-properties="usedProperties"
+    />
 
-      <select
+    <!-- Value -->
+    <div class="b-l b-editor w-full h-full">
+      <EditorNodeInputTablePropertyBoolean
+        v-if="propertySchema.type === 'boolean'"
+        v-model="value"
+      />
+      <EditorNodeInputTablePropertyNumber
+        v-else-if="propertySchema.type === 'number'"
+        v-model="value"
+        :max="propertySchema['x-slider-max']"
+        :min="propertySchema['x-slider-min']"
+        :step="propertySchema['x-slider-step']"
+        :default-value="propertySchema.default"
+      />
+      <EditorNodeInputTablePropertyString
         v-else
-        v-model="property"
-        class="cursor-pointer w-0 grow h-full outline-none bg-transparent">
-        <option
-          v-for="(option, optionKey) in schema.properties"
-          :key="optionKey"
-          :value="optionKey"
-          v-text="`${option.title ?? value} (${option.type})`"
-        />
-      </select>
+        v-model="value"
+      />
     </div>
 
-    <!-- Text -->
-    <template v-if="property">
-      <input
-        v-if="propertySchema.type === 'string'"
-        v-model="value"
-        :placeholder="t('value')"
-        :class="{ 'text-editor-node italic': !value }"
-        class="cursor-text w-0 grow h-full outline-none bg-transparent text-sm px-sm b-l b-editor">
-
-      <!-- Boolean - True false radio inline -->
-      <div
-        v-else-if="propertySchema.type === 'boolean'"
-        class="flex items-center h-full px-sm grow cursor-pointer space-x-sm"
-        @click="() => value = !value">
-
-        <!-- 2 values / clickable -->
-        <div
-          class="relative flex items-center h-full space-x-xs px-sm"
-          :class="{ 'bg-active text-active': value }">
-          <BaseIcon icon="i-carbon:checkmark" class="size-4" />
-          <span class="text-sm">True</span>
-        </div>
-
-        <div
-          class="relative flex items-center h-full space-x-xs px-sm"
-          :class="{ 'bg-active text-active': !value }">
-          <BaseIcon icon="i-carbon:close" class="size-4" />
-          <span class="text-sm">False</span>
-        </div>
-      </div>
-    </template>
-
-    <div class="grow" />
-
     <!-- Add -->
-    <EditorNodeInputTableButton
-      v-if="isLast"
-      class="op-0 group-hover:op-100"
-      icon="i-carbon:add"
-      @click="() => emit('add')"
-    />
-
-    <EditorNodeInputTableButton
-      class="op-0 group-hover:op-100"
-      icon="i-carbon:close"
-      @click="() => emit('remove')"
-    />
+    <div class="flex h-full items-center ml-auto op-0 group-hover:op-100">
+      <EditorNodeInputTableButton
+        icon="i-carbon:close"
+        @click="() => emit('removeProperty')"
+      />
+      <EditorNodeInputTableButton
+        icon="i-carbon:add"
+        @click="() => emit('addProperty')"
+      />
+    </div>
   </div>
 </template>

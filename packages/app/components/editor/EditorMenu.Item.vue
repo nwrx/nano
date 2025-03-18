@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { BaseIcon } from '@unshared/vue/BaseIcon'
+import { vMarkdown } from '~/utils/vMarkdown'
+
 defineProps<{
   icon?: string
   label?: string
@@ -24,8 +27,8 @@ defineProps<{
 
     <!-- Name -->
     <div class="grow">
-      <p class="text-sm break-all line-clamp-1" v-text="label" />
-      <p class="text-xs text-subtle break-all line-clamp-2" v-text="description" />
+      <p v-markdown="label" class="text-sm break-all line-clamp-1" />
+      <p v-markdown="description" class="text-xs text-subtle break-all line-clamp-2" />
     </div>
 
     <!-- Checkmark -->

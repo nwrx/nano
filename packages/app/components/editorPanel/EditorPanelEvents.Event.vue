@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { EditorNodeObject, EditorSessionServerMessage } from '@nwrx/nano-api'
+import type { FlowNodeObject, EditorSessionServerMessage } from '@nwrx/nano-api'
 
 defineProps<{
   event: EditorSessionServerMessage
-  node?: EditorNodeObject
+  node?: FlowNodeObject
 }>()
 
 // --- Localization

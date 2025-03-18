@@ -1,7 +1,7 @@
 <!-- eslint-disable sonarjs/no-nested-assignment -->
 <script setup lang="ts">
 import type { NodeState } from '@nwrx/nano'
-import type { application, EditorNodeObject } from '@nwrx/nano-api'
+import type { application, FlowNodeObject } from '@nwrx/nano-api'
 import type { ThreadServerMessage } from '@nwrx/nano-runner'
 import type { ChannelConnectOptions } from '@unserved/client'
 import type { WebSocketChannel } from '@unshared/client/websocket'
@@ -37,7 +37,7 @@ async function start() {
 
   // --- Send the inputs to the flow.
   messages.value = []
-  channel.value.send({ event: 'start', data: {} })
+  channel.value.send({ event: 'workerStart', data: {} })
 }
 
 const tree = computed(() => {
@@ -45,9 +45,9 @@ const tree = computed(() => {
   const nodes = props.editor.model.nodes
   const messagesAll = messages.value
   const outputs: Record<string, string> = {}
-  const nodesTree = new Map<number, EditorNodeObject | undefined>()
+  const nodesTree = new Map<number, FlowNodeObject | undefined>()
   const nodesDepth = new Map<string, number>()
-  const nodesRunning = new Map<string, EditorNodeObject>()
+  const nodesRunning = new Map<string, FlowNodeObject>()
   let maxConcurrency = 1
 
   // --- Collect all the node states.

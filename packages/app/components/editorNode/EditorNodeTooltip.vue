@@ -1,23 +1,21 @@
 <script setup lang="ts">
-import type { EditorNodeObject } from '@nwrx/nano-api'
+import type { FlowNodeObject } from '@nwrx/nano-api'
 import { vMarkdown } from '#imports'
 
 defineProps<{
-  editor: Editor
-  node: EditorNodeObject
+  node?: FlowNodeObject
 }>()
 </script>
 
 <template>
   <div class="w-99 divide-y divide-editor">
     <p
-      v-if="node.description"
-      v-markdown.html="node.description"
+      v-markdown.html="node?.component.description || 'MISSING_NODE_PROP'"
       class="p-md text-app max-h-80 overflow-y-auto markdown"
       @wheel.stop
     />
     <p class="px-md py-sm font-medium text-app">
-      (node): {{ node.specifier }}
+      (node): {{ node?.specifier || 'MISSING_NODE_PROP' }}
     </p>
   </div>
 </template>

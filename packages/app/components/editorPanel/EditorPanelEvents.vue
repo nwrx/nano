@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { EditorNodeObject, EditorSessionServerMessage } from '@nwrx/nano-api'
+import type { FlowNodeObject, EditorSessionServerMessage } from '@nwrx/nano-api'
 
 const props = defineProps<{
   events?: EditorSessionServerMessage[]
-  nodes?: EditorNodeObject[]
+  nodes?: FlowNodeObject[]
 }>()
 
 const emit = defineEmits<{
@@ -19,7 +19,7 @@ const EVENTS_WHITELIST = new Set<EditorSessionServerMessage['event']>([
 ])
 
 // --- Compute the given node based on the event.
-function getNode(event: EditorSessionServerMessage): EditorNodeObject | undefined {
+function getNode(event: EditorSessionServerMessage): FlowNodeObject | undefined {
   return (props.nodes ?? []).find((node) => {
     if ('id' in event) return node.id === event.id
     return false

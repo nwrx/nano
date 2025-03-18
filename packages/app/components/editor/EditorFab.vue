@@ -1,6 +1,8 @@
 <!-- eslint-disable vue/prop-name-casing -->
 <script setup lang="ts">
 import type { BaseButtonProps } from '@unshared/vue'
+import { BaseButton } from '@unshared/vue/BaseButton'
+import { BaseIcon } from '@unshared/vue/BaseIcon'
 
 const props = defineProps<BaseButtonProps & {
   icon?: string

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { EditorNodeObject, EditorSessionServerMessage } from '@nwrx/nano-api'
+import type { FlowNodeObject, EditorSessionServerMessage } from '@nwrx/nano-api'
 
 const props = defineProps<{
   event: EditorSessionServerMessage
-  node?: EditorNodeObject
+  node?: FlowNodeObject
   isOpen: boolean
 }>()
 

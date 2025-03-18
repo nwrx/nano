@@ -1,49 +1,44 @@
 <script setup lang="ts">
-import type { EditorNodeObject } from '@nwrx/nano-api'
+import type { FlowNodeObject } from '@nwrx/nano-api'
+import type { Schema } from '@nwrx/nano/utils'
+import type { ComponentInstance } from 'vue'
+import EditorNodeInputGroup from './EditorNodeInput.Group.vue'
+import EditorNodeInputLabel from './EditorNodeInput.Label.vue'
+import EditorNodeInputValue from './EditorNodeInput.Value.vue'
 
-const props = defineProps<{
-  editor: Editor
-  node: EditorNodeObject
-  name: string
+defineProps<{
+  name?: string
+  node?: FlowNodeObject
+  schema?: Schema
 }>()
 
-const { t } = useI18n()
-const input = ref<HTMLInputElement>()
-const schema = computed(() => props.node.inputs[props.name])
-const model = computed({
-  get: () => props.node.input[props.name],
-  set: (value: any) => props.editor.model.setNodesInputValue({
-    id: props.node.id,
-    name: props.name,
-    value,
-  }),
-})
+const value = defineModel()
+const inputComponent = ref<ComponentInstance<typeof EditorNodeInputValue>>()
 
-const placeholder = computed(() => {
-  const defaultValue = schema.value.default
-  return typeof defaultValue === 'string' ? defaultValue : t('empty')
-})
+function handleClick() {
+  if (!inputComponent.value) return
+  inputComponent.value.focus()
+}
 </script>
 
 <template>
   <EditorNodeInputGroup
     class="flex items-center cursor-text"
-    @click="() => input?.focus()">
+    @click="() => handleClick()">
 
     <!-- Label -->
     <EditorNodeInputLabel
-      :editor="editor"
-      :node="node"
       :name="name"
+      :schema="schema"
     />
 
     <!-- Field -->
-    <input
-      ref="input"
-      v-model="model"
-      :class="{ 'font-light font-mono text-sm': !model }"
-      class="w-full outline-none bg-transparent text-sm"
-      :placeholder="placeholder">
+    <EditorNodeInputValue
+      ref="inputComponent"
+      v-model="value"
+      :name="name"
+      :schema="schema"
+    />
   </EditorNodeInputGroup>
 </template>
 

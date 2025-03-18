@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { BaseButton } from '@unshared/vue/BaseButton'
+import { BaseIcon } from '@unshared/vue/BaseIcon'
+
 defineProps<{
   icon?: string
   label?: string
@@ -16,11 +19,12 @@ const emit = defineEmits<{
     :class="{
       'w-7': !label,
       'px-sm': label,
-      '!bg-editor-active !text-editor-active': isActive,
+      '!bg-active !text-active': isActive,
     }"
     class="
        flex items-center justify-center cursor-pointer
-      hover:bg-prominent rd transition h-7 space-x-xs
+        rd transition h-7 space-x-xs
+      hover:bg-active hover:text-active
     "
     @click="() => emit('click')">
 

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { BaseIcon } from '@unshared/vue/BaseIcon'
+
 defineProps<{
   icon: string
 }>()

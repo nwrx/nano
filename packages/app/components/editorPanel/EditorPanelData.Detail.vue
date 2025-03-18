@@ -1,10 +1,10 @@
 <!-- eslint-disable vue/no-extra-parens -->
 <script setup lang="ts">
-import type { EditorNodeObject, InputJSON } from '@nwrx/nano-api'
+import type { FlowNodeObject, InputJSON } from '@nwrx/nano-api'
 
 const props = defineProps<{
-  node?: EditorNodeObject
-  nodes?: EditorNodeObject[]
+  node?: FlowNodeObject
+  nodes?: FlowNodeObject[]
   socket?: InputJSON
   modelValue?: unknown
   isEditable?: boolean

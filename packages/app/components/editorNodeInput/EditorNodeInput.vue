@@ -1,31 +1,50 @@
 <script setup lang="ts">
-import type { EditorNodeObject } from '@nwrx/nano-api'
+import type { FlowNodeObject } from '@nwrx/nano-api'
+import type { Schema, SchemaOption } from '@nwrx/nano/utils'
+import { isReferenceLink } from '~/composables/useEditor/isReferenceLink'
+import EditorNodePin from '../editorNode/EditorNodePin.vue'
+import EditorNodeInputLink from './EditorNodeInputLink.vue'
+import EditorNodeInputSelect from './EditorNodeInputSelect.vue'
+import EditorNodeInputTable from './EditorNodeInputTable.vue'
+import EditorNodeInputText from './EditorNodeInputText.vue'
+import EditorNodeInputTextarea from './EditorNodeInputTextarea.vue'
 
 const props = defineProps<{
-  editor: Editor
-  node: EditorNodeObject
-  name: string
+  name?: string
+  node?: FlowNodeObject
+  schema?: Schema
+  searchOptions?: (name: string, query: string) => Promise<SchemaOption[]>
 }>()
 
-// --- Use the `useModel` composition function to create a two-way binding.
-const schema = computed(() => props.node.inputs[props.name])
-const control = computed(() => schema.value['x-control'])
-const color = computed(() => getSchemaTypeColor(schema.value))
-const dataId = computed(() => ['pin', 'target', props.node.id, props.name].filter(Boolean).join('-'))
+const emit = defineEmits<{
+  'grab': [string | undefined]
+  'assign': [string | undefined]
+  'unassign': []
+  'setValue': [unknown]
+}>()
+
+const control = computed(() => props.schema?.['x-control'])
+
+// --- Reactive value of the input.
+const value = computed({
+  get: () => {
+    if (!props.node) return
+    if (!props.name) return
+    return props.node.input[props.name]
+  },
+  set: (value: any) => emit('setValue', value),
+})
 
 // --- Check if the model is a link reference.
 const isLinkValue = computed(() => {
+  if (!props.node) return false
+  if (!props.name) return false
   const model = props.node.input[props.name]
-  if (typeof model !== 'object') return false
-  if ( model === null) return false
-  if ('$ref' in model === false) return false
-  if (typeof model.$ref !== 'string') return false
-  return model.$ref.startsWith('#/Nodes/') !== false
+  return isReferenceLink(model)
 })
 
 // --- Flag that indicates if the input can be linked.
 const isLinkable = computed(() => {
-  if (control.value === 'language-model') return true
   if (control.value === undefined) return true
   return isLinkValue.value
 })
@@ -33,45 +52,74 @@ const isLinkable = computed(() => {
 
 <template>
   <div
-    class="flex items-center w-full relative pr-md group"
+    class="flex items-center w-full relative pr-md py-2px group"
     :class="{ 'hover:bg-emphasized cursor-pointer': isLinkable }"
-    @mousedown.stop="() => isLinkable && editor.view.onLinkGrab({ targetId: node.id, targetName: name })"
-    @mouseenter="() => editor.view.onLinkAssign({ targetId: node.id, targetName: name })"
-    @mouseleave="() => editor.view.onLinkUnassign()">
+    @mousedown.stop="() => isLinkable && emit('grab', undefined)"
+    @mouseenter="() => isLinkable && emit('assign', undefined)"
+    @mouseleave="() => isLinkable && emit('unassign')">
 
-    <!-- Node pin, used to connect to other nodes. -->
-    <EditorTooltip class="self-start">
-      <EditorNodePin
-        :data-id="dataId"
-        :data-color="color"
-        :appearance="isLinkable ? 'left' : 'dot'"
-        :color="color"
-        class="cursor-pointer"
-      />
-      <template #tooltip>
-        <EditorNodeInputTooltip
-          :editor="editor"
-          :node="node"
-          :name="name"
-        />
-      </template>
-    </EditorTooltip>
+    <!-- Node pin. -->
+    <EditorNodePin
+      :node="node"
+      :name="name"
+      :schema="schema"
+      type="target"
+    />
 
-    <!-- Control -->
-    <template v-if="control">
-      <EditorNodeInputText v-if="control === 'text'" :editor :node :name />
-      <EditorNodeInputTextarea v-else-if="control === 'textarea'" :editor :node :name />
-      <EditorNodeInputVariable v-else-if="control === 'variable'" :editor :node :name />
-      <EditorNodeInputSelect v-else-if="control === 'select'" :editor :node :name />
-      <EditorNodeInputTable v-else-if="control === 'table'" :editor :node :name />
-      <EditorNodeInputLink v-else-if="control === 'language-model'" :editor :node :name />
-      <p v-else class="text-xs font-mono text-app bg-prominent b b-app rd-md px-sm py-xs">
-        <span>{{ schema.title ?? name }} ({{ schema.type ?? 'any' }} - {{ control ?? 'none' }})</span>
-      </p>
-    </template>
+    <!-- Text Control -->
+    <EditorNodeInputText
+      v-if="control === 'text'"
+      v-model="value"
+      :node="node"
+      :name="name"
+      :schema="schema"
+    />
 
+    <!-- Textarea Control -->
+    <EditorNodeInputTextarea
+      v-else-if="control === 'textarea'"
+      v-model="value"
+      :node="node"
+      :name="name"
+      :schema="schema"
+    />
+
+    <!-- Select Control -->
+    <EditorNodeInputSelect
+      v-else-if="control === 'select' || control === 'variable'"
+      v-model="value"
+      :node="node"
+      :name="name"
+      :schema="schema"
+      :search-options="async(query) => {
+        if (!searchOptions) return []
+        if (!name) return []
+        return searchOptions(name, query)
+      }"
+    />
+
+    <!-- Table Control -->
+    <EditorNodeInputTable
+      v-else-if="control === 'table'"
+      v-model="value"
+      :node="node"
+      :name="name"
+      :schema="schema"
+      @grab="path => emit('grab', path)"
+      @assign="path => emit('assign', path)"
+      @unassign="() => emit('unassign')"
+    />
+
+    <!-- Link Control -->
+    <EditorNodeInputLink
+      v-else-if="control === undefined"
+      :name="name"
+      :schema="schema"
+    />
+
+    <!-- Debug -->
     <p v-else class="text-xs font-mono text-app bg-prominent b b-app rd-md px-sm py-xs">
-      <span>{{ schema.title ?? name }} ({{ schema.type ?? 'any' }} - {{ control ?? 'none' }})</span>
+      <span>{{ schema?.title ?? name }} ({{ schema?.type ?? 'any' }} - {{ control ?? 'none' }})</span>
     </p>
   </div>
 </template>

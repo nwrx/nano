@@ -1,29 +1,39 @@
 <script setup lang="ts">
-import type { EditorNodeObject } from '@nwrx/nano-api'
-const props = defineProps<{ editor: Editor; node: EditorNodeObject; name: string }>()
+import type { FlowNodeObject } from '@nwrx/nano-api'
+import type { Schema } from '@nwrx/nano/utils'
+import EditorNodePin from '../editorNode/EditorNodePin.vue'
 
-const schema = computed(() => props.node.outputs[props.name])
-const dataId = computed(() => ['pin', 'source', props.node.id, props.name].join('-'))
+defineProps<{
+  name?: string
+  schema?: Schema
+  node?: FlowNodeObject
+}>()
+
+const emit = defineEmits<{
+  'grab': [string | undefined]
+  'assign': [string | undefined]
+  'unassign': []
+}>()
 </script>
 
 <template>
   <div
     class="flex items-center w-full hover:bg-emphasized cursor-pointer"
-    @mousedown.stop="() => editor.view.onLinkGrab({ sourceId: node.id, sourceName: name })"
-    @mouseenter="() => editor.view.onLinkAssign({ sourceId: node.id, sourceName: name })"
-    @mouseleave="() => editor.view.onLinkUnassign()">
+    @mousedown.stop="() => emit('grab', undefined)"
+    @mouseenter="() => emit('assign', undefined)"
+    @mouseleave="() => emit('unassign')">
 
     <!-- Node pin, used to connect to other nodes. -->
-    <div class="truncate px-sm py-xs text-right grow">
-      <span class="text-sm" v-text="schema.title ?? name" />
+    <div class="truncate px-sm py-xs text-right font-mono text-sm grow">
+      {{ schema?.title || name || 'MISSING_INPUT_SCHEMA_AND_NAME' }}
     </div>
 
     <!-- Node pin, used to connect to other nodes. -->
     <EditorNodePin
-      :data-id="dataId"
-      :data-color="getSchemaTypeColor(schema)"
-      :color="getSchemaTypeColor(schema)"
-      appearance="right"
+      :node="node"
+      :name="name"
+      :schema="schema"
+      type="source"
     />
   </div>
 </template>

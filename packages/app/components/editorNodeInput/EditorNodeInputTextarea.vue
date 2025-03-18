@@ -1,22 +1,19 @@
 <script setup lang="ts">
-import type { EditorNodeObject } from '@nwrx/nano-api'
+import type { FlowNodeObject } from '@nwrx/nano-api'
+import type { Schema } from '@nwrx/nano/utils'
+import EditorNodeInputGroup from './EditorNodeInput.Group.vue'
+import EditorNodeInputLabel from './EditorNodeInput.Label.vue'
+import EditorNodeInputValue from './EditorNodeInput.Value.vue'
+import EditorNodeInputTextareaDialog from './EditorNodeInputTextarea.Dialog.vue'
 
-const props = defineProps<{
-  editor: Editor
-  node: EditorNodeObject
-  name: string
+defineProps<{
+  name?: string
+  node?: FlowNodeObject
+  schema?: Schema
 }>()
 
 const isDialogOpen = ref(false)
-const schema = computed(() => props.node.inputs[props.name])
-const model = computed({
-  get: () => props.node.input[props.name],
-  set: (value: any) => props.editor.model.setNodesInputValue({
-    id: props.node.id,
-    name: props.name,
-    value,
-  }),
-})
+const value = defineModel()
 </script>
 
 <template>
@@ -26,21 +23,24 @@ const model = computed({
 
     <!-- Label -->
     <EditorNodeInputLabel
-      :editor="editor"
-      :node="node"
       :name="name"
+      :schema="schema"
     />
 
-    <span class="text-sm">
-      {{ model ?? schema.default }}
-    </span>
+    <!-- Value -->
+    <EditorNodeInputValue
+      :model-value="value"
+      :name="name"
+      :schema="schema"
+      readonly
+    />
   </EditorNodeInputGroup>
 
   <!-- Dialog -->
   <EditorNodeInputTextareaDialog
-    v-model="model"
-    v-model:is-open="isDialogOpen"
-    :name="schema.title ?? name"
-    :description="schema.description"
+    v-model="value"
+    v-model:show="isDialogOpen"
+    :title="schema?.title ?? name"
+    :description="schema?.description"
   />
 </template>

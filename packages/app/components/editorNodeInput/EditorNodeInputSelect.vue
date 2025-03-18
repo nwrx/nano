@@ -1,41 +1,32 @@
 <!-- eslint-disable vue/prop-name-casing -->
 <script setup lang="ts">
-import type { EditorNodeObject } from '@nwrx/nano-api'
-import type { SchemaOption } from '@nwrx/nano/utils'
+import type { FlowNodeObject } from '@nwrx/nano-api'
+import type { Schema, SchemaOption } from '@nwrx/nano/utils'
+import { BaseIcon } from '@unshared/vue/BaseIcon'
+import EditorMenuItem from '../editor/EditorMenu.Item.vue'
+import EditorMenu from '../editor/EditorMenu.vue'
+import EditorNodeInputGroup from './EditorNodeInput.Group.vue'
+import EditorNodeInputLabel from './EditorNodeInput.Label.vue'
+import EditorNodeInputValue from './EditorNodeInput.Value.vue'
 
 const props = defineProps<{
-  editor: Editor
-  node: EditorNodeObject
-  name: string
+  name?: string
+  node?: FlowNodeObject
+  schema?: Schema
+  searchOptions?: (search: string) => Promise<SchemaOption[]>
 }>()
 
-const { t } = useI18n()
 const isFocused = ref(false)
-const input = ref<HTMLInputElement>()
-const schema = computed(() => props.node.inputs[props.name])
-
-const model = computed({
-  get: () => props.node.input[props.name],
-  set: (value: any) => props.editor.model.setNodesInputValue({
-    id: props.node.id,
-    name: props.name,
-    value,
-  }),
-})
+const value = defineModel()
+const options = ref<SchemaOption[]>([])
 
 const search = ref('')
-const options = ref<SchemaOption[]>([])
-const isLoading = ref(false)
-
-const placeholder = computed(() => {
-  if (model.value) return ''
-  const defaultValue = schema.value.default
-  return typeof defaultValue === 'string' ? defaultValue : t('empty')
-})
+const searchElement = ref<HTMLInputElement>()
+const isSearching = ref(false)
 
 function onFocus() {
   isFocused.value = true
-  searchOptions()
+  void refreshOptions()
 }
 
 function onBlur() {
@@ -43,69 +34,77 @@ function onBlur() {
   search.value = ''
 }
 
-function searchOptions() {
-  isLoading.value = true
-  props.editor.model.searchOptions({
-    id: props.node.id,
-    name: props.name,
-    query: search.value,
-  })
-  const stop = props.editor.channel.on('message', (message) => {
-    setTimeout(() => stop(), 100)
-    if (message.event === 'searchOptionsResult') {
-      options.value = message.data
-      isLoading.value = false
-      stop()
-    }
-  })
+async function refreshOptions() {
+  if (!props.searchOptions) return
+  isSearching.value = true
+  options.value = await props.searchOptions(search.value)
+  isSearching.value = false
 }
+
+watchDebounced(
+  search,
+  () => void refreshOptions(),
+  { debounce: 200 },
+)
 </script>
 
 <template>
   <EditorNodeInputGroup
     class="flex items-center cursor-text relative"
-    :class="{ '!ring-editor-active': isFocused }"
-    @mousedown.prevent="() => input!.focus()">
+    :class="{ '!b-editor-active': isFocused }"
+    @mousedown.prevent="() => searchElement!.focus()">
 
     <!-- Label -->
     <EditorNodeInputLabel
-      :editor="editor"
       :node="node"
       :name="name"
+      :schema="schema"
     />
 
     <!-- Current -->
-    <div
-      v-if="!search && model"
-      class="rd text-sm mr-sm font-mono"
-      v-text="String(model)"
+    <EditorNodeInputValue
+      v-if="!isFocused"
+      :name="name"
+      :schema="schema"
+      :model-value="value"
+      :readonly="true"
     />
 
     <!-- Field -->
     <input
-      ref="input"
+      ref="searchElement"
       v-model="search"
-      class="grow outline-none bg-transparent text-sm w-0 font-mono"
-      :placeholder="placeholder"
+      class="outline-none bg-transparent text-sm grow w-0 font-mono"
       @focus="() => onFocus()"
       @blur="() => onBlur()">
 
     <!-- Clear -->
     <BaseIcon
+      v-if="isSearching"
+      icon="i-line-md:loading-loop"
+      class="op-0 group-hover:op-100 size-4 text-app cursor-pointer shrink-0"
+    />
+
+    <!-- Clear -->
+    <BaseIcon
+      v-else-if="!isFocused && value"
       icon="i-carbon:close"
       class="op-0 group-hover:op-100 size-4 text-app cursor-pointer shrink-0"
-      @click="() => model = undefined"
+      @mousedown.stop="() => value = undefined"
     />
 
     <!-- List -->
-    <EditorMenu :show="isFocused" :is-loading="isLoading" :is-empty="options.length === 0">
+    <EditorMenu
+      :show="isFocused"
+      :is-loading="isSearching"
+      :is-empty="options.length === 0">
       <EditorMenuItem
         v-for="(option, index) in options"
         :key="index"
         :icon="option.icon"
         :label="option.label"
-        :is-selected="model === option.value"
-        @mousedown.stop="() => model = option.value"
+        :is-selected="JSON.stringify(value) === JSON.stringify(option.value)"
+        @mousedown.stop="() => value = option.value"
       />
     </EditorMenu>
   </EditorNodeInputGroup>

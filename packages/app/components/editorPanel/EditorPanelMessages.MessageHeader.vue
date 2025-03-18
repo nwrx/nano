@@ -1,6 +1,5 @@
 <script setup lang="ts">
 defineProps<{
-  editor: Editor
   item: EditorMessageTreeItem
 }>()
 
@@ -8,12 +7,12 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <div class="flex items-center space-x-md h-12">
+  <div class="flex items-center space-x-md h-8">
 
     <!-- Tag -->
     <h3
-      v-if="item.node && item.message.event === 'nodeStart'"
-      class="flex items-center b h-7 rd whitespace-nowrap"
+      v-if="item.node"
+      class="flex items-center b h-6 rd whitespace-nowrap"
       :style="{
         borderColor: getNodeColor(item.node),
         backgroundColor: `${getNodeColor(item.node)}10`,
@@ -26,7 +25,7 @@ const { t } = useI18n()
         <BaseIcon
           load
           :icon="item.node.icon"
-          class="size-5 text-white"
+          class="size-4 text-white"
         />
       </div>
       <span class="font-mono px-sm text-sm truncate">

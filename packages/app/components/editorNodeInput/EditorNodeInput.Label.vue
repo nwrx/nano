@@ -1,17 +1,14 @@
 <script setup lang="ts">
-import type { EditorNodeObject } from '@nwrx/nano-api'
+import type { Schema } from '@nwrx/nano/utils'
 
-const props = defineProps<{
-  editor: Editor
-  node: EditorNodeObject
-  name: string
+defineProps<{
+  name?: string
+  schema?: Schema
 }>()
-
-const schema = computed(() => props.node.inputs[props.name])
 </script>
 
 <template>
   <p class="text-sm truncate text-subtle shrink-0 mr-sm font-mono">
-    {{ schema.title ?? name }} ‒
+    {{ schema?.title || name || 'MISSING_SCHEMA_AND_NAME' }} ‒
   </p>
 </template>

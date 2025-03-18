@@ -1,6 +1,5 @@
 <script setup lang="ts">
 defineProps<{
-  editor: Editor
   maxConcurrency: number
   item: EditorMessageTreeItem
 }>()
@@ -12,6 +11,7 @@ const showBody = ref(false)
   <div
     :class="{
       'bg-editor-panel-data': showBody,
+      '!bg-danger-400/50': item.message.event === 'nodeError',
     }"
     class="
       flex items-stretch pr-md rd relative
@@ -20,7 +20,6 @@ const showBody = ref(false)
 
     <!-- Pin -->
     <EditorPanelMessagesMessageTree
-      :editor="editor"
       :item="item"
       :max-concurrency="maxConcurrency"
     />
@@ -29,7 +28,6 @@ const showBody = ref(false)
     <div class="w-full">
       <EditorPanelMessagesMessageHeader
         class="cursor-pointer select-none"
-        :editor="editor"
         :item="item"
         @mousedown="() => showBody = !showBody"
       />
@@ -56,6 +54,13 @@ const showBody = ref(false)
             <!-- Value -->
             <DataSheet :model-value="item.message.data[2]" />
           </div>
+        </div>
+
+        <!-- Error -->
+        <div v-if="item.message.event === 'nodeError'" class="p-md bg-error">
+          <pre class="text-error">
+            {{ item.message.data }}
+          </pre>
         </div>
       </Collapse>
     </div>
