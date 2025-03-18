@@ -2,31 +2,19 @@
 /* eslint-disable sonarjs/todo-tag */
 import type { Thread } from '@nwrx/nano'
 import type { Peer } from 'crossws'
-import type { ModuleFlowEditor } from '..'
+import type { FlowNodeObject, ModuleFlowEditor } from '..'
 import type { Flow } from '../../flow'
 import type { Project } from '../../project'
-import type { RegistryComponent } from '../../registry'
 import type { User } from '../../user'
 import type { Workspace } from '../../workspace'
 import type { EditorSessionClientMessage } from './editorSessionClientMessage'
 import type { EditorSessionServerMessage } from './editorSessionServerMessage'
-import {
-  abort,
-  addLink,
-  addNode,
-  getNode,
-  getNodeInputOptions,
-  removeLink,
-  removeNode,
-  serialize,
-  setNodeInputValue,
-  setNodeMetadataValue,
-} from '@nwrx/nano'
-import { serializeSpecifier } from '@nwrx/nano/utils'
+import * as Nano from '@nwrx/nano'
+import * as NanoUtils from '@nwrx/nano/utils'
+import * as YAML from 'yaml'
 import { ModuleFlow } from '../../flow'
 import { ModuleVault } from '../../vault'
-import { serializeNode } from './serializeNode'
-import { serializeSession } from './serializeSession'
+import { serializeSession, serializeSessionNode } from './serializeSession'
 
 export interface EditorSessionParticipant {
   peer: Peer
@@ -50,12 +38,12 @@ export interface EditorSessionOptions {
 export class EditorSession {
   constructor(
     public moduleFlow: ModuleFlowEditor,
-    public options: EditorSessionOptions,
+    private options: EditorSessionOptions,
   ) {}
 
-  owner: EditorSessionParticipant
-  participants: EditorSessionParticipant[] = []
-  componentsCache = new Map<string, RegistryComponent>()
+  /***************************************************************************/
+  /* Entities                                                                */
+  /***************************************************************************/
 
   get thread() {
     return this.options.thread
@@ -73,8 +61,21 @@ export class EditorSession {
     return this.options.workspace
   }
 
+  async save() {
+    const moduleFlow = this.moduleFlow.getModule(ModuleFlow)
+    const { Flow } = moduleFlow.getRepositories()
+    this.flow.data = Nano.serialize(this.thread)
+    await Flow.save(this.flow)
+  }
+
+  /***************************************************************************/
+  /* Subscriptions                                                           */
+  /***************************************************************************/
+
+  participants: EditorSessionParticipant[] = []
+
   isSubscribed(peer: Peer) {
-    return this.participants.some(p => p.peer?.id === peer.id)
+    return this.participants.some(p => p.peer.id === peer.id)
   }
 
   async subscribe(peer: Peer, user: User) {
@@ -89,33 +90,27 @@ export class EditorSession {
     }
 
     this.participants.push(newParticipant)
-    if (this.participants.length === 1) this.owner = newParticipant
 
     // --- Bind the peer to the participant.
     this.broadcast({
-      event: 'user:join',
-      id: peer.id,
-      color: newParticipant.color,
-      name: user.profile?.displayName ?? user.username,
+      event: 'userJoined',
+      data: [{
+        id: peer.id,
+        color: newParticipant.color,
+        name: user.profile?.displayName ?? user.username,
+      }],
     })
 
     // --- Send the flow session data to the peer.
     peer.send({
-      event: 'init',
+      event: 'syncronize',
       data: await serializeSession(this, peer),
     })
   }
 
   unsubscribe(peer: Peer) {
-    const peerToRemove = this.participants.find(p => p.peer?.id === peer.id)
-    if (!peerToRemove) return
-
-    // --- Remove the peer from the participants list.
     this.participants = this.participants.filter(p => p.peer?.id !== peer.id)
-    this.broadcast({ event: 'user:leave', id: peer.id })
-
-    // --- If there are no more peers, stop the flow.
-    if (this.participants.length === 0) abort(this.thread)
+    this.broadcast({ event: 'userLeft', id: peer.id })
   }
 
   broadcast(payload: EditorSessionServerMessage, except?: Peer) {
@@ -134,19 +129,39 @@ export class EditorSession {
     }
   }
 
-  async onMessage(peer: Peer, message: EditorSessionClientMessage) {
+  private * getColor() {
+    let index = 0
+    const colors = ['#5636f9', '#f59e0b', '#d53b23', '#adef1f', '#5db65a']
+    while (true) {
+      yield colors[index]
+      if (index >= colors.length - 1) index = 0
+      else index++
+    }
+  }
+
+  /***************************************************************************/
+  /* Websocket                                                               */
+  /***************************************************************************/
+
+  async handleMessage(peer: Peer, message: EditorSessionClientMessage) {
     try {
 
       /***************************************************************************/
       /* Flow                                                                    */
       /***************************************************************************/
 
-      if (message.event === 'setMetaValues') {
+      if (message.event === 'syncronize') {
+        peer.send({
+          event: 'syncronize',
+          data: await serializeSession(this, peer),
+        })
+      }
+      else if (message.event === 'setMetaValues') {
         for (const { name, value } of message.data) {
           // if (name === 'name') this.flow.name = value as string
           if (name === 'title') this.flow.title = value as string
           if (name === 'description') this.flow.description = value as string
-          this.broadcast({ event: 'meta', name, value })
+          this.broadcast({ event: 'metadataChanged', name, value })
         }
         await this.save()
       }
@@ -155,69 +170,56 @@ export class EditorSession {
       /* Nodes                                                                   */
       /***************************************************************************/
 
-      if (message.event === 'createNodes') {
+      else if (message.event === 'createNodes') {
+        const data: FlowNodeObject[] = []
         for (const { specifier, x, y } of message.data) {
-          const id = addNode(this.thread, specifier, { metadata: { position: { x, y } } })
-          const component = await serializeNode.call(this, id)
-          this.broadcast({ event: 'node:created', id, component, x, y })
+          const id = Nano.addNode(this.thread, specifier, { metadata: { position: { x, y } } })
+          const node = await serializeSessionNode(this, id)
+          data.push(node)
         }
+        this.broadcast({ event: 'nodesCreated', data })
         await this.save()
       }
-      if (message.event === 'cloneNodes') {
-        for (const { id, x, y } of message.data) {
-          const { input, ...specifierObject } = getNode(this.thread, id)
-          const specifier = serializeSpecifier(specifierObject)
-          const newId = addNode(this.thread, specifier, { input, metadata: { position: { x, y } } })
-          const component = await serializeNode.call(this, newId)
-          this.broadcast({ event: 'node:created', id: newId, component, x, y })
+      else if (message.event === 'cloneNodes') {
+        const [{ ids, origin }] = message.data
+        const data: FlowNodeObject[] = []
+
+        // --- Find the left-top most node position.
+        const sourceNodes = ids.map(id => this.thread.nodes.get(id)).filter(Boolean) as Nano.Node[]
+        const sourcePositions = sourceNodes.map(node => node.metadata.position ?? { x: 0, y: 0 })
+        const sourcePosition = {
+          x: Math.min(...sourcePositions.map(p => p.x)),
+          y: Math.min(...sourcePositions.map(p => p.y)),
         }
+
+        for (const sourceNode of sourceNodes) {
+          const specifier = NanoUtils.serializeSpecifier(sourceNode)
+          const position = {
+            x: origin.x + (sourceNode.metadata.position!.x - sourcePosition.x),
+            y: origin.y + (sourceNode.metadata.position!.y - sourcePosition.y),
+          }
+          const id = Nano.addNode(this.thread, specifier, { input: sourceNode.input, metadata: { position } })
+          const node = await serializeSessionNode(this, id)
+          data.push(node)
+        }
+        this.broadcast({ event: 'nodesCreated', data })
         await this.save()
       }
-      if (message.event === 'removeNodes') {
-        for (const id of message.data) {
-          await removeNode(this.thread, id)
-          this.broadcast({ event: 'node:removed', ids: [id] })
-        }
+      else if (message.event === 'removeNodes') {
+        await Nano.removeNode(this.thread, ...message.data)
+        this.broadcast({ event: 'nodesRemoved', data: message.data })
         await this.save()
       }
-      if (message.event === 'setNodesInputValue') {
-        for (const { id, name, value } of message.data) {
-          setNodeInputValue(this.thread, id, name, value)
-          this.broadcast({ event: 'node:inputValueChanged', id, name, value })
-        }
+      else if (message.event === 'setNodesInputValue') {
+        for (const { id, name, value } of message.data)
+          Nano.setNodeInputValue(this.thread, id, name, value)
+        this.broadcast({ event: 'nodesInputChanged', data: message.data })
         await this.save()
       }
-      if (message.event === 'setNodesInputVisibility') {
-        for (const { id, name, visible } of message.data) {
-          const { metadata = {} } = getNode(this.thread, id)
-          const visibility = metadata.visibility ?? {}
-          const newValue = { ...visibility, [name]: visible }
-          setNodeMetadataValue(this.thread, id, 'visibility', newValue)
-          this.broadcast({ event: 'node:metaValueChanged', id, name: 'visibility', value: newValue })
-        }
-        await this.save()
-      }
-      if (message.event === 'setNodesPosition') {
-        for (const { id, x, y } of message.data) {
-          setNodeMetadataValue(this.thread, id, 'position', { x, y })
-          this.broadcast({ event: 'node:metaValueChanged', id, name: 'position', value: { x, y } })
-        }
-        await this.save()
-      }
-      if (message.event === 'setNodesLabel') {
-        for (const { id, label } of message.data) {
-          const value = label.trim() === '' ? undefined : label
-          setNodeMetadataValue(this.thread, id, 'label', value)
-          this.broadcast({ event: 'node:metaValueChanged', id, name: 'label', value })
-        }
-        await this.save()
-      }
-      if (message.event === 'setNodesComment') {
-        for (const { id, comment } of message.data) {
-          const value = comment.trim() === '' ? undefined : comment
-          setNodeMetadataValue(this.thread, id, 'comment', value)
-          this.broadcast({ event: 'node:metaValueChanged', id, name: 'comment', value })
-        }
+      else if (message.event === 'setNodesMetadata') {
+        for (const { id, name, value } of message.data)
+          Nano.setNodeMetadataValue(this.thread, id, name, value)
+        this.broadcast({ event: 'nodesMetadataChanged', data: message.data })
         await this.save()
       }
 
@@ -225,75 +227,78 @@ export class EditorSession {
       /* Links                                                                   */
       /***************************************************************************/
 
-      if (message.event === 'createLink') {
+      else if (message.event === 'createLinks') {
         const [link] = message.data
-        const { id, name, value } = await addLink(this.thread, link)
-        this.broadcast({ event: 'node:inputValueChanged', id, name, value })
-        this.broadcast({ event: 'node:linkCreated', data: [link] })
+        const { id, name, value } = await Nano.addLink(this.thread, link)
+        this.broadcast({ event: 'nodesInputChanged', data: [{ id, name, value }] })
         await this.save()
       }
-
-      if (message.event === 'removeLink') {
+      else if (message.event === 'removeLinks') {
         const [link] = message.data
-        const results = await removeLink(this.thread, link)
-        for (const { id, name, value } of results) {
-          this.broadcast({ event: 'node:inputValueChanged', id, name, value })
-          this.broadcast({ event: 'node:linkRemoved', data: results })
-        }
+        const data = await Nano.removeLink(this.thread, link)
+        this.broadcast({ event: 'nodesInputChanged', data })
         await this.save()
-      }
-
-      /***************************************************************************/
-      /* Requests                                                                */
-      /***************************************************************************/
-
-      if (message.event === 'searchVariables') {
-        const [{ search }] = message.data
-        const moduleVault = this.moduleFlow.getModule(ModuleVault)
-        const variables = await moduleVault.searchVariableByProject({ project: this.project, search, withVault: true })
-        peer.send({ event: 'searchVariablesResult', data: variables.map(x => x.serialize({ withVault: true })) } as EditorSessionServerMessage)
-      }
-      if (message.event === 'searchOptions') {
-        const [{ id, name, query }] = message.data
-        const data = await getNodeInputOptions(this.thread, id, name, query)
-        peer.send({ event: 'searchOptionsResult', data } as EditorSessionServerMessage)
       }
 
       /***************************************************************************/
       /* User                                                                    */
       /***************************************************************************/
 
-      if (message.event === 'setUserPosition') {
+      else if (message.event === 'setUserPosition') {
         const [x, y] = message.data
-        this.broadcast({ event: 'user:position', id: peer.id, x, y }, peer)
+        this.broadcast({ event: 'usersPositionChanged', data: [{ id: peer.id, x, y }] }, peer)
       }
-      if (message.event === 'userLeave')
+      else if (message.event === 'userLeave') {
         this.unsubscribe(peer)
+      }
+
+      /***************************************************************************/
+      /* Requests                                                                */
+      /***************************************************************************/
+
+      else if (message.event === 'getFlowExport') {
+        const [{ format }] = message.data
+        const data = Nano.serialize(this.thread)
+        const formatted = format === 'json'
+          ? JSON.stringify(data, undefined, 2)
+          : YAML.stringify(data)
+        peer.send({ event: 'getFlowExportResult', data: [formatted] } as EditorSessionServerMessage)
+      }
+      else if (message.event === 'searchOptions') {
+        const [{ id, name, search }] = message.data
+
+        // --- If the input expects a Variable reference, search for the variables.
+        const socket = await Nano.getNodeInputSocket(this.thread, id, name)
+        if (socket['x-control'] === 'variable') {
+          const moduleVault = this.moduleFlow.getModule(ModuleVault)
+          const variables = await moduleVault.searchVariableByProject({ project: this.project, search, withVault: true })
+          peer.send({
+            event: 'searchOptionsResult',
+            data: [{
+              id,
+              name,
+              options: variables.map(x => ({
+                value: { $ref: `#/Variables/${x.vault?.name}/${x.name}` },
+                label: `${x.vault?.name ?? 'Global'} / **${x.name}**`,
+              })),
+            }],
+          } as EditorSessionServerMessage)
+        }
+
+        // --- Otherwise, search for the options in the component schema.
+        else {
+          const options = await Nano.getNodeInputOptions(this.thread, id, name, search)
+          peer.send({ event: 'searchOptionsResult', data: [{ id, name, options }] } as EditorSessionServerMessage)
+        }
+      }
     }
 
     /***************************************************************************/
     /* Error handling                                                          */
     /***************************************************************************/
     catch (error) {
-      this.broadcast({ event: 'error', message: (error as Error).message })
+      peer.send({ event: 'error', message: (error as Error).message } as EditorSessionServerMessage)
       console.error(error)
-    }
-  }
-
-  async save() {
-    const moduleFlow = this.moduleFlow.getModule(ModuleFlow)
-    const { Flow } = moduleFlow.getRepositories()
-    this.flow.data = serialize(this.thread)
-    await Flow.save(this.flow)
-  }
-
-  private * getColor() {
-    let index = 0
-    const colors = ['#5636f9', '#f59e0b', '#d53b23', '#adef1f', '#5db65a']
-    while (true) {
-      yield colors[index]
-      if (index >= colors.length - 1) index = 0
-      else index++
     }
   }
 }

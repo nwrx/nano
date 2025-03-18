@@ -1,18 +1,16 @@
 import type { SchemaOption } from '@nwrx/nano/utils'
-import type { VaultVariableObject } from '../../vault'
-import type { EditorNodeObject } from './serializeNode'
-import type { EditorSessionObject } from './serializeSession'
+import type { EditorState, FlowNodeObject } from './serializeSession'
 import { assert, assertObjectStrict, createArrayParser, createRuleSet, createSchema } from '@unshared/validation'
 
 export const EDITOR_SESSION_SERVER_MESSAGE_SCHEMA = createRuleSet(
 
   [createSchema({
-    event: assert.stringEquals('init'),
-    data: assertObjectStrict as () => EditorSessionObject,
+    event: assert.stringEquals('syncronize'),
+    data: assertObjectStrict as () => EditorState,
   })],
 
   [createSchema({
-    event: assert.stringEquals('meta'),
+    event: assert.stringEquals('metadataChanged'),
     name: assert.stringNotEmpty,
     value: assert.notNull,
   })],
@@ -23,78 +21,32 @@ export const EDITOR_SESSION_SERVER_MESSAGE_SCHEMA = createRuleSet(
   })],
 
   /***************************************************************************/
-
-  [createSchema({
-    event: assert.stringEquals('node:created'),
-    id: assert.stringNotEmpty,
-    x: assert.number,
-    y: assert.number,
-    component: assertObjectStrict as () => EditorNodeObject,
-  })],
-
-  [createSchema({
-    event: assert.stringEquals('node:removed'),
-    ids: createArrayParser(assert.stringNotEmpty),
-  })],
-
-  [createSchema({
-    event: assert.stringEquals('node:metaValueChanged'),
-    id: assert.stringNotEmpty,
-    name: assert.stringNotEmpty,
-    value: assert.notNull,
-  })],
-
-  [createSchema({
-    event: assert.stringEquals('node:inputValueChanged'),
-    id: assert.stringNotEmpty,
-    name: assert.stringNotEmpty,
-    value: assert.notNull,
-  })],
-
-  [createSchema({
-    event: assert.stringEquals('node:inputOptionResult'),
-    id: assert.stringNotEmpty,
-    name: assert.stringNotEmpty,
-    options: createArrayParser(assert.object),
-  })],
-
-  /***************************************************************************/
-  /* Links                                                                   */
+  /* Nodes                                                                   */
   /***************************************************************************/
 
   [createSchema({
-    event: assert.stringEquals('node:linkCreated'),
+    event: assert.stringEquals('nodesCreated'),
+    data: createArrayParser(assertObjectStrict as () => FlowNodeObject),
+  })],
+  [createSchema({
+    event: assert.stringEquals('nodesRemoved'),
+    data: createArrayParser(assert.stringNotEmpty),
+  })],
+  [createSchema({
+    event: assert.stringEquals('nodesMetadataChanged'),
     data: createArrayParser({
-      sourceId: assert.stringNotEmpty,
-      sourceName: assert.stringNotEmpty,
-      sourcePath: [[assert.undefined], [assert.stringNotEmpty]],
-      targetId: assert.stringNotEmpty,
-      targetName: assert.stringNotEmpty,
-      targetPath: [[assert.undefined], [assert.stringNotEmpty]],
+      id: assert.stringNotEmpty,
+      name: assert.stringNotEmpty,
+      value: assert.notNull,
     }),
   })],
-
   [createSchema({
-    event: assert.stringEquals('node:linkRemoved'),
+    event: assert.stringEquals('nodesInputChanged'),
     data: createArrayParser({
-      id: [[assert.undefined], [assert.stringNotEmpty]],
-      name: [[assert.undefined], [assert.stringNotEmpty]],
-      // path: [[assert.undefined], [assert.stringNotEmpty]],
+      id: assert.stringNotEmpty,
+      name: assert.stringNotEmpty,
+      value: assert.notNull,
     }),
-  })],
-
-  /***************************************************************************/
-  /* Requests                                                                */
-  /***************************************************************************/
-
-  [createSchema({
-    event: assert.stringEquals('searchVariablesResult'),
-    data: createArrayParser(assert.object as (value: unknown) => asserts value is VaultVariableObject),
-  })],
-
-  [createSchema({
-    event: assert.stringEquals('searchOptionsResult'),
-    data: createArrayParser(assert.object as (value: unknown) => asserts value is SchemaOption),
   })],
 
   /***************************************************************************/
@@ -102,22 +54,41 @@ export const EDITOR_SESSION_SERVER_MESSAGE_SCHEMA = createRuleSet(
   /***************************************************************************/
 
   [createSchema({
-    event: assert.stringEquals('user:join'),
-    id: assert.stringNotEmpty,
-    name: assert.stringNotEmpty,
-    color: assert.stringNotEmpty,
+    event: assert.stringEquals('userJoined'),
+    data: createArrayParser({
+      id: assert.stringNotEmpty,
+      name: assert.stringNotEmpty,
+      color: assert.stringNotEmpty,
+    }),
+  })],
+  [createSchema({
+    event: assert.stringEquals('userLeft'),
+    data: createArrayParser(assert.stringNotEmpty),
+  })],
+  [createSchema({
+    event: assert.stringEquals('usersPositionChanged'),
+    data: createArrayParser({
+      id: assert.stringNotEmpty,
+      x: assert.number,
+      y: assert.number,
+    }),
   })],
 
-  [createSchema({
-    event: assert.stringEquals('user:leave'),
-    id: assert.stringNotEmpty,
-  })],
+  /***************************************************************************/
+  /* Request Results                                                         */
+  /***************************************************************************/
 
   [createSchema({
-    event: assert.stringEquals('user:position'),
-    id: assert.stringNotEmpty,
-    x: assert.number,
-    y: assert.number,
+    event: assert.stringEquals('getFlowExportResult'),
+    data: createArrayParser(assert.stringNotEmpty),
+  })],
+  [createSchema({
+    event: assert.stringEquals('searchOptionsResult'),
+    data: createArrayParser({
+      id: assert.stringNotEmpty,
+      name: assert.stringNotEmpty,
+      options: assert.array as (value: unknown) => asserts value is SchemaOption[],
+    }),
   })],
 )
 

@@ -1,5 +1,6 @@
 import type { Peer } from 'crossws'
 import type { ModuleFlowEditor } from '..'
+import type { Flow } from '../../flow'
 import { createThreadFromFlow } from '@nwrx/nano'
 import { components } from '@nwrx/nano/components'
 import { defineComponent, serializeSpecifier } from '@nwrx/nano/utils'
@@ -50,7 +51,9 @@ export function getEditorSession(this: ModuleFlowEditor, options: ResolveEditorS
   }
 
   // --- If a session already exists for the flow, return it.
-  const { flow, project, workspace /* , user */ } = parsedOptions
+  // @ts-expect-error: At this point, the flow is guaranteed to be defined.
+  const flow = options.flow as Flow
+  const { project, workspace /* , user */ } = parsedOptions
   const exists = this.flowEditorSessions.get(flow.id)
   if (exists) return exists
 

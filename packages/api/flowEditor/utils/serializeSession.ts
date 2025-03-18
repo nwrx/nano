@@ -1,55 +1,68 @@
 /* eslint-disable sonarjs/todo-tag */
-import type { Link } from '@nwrx/nano'
+import type { Node } from '@nwrx/nano'
 import type { Peer } from 'crossws'
+import type { FlowObject } from '../../flow/entities'
+import type { RegistryComponentObject } from '../../registry'
 import type { EditorSession } from './createEditorSession'
-import type { EditorSessionServerMessage } from './editorSessionServerMessage'
-import type { EditorNodeObject } from './serializeNode'
-import { getLinks } from '@nwrx/nano'
-import { serializeNode } from './serializeNode'
+import { serializeSpecifier } from '@nwrx/nano/utils'
+import { ModuleRegistry } from '../../registry'
 
-export interface EditorParticipantJSON {
+export interface ParticipantObject {
   id: string
   name: string
   color: string
   position: { x: number; y: number }
 }
 
-export interface EditorSessionObject {
-  name: string
-  title: string
-  icon: string
-  description: string
-  links: Link[]
-  nodes: EditorNodeObject[]
-  events: EditorSessionServerMessage[]
-  secrets: string[]
-  variables: string[]
-  isRunning: boolean
-  peerId: string
-  peers: EditorParticipantJSON[]
+export interface FlowNodeObject extends Omit<Node, 'component'> {
+  id: string
+  specifier: string
+  component: RegistryComponentObject
 }
 
-export async function serializeSession(session: EditorSession, peer: Peer): Promise<EditorSessionObject> {
-  const nodePromises = session.thread.nodes.keys().map(id => serializeNode.call(session, id))
-  const nodes = await Promise.all(nodePromises)
+export interface EditorState {
+  flow: FlowObject
+  nodes: FlowNodeObject[]
+  participants: ParticipantObject[]
+}
 
+export async function serializeSessionNode(session: EditorSession, id: string): Promise<FlowNodeObject> {
+  const moduleRegistry = session.moduleFlow.getModule(ModuleRegistry)
+  const node = session.thread.nodes.get(id)
+  if (!node) throw new Error('Node not found.')
+  const specifier = serializeSpecifier(node)
+  const component = await moduleRegistry.resolveComponent({ specifier })
   return {
-    name: session.flow.name,
-    title: session.flow.title ?? session.flow.name,
-    icon: 'i-carbon:flow',
-    description: session.flow.description ?? '',
-    nodes,
-    links: getLinks(session.thread),
-    isRunning: false, // session.thread.isRunning,
-    events: [],
-    secrets: [],
-    variables: [],
-    peerId: peer.id,
-    peers: session.participants.map(peer => ({
-      id: peer.peer.id,
-      name: peer.peer.id,
-      color: peer.color,
-      position: peer.position,
-    })),
+    id,
+    specifier,
+    ...node,
+    component: component.serialize({
+      withInputs: true,
+      withOutputs: true,
+      withCategories: true,
+    }),
+  }
+}
+
+export async function serializeSession(session: EditorSession, peer: Peer): Promise<EditorState> {
+
+  // --- Collect and serialize all nodes in the session.
+  const nodes = session.thread.nodes.keys().map(id => serializeSessionNode(session, id))
+
+  // --- Collect all participants in the session, excluding the current peer.
+  const participants = session.participants
+    .filter(participant => peer.id !== participant.peer.id)
+    .map(participant => ({
+      id: participant.peer.id,
+      name: participant.user.username,
+      color: participant.color,
+      position: participant.position,
+    }))
+
+  // --- Return the serialized session data.
+  return {
+    flow: session.flow.serialize(),
+    nodes: await Promise.all(nodes),
+    participants,
   }
 }

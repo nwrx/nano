@@ -43,7 +43,7 @@ export function flowEditor(this: ModuleFlowEditor) {
 
       onMessage: async({ peer, message }) => {
         const session = getEditorSession.call(this, { peer })
-        await session.onMessage(peer, message)
+        await session.handleMessage(peer, message)
       },
 
       onClose: ({ peer }) => {

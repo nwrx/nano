@@ -7,7 +7,6 @@ import * as UTILS from './utils'
 
 export type * from './utils/editorSessionClientMessage'
 export type * from './utils/editorSessionServerMessage'
-export type * from './utils/serializeNode'
 export type * from './utils/serializeSession'
 
 /**
