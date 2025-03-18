@@ -34,7 +34,7 @@ export type ThreadEventMap = {
   'nodeDone': [nodeId: string, result: ObjectLike]
   'nodeOutput': [nodeId: string, name: string, value: unknown]
   'nodeOutputDeltaStart': [nodeId: string, name: string]
-  'nodeOutputDelta': [nodeId: string, name: string, value: string]
+  'nodeOutputDelta': [nodeId: string, name: string, value: string | Uint8Array]
   'nodeOutputDeltaEnd': [nodeId: string, name: string]
 
   // Questions.
