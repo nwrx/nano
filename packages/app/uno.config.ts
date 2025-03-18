@@ -346,6 +346,7 @@ export default defineConfig<Theme>({
     // Button
     buttonColor: {
       DEFAULT: COLORS.primary[900],
+      light: COLORS.primary[800],
       primary: COLORS.primary[600],
       secondary: COLORS.secondary[500],
       success: COLORS.success[800],
@@ -354,6 +355,7 @@ export default defineConfig<Theme>({
     },
     buttonBackground: {
       DEFAULT: COLORS.primary[100],
+      light: COLORS.primary[50],
       primary: COLORS.primary[100],
       secondary: COLORS.secondary[200],
       success: COLORS.success[300],
@@ -362,6 +364,7 @@ export default defineConfig<Theme>({
     },
     buttonBorderColor: {
       DEFAULT: COLORS.primary[100],
+      light: COLORS.primary[50],
       primary: COLORS.primary[200],
       secondary: COLORS.secondary[200],
       success: COLORS.success[300],
@@ -381,6 +384,16 @@ export default defineConfig<Theme>({
       },
       hover: {
         opacity: '1',
+      },
+      sm: {
+        fontSize: '0.75rem',
+        fontWeight: '600',
+        borderRadius: '0.25rem',
+        borderWidth: '1px',
+        paddingLeft: '0.25rem',
+        paddingRight: '0.25rem',
+        paddingTop: '0.25rem',
+        paddingBottom: '0.25rem',
       },
       lg: {
         fontSize: '1rem',
@@ -628,6 +641,7 @@ export default defineConfig<Theme>({
           // Button
           buttonColor: {
             DEFAULT: COLORS.primary[50],
+            light: COLORS.primary[50],
             primary: COLORS.primary[50],
             secondary: COLORS.secondary[50],
             success: COLORS.success[400],
@@ -635,7 +649,8 @@ export default defineConfig<Theme>({
             warning: COLORS.warning[400],
           },
           buttonBackground: {
-            DEFAULT: COLORS.primary[700],
+            DEFAULT: COLORS.primary[850],
+            light: COLORS.primary[800],
             primary: COLORS.primary[500],
             secondary: COLORS.secondary[500],
             success: `${COLORS.success[500]}40`,
@@ -643,7 +658,8 @@ export default defineConfig<Theme>({
             warning: `${COLORS.warning[500]}40`,
           },
           buttonBorderColor: {
-            DEFAULT: COLORS.primary[800],
+            DEFAULT: COLORS.primary[500],
+            light: COLORS.primary[800],
             primary: COLORS.primary[600],
             secondary: COLORS.secondary[500],
             success: COLORS.success[500],
