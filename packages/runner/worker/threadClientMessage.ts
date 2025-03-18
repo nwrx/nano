@@ -4,16 +4,21 @@ import { assert, assertObjectStrict, createArrayParser, createRuleSet, createSch
 export const THREAD_CLIENT_MESSAGE_SCHEMA = createRuleSet(
 
   [createSchema({
-    event: assert.stringEquals('start'),
-    data: assertObjectStrict<ThreadInputObject>,
+    event: assert.stringEquals('workerStart'),
+    data: createArrayParser(assertObjectStrict<ThreadInputObject>),
   })],
 
   [createSchema({
-    event: assert.stringEquals('abort'),
+    event: assert.stringEquals('workerAbort'),
   })],
 
   [createSchema({
-    event: assert.stringEquals('worker:resolveReferenceResult'),
+    event: assert.stringEquals('workerResolveComponents'),
+    data: createArrayParser({ id: assert.stringNotEmpty }),
+  })],
+
+  [createSchema({
+    event: assert.stringEquals('workerResolveReferenceResult'),
     data: createArrayParser({
       id: assert.stringUuid,
       value: (x: unknown) => x,

@@ -84,14 +84,14 @@ export function createThreadWorker(port, flow) {
         const id = randomUUID()
 
         /** @type {ThreadServerMessage} */
-        const message = { event: 'worker:resolveReference', data: [id, type, values] }
+        const message = { event: 'workerResolveReference', data: [id, type, values] }
         port.postMessage(message)
 
         // --- Wait for the response from the main API.
         /** @type {unknown} */
         const value = await new Promise((resolve) => {
           const callback = (/** @type {ThreadClientMessage} */ message) => {
-            if (message.event !== 'worker:resolveReferenceResult') return
+            if (message.event !== 'workerResolveReferenceResult') return
             const [{ id: responseId, value }] = message.data
             if (responseId !== id) return
             port.off('message', callback)
@@ -117,18 +117,13 @@ export function createThreadWorker(port, flow) {
     // --- Listen to the parent thread for incoming instructions.
     port.on('message', (/** @type {ThreadClientMessage} */ message) => {
       try {
-        if (message.event === 'start') void start(thread, message.data).catch(noop)
-        else if (message.event === 'abort') abort(thread)
-
-        // --- Push the output value of the thread to the parent thread.
-        // else if (message.event === 'worker:getOutputValue') {
-        //   if (isThreadRunning(thread)) throw new Error('Thread is still running.')
-
-        //   /** @type {TransferList} */
-        //   const transferList = []
-        //   const value = serialize(thread.output[message.name], transferList)
-        //   port.postMessage({ event: 'worker:outputValue', data: [message.name, value] }, transferList)
-        // }
+        if (message.event === 'workerStart') {
+          const [data] = message.data
+          void start(thread, data).catch(noop)
+        }
+        else if (message.event === 'workerAbort') {
+          abort(thread)
+        }
       }
 
       // --- If an error occurs, serialize the error and send it to the parent thread.
@@ -139,7 +134,7 @@ export function createThreadWorker(port, flow) {
 
     // --- Notify the parent thread that the worker is ready to start.
     /** @type {ThreadServerMessage} */
-    const message = { event: 'worker:ready' }
+    const message = { event: 'workerReady' }
     port.postMessage(message)
   }
 

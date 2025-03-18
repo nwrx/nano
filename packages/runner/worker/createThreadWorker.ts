@@ -10,9 +10,8 @@ import { deserializeError } from './deserializeError'
 
 export type ThreadWorkerMessage =
   | { [K in keyof ThreadEventMap]: { event: K; data: ThreadEventMap[K] } }[keyof ThreadEventMap]
-  | { event: 'worker:outputValue'; data: [name: string, value: unknown] }
-  | { event: 'worker:ready' }
-  | { event: 'worker:resolveReference'; data: readonly [id: UUID, type: ReferenceType, values: string[]] }
+  | { event: 'workerReady' }
+  | { event: 'workerResolveReference'; data: readonly [id: UUID, type: ReferenceType, values: string[]] }
 
 /**
  * Create a new thread worker for the given flow. This will initialize a new
@@ -46,7 +45,7 @@ export async function createThreadWorker(this: ModuleRunner, flow: FlowV1): Prom
     const callback = (message: ThreadWorkerMessage) => {
 
       // --- Wait for the worker to be ready before resolving the promise.
-      if (message.event === 'worker:ready') {
+      if (message.event === 'workerReady') {
         port1.off('message', callback)
         resolve()
       }
