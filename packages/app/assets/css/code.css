@@ -1,0 +1,29 @@
+.code {
+  padding: 2rem;
+  white-space: pre-wrap;
+  font-size: 1rem;
+}
+
+.code .hljs-attr {
+  color: rgb(var(--theme-colors-token-property) / 1);
+}
+
+.code .hljs-operator {
+  color: rgb(var(--theme-colors-token-operator) / 1);
+}
+
+.code .hljs-string {
+  color: rgb(var(--theme-colors-token-string) / 1);
+}
+
+.code .hljs-number {
+  color: rgb(var(--theme-colors-token-number) / 1);
+}
+
+.code .hljs-literal {
+  color: rgb(var(--theme-colors-token-literal) / 1);
+}
+
+.code .hljs-punctuation {
+  color: rgb(var(--theme-colors-token-punctuation) / 1);
+}

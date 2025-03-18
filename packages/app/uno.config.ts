@@ -50,6 +50,15 @@ export default defineConfig<Theme>({
     THEME.ruleTab,
   ],
 
+  safelist: [
+    'bg-token-string',
+    'bg-token-number',
+    'bg-token-literal',
+    'bg-token-property',
+    'bg-token-operator',
+    'bg-token-punctuation',
+  ],
+
   /**
    * The theme object is used to define the colors, spacings, and other
    * design tokens that are used in the CSS utilities. The theme object
@@ -75,10 +84,17 @@ export default defineConfig<Theme>({
       'editor': COLORS.primary[50],
       'editor-select': `${COLORS.primary[500]}20`,
       'editor-active': COLORS.primary[500],
-
       'editor-node': `${COLORS.primary[100]}80`,
       'editor-panel': `${COLORS.primary[70]}80`,
       'editor-panel-data': `${COLORS.primary[900]}10`,
+
+      // Code
+      'token-string': COLORS.success[600],
+      'token-number': COLORS.primary[600],
+      'token-literal': COLORS.warning[600],
+      'token-property': COLORS.primary[600],
+      'token-operator': COLORS.primary[600],
+      'token-punctuation': COLORS.primary[600],
     },
 
     textColor: {
@@ -424,6 +440,14 @@ export default defineConfig<Theme>({
         paddingTop: '0.5rem',
         paddingBottom: '0.5rem',
       },
+      sm: {
+        fontSize: '0.875rem',
+        borderWidth: '1px',
+        paddingLeft: '0.75rem',
+        paddingRight: '0.75rem',
+        paddingTop: '0.25rem',
+        paddingBottom: '0.25rem',
+      },
       lg: {
         fontSize: '1rem',
         borderWidth: '1px',
@@ -491,10 +515,17 @@ export default defineConfig<Theme>({
             'editor': COLORS.primary[930],
             'editor-select': `${COLORS.primary[500]}40`,
             'editor-active': COLORS.primary[700],
-
             'editor-node': `${COLORS.primary[850]}80`,
             'editor-panel': `${COLORS.primary[850]}80`,
             'editor-panel-data': `${COLORS.primary[400]}15`,
+
+            // Code
+            'token-string': COLORS.success[500],
+            'token-number': COLORS.primary[300],
+            'token-literal': COLORS.warning[600],
+            'token-property': COLORS.danger[300],
+            'token-operator': COLORS.primary[50],
+            'token-punctuation': COLORS.primary[50],
           },
           textColor: {
             'app': COLORS.primary[50],
