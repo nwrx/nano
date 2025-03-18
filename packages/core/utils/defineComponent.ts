@@ -11,7 +11,7 @@ export const SYMBOL_TYPE = Symbol.for('type')
 /* Socket                                                                */
 /*************************************************************************/
 
-export interface SchemaType<T = any> { [SYMBOL_TYPE]: T }
+export type SchemaType<T = any> = string & { [SYMBOL_TYPE]: T }
 
 export type SchemaControl =
   | 'autocomplete'
@@ -32,10 +32,12 @@ export type SchemaXType =
   | 'stream'
   | 'function'
   | 'file'
-  | 'language-model'
-  | 'language-model-tool'
-  | OpenAPIV3_1.NonArraySchemaObjectType
-  | OpenAPIV3_1.ArraySchemaObjectType
+  | 'boolean'
+  | 'object'
+  | 'number'
+  | 'string'
+  | 'integer'
+  | 'array'
 
 export interface SchemaOption {
   value: unknown
