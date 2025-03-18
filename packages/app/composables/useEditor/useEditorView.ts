@@ -1,8 +1,12 @@
 /* eslint-disable unicorn/prevent-abbreviations */
 import type { Link } from '@nwrx/nano'
-import type { EditorNodeObject } from '@nwrx/nano-api'
+import type { FlowNodeObject } from '@nwrx/nano-api'
 import type { Position } from '@vueuse/core'
-import type { CSSProperties, VNodeRef } from 'vue'
+import type { ComponentInstance, CSSProperties, VNodeRef } from 'vue'
+import type EditorNode from '~/components/editorNode/EditorNode.vue'
+import { useAlerts } from '@unshared/vue/useAlerts'
+import { getComponentColor } from './getComponentColor'
+import { getLinks } from './getLinks'
 
 export interface FlowLinkProps {
   sourceX: number
@@ -15,16 +19,43 @@ export interface FlowLinkProps {
 
 export type EditorView = ReturnType<typeof useEditorView>
 
-export function useEditorView(model: EditorModel) {
+export interface EditorViewOptions {
+  nodes?: Ref<FlowNodeObject[]>
+  handleCreateNodes?: (...values: Array<{ specifier: string; x: number; y: number }>) => void
+  handleCloneNodes?: (...values: Array<{ ids: string[]; origin: Position }>) => void
+  handleRemoveNodes?: (...values: string[]) => void
+  handleSetNodesMetadata?: (...values: Array<{ id: string; name: string; value: unknown }>) => void
+  handleCreateLinks?: (...values: Link[]) => void
+  handleRemoveLinks?: (...values: Link[]) => void
+}
+
+export function useEditorView(options: EditorViewOptions = {}) {
+  const alerts = useAlerts()
+  const {
+    nodes = ref<FlowNodeObject[]>([]),
+    handleCreateNodes = () => alerts.error('The "handleCreateNodes" method is not implemented.'),
+    handleCloneNodes = () => alerts.error('The "onCloneNodes" method is not implemented.'),
+    handleRemoveNodes = () => alerts.error('The "handleRemoveNodes" method is not implemented.'),
+    handleSetNodesMetadata = () => alerts.error('The "handleSetNodesMetadata" method is not implemented.'),
+    handleCreateLinks = () => alerts.error('The "handleCreateLinks" method is not implemented.'),
+    handleRemoveLinks = () => alerts.error('The "handleRemoveLinks" method is not implemented.'),
+  } = options
+
   const settings = useLocalSettings()
 
   // --- View references.
   const view = ref<HTMLDivElement>()
   const viewContainer = ref<HTMLDivElement>()
-  const viewNodes = ref<Record<string, HTMLDivElement>>({})
+  const viewNodes = ref<Record<string, ComponentInstance<typeof EditorNode>>>({})
+
+  // --- Component references.
   const setView: VNodeRef = (element) => { view.value = element as HTMLDivElement }
   const setViewContainer: VNodeRef = (element) => { viewContainer.value = element as HTMLDivElement }
-  const setViewNode = (id: string, component: HTMLDivElement) => viewNodes.value[id] = component
+  const setViewNode = (id: string, component: Element | globalThis.ComponentPublicInstance | null) => {
+    if (!component) return delete viewNodes.value[id]
+    // @ts-expect-error: component type is not relevant.
+    viewNodes.value[id] = component
+  }
 
   // --- View states.
   const viewSize = 10e4
@@ -44,9 +75,6 @@ export function useEditorView(model: EditorModel) {
   const cursorView = ref({ x: 0, y: 0 })
   const cursorWorld = ref({ x: 0, y: 0 })
 
-  // --- Editor Peers.
-  const peers = computed(() => model.peers.filter(peer => peer.id !== model.peerId))
-
   // --- Panel state.
   const panelWidth = computed({
     get: () => settings.value.editorPanelWidth ?? 512,
@@ -55,26 +83,26 @@ export function useEditorView(model: EditorModel) {
   const panelResizeOrigin = ref(0)
   const panelResizeInitial = ref(0)
   const isPanelResizing = ref(false)
-  watch(isPanelResizing, (value) => {
-    if (!value) return
+  watch(isPanelResizing, (isPanelResizing) => {
+    if (!isPanelResizing) return
     panelResizeOrigin.value = cursorClient.value.x
     panelResizeInitial.value = panelWidth.value
   })
 
   // --- Node(s) state.
-  const nodes = computed(() => model.nodes)
   const nodeDragging = ref(false)
   const nodeDragOriginWorld = ref<Record<string, Position>>({})
   const nodeDragOriginScreen = ref({ x: 0, y: 0 })
   const nodeSelectedIds = ref(new Set<string>())
   const nodeSelected = computed(() => nodes.value.filter(node => nodeSelectedIds.value.has(node.id)))
-  // watch(nodeSelected, () => session.sele)
 
   // --- Initialize the drag link state.
-  const links = computed(() => model.links)
+  const links = computed(() => getLinks(nodes.value))
   const linksProps = ref<FlowLinkProps[]>([])
   const linkDragFrom = ref<Partial<Link>>()
   const linkDragTo = ref<Partial<Link>>()
+
+  // --- Compute the link properties based on the links and nodes.
   watch([links, nodes, viewZoom], ([links, nodes]) => setTimeout(() => {
     linksProps.value = links.map((link) => {
       const nodeSource = nodes.find(node => node.id === link.sourceId)
@@ -131,14 +159,25 @@ export function useEditorView(model: EditorModel) {
   function getPinAttributes(link?: Partial<Link>, type?: 'source' | 'target') {
     if (!link) return
     if (!link.sourceId && !link.targetId) return
+
+    // --- Try the Pin at path.
     const pinSelectorDataId = type === 'source'
       ? ['pin', type, link.sourceId, link.sourceName, link.sourcePath].filter(Boolean).join('-')
       : ['pin', type, link.targetId, link.targetName, link.targetPath].filter(Boolean).join('-')
     const pinSelector = `[data-id="${pinSelectorDataId}"]`
-    const pinElement = document.querySelector<HTMLDivElement>(pinSelector)
-    if (!pinElement) return
+    let pinElement = document.querySelector<HTMLDivElement>(pinSelector)
+
+    // --- Try again without the path.
+    if (!pinElement) {
+      const pinSelectorDataId = type === 'source'
+        ? ['pin', type, link.sourceId, link.sourceName].filter(Boolean).join('-')
+        : ['pin', type, link.targetId, link.targetName].filter(Boolean).join('-')
+      const pinSelector = `[data-id="${pinSelectorDataId}"]`
+      pinElement = document.querySelector<HTMLDivElement>(pinSelector)
+    }
 
     // --- Get the position and color of the pin.
+    if (!pinElement) return
     const { x, y, width, height } = pinElement.getBoundingClientRect()
     return {
       color: pinElement.dataset.color ?? 'black',
@@ -158,7 +197,7 @@ export function useEditorView(model: EditorModel) {
     view,
     viewContainer,
     viewPosition,
-    zoom: viewZoom,
+    viewZoom,
     viewMoving,
     viewDragOriginScreen,
     viewDragOriginWorld,
@@ -169,7 +208,6 @@ export function useEditorView(model: EditorModel) {
 
     cursorView,
     cursorWorld,
-    peers,
 
     nodes,
     nodeSelectedIds,
@@ -179,6 +217,7 @@ export function useEditorView(model: EditorModel) {
     nodeDragOriginScreen,
     nodeDragOriginWorld,
 
+    links,
     linksProps,
     linkDragFrom,
     linkDragTo,
@@ -188,13 +227,9 @@ export function useEditorView(model: EditorModel) {
     })),
 
     viewStyle: computed<CSSProperties>(() => {
-
-      // --- Compute the position of the viewplane based on the view position and the zoom level.
       const { width, height } = viewContainerRect
       const viewX = (viewPosition.value.x * viewZoom.value) + (width / 2) - (viewSize / 2)
       const viewY = (viewPosition.value.y * viewZoom.value) + (height / 2) - (viewSize / 2)
-
-      // --- Return the style object that should be applied to the viewplane.
       return {
         position: 'absolute',
         left: `${viewX}px`,
@@ -220,19 +255,26 @@ export function useEditorView(model: EditorModel) {
       }
     }),
 
-    getNodeStyle: (node: EditorNodeObject): CSSProperties => {
-      const { x, y } = worldToView(node.position)
-      const color = getNodeColor(node)
+    getNodeStyle: (node: FlowNodeObject): CSSProperties => {
+      const { x, y } = worldToView(node.metadata.position ?? { x: 0, y: 0 })
+      const color = getComponentColor(node.component)
       const isSelected = nodeSelectedIds.value.has(node.id)
-      const isRunning = node.state === 'processing'
       return {
         'position': 'absolute',
         'left': `${x}px`,
         'top': `${y}px`,
         'zIndex': zIndexMap[node.id] ?? 1,
         'transition': isSelected ? 'none' : 'transform 0.1s ease',
-        '--un-ring-color': isRunning || isSelected ? color ?? 'transparent' : 'transparent',
-        '--un-ring-width': `${(isRunning || isSelected ? 3 : 5) / (viewZoom.value ?? 1)}px`,
+        '--un-ring-color': isSelected ? color : 'transparent',
+        '--un-ring-width': `${(isSelected ? 3 : 5) / (viewZoom.value ?? 1)}px`,
+      }
+    },
+
+    getNodeHeaderStyle: (node: FlowNodeObject): CSSProperties => {
+      const color = getComponentColor(node.component)
+      return {
+        backgroundColor: color,
+        cursor: nodeDragging.value ? 'grabbing' : 'pointer',
       }
     },
 
@@ -284,8 +326,11 @@ export function useEditorView(model: EditorModel) {
         const selectLeft = Math.min(selectFrom.x, selectTo.x)
         const selectBottom = Math.max(selectFrom.y, selectTo.y)
         const selectRight = Math.max(selectFrom.x, selectTo.x)
-        const selectedIds = Object.entries(viewNodes.value)
-          .filter(([, element]) => {
+        const selectedNodes = Object.entries(viewNodes.value)
+          .filter(([, component]) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            const element = component.$el as HTMLElement
+            if (!element) return false
             const node = element.getBoundingClientRect()
             return (
               node.top < selectBottom
@@ -297,7 +342,7 @@ export function useEditorView(model: EditorModel) {
           .map(([id]) => id)
 
         // --- Update the selected nodes.
-        nodeSelectedIds.value = new Set(selectedIds)
+        nodeSelectedIds.value = new Set(selectedNodes)
       }
 
       // --- If dragging a node, update the position based on the mouse movement.
@@ -305,15 +350,19 @@ export function useEditorView(model: EditorModel) {
         for (const node of nodeSelected.value) {
           const deltaX = event.clientX - nodeDragOriginScreen.value.x
           const deltaY = event.clientY - nodeDragOriginScreen.value.y
-          const nodeDragOrigin = nodeDragOriginWorld.value[node.id]
+          const nodeDragOrigin = nodeDragOriginWorld.value[node.id] ?? { x: 0, y: 0 }
           if (!nodeDragOrigin) return
-          node.position.x = nodeDragOrigin.x + deltaX / viewZoom.value
-          node.position.y = nodeDragOrigin.y + deltaY / viewZoom.value
+          node.metadata.position = node.metadata.position ?? { x: 0, y: 0 }
+          node.metadata.position.x = nodeDragOrigin.x + deltaX / viewZoom.value
+          node.metadata.position.y = nodeDragOrigin.y + deltaY / viewZoom.value
         }
 
         // --- Update the position of the selected nodes.
-        const positions = nodeSelected.value.map(node => ({ id: node.id, x: node.position.x, y: node.position.y }))
-        model.setNodesPosition(...positions)
+        handleSetNodesMetadata(...nodeSelected.value.map(node => ({
+          id: node.id,
+          name: 'position',
+          value: node.metadata.position,
+        })))
       }
 
       // --- If resizing the panel, update the panel width based on the mouse movement.
@@ -334,15 +383,17 @@ export function useEditorView(model: EditorModel) {
       // --- If a drag link is active, emit a link remove event.
       if (linkDragFrom.value && !linkDragTo.value) {
         // @ts-expect-error: edge case handled by the server.
-        model.removeLink(linkDragFrom.value)
+        handleRemoveLinks(linkDragFrom.value)
         linkDragFrom.value = undefined
         event.stopPropagation()
       }
 
       // --- If dragFrom and dragTo are set, emit the link create event.
       else if (linkDragFrom.value && linkDragTo.value) {
-        // @ts-expect-error: edge case handled by the server.
-        model.createLink({ ...linkDragFrom.value, ...linkDragTo.value })
+        const linkToCreate = { ...linkDragFrom.value, ...linkDragTo.value }
+        const { sourceId, sourceName, sourcePath, targetId, targetName, targetPath } = linkToCreate
+        if (sourceId && targetId && sourceName && targetName && sourceId !== targetId)
+          handleCreateLinks({ sourceId, sourceName, sourcePath, targetId, targetName, targetPath })
         linkDragFrom.value = undefined
         linkDragTo.value = undefined
         event.stopPropagation()
@@ -371,13 +422,17 @@ export function useEditorView(model: EditorModel) {
       if (!event.dataTransfer) return
       const json = event.dataTransfer.getData('application/json')
       if (!json) return
-      const data = JSON.parse(json) as DropPayload
+
+      // --- Parse the drop payload.
+      let data: DropPayload
+      try { data = JSON.parse(json) as DropPayload }
+      catch { return }
 
       // --- Handle the creation of a new node.
       if (data.type === 'createNode') {
         if (!view.value) return
         const { x, y } = screenToWorld({ x: event.clientX, y: event.clientY })
-        model.createNodes({ specifier: data.kind, x, y })
+        handleCreateNodes({ specifier: data.kind, x, y })
       }
     },
 
@@ -387,6 +442,7 @@ export function useEditorView(model: EditorModel) {
         || document.activeElement instanceof HTMLTextAreaElement
         || document.activeElement instanceof HTMLSelectElement
 
+      // --- Grab the viewplane to move it around.
       if (event.key === ' ') {
         viewMoving.value = true
         viewDragOriginScreen.value = { x: cursorClient.value.x, y: cursorClient.value.y }
@@ -396,24 +452,23 @@ export function useEditorView(model: EditorModel) {
       if (isInputActive) return
       if (nodeSelectedIds.value.size === 0) return
 
-      // --- Handle the duplicate key to duplicate the selected nodes.
-      if (nodeSelectedIds.value.size === 1 && event.key === 'd' && event.ctrlKey) {
-        event.preventDefault()
-        const id = [...nodeSelectedIds.value][0]
-        const { x, y } = cursorWorld.value
-        model.cloneNodes({ id, x, y })
-        return
-      }
-
       // --- When more than one node is selected.
       if (nodeSelectedIds.value.size > 0) {
 
+        // --- Duplicate the selected nodes.
+        if (event.key === 'd' && event.ctrlKey) {
+          event.preventDefault()
+          const { x, y } = cursorWorld.value
+          handleCloneNodes({ ids: [...nodeSelectedIds.value], origin: { x, y } })
+        }
+
         // --- Handle the delete key to remove the selected nodes.
-        if (event.key === 'Delete' || event.key === 'Backspace')
-          model.removeNodes(...nodeSelectedIds.value)
+        else if (event.key === 'Delete' || event.key === 'Backspace') {
+          handleRemoveNodes(...nodeSelectedIds.value)
+        }
 
         // --- Handle the move key to move the selected nodes.
-        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+        else if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
           const factor = event.shiftKey ? 100 : 10
           const offset = { x: 0, y: 0 }
           if (event.key === 'ArrowUp') offset.y -= factor
@@ -422,14 +477,14 @@ export function useEditorView(model: EditorModel) {
           if (event.key === 'ArrowRight') offset.x += factor
 
           // --- Update the position of the selected nodes.
-          const positions = nodeSelected.value.map(node => ({
+          handleSetNodesMetadata(...nodeSelected.value.map(node => ({
             id: node.id,
-            x: node.position.x + offset.x,
-            y: node.position.y + offset.y,
-          }))
-
-          // --- Update the position of the selected nodes.
-          model.setNodesPosition(...positions)
+            name: 'position',
+            value: {
+              x: (node.metadata.position?.x ?? 0) + offset.x,
+              y: (node.metadata.position?.y ?? 0) + offset.y,
+            },
+          })))
         }
       }
     },
@@ -454,7 +509,10 @@ export function useEditorView(model: EditorModel) {
       // --- Update the drag origin to the current mouse position so the node
       // --- stays next to the cursor when dragging it around the viewplane.
       nodeDragOriginScreen.value = { x: event.clientX, y: event.clientY }
-      nodeDragOriginWorld.value = Object.fromEntries(nodeSelected.value.map(node => [node.id, { ...node.position }]))
+      nodeDragOriginWorld.value = Object.fromEntries(nodeSelected.value.map(node => [
+        node.id,
+        { ...node.metadata.position ?? { x: 0, y: 0 } },
+      ]))
     },
 
     onNodeHandleRelease: () => {
@@ -474,16 +532,26 @@ export function useEditorView(model: EditorModel) {
     /* Links                                                                   */
     /***************************************************************************/
 
-    onLinkGrab: (link: Partial<Link>) => {
-      linkDragFrom.value = link
+    onInputGrab: (id: string, name: string, path?: string) => {
+      linkDragFrom.value = { targetId: id, targetName: name, targetPath: path }
     },
-
-    onLinkAssign: (link: Partial<Link>) => {
+    onInputAssign: (id: string, name: string, path?: string) => {
       if (!linkDragFrom.value) return
-      linkDragTo.value = link
+      linkDragTo.value = { targetId: id, targetName: name, targetPath: path }
+    },
+    onInputUnassign: () => {
+      if (!linkDragFrom.value) return
+      linkDragTo.value = undefined
     },
 
-    onLinkUnassign: () => {
+    onOutputGrab: (id: string, name: string, path?: string) => {
+      linkDragFrom.value = { sourceId: id, sourceName: name, sourcePath: path }
+    },
+    onOutputAssign: (id: string, name: string, path?: string) => {
+      if (!linkDragFrom.value) return
+      linkDragTo.value = { sourceId: id, sourceName: name, sourcePath: path }
+    },
+    onOutputUnassign: () => {
       if (!linkDragFrom.value) return
       linkDragTo.value = undefined
     },

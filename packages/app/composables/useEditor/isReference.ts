@@ -7,8 +7,3 @@ export function isReference(value: unknown): value is Reference {
   if (typeof value.$ref !== 'string') return false
   return value.$ref.startsWith('#/')
 }
-
-export function isReferenceLink(value: unknown): value is string {
-  return isReference(value)
-    && value.$ref.startsWith('#/Nodes/')
-}

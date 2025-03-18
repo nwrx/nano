@@ -1,9 +1,10 @@
 /* eslint-disable sonarjs/todo-tag */
-import type { EditorSessionClientMessage, EditorSessionObject, ModuleFlowEditor } from '@nwrx/nano-api'
+import type { EditorSessionClientMessage, EditorSessionServerMessage, EditorState, ModuleFlowEditor } from '@nwrx/nano-api'
+import type { SchemaOption } from '@nwrx/nano/utils'
 import type { ChannelConnectOptions } from '@unserved/client'
 import type { WebSocketChannel } from '@unshared/client/websocket'
-import type { EditorView } from '#imports'
-import { useAlerts, useClient } from '#imports'
+import { useAlerts } from '@unshared/vue/useAlerts'
+import { useClient } from '~/composables/useClient'
 
 export interface UseEditorSessionOptions {
   workspace: string
@@ -11,19 +12,10 @@ export interface UseEditorSessionOptions {
   name: string
 }
 
-export const INITIAL_EDITOR_SESSION: EditorSessionObject = {
-  name: '',
-  title: '',
-  icon: '',
-  description: '',
+export const INITIAL_EDITOR_STATE: EditorState = {
+  flow: { name: '', title: '', description: '' },
   nodes: [],
-  links: [],
-  events: [],
-  secrets: [],
-  variables: [],
-  isRunning: false,
-  peers: [],
-  peerId: '',
+  participants: [],
 }
 
 export type EditorChannel = WebSocketChannel<ChannelConnectOptions<ModuleFlowEditor, 'WS /ws/workspaces/:workspace/projects/:project/flows/:name/editor'>>
@@ -31,123 +23,128 @@ export type EditorEventName = EditorSessionClientMessage['event']
 export type EditorEventPayload<K extends EditorEventName> = EditorSessionClientMessage extends infer T ? T extends { event: K } ? T : never : never
 export type EditorMethodParameters<K extends EditorEventName> = EditorEventPayload<K> extends { data: infer T extends any[] } ? T : []
 export type EditorMethod<K extends EditorEventName> = (...data: EditorMethodParameters<K>) => void
-export type EditorModel = Readonly<EditorSessionObject> & { [K in EditorEventName]: EditorMethod<K> }
+export type EditorModel = ReturnType<typeof useEditorModel>
 
-export interface Editor {
-  model: EditorModel
-  view: EditorView
-  channel: EditorChannel
-  options: UseEditorSessionOptions
-
-}
-
-export async function useEditor(options: UseEditorSessionOptions): Promise<Editor> {
+export function useEditorModel(options: UseEditorSessionOptions) {
   const client = useClient()
   const alerts = useAlerts()
-  const data = ref(INITIAL_EDITOR_SESSION) as Ref<EditorSessionObject>
+  const state = ref(INITIAL_EDITOR_STATE) as Ref<EditorState>
+  const messagesServer = ref([]) as Ref<EditorSessionServerMessage[]>
+  const messagesClient = ref([]) as Ref<EditorSessionClientMessage[]>
+  let channel: EditorChannel | undefined
 
   // --- Create a WebSocket channel to connect to the editor server. This allows us to
   // --- send and receive messages to and from the server to interact with the editor
   // --- while keeping the state of the editor in sync with the server when other users
   // --- make changes to the flow via the same editor session.
-  const channel = await client.connect('WS /ws/workspaces/:workspace/projects/:project/flows/:name/editor', {
-    parameters: { ...options },
-    onMessage: (payload) => {
-      switch (payload.event) {
+  async function connect() {
+    channel = await client.connect('WS /ws/workspaces/:workspace/projects/:project/flows/:name/editor', {
+      parameters: { ...options },
+      onMessage: (message) => {
+        messagesServer.value.push(message as EditorSessionServerMessage)
 
-        // Flow
-        case 'init': {
-          data.value = { ...data.value, ...payload.data }
-          break
+        /***************************************************************************/
+        /* Flow                                                                    */
+        /***************************************************************************/
+        if (message.event === 'syncronize') {
+          state.value = { ...state.value, ...message.data }
         }
-        case 'error': {
-          alerts.error(payload.message)
-          break
+        else if (message.event === 'error') {
+          alerts.error(message.message)
         }
-        case 'meta': {
-          const { name, value } = payload
-          if (name === 'name') data.value.name = value as string
-          if (name === 'title') data.value.title = value as string
-          if (name === 'icon') data.value.icon = value as string
-          if (name === 'description') data.value.description = value as string
-          break
+        else if (message.event === 'metadataChanged') {
+          const { name, value } = message
+          // @ts-expect-error: ignore
+          state.value.flow[name] = value
         }
 
-        // Nodes
-        case 'node:created': {
-          const { component } = payload
-          data.value.nodes.push(component)
-          data.value.nodes = [...data.value.nodes]
-          break
+        /***************************************************************************/
+        /* Nodes                                                                   */
+        /***************************************************************************/
+        else if (message.event === 'nodesCreated') {
+          state.value.nodes.push(...message.data)
+          state.value.nodes = [...state.value.nodes]
         }
-        case 'node:metaValueChanged': {
-          const { id, name, value } = payload
-          const node = data.value.nodes.find(n => n.id === id)
-          if (!node) return console.warn('node not found', id)
-          if (name === 'label') node.label = value as string
-          if (name === 'comment') node.comment = value as string
-          if (name === 'position') node.position = value as { x: number; y: number }
-          break
+        else if (message.event === 'nodesMetadataChanged') {
+          for (const { id, name, value } of message.data) {
+            const node = state.value.nodes.find(n => n.id === id)
+            if (!node) return
+            node.metadata[name] = value
+          }
         }
-        case 'node:inputValueChanged': {
-          const { id, name, value } = payload
-          const node = data.value.nodes.find(n => n.id === id)
-          if (!node) return
-          node.input[name] = value
-          break
+        else if (message.event === 'nodesInputChanged') {
+          for (const { id, name, value } of message.data) {
+            const node = state.value.nodes.find(n => n.id === id)
+            if (!node) return
+            node.input[name] = value
+          }
         }
-        case 'node:removed': {
-          const { ids } = payload
-          data.value.nodes = data.value.nodes.filter(n => !ids.includes(n.id))
-          break
+        else if (message.event === 'nodesRemoved') {
+          state.value.nodes = state.value.nodes.filter(n => !message.data.includes(n.id))
         }
 
-        // Links
-        case 'node:linkCreated': {
-          data.value.links.push(payload.data[0])
-          break
-        }
-        case 'node:linkRemoved': {
-          const { data: [...links] } = payload
-          data.value.links = data.value.links.filter(l => !links.some(link => link.id === l.targetId && link.name === l.targetName))
-          break
-        }
+        /***************************************************************************/
+        /* Users                                                                   */
+        /***************************************************************************/
 
-        // Users
-        case 'user:join': {
-          const peer = payload
-          if (peer.id === data.value.peerId) return
-          data.value.peers.push({ ...peer, position: { x: 0, y: 0 } })
-          break
+        else if (message.event === 'userJoined') {
+          for (const peer of message.data)
+            state.value.participants.push({ ...peer, position: { x: 0, y: 0 } })
         }
-        case 'user:position': {
-          const { id, x, y } = payload
-          const peer = data.value.peers.find(p => p.id === id)
-          if (!peer) return
-          peer.position = { x, y }
-          break
+        else if (message.event === 'usersPositionChanged') {
+          for (const { id, x, y } of message.data) {
+            const participant = state.value.participants.find(p => p.id === id)
+            if (!participant) return
+            participant.position = { x, y }
+          }
         }
-        case 'user:leave': {
-          const { id } = payload
-          data.value.peers = data.value.peers.filter(p => p.id !== id)
-          break
+        else if (message.event === 'userLeft') {
+          state.value.participants = state.value.participants.filter(p => !message.data.includes(p.id))
         }
-      }
-    },
-  })
+      },
+    })
+  }
 
-  const model = new Proxy({}, {
-    get(_, property) {
-      if (property === 'then') return
-      if (property === 'catch') return
-      if (property in data.value) return data.value[property as keyof EditorSessionObject]
-      // @ts-expect-error: event name mismatch is handled by the server.
-      return (...data: any[]) => channel.send({ event: property, data })
-    },
-  }) as unknown as EditorModel
+  function send<K extends EditorEventName>(event: K, ...data: EditorMethodParameters<K>) {
+    if (!channel) return alerts.error('The editor is not connected to the server.')
+    const message = { event, data } as EditorSessionClientMessage
+    messagesClient.value.push(message)
+    channel.send(message)
+  }
 
-  // --- Initialize the editor view. This allows us to interact with the Vue components
-  // --- that are part of the editor and handle its state and events based on the model.
-  const view = useEditorView(model)
-  return { model, view, channel, options }
+  async function searchOptions(id: string, name: string, search: string) {
+    send('searchOptions', { id, name, search })
+    return new Promise<SchemaOption[]>((resolve) => {
+      const stop = channel!.on('message', (message) => {
+        if (message.event !== 'searchOptionsResult') return
+        if (message.data[0].id !== id) return
+        if (message.data[0].name !== name) return
+        resolve(message.data[0].options)
+        stop()
+      })
+    })
+  }
+
+  async function getFlowExport(format?: 'json' | 'yaml'): Promise<string> {
+    send('getFlowExport', { format })
+    return new Promise<string>((resolve) => {
+      const stop = channel!.on('message', (message) => {
+        if (message.event !== 'getFlowExportResult') return
+        resolve(message.data[0])
+        stop()
+      })
+    })
+  }
+
+  return {
+    connect,
+    send,
+    searchOptions,
+    getFlowExport,
+    state,
+    messagesServer,
+    messagesClient,
+    clearMessagesClient: () => messagesClient.value = [],
+    clearMessagesServer: () => messagesServer.value = [],
+  }
 }

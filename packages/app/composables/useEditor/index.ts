@@ -1,3 +1,4 @@
+export * from './getComponentColor'
 export * from './getSchemaTypeColor'
 export * from './isReference'
 export * from './useEditorModel'

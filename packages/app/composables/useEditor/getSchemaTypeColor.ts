@@ -1,19 +1,11 @@
-import type { EditorNodeObject, RegistryComponentObject } from '@nwrx/nano-api'
+import type { RegistryComponentObject } from '@nwrx/nano-api'
 import type { Schema } from '@nwrx/nano/utils'
 
 export function getSchemaType(socket?: Schema) {
-  if (!socket?.type) return
-  if (Array.isArray(socket.type)) return socket.type[0]
+  if (!socket?.type) return 'unknown'
   if (typeof socket.type === 'string') return socket.type
   if (typeof socket['x-type'] === 'string') return socket['x-type']
-}
-
-export function getNodeColor(node?: EditorNodeObject) {
-  if (node?.category === 'control') return '#FF0000'
-  if (node?.category === 'models') return '#00FF00'
-  if (node?.category === 'processing') return '#0000FF'
-  if (node?.category === 'storage') return '#0000FF'
-  return '#fff'
+  return 'unknown'
 }
 
 export function getSchemaTypeColor(socket?: Schema) {
