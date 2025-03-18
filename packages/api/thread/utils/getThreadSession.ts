@@ -1,4 +1,3 @@
-import type { ThreadServerMessage } from '@nwrx/nano-runner'
 import type { Peer } from 'crossws'
 import type { ModuleThread } from '..'
 import type { Flow } from '../../flow'
@@ -45,14 +44,13 @@ export async function getThreadSession(this: ModuleThread, options: ThreadSessio
   // --- Store events in the database.
   const { ThreadEvent } = this.getRepositories()
   channel.on('message', async(message) => {
-    if (message.event === 'worker:ready') { return }
-    else if (message.event === 'worker:outputValue') { return }
-    else if (message.event === 'worker:resolveReference') {
+    if (message.event === 'workerReady') { return }
+    else if (message.event === 'workerResolveReference') {
       const [id, type, values] = message.data
       if (type === 'Variables') {
         const [vault, name] = values
         const value = await moduleVault.getVariableValue({ workspace, project, vault, name })
-        channel.send({ event: 'worker:resolveReferenceResult', data: [{ id, value }] })
+        channel.send({ event: 'workerResolveReferenceResult', data: [{ id, value }] })
       }
     }
 
