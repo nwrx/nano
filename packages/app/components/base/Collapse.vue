@@ -4,7 +4,7 @@ const model = defineModel({ default: false })
 const isCollapsed = ref(false)
 const isCollapsing = ref(false)
 
-const duration = ref(300)
+const duration = ref(150)
 let timeout: NodeJS.Timeout
 
 watch(model, () => {
@@ -22,16 +22,14 @@ watch(model, () => {
     :is-open="model"
     :duration="duration"
     vertical
-    class="transition-all duration-slow"
+    class="transition-all"
     :class="{
       'h-0': isCollapsed,
       'overflow-hidden': isCollapsing,
       'op-50 pointer-events-none': model !== true,
     }">
-    <KeepAlive v-if="model || isCollapsing">
-      <div>
-        <slot />
-      </div>
-    </KeepAlive>
+    <div v-if="model || isCollapsing">
+      <slot />
+    </div>
   </BaseCollapse>
 </template>
