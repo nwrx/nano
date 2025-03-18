@@ -11,14 +11,14 @@ describe('resolveSchema', () => {
 
     it('should throw an error if the reference is not resolved', async() => {
       const shouldThrow = resolveSchema('value', { $ref: '#/Variables/Greet' }, { type: 'string' })
-      const error = E.REFERENCE_NOT_RESOLVED('value')
+      const error = E.REFERENCE_NOT_RESOLVED('value', { $ref: '#/Variables/Greet' })
       await expect(shouldThrow).rejects.toThrow(error)
     })
 
     it('should throw an error if the reference value is undefined', async() => {
       const resolver = () => undefined
       const shouldThrow = resolveSchema('value', { $ref: '#/Variables/Greet' }, { type: 'string' }, [resolver])
-      const error = E.REFERENCE_NOT_RESOLVED('value')
+      const error = E.REFERENCE_NOT_RESOLVED('value', { $ref: '#/Variables/Greet' })
       await expect(shouldThrow).rejects.toThrow(error)
     })
 

@@ -46,8 +46,8 @@ describe('getNodeInputOptions', () => {
     const nodeId = addNode(thread, 'example')
     const options = await getNodeInputOptions(thread, nodeId, 'enumInput')
     expect(options).toStrictEqual([
-      { value: 'option1', label: 'option1' },
-      { value: 'option2', label: 'option2' },
+      { value: 'option1', label: 'option1', icon: undefined, description: undefined },
+      { value: 'option2', label: 'option2', icon: undefined, description: undefined },
     ])
   })
 

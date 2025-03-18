@@ -21,13 +21,13 @@ describe('DEFAULT_REFERENCE_RESOLVER', () => {
       expect(result).toBe('test-result')
     })
 
-    it('should return undefined if the result is undefined', async() => {
+    it('should return null if the result is undefined', async() => {
       const thread = createThread()
       const nodeId = addNode(thread, 'example', { component })
       const node = thread.nodes.get(nodeId)!
       node.state = 'done'
       const result = await DEFAULT_REFERENCE_RESOLVER.call(thread, 'Nodes', nodeId, 'output')
-      expect(result).toBeUndefined()
+      expect(result).toBeNull()
     })
 
     it('should throw if the node is not found', async() => {
