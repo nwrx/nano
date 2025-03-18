@@ -6,21 +6,17 @@ export interface LocalSettings {
   monitoringEventTypes?: string[]
 
   // Editor states
+  editorConsoleTab?: string
+  editorConsoleShow?: boolean
   editorPanelTab?: string
   editorPanelOpen?: boolean
   editorPanelWidth?: number
   editorPanelSecretsOpen?: boolean
   editorPanelVariablesOpen?: boolean
-
-  // Flow
   editorPanelFlowSettingsOpen?: boolean
-
-  // Node
   editorPanelNodeInputOpen?: boolean
   editorPanelNodeOutputOpen?: boolean
   editorPanelNodeMetadataOpen?: boolean
-
-  // Textarea
   editorNodeTextareaShowPreview?: boolean
 
   // Chat states
@@ -35,12 +31,6 @@ export const useLocalSettings = createGlobalState(() =>
     monitoringEventNames: [],
     monitoringEventTypes: [],
     editorPanelTab: 'node',
-    editorPanelOpen: true,
+    editorConsoleTab: 'view',
     editorPanelWidth: 512,
-    editorPanelSecretsOpen: false,
-    editorPanelNodeInputOpen: false,
-    editorPanelNodeOutputOpen: false,
-    editorPanelNodeMetadataOpen: false,
-    editorNodeTextareaShowPreview: true,
-    chatPanelOpen: true,
   }))
