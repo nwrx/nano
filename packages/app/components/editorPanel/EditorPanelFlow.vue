@@ -1,6 +1,12 @@
 <script setup lang="ts">
+import type { FlowObject } from '@nwrx/nano-api'
+
 defineProps<{
-  editor: Editor
+  flow?: FlowObject
+}>()
+
+const emit = defineEmits<{
+  'setMetadata': Array<{ name: string; value: unknown }>
 }>()
 
 const { t } = useI18n()
@@ -12,12 +18,12 @@ const settings = useLocalSettings()
 
     <!-- Name -->
     <EditorPanelHeader
-      :name="editor.model.title"
-      :description="editor.model.description"
+      :name="flow?.title || flow?.name"
+      :description="flow?.description"
       :placeholder-name="t('meta.title')"
       :placeholder-description="t('meta.description')"
-      @update:name="(value) => editor.model.setMetaValues({ name: 'title', value })"
-      @update:description="(value) => editor.model.setMetaValues({ name: 'description', value })"
+      @update:name="(value) => emit('setMetadata', { name: 'title', value })"
+      @update:description="(value) => emit('setMetadata', { name: 'description', value })"
     />
 
     <EditorPanelSection
@@ -25,12 +31,12 @@ const settings = useLocalSettings()
       class-content="space-y-md"
       title="HTTP"
       text="Define the behavior of the HTTP trigger.">
-      <EditorPanelDataContainer>
+      <DataSheet>
         <DataSheetRow
           :name="t('settings.name')"
           is-editable
-          :model-value="editor.model.name"
-          @update:model-value="(value) => editor.model.setMetaValues({ name: 'name', value })"
+          :model-value="flow?.name"
+          @update:model-value="(value) => emit('setMetadata', { name: 'name', value })"
         />
         <DataSheetRow
           name="Enabled"
@@ -44,7 +50,7 @@ const settings = useLocalSettings()
           name="Override Secrets"
           hint="Allow the user to override the secrets via HTTP Headers."
         />
-      </EditorPanelDataContainer>
+      </DataSheet>
     </EditorPanelSection>
   </div>
 </template>
