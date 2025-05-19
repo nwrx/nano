@@ -1,27 +1,25 @@
-import type { Peer } from 'crossws'
+import type { ThreadServerMessage } from '@nwrx/nano-runner'
 import type { ModuleThread } from '..'
 import type { Flow } from '../../flow'
 import type { Project } from '../../project'
 import type { ThreadRunnerChannel } from '../../threadRunner'
-import type { User } from '../../user'
 import type { Workspace } from '../../workspace'
 import type { Thread } from '../entities'
 import { ModuleThreadRunner } from '../../threadRunner'
 import { ModuleVault } from '../../vault'
 
 export interface ThreadSessionOptions {
-  peer: Peer
-  user: User
   flow: Flow
   thread: Thread
   project: Project
   workspace: Workspace
+  onMessage?: (message: ThreadServerMessage) => any
 }
 
 export async function getThreadSession(this: ModuleThread, options: ThreadSessionOptions): Promise<ThreadRunnerChannel> {
   const moduleThreadRunner = this.getModule(ModuleThreadRunner)
   const moduleVault = this.getModule(ModuleVault)
-  const { peer, /* user, */ thread, workspace, project } = options
+  const { onMessage, thread, workspace, project } = options
 
   // --- Create a new thread session.
   const runner = await moduleThreadRunner.requestThreadRunner()
@@ -54,6 +52,7 @@ export async function getThreadSession(this: ModuleThread, options: ThreadSessio
       }
     }
 
+    // --- Store the event in the database.
     else {
       const event = ThreadEvent.create({
         thread,
@@ -62,6 +61,9 @@ export async function getThreadSession(this: ModuleThread, options: ThreadSessio
         runner: runner.runner,
       })
       await ThreadEvent.save(event)
+
+      // --- Custom message handler.
+      if (onMessage) onMessage(message as ThreadServerMessage)
     }
   })
 

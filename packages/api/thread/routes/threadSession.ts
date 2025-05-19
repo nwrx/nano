@@ -42,7 +42,7 @@ export function threadSession(this: ModuleThread) {
         await Thread.save(thread)
 
         // --- Create the thread session instance.
-        const session = await getThreadSession.call(this, { peer, user, thread, flow, project, workspace })
+        const session = await getThreadSession.call(this, { thread, flow, project, workspace })
         this.threadSessions.set(peer.id, session)
         session.on('message', message => peer.send(message))
         peer.send({ event: 'ready' })

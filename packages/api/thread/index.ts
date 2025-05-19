@@ -12,4 +12,7 @@ export class ModuleThread extends ModuleBase {
   errors = UTILS.ERRORS
   dependencies = [ModuleUser, ModuleFlow]
   threadSessions = new Map<string, ThreadRunnerChannel>()
+  getThread = UTILS.getThread.bind(this)
+  createThread = UTILS.createThread.bind(this)
+  getThreadSession = UTILS.getThreadSession.bind(this)
 }
