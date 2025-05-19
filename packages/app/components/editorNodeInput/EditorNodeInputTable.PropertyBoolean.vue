@@ -9,7 +9,7 @@ const value = defineModel()
 
     <!-- iOs like Switch  -->
     <div
-      class="flex items-center w-8 h-4 b b-editor rd-full transition"
+      class="flex items-center w-10 h-5 b b-editor rd-full transition"
       :class="{
         'bg-active': value,
         'bg-subtle': !value,
@@ -17,9 +17,9 @@ const value = defineModel()
 
       <!-- Circle -->
       <div
-        class="w-3 h-3 b b-editor rd-full transition"
+        class="w-4 h-4 b b-editor rd-full transition"
         :class="{
-          'bg-subtle translate-x-4': value,
+          'bg-subtle translate-x-5': value,
           'bg-active translate-x-0.5': !value,
         }"
       />
