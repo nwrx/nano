@@ -2,6 +2,7 @@ import type { FlowV1 } from '@nwrx/nano'
 import type { ModuleRunner } from '../application'
 import { createHttpRoute } from '@unserved/server'
 import { assertObjectStrict, assertStringUuid, createParser } from '@unshared/validation'
+import { setResponseStatus } from 'h3'
 import { authorize } from '../utils'
 import { createThreadWorker } from '../worker'
 
@@ -26,6 +27,7 @@ export function threadCreate(this: ModuleRunner) {
       // --- Otherwise, create a new thread worker for the given flow.
       const worker = await createThreadWorker.call(this, body.flow)
       this.runnerWorkerPorts.set(parameters.id, worker)
+      setResponseStatus(event, 201, 'Created')
     },
   )
 }
