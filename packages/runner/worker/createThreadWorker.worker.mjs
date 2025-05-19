@@ -1,6 +1,6 @@
 /* eslint-disable jsdoc/no-types */
 import { abort, createThreadFromFlow, start } from '@nwrx/nano'
-import { components } from '@nwrx/nano/components'
+import { COMPONENTS } from '@nwrx/nano/components'
 import { noop } from '@unshared/functions'
 import { randomUUID } from 'node:crypto'
 import { serialize } from './serialize.mjs'
@@ -73,10 +73,10 @@ export function createThreadWorker(port, flow) {
       componentResolvers: [(specifier) => {
         if (specifier.registry !== 'default') return
         if (specifier.workspace !== 'nanoworks') return
-        if (specifier.name in components === false) return
+        if (specifier.name in COMPONENTS === false) return
         // @ts-expect-error: key exists
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        return components[specifier.name]
+        return COMPONENTS[specifier.name]
       }],
 
       // --- Ask the main API to resolve the reference.
