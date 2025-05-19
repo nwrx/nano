@@ -40,26 +40,26 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
 en:
   flow: Flow
   node: Node
-  events: Events
-  playground: Sandbox
+  evaluation: Evaluation
+  playground: Playground
 fr:
   flow: Flux
   node: Noeud
-  events: Événements
+  evaluation: Évaluation
   playground: Bac à sable
 de:
   flow: Fluss
   node: Knoten
-  events: Ereignisse
+  evaluation: Bewertung
   playground: Sandkasten
 es:
   flow: Flujo
   node: Nodo
-  events: Eventos
+  evaluation: Evaluación
   playground: Caja de arena
 zh:
   flow: 流程
   node: 节点
-  events: 事件
+  evaluation: 评估
   playground: 沙盒
 </i18n>
