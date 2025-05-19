@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/require-await */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import type { ThreadRunnerStatus } from '@nwrx/nano-runner'
 import type { Context } from '../../__fixtures__'
 import { createTestContext } from '../../__fixtures__'
 
@@ -33,21 +34,27 @@ describe<Context>('GET /api/runners/:runner', () => {
 
       // Check the status for the claimed runner.
       const response = await application.fetch(`/api/runners/${identity}`, { method: 'GET', headers })
-      const data = await response.json() as { address: string; status: unknown }
+      const data = await response.json() as ThreadRunnerStatus
       expect(response).toMatchObject({ status: 200, statusText: 'OK' })
       expect(data).toStrictEqual({
-        address: 'http://localhost',
-        createdAt: expect.any(String),
-        identity,
-        lastSeenAt: expect.any(String),
+        availableParallelismv: expect.any(Number),
+        availmem: expect.any(Number),
+        cpus: expect.any(Array),
+        freemem: expect.any(Number),
         isClaimed: true,
-        isRunning: false,
         isReachable: true,
+        isRunning: false,
+        loadavg: expect.any(Array),
+        platform: expect.any(String),
+        release: expect.any(String),
+        totalmem: expect.any(Number),
+        type: expect.any(String),
+        version: expect.any(String),
         workerPool: expect.any(Array),
-      })
+      } as ThreadRunnerStatus)
     })
 
-    it('should not return status for unreachable runner', async({ application, setupUser, moduleThreadRunner }) => {
+    it('should return 500 when the runner is unreachable', async({ application, setupUser, moduleThreadRunner }) => {
       const { headers } = await setupUser({ isSuperAdministrator: true })
       // Claim a runner first.
       const body = JSON.stringify({ address: 'http://localhost' })
@@ -60,16 +67,10 @@ describe<Context>('GET /api/runners/:runner', () => {
       moduleThreadRunner.threadRunners.get(id)!.getStatus =async() => { throw new Error('Unreachable') }
       const response = await application.fetch(`/api/runners/${identity}`, { method: 'GET', headers })
       const data = await response.json() as { address: string; status: unknown }
-      expect(response).toMatchObject({ status: 200, statusText: 'OK' })
+      expect(response).toMatchObject({ status: 500, statusText: 'Internal Server Error' })
       expect(data).toStrictEqual({
-        address: 'http://localhost',
-        createdAt: expect.any(String),
-        identity,
-        lastSeenAt: expect.any(String),
-        isClaimed: false,
-        isRunning: false,
-        isReachable: false,
-        workerPool: [],
+        stack: [],
+        statusCode: 500,
       })
     })
   })
