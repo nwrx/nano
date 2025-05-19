@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/no-setup-props-reactivity-loss -->
 <script setup lang="ts">
-import type { FlowV1, Link } from '@nwrx/nano'
+import type { Link, ThreadInputObject } from '@nwrx/nano'
 import type {
   EditorSessionClientMessage,
   EditorSessionServerMessage,
@@ -9,10 +9,12 @@ import type {
   ParticipantObject,
   RegistryCategoryObject,
 } from '@nwrx/nano-api'
+import type { ThreadServerMessage } from '@nwrx/nano-runner'
 import type { SchemaOption } from '@nwrx/nano/utils'
 import { useEditorView } from '~/composables/useEditor'
 import EditorConsole from '../editorConsole/EditorConsole.vue'
 import EditorNode from '../editorNode/EditorNode.vue'
+import EditorPanel from '../editorPanel/EditorPanel.vue'
 import EditorBackground from './EditorBackground.vue'
 import EditorDrawer from './EditorDrawer.vue'
 import EditorLink from './EditorLink.vue'
@@ -27,12 +29,14 @@ const props = defineProps<{
   categories: RegistryCategoryObject[]
   messagesClient?: EditorSessionClientMessage[]
   messagesServer?: EditorSessionServerMessage[]
+  messagesThread?: ThreadServerMessage[]
   searchOptions?: (id: string, name: string, query: string) => Promise<SchemaOption[]>
   getFlowExport?: (format?: 'json' | 'yaml') => Promise<string>
 }>()
 
 const emit = defineEmits<{
   'syncronize': []
+  'setMetadata': Array<{ name: string; value: unknown }>
   'createNodes': Array<{ specifier: string; x: number; y: number }>
   'cloneNodes': Array<{ ids: string[]; origin: { x: number; y: number } }>
   'removeNodes': string[]
@@ -42,6 +46,7 @@ const emit = defineEmits<{
   'removeLinks': Link[]
   'clearMessagesServer': []
   'clearMessagesClient': []
+  'startThread': [ThreadInputObject]
 }>()
 
 const view = useEditorView({
@@ -151,8 +156,19 @@ const view = useEditorView({
         />
 
         <!-- Panel -->
-        <div class="pointer-events-auto row-span-2 justify-self-end w-50 h-full bg-blue" />
-        <!-- <EditorPanel :editor class="pointer-events-auto row-span-2 justify-self-end h-full" /> -->
+        <EditorPanel
+          v-model:is-panel-resizing="view.isPanelResizing"
+          :flow="flow"
+          :nodes="nodes"
+          :panel-width="view.panelWidth"
+          :nodes-selected="view.nodeSelected"
+          :messages-thread="messagesThread"
+          class="pointer-events-auto row-span-2 justify-self-end h-full"
+          @panel-resize-start="() => view.isPanelResizing = true"
+          @panel-resize-end="() => view.isPanelResizing = false"
+          @set-metadata="({ name, value }) => emit('setMetadata', { name, value })"
+          @start-thread="(input) => emit('startThread', input)"
+        />
 
         <!-- Drawer -->
         <EditorDrawer
@@ -169,6 +185,7 @@ const view = useEditorView({
           :participants="participants"
           :messages-client="messagesClient"
           :messages-server="messagesServer"
+          :messages-thread="messagesThread"
           class="pointer-events-auto col-span-2 self-end justify-self-end select-text"
           @syncronize="() => emit('syncronize')"
           @clear-messages-client="() => emit('clearMessagesClient')"

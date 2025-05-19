@@ -7,6 +7,7 @@ import type {
   ParticipantObject,
   RegistryCategoryObject,
 } from '@nwrx/nano-api'
+import type { ThreadServerMessage } from '@nwrx/nano-runner'
 import Button from '~/components/base/Button.vue'
 import DataSheet from '~/components/base/DataSheet.vue'
 import TabsItem from '~/components/base/Tabs.Item.vue'
@@ -18,6 +19,7 @@ defineProps<{
   nodes?: FlowNodeObject[]
   messagesClient?: EditorSessionClientMessage[]
   messagesServer?: EditorSessionServerMessage[]
+  messagesThread?: ThreadServerMessage[]
   participants?: ParticipantObject[]
   categories: RegistryCategoryObject[]
 }>()
@@ -38,6 +40,7 @@ const TABS = [
   { value: 'categories', icon: 'i-carbon:category' },
   { value: 'messagesClient', icon: 'i-carbon:upload' },
   { value: 'messagesServer', icon: 'i-carbon:download' },
+  { value: 'messagesThread', icon: 'i-carbon:chat' },
 ]
 </script>
 
@@ -137,6 +140,10 @@ const TABS = [
               :row-value="(entry) => entry.data"
             />
           </div>
+
+          <div v-else-if="settings.editorConsoleTab === 'messagesThread'">
+            <DataSheet :model-value="messagesThread" />
+          </div>
         </div>
       </KeepAlive>
     </Collapse>
@@ -153,4 +160,5 @@ en:
     categories: Categories
     messagesClient: Client
     messagesServer: Server
+    messagesThread: Thread
 </i18n>
