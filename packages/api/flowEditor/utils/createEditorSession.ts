@@ -1,4 +1,3 @@
-/* eslint-disable sonarjs/cognitive-complexity */
 /* eslint-disable sonarjs/todo-tag */
 import type { Thread } from '@nwrx/nano'
 import type { Peer } from 'crossws'
@@ -102,7 +101,7 @@ export class EditorSession {
     })
 
     // --- Send the flow session data to the peer.
-    peer.send({
+    this.send(peer, {
       event: 'syncronize',
       data: await serializeSession(this, peer),
     })
@@ -110,7 +109,11 @@ export class EditorSession {
 
   unsubscribe(peer: Peer) {
     this.participants = this.participants.filter(p => p.peer?.id !== peer.id)
-    this.broadcast({ event: 'userLeft', id: peer.id })
+    this.broadcast({ event: 'userLeft', data: [peer.id] })
+  }
+
+  send(peer: Peer, payload: EditorSessionServerMessage) {
+    peer.send(payload)
   }
 
   broadcast(payload: EditorSessionServerMessage, except?: Peer) {
@@ -151,18 +154,14 @@ export class EditorSession {
       /***************************************************************************/
 
       if (message.event === 'syncronize') {
-        peer.send({
+        this.send(peer, {
           event: 'syncronize',
           data: await serializeSession(this, peer),
         })
       }
-      else if (message.event === 'setMetaValues') {
-        for (const { name, value } of message.data) {
-          // if (name === 'name') this.flow.name = value as string
-          if (name === 'title') this.flow.title = value as string
-          if (name === 'description') this.flow.description = value as string
-          this.broadcast({ event: 'metadataChanged', name, value })
-        }
+      else if (message.event === 'setMetadata') {
+        for (const { name, value } of message.data) this.flow[name] = value
+        this.broadcast({ event: 'metadataChanged', data: message.data })
         await this.save()
       }
 
@@ -258,11 +257,14 @@ export class EditorSession {
 
       else if (message.event === 'getFlowExport') {
         const [{ format }] = message.data
-        const data = Nano.serialize(this.thread)
+        const data = Nano.serialize(this.thread, {
+          name: this.flow.name,
+          description: this.flow.description,
+        })
         const formatted = format === 'json'
           ? JSON.stringify(data, undefined, 2)
           : YAML.stringify(data)
-        peer.send({ event: 'getFlowExportResult', data: [formatted] } as EditorSessionServerMessage)
+        this.send(peer, { event: 'getFlowExportResult', data: [formatted] })
       }
       else if (message.event === 'searchOptions') {
         const [{ id, name, search }] = message.data
@@ -272,7 +274,7 @@ export class EditorSession {
         if (socket['x-control'] === 'variable') {
           const moduleVault = this.moduleFlow.getModule(ModuleVault)
           const variables = await moduleVault.searchVariableByProject({ project: this.project, search, withVault: true })
-          peer.send({
+          this.send(peer, {
             event: 'searchOptionsResult',
             data: [{
               id,
@@ -288,7 +290,7 @@ export class EditorSession {
         // --- Otherwise, search for the options in the component schema.
         else {
           const options = await Nano.getNodeInputOptions(this.thread, id, name, search)
-          peer.send({ event: 'searchOptionsResult', data: [{ id, name, options }] } as EditorSessionServerMessage)
+          this.send(peer, { event: 'searchOptionsResult', data: [{ id, name, options }] })
         }
       }
     }
@@ -297,7 +299,7 @@ export class EditorSession {
     /* Error handling                                                          */
     /***************************************************************************/
     catch (error) {
-      peer.send({ event: 'error', message: (error as Error).message } as EditorSessionServerMessage)
+      this.send(peer, { event: 'error', message: (error as Error).message })
       console.error(error)
     }
   }

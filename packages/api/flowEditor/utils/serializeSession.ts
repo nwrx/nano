@@ -31,17 +31,30 @@ export async function serializeSessionNode(session: EditorSession, id: string): 
   const node = session.thread.nodes.get(id)
   if (!node) throw new Error('Node not found.')
   const specifier = serializeSpecifier(node)
-  const component = await moduleRegistry.resolveComponent({ specifier })
-  return {
-    id,
-    specifier,
-    ...node,
-    component: component.serialize({
-      withInputs: true,
-      withOutputs: true,
-      withCategories: true,
-    }),
-  }
+  return await moduleRegistry.resolveComponent({ specifier })
+    .then(component => ({
+      id,
+      specifier,
+      ...node,
+      component: component.serialize({
+        withInputs: true,
+        withOutputs: true,
+        withCategories: true,
+      }),
+    }))
+    .catch(() => ({
+      id,
+      specifier,
+      ...node,
+      component: {
+        name: 'Unknown',
+        version: 'Unknown',
+        title: 'Unknown',
+        description: 'Unknown',
+        icon: 'Unknown',
+        environment: 'builtin',
+      },
+    }))
 }
 
 export async function serializeSession(session: EditorSession, peer: Peer): Promise<EditorState> {

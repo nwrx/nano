@@ -2,7 +2,7 @@ import type { Peer } from 'crossws'
 import type { ModuleFlowEditor } from '..'
 import type { Flow } from '../../flow'
 import { createThreadFromFlow } from '@nwrx/nano'
-import { components } from '@nwrx/nano/components'
+import { COMPONENTS } from '@nwrx/nano/components'
 import { defineComponent, serializeSpecifier } from '@nwrx/nano/utils'
 import { assert, createRuleSet, createSchema } from '@unshared/validation'
 import { assertFlow } from '../../flow'
@@ -61,7 +61,7 @@ export function getEditorSession(this: ModuleFlowEditor, options: ResolveEditorS
   const thread = createThreadFromFlow(flow.data, {
     componentResolvers: [async(specifierObject) => {
       if (specifierObject.workspace === 'nanoworks' && specifierObject.registry === 'default') {
-        const component = components[specifierObject.name as keyof typeof components]
+        const component = COMPONENTS[specifierObject.name as keyof typeof COMPONENTS]
         if (component) return component
         throw new Error(`Component "${specifierObject.name}" not found in the collection "${specifierObject.collection}"`)
       }

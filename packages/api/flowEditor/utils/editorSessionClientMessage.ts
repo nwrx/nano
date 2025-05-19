@@ -11,10 +11,16 @@ export const EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA = createRuleSet(
   })],
 
   [createSchema({
-    event: assert.stringEquals('setMetaValues'),
+    event: assert.stringEquals('setMetadata'),
     data: createArrayParser({
-      name: assert.stringNotEmpty,
-      value: assert.notNull,
+      name: assert.stringEnum('title', 'description'),
+      value: assert.string,
+    }),
+  })],
+  [createSchema({
+    event: assert.stringEquals('getFlowExport'),
+    data: createArrayParser({
+      format: [[assert.undefined], [assert.stringEnum('json', 'yaml')]],
     }),
   })],
 
@@ -58,6 +64,14 @@ export const EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA = createRuleSet(
       id: assert.stringNotEmpty,
       name: assert.stringNotEmpty,
       value: assert.notNull,
+    }),
+  })],
+  [createSchema({
+    event: assert.stringEquals('searchOptions'),
+    data: createArrayParser({
+      id: assert.stringNotEmpty,
+      name: assert.stringNotEmpty,
+      search: [[assert.undefined], [assert.string]],
     }),
   })],
 
@@ -104,20 +118,6 @@ export const EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA = createRuleSet(
   /* Request                                                                 */
   /***************************************************************************/
 
-  [createSchema({
-    event: assert.stringEquals('getFlowExport'),
-    data: createArrayParser({
-      format: [[assert.undefined], [assert.stringEnum('json', 'yaml')]],
-    }),
-  })],
-  [createSchema({
-    event: assert.stringEquals('searchOptions'),
-    data: createArrayParser({
-      id: assert.stringNotEmpty,
-      name: assert.stringNotEmpty,
-      search: [[assert.undefined], [assert.string]],
-    }),
-  })],
 )
 
 /** The message received from the client in a flow session. */

@@ -8,16 +8,20 @@ export const EDITOR_SESSION_SERVER_MESSAGE_SCHEMA = createRuleSet(
     event: assert.stringEquals('syncronize'),
     data: assertObjectStrict as () => EditorState,
   })],
-
   [createSchema({
     event: assert.stringEquals('metadataChanged'),
-    name: assert.stringNotEmpty,
-    value: assert.notNull,
+    data: createArrayParser({
+      name: assert.stringEnum('name', 'title', 'description'),
+      value: assert.notNull,
+    }),
   })],
-
   [createSchema({
     event: assert.stringEquals('error'),
     message: assert.stringNotEmpty,
+  })],
+  [createSchema({
+    event: assert.stringEquals('getFlowExportResult'),
+    data: createArrayParser(assert.stringNotEmpty),
   })],
 
   /***************************************************************************/
@@ -48,6 +52,14 @@ export const EDITOR_SESSION_SERVER_MESSAGE_SCHEMA = createRuleSet(
       value: assert.notNull,
     }),
   })],
+  [createSchema({
+    event: assert.stringEquals('searchOptionsResult'),
+    data: createArrayParser({
+      id: assert.stringNotEmpty,
+      name: assert.stringNotEmpty,
+      options: assert.array as (value: unknown) => asserts value is SchemaOption[],
+    }),
+  })],
 
   /***************************************************************************/
   /* User                                                                    */
@@ -74,22 +86,6 @@ export const EDITOR_SESSION_SERVER_MESSAGE_SCHEMA = createRuleSet(
     }),
   })],
 
-  /***************************************************************************/
-  /* Request Results                                                         */
-  /***************************************************************************/
-
-  [createSchema({
-    event: assert.stringEquals('getFlowExportResult'),
-    data: createArrayParser(assert.stringNotEmpty),
-  })],
-  [createSchema({
-    event: assert.stringEquals('searchOptionsResult'),
-    data: createArrayParser({
-      id: assert.stringNotEmpty,
-      name: assert.stringNotEmpty,
-      options: assert.array as (value: unknown) => asserts value is SchemaOption[],
-    }),
-  })],
 )
 
 /** The message sent from the server to the client in a flow editor session. */
