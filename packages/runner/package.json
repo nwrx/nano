@@ -21,6 +21,7 @@
     "@unserved/server": "0.3.2",
     "@unshared/functions": "0.4.1",
     "@unshared/process": "0.4.1",
+    "@unshared/string": "0.4.1",
     "@unshared/types": "0.4.1",
     "@unshared/validation": "0.4.1",
     "consola": "3.4.1",
