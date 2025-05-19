@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import AppPage from '~/components/app/AppPage.vue'
 import Editor from '~/components/editor/Editor.vue'
-import { useEditorModel } from '~/composables/useEditor'
+import { useEditorModel } from '~/composables/useEditor/useEditorModel'
+import { useEditorThread } from '~/composables/useEditor/useEditorThread'
 
 definePageMeta({
   name: 'ProjectFlowEditor',
@@ -15,6 +16,13 @@ const editor = useEditorModel({
   name: route.params.name as string,
   project: route.params.project as string,
   workspace: route.params.workspace as string,
+})
+
+const thread = useEditorThread({
+  flow: route.params.name as string,
+  project: route.params.project as string,
+  workspace: route.params.workspace as string,
+  nodes: toRef(editor.state.value.nodes),
 })
 
 // --- Fetch the categories.
@@ -55,16 +63,22 @@ onBeforeRouteLeave(() => {
         :messages-server="editor.messagesServer.value"
         :search-options="editor.searchOptions"
         :get-flow-export="editor.getFlowExport"
+
+        :messages-thread="thread.messages"
+
         @syncronize="() => editor.send('syncronize')"
+        @set-metadata="(...data) => editor.send('setMetadata', ...data)"
         @create-nodes="(...data) => editor.send('createNodes', ...data)"
         @clone-nodes="(...data) => editor.send('cloneNodes', ...data)"
         @remove-nodes="(...data) => editor.send('removeNodes', ...data)"
         @set-nodes-metadata="(...data) => editor.send('setNodesMetadata', ...data)"
         @set-nodes-input-value="(...data) => editor.send('setNodesInputValue', ...data)"
-        @create-links="(...data) => editor.send('createLinks', ...data)"
+        @create-links="(link) => editor.send('createLinks', link)"
         @remove-links="(...data) => editor.send('removeLinks', ...data)"
         @clear-messages-client="() => editor.clearMessagesClient()"
         @clear-messages-server="() => editor.clearMessagesServer()"
+
+        @start-thread="(input) => thread.start(input)"
       />
     </AppPage>
   </div>

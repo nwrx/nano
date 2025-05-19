@@ -6,7 +6,7 @@ import type { WebSocketChannel } from '@unshared/client/websocket'
 import { useAlerts } from '@unshared/vue/useAlerts'
 import { useClient } from '~/composables/useClient'
 
-export interface UseEditorSessionOptions {
+export interface UseEditorModelOptions {
   workspace: string
   project: string
   name: string
@@ -25,7 +25,7 @@ export type EditorMethodParameters<K extends EditorEventName> = EditorEventPaylo
 export type EditorMethod<K extends EditorEventName> = (...data: EditorMethodParameters<K>) => void
 export type EditorModel = ReturnType<typeof useEditorModel>
 
-export function useEditorModel(options: UseEditorSessionOptions) {
+export function useEditorModel(options: UseEditorModelOptions) {
   const client = useClient()
   const alerts = useAlerts()
   const state = ref(INITIAL_EDITOR_STATE) as Ref<EditorState>
@@ -46,6 +46,7 @@ export function useEditorModel(options: UseEditorSessionOptions) {
         /***************************************************************************/
         /* Flow                                                                    */
         /***************************************************************************/
+
         if (message.event === 'syncronize') {
           state.value = { ...state.value, ...message.data }
         }
@@ -53,9 +54,8 @@ export function useEditorModel(options: UseEditorSessionOptions) {
           alerts.error(message.message)
         }
         else if (message.event === 'metadataChanged') {
-          const { name, value } = message
-          // @ts-expect-error: ignore
-          state.value.flow[name] = value
+          // @ts-expect-error: `name` is a valid key in `EditorState['flow']`.
+          for (const { name, value } of message.data) state.value.flow[name] = value
         }
 
         /***************************************************************************/
