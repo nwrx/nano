@@ -112,7 +112,6 @@ function toggle() {
 
       <!-- Content -->
       <DataSheetDetail
-        v-if="isOpen"
         v-model="model"
         :is-editable="isEditable"
         :is-clearable="isClearable"
