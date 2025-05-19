@@ -8,6 +8,7 @@ const props = defineProps<BaseButtonProps & {
   icon?: string
   label?: string
   isActive?: boolean
+  classIcon?: unknown
 }>()
 </script>
 
@@ -15,14 +16,15 @@ const props = defineProps<BaseButtonProps & {
   <BaseButton
     v-bind="props"
     eager
-    :class="{ 'text-white !bg-primary-500': isActive }"
+    :class="{ 'text-active !bg-active': isActive }"
     class="flex items-center justify-center size-8 rounded hover:bg-prominent transition">
 
     <slot>
       <BaseIcon
         v-if="icon"
         :icon="icon"
-        class="size-5 shrink-0"
+        class="size-5 shrink-0 transition"
+        :class="classIcon"
       />
     </slot>
   </BaseButton>
