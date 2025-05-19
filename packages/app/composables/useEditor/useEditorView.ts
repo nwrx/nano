@@ -31,6 +31,9 @@ export interface EditorViewOptions {
 
 export function useEditorView(options: EditorViewOptions = {}) {
   const alerts = useAlerts()
+  const settings = useLocalSettings()
+
+  // --- Destructure the options.
   const {
     nodes = ref<FlowNodeObject[]>([]),
     handleCreateNodes = () => alerts.error('The "handleCreateNodes" method is not implemented.'),
@@ -40,8 +43,6 @@ export function useEditorView(options: EditorViewOptions = {}) {
     handleCreateLinks = () => alerts.error('The "handleCreateLinks" method is not implemented.'),
     handleRemoveLinks = () => alerts.error('The "handleRemoveLinks" method is not implemented.'),
   } = options
-
-  const settings = useLocalSettings()
 
   // --- View references.
   const view = ref<HTMLDivElement>()
@@ -212,7 +213,6 @@ export function useEditorView(options: EditorViewOptions = {}) {
     nodes,
     nodeSelectedIds,
     nodeSelected,
-    viewNodes,
     nodeDragging,
     nodeDragOriginScreen,
     nodeDragOriginWorld,
