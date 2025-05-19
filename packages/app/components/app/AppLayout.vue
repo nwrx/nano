@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ASSET_NWRX_LOGO from '~/assets/nwrx-logo-white.svg'
+import AppPageErrorBoundary from './AppPage.ErrorBoundary.vue'
 import '~/assets/css/code.css'
 import '~/assets/css/markdown.css'
 
