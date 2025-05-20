@@ -10,7 +10,7 @@ export async function openaiOnRequest(data: LanguageModelRequestContext, token?:
     function: {
       name: tool.name,
       description: tool.description,
-      parameters: tool.parameters,
+      parameters: tool.inputSchema,
     },
   }))
 

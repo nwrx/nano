@@ -9,7 +9,7 @@ export async function anthropicOnRequest(context: LanguageModelRequestContext, t
   const tools = context.tools.map<Anthropic.Tool>(tool => ({
     name: tool.name,
     description: tool.description,
-    input_schema: tool.parameters,
+    input_schema: tool.inputSchema,
   }))
 
   // --- Adapt the messages to the Anthropic API request format.

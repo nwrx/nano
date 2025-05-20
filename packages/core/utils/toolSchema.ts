@@ -9,7 +9,7 @@ export const toolSchema = {
   additionalProperties: false,
   required: [
     'name',
-    'parameters',
+    'inputSchema',
     'call',
   ],
   properties: {
@@ -30,7 +30,7 @@ export const toolSchema = {
       'description': 'The description of the tool to provide additional information about it to LLM. It allows the LLM to understand the purpose of the tool and how, when, and where to use it.',
       'x-optional': true,
     },
-    parameters: {
+    inputSchema: {
       type: 'object',
       title: 'Properties',
       description: 'The schema of the data that the tool can accept.',

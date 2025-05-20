@@ -30,7 +30,7 @@ export function defineTool(nodeId: string, options: ToolOptions): Tool {
     call: options.call,
     name: options.name,
     description: options.description,
-    parameters: {
+    inputSchema: {
       type: 'object',
       required: Object.keys(options.properties),
       additionalProperties: false,
