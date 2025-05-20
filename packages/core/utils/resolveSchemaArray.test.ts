@@ -82,4 +82,64 @@ describe('resolveSchemaArray', () => {
       await expect(shouldThrow).rejects.toThrow(error)
     })
   })
+
+  describe('resolving array references', () => {
+    it('should flatten a reference that resolves to an array', async() => {
+      const resolver = () => [4, 5, 6]
+      const result = await resolveSchemaArray(
+        'value',
+        [1, 2, 3, { $ref: '#/Variables/Numbers' }],
+        { type: 'array', items: { type: 'number' } },
+        [resolver],
+      )
+      expect(result).toEqual([1, 2, 3, 4, 5, 6])
+    })
+
+    it('should not flatten a reference if the schema has "array" type items', async() => {
+      const resolver = () => [4, 5, 6]
+      const result = await resolveSchemaArray(
+        'value',
+        [{ $ref: '#/Variables/Numbers' }],
+        { type: 'array', items: { type: 'array', items: { type: 'number' } } },
+        [resolver],
+      )
+      expect(result).toEqual([[4, 5, 6]])
+    })
+
+    it('should not flatten a reference if the schema has no items property', async() => {
+      const resolver = () => [4, 5, 6]
+      const result = await resolveSchemaArray(
+        'value',
+        [{ $ref: '#/Variables/Numbers' }],
+        { type: 'array' },
+        [resolver],
+      )
+      expect(result).toEqual([[4, 5, 6]])
+    })
+
+    it('should handle nested references that resolve to arrays', async() => {
+      const resolver1 = () => [4, 5, 6]
+      const resolver2 = () => [7, 8, 9]
+      const result = await resolveSchemaArray(
+        'value',
+        [1, 2, 3, { $ref: '#/Variables/Numbers1' }, { $ref: '#/Variables/Numbers2' }],
+        { type: 'array', items: { type: 'number' } },
+        [
+          (type, variable) => (variable === 'Numbers1' ? resolver1() : undefined),
+          (type, variable) => (variable === 'Numbers2' ? resolver2() : undefined),
+        ],
+      )
+      expect(result).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9])
+    })
+
+    it('should throw an error if the reference is not resolved', async() => {
+      const shouldThrow = resolveSchemaArray(
+        'value',
+        [1, 2, 3, { $ref: '#/Variables/Numbers' }],
+        { type: 'array', items: { type: 'number' } },
+      )
+      const error = E.REFERENCE_NOT_RESOLVED('value', { $ref: '#/Variables/Numbers' })
+      await expect(shouldThrow).rejects.toThrow(error)
+    })
+  })
 })

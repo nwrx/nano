@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
 import type { Schema } from './defineComponent'
-import type { ReferenceResolver } from './resolveReference'
 import { ERRORS as E } from './errors'
+import { isReference } from './isReference'
+import { type ReferenceResolver, resolveReference } from './resolveReference'
 import { resolveSchema } from './resolveSchema'
 
 export async function resolveSchemaArray(
@@ -32,19 +32,30 @@ export async function resolveSchemaArray(
     if (extra.size > 0) throw E.INPUT_ARRAY_NOT_UNIQUE(path, [...extra])
   }
 
-  // --- Resolve and assert each item in the array.
-  const promises = value.map(async(value, index) => {
-    const nestedPath = `${path}[${index}]`
-    return await resolveSchema(nestedPath, value, schema.items ?? {}, resolvers)
+  // --- Resolve every references in the array.
+  const valueResolvedPromises = value.map(async(value: unknown) => {
+    if (!isReference(value)) return value
+    const resolved = await resolveReference(value, resolvers)
+    if (resolved === undefined) throw E.REFERENCE_NOT_RESOLVED(path, value)
+    return resolved
   })
 
-  // --- Check if the `items` schema excepts an array of arrays.
-  const expectNestedArrays = !schema.items
+  // --- If the schema does not expect any kind of nested arrays, we can
+  // --- flatten the value to extract the items from the nested arrays.
+  const expectNestedArrays = schema.items === undefined
     || schema.items.type === 'array'
     || schema.items.anyOf?.some(s => s.type === 'array')
     || schema.items.oneOf?.some(s => s.type === 'array')
 
   // --- Resolve all items in parallel.
-  const resolved = await Promise.all(promises)
-  return expectNestedArrays ? resolved : resolved.flat()
+  const valueResolved = await Promise.all(valueResolvedPromises)
+  const valueFlattened = expectNestedArrays ? valueResolved : valueResolved.flat()
+
+  // --- Resolve and assert each item in the array.
+  const promises = valueFlattened.map(async(value, index) => {
+    const nestedPath = `${path}[${index}]`
+    return await resolveSchema(nestedPath, value, schema.items ?? {}, resolvers)
+  })
+
+  return await Promise.all(promises)
 }
