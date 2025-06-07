@@ -13,8 +13,8 @@ export function resolveSchemaString(
   if (value === '') {
     if (typeof schema.default === 'string')
       return schema.default
-    if (schema.required)
-      throw E.INPUT_REQUIRED(path)
+    else
+      throw E.INPUT_STRING_EMPTY(path)
   }
 
   // --- Assert pattern.

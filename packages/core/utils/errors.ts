@@ -200,6 +200,11 @@ export const ERRORS = {
     name: 'E_INPUT_TOO_LONG',
     context: { path, maxLength },
   }),
+  INPUT_STRING_EMPTY: (path: string) => createError({
+    message: `The input at "${path}" is expected to be a non-empty string`,
+    name: 'E_INPUT_STRING_EMPTY',
+    context: { path },
+  }),
 
   // Number errors.
   INPUT_NOT_NUMBER: (path: string) => createError({

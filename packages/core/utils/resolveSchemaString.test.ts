@@ -53,4 +53,17 @@ describe('resolveSchemaString', () => {
       expect(shouldThrow).toThrow(error)
     })
   })
+
+  describe('default', () => {
+    it('should return the default value if the string is empty', () => {
+      const result = resolveSchemaString('value', '', { type: 'string', default: 'Default Value' })
+      expect(result).toBe('Default Value')
+    })
+
+    it('should throw an error if the string is empty and no default value is provided', () => {
+      const shouldThrow = () => resolveSchemaString('value', '', { type: 'string' })
+      const error = E.INPUT_STRING_EMPTY('value')
+      expect(shouldThrow).toThrow(error)
+    })
+  })
 })
