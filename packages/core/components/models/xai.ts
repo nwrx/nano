@@ -1,5 +1,5 @@
-import { defineLanguageModel } from '../../inference'
-import { openaiOnRequest, openaiOnResponse, openaiSearchModels } from '../openai'
+import { defineLanguageModel } from '../inference'
+import { openaiOnRequest, openaiOnResponse, openaiSearchModels } from './openai'
 
 export const xai = defineLanguageModel({
   defaultBaseUrl: 'https://api.x.ai/v1',

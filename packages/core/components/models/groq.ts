@@ -1,5 +1,5 @@
-import { defineLanguageModel } from '../../inference'
-import { openaiOnRequest, openaiOnResponse, openaiSearchModels } from '../openai'
+import { defineLanguageModel } from '../inference'
+import { openaiOnRequest, openaiOnResponse, openaiSearchModels } from './openai'
 
 export const groq = defineLanguageModel({
   defaultModelId: 'llama3-8b-8192',

@@ -1,9 +1,9 @@
-import { defineLanguageModel } from '../../inference'
-import { openaiOnRequest, openaiOnResponse, openaiSearchModels } from '../openai'
+import { defineLanguageModel } from '../inference'
+import { openaiOnRequest, openaiOnResponse, openaiSearchModels } from './openai'
 
-export const codestral = defineLanguageModel({
-  defaultBaseUrl: 'https://codestral.mistral.com/v1',
-  defaultModelId: 'open-codestral-7b',
+export const mistralai = defineLanguageModel({
+  defaultBaseUrl: 'https://api.mistral.ai/v1',
+  defaultModelId: 'open-mistral-7b',
   pathModels: '/models',
   pathCompletions: '/chat/completions',
   allowCustomToken: true,
