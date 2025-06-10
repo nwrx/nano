@@ -5,7 +5,7 @@ import { User } from '../../user'
 import { RegistryCategory, RegistryCategoryObject } from './RegistryCategory'
 import { RegistryCollection, RegistryCollectionObject } from './RegistryCollection'
 
-export type RegistryComponentEnvironment =
+export type RegistryComponentRuntime =
   | 'builtin'
   | 'ecmascript2024'
   | 'nanoflow1'
@@ -101,14 +101,14 @@ export class RegistryComponent extends BaseEntity {
   outputs: Record<string, Schema> = {}
 
   /**
-   * The environment used in the code of the component. Additionally, the `environment`
+   * The runtime used in the code of the component. Additionally, the `runtime`
    * property may reference built-in components using the `<nanoworks/core/component-name>`
    * syntax.
    *
    * @example 'javascript'
    */
   @Column('varchar')
-  environment: RegistryComponentEnvironment = 'builtin'
+  runtime: RegistryComponentRuntime = 'builtin'
 
   /**
    * The code of the component. This code will be executed in an isolated environment
@@ -132,7 +132,7 @@ export class RegistryComponent extends BaseEntity {
       title: this.title,
       description: this.description,
       icon: this.icon,
-      environment: this.environment,
+      runtime: this.runtime,
       inputs: withInputs ? this.inputs : undefined,
       outputs: withOutputs ? this.outputs : undefined,
       collection: withCollection ? this.collection.serialize(serializeCollectionOptions) : undefined,
@@ -154,7 +154,7 @@ export interface RegistryComponentObject {
   title: string
   description: string
   icon: string
-  environment: RegistryComponentEnvironment
+  runtime: RegistryComponentRuntime
   inputs?: Record<string, Schema>
   outputs?: Record<string, Schema>
   collection?: RegistryCollectionObject

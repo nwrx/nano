@@ -1,7 +1,7 @@
 import type { Schema } from '@nwrx/nano/utils'
 import type { ModuleRegistry } from '../index'
+import { COMPONENTS } from '@nwrx/nano/components'
 import { In } from 'typeorm'
-import { components } from '../../../core/components'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
 import { NATIVE_CATEGORIES } from './nativeCategories'
@@ -22,7 +22,7 @@ export async function initialize(this: ModuleRegistry) {
     // --- Assert that the `nanoworks` user workspace exist. If not, create it.
     const { User } = moduleUser.getRepositories()
     let createdBy = await User.findOneBy({ username: 'nanoworks' })
-    const userNanoworks = User.create({ id: createdBy?.id, username: 'nanoworks', email: 'contact@nanoworks.io' })
+    const userNanoworks = User.create({ id: createdBy?.id, username: 'nanoworks', email: 'contact@nwrx.io' })
     createdBy = await User.save(userNanoworks)
 
     // --- Assert that the `nanoworks` workspace exist. If not, create it.
@@ -49,16 +49,33 @@ export async function initialize(this: ModuleRegistry) {
       await RegistryCollection.save(collection)
     }
 
-    // --- For each initial component, check if it exists and create it if it does not.
+    // --- Remove all components from the registry that are not in the initial components.
     const { RegistryComponent } = this.getRepositories()
+    const components = await RegistryComponent.findBy({ runtime: 'builtin' })
+    for (const component of components) {
+      const shouldBeRemoved = !Object.keys(NATIVE_COMPONENTS).includes(component.name)
+      if (shouldBeRemoved) await RegistryComponent.remove(component)
+    }
+
+    // --- For each initial component, check if it exists and create it if it does not.
     for (const name in NATIVE_COMPONENTS) {
       const native = NATIVE_COMPONENTS[name as keyof typeof NATIVE_COMPONENTS]
       const collection = await RegistryCollection.findOneByOrFail({ name: native.collection, workspace })
       const categories = await RegistryCategory.findBy({ name: In(native.categories) })
       const existing = await RegistryComponent.findOneBy({ name, collection })
-      const inputs = components[name as keyof typeof components].inputs as Record<string, Schema>
-      const outputs = components[name as keyof typeof components].outputs as Record<string, Schema>
-      const component = RegistryComponent.create({ id: existing?.id, name, ...native, version: '1.0.0', inputs, outputs, collection, categories, createdBy })
+      const inputs = COMPONENTS[name as keyof typeof COMPONENTS].inputs as Record<string, Schema>
+      const outputs = COMPONENTS[name as keyof typeof COMPONENTS].outputs as Record<string, Schema>
+      const component = RegistryComponent.create({
+        id: existing?.id,
+        ...native,
+        name,
+        version: '1.0.0',
+        inputs,
+        outputs,
+        collection,
+        categories,
+        createdBy,
+      })
       await RegistryComponent.save(component)
     }
   })
