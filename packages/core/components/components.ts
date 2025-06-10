@@ -1,12 +1,12 @@
 import * as core from './core'
 import * as inference from './inference'
 import * as models from './models'
-import * as services from './services'
 
-export const components = {
+export const COMPONENTS = {
 
   // Core
   ask: core.ask,
+  mcp: core.mcp,
   client: core.client,
   confirm: core.confirm,
   gate: core.gate,
@@ -28,7 +28,4 @@ export const components = {
   openai: models.openai,
   anthropic: models.anthropic,
   mistralai: models.mistralai,
-
-  // Services
-  weather: services.weather,
 }

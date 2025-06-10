@@ -1,10 +1,10 @@
 /* eslint-disable sonarjs/no-duplicate-string */
-import type { components } from '@nwrx/nano/components'
+import type { COMPONENTS } from '@nwrx/nano/components'
 import type { RegistryComponent } from '../entities'
 import type { NativeCategoryName } from './nativeCategories'
 import type { NativeCollectionName } from './nativeCollections'
 
-export type NativeComponents = Record<keyof typeof components, Partial<Omit<RegistryComponent, 'categories' | 'collection'>> & {
+export type NativeComponents = Record<keyof typeof COMPONENTS, Partial<Omit<RegistryComponent, 'categories' | 'collection'>> & {
   collection: NativeCollectionName
   categories: NativeCategoryName[]
 }>
@@ -120,6 +120,15 @@ export const NATIVE_COMPONENTS = {
     icon: 'https://api.iconify.design/carbon:storage.svg',
     description: 'Messages storage provider. Messages provides powerful storage capabilities for a variety of use cases.',
     categories: ['storage', 'built-by-nanoworks'],
+    collection: 'core',
+  },
+
+  // MCP
+  mcp: {
+    title: 'MCP Server',
+    icon: 'https://api.iconify.design/carbon:server.svg',
+    description: 'MCP server provider. MCP server provides powerful server capabilities for a variety of use cases.',
+    categories: ['mcp', 'built-by-nanoworks'],
     collection: 'core',
   },
 } as const satisfies Partial<NativeComponents>

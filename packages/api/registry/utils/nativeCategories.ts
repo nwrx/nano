@@ -44,6 +44,12 @@ export const NATIVE_CATEGORIES = {
     icon: 'https://api.iconify.design/carbon:model.svg',
     description: 'LLM models',
   },
+  'mcp': {
+    title: 'MCP',
+    type: 'Purpose',
+    icon: 'https://api.iconify.design/carbon:cloud-platform.svg',
+    description: 'This category is used to classify components that are used to interact with an MCP server.',
+  },
 
   // Technology
   'database': {
