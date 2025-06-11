@@ -44,6 +44,7 @@
     "dev": "tsup --watch"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "1.12.1",
     "@unshared/client": "0.4.1",
     "@unshared/collection": "0.4.1",
     "@unshared/decorators": "0.4.1",
@@ -58,7 +59,10 @@
   },
   "devDependencies": {
     "consola": "3.4.1",
-    "msw": "2.7.3"
+    "h3": "1.15.1",
+    "msw": "2.7.3",
+    "zod": "3.24.2",
+    "zod-to-json-schema": "3.24.5"
   },
   "tsup": {
     "entry": {
