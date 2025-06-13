@@ -3,6 +3,7 @@ import type { ModuleVault } from '../index'
 import { assert, createSchema } from '@unshared/validation'
 import { assertProject } from '../../project'
 import { assertWorkspace } from '../../workspace'
+import { getVariable } from './getVariable'
 import { getVaultAdapter } from './getVaultAdapter'
 
 /** The schema for the getVariableValue options. */
@@ -29,16 +30,18 @@ export async function getVariableValue(this: ModuleVault, options: GetVariableVa
 
   // --- Assert that the project can `Use` the vault.
   const { VaultProjectAssignment } = this.getRepositories()
-  const count = await VaultProjectAssignment.countBy({ project, vault: { name: vault }, permission: 'Use' })
-  if (count === 0) throw this.errors.VAULT_VARIABLE_NOT_FOUND(workspace.name, vault, name)
+  const vaultAssignment = await VaultProjectAssignment.findOne({
+    where: { project, vault: { name: vault }, permission: 'Use' },
+    relations: { vault: true },
+  })
 
   // --- Get the variable from the database
-  const { VaultVariable } = this.getRepositories()
-  const variable = await VaultVariable.findOne({ where: { vault: { name: vault }, name }, relations: { vault: true } })
-  if (!variable) throw this.errors.VAULT_VARIABLE_NOT_FOUND(workspace.name, vault, name)
+  if (!vaultAssignment) throw this.errors.VAULT_VARIABLE_NOT_FOUND(workspace.name, vault, name)
+  if (!vaultAssignment.vault) throw new Error(`Failed to load vault assignment for ${vault}`)
+  const variable = await getVariable.call(this, { workspace, vault: vaultAssignment.vault, name })
 
   // --- Get the adapter and retrieve the decrypted value
-  const adapter = await getVaultAdapter.call(this, variable.vault!)
+  const adapter = await getVaultAdapter.call(this, vaultAssignment.vault)
   await adapter.initialize()
   return adapter.getValue(variable)
 }

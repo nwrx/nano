@@ -8,8 +8,10 @@ import * as UTILS from './utils'
 
 export type * from './adapters'
 export * from './entities'
+export * from './utils/assertVault'
 export * from './utils/assertVaultPermission'
 export * from './utils/assertVaultType'
+export * from './utils/assertVaultVariable'
 export type * from './utils/getVaultProjectPermissions'
 export type * from './utils/getVaultUserPermissions'
 
@@ -62,6 +64,7 @@ export class ModuleVault extends ModuleBase implements ModuleVaultOptions {
 
   createVault = UTILS.createVault.bind(this)
   getVault = UTILS.getVault.bind(this)
+  getVariable = UTILS.getVariable.bind(this)
   getVariableValue = UTILS.getVariableValue.bind(this)
   searchVariableByProject = UTILS.searchVariableByProject.bind(this)
 }

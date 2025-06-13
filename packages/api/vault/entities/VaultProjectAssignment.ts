@@ -14,7 +14,7 @@ export class VaultProjectAssignment extends BaseEntity {
    */
   @JoinColumn()
   @ManyToOne(() => Vault, { nullable: false })
-  vault: Vault
+  vault?: Vault
 
   /**
    * The project that the vault is assigned to. Users with write permission
@@ -22,14 +22,14 @@ export class VaultProjectAssignment extends BaseEntity {
    */
   @JoinColumn()
   @ManyToOne(() => Project, { nullable: false })
-  project: Project
+  project?: Project
 
   /**
    * The user that created the assignment.
    */
   @JoinColumn()
   @ManyToOne(() => User, { nullable: false })
-  createdBy: User
+  createdBy?: User
 
   /**
    * The permission level for this assignment.

@@ -2,7 +2,7 @@ import type { Context } from '../../__fixtures__'
 import { ValidationError } from '@unshared/validation'
 import { createTestContext } from '../../__fixtures__'
 import { createVariable } from './createVariable'
-import { getVariableValue } from './getVariableValue'
+import { getVariable } from './getVariable'
 import { setVariableValue } from './setVariableValue'
 
 describe.concurrent<Context>('setVariableValue', () => {
@@ -15,8 +15,8 @@ describe.concurrent<Context>('setVariableValue', () => {
       const variable = await createVariable.call(moduleVault, { user, name: 'variable', value: 'value', vault })
       await moduleVault.getRepositories().VaultVariable.save(variable)
       await setVariableValue.call(moduleVault, { workspace, vault, name: variable.name, value: 'new-value' })
-      const value = await getVariableValue.call(moduleVault, { workspace, vault, name: variable.name })
-      expect(value).toBe('new-value')
+      const value = await getVariable.call(moduleVault, { workspace, vault, name: variable.name })
+      expect(value).toMatchObject({ id: variable.id, name: variable.name })
     })
 
   })
