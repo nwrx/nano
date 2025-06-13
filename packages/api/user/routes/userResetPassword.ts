@@ -1,7 +1,7 @@
 /* eslint-disable sonarjs/todo-tag */
 import type { ModuleUser } from '../index'
 import { createHttpRoute } from '@unserved/server'
-import { assertStringEmail, createSchema } from '@unshared/validation'
+import { assertStringEmail, createParser } from '@unshared/validation'
 import { createCipheriv, createHash } from 'node:crypto'
 import { getUser } from '../utils'
 
@@ -9,7 +9,7 @@ export function userResetPassword(this: ModuleUser) {
   return createHttpRoute(
     {
       name: 'POST /api/users/:username/reset-password',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         username: assertStringEmail,
       }),
     },

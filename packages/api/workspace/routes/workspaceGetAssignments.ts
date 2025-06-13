@@ -1,7 +1,7 @@
 import type { ModuleWorkspace } from '../index'
 import type { WorkspaceUserPermissions } from '../utils'
 import { createHttpRoute } from '@unserved/server'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { getWorkspace, getWorkspaceAssignments } from '../utils'
 
@@ -9,7 +9,7 @@ export function workspaceGetAssignments(this: ModuleWorkspace) {
   return createHttpRoute(
     {
       name: 'GET /api/workspaces/:workspace/assignments',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         workspace: assert.stringNotEmpty,
       }),
     },

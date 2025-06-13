@@ -1,6 +1,6 @@
 import type { ModuleStorage } from '../index'
 import { createHttpRoute } from '@unserved/server'
-import { assertString, assertStringUuid, assertUndefined, createSchema } from '@unshared/validation'
+import { assertString, assertStringUuid, assertUndefined, createParser } from '@unshared/validation'
 import { setResponseStatus } from 'h3'
 import { ModuleUser } from '../../user'
 import { erase, getFile } from '../utils'
@@ -9,7 +9,7 @@ export function storageDelete(this: ModuleStorage) {
   return createHttpRoute(
     {
       name: 'DELETE /api/storage/:pool/:id',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         id: assertStringUuid,
         pool: [[assertUndefined], [assertString]],
       }),

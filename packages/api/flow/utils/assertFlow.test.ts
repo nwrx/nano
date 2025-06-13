@@ -1,4 +1,4 @@
-import { ValidationError } from '@unshared/validation'
+import { AssertionError } from '@unshared/validation'
 import { randomUUID } from 'node:crypto'
 import { assertFlow } from './assertFlow'
 
@@ -59,7 +59,7 @@ describe('assertFlow', () => {
         data: VALID_FLOW_DATA,
         assignments: [],
       })
-      expect(shouldThrow).toThrow(ValidationError)
+      expect(shouldThrow).toThrow(AssertionError)
     })
 
     it('should throw an error if the flow name is empty', () => {
@@ -69,7 +69,7 @@ describe('assertFlow', () => {
         data: VALID_FLOW_DATA,
         assignments: [],
       })
-      expect(shouldThrow).toThrow(ValidationError)
+      expect(shouldThrow).toThrow(AssertionError)
     })
 
     it('should throw an error if the flow data is invalid', () => {
@@ -79,7 +79,7 @@ describe('assertFlow', () => {
         data: { version: '', nodes: null, metadata: null },
         assignments: [],
       })
-      expect(shouldThrow).toThrow(ValidationError)
+      expect(shouldThrow).toThrow(AssertionError)
     })
 
     it('should throw an error if the user id is not a UUID', () => {
@@ -89,7 +89,7 @@ describe('assertFlow', () => {
         data: VALID_FLOW_DATA,
         assignments: [{ user: { ...VALID_USER, id: 'invalid' }, permission: 'Read' }],
       })
-      expect(shouldThrow).toThrow(ValidationError)
+      expect(shouldThrow).toThrow(AssertionError)
     })
 
     it('should throw an error if the permission is invalid for an assignment', () => {
@@ -99,7 +99,7 @@ describe('assertFlow', () => {
         data: VALID_FLOW_DATA,
         assignments: [{ user: VALID_USER, permission: 'Invalid' }],
       })
-      expect(shouldThrow).toThrow(ValidationError)
+      expect(shouldThrow).toThrow(AssertionError)
     })
   })
 })

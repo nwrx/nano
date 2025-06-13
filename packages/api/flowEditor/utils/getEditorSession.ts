@@ -4,7 +4,7 @@ import type { Flow } from '../../flow'
 import { createThreadFromFlow } from '@nwrx/nano'
 import { COMPONENTS } from '@nwrx/nano/components'
 import { defineComponent, serializeSpecifier } from '@nwrx/nano/utils'
-import { assert, createRuleSet, createSchema } from '@unshared/validation'
+import { assert, createRuleSet, createParser } from '@unshared/validation'
 import { assertFlow } from '../../flow'
 import { assertProject } from '../../project'
 import { ModuleRegistry } from '../../registry'
@@ -15,14 +15,14 @@ import { EditorSession } from './createEditorSession'
 
 /** Schema to validate the options to resolve the editor session. */
 const GET_EDITOR_SESSION_OPTIONS_SCHEMA = createRuleSet(
-  [createSchema({
+  [createParser({
     user: assertUser,
     flow: assertFlow,
     project: assertProject,
     workspace: assertWorkspace,
   })],
 
-  [createSchema({
+  [createParser({
     peer: assert.object as (value: unknown) => asserts value is Peer,
   })],
 )

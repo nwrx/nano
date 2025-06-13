@@ -1,5 +1,5 @@
 import type { VaultType } from './assertVaultType'
-import { ValidationError } from '@unshared/validation'
+import { AssertionError } from '@unshared/validation'
 import { assertVaultType, VAULT_TYPES } from './assertVaultType'
 
 describe('assertVaultType', () => {
@@ -11,7 +11,7 @@ describe('assertVaultType', () => {
   it('should throw an error if the vault type is not valid', () => {
     const shouldThrow = () => assertVaultType('invalid' as any)
     const values = VAULT_TYPES.map(value => `'${value}'`).join(', ')
-    expect(shouldThrow).toThrow(ValidationError)
+    expect(shouldThrow).toThrow(AssertionError)
     expect(shouldThrow).toThrow(`String is not one of the values: ${values}`)
   })
 

@@ -1,7 +1,7 @@
 import type { ThreadClientMessage, ThreadServerMessage } from '@nwrx/nano-runner'
 import type { ModuleThread } from '..'
 import { createWebSocketRoute } from '@unserved/server'
-import { assert, assertObjectStrict, createParser, createSchema } from '@unshared/validation'
+import { assert, assertObjectStrict, createParser } from '@unshared/validation'
 import { ModuleFlow } from '../../flow'
 import { ModuleProject } from '../../project'
 import { ModuleUser } from '../../user'
@@ -12,7 +12,7 @@ export function threadSession(this: ModuleThread) {
   return createWebSocketRoute(
     {
       name: 'WS /ws/workspaces/:workspace/projects/:project/flows/:flow/thread/:thread?',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         project: assert.stringNotEmpty,
         flow: assert.stringNotEmpty,

@@ -2,12 +2,12 @@ import type { Loose } from '@unshared/types'
 import type { ModuleVault } from '..'
 import type { Vault } from '../entities'
 import type { VaultConfiguration } from './getVaultAdapter'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { assertUser } from '../../user'
 import { encrypt } from '../../utils'
 import { assertVault } from './assertVault'
 
-const UPDATE_VAULT_OPTIONS_SCHEMA = createSchema({
+const UPDATE_VAULT_OPTIONS_SCHEMA = createParser({
   user: assertUser,
   vault: assertVault,
   configuration: assert.objectStrict as (value: unknown) => asserts value is VaultConfiguration,

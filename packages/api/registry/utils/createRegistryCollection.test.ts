@@ -1,5 +1,5 @@
 import type { Context } from '../../__fixtures__'
-import { ValidationError } from '@unshared/validation'
+import { AssertionError } from '@unshared/validation'
 import { createTestContext } from '../../__fixtures__'
 import { RegistryCollection } from '../entities'
 import { createRegistryCollection } from './createRegistryCollection'
@@ -61,21 +61,21 @@ describe.concurrent<Context>('createRegistryCollection', () => {
       const { user, workspace } = await setupUser()
       // @ts-expect-error: testing missing `name` property
       const shouldReject = createRegistryCollection.call(moduleRegistry, { workspace, user })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
 
     it('should throw an error if the collection workspace is missing', async({ setupUser, moduleRegistry }) => {
       const { user } = await setupUser()
       // @ts-expect-error: testing missing `workspace` property
       const shouldReject = createRegistryCollection.call(moduleRegistry, { name: 'collection', user })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
 
     it('should throw an error if the collection user is missing', async({ setupUser, moduleRegistry }) => {
       const { workspace } = await setupUser()
       // @ts-expect-error: testing missing `user` property
       const shouldReject = createRegistryCollection.call(moduleRegistry, { name: 'collection', workspace })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
   })
 })

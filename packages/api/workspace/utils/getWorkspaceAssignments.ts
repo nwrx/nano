@@ -1,7 +1,7 @@
 import type { Loose } from '@unshared/types'
 import type { ModuleWorkspace } from '../index'
 import type { WorkspacePermission } from './assertWorkspacePermission'
-import { createSchema } from '@unshared/validation'
+import { createParser } from '@unshared/validation'
 import { assertWorkspace } from './assertWorkspace'
 
 /** A map of the workspace assignments by user. */
@@ -12,7 +12,7 @@ export interface WorkspaceUserPermissions {
 }
 
 /** The parser function for the {@linkcode getWorkspace} function. */
-const GET_WORKSPACE_ASSIGNMENTS_OPTIONS_SCHEMA = createSchema({
+const GET_WORKSPACE_ASSIGNMENTS_OPTIONS_SCHEMA = createParser({
   workspace: assertWorkspace,
 })
 

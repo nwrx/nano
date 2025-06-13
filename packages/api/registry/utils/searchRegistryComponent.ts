@@ -2,14 +2,14 @@ import type { Loose } from '@unshared/types'
 import type { FindOptionsOrder } from 'typeorm'
 import type { RegistryComponent } from '../entities'
 import type { ModuleRegistry } from '../index'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { ILike } from 'typeorm'
 import { assertWorkspace } from '../../workspace'
 import { assertRegistryCategory } from './assertRegistryCategory'
 import { assertRegistryCollection } from './assertRegistryCollection'
 
 /** The parser function for the `searchRegistryComponent` function. */
-export const SEARCH_REGISTRY_COMPONENT_OPTIONS_SCHEMA = createSchema({
+export const SEARCH_REGISTRY_COMPONENT_OPTIONS_SCHEMA = createParser({
   workspace: [[assert.undefined], [assertWorkspace]],
   collection: [[assert.undefined], [assertRegistryCollection]],
   categories: [[assert.undefined], [assertRegistryCategory]],

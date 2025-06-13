@@ -1,6 +1,6 @@
 import type { ModuleUser } from '../index'
 import { createHttpRoute } from '@unserved/server'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { setResponseStatus } from 'h3'
 import { ModuleStorage } from '../../storage'
 import { getUser } from '../utils'
@@ -15,11 +15,19 @@ export function userSetAvatar(this: ModuleUser) {
   return createHttpRoute(
     {
       name: 'PUT /api/users/:username/avatar',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         username: assert.stringNotEmpty,
       }),
-      parseFormData: createSchema({
-        file: assert.instance(File),
+      parseFormData: createParser({
+        file: [
+          assert.file,
+          assert.fileSizeLowerThan(50 * 1024 * 1024), // 50 MB
+          assert.fileType(assert.stringEnum(
+            'image/png',
+            'image/jpeg',
+            'image/webp',
+          )),
+        ],
       }),
     },
     async({ event, parameters, formData }): Promise<void> => {

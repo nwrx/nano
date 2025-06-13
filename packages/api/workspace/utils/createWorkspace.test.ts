@@ -1,5 +1,5 @@
 import type { Context } from '../../__fixtures__'
-import { ValidationError } from '@unshared/validation'
+import { AssertionError } from '@unshared/validation'
 import { createTestContext } from '../../__fixtures__'
 import { createWorkspace } from './createWorkspace'
 
@@ -62,25 +62,25 @@ describe.concurrent<Context>('createWorkspace', () => {
     it('should throw an error if the workspace name is empty', async({ moduleWorkspace, setupUser }) => {
       const { user } = await setupUser()
       const shouldReject = createWorkspace.call(moduleWorkspace, { user, name: '' })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
 
     it('should throw an error if the workspace user id is not an UUID', async({ moduleWorkspace }) => {
     // @ts-expect-error: testing invalid `user.id`
       const shouldReject = createWorkspace.call(moduleWorkspace, { user: { id: 'not-a-uuid' }, name: 'workspace' })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
 
     it('should throw an error if the user is not an instance of `User`', async({ moduleWorkspace }) => {
     // @ts-expect-error: testing missing `user.id` property
       const shouldReject = createWorkspace.call(moduleWorkspace, { user: {}, name: 'workspace' })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
 
     it('should throw an error if the workspace is missing the user', async({ moduleWorkspace }) => {
     // @ts-expect-error: testing missing `user.id` property
       const shouldReject = createWorkspace.call(moduleWorkspace, { name: 'workspace' })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
   })
 })

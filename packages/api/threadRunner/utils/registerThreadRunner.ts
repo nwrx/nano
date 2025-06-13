@@ -1,11 +1,11 @@
 import type { Loose } from '@unshared/types'
 import type { ModuleThreadRunner } from '..'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { assertUser } from '../../user'
 import { createThreadRunnerClient } from './createThreadRunnerClient'
 
 /** The schema for the register thread runner options. */
-export const REGISTER_THREAD_RUNNER_OPTIONS_SCHEMA = createSchema({
+export const REGISTER_THREAD_RUNNER_OPTIONS_SCHEMA = createParser({
   user: assertUser,
   address: assert.stringNotEmpty,
 })

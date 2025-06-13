@@ -1,9 +1,9 @@
 import type { Loose } from '@unshared/types'
 import type { RegistryCategory } from '../entities'
 import type { ModuleRegistry } from '../index'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 
-const GET_REGISTRY_CATEGORY_OPTIONS = createSchema({
+const GET_REGISTRY_CATEGORY_OPTIONS = createParser({
   name: assert.stringNotEmpty,
 })
 

@@ -1,7 +1,7 @@
 import type { UUID } from 'node:crypto'
 import type { ModuleUser } from '../index'
 import { createHttpRoute } from '@unserved/server'
-import { assertStringNotEmpty, createSchema, EXP_UUID } from '@unshared/validation'
+import { assertStringNotEmpty, createParser, EXP_UUID } from '@unshared/validation'
 import { createDecipheriv, createHash } from 'node:crypto'
 import { createPassword, createSession } from '../utils'
 
@@ -9,10 +9,10 @@ export function userRecover(this: ModuleUser) {
   return createHttpRoute(
     {
       name: 'POST /api/users/:username/recover',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         username: assertStringNotEmpty,
       }),
-      parseBody: createSchema({
+      parseBody: createParser({
         token: assertStringNotEmpty,
         newPassword: assertStringNotEmpty,
         newPasswordConfirm: assertStringNotEmpty,

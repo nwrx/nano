@@ -1,7 +1,7 @@
 import type { Loose } from '@unshared/types'
 import type { ModuleProject } from '../index'
 import type { ProjectPermission } from './assertProjectPermission'
-import { createSchema } from '@unshared/validation'
+import { createParser } from '@unshared/validation'
 import { assertProject } from './assertProject'
 
 /** A map of the project assignments by user. */
@@ -12,7 +12,7 @@ export interface ProjectUserPermissions {
 }
 
 /** The parser function for the {@linkcode getProject} function. */
-const GET_PROJECT_ASSIGNMENTS_OPTIONS_SCHEMA = createSchema({
+const GET_PROJECT_ASSIGNMENTS_OPTIONS_SCHEMA = createParser({
   project: assertProject,
 })
 

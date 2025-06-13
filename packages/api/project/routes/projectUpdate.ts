@@ -1,6 +1,6 @@
 import type { ModuleProject } from '../index'
 import { createHttpRoute } from '@unserved/server'
-import { assertString, assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
+import { assertString, assertStringNotEmpty, assertUndefined, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
 import { getProject } from '../utils'
@@ -9,11 +9,11 @@ export function projectUpdate(this: ModuleProject) {
   return createHttpRoute(
     {
       name: 'PUT /api/workspaces/:workspace/projects/:project',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         project: assertStringNotEmpty,
         workspace: assertStringNotEmpty,
       }),
-      parseBody: createSchema({
+      parseBody: createParser({
         title: [[assertUndefined], [assertStringNotEmpty]],
         description: [[assertUndefined], [assertString]],
       }),

@@ -1,7 +1,7 @@
 /* eslint-disable sonarjs/todo-tag */
 import type { ModuleProject } from '../index'
 import { createHttpRoute } from '@unserved/server'
-import { assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
+import { assertStringNotEmpty, assertUndefined, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
 import { searchProjects } from '../utils'
@@ -10,10 +10,10 @@ export function projectSearch(this: ModuleProject) {
   return createHttpRoute(
     {
       name: 'GET /api/workspaces/:workspace/projects',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         workspace: assertStringNotEmpty,
       }),
-      parseQuery: createSchema({
+      parseQuery: createParser({
         search: [[assertUndefined], [assertStringNotEmpty]],
         page: [[assertUndefined], [assertStringNotEmpty, Number.parseInt]],
         limit: [[assertUndefined], [assertStringNotEmpty, Number.parseInt]],

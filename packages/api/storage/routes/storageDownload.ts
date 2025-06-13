@@ -1,7 +1,7 @@
 import type { ModuleStorage } from '../index'
 import { createHttpRoute } from '@unserved/server'
 import { parseBoolean } from '@unshared/string'
-import { assertStringNotEmpty, assertStringUuid, assertUndefined, createSchema } from '@unshared/validation'
+import { assertStringNotEmpty, assertStringUuid, assertUndefined, createParser } from '@unshared/validation'
 import { getHeader } from 'h3'
 import { ModuleUser } from '../../user'
 import { getFile } from '../utils'
@@ -10,10 +10,10 @@ export function fileDownload(this: ModuleStorage) {
   return createHttpRoute(
     {
       name: 'GET /api/storage/:id',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         id: assertStringUuid,
       }),
-      parseQuery: createSchema({
+      parseQuery: createParser({
         download: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
       }),
     },

@@ -1,7 +1,7 @@
 import type { User } from '../entities'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 
-export const assertUser = createSchema({
+export const assertUser = createParser({
   id: assert.stringUuid,
   username: assert.stringNotEmpty,
   isSuperAdministrator: [[assert.nil], [assert.boolean]],

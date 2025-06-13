@@ -1,6 +1,6 @@
 import type { ModuleProject } from '..'
 import { createWebSocketRoute } from '@unserved/server'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { ModuleFlow } from '../../flow'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
@@ -10,7 +10,7 @@ export function flowSubscribe(this: ModuleProject) {
   return createWebSocketRoute(
     {
       name: 'WS /ws/workspaces/:workspace/projects/:project',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         project: assert.stringNotEmpty,
       }),

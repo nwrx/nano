@@ -1,6 +1,6 @@
 import type { ModuleVault } from '..'
 import { createHttpRoute } from '@unserved/server'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
 import { searchVaults } from '../utils'
@@ -9,10 +9,10 @@ export function vaultSearch(this: ModuleVault) {
   return createHttpRoute(
     {
       name: 'GET /api/workspaces/:workspace/vaults',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         workspace: assert.stringNotEmpty,
       }),
-      parseQuery: createSchema({
+      parseQuery: createParser({
         search: [[assert.undefined], [assert.stringNotEmpty]],
         page: [[assert.undefined], [assert.stringNotEmpty, assert.number]],
         limit: [[assert.undefined], [assert.stringNotEmpty, assert.number]],

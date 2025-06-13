@@ -1,7 +1,7 @@
 import type { ModuleFlow } from '..'
 import { createHttpRoute } from '@unserved/server'
 import { toSlug } from '@unshared/string'
-import { assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
+import { assertStringNotEmpty, assertUndefined, createParser } from '@unshared/validation'
 import { ModuleProject } from '../../project'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
@@ -11,11 +11,11 @@ export function flowCreate(this: ModuleFlow) {
   return createHttpRoute(
     {
       name: 'POST /api/workspaces/:workspace/projects/:project/flows',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         workspace: assertStringNotEmpty,
         project: assertStringNotEmpty,
       }),
-      parseBody: createSchema({
+      parseBody: createParser({
         name: [[assertUndefined, getRandomName], [assertStringNotEmpty, toSlug]],
       }),
     },

@@ -1,8 +1,8 @@
 import type { RegistryCategory } from '../entities'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { assertRegistryCategoryType } from './assertRegistryCategoryType'
 
-export const assertRegistryCategory = createSchema({
+export const assertRegistryCategory = createParser({
   id: assert.stringUuid,
   name: assert.stringNotEmpty,
   type: assertRegistryCategoryType,

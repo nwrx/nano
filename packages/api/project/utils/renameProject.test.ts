@@ -1,5 +1,5 @@
 import type { Context } from '../../__fixtures__'
-import { ValidationError } from '@unshared/validation'
+import { AssertionError } from '@unshared/validation'
 import { createTestContext } from '../../__fixtures__'
 import { ERRORS } from './errors'
 import { renameProject } from './renameProject'
@@ -67,19 +67,19 @@ describe.concurrent<Context>('renameProject', () => {
       const { workspace } = await setupWorkspace()
       const { project } = await setupProject()
       const shouldReject = renameProject.call(moduleProject, { project, workspace })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
 
     it('should throw an error if the project is missing', async({ setupWorkspace, moduleProject }) => {
       const { workspace } = await setupWorkspace()
       const shouldReject = renameProject.call(moduleProject, { name: 'new-name', workspace })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
 
     it('should throw an error if the workspace is missing', async({ setupProject, moduleProject }) => {
       const { project } = await setupProject()
       const shouldReject = renameProject.call(moduleProject, { project, name: 'new-name' })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
   })
 })

@@ -1,4 +1,4 @@
-import { ValidationError } from '@unshared/validation'
+import { AssertionError } from '@unshared/validation'
 import { randomUUID } from 'node:crypto'
 import { assertRegistryComponent } from './assertRegistryComponent'
 
@@ -44,7 +44,7 @@ describe('assertRegistryComponent', () => {
         collection: VALID_COLLECTION,
         categories: [],
       })
-      expect(shouldThrow).toThrow(ValidationError)
+      expect(shouldThrow).toThrow(AssertionError)
     })
 
     it('should throw if name is empty', () => {
@@ -54,7 +54,7 @@ describe('assertRegistryComponent', () => {
         collection: VALID_COLLECTION,
         categories: [],
       })
-      expect(shouldThrow).toThrow(ValidationError)
+      expect(shouldThrow).toThrow(AssertionError)
     })
 
     it('should throw if collection is invalid', () => {
@@ -64,7 +64,7 @@ describe('assertRegistryComponent', () => {
         collection: { id: 'invalid-uuid', name: 'test' },
         categories: [],
       })
-      expect(shouldThrow).toThrow(ValidationError)
+      expect(shouldThrow).toThrow(AssertionError)
     })
 
     it('should throw if categories contains invalid category', () => {
@@ -74,7 +74,7 @@ describe('assertRegistryComponent', () => {
         collection: VALID_COLLECTION,
         categories: [{ id: 'invalid-uuid', name: 'test' }],
       })
-      expect(shouldThrow).toThrow(ValidationError)
+      expect(shouldThrow).toThrow(AssertionError)
     })
   })
 })

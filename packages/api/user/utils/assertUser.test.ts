@@ -1,4 +1,4 @@
-import { ValidationError } from '@unshared/validation'
+import { AssertionError } from '@unshared/validation'
 import { randomUUID } from 'node:crypto'
 import { assertUser } from './assertUser'
 
@@ -38,12 +38,12 @@ describe('assertUser', () => {
   describe('fail', () => {
     it('should throw an error if the user id is not a UUID', () => {
       const shouldThrow = () => assertUser({ id: 'invalid', username: 'john.doe' })
-      expect(shouldThrow).toThrow(ValidationError)
+      expect(shouldThrow).toThrow(AssertionError)
     })
 
     it('should throw an error if the username is empty', () => {
       const shouldThrow = () => assertUser({ id: randomUUID(), username: '' })
-      expect(shouldThrow).toThrow(ValidationError)
+      expect(shouldThrow).toThrow(AssertionError)
     })
   })
 })

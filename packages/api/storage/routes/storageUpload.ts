@@ -9,7 +9,7 @@ export function storageUpload(this: ModuleStorage) {
     {
       name: 'POST /api/storage',
       parseFormData: createParser({
-        file: assert.instance(File),
+        file: assert.instanceOf(File),
       }),
     },
     async({ event, formData }) => {

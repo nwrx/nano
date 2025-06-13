@@ -1,11 +1,11 @@
 import type { Encrypted } from '../../utils'
 import type { Vault } from '../entities'
-import { assert, createArrayParser, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { assertUser } from '../../user'
 import { assertVaultPermission } from './assertVaultPermission'
 import { assertVaultType } from './assertVaultType'
 
-export const assertVault = createSchema({
+export const assertVault = createParser({
   id: assert.stringUuid,
   name: assert.stringNotEmpty,
   type: assertVaultType,
@@ -13,7 +13,7 @@ export const assertVault = createSchema({
   configuration: assert.object as (value: unknown) => asserts value is Encrypted,
   assignments: [
     [assert.undefined],
-    [createArrayParser({
+    [assert.arrayOf({
       user: [[assert.undefined], [assertUser]],
       permission: assertVaultPermission,
     })],

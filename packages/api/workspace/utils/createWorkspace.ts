@@ -1,11 +1,11 @@
 import type { Loose } from '@unshared/types'
 import type { ModuleWorkspace } from '..'
 import type { Workspace } from '../entities'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { assertUser } from '../../user/utils/assertUser'
 
 /** The parser function for the {@linkcode createWorkspace} function. */
-const CREATE_WORKSPACE_OPTIONS_SCHEMA = createSchema({
+const CREATE_WORKSPACE_OPTIONS_SCHEMA = createParser({
 
   /** The `User` that will own the workspace. */
   user: assertUser,

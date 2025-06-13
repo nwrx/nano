@@ -1,5 +1,5 @@
 import type { Context } from '../../__fixtures__'
-import { ValidationError } from '@unshared/validation'
+import { AssertionError } from '@unshared/validation'
 import { createTestContext } from '../../__fixtures__'
 import { VaultVariable } from '../entities'
 import { createVariable } from './createVariable'
@@ -35,7 +35,7 @@ describe.concurrent<Context>('getVariable', () => {
         const { vault } = await setupVault()
         // @ts-expect-error: testing invalid options
         const shouldThrow = getVariable.call(moduleVault, { vault, name: 'variable' })
-        await expect(shouldThrow).rejects.toThrow(ValidationError)
+        await expect(shouldThrow).rejects.toThrow(AssertionError)
       })
     })
 
@@ -44,7 +44,7 @@ describe.concurrent<Context>('getVariable', () => {
         const { workspace } = await setupUser()
         // @ts-expect-error: testing invalid options
         const shouldThrow = getVariable.call(moduleVault, { workspace, name: 'variable' })
-        await expect(shouldThrow).rejects.toThrow(ValidationError)
+        await expect(shouldThrow).rejects.toThrow(AssertionError)
       })
     })
 
@@ -54,14 +54,14 @@ describe.concurrent<Context>('getVariable', () => {
         const { vault } = await setupVault()
         // @ts-expect-error: testing invalid options
         const shouldThrow = getVariable.call(moduleVault, { workspace, vault })
-        await expect(shouldThrow).rejects.toThrow(ValidationError)
+        await expect(shouldThrow).rejects.toThrow(AssertionError)
       })
 
       it('should throw if name is empty', async({ setupVault, setupWorkspace, moduleVault }) => {
         const { workspace } = await setupWorkspace()
         const { vault } = await setupVault({ workspace })
         const shouldThrow = getVariable.call(moduleVault, { workspace, vault, name: '' })
-        await expect(shouldThrow).rejects.toThrow(ValidationError)
+        await expect(shouldThrow).rejects.toThrow(AssertionError)
       })
     })
   })

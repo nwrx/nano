@@ -1,13 +1,13 @@
 import type { Loose } from '@unshared/types'
 import type { WorkspaceAssignment } from '../entities'
 import type { ModuleWorkspace } from '../index'
-import { createSchema } from '@unshared/validation'
+import { createParser } from '@unshared/validation'
 import { assertUser } from '../../user/utils/assertUser'
 import { assertWorkspace } from './assertWorkspace'
 import { assertWorkspacePermission } from './assertWorkspacePermission'
 
 /** The parsed options to assign the user to the workspace with. */
-export const ASSIGN_USER_TO_WORKSPACE_OPTIONS = createSchema({
+export const ASSIGN_USER_TO_WORKSPACE_OPTIONS = createParser({
   user: assertUser,
   workspace: assertWorkspace,
   permission: assertWorkspacePermission,

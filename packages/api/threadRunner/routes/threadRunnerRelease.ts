@@ -1,13 +1,13 @@
 import type { ModuleThreadRunner } from '../index'
 import { createHttpRoute } from '@unserved/server'
-import { assertStringNotEmpty, createSchema } from '@unshared/validation'
+import { assertStringNotEmpty, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 
 export function releaseThreadRunner(this: ModuleThreadRunner) {
   return createHttpRoute(
     {
       name: 'DELETE /api/runners/:identity',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         identity: assertStringNotEmpty,
       }),
     },

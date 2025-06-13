@@ -3,7 +3,7 @@ import type { ModuleRegistry } from '..'
 import type { RegistryCollection, RegistryCollectionObject } from '../entities'
 import { createHttpRoute } from '@unserved/server'
 import { parseBoolean } from '@unshared/string'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
 import { getRegistryCategory, searchRegistryCollection } from '../utils'
@@ -12,7 +12,7 @@ export function registryCollectionSearch(this: ModuleRegistry) {
   return createHttpRoute(
     {
       name: 'GET /api/registry/collections',
-      parseQuery: createSchema({
+      parseQuery: createParser({
         workspace: [[assert.undefined], [assert.stringNotEmpty]],
         categories: [[assert.undefined], [assert.stringNotEmpty, (value: string) => value.toString().split(',')]],
         search: [[assert.undefined], [assert.string]],

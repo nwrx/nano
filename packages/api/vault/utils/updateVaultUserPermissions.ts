@@ -1,17 +1,17 @@
 import type { Loose } from '@unshared/types'
 import type { VaultAssignment } from '../entities'
 import type { ModuleVault } from '../index'
-import { createArrayParser, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { assertUser } from '../../user'
 import { assertVault } from './assertVault'
 import { assertVaultPermission } from './assertVaultPermission'
 
 /** The schema for assigning a vault to a user. */
-export const UPDATE_VAULT_USER_PERMISSIONS_OPTIONS_SCHEMA = createSchema({
+export const UPDATE_VAULT_USER_PERMISSIONS_OPTIONS_SCHEMA = createParser({
   user: assertUser,
   vault: assertVault,
   assignee: assertUser,
-  permissions: createArrayParser(assertVaultPermission),
+  permissions: assert.arrayOf(assertVaultPermission),
 })
 
 /** The options for assigning a vault to a user. */

@@ -1,6 +1,6 @@
 import type { ModuleChat } from '../index'
 import { createHttpRoute } from '@unserved/server'
-import { assertStringNotEmpty, assertStringUuid, createSchema } from '@unshared/validation'
+import { assertStringNotEmpty, assertStringUuid, createParser } from '@unshared/validation'
 import { setResponseStatus } from 'h3'
 import { ModuleUser } from '../../user'
 
@@ -8,7 +8,7 @@ export function chatDelete(this: ModuleChat) {
   return createHttpRoute(
     {
       name: 'DELETE /api/workspaces/:workspace/threads/:id',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         workspace: assertStringNotEmpty,
         id: assertStringUuid,
       }),

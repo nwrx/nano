@@ -1,30 +1,30 @@
 import type { Peer } from 'crossws'
 import type { FlowObject } from '../../flow'
-import { assert, createArrayParser, createRuleSet, createSchema } from '@unshared/validation'
+import { assert, createParser, createRuleSet } from '@unshared/validation'
 
 export const PROJECT_OBSERVER_MESSAGE_SCHEMA = createRuleSet(
-  [createSchema({
+  [createParser({
     event: assert.stringEquals('flows'),
-    flows: createArrayParser(assert.object as (value: unknown) => asserts value is FlowObject),
+    flows: assert.arrayOf(assert.object as (value: unknown) => asserts value is FlowObject),
   })],
 
-  [createSchema({
+  [createParser({
     event: assert.stringEquals('flowCreated'),
     flow: assert.object as (value: unknown) => asserts value is FlowObject,
   })],
 
-  [createSchema({
+  [createParser({
     event: assert.stringEquals('flowUpdated'),
     flow: assert.object as (value: unknown) => asserts value is FlowObject,
   })],
 
-  [createSchema({
+  [createParser({
     event: assert.stringEquals('flowRenamed'),
     oldName: assert.stringNotEmpty,
     newName: assert.stringNotEmpty,
   })],
 
-  [createSchema({
+  [createParser({
     event: assert.stringEquals('flowDeleted'),
     name: assert.stringNotEmpty,
   })],

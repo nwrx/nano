@@ -1,7 +1,7 @@
 import type { ModuleFlow } from '..'
 import { createHttpRoute } from '@unserved/server'
 import { parseBoolean } from '@unshared/string'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { setResponseHeader } from 'h3'
 import * as YAML from 'yaml'
 import { ModuleProject } from '../../project'
@@ -13,12 +13,12 @@ export function flowGet(this: ModuleFlow) {
   return createHttpRoute(
     {
       name: 'GET /api/workspaces/:workspace/projects/:project/flows/:name',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         project: assert.stringNotEmpty,
         name: assert.stringNotEmpty,
       }),
-      parseQuery: createSchema({
+      parseQuery: createParser({
         format: [[assert.undefined], [assert.stringEnum('json', 'yaml')]],
         download: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],
       }),

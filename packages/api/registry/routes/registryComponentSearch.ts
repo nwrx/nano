@@ -3,7 +3,7 @@ import type { ModuleRegistry } from '..'
 import type { RegistryComponent, RegistryComponentObject } from '../entities'
 import { createHttpRoute } from '@unserved/server'
 import { parseBoolean } from '@unshared/string'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
 import { getRegistryCategory, getRegistryCollection, searchRegistryComponent } from '../utils'
@@ -12,7 +12,7 @@ export function registryComponentSearch(this: ModuleRegistry) {
   return createHttpRoute(
     {
       name: 'GET /api/registry',
-      parseQuery: createSchema({
+      parseQuery: createParser({
         workspace: [[assert.undefined], [assert.stringNotEmpty]],
         collection: [[assert.undefined], [assert.stringNotEmpty]],
         categories: [[assert.undefined], [assert.stringNotEmpty]],

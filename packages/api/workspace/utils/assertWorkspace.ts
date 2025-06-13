@@ -1,14 +1,14 @@
 import type { Workspace } from '../entities'
-import { assert, createArrayParser, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { assertUser } from '../../user/utils/assertUser'
 import { assertWorkspacePermission } from './assertWorkspacePermission'
 
-export const assertWorkspace = createSchema({
+export const assertWorkspace = createParser({
   id: assert.stringUuid,
   name: assert.stringNotEmpty,
   assignments: [
     [assert.undefined],
-    [createArrayParser({
+    [assert.arrayOf({
       user: [[assert.undefined], [assertUser]],
       permission: assertWorkspacePermission,
     })],

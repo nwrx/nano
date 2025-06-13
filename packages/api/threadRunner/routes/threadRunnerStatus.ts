@@ -1,14 +1,14 @@
 import type { ThreadRunnerStatus } from '@nwrx/nano-runner'
 import type { ModuleThreadRunner } from '../index'
 import { createHttpRoute } from '@unserved/server'
-import { assertStringNotEmpty, createSchema } from '@unshared/validation'
+import { assertStringNotEmpty, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 
 export function threadRunnerStatus(this: ModuleThreadRunner) {
   return createHttpRoute(
     {
       name: 'GET /api/runners/:identity',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         identity: assertStringNotEmpty,
       }),
     },

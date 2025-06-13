@@ -1,7 +1,7 @@
 import type { ModuleVault } from '..'
 import type { VaultConfiguration } from '../utils'
 import { createHttpRoute } from '@unserved/server'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
 import { getVault, updateVault } from '../utils'
@@ -10,7 +10,7 @@ export function vaultUpdate(this: ModuleVault) {
   return createHttpRoute(
     {
       name: 'PUT /api/workspaces/:workspace/vaults/:vault',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         vault: assert.stringNotEmpty,
       }),

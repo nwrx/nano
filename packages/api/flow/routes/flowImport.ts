@@ -1,7 +1,7 @@
 import type { ModuleFlow } from '../index'
 import { createHttpRoute } from '@unserved/server'
 import { toSlug } from '@unshared/string'
-import { assert, assertString, assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
+import { assert, assertString, assertStringNotEmpty, assertUndefined, createParser } from '@unshared/validation'
 import * as YAML from 'yaml'
 import { ModuleProject } from '../../project'
 import { ModuleUser } from '../../user'
@@ -12,12 +12,12 @@ export function flowImport(this: ModuleFlow) {
   return createHttpRoute(
     {
       name: 'POST /api/workspaces/:workspace/projects/:project/import',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         workspace: assertStringNotEmpty,
         project: assertStringNotEmpty,
       }),
-      parseFormData: createSchema({
-        file: assert.instance(File),
+      parseFormData: createParser({
+        file: assert.instanceOf(File),
       }),
     },
     async({ event, formData, parameters }) => {
@@ -39,7 +39,7 @@ export function flowImport(this: ModuleFlow) {
       else throw new Error('Invalid file type. Only JSON and YAML files are supported.')
 
       // --- Ensure the data is valid.
-      const { name = getRandomName(), title = name, description } = createSchema({
+      const { name = getRandomName(), title = name, description } = createParser({
         name: [[assertUndefined], [assertStringNotEmpty, toSlug]],
         title: [[assertUndefined], [assertString]],
         description: [[assertUndefined], [assertString]],

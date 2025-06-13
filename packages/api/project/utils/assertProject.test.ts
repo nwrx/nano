@@ -1,4 +1,4 @@
-import { ValidationError } from '@unshared/validation'
+import { AssertionError } from '@unshared/validation'
 import { randomUUID } from 'node:crypto'
 import { assertProject } from './assertProject'
 
@@ -47,7 +47,7 @@ describe('assertProject', () => {
         name: 'my-project',
         assignments: [],
       })
-      expect(shouldThrow).toThrow(ValidationError)
+      expect(shouldThrow).toThrow(AssertionError)
     })
 
     it('should throw an error if the project name is empty', () => {
@@ -56,7 +56,7 @@ describe('assertProject', () => {
         name: '',
         assignments: [],
       })
-      expect(shouldThrow).toThrow(ValidationError)
+      expect(shouldThrow).toThrow(AssertionError)
     })
 
     it('should throw an error if the user id is not a UUID', () => {
@@ -65,7 +65,7 @@ describe('assertProject', () => {
         name: 'my-project',
         assignments: [{ user: { ...VALID_USER, id: 'invalid' }, permission: 'Read' }],
       })
-      expect(shouldThrow).toThrow(ValidationError)
+      expect(shouldThrow).toThrow(AssertionError)
     })
 
     it('should throw an error if the permission is invalid for an assignment', () => {
@@ -74,7 +74,7 @@ describe('assertProject', () => {
         name: 'my-project',
         assignments: [{ user: VALID_USER, permission: 'Invalid' }],
       })
-      expect(shouldThrow).toThrow(ValidationError)
+      expect(shouldThrow).toThrow(AssertionError)
     })
   })
 })

@@ -1,10 +1,10 @@
 import type { Workspace } from '../entities'
 import type { ModuleWorkspace } from '../index'
 import { toSlug } from '@unshared/string'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { assertWorkspace } from './assertWorkspace'
 
-const RENAME_WORKSPACE_OPTIONS = createSchema({
+const RENAME_WORKSPACE_OPTIONS = createParser({
   workspace: assertWorkspace,
   name: [assert.stringNotEmpty, toSlug],
 })

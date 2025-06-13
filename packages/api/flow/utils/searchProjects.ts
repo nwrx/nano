@@ -2,13 +2,13 @@ import type { Loose } from '@unshared/types'
 import type { FindOptionsOrder, FindOptionsWhere } from 'typeorm'
 import type { Flow } from '../entities'
 import type { ModuleFlow } from '../index'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { ILike, In } from 'typeorm'
 import { assertProject } from '../../project'
 import { assertUser } from '../../user'
 
 /** The parser function for the `searchProjects` function. */
-export const SEARCH_FLOW_OPTIONS_SCHEMA = createSchema({
+export const SEARCH_FLOW_OPTIONS_SCHEMA = createParser({
   project: assertProject,
   search: [[assert.undefined], [assert.string]],
   user: [[assert.undefined], [assertUser]],

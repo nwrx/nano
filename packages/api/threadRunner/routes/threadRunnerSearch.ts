@@ -2,7 +2,7 @@ import type { ModuleThreadRunner } from '..'
 import type { ThreadRunner } from '../entities'
 import type { ThreadRunnerObject } from '../entities'
 import { createHttpRoute } from '@unserved/server'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { type FindOptionsOrder, ILike } from 'typeorm'
 import { ModuleUser } from '../../user'
 
@@ -10,7 +10,7 @@ export function searchThreadRunner(this: ModuleThreadRunner) {
   return createHttpRoute(
     {
       name: 'GET /api/runners',
-      parseQuery: createSchema({
+      parseQuery: createParser({
         search: [[assert.undefined], [assert.stringNotEmpty]],
         page: [[assert.undefined], [assert.stringNotEmpty, assert.number]],
         limit: [[assert.undefined], [assert.stringNotEmpty, assert.number]],

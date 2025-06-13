@@ -1,10 +1,10 @@
 import type { Loose } from '@unshared/types'
 import type { RegistryCollection } from '../entities'
 import type { ModuleRegistry } from '../index'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { assertWorkspace } from '../../workspace'
 
-const GET_REGISTRY_COLLECTION_OPTIONS = createSchema({
+const GET_REGISTRY_COLLECTION_OPTIONS = createParser({
   workspace: assertWorkspace,
   name: assert.stringNotEmpty,
   withComponents: [[assert.undefined], [assert.boolean]],

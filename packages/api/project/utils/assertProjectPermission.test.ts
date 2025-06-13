@@ -1,5 +1,5 @@
 import type { ProjectPermission } from './assertProjectPermission'
-import { ValidationError } from '@unshared/validation'
+import { AssertionError } from '@unshared/validation'
 import { assertProjectPermission, PROJECT_PERMISSIONS } from './assertProjectPermission'
 
 describe('assertProjectPermission', () => {
@@ -11,7 +11,7 @@ describe('assertProjectPermission', () => {
   it('should throw an error if the permission is not valid', () => {
     const shouldThrow = () => assertProjectPermission('Invalid' as any)
     const values = PROJECT_PERMISSIONS.map(value => `'${value}'`).join(', ')
-    expect(shouldThrow).toThrow(ValidationError)
+    expect(shouldThrow).toThrow(AssertionError)
     expect(shouldThrow).toThrow(`String is not one of the values: ${values}`)
   })
 

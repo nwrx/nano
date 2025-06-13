@@ -1,7 +1,7 @@
 import type { ModuleProject } from '../index'
 import { createHttpRoute } from '@unserved/server'
 import { toSlug } from '@unshared/string'
-import { assertStringNotEmpty, createSchema } from '@unshared/validation'
+import { assertStringNotEmpty, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
 import { getProject, renameProject } from '../utils'
@@ -10,11 +10,11 @@ export function projectRename(this: ModuleProject) {
   return createHttpRoute(
     {
       name: 'PUT /api/workspaces/:workspace/projects/:project/name',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         workspace: assertStringNotEmpty,
         project: assertStringNotEmpty,
       }),
-      parseBody: createSchema({
+      parseBody: createParser({
         name: [assertStringNotEmpty, toSlug],
       }),
     },

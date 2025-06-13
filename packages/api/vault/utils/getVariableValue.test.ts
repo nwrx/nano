@@ -1,6 +1,6 @@
 import type { Context } from '../../__fixtures__'
 import type { VaultPermission } from './assertVaultPermission'
-import { ValidationError } from '@unshared/validation'
+import { AssertionError } from '@unshared/validation'
 import { createTestContext } from '../../__fixtures__'
 import { createVariable } from './createVariable'
 import { getVariableValue } from './getVariableValue'
@@ -56,7 +56,7 @@ describe.concurrent<Context>('getVariableValue', () => {
         const { vault } = await setupVault()
         // @ts-expect-error: testing invalid options
         const shouldThrow = getVariableValue.call(moduleVault, { project, vault: vault.name, name: 'variable' })
-        await expect(shouldThrow).rejects.toThrow(ValidationError)
+        await expect(shouldThrow).rejects.toThrow(AssertionError)
       })
 
       it('should throw if workspace is invalid', async({ setupUser, setupProject, setupVault, moduleVault }) => {
@@ -65,7 +65,7 @@ describe.concurrent<Context>('getVariableValue', () => {
         const { vault } = await setupVault({ workspace })
         // @ts-expect-error: testing invalid options
         const shouldThrow = getVariableValue.call(moduleVault, { project, vault: vault.name, name: 'variable', workspace: 'invalid-workspace' })
-        await expect(shouldThrow).rejects.toThrow(ValidationError)
+        await expect(shouldThrow).rejects.toThrow(AssertionError)
       })
     })
 
@@ -75,7 +75,7 @@ describe.concurrent<Context>('getVariableValue', () => {
         const { vault } = await setupVault({ workspace })
         // @ts-expect-error: testing invalid options
         const shouldThrow = getVariableValue.call(moduleVault, { workspace, vault: vault.name, name: 'variable' })
-        await expect(shouldThrow).rejects.toThrow(ValidationError)
+        await expect(shouldThrow).rejects.toThrow(AssertionError)
       })
 
       it('should throw if project is invalid', async({ setupUser, setupVault, moduleVault }) => {
@@ -83,7 +83,7 @@ describe.concurrent<Context>('getVariableValue', () => {
         const { vault } = await setupVault({ workspace })
         // @ts-expect-error: testing invalid options
         const shouldThrow = getVariableValue.call(moduleVault, { workspace, project: 'invalid-project', vault: vault.name, name: 'variable' })
-        await expect(shouldThrow).rejects.toThrow(ValidationError)
+        await expect(shouldThrow).rejects.toThrow(AssertionError)
       })
     })
 
@@ -93,14 +93,14 @@ describe.concurrent<Context>('getVariableValue', () => {
         const { project } = await setupProject({ workspace, user })
         // @ts-expect-error: testing invalid options
         const shouldThrow = getVariableValue.call(moduleVault, { workspace, project, name: 'variable' })
-        await expect(shouldThrow).rejects.toThrow(ValidationError)
+        await expect(shouldThrow).rejects.toThrow(AssertionError)
       })
 
       it('should throw if vault is empty', async({ setupUser, setupProject, moduleVault }) => {
         const { workspace, user } = await setupUser()
         const { project } = await setupProject({ workspace, user })
         const shouldThrow = getVariableValue.call(moduleVault, { workspace, project, vault: '', name: 'variable' })
-        await expect(shouldThrow).rejects.toThrow(ValidationError)
+        await expect(shouldThrow).rejects.toThrow(AssertionError)
       })
     })
 
@@ -111,7 +111,7 @@ describe.concurrent<Context>('getVariableValue', () => {
         const { vault } = await setupVault({ workspace })
         // @ts-expect-error: testing invalid options
         const shouldThrow = getVariableValue.call(moduleVault, { workspace, project, vault: vault.name })
-        await expect(shouldThrow).rejects.toThrow(ValidationError)
+        await expect(shouldThrow).rejects.toThrow(AssertionError)
       })
 
       it('should throw if name is empty', async({ setupUser, setupProject, setupVault, moduleVault }) => {
@@ -119,7 +119,7 @@ describe.concurrent<Context>('getVariableValue', () => {
         const { project } = await setupProject({ workspace, user })
         const { vault } = await setupVault({ workspace })
         const shouldThrow = getVariableValue.call(moduleVault, { workspace, project, vault: vault.name, name: '' })
-        await expect(shouldThrow).rejects.toThrow(ValidationError)
+        await expect(shouldThrow).rejects.toThrow(AssertionError)
       })
     })
   })

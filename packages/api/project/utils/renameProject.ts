@@ -1,11 +1,11 @@
 import type { Project } from '../entities'
 import type { ModuleProject } from '../index'
 import { toSlug } from '@unshared/string'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { assertWorkspace } from '../../workspace'
 import { assertProject } from './assertProject'
 
-const SET_PROJECT_NAME_OPTIONS = createSchema({
+const SET_PROJECT_NAME_OPTIONS = createParser({
   workspace: assertWorkspace,
   project: assertProject,
   name: [assert.stringNotEmpty, toSlug],

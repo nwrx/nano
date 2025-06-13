@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import type { Context } from '../../__fixtures__'
-import { EXP_UUID, ValidationError } from '@unshared/validation'
+import { EXP_UUID, AssertionError } from '@unshared/validation'
 import { createTestContext } from '../../__fixtures__'
 import { PROJECT_PERMISSIONS, type ProjectPermission } from './assertProjectPermission'
 import { searchProjects } from './searchProjects'
@@ -111,45 +111,45 @@ describe('searchProjects', () => {
   })
 
   describe<Context>('validation', (it) => {
-    it('should throw a "ValidationError" if workspace is not provided', async({ moduleProject }) => {
+    it('should throw a "AssertionError" if workspace is not provided', async({ moduleProject }) => {
       // @ts-expect-error: testing invalid input
       const shouldReject = () => searchProjects.call(moduleProject, { search: 'project' })
-      await expect(shouldReject).rejects.toThrowError(ValidationError)
+      await expect(shouldReject).rejects.toThrowError(AssertionError)
     })
 
-    it('should throw a "ValidationError" if search is invalid', async({ setupWorkspace, moduleProject }) => {
+    it('should throw a "AssertionError" if search is invalid', async({ setupWorkspace, moduleProject }) => {
       const { workspace } = await setupWorkspace({ isPublic: true })
       // @ts-expect-error: testing invalid input
       const shouldReject = () => searchProjects.call(moduleProject, { workspace, search: 123 })
-      await expect(shouldReject).rejects.toThrowError(ValidationError)
+      await expect(shouldReject).rejects.toThrowError(AssertionError)
     })
 
-    it('should throw a "ValidationError" if search is not a string', async({ setupWorkspace, moduleProject }) => {
+    it('should throw a "AssertionError" if search is not a string', async({ setupWorkspace, moduleProject }) => {
       const { workspace } = await setupWorkspace({ isPublic: true })
       // @ts-expect-error: testing invalid input
       const shouldReject = () => searchProjects.call(moduleProject, { workspace, search: ['project'] })
-      await expect(shouldReject).rejects.toThrowError(ValidationError)
+      await expect(shouldReject).rejects.toThrowError(AssertionError)
     })
 
-    it('should throw a "ValidationError" if page is invalid', async({ setupWorkspace, moduleProject }) => {
+    it('should throw a "AssertionError" if page is invalid', async({ setupWorkspace, moduleProject }) => {
       const { workspace } = await setupWorkspace({ isPublic: true })
       // @ts-expect-error: testing invalid input
       const shouldReject = () => searchProjects.call(moduleProject, { workspace, page: '1' })
-      await expect(shouldReject).rejects.toThrowError(ValidationError)
+      await expect(shouldReject).rejects.toThrowError(AssertionError)
     })
 
-    it('should throw a "ValidationError" if limit is invalid', async({ setupWorkspace, moduleProject }) => {
+    it('should throw a "AssertionError" if limit is invalid', async({ setupWorkspace, moduleProject }) => {
       const { workspace } = await setupWorkspace({ isPublic: true })
       // @ts-expect-error: testing invalid input
       const shouldReject = () => searchProjects.call(moduleProject, { workspace, limit: '10' })
-      await expect(shouldReject).rejects.toThrowError(ValidationError)
+      await expect(shouldReject).rejects.toThrowError(AssertionError)
     })
 
-    it('should throw a "ValidationError" if user is invalid', async({ setupWorkspace, moduleProject }) => {
+    it('should throw a "AssertionError" if user is invalid', async({ setupWorkspace, moduleProject }) => {
       const { workspace } = await setupWorkspace({ isPublic: true })
       // @ts-expect-error: testing invalid input
       const shouldReject = () => searchProjects.call(moduleProject, { workspace, user: 'user' })
-      await expect(shouldReject).rejects.toThrowError(ValidationError)
+      await expect(shouldReject).rejects.toThrowError(AssertionError)
     })
   })
 })

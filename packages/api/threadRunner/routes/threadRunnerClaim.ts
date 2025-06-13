@@ -1,6 +1,6 @@
 import type { ModuleThreadRunner } from '../index'
 import { createHttpRoute } from '@unserved/server'
-import { assertStringNotEmpty, createSchema } from '@unshared/validation'
+import { assertStringNotEmpty, createParser } from '@unshared/validation'
 import { setResponseStatus } from 'h3'
 import { ModuleUser } from '../../user'
 import { registerThreadRunner } from '../utils/registerThreadRunner'
@@ -9,7 +9,7 @@ export function threadRunnerClaim(this: ModuleThreadRunner) {
   return createHttpRoute(
     {
       name: 'POST /api/runners',
-      parseBody: createSchema({ address: assertStringNotEmpty }),
+      parseBody: createParser({ address: assertStringNotEmpty }),
     },
     async({ event, body }) => {
       const moduleUser = this.getModule(ModuleUser)

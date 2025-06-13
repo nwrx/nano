@@ -1,11 +1,11 @@
 import type { Loose } from '@unshared/types'
 import type { ModuleVault } from '../index'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { assertUser } from '../../user'
 import { assertVault } from './assertVault'
 import { getVaultAdapter } from './getVaultAdapter'
 
-export const CREATE_VARIABLE_OPTIONS_SCHEMA = createSchema({
+export const CREATE_VARIABLE_OPTIONS_SCHEMA = createParser({
   user: assertUser,
   vault: assertVault,
   name: assert.stringNotEmpty,

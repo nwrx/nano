@@ -1,11 +1,11 @@
 import type { Loose } from '@unshared/types'
 import type { ModuleVault } from '../index'
 import type { VaultPermission } from './assertVaultPermission'
-import { createSchema } from '@unshared/validation'
+import { createParser } from '@unshared/validation'
 import { assertVault } from './assertVault'
 
 /** The parser function for the {@linkcode getVaultProjectPermissions} function. */
-const GET_VAULT_PROJECT_ASSIGNMENTS_SCHEMA = createSchema({
+const GET_VAULT_PROJECT_ASSIGNMENTS_SCHEMA = createParser({
   vault: assertVault,
 })
 

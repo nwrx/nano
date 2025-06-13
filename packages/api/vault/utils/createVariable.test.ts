@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import type { Context } from '../../__fixtures__'
-import { ValidationError } from '@unshared/validation'
+import { AssertionError } from '@unshared/validation'
 import { createTestContext } from '../../__fixtures__'
 import { VaultVariable } from '../entities'
 import { createVariable, type CreateVariableOptions } from './createVariable'
@@ -63,7 +63,7 @@ describe('createVariable', () => {
       const options = { name: 'variable', value: 'value', vault }
       // @ts-expect-error: testing invalid options
       const shouldThrow = createVariable.call(moduleVault, options)
-      await expect(shouldThrow).rejects.toThrow(ValidationError)
+      await expect(shouldThrow).rejects.toThrow(AssertionError)
     })
 
     it('should throw if name is missing', async({ setupUser, setupVault, moduleVault }) => {
@@ -72,7 +72,7 @@ describe('createVariable', () => {
       const options = { user, value: 'value', vault }
       // @ts-expect-error: testing invalid options
       const shouldThrow = createVariable.call(moduleVault, options)
-      await expect(shouldThrow).rejects.toThrow(ValidationError)
+      await expect(shouldThrow).rejects.toThrow(AssertionError)
     })
 
     it('should throw if name is empty', async({ setupUser, setupVault, moduleVault }) => {
@@ -80,7 +80,7 @@ describe('createVariable', () => {
       const { vault } = await setupVault()
       const options = { user, name: '', value: 'value', vault }
       const shouldThrow = createVariable.call(moduleVault, options as CreateVariableOptions)
-      await expect(shouldThrow).rejects.toThrow(ValidationError)
+      await expect(shouldThrow).rejects.toThrow(AssertionError)
     })
 
     it('should throw if value is missing', async({ setupUser, setupVault, moduleVault }) => {
@@ -89,7 +89,7 @@ describe('createVariable', () => {
       const options = { user, name: 'variable', vault }
       // @ts-expect-error: testing invalid options
       const shouldThrow = createVariable.call(moduleVault, options)
-      await expect(shouldThrow).rejects.toThrow(ValidationError)
+      await expect(shouldThrow).rejects.toThrow(AssertionError)
     })
 
     it('should throw if value is empty', async({ setupUser, setupVault, moduleVault }) => {
@@ -97,7 +97,7 @@ describe('createVariable', () => {
       const { vault } = await setupVault()
       const options = { user, name: 'variable', value: '', vault }
       const shouldThrow = createVariable.call(moduleVault, options as CreateVariableOptions)
-      await expect(shouldThrow).rejects.toThrow(ValidationError)
+      await expect(shouldThrow).rejects.toThrow(AssertionError)
     })
 
     it('should throw if vault is missing', async({ setupUser, moduleVault }) => {
@@ -105,7 +105,7 @@ describe('createVariable', () => {
       const options = { user, name: 'variable', value: 'value' }
       // @ts-expect-error: testing invalid options
       const shouldThrow = createVariable.call(moduleVault, options)
-      await expect(shouldThrow).rejects.toThrow(ValidationError)
+      await expect(shouldThrow).rejects.toThrow(AssertionError)
     })
   })
 })

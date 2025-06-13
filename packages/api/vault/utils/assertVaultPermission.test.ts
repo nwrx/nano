@@ -1,5 +1,5 @@
 import type { VaultPermission } from './assertVaultPermission'
-import { ValidationError } from '@unshared/validation'
+import { AssertionError } from '@unshared/validation'
 import { assertVaultPermission, VAULT_PERMISSIONS } from './assertVaultPermission'
 
 describe('assertWorkspacePermission', () => {
@@ -11,7 +11,7 @@ describe('assertWorkspacePermission', () => {
   it('should throw an error if the permission is not valid', () => {
     const shouldThrow = () => assertVaultPermission('Invalid' as any)
     const values = VAULT_PERMISSIONS.map(value => `'${value}'`).join(', ')
-    expect(shouldThrow).toThrow(ValidationError)
+    expect(shouldThrow).toThrow(AssertionError)
     expect(shouldThrow).toThrow(`String is not one of the values: ${values}`)
   })
 

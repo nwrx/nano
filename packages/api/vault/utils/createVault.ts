@@ -2,13 +2,13 @@ import type { Loose } from '@unshared/types'
 import type { ModuleVault } from '..'
 import type { Vault } from '../entities'
 import type { VaultConfiguration } from './getVaultAdapter'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { assertUser } from '../../user'
 import { encrypt } from '../../utils'
 import { assertWorkspace } from '../../workspace'
 import { assertVaultType } from './assertVaultType'
 
-const CREATE_VAULT_OPTIONS_SCHEMA = createSchema({
+const CREATE_VAULT_OPTIONS_SCHEMA = createParser({
   user: assertUser,
   workspace: assertWorkspace,
   type: [[assert.undefined], [assertVaultType]],

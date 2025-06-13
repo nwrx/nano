@@ -2,12 +2,12 @@ import type { Loose } from '@unshared/types'
 import type { FindOptionsOrder } from 'typeorm'
 import type { ModuleVault } from '..'
 import type { VaultVariable } from '../entities'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { ILike } from 'typeorm'
 import { assertProject } from '../../project'
 
 /** The parser function for the `searchVariableByProject` function. */
-export const SEARCH_VARIABLE_BY_PROJECT_OPTIONS_SCHEMA = createSchema({
+export const SEARCH_VARIABLE_BY_PROJECT_OPTIONS_SCHEMA = createParser({
   project: assertProject,
   search: [[assert.undefined], [assert.string]],
   page: [[assert.undefined], [assert.number]],

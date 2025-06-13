@@ -1,13 +1,13 @@
 import type { Loose } from '@unshared/types'
 import type { ModuleVault } from '../index'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { assertProject } from '../../project'
 import { assertWorkspace } from '../../workspace'
 import { getVariable } from './getVariable'
 import { getVaultAdapter } from './getVaultAdapter'
 
 /** The schema for the getVariableValue options. */
-export const GET_VARIABLE_VALUE_OPTIONS_SCHEMA = createSchema({
+export const GET_VARIABLE_VALUE_OPTIONS_SCHEMA = createParser({
   workspace: assertWorkspace,
   project: assertProject,
   vault: assert.stringNotEmpty,

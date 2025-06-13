@@ -1,13 +1,13 @@
 import type { ModuleUser } from '..'
 import { createHttpRoute } from '@unserved/server'
-import { assertStringNotEmpty, createSchema } from '@unshared/validation'
+import { assertStringNotEmpty, createParser } from '@unshared/validation'
 import { getUser } from '../utils'
 
 export function userVerify(this: ModuleUser) {
   return createHttpRoute(
     {
       name: 'POST /api/users/:username/verify',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         username: assertStringNotEmpty,
       }),
     },

@@ -1,5 +1,5 @@
 import type { Context } from '../../__fixtures__'
-import { ValidationError } from '@unshared/validation'
+import { AssertionError } from '@unshared/validation'
 import { createTestContext } from '../../__fixtures__'
 import { getProjectAssignments } from './getProjectAssignments'
 
@@ -30,16 +30,16 @@ describe('getProjectAssignments', () => {
   })
 
   describe<Context>('validation', (it) => {
-    it('should throw ValidationError if project is not provided', async(context) => {
+    it('should throw AssertionError if project is not provided', async(context) => {
       // @ts-expect-error: testing invalid input
       const shouldReject = getProjectAssignments.call(context.moduleProject, {})
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
 
-    it('should throw ValidationError if project is invalid', async(context) => {
+    it('should throw AssertionError if project is invalid', async(context) => {
       // @ts-expect-error: testing invalid input
       const shouldReject = getProjectAssignments.call(context.moduleProject, { project: {} })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
   })
 })

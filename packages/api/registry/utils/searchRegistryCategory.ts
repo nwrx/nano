@@ -2,12 +2,12 @@ import type { Loose } from '@unshared/types'
 import type { FindOptionsOrder } from 'typeorm'
 import type { RegistryCategory } from '../entities'
 import type { ModuleRegistry } from '../index'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { ILike } from 'typeorm'
 import { assertRegistryCategoryType } from './assertRegistryCategoryType'
 
 /** The parser function for the `searchRegistryCategory` function. */
-export const SEARCH_REGISTRY_CATEGORY_OPTIONS_SCHEMA = createSchema({
+export const SEARCH_REGISTRY_CATEGORY_OPTIONS_SCHEMA = createParser({
   search: [[assert.undefined], [assert.string]],
   type: [[assert.undefined], [assertRegistryCategoryType]],
   page: [[assert.undefined], [assert.number]],

@@ -1,6 +1,6 @@
 import type { ModuleVault } from '..'
 import { createHttpRoute } from '@unserved/server'
-import { assert, createArrayParser, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
 import { assertVaultPermission, getVault, updateVaultUserPermissions } from '../utils'
@@ -9,13 +9,13 @@ export function vaultUserAssign(this: ModuleVault) {
   return createHttpRoute(
     {
       name: 'PUT /api/workspaces/:workspace/vaults/:vault/assignments/:username',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         vault: assert.stringNotEmpty,
         username: assert.stringNotEmpty,
       }),
-      parseBody: createSchema({
-        permissions: createArrayParser(assertVaultPermission),
+      parseBody: createParser({
+        permissions: assert.arrayOf(assertVaultPermission),
       }),
     },
     async({ event, parameters, body }): Promise<void> => {

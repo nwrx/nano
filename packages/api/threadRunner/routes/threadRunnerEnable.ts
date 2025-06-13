@@ -1,14 +1,14 @@
 /* eslint-disable unicorn/no-null */
 import type { ModuleThreadRunner } from '..'
 import { createHttpRoute } from '@unserved/server'
-import { assertStringNotEmpty, createSchema } from '@unshared/validation'
+import { assertStringNotEmpty, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 
 export function threadRunnerEnable(this: ModuleThreadRunner) {
   return createHttpRoute(
     {
       name: 'PUT /api/runners/:identity/enable',
-      parseParameters: createSchema({ identity: assertStringNotEmpty }),
+      parseParameters: createParser({ identity: assertStringNotEmpty }),
     },
     async({ event, parameters }) => {
       const moduleUser = this.getModule(ModuleUser)

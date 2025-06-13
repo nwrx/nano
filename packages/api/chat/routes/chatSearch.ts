@@ -1,7 +1,7 @@
 import type { ModuleChat } from '../index'
 import { createHttpRoute } from '@unserved/server'
 import { parseBoolean } from '@unshared/string'
-import { assertStringNotEmpty, assertStringNumber, assertUndefined, createSchema } from '@unshared/validation'
+import { assertStringNotEmpty, assertStringNumber, assertUndefined, createParser } from '@unshared/validation'
 import { ILike } from 'typeorm'
 import { ModuleUser } from '../../user'
 
@@ -9,8 +9,8 @@ export function chatSearch(this: ModuleChat) {
   return createHttpRoute(
     {
       name: 'GET /api/workspaces/:workspace/threads',
-      parseParameters: createSchema({ workspace: assertStringNotEmpty }),
-      parseQuery: createSchema({
+      parseParameters: createParser({ workspace: assertStringNotEmpty }),
+      parseQuery: createParser({
         search: [[assertUndefined], [assertStringNotEmpty]],
         page: [[assertUndefined], [assertStringNumber, Number.parseInt]],
         limit: [[assertUndefined], [assertStringNumber, Number.parseInt]],

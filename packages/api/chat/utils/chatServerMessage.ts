@@ -1,33 +1,33 @@
-import { assert, createArrayParser, createRuleSet, createSchema } from '@unshared/validation'
+import { assert, createRuleSet, createParser } from '@unshared/validation'
 import { CHAT_MESSAGE_DATA_SCHEMA } from './chatMessageData'
 
 export const CHAT_SERVER_MESSAGE_SCHEMA = createRuleSet(
-  [createSchema({
+  [createParser({
     event: assert.stringEquals('threadOpened'),
     id: assert.stringUuid,
     title: assert.stringNotEmpty,
     description: assert.stringNotEmpty,
-    messages: createArrayParser({
+    messages: assert.arrayOf({
       id: assert.stringUuid,
       createdAt: assert.stringNotEmpty,
       data: CHAT_MESSAGE_DATA_SCHEMA,
     }),
   })],
 
-  [createSchema({
+  [createParser({
     event: assert.stringEquals('message'),
     id: assert.stringUuid,
     createdAt: assert.stringNotEmpty,
     data: CHAT_MESSAGE_DATA_SCHEMA,
   })],
 
-  [createSchema({
+  [createParser({
     event: assert.stringEquals('error'),
     message: assert.stringNotEmpty,
     stack: [[assert.undefined], [assert.stringNotEmpty]],
   })],
 
-  [createSchema({
+  [createParser({
     event: assert.stringEquals('abort'),
   })],
 )

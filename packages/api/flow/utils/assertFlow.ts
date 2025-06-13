@@ -1,19 +1,19 @@
 import type { Flow } from '../entities'
-import { assert, createArrayParser, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { assertUser } from '../../user/utils/assertUser'
 import { assertFlowPermission } from './assertFlowPermission'
 
-export const assertFlow = createSchema({
+export const assertFlow = createParser({
   id: assert.stringUuid,
   name: assert.stringNotEmpty,
-  data: createSchema({
+  data: createParser({
     version: assert.stringNotEmpty,
     nodes: assert.object,
     metadata: assert.object,
   }),
   assignments: [
     [assert.undefined],
-    [createArrayParser({
+    [assert.arrayOf({
       user: [[assert.undefined], [assertUser]],
       permission: assertFlowPermission,
     })],

@@ -1,4 +1,4 @@
-import { ValidationError } from '@unshared/validation'
+import { AssertionError } from '@unshared/validation'
 import { assertWorkspace } from './assertWorkspace'
 
 const VALID_USER = {
@@ -46,7 +46,7 @@ describe('assertWorkspace', () => {
         name: 'workspace',
         assignments: [],
       })
-      expect(shouldThrow).toThrow(ValidationError)
+      expect(shouldThrow).toThrow(AssertionError)
     })
 
     it('should throw an error if the workspace name is empty', () => {
@@ -55,7 +55,7 @@ describe('assertWorkspace', () => {
         name: '',
         assignments: [],
       })
-      expect(shouldThrow).toThrow(ValidationError)
+      expect(shouldThrow).toThrow(AssertionError)
     })
 
     it('should throw an error if the user id is not a UUID', () => {
@@ -64,7 +64,7 @@ describe('assertWorkspace', () => {
         name: 'workspace',
         assignments: [{ user: { ...VALID_USER, id: 'invalid' }, permission: 'Read' }],
       })
-      expect(shouldThrow).toThrow(ValidationError)
+      expect(shouldThrow).toThrow(AssertionError)
     })
 
     it('should throw an error if the permission is invalid for an assignment', () => {
@@ -73,7 +73,7 @@ describe('assertWorkspace', () => {
         name: 'workspace',
         assignments: [{ user: VALID_USER, permission: 'Invalid' }],
       })
-      expect(shouldThrow).toThrow(ValidationError)
+      expect(shouldThrow).toThrow(AssertionError)
     })
   })
 })

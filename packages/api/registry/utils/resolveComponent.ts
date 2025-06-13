@@ -2,13 +2,13 @@ import type { Loose } from '@unshared/types'
 import type { RegistryComponent } from '../entities'
 import type { ModuleRegistry } from '../index'
 import { parseSpecifier } from '@nwrx/nano/utils'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { assertUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
 import { getRegistryCollection } from './getRegistryCollection'
 import { getRegistryComponent } from './getRegistryComponent'
 
-const RESOLVE_COMPONENT_OPTIONS = createSchema({
+const RESOLVE_COMPONENT_OPTIONS = createParser({
   user: [[assert.undefined], [assertUser]],
   specifier: assert.stringNotEmpty,
 })

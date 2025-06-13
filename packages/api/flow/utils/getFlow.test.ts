@@ -2,7 +2,7 @@
 
 import type { Context } from '../../__fixtures__'
 import type { FlowPermission } from './assertFlowPermission'
-import { EXP_UUID, ValidationError } from '@unshared/validation'
+import { EXP_UUID, AssertionError } from '@unshared/validation'
 import { createTestContext } from '../../__fixtures__'
 import { FLOW_PERMISSIONS } from './assertFlowPermission'
 import { ERRORS as E } from './errors'
@@ -110,50 +110,50 @@ describe('getFlow', () => {
       await expect(shouldReject).rejects.toThrow(error)
     })
 
-    it('should throw a "ValidationError" if the request permission is not provided', async({ moduleFlow, setupWorkspace, setupProject }) => {
+    it('should throw a "AssertionError" if the request permission is not provided', async({ moduleFlow, setupWorkspace, setupProject }) => {
       const { workspace } = await setupWorkspace()
       const { project } = await setupProject({ workspace })
       // @ts-expect-error: testing invalid input
       const shouldReject = getFlow.call(moduleFlow, { workspace, project, name: 'flow', permission: undefined })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
 
-    it('should throw a "ValidationError" if the request permission is invalid', async({ moduleFlow, setupWorkspace, setupProject }) => {
+    it('should throw a "AssertionError" if the request permission is invalid', async({ moduleFlow, setupWorkspace, setupProject }) => {
       const { workspace } = await setupWorkspace()
       const { project } = await setupProject({ workspace })
       // @ts-expect-error: testing invalid input
       const shouldReject = getFlow.call(moduleFlow, { workspace, project, name: 'flow', permission: 'Invalid' })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
 
-    it('should throw a "ValidationError" if flow name is empty', async({ moduleFlow, setupWorkspace, setupProject }) => {
+    it('should throw a "AssertionError" if flow name is empty', async({ moduleFlow, setupWorkspace, setupProject }) => {
       const { workspace } = await setupWorkspace()
       const { project } = await setupProject({ workspace })
       const shouldReject = getFlow.call(moduleFlow, { workspace, project, name: '', permission: 'Read' })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
 
-    it('should throw a "ValidationError" if the user does not have an "id" property', async({ moduleFlow, setupWorkspace, setupProject }) => {
+    it('should throw a "AssertionError" if the user does not have an "id" property', async({ moduleFlow, setupWorkspace, setupProject }) => {
       const { workspace } = await setupWorkspace()
       const { project } = await setupProject({ workspace })
       // @ts-expect-error: testing invalid input
       const shouldReject = getFlow.call(moduleFlow, { workspace, project, user: {}, name: 'flow', permission: 'Read' })
-      await expect(shouldReject).rejects.toThrowError(ValidationError)
+      await expect(shouldReject).rejects.toThrowError(AssertionError)
     })
 
-    it('should throw a "ValidationError" if workspace is not provided', async({ moduleFlow, setupWorkspace, setupProject }) => {
+    it('should throw a "AssertionError" if workspace is not provided', async({ moduleFlow, setupWorkspace, setupProject }) => {
       const { workspace } = await setupWorkspace()
       const { project } = await setupProject({ workspace })
       // @ts-expect-error: testing invalid input
       const shouldReject = getFlow.call(moduleFlow, { project, name: 'flow', permission: 'Read' })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
 
-    it('should throw a "ValidationError" if project is not provided', async({ moduleFlow, setupWorkspace }) => {
+    it('should throw a "AssertionError" if project is not provided', async({ moduleFlow, setupWorkspace }) => {
       const { workspace } = await setupWorkspace()
       // @ts-expect-error: testing invalid input
       const shouldReject = getFlow.call(moduleFlow, { workspace, name: 'flow', permission: 'Read' })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
   })
 })

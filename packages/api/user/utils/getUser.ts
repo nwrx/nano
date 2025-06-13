@@ -1,11 +1,11 @@
 import type { Loose } from '@unshared/types'
 import type { ModuleUser } from '..'
 import type { User } from '../entities'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { assertUser } from './assertUser'
 
 /** The options to resolve the user. */
-const GET_USER_OPTIONS_SCHEMA = createSchema({
+const GET_USER_OPTIONS_SCHEMA = createParser({
   username: assert.stringNotEmpty,
   user: [[assert.undefined], [assertUser]],
   withDeleted: [[assert.undefined], [assert.boolean]],

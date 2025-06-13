@@ -2,7 +2,7 @@ import type { ModuleVault } from '..'
 import type { VaultPermission } from '../utils'
 import { createHttpRoute } from '@unserved/server'
 import { parseBoolean } from '@unshared/string'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
 import { getVault, getVaultProjectPermissions } from '../utils'
@@ -11,11 +11,11 @@ export function vaultProjects(this: ModuleVault) {
   return createHttpRoute(
     {
       name: 'GET /api/workspaces/:workspace/vaults/:vault/projects',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         vault: assert.stringNotEmpty,
       }),
-      parseQuery: createSchema({
+      parseQuery: createParser({
         withDeleted: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],
       }),
     },

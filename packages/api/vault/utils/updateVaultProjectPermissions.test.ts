@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import type { Context } from '../../__fixtures__'
-import { ValidationError } from '@unshared/validation'
+import { AssertionError } from '@unshared/validation'
 import { createTestContext } from '../../__fixtures__'
 import { updateVaultProjectPermissions } from './updateVaultProjectPermissions'
 
@@ -76,7 +76,7 @@ describe.concurrent<Context>('updateVaultProjectPermissions', () => {
     it('should throw on missing options', async({ moduleVault }) => {
       // @ts-expect-error: testing invalid options
       const shouldThrow = updateVaultProjectPermissions.call(moduleVault, {})
-      await expect(shouldThrow).rejects.toThrow(ValidationError)
+      await expect(shouldThrow).rejects.toThrow(AssertionError)
     })
   })
 })

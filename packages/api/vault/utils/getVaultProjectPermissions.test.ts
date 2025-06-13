@@ -1,5 +1,5 @@
 import type { Context } from '../../__fixtures__'
-import { ValidationError } from '@unshared/validation'
+import { AssertionError } from '@unshared/validation'
 import { createTestContext } from '../../__fixtures__'
 import { getVaultProjectPermissions } from './getVaultProjectPermissions'
 
@@ -36,10 +36,10 @@ describe('getVaultProjectPermissions', () => {
   })
 
   describe<Context>('validation', (it) => {
-    it('should throw ValidationError if options are not provided', async(context) => {
+    it('should throw AssertionError if options are not provided', async(context) => {
       // @ts-expect-error: testing invalid input
       const shouldReject = getVaultProjectPermissions.call(context.moduleVault, {})
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
   })
 })

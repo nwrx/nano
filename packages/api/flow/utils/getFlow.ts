@@ -1,7 +1,7 @@
 import type { Loose } from '@unshared/types'
 import type { Flow } from '../entities'
 import type { ModuleFlow } from '../index'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { In } from 'typeorm'
 import { assertProject } from '../../project/utils/assertProject'
 import { assertUser } from '../../user/utils/assertUser'
@@ -9,7 +9,7 @@ import { assertWorkspace } from '../../workspace/utils/assertWorkspace'
 import { assertFlowPermission } from './assertFlowPermission'
 
 /** The parser fuction for the {@linkcode getFlow} function. */
-const GET_FLOW_OPTIONS_SCHEMA = createSchema({
+const GET_FLOW_OPTIONS_SCHEMA = createParser({
   user: [[assert.undefined], [assertUser]],
   name: assert.stringNotEmpty,
   workspace: assertWorkspace,

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import type { Context } from '../../__fixtures__'
 import type { VaultPermission } from './assertVaultPermission'
-import { EXP_UUID, ValidationError } from '@unshared/validation'
+import { EXP_UUID, AssertionError } from '@unshared/validation'
 import { createTestContext } from '../../__fixtures__'
 import { VAULT_PERMISSIONS } from './assertVaultPermission'
 import { searchVaults } from './searchVaults'
@@ -106,64 +106,64 @@ describe('searchVaults', () => {
   })
 
   describe<Context>('validation', (it) => {
-    it('should throw a "ValidationError" if workspace is not provided', async({ moduleVault }) => {
+    it('should throw a "AssertionError" if workspace is not provided', async({ moduleVault }) => {
       // @ts-expect-error: testing invalid input
       const shouldReject = () => searchVaults.call(moduleVault, { search: 'vault' })
-      await expect(shouldReject).rejects.toThrowError(ValidationError)
+      await expect(shouldReject).rejects.toThrowError(AssertionError)
     })
 
-    it('should throw a "ValidationError" if search is invalid', async({ setupUser, setupWorkspace, moduleVault }) => {
+    it('should throw a "AssertionError" if search is invalid', async({ setupUser, setupWorkspace, moduleVault }) => {
       const { user } = await setupUser()
       const { workspace } = await setupWorkspace()
       // @ts-expect-error: testing invalid input
       const shouldReject = () => searchVaults.call(moduleVault, { user, workspace, search: 123 })
-      await expect(shouldReject).rejects.toThrowError(ValidationError)
+      await expect(shouldReject).rejects.toThrowError(AssertionError)
     })
 
-    it('should throw a "ValidationError" if search is not a string', async({ setupUser, setupWorkspace, moduleVault }) => {
+    it('should throw a "AssertionError" if search is not a string', async({ setupUser, setupWorkspace, moduleVault }) => {
       const { user } = await setupUser()
       const { workspace } = await setupWorkspace()
       // @ts-expect-error: testing invalid input
       const shouldReject = () => searchVaults.call(moduleVault, { user, workspace, search: ['vault'] })
-      await expect(shouldReject).rejects.toThrowError(ValidationError)
+      await expect(shouldReject).rejects.toThrowError(AssertionError)
     })
 
-    it('should throw a "ValidationError" if page is invalid', async({ setupUser, setupWorkspace, moduleVault }) => {
+    it('should throw a "AssertionError" if page is invalid', async({ setupUser, setupWorkspace, moduleVault }) => {
       const { user } = await setupUser()
       const { workspace } = await setupWorkspace()
       // @ts-expect-error: testing invalid input
       const shouldReject = () => searchVaults.call(moduleVault, { user, workspace, page: '1' })
-      await expect(shouldReject).rejects.toThrowError(ValidationError)
+      await expect(shouldReject).rejects.toThrowError(AssertionError)
     })
 
-    it('should throw a "ValidationError" if limit is invalid', async({ setupUser, setupWorkspace, moduleVault }) => {
+    it('should throw a "AssertionError" if limit is invalid', async({ setupUser, setupWorkspace, moduleVault }) => {
       const { user } = await setupUser()
       const { workspace } = await setupWorkspace()
       // @ts-expect-error: testing invalid input
       const shouldReject = () => searchVaults.call(moduleVault, { user, workspace, limit: '10' })
-      await expect(shouldReject).rejects.toThrowError(ValidationError)
+      await expect(shouldReject).rejects.toThrowError(AssertionError)
     })
 
-    it('should throw a "ValidationError" if user is invalid', async({ setupWorkspace, moduleVault }) => {
+    it('should throw a "AssertionError" if user is invalid', async({ setupWorkspace, moduleVault }) => {
       const { workspace } = await setupWorkspace()
       // @ts-expect-error: testing invalid input
       const shouldReject = () => searchVaults.call(moduleVault, { workspace, user: 'user' })
-      await expect(shouldReject).rejects.toThrowError(ValidationError)
+      await expect(shouldReject).rejects.toThrowError(AssertionError)
     })
 
-    it('should throw a "ValidationError" if user is not provided', async({ setupWorkspace, moduleVault }) => {
+    it('should throw a "AssertionError" if user is not provided', async({ setupWorkspace, moduleVault }) => {
       const { workspace } = await setupWorkspace()
       // @ts-expect-error: testing invalid input
       const shouldReject = () => searchVaults.call(moduleVault, { workspace })
-      await expect(shouldReject).rejects.toThrowError(ValidationError)
+      await expect(shouldReject).rejects.toThrowError(AssertionError)
     })
 
-    it('should throw a "ValidationError" if order is invalid', async({ setupUser, setupWorkspace, moduleVault }) => {
+    it('should throw a "AssertionError" if order is invalid', async({ setupUser, setupWorkspace, moduleVault }) => {
       const { user } = await setupUser()
       const { workspace } = await setupWorkspace()
       // @ts-expect-error: testing invalid input
       const shouldReject = () => searchVaults.call(moduleVault, { user, workspace, order: 'order' })
-      await expect(shouldReject).rejects.toThrowError(ValidationError)
+      await expect(shouldReject).rejects.toThrowError(AssertionError)
     })
   })
 })

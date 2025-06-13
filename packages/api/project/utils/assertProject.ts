@@ -1,14 +1,14 @@
 import type { Project } from '../entities'
-import { assert, createArrayParser, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { assertUser } from '../../user/utils/assertUser'
 import { assertProjectPermission } from './assertProjectPermission'
 
-export const assertProject = createSchema({
+export const assertProject = createParser({
   id: assert.stringUuid,
   name: assert.stringNotEmpty,
   assignments: [
     [assert.undefined],
-    [createArrayParser({
+    [assert.arrayOf({
       user: [[assert.undefined], [assertUser]],
       permission: assertProjectPermission,
     })],

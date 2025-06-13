@@ -1,4 +1,4 @@
-import { ValidationError } from '@unshared/validation'
+import { AssertionError } from '@unshared/validation'
 import { randomUUID } from 'node:crypto'
 import { assertRegistryCategory } from './assertRegistryCategory'
 
@@ -20,7 +20,7 @@ describe('assertRegistryCategory', () => {
         id: 'invalid-uuid',
         name: 'test-category',
       })
-      expect(shouldThrow).toThrow(ValidationError)
+      expect(shouldThrow).toThrow(AssertionError)
     })
 
     it('should throw if name is empty', () => {
@@ -28,7 +28,7 @@ describe('assertRegistryCategory', () => {
         id: randomUUID(),
         name: '',
       })
-      expect(shouldThrow).toThrow(ValidationError)
+      expect(shouldThrow).toThrow(AssertionError)
     })
   })
 })

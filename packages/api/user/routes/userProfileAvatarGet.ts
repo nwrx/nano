@@ -1,7 +1,7 @@
 import type { ModuleUser } from '..'
 import { createHttpRoute } from '@unserved/server'
 import { dedent, parseBoolean } from '@unshared/string'
-import { assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
+import { assertStringNotEmpty, assertUndefined, createParser } from '@unshared/validation'
 import { setResponseHeader } from 'h3'
 import { ModuleStorage } from '../../storage'
 import { getUser } from '../utils'
@@ -10,10 +10,10 @@ export function userGetAvatar(this: ModuleUser) {
   return createHttpRoute(
     {
       name: 'GET /api/users/:username/avatar',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         username: assertStringNotEmpty,
       }),
-      parseQuery: createSchema({
+      parseQuery: createParser({
         download: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
       }),
     },

@@ -1,11 +1,11 @@
 import type { ModuleThread } from '..'
-import { createSchema } from '@unshared/validation'
+import { createParser } from '@unshared/validation'
 import { assertFlow } from '../../flow'
 import { assertProject } from '../../project'
 import { assertUser } from '../../user'
 import { assertWorkspace } from '../../workspace'
 
-export const CREATE_THREAD_OPTIONS_SCHEMA = createSchema({
+export const CREATE_THREAD_OPTIONS_SCHEMA = createParser({
   user: assertUser,
   flow: assertFlow,
   project: assertProject,

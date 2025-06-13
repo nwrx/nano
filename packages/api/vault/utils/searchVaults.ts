@@ -2,13 +2,13 @@ import type { Loose } from '@unshared/types'
 import type { FindOptionsOrder } from 'typeorm'
 import type { ModuleVault } from '..'
 import type { Vault } from '../entities'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { ILike, In } from 'typeorm'
 import { assertUser } from '../../user'
 import { assertWorkspace } from '../../workspace'
 
 /** The parser function for the `searchVaults` function. */
-export const SEARCH_VAULTS_OPTIONS_SCHEMA = createSchema({
+export const SEARCH_VAULTS_OPTIONS_SCHEMA = createParser({
   user: assertUser,
   workspace: assertWorkspace,
   search: [[assert.undefined], [assert.string]],

@@ -1,7 +1,7 @@
 import type { ThreadRunnerStatus } from '@nwrx/nano-runner'
 import type { ModuleThreadRunner } from '..'
 import { createWebSocketRoute } from '@unserved/server'
-import { assert, createRuleSet, createSchema } from '@unshared/validation'
+import { assert, createRuleSet, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 
 // Same thing but as a websocket that polls every 5 seconds
@@ -9,7 +9,7 @@ export function threadRunnerStatusSession(this: ModuleThreadRunner) {
   return createWebSocketRoute(
     {
       name: 'WS /ws/runners/:identity',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         identity: assert.stringNotEmpty,
       }),
       parseServerMessage: createRuleSet([assert.object as (value: unknown) => asserts value is ThreadRunnerStatus]),

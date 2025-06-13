@@ -1,4 +1,4 @@
-import { assert, createArrayParser, createRuleSet, createSchema } from '@unshared/validation'
+import { assert, createParser, createRuleSet } from '@unshared/validation'
 
 export const CHAT_CLIENT_MESSAGE_SCHEMA = createRuleSet(
 
@@ -6,47 +6,47 @@ export const CHAT_CLIENT_MESSAGE_SCHEMA = createRuleSet(
   /* Lifecycle                                                               */
   /***************************************************************************/
 
-  [createSchema({
+  [createParser({
     event: assert.stringEquals('createThread'),
-    project: assert.stringNotEmpty.with('You must provide a project name.'),
-    name: assert.stringNotEmpty.with('You must provide a flow name.'),
+    project: assert.stringNotEmpty.withMessage('You must provide a project name.'),
+    name: assert.stringNotEmpty.withMessage('You must provide a flow name.'),
   })],
 
-  [createSchema({
+  [createParser({
     event: assert.stringEquals('openThread'),
-    id: assert.stringUuid.with('You must provide a thread ID.'),
+    id: assert.stringUuid.withMessage('You must provide a thread ID.'),
   })],
 
   /***************************************************************************/
   /* Input                                                                   */
   /***************************************************************************/
 
-  [createSchema({
+  [createParser({
     event: assert.stringEquals('message'),
     message: assert.stringNotEmpty,
   })],
 
-  [createSchema({
+  [createParser({
     event: assert.stringEquals('answer'),
     answer: assert.stringNotEmpty,
   })],
 
-  [createSchema({
+  [createParser({
     event: assert.stringEquals('answerConfirm'),
     confirm: assert.boolean,
   })],
 
-  [createSchema({
+  [createParser({
     event: assert.stringEquals('answerMultiple'),
-    answers: createArrayParser(assert.stringNotEmpty),
+    answers: assert.arrayOf(assert.stringNotEmpty),
   })],
 
-  [createSchema({
+  [createParser({
     event: assert.stringEquals('answerSelect'),
     answer: assert.stringNotEmpty,
   })],
 
-  [createSchema({
+  [createParser({
     event: assert.stringEquals('attachment'),
     name: assert.stringNotEmpty,
     data: assert.stringNotEmpty,

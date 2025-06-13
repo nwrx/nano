@@ -3,14 +3,14 @@ import type { ModuleRegistry } from '..'
 import type { RegistryCategoryObject, RegistryComponent } from '../entities'
 import { createHttpRoute } from '@unserved/server'
 import { parseBoolean } from '@unshared/string'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { assertRegistryCategoryType, searchRegistryCategory } from '../utils'
 
 export function registryCategorySearch(this: ModuleRegistry) {
   return createHttpRoute(
     {
       name: 'GET /api/registry/categories',
-      parseQuery: createSchema({
+      parseQuery: createParser({
         search: [[assert.undefined], [assert.string]],
         type: [[assert.undefined], [assertRegistryCategoryType]],
         page: [[assert.undefined], [assert.stringNotEmpty, Number.parseInt]],

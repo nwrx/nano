@@ -1,14 +1,14 @@
 import type { Loose } from '@unshared/types'
 import type { Project } from '../entities'
 import type { ModuleProject } from '../index'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { In } from 'typeorm'
 import { assertUser } from '../../user/utils/assertUser'
 import { assertWorkspace } from '../../workspace'
 import { assertProjectPermission } from './assertProjectPermission'
 
 /** The parser function for the {@linkcode getProject} function. */
-const GET_PROJECT_OPTIONS_SCHEMA = createSchema({
+const GET_PROJECT_OPTIONS_SCHEMA = createParser({
   workspace: assertWorkspace,
   user: [[assert.undefined], [assertUser]],
   name: assert.stringNotEmpty,

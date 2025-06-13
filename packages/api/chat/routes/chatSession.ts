@@ -1,6 +1,6 @@
 import type { ModuleChat } from '../index'
 import { createWebSocketRoute } from '@unserved/server'
-import { assertStringNotEmpty, createSchema } from '@unshared/validation'
+import { assertStringNotEmpty, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { CHAT_CLIENT_MESSAGE_SCHEMA, createSession } from '../utils'
 
@@ -8,7 +8,7 @@ export function threadSessionById(this: ModuleChat) {
   return createWebSocketRoute(
     {
       name: 'WS /ws/chat/:workspace',
-      parseParameters: createSchema({ workspace: assertStringNotEmpty }),
+      parseParameters: createParser({ workspace: assertStringNotEmpty }),
       parseClientMessage: CHAT_CLIENT_MESSAGE_SCHEMA,
     },
     {

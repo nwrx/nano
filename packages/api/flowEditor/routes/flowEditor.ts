@@ -1,6 +1,6 @@
 import type { ModuleFlowEditor } from '..'
 import { createWebSocketRoute } from '@unserved/server'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { ModuleFlow } from '../../flow'
 import { ModuleProject } from '../../project'
 import { ModuleUser } from '../../user'
@@ -15,10 +15,10 @@ export function flowEditor(this: ModuleFlowEditor) {
   return createWebSocketRoute(
     {
       name: 'WS /ws/workspaces/:workspace/projects/:project/flows/:name/editor',
-      parseParameters: createSchema({
-        workspace: assert.stringNotEmpty.with('Workspace name is required.'),
-        project: assert.stringNotEmpty.with('Project name is required.'),
-        name: assert.stringNotEmpty.with('Flow name is required.'),
+      parseParameters: createParser({
+        workspace: assert.stringNotEmpty.withMessage('Workspace name is required.'),
+        project: assert.stringNotEmpty.withMessage('Project name is required.'),
+        name: assert.stringNotEmpty.withMessage('Flow name is required.'),
       }),
       parseClientMessage: EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA,
       parseServerMessage: EDITOR_SESSION_SERVER_MESSAGE_SCHEMA,

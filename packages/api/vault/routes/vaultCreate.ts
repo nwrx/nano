@@ -1,7 +1,7 @@
 import type { ModuleVault } from '..'
 import type { VaultConfiguration } from '../utils'
 import { createHttpRoute } from '@unserved/server'
-import { assertObjectStrict, assertStringKebabCase, assertStringNotEmpty, createSchema } from '@unshared/validation'
+import { assertObjectStrict, assertStringKebabCase, assertStringNotEmpty, createParser } from '@unshared/validation'
 import { setResponseStatus } from 'h3'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
@@ -11,10 +11,10 @@ export function vaultCreate(this: ModuleVault) {
   return createHttpRoute(
     {
       name: 'POST /api/workspaces/:workspace/vaults',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         workspace: assertStringNotEmpty,
       }),
-      parseBody: createSchema({
+      parseBody: createParser({
         name: assertStringKebabCase,
         type: assertVaultType,
         configuration: assertObjectStrict as (value: unknown) => VaultConfiguration,

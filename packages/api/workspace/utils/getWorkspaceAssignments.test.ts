@@ -1,5 +1,5 @@
 import type { Context } from '../../__fixtures__'
-import { ValidationError } from '@unshared/validation'
+import { AssertionError } from '@unshared/validation'
 import { createTestContext } from '../../__fixtures__'
 import { getWorkspaceAssignments } from './getWorkspaceAssignments'
 
@@ -30,16 +30,16 @@ describe('getWorkspaceAssignments', () => {
   })
 
   describe<Context>('validation', (it) => {
-    it('should throw ValidationError if workspace is not provided', async(context) => {
+    it('should throw AssertionError if workspace is not provided', async(context) => {
       // @ts-expect-error: testing invalid input
       const shouldReject = getWorkspaceAssignments.call(context.moduleWorkspace, {})
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
 
-    it('should throw ValidationError if workspace is invalid', async(context) => {
+    it('should throw AssertionError if workspace is invalid', async(context) => {
       // @ts-expect-error: testing invalid input
       const shouldReject = getWorkspaceAssignments.call(context.moduleWorkspace, { workspace: {} })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
   })
 })

@@ -1,8 +1,8 @@
 import type { Loose } from '@unshared/types'
 import type { ModuleThread } from '..'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 
-export const GET_THREAD_OPTIONS_SCHEMA = createSchema({
+export const GET_THREAD_OPTIONS_SCHEMA = createParser({
   id: assert.stringUuid,
   withEvents: [[assert.undefined], [assert.boolean]],
 })

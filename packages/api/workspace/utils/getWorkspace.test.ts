@@ -2,7 +2,7 @@
 
 import type { Context } from '../../__fixtures__'
 import type { WorkspacePermission } from './assertWorkspacePermission'
-import { EXP_UUID, ValidationError } from '@unshared/validation'
+import { EXP_UUID, AssertionError } from '@unshared/validation'
 import { createTestContext } from '../../__fixtures__'
 import { WORKSPACE_PERMISSIONS } from './assertWorkspacePermission'
 import { ERRORS as E } from './errors'
@@ -106,33 +106,33 @@ describe('getWorkspace', () => {
       await expect(shouldReject).rejects.toThrow(error)
     })
 
-    it('should throw a "ValidationError" if the request permission is not provided', async({ moduleWorkspace }) => {
+    it('should throw a "AssertionError" if the request permission is not provided', async({ moduleWorkspace }) => {
       // @ts-expect-error: testing invalid input
       const shouldReject = getWorkspace.call(moduleWorkspace, { name: 'workspace', permission: undefined })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
 
-    it('should throw a "ValidationError" if the request permission is invalid', async({ moduleWorkspace }) => {
+    it('should throw a "AssertionError" if the request permission is invalid', async({ moduleWorkspace }) => {
       // @ts-expect-error: testing invalid input
       const shouldReject = getWorkspace.call(moduleWorkspace, { name: 'workspace', permission: 'Invalid' })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
 
-    it('should throw a "ValidationError" if workspace name is empty', async({ moduleWorkspace }) => {
+    it('should throw a "AssertionError" if workspace name is empty', async({ moduleWorkspace }) => {
       const shouldReject = getWorkspace.call(moduleWorkspace, { name: '', permission: 'Read' })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
 
-    it('should throw a "ValidationError" if the user is not provided', async({ moduleWorkspace }) => {
+    it('should throw a "AssertionError" if the user is not provided', async({ moduleWorkspace }) => {
       // @ts-expect-error: testing invalid input
       const shouldReject = getWorkspace.call(moduleWorkspace, { user: null, name: 'workspace', permission: 'Read' })
-      await expect(shouldReject).rejects.toThrowError(ValidationError)
+      await expect(shouldReject).rejects.toThrowError(AssertionError)
     })
 
-    it('should throw a "ValidationError" if the user does not have an "id" property', async({ moduleWorkspace }) => {
+    it('should throw a "AssertionError" if the user does not have an "id" property', async({ moduleWorkspace }) => {
       // @ts-expect-error: testing invalid input
       const shouldReject = getWorkspace.call(moduleWorkspace, { user: {}, name: 'workspace', permission: 'Read' })
-      await expect(shouldReject).rejects.toThrowError(ValidationError)
+      await expect(shouldReject).rejects.toThrowError(AssertionError)
     })
   })
 })

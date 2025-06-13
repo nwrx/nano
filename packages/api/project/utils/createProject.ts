@@ -1,11 +1,11 @@
 import type { Loose } from '@unshared/types'
 import type { Project } from '../entities'
 import type { ModuleProject } from '../index'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { assertUser } from '../../user'
 import { assertWorkspace } from '../../workspace'
 
-const CREATE_PROJECT_OPTIONS = createSchema({
+const CREATE_PROJECT_OPTIONS = createParser({
   workspace: assertWorkspace,
   user: assertUser,
   name: assert.stringNotEmpty,

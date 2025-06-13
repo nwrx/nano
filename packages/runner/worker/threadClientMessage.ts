@@ -1,33 +1,33 @@
 import type { ThreadInputObject } from '@nwrx/nano'
-import { assert, assertObjectStrict, createArrayParser, createRuleSet, createSchema } from '@unshared/validation'
+import { assert, assertObjectStrict, createRuleSet, createParser } from '@unshared/validation'
 
 export const THREAD_CLIENT_MESSAGE_SCHEMA = createRuleSet(
 
-  [createSchema({
+  [createParser({
     event: assert.stringEquals('workerStart'),
-    data: createArrayParser(assertObjectStrict<ThreadInputObject>),
+    data: assert.arrayOf(assertObjectStrict<ThreadInputObject>),
   })],
 
-  [createSchema({
+  [createParser({
     event: assert.stringEquals('workerAbort'),
   })],
 
-  [createSchema({
+  [createParser({
     event: assert.stringEquals('workerGetOutputSchema'),
   })],
 
-  [createSchema({
+  [createParser({
     event: assert.stringEquals('workerGetInputSchema'),
   })],
 
-  [createSchema({
+  [createParser({
     event: assert.stringEquals('workerResolveComponents'),
-    data: createArrayParser({ id: assert.stringNotEmpty }),
+    data: assert.arrayOf({ id: assert.stringNotEmpty }),
   })],
 
-  [createSchema({
+  [createParser({
     event: assert.stringEquals('workerResolveReferenceResult'),
-    data: createArrayParser({
+    data: assert.arrayOf({
       id: assert.stringUuid,
       value: (x: unknown) => x,
     }),

@@ -2,7 +2,7 @@ import type { ModuleVault } from '..'
 import type { VaultVariableObject } from '../entities'
 import { createHttpRoute } from '@unserved/server'
 import { parseBoolean } from '@unshared/string/parseBoolean'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { ModuleProject } from '../../project'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
@@ -12,11 +12,11 @@ export function variableSearchByVault(this: ModuleVault) {
   return createHttpRoute(
     {
       name: 'GET /api/workspaces/:workspace/vaults/:vault/variables',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         vault: assert.stringNotEmpty,
       }),
-      parseQuery: createSchema({
+      parseQuery: createParser({
         search: [[assert.undefined], [assert.stringNotEmpty]],
         page: [[assert.undefined], [assert.stringNotEmpty, assert.number]],
         limit: [[assert.undefined], [assert.stringNotEmpty, assert.number]],
@@ -42,10 +42,10 @@ export function variableSearchByWorkspace(this: ModuleVault) {
   return createHttpRoute(
     {
       name: 'GET /api/workspaces/:workspace/variables',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         workspace: assert.stringNotEmpty,
       }),
-      parseQuery: createSchema({
+      parseQuery: createParser({
         search: [[assert.undefined], [assert.stringNotEmpty]],
         page: [[assert.undefined], [assert.stringNotEmpty, assert.number]],
         limit: [[assert.undefined], [assert.stringNotEmpty, assert.number]],
@@ -70,11 +70,11 @@ export function variableSearchByProject(this: ModuleVault) {
   return createHttpRoute(
     {
       name: 'GET /api/workspaces/:workspace/projects/:project/variables',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         project: assert.stringNotEmpty,
       }),
-      parseQuery: createSchema({
+      parseQuery: createParser({
         search: [[assert.undefined], [assert.stringNotEmpty]],
         page: [[assert.undefined], [assert.stringNotEmpty, assert.number]],
         limit: [[assert.undefined], [assert.stringNotEmpty, assert.number]],

@@ -1,13 +1,13 @@
 import type { Loose } from '@unshared/types'
 import type { Workspace } from '../entities'
 import type { ModuleWorkspace } from '../index'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { In } from 'typeorm'
 import { assertUser } from '../../user/utils/assertUser'
 import { assertWorkspacePermission } from './assertWorkspacePermission'
 
 /** The parser fuction for the {@linkcode getWorkspace} function. */
-const GET_WORKSPACE_OPTIONS = createSchema({
+const GET_WORKSPACE_OPTIONS = createParser({
   name: assert.stringNotEmpty,
   user: [[assert.undefined], [assertUser]],
   permission: assertWorkspacePermission,

@@ -1,4 +1,4 @@
-import { ValidationError } from '@unshared/validation'
+import { AssertionError } from '@unshared/validation'
 import { randomUUID } from 'node:crypto'
 import { assertVault } from './assertVault'
 import { VAULT_TYPES } from './assertVaultType'
@@ -38,7 +38,7 @@ describe('assertVault', () => {
         type: VAULT_TYPES[0],
         configuration: {},
       })
-      expect(shouldThrow).toThrow(ValidationError)
+      expect(shouldThrow).toThrow(AssertionError)
     })
 
     it('should throw an error if the vault name is empty', () => {
@@ -48,7 +48,7 @@ describe('assertVault', () => {
         type: VAULT_TYPES[0],
         configuration: {},
       })
-      expect(shouldThrow).toThrow(ValidationError)
+      expect(shouldThrow).toThrow(AssertionError)
     })
 
     it('should throw an error if the vault type is invalid', () => {
@@ -58,7 +58,7 @@ describe('assertVault', () => {
         type: 'invalid',
         configuration: {},
       })
-      expect(shouldThrow).toThrow(ValidationError)
+      expect(shouldThrow).toThrow(AssertionError)
     })
 
     it('should throw an error if an assignment has invalid user id', () => {
@@ -71,7 +71,7 @@ describe('assertVault', () => {
           { user: { id: 'invalid' }, permission: 'Read' },
         ],
       })
-      expect(shouldThrow).toThrow(ValidationError)
+      expect(shouldThrow).toThrow(AssertionError)
     })
   })
 })

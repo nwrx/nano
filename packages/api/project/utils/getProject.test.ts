@@ -2,7 +2,7 @@
 
 import type { Context } from '../../__fixtures__'
 import type { ProjectPermission } from './assertProjectPermission'
-import { EXP_UUID, ValidationError } from '@unshared/validation'
+import { EXP_UUID, AssertionError } from '@unshared/validation'
 import { createTestContext } from '../../__fixtures__'
 import { PROJECT_PERMISSIONS } from './assertProjectPermission'
 import { ERRORS as E } from './errors'
@@ -108,37 +108,37 @@ describe('getProject', () => {
       await expect(shouldReject).rejects.toThrow(error)
     })
 
-    it('should throw a "ValidationError" if the request permission is not provided', async({ moduleProject, setupWorkspace }) => {
+    it('should throw a "AssertionError" if the request permission is not provided', async({ moduleProject, setupWorkspace }) => {
       const { workspace } = await setupWorkspace()
       // @ts-expect-error: testing invalid input
       const shouldReject = getProject.call(moduleProject, { workspace, name: 'project', permission: undefined })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
 
-    it('should throw a "ValidationError" if the request permission is invalid', async({ moduleProject, setupWorkspace }) => {
+    it('should throw a "AssertionError" if the request permission is invalid', async({ moduleProject, setupWorkspace }) => {
       const { workspace } = await setupWorkspace()
       // @ts-expect-error: testing invalid input
       const shouldReject = getProject.call(moduleProject, { workspace, name: 'project', permission: 'Invalid' })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
 
-    it('should throw a "ValidationError" if project name is empty', async({ moduleProject, setupWorkspace }) => {
+    it('should throw a "AssertionError" if project name is empty', async({ moduleProject, setupWorkspace }) => {
       const { workspace } = await setupWorkspace()
       const shouldReject = getProject.call(moduleProject, { workspace, name: '', permission: 'Read' })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
 
-    it('should throw a "ValidationError" if the user does not have an "id" property', async({ moduleProject, setupWorkspace }) => {
+    it('should throw a "AssertionError" if the user does not have an "id" property', async({ moduleProject, setupWorkspace }) => {
       const { workspace } = await setupWorkspace()
       // @ts-expect-error: testing invalid input
       const shouldReject = getProject.call(moduleProject, { workspace, user: {}, name: 'project', permission: 'Read' })
-      await expect(shouldReject).rejects.toThrowError(ValidationError)
+      await expect(shouldReject).rejects.toThrowError(AssertionError)
     })
 
-    it('should throw a "ValidationError" if workspace is not provided', async({ moduleProject }) => {
+    it('should throw a "AssertionError" if workspace is not provided', async({ moduleProject }) => {
       // @ts-expect-error: testing invalid input
       const shouldReject = getProject.call(moduleProject, { name: 'project', permission: 'Read' })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
   })
 })

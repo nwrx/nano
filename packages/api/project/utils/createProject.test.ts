@@ -1,5 +1,5 @@
 import type { Context } from '../../__fixtures__'
-import { ValidationError } from '@unshared/validation'
+import { AssertionError } from '@unshared/validation'
 import { createTestContext } from '../../__fixtures__'
 import { Project } from '../entities'
 import { createProject } from './createProject'
@@ -73,21 +73,21 @@ describe.concurrent<Context>('createProject', () => {
       const { user, workspace } = await setupUser()
       // @ts-expect-error: testing missing `name` property
       const shouldReject = createProject.call(moduleProject, { user, workspace })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
 
     it('should throw an error if the project user is missing', async({ setupUser, moduleProject }) => {
       const { workspace } = await setupUser()
       // @ts-expect-error: testing missing `user` property
       const shouldReject = createProject.call(moduleProject, { name: 'project', workspace })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
 
     it('should throw an error if the project workspace is missing', async({ setupUser, moduleProject }) => {
       const { user } = await setupUser()
       // @ts-expect-error: testing missing `workspace` property
       const shouldReject = createProject.call(moduleProject, { user, name: 'project' })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
   })
 })

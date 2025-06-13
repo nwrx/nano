@@ -1,5 +1,5 @@
 import type { RegistryCategoryType } from './assertRegistryCategoryType'
-import { ValidationError } from '@unshared/validation'
+import { AssertionError } from '@unshared/validation'
 import { assertRegistryCategoryType, REGISTRY_CATEGORY_TYPES } from './assertRegistryCategoryType'
 
 describe('assertRegistryCategoryType', () => {
@@ -11,7 +11,7 @@ describe('assertRegistryCategoryType', () => {
   it('should throw an error if the category is not valid', () => {
     const shouldThrow = () => assertRegistryCategoryType('Invalid' as any)
     const values = REGISTRY_CATEGORY_TYPES.map(value => `'${value}'`).join(', ')
-    expect(shouldThrow).toThrow(ValidationError)
+    expect(shouldThrow).toThrow(AssertionError)
     expect(shouldThrow).toThrow(`String is not one of the values: ${values}`)
   })
 

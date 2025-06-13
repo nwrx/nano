@@ -1,5 +1,5 @@
 import type { Context } from '../../__fixtures__'
-import { ValidationError } from '@unshared/validation'
+import { AssertionError } from '@unshared/validation'
 import { createTestContext } from '../../__fixtures__'
 import { ERRORS } from './errors'
 import { renameWorkspace } from './renameWorkspace'
@@ -52,12 +52,12 @@ describe.concurrent<Context>('renameWorkspace', () => {
     it('should throw an error if the new name is missing', async({ setupWorkspace, moduleWorkspace }) => {
       const { workspace } = await setupWorkspace()
       const shouldReject = renameWorkspace.call(moduleWorkspace, { workspace })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
 
     it('should throw an error if the workspace is missing', async({ moduleWorkspace }) => {
       const shouldReject = renameWorkspace.call(moduleWorkspace, { name: 'new-name' })
-      await expect(shouldReject).rejects.toThrow(ValidationError)
+      await expect(shouldReject).rejects.toThrow(AssertionError)
     })
   })
 })

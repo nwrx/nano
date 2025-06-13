@@ -1,7 +1,7 @@
 import type { RegistryCollection } from '../entities'
-import { assert, createSchema } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 
-export const assertRegistryCollection = createSchema({
+export const assertRegistryCollection = createParser({
   id: assert.stringUuid,
   name: assert.stringNotEmpty,
 }) as (value: unknown) => RegistryCollection

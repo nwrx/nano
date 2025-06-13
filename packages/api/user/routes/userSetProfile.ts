@@ -1,16 +1,16 @@
 import type { ModuleUser } from '../index'
 import { createHttpRoute } from '@unserved/server'
-import { assertString, assertStringNotEmpty, assertUndefined, createSchema } from '@unshared/validation'
+import { assertString, assertStringNotEmpty, assertUndefined, createParser } from '@unshared/validation'
 import { getUser } from '../utils'
 
 export function userSetProfile(this: ModuleUser) {
   return createHttpRoute(
     {
       name: 'PUT /api/users/:username/profile',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         username: assertStringNotEmpty,
       }),
-      parseBody: createSchema({
+      parseBody: createParser({
         displayName: [[assertUndefined], [assertStringNotEmpty]],
         biography: [[assertUndefined], [assertString]],
         company: [[assertUndefined], [assertString]],

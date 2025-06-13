@@ -1,6 +1,6 @@
 import type { ModuleProject } from '../index'
 import { createHttpRoute } from '@unserved/server'
-import { assertStringNotEmpty, createSchema } from '@unshared/validation'
+import { assertStringNotEmpty, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
 import { getProject } from '../utils'
@@ -9,7 +9,7 @@ export function projectRemove(this: ModuleProject) {
   return createHttpRoute(
     {
       name: 'DELETE /api/workspaces/:workspace/projects/:project',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         workspace: assertStringNotEmpty,
         project: assertStringNotEmpty,
       }),

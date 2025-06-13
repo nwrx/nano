@@ -1,6 +1,6 @@
 import type { ModuleVault } from '..'
 import { createHttpRoute } from '@unserved/server'
-import { assertStringNotEmpty, createSchema } from '@unshared/validation'
+import { assertStringNotEmpty, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
 import { getVault } from '../utils'
@@ -9,7 +9,7 @@ export function vaultRemove(this: ModuleVault) {
   return createHttpRoute(
     {
       name: 'DELETE /api/workspaces/:workspace/vaults/:vault',
-      parseParameters: createSchema({
+      parseParameters: createParser({
         workspace: assertStringNotEmpty,
         vault: assertStringNotEmpty,
       }),
