@@ -8,5 +8,6 @@ export function getComponentColor(component?: RegistryComponentObject) {
   if (purposeCategory.name === 'models') return '#00FF00'
   if (purposeCategory.name === 'processing') return '#0000FF'
   if (purposeCategory.name === 'storage') return '#0000FF'
-  return '#fff'
+  if (purposeCategory.name === 'mcp') return '#FF00FF'
+  return '#000'
 }
