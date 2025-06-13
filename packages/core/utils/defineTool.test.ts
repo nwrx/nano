@@ -24,7 +24,7 @@ describe('createTool', () => {
       nodeId: 'example',
       name: 'Weather Forecast',
       description: 'A tool that can be used to get the weather forecast.',
-      parameters: {
+      inputSchema: {
         type: 'object',
         additionalProperties: false,
         required: [
@@ -61,7 +61,7 @@ describe('createTool', () => {
       nodeId: 'example',
       name: 'Weather Forecast',
       description: 'A tool that can be used to get the weather forecast.',
-      parameters: {
+      inputSchema: {
         required: [],
         additionalProperties: false,
         properties: {},

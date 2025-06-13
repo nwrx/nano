@@ -67,7 +67,7 @@ describe('DEFAULT_REFERENCE_RESOLVER', () => {
         name: 'example',
         nodeId,
         description: undefined,
-        parameters: expect.any(Object),
+        inputSchema: expect.any(Object),
       })
     })
 
@@ -81,7 +81,7 @@ describe('DEFAULT_REFERENCE_RESOLVER', () => {
         name: 'example',
         nodeId,
         description: 'Tool Description',
-        parameters: expect.any(Object),
+        inputSchema: expect.any(Object),
       })
     })
 
