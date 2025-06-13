@@ -52,7 +52,7 @@ export async function serializeSessionNode(session: EditorSession, id: string): 
         title: 'Unknown',
         description: 'Unknown',
         icon: 'Unknown',
-        environment: 'builtin',
+        runtime: 'builtin',
       },
     }))
 }
