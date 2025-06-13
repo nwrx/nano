@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/require-await */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import type { ThreadRunnerStatus } from '@nwrx/nano-runner'
 import type { Context } from '../../__fixtures__'
@@ -63,14 +62,20 @@ describe<Context>('GET /api/runners/:runner', () => {
       const { id, identity } = await ThreadRunner.findOneByOrFail({})
 
       // Check the status for the claimed runner.
-      moduleThreadRunner.threadRunners.get(id)!.ping = async() => { throw new Error('Unreachable') }
-      moduleThreadRunner.threadRunners.get(id)!.getStatus =async() => { throw new Error('Unreachable') }
+      // moduleThreadRunner.threadRunners.get(id)!.ping = async() => { throw new Error('Unreachable') }
+      moduleThreadRunner.threadRunners.get(id)!.getStatus = () => Promise.reject(new Error('Unreachable'))
       const response = await application.fetch(`/api/runners/${identity}`, { method: 'GET', headers })
       const data = await response.json() as { address: string; status: unknown }
-      expect(response).toMatchObject({ status: 500, statusText: 'Internal Server Error' })
+      expect(response).toMatchObject({ status: 503, statusText: 'Service Unavailable' })
       expect(data).toStrictEqual({
         stack: [],
-        statusCode: 500,
+        statusCode: 503,
+        statusMessage: 'Service Unavailable',
+        data: {
+          address: 'runner-1',
+          message: 'Thread runner with base URL "runner-1" is not reachable: Unreachable',
+          name: 'E_THREAD_RUNNER_NOT_REACHABLE',
+        },
       })
     })
   })

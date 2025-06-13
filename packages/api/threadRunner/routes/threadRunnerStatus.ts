@@ -28,7 +28,9 @@ export function threadRunnerStatus(this: ModuleThreadRunner) {
       // --- Retrieve the thread runner client and get its status.
       const runner = this.threadRunners.get(threadRunner.id)
       if (!runner) throw this.errors.THREAD_RUNNER_NOT_FOUND(identity)
-      return await runner.getStatus()
+      return await runner.getStatus().catch((error: Error) => {
+        throw this.errors.THREAD_RUNNER_NOT_REACHABLE(identity, error.message)
+      })
     },
   )
 }

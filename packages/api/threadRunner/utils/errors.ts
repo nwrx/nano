@@ -29,12 +29,12 @@ export const ERRORS = {
     message: `Thread runner with base URL "${address}" is already registered in the database`,
     data: { address },
   }),
-  THREAD_RUNNER_NOT_REACHABLE: (address: string, code: string) => createError({
+  THREAD_RUNNER_NOT_REACHABLE: (address: string, message?: string) => createError({
     name: 'E_THREAD_RUNNER_NOT_REACHABLE',
     statusCode: 503,
     statusMessage: 'Service Unavailable',
-    message: `Thread runner with base URL "${address}" is not reachable: ${code}`,
-    data: { address, code },
+    message: `Thread runner with base URL "${address}" is not reachable: ${message}`,
+    data: { address, message },
   }),
 
   // Enable/Disable
