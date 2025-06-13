@@ -1,6 +1,6 @@
 import type { ModuleThreadRunner } from '..'
 import { IsNull } from 'typeorm'
-import { createThreadRunnerClient } from './createThreadRunner'
+import { createThreadRunnerClient } from './createThreadRunnerClient'
 
 /**
  * Collect all enabled thread runners from the database, instantiate a client

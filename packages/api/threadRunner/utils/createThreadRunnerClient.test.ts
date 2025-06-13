@@ -5,7 +5,7 @@ import type { Context } from '../../__fixtures__'
 import type { ThreadWorkerMessage } from '../../../runner/worker'
 import { WebSocketChannel } from '@unshared/client/websocket'
 import { createTestContext } from '../../__fixtures__'
-import { createThreadRunnerClient, ThreadRunnerClient } from './createThreadRunner'
+import { createThreadRunnerClient, ThreadRunnerClient } from './createThreadRunnerClient'
 
 const flow: FlowV1 = {
   version: '1',
@@ -29,7 +29,7 @@ const flow: FlowV1 = {
   },
 }
 
-describe.sequential<Context>('createThreadRunner', () => {
+describe.sequential<Context>('createThreadRunnerClient', () => {
   beforeEach<Context>(async(context) => {
     await createTestContext(context)
     await context.runner.createTestServer()

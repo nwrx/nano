@@ -1,4 +1,4 @@
-import type { ThreadRunnerClient } from './utils/createThreadRunner'
+import type { ThreadRunnerClient } from './utils/createThreadRunnerClient'
 import { ModuleBase } from '@unserved/server'
 import { ModuleFlow } from '../flow'
 import { ModuleUser } from '../user'
@@ -7,7 +7,7 @@ import * as ROUTES from './routes'
 import * as UTILS from './utils'
 
 export * from './entities'
-export * from './utils/createThreadRunner'
+export * from './utils/createThreadRunnerClient'
 
 export class ModuleThreadRunner extends ModuleBase {
   routes = ROUTES

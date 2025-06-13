@@ -1,4 +1,4 @@
-import type { ThreadRunnerClient } from './createThreadRunner'
+import type { ThreadRunnerClient } from './createThreadRunnerClient'
 import { type Context, createTestContext } from '../../__fixtures__'
 import { requestThreadRunner } from './requestThreadRunner'
 

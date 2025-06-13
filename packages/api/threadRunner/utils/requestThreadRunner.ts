@@ -1,5 +1,5 @@
 import type { ModuleThreadRunner } from '../index'
-import type { ThreadRunnerClient } from './createThreadRunner'
+import type { ThreadRunnerClient } from './createThreadRunnerClient'
 
 /**
  * Request a thread runner to run a flow. This will query all available thread
