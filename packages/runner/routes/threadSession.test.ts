@@ -26,7 +26,7 @@ async function createConnection(context: Context, flow: FlowV1) {
 }
 
 async function startThread(ws: WebSocket, data: Record<string, unknown>) {
-  ws.send(JSON.stringify({ event: 'start', data }))
+  ws.send(JSON.stringify({ event: 'workerStart', data: [data] }))
   return await new Promise((resolve, reject) => {
     ws.on('message', (message) => {
       const utf8 = message.toString()

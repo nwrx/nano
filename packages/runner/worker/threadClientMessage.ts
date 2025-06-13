@@ -13,6 +13,14 @@ export const THREAD_CLIENT_MESSAGE_SCHEMA = createRuleSet(
   })],
 
   [createSchema({
+    event: assert.stringEquals('workerGetOutputSchema'),
+  })],
+
+  [createSchema({
+    event: assert.stringEquals('workerGetInputSchema'),
+  })],
+
+  [createSchema({
     event: assert.stringEquals('workerResolveComponents'),
     data: createArrayParser({ id: assert.stringNotEmpty }),
   })],
