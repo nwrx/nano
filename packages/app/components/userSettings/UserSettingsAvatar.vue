@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import AppPageForm from '../app/AppPageForm.vue'
+import Button from '../base/Button.vue'
+import InputImage from '../base/InputImage.vue'
+
 const props = defineProps<{ username: string }>()
 const { t } = useI18n()
 const client = useClient()
@@ -6,13 +10,9 @@ const alerts = useAlerts()
 
 async function setAvatar(file: File) {
   await client.requestAttempt('PUT /api/users/:username/avatar', {
-    data: {
-      username: props.username,
-      file,
-    },
-    onSuccess: () => {
-      alerts.success(t('general.alert.success'))
-    },
+    onSuccess: () => alerts.success(t('general.alert.success')),
+    parameters: { username: props.username },
+    body: { file },
   })
 }
 </script>
