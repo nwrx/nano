@@ -126,7 +126,7 @@ export const NATIVE_COMPONENTS = {
   // MCP
   mcp: {
     title: 'MCP Server',
-    icon: 'https://api.iconify.design/carbon:server.svg',
+    icon: 'https://api.iconify.design/carbon:web-services-container.svg',
     description: 'MCP server provider. MCP server provides powerful server capabilities for a variety of use cases.',
     categories: ['mcp', 'built-by-nanoworks'],
     collection: 'core',

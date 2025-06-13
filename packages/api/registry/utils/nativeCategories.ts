@@ -47,7 +47,7 @@ export const NATIVE_CATEGORIES = {
   'mcp': {
     title: 'MCP',
     type: 'Purpose',
-    icon: 'https://api.iconify.design/carbon:cloud-platform.svg',
+    icon: 'https://api.iconify.design/carbon:web-services-container.svg',
     description: 'This category is used to classify components that are used to interact with an MCP server.',
   },
 
