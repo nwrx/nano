@@ -59,7 +59,7 @@ export function variableSearchByWorkspace(this: ModuleVault) {
       const { user } = await moduleUser.authenticate(event)
 
       // --- Get the workspace with read permission and search the variables.
-      const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Read' })
+      const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Owner' })
       const variables = await searchVariableByWorkspace.call(this, { workspace, ...query })
       return variables.map(variable => variable.serialize({ withVault: query.withVault }))
     },
