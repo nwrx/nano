@@ -16,7 +16,7 @@ export class VaultAssignment extends BaseEntity {
    */
   @JoinColumn()
   @ManyToOne(() => Vault, { nullable: false })
-  vault: Vault
+  vault?: Vault
 
   /**
    * The user that the variable is assigned to. The variable can be used
@@ -26,7 +26,7 @@ export class VaultAssignment extends BaseEntity {
    */
   @JoinColumn()
   @ManyToOne(() => User, { nullable: false })
-  user: User
+  user?: User
 
   /**
    * The user that is responsible for the assignment. This user can be
@@ -34,7 +34,7 @@ export class VaultAssignment extends BaseEntity {
    */
   @JoinColumn()
   @ManyToOne(() => User, { nullable: false })
-  createdBy: User
+  createdBy?: User
 
   /**
    * The permission level for this assignment.

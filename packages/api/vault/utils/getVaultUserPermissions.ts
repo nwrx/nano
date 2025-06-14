@@ -33,6 +33,7 @@ export async function getVaultUserPermissions(this: ModuleVault, options: GetVau
   // --- Collect the assignments by user.
   const permissions: Record<string, VaultPermission[]> = {}
   for (const { user, permission } of assignments) {
+    if (!user) throw new Error('`user` relation not loaded for VaultAssignment')
     const { username } = user
     if (!permissions[username]) permissions[username] = []
     permissions[username].push(permission)

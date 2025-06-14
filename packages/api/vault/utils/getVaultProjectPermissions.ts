@@ -33,6 +33,7 @@ export async function getVaultProjectPermissions(this: ModuleVault, options: Get
   // --- Collect the assignments by project.
   const permissions = new Map<string, VaultPermission[]>()
   for (const { project, permission } of assignments) {
+    if (!project) throw new Error('`project` relation not loaded for VaultProjectAssignment')
     const { name } = project
     if (!permissions.has(name)) permissions.set(name, [])
     permissions.get(name)!.push(permission)
