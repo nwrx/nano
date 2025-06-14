@@ -2,7 +2,7 @@
 
 import type { Context } from '../../__fixtures__'
 import type { VaultPermission } from './assertVaultPermission'
-import { EXP_UUID, AssertionError } from '@unshared/validation'
+import { AssertionError, EXP_UUID } from '@unshared/validation'
 import { createTestContext } from '../../__fixtures__'
 import { VAULT_PERMISSIONS } from './assertVaultPermission'
 import { ERRORS as E } from './errors'
@@ -113,7 +113,9 @@ describe('getVault', () => {
       const error2 = E.VAULT_NOT_FOUND(workspace.name, vault.name)
       await expect(shouldRejectUser2).rejects.toThrow(error2)
     })
+  })
 
+  describe<Context>('assertion errors', (it) => {
     it('should throw a "AssertionError" if the request permission is not provided', async({ moduleVault, setupWorkspace, setupUser }) => {
       const { user } = await setupUser()
       const { workspace } = await setupWorkspace()
