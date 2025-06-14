@@ -40,6 +40,9 @@ export function useEditorModel(options: UseEditorModelOptions) {
   async function connect() {
     channel = await client.connect('WS /ws/workspaces/:workspace/projects/:project/flows/:name/editor', {
       parameters: { ...options },
+      autoReconnect: true,
+      reconnectDelay: 1000,
+      reconnectLimit: 5,
       onMessage: (message) => {
         messagesServer.value.push(message as EditorSessionServerMessage)
 
@@ -102,7 +105,7 @@ export function useEditorModel(options: UseEditorModelOptions) {
           state.value.participants = state.value.participants.filter(p => !message.data.includes(p.id))
         }
       },
-    })
+    }).open()
   }
 
   function send<K extends EditorEventName>(event: K, ...data: EditorMethodParameters<K>) {

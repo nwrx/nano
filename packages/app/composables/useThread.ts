@@ -17,8 +17,11 @@ export function useThread(workspace: string, project: string, flow: string) {
   async function connect(thread?: string) {
     channel.value = await client.connect('WS /ws/workspaces/:workspace/projects/:project/flows/:flow/thread/:thread?', {
       data: { workspace, project, flow, thread },
+      autoReconnect: true,
+      reconnectDelay: 1000,
+      reconnectLimit: 5,
       onMessage: (message: ThreadServerMessage) => messages.value.push(message),
-    }) as Channel
+    }).open() as Channel
 
     // --- Wait for the first message to be received.
     await new Promise((resolve, reject) => {

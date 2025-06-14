@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/no-commented-code */
 import type { ThreadInputObject } from '@nwrx/nano'
 import type { application, FlowNodeObject } from '@nwrx/nano-api'
 import type { ThreadServerMessage } from '@nwrx/nano-runner'
@@ -29,6 +30,9 @@ export function useEditorThread(options: UseEditorThreadOptions) {
     // --- Connect to the thread server via WebSocket.
     channel.value = await client.connect('WS /ws/workspaces/:workspace/projects/:project/flows/:flow/thread/:thread?', {
       data: { workspace, project, flow, thread },
+      autoReconnect: true,
+      reconnectDelay: 1000,
+      reconnectLimit: 5,
       onMessage: (message: ThreadServerMessage) => {
         messages.value.push(message)
         if (message.event === 'error') {
@@ -47,7 +51,7 @@ export function useEditorThread(options: UseEditorThreadOptions) {
           nodes.value = [...nodes.value]
         }
       },
-    }) as Channel
+    }).open() as Channel
 
     // --- Wait for the first message to be received.
     await new Promise((resolve, reject) => {
