@@ -3,6 +3,23 @@ definePageMeta({
   name: 'WorkspaceMonitoring',
   path: '/:workspace/monitoring',
   middleware: ['redirect-when-guest', 'abort-reserved'],
+  layout: 'workspace',
+  icon: 'i-carbon:cloud-monitoring',
+  groups: ['nav-items-workspace'],
+  title: {
+    en: 'Monitoring',
+    fr: 'Métriques',
+    de: 'Überwachung',
+    es: 'Monitoreo',
+    zh: '监控',
+  },
+  description: {
+    en: 'Monitor activities and traces across your projects.',
+    fr: 'Surveillez les activités et les traces de vos projets.',
+    de: 'Überwachen Sie Aktivitäten und Spuren in Ihren Projekten.',
+    es: 'Monitoree actividades y trazas en sus proyectos.',
+    zh: '监视您项目中的活动和跟踪。',
+  },
 })
 
 const { t } = useI18n()
@@ -22,30 +39,21 @@ onMounted(async() => {
 </script>
 
 <template>
-  <AppPage>
-    <ProjectHeader
-      icon="i-carbon:cloud-monitoring"
-      :title="t('title')"
-      :workspace="workspace"
-      :description="t('description')"
-    />
-
-    <Monitoring
-      v-model:event-names="settings.monitoringEventNames"
-      v-model:event-types="settings.monitoringEventTypes"
-      :projects="session.data.projects"
-      :threads="session.data.threads"
-      :events="session.data.events"
-      :node-events="session.data.nodeEvents"
-      :selected-project="session.selection.project"
-      :selected-flow="session.selection.flow"
-      :selected-thread="session.selection.thread"
-      :selected-event="session.selection.event"
-      @select-flow="(project, flow) => session.selectFlow(project, flow)"
-      @select-thread="thread => session.selectThread(thread)"
-      @select-event="event => session.selectEvent(event)"
-    />
-  </AppPage>
+  <Monitoring
+    v-model:event-names="settings.monitoringEventNames"
+    v-model:event-types="settings.monitoringEventTypes"
+    :projects="session.data.projects"
+    :threads="session.data.threads"
+    :events="session.data.events"
+    :node-events="session.data.nodeEvents"
+    :selected-project="session.selection.project"
+    :selected-flow="session.selection.flow"
+    :selected-thread="session.selection.thread"
+    :selected-event="session.selection.event"
+    @select-flow="(project, flow) => session.selectFlow(project, flow)"
+    @select-thread="thread => session.selectThread(thread)"
+    @select-event="event => session.selectEvent(event)"
+  />
 </template>
 
 <i18n lang="yaml">

@@ -19,13 +19,14 @@ export type NavItemGroup =
   | 'project-security'
   | 'project-settings'
 
-  // User Settings
+  // User
   | 'user-billing'
   | 'user-security'
   | 'user-settings'
 
-  // Workspace Settings
+  // Workspace
   | 'workspace-billing'
+  | 'workspace-mcp'
   | 'workspace-security'
   | 'workspace-settings'
 
@@ -57,13 +58,20 @@ export interface ProjectListItem {
   flows?: FlowObject[]
 }
 
+export type RouteGroup =
+  | 'nav-items-bottom'
+  | 'nav-items-top'
+  | 'nav-items-workspace'
+
 declare module 'vue-router' {
   export interface RouteMeta {
     icon?: string
     title?: string | Stringtable
     description?: string | Stringtable
-    group?: NavItemGroup
     parent?: string
+    group?: NavItemGroup
+    groups?: RouteGroup[]
+    isWorkInProgress?: boolean
   }
 }
 

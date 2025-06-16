@@ -3,6 +3,23 @@ definePageMeta({
   name: 'WorkspaceChat',
   path: '/:workspace/chat/:id?',
   middleware: ['redirect-when-guest', 'abort-reserved'],
+  layout: 'workspace',
+  icon: 'i-carbon:chat-bot',
+  groups: ['nav-items-workspace'],
+  title: {
+    en: 'Chat',
+    fr: 'Chat',
+    de: 'Chat',
+    es: 'Chat',
+    zh: '聊天',
+  },
+  description: {
+    en: 'Interact with your flows through a chat interface.',
+    fr: 'Interagissez avec vos flux via une interface de chat.',
+    de: 'Interagiere mit deinen Flows über eine Chat-Schnittstelle.',
+    es: 'Interactúa con tus flujos a través de una interfaz de chat.',
+    zh: '通过聊天界面与您的流进行交互。',
+  },
 })
 
 const { t } = useI18n()
