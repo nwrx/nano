@@ -35,7 +35,7 @@ onMounted(getVariables)
 
       <!-- Name -->
       <template #cell.name="variable">
-        <VariableCard :variable="variable" />
+        <VaultVariableCard :variable="variable" />
       </template>
 
       <!-- Created At -->
