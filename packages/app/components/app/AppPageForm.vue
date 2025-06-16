@@ -1,14 +1,29 @@
+<!-- eslint-disable @typescript-eslint/prefer-nullish-coalescing -->
 <script setup lang="ts">
 import { vMarkdown } from '#imports'
 
-defineProps<{
+const props = defineProps<{
   title?: string
   text?: string | string[]
   vertical?: boolean
   label?: string
 }>()
 
-const emit = defineEmits<{ submit: [] }>()
+const emit = defineEmits<{
+  submit: []
+}>()
+
+const slots = defineSlots<{
+  default?: []
+  title?: []
+  text?: []
+}>()
+
+const showHeader = computed(() => (
+  slots.title
+  || slots.text
+  || props.title
+  || props.text))
 </script>
 
 <template>
@@ -24,7 +39,7 @@ const emit = defineEmits<{ submit: [] }>()
     ">
 
     <!-- Title and Text -->
-    <div class="w-full" :class="{ 'lg:basis-1/3': !vertical }">
+    <div v-if="showHeader" class="w-full" :class="{ 'lg:basis-1/3': !vertical }">
       <h2 class="text-2xl font-medium">
         <slot name="title">
           {{ title }}
@@ -47,8 +62,11 @@ const emit = defineEmits<{ submit: [] }>()
 
     <!-- Form -->
     <form
-      class="flex items-start flex-col gap-md grow lg:basis-2/3 mt-lg"
-      :class="{ 'lg:mt-0': !vertical }"
+      class="flex items-start flex-col gap-md grow lg:basis-2/3"
+      :class="{
+        'lg:mt-0': !vertical && showHeader,
+        'mt-lg': showHeader,
+      }"
       @submit.prevent="() => emit('submit')">
 
       <!-- Form content -->
