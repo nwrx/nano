@@ -14,8 +14,8 @@ const isOpen = useVModel(props, 'modelValue', emit, { passive: true })
     class-hint="hint-warning"
     class-button="button-warning"
     icon="i-carbon:login"
-    :title="t('title', { ...user })"
-    :text="t('hint', { ...user })"
+    :title="t('title', { username: user.username })"
+    :text="t('text', { username: user.username })"
     :label-cancel="t('cancel')"
     :label-confirm="t('confirm')"
     @confirm="() => emit('submit')">
@@ -28,33 +28,28 @@ const isOpen = useVModel(props, 'modelValue', emit, { passive: true })
 
 <i18n lang="yaml">
 en:
-  title: Impersonate the **{username}** user?
-  hint: You are about to impersonate this user. While impersonating, you will have access to their account and perform actions on their behalf. All actions will be logged and traceable back to your admin account.
-  message: Confirm by typing the username below.
-  confirm: I understand, impersonate this user
-  cancel: Cancel impersonation
+  title: Impersonate User Account
+  text: You are about to impersonate the user "{username}". While impersonating, you will have complete access to their account and can perform actions on their behalf. All administrative actions will be logged and attributed to your admin session for audit purposes.
+  confirm: Begin User Impersonation
+  cancel: Cancel Impersonation
 fr:
-  title: Usurper l'utilisateur **{username}** ?
-  hint: Vous êtes sur le point d'usurper cet utilisateur. Pendant l'usurpation, vous aurez accès à leur compte et pourrez effectuer des actions en leur nom. Toutes les actions seront enregistrées et traçables jusqu'à votre compte administrateur.
-  message: Confirmez en tapant le nom d'utilisateur ci-dessous.
-  confirm: Je comprends, usurper cet utilisateur
-  cancel: Annuler l'usurpation
+  title: Usurper le Compte Utilisateur
+  text: Vous êtes sur le point d'usurper l'utilisateur "{username}". Pendant l'usurpation, vous aurez un accès complet à son compte et pourrez effectuer des actions en son nom. Toutes les actions administratives seront enregistrées et attribuées à votre session d'administration à des fins d'audit.
+  confirm: Commencer l'Usurpation d'Utilisateur
+  cancel: Annuler l'Usurpation
 de:
-  title: Benutzer **{username}** imitieren?
-  hint: Sie sind dabei, diesen Benutzer zu imitieren. Während der Imitation haben Sie Zugriff auf deren Konto und können Aktionen in deren Namen ausführen. Alle Aktionen werden protokolliert und sind zu Ihrem Administratorkonto zurückverfolgbar.
-  message: Bestätigen Sie, indem Sie den Benutzernamen unten eingeben.
-  confirm: Ich verstehe, diesen Benutzer imitieren
-  cancel: Imitation abbrechen
+  title: Benutzerkonto Verkörpern
+  text: Sie sind dabei, den Benutzer "{username}" zu verkörpern. Während der Verkörperung haben Sie vollständigen Zugriff auf dessen Konto und können Aktionen in seinem Namen ausführen. Alle administrativen Aktionen werden protokolliert und Ihrer Admin-Sitzung zu Audit-Zwecken zugeordnet.
+  confirm: Benutzerverkörperung Beginnen
+  cancel: Verkörperung Abbrechen
 es:
-  title: ¿Suplantar al usuario **{username}**?
-  hint: Estás a punto de suplantar a este usuario. Durante la suplantación, tendrás acceso a su cuenta y podrás realizar acciones en su nombre. Todas las acciones serán registradas y rastreables hasta tu cuenta de administrador.
-  message: Confirma escribiendo el nombre de usuario a continuación.
-  confirm: Entiendo, suplantar a este usuario
-  cancel: Cancelar suplantación
+  title: Personificar Cuenta de Usuario
+  text: Está a punto de personificar al usuario "{username}". Durante la personificación, tendrá acceso completo a su cuenta y podrá realizar acciones en su nombre. Todas las acciones administrativas serán registradas y atribuidas a su sesión de administrador con fines de auditoría.
+  confirm: Iniciar Personificación de Usuario
+  cancel: Cancelar Personificación
 zh:
-  title: 模拟用户 **{username}**？
-  hint: 您即将模拟此用户。在模拟期间，您将可以访问他们的帐户并以他们的名义执行操作。所有操作都将被记录并可以追溯到您的管理员帐户。
-  message: 通过在下面输入用户名来确认。
-  confirm: 我明白，模拟此用户
+  title: 模拟用户账户
+  text: 您即将模拟用户 "{username}"。在模拟期间，您将完全访问其账户并可以代表他们执行操作。所有管理操作将被记录并归属于您的管理员会话以用于审计目的。
+  confirm: 开始用户模拟
   cancel: 取消模拟
 </i18n>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { UserObject } from '@nwrx/nano-api'
+import { toCamelCase } from '@unshared/string/toCamelCase'
 
 const { t } = useI18n()
 const client = useClient()
@@ -8,6 +9,10 @@ const showCreate = ref(false)
 
 async function getUsers() {
   await client.requestAttempt('GET /api/users', {
+    query: {
+      withProfile: true,
+      withProtected: true,
+    },
     onData: (data) => {
       users.value = data
     },
@@ -22,8 +27,8 @@ onMounted(getUsers)
     <Table :columns="['name', 'email', 'status']" :rows="users">
 
       <!-- Header -->
-      <template #header="label">
-        {{ t(`header.${label}`) }}
+      <template #header="name">
+        {{ t(toCamelCase('header', name)) }}
       </template>
 
       <!-- Cell / Name -->
@@ -46,16 +51,16 @@ onMounted(getUsers)
           <Badge
             size="small"
             class="font-normal badge-soft"
-            :class="disabledAt ? 'badge-danger' : 'badge-success'"
+            :class="verifiedAt ? 'badge-success' : 'badge-danger'"
             :icon="verifiedAt ? 'i-carbon:checkmark' : 'i-carbon:close'"
-            :label="verifiedAt ? t('status.verified') : t('status.unverified')"
+            :label="verifiedAt ? t('statusVerified') : t('statusUnverified')"
           />
           <Badge
             size="small"
             class="font-normal badge-outlined"
             :class="disabledAt ? 'badge-danger' : 'badge-success'"
             :icon="disabledAt ? 'i-carbon:close' : 'i-carbon:checkmark'"
-            :label="disabledAt ? t('status.disabled') : t('status.enabled')"
+            :label="disabledAt ? t('statusDisabled') : t('statusEnabled')"
           />
         </div>
       </template>
@@ -89,22 +94,58 @@ onMounted(getUsers)
 
 <i18n lang="yaml">
 en:
-  title: Users
-  text: Centralized user management for the entire platform. Note that this only lists to locally stored users and does not include users from external authentication providers. To manage users from external providers, please refer to the respective provider's documentation.
-  create: Create a new user
-  header:
-    name: Name
-    email: Email
-    status: Status
-  status:
-    verified: Verified
-    unverified: Unverified
-    enabled: Enabled
-    disabled: Disabled
-  menu:
-    impersonate: Impersonate
-    verify: Verify
-    disable: Disable
-    enable: Enable
-    delete: Delete
+  title: User Management
+  text: Comprehensive user administration for your platform ecosystem. Manage local user accounts, monitor verification status, and control access permissions. External authentication provider users are managed through their respective systems.
+  create: Add New User
+  headerName: User Profile
+  headerEmail: Authentication & Status
+  headerStatus: Actions
+  statusVerified: Email Verified
+  statusUnverified: Pending Verification
+  statusEnabled: Active
+  statusDisabled: Suspended
+fr:
+  title: Gestion des Utilisateurs
+  text: Administration complète des utilisateurs pour votre écosystème de plateforme. Gérez les comptes utilisateurs locaux, surveillez le statut de vérification et contrôlez les permissions d'accès. Les utilisateurs des fournisseurs d'authentification externes sont gérés via leurs systèmes respectifs.
+  create: Ajouter un Nouvel Utilisateur
+  headerName: Profil Utilisateur
+  headerEmail: Authentification et Statut
+  headerStatus: Actions
+  statusVerified: Email Vérifié
+  statusUnverified: Vérification en Attente
+  statusEnabled: Actif
+  statusDisabled: Suspendu
+de:
+  title: Benutzerverwaltung
+  text: Umfassende Benutzerverwaltung für Ihr Plattform-Ökosystem. Verwalten Sie lokale Benutzerkonten, überwachen Sie den Verifizierungsstatus und kontrollieren Sie Zugriffsberechtigungen. Benutzer externer Authentifizierungsanbieter werden über ihre jeweiligen Systeme verwaltet.
+  create: Neuen Benutzer Hinzufügen
+  headerName: Benutzerprofil
+  headerEmail: Authentifizierung & Status
+  headerStatus: Aktionen
+  statusVerified: E-Mail Verifiziert
+  statusUnverified: Verifizierung Ausstehend
+  statusEnabled: Aktives
+  statusDisabled: Gesperrt
+es:
+  title: Gestión de Usuarios
+  text: Administración integral de usuarios para su ecosistema de plataforma. Gestione cuentas de usuario locales, monitoree el estado de verificación y controle permisos de acceso. Los usuarios de proveedores de autenticación externos se gestionan a través de sus sistemas respectivos.
+  create: Agregar Nuevo Usuario
+  headerName: Perfil de Usuario
+  headerEmail: Autenticación y Estado
+  headerStatus: Acciones
+  statusVerified: Email Verificado
+  statusUnverified: Verificación Pendiente
+  statusEnabled: Activa
+  statusDisabled: Suspendida
+zh:
+  title: 用户管理
+  text: 为您的平台生态系统提供全面的用户管理。管理本地用户账户，监控验证状态，控制访问权限。外部身份验证提供商的用户通过其各自系统进行管理。
+  create: 添加新用户
+  headerName: 用户档案
+  headerEmail: 身份验证与状态
+  headerStatus: 操作
+  statusVerified: 邮箱已验证
+  statusUnverified: 待验证
+  statusEnabled: 活跃
+  statusDisabled: 已禁用
 </i18n>

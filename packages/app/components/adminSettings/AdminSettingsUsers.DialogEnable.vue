@@ -19,7 +19,7 @@ async function enableUser() {
     onSuccess: () => {
       confirm.value = ''
       emit('submit')
-      alerts.success(t('success', { ...props.user }))
+      alerts.success(t('success', { username: props.user.username }))
     },
   })
 }
@@ -31,23 +31,21 @@ async function enableUser() {
     class-hint="hint-success"
     class-button="button-success"
     icon="i-carbon:user-online"
-    :title="t('title', { ...user })"
-    :text="t('hint', { ...user })"
+    :title="t('title', { username: user.username })"
+    :text="t('text', { username: user.username })"
     :label-cancel="t('cancel')"
     :label-confirm="t('confirm')"
     :disabled="confirm !== user.username"
     @confirm="() => enableUser()">
-
     <!-- User Card -->
     <UserCard
       :display-name="user.displayName"
       :username="user.username"
     />
-
     <!-- Confirmation input -->
     <InputText
       v-model="confirm"
-      :label="t('message')"
+      :label="t('confirmLabel')"
       :placeholder="user.username"
       class="mt-md"
     />
@@ -56,38 +54,38 @@ async function enableUser() {
 
 <i18n lang="yaml">
 en:
-  title: Enable the **{username}** user?
-  hint: You are about to enable the user. This will allow the user to log in and access the system again. Please confirm that you understand the consequences of this action.
-  message: Please confirm by the username
-  cancel: Cancel
-  confirm: Enable
-  success: The user **{displayName}** has been enabled.
+  title: Enable User Account
+  text: You are about to enable the user account for "{username}". This will restore the user's access to the platform and all associated permissions. The user will be able to log in immediately.
+  confirmLabel: Type the username to confirm account activation
+  cancel: Keep Account Disabled
+  confirm: Enable Account
+  success: User account "{username}" has been enabled successfully
 fr:
-  title: Activer l'utilisateur **{username}** ?
-  hint: Vous êtes sur le point d'activer l'utilisateur. Cela permettra à l'utilisateur de se connecter et d'accéder à nouveau au système. Veuillez confirmer que vous comprenez les conséquences de cette action.
-  message: Veuillez confirmer en le nom d'utilisateur
-  cancel: Annuler
-  confirm: Activer
-  success: L'utilisateur **{displayName}** a été activé.
+  title: Activer le Compte Utilisateur
+  text: Vous êtes sur le point d'activer le compte utilisateur de "{username}". Ceci restaurera l'accès de l'utilisateur à la plateforme et toutes les permissions associées. L'utilisateur pourra se connecter immédiatement.
+  confirmLabel: Tapez le nom d'utilisateur pour confirmer l'activation du compte
+  cancel: Garder le Compte Désactivé
+  confirm: Activer le Compte
+  success: Le compte utilisateur "{username}" a été activé avec succès
 de:
-  title: Aktivieren Sie den Benutzer **{username}**?
-  hint: Sie sind dabei, den Benutzer zu aktivieren. Dadurch kann sich der Benutzer anmelden und wieder auf das System zugreifen. Bitte bestätigen Sie, dass Sie die Konsequenzen dieser Aktion verstehen.
-  message: Bitte bestätigen Sie durch den Benutzernamen
-  cancel: Stornieren
-  confirm: Aktivieren
-  success: Der Benutzer **{displayName}** wurde aktiviert.
+  title: Benutzerkonto Aktivieren
+  text: Sie sind dabei, das Benutzerkonto für "{username}" zu aktivieren. Dies wird den Zugriff des Benutzers auf die Plattform und alle zugehörigen Berechtigungen wiederherstellen. Der Benutzer kann sich sofort anmelden.
+  confirmLabel: Geben Sie den Benutzernamen ein, um die Kontoaktivierung zu bestätigen
+  cancel: Konto Deaktiviert Lassen
+  confirm: Konto Aktivieren
+  success: Benutzerkonto "{username}" wurde erfolgreich aktiviert
 es:
-  title: ¿Habilitar al usuario **{username}**?
-  hint: Estás a punto de habilitar al usuario. Esto permitirá que el usuario inicie sesión y acceda al sistema nuevamente. Por favor, confirma que entiendes las consecuencias de esta acción.
-  message: Por favor confirma por el nombre de usuario
-  cancel: Cancelar
-  confirm: Habilitar
-  success: El usuario **{displayName}** ha sido habilitado.
+  title: Habilitar Cuenta de Usuario
+  text: Está a punto de habilitar la cuenta de usuario de "{username}". Esto restaurará el acceso del usuario a la plataforma y todos los permisos asociados. El usuario podrá iniciar sesión inmediatamente.
+  confirmLabel: Escriba el nombre de usuario para confirmar la activación de la cuenta
+  cancel: Mantener Cuenta Deshabilitada
+  confirm: Habilitar Cuenta
+  success: La cuenta de usuario "{username}" ha sido habilitada exitosamente
 zh:
-  title: 启用用户 **{username}**？
-  hint: 您即将启用用户。这将允许用户再次登录并访问系统。请确认您理解此操作的后果。
-  message: 请通过用户名确认
-  cancel: 取消
-  confirm: 启用
-  success: 用户 **{displayName}** 已被启用。
+  title: 启用用户账户
+  text: 您即将启用用户 "{username}" 的账户。这将恢复用户对平台的访问权限和所有相关权限。用户将能够立即登录。
+  confirmLabel: 输入用户名以确认账户激活
+  cancel: 保持账户禁用
+  confirm: 启用账户
+  success: 用户账户 "{username}" 已成功启用
 </i18n>

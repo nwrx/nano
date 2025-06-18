@@ -42,19 +42,17 @@ async function createUser() {
     :label-confirm="t('confirm')"
     :disabled="!username || !email"
     @confirm="() => createUser()">
-
     <!-- Username Input -->
     <InputText
       v-model="username"
-      :placeholder="t('username.placeholder')"
-      :hint="t('username.hint')"
+      :placeholder="t('usernamePlaceholder')"
+      :hint="t('usernameHint')"
     />
-
     <!-- Email Input -->
     <InputText
       v-model="email"
-      :placeholder="t('email.placeholder')"
-      :hint="t('email.hint')"
+      :placeholder="t('emailPlaceholder')"
+      :hint="t('emailHint')"
       class="mt-4"
     />
   </Dialog>
@@ -62,53 +60,53 @@ async function createUser() {
 
 <i18n lang="yaml">
 en:
-  title: Create a New User
-  hint: Create a new user account. The user will receive an email with instructions to set their password.
-  confirm: Create User
+  title: Create New User Account
+  hint: Create a new user account with administrative privileges. The user will receive a secure email invitation to complete their account setup and establish their password.
+  confirm: Create User Account
   cancel: Cancel
-  username.placeholder: Enter the username
-  username.hint: The username is used to log in and identify the user.
-  email.placeholder: Enter the email address
-  email.hint: The email address is used to send the user an invitation to set their password.
-  success: User created successfully.
+  usernamePlaceholder: Enter username
+  usernameHint: Unique identifier for user authentication and system identification
+  emailPlaceholder: Enter email address
+  emailHint: Primary contact email for account notifications and password recovery
+  success: User account has been created successfully and invitation email sent
 fr:
-  title: Créer un nouvel utilisateur
-  hint: Créer un nouveau compte utilisateur. L'utilisateur recevra un e-mail avec des instructions pour définir son mot de passe.
-  confirm: Créer l'utilisateur
+  title: Créer un Nouveau Compte Utilisateur
+  hint: Créer un nouveau compte utilisateur avec des privilèges administratifs. L'utilisateur recevra une invitation par email sécurisée pour compléter la configuration de son compte et établir son mot de passe.
+  confirm: Créer le Compte Utilisateur
   cancel: Annuler
-  username.placeholder: Entrez le nom d'utilisateur
-  username.hint: Le nom d'utilisateur est utilisé pour se connecter et identifier l'utilisateur.
-  email.placeholder: Entrez l'adresse e-mail
-  email.hint: L'adresse e-mail est utilisée pour envoyer à l'utilisateur une invitation pour définir son mot de passe.
-  success: Utilisateur créé avec succès.
+  usernamePlaceholder: Entrez le nom d'utilisateur
+  usernameHint: Identifiant unique pour l'authentification utilisateur et l'identification système
+  emailPlaceholder: Entrez l'adresse email
+  emailHint: Email de contact principal pour les notifications de compte et la récupération de mot de passe
+  success: Le compte utilisateur a été créé avec succès et l'email d'invitation envoyé
 de:
-  title: Neuen Benutzer erstellen
-  hint: Erstellen Sie ein neues Benutzerkonto. Der Benutzer erhält eine E-Mail mit Anweisungen zum Festlegen seines Passworts.
-  confirm: Benutzer erstellen
+  title: Neues Benutzerkonto Erstellen
+  hint: Erstellen Sie ein neues Benutzerkonto mit Administratorrechten. Der Benutzer erhält eine sichere E-Mail-Einladung zur Vervollständigung der Kontoeinrichtung und Festlegung seines Passworts.
+  confirm: Benutzerkonto Erstellen
   cancel: Abbrechen
-  username.placeholder: Geben Sie den Benutzernamen ein
-  username.hint: Der Benutzername wird zum Anmelden und Identifizieren des Benutzers verwendet.
-  email.placeholder: Geben Sie die E-Mail-Adresse ein
-  email.hint: Die E-Mail-Adresse wird verwendet, um dem Benutzer eine Einladung zum Festlegen seines Passworts zu senden.
-  success: Benutzer erfolgreich erstellt.
+  usernamePlaceholder: Benutzername eingeben
+  usernameHint: Eindeutige Kennung für Benutzerauthentifizierung und Systemidentifikation
+  emailPlaceholder: E-Mail-Adresse eingeben
+  emailHint: Primäre Kontakt-E-Mail für Kontobenachrichtigungen und Passwort-Wiederherstellung
+  success: Benutzerkonto wurde erfolgreich erstellt und Einladungs-E-Mail gesendet
 es:
-  title: Crear un nuevo usuario
-  hint: Crea una nueva cuenta de usuario. El usuario recibirá un correo electrónico con instrucciones para establecer su contraseña.
-  confirm: Crear usuario
+  title: Crear Nueva Cuenta de Usuario
+  hint: Crear una nueva cuenta de usuario con privilegios administrativos. El usuario recibirá una invitación por correo electrónico segura para completar la configuración de su cuenta y establecer su contraseña.
+  confirm: Crear Cuenta de Usuario
   cancel: Cancelar
-  username.placeholder: Introduce el nombre de usuario
-  username.hint: El nombre de usuario se utiliza para iniciar sesión e identificar al usuario.
-  email.placeholder: Introduce la dirección de correo electrónico
-  email.hint: La dirección de correo electrónico se utiliza para enviar al usuario una invitación para establecer su contraseña.
-  success: Usuario creado con éxito.
+  usernamePlaceholder: Ingrese nombre de usuario
+  usernameHint: Identificador único para autenticación de usuario e identificación del sistema
+  emailPlaceholder: Ingrese dirección de correo electrónico
+  emailHint: Correo electrónico de contacto principal para notificaciones de cuenta y recuperación de contraseña
+  success: La cuenta de usuario ha sido creada exitosamente y se envió el correo de invitación
 zh:
-  title: 创建新用户
-  hint: 创建新用户帐户。用户将收到一封电子邮件，其中包含设置密码的说明。
-  confirm: 创建用户
+  title: 创建新用户账户
+  hint: 创建具有管理员权限的新用户账户。用户将收到安全的邮件邀请以完成账户设置并建立密码。
+  confirm: 创建用户账户
   cancel: 取消
-  username.placeholder: 输入用户名
-  username.hint: 用户名用于登录和识别用户。
-  email.placeholder: 输入电子邮件地址
-  email.hint: 电子邮件地址用于向用户发送邀请，以设置其密码。
-  success: 用户创建成功。
+  usernamePlaceholder: 输入用户名
+  usernameHint: 用于用户身份验证和系统识别的唯一标识符
+  emailPlaceholder: 输入邮箱地址
+  emailHint: 用于账户通知和密码恢复的主要联系邮箱
+  success: 用户账户已成功创建并发送邀请邮件
 </i18n>

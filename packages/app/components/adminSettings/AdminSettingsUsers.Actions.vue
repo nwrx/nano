@@ -16,30 +16,31 @@ const showDelete = ref(false)
   <ContextMenu x="right" y="top" @mousedown.stop>
     <template #menu>
       <ContextMenuItem
-        :label="t('menu.impersonate')"
+        :label="t('menuImpersonate')"
         icon="i-carbon:login"
         @click="() => showImpersonate = true"
       />
       <ContextMenuItem
-        :label="t('menu.verify')"
+        v-if="!user.verifiedAt"
+        :label="t('menuVerify')"
         icon="i-carbon:checkmark-outline"
         @click="() => showVerify = true"
       />
       <ContextMenuDivider />
       <ContextMenuItem
         v-if="!user.disabledAt"
-        :label="t('menu.disable')"
+        :label="t('menuDisable')"
         icon="i-carbon:close"
         @click="() => showDisable = true"
       />
       <ContextMenuItem
         v-if="user.disabledAt"
-        :label="t('menu.enable')"
+        :label="t('menuEnable')"
         icon="i-carbon:checkmark"
         @click="() => showEnable = true"
       />
       <ContextMenuItem
-        :label="t('menu.delete')"
+        :label="t('menuDelete')"
         icon="i-carbon:trash-can"
         @click="() => showDelete = true"
       />
@@ -80,3 +81,36 @@ const showDelete = ref(false)
     @submit="() => emit('submit')"
   />
 </template>
+
+<i18n lang="yaml">
+en:
+  menuImpersonate: Impersonate User
+  menuVerify: Verify Email
+  menuDisable: Disable Account
+  menuEnable: Enable Account
+  menuDelete: Delete User
+fr:
+  menuImpersonate: Incarner l'Utilisateur
+  menuVerify: Vérifier l'Email
+  menuDisable: Désactiver le Compte
+  menuEnable: Activer le Compte
+  menuDelete: Supprimer l'Utilisateur
+de:
+  menuImpersonate: Benutzer Verkörpern
+  menuVerify: E-Mail Verifizieren
+  menuDisable: Konto Deaktivieren
+  menuEnable: Konto Aktivieren
+  menuDelete: Benutzer Löschen
+es:
+  menuImpersonate: Personificar Usuario
+  menuVerify: Verificar Email
+  menuDisable: Deshabilitar Cuenta
+  menuEnable: Habilitar Cuenta
+  menuDelete: Eliminar Usuario
+zh:
+  menuImpersonate: 模拟用户
+  menuVerify: 验证邮箱
+  menuDisable: 禁用账户
+  menuEnable: 启用账户
+  menuDelete: 删除用户
+</i18n>
