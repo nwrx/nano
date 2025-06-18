@@ -61,4 +61,32 @@ en:
   cancel: Cancel
   confirm: Delete User
   success: User has been deleted successfully
+es:
+  title: Eliminar Usuario
+  text: Esta acción no se puede deshacer. Todos los datos asociados con el usuario se perderán.
+  message: Escribe tu nombre de usuario para confirmar la eliminación
+  cancel: Cancelar
+  confirm: Eliminar Usuario
+  success: Usuario eliminado exitosamente
+fr:
+  title: Supprimer l'Utilisateur
+  text: Cette action ne peut pas être annulée. Toutes les données associées à l'utilisateur seront perdues.
+  message: Tapez votre nom d'utilisateur pour confirmer la suppression
+  cancel: Annuler
+  confirm: Supprimer l'Utilisateur
+  success: Utilisateur supprimé avec succès
+de:
+  title: Benutzer Löschen
+  text: Diese Aktion kann nicht rückgängig gemacht werden. Alle mit dem Benutzer verbundenen Daten gehen verloren.
+  message: Geben Sie Ihren Benutzernamen ein, um die Löschung zu bestätigen
+  cancel: Abbrechen
+  confirm: Benutzer Löschen
+  success: Benutzer erfolgreich gelöscht
+zh:
+  title: 删除用户
+  text: 此操作无法撤销。与用户相关的所有数据都将丢失。
+  message: 输入您的用户名以确认删除
+  cancel: 取消
+  confirm: 删除用户
+  success: 用户删除成功
 </i18n>

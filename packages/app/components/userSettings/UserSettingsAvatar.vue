@@ -48,4 +48,28 @@ en:
   imageLabel: Upload a new profile picture
   imageHint: 'Accepted formats: JPG, PNG, GIF. Max file size: 5MB.'
   imageRemove: Remove current profile picture
+fr:
+  title: Photo de profil
+  text: Mettez à jour votre photo de profil. Cela peut être votre photo ou toute image que vous aimez pour vous représenter. Gardez à l'esprit que cette image sera visible par les autres utilisateurs.
+  imageLabel: Télécharger une nouvelle photo de profil
+  imageHint: 'Formats acceptés : JPG, PNG, GIF. Taille maximale du fichier : 5 Mo.'
+  imageRemove: Supprimer la photo de profil actuelle
+de:
+  title: Profilbild
+  text: Aktualisieren Sie Ihr Profilbild. Dies kann Ihr Foto oder ein beliebiges Bild sein, das Sie repräsentiert. Beachten Sie, dass dieses Bild für andere Benutzer sichtbar ist.
+  imageLabel: Neues Profilbild hochladen
+  imageHint: 'Akzeptierte Formate: JPG, PNG, GIF. Maximale Dateigröße: 5 MB.'
+  imageRemove: Aktuelles Profilbild entfernen
+es:
+  title: Foto de perfil
+  text: Actualiza tu foto de perfil. Puede ser tu foto o cualquier imagen que te guste para representarte. Ten en cuenta que esta imagen será visible para otros usuarios.
+  imageLabel: Subir una nueva foto de perfil
+  imageHint: 'Formatos aceptados: JPG, PNG, GIF. Tamaño máximo del archivo: 5 MB.'
+  imageRemove: Eliminar foto de perfil actual
+zh:
+  title: 个人资料图片
+  text: 更新您的个人资料图片。这可以是您的照片或任何您喜欢的代表您的图像。请记住，此图像将对其他用户可见。
+  imageLabel: 上传新的个人资料图片
+  imageHint: 接受的格式：JPG、PNG、GIF。最大文件大小：5MB。
+  imageRemove: 删除当前个人资料图片
 </i18n>

@@ -60,4 +60,32 @@ en:
   cancel: Cancel
   confirm: Change Username
   success: Username changed successfully
+es:
+  title: Cambiar Nombre de Usuario
+  text: Cambiar el nombre de usuario podría romper las integraciones existentes.
+  hint: Ingresa tu nuevo nombre de usuario
+  cancel: Cancelar
+  confirm: Cambiar Nombre de Usuario
+  success: Nombre de usuario cambiado exitosamente
+fr:
+  title: Changer le Nom d'Utilisateur
+  text: Changer le nom d'utilisateur pourrait casser les intégrations existantes.
+  hint: Entrez votre nouveau nom d'utilisateur
+  cancel: Annuler
+  confirm: Changer le Nom d'Utilisateur
+  success: Nom d'utilisateur changé avec succès
+de:
+  title: Benutzername Ändern
+  text: Das Ändern des Benutzernamens könnte bestehende Integrationen beschädigen.
+  hint: Geben Sie Ihren neuen Benutzernamen ein
+  cancel: Abbrechen
+  confirm: Benutzername Ändern
+  success: Benutzername erfolgreich geändert
+zh:
+  title: 更改用户名
+  text: 更改用户名可能会破坏现有的集成。
+  hint: 输入您的新用户名
+  cancel: 取消
+  confirm: 更改用户名
+  success: 用户名更改成功
 </i18n>
