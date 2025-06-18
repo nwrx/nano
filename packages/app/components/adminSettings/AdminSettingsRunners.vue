@@ -1,5 +1,12 @@
 <script setup lang="ts">
 import type { ThreadRunnerObject } from '@nwrx/nano-api'
+import { toCamelCase } from '@unshared/string/toCamelCase'
+import AdminSettingsRunnersDialogClaim from '~/components/adminSettings/AdminSettingsRunners.DialogClaim.vue'
+import AppPageForm from '~/components/app/AppPageForm.vue'
+import Hyperlink from '~/components/base/Hyperlink.vue'
+import TableCellDate from '~/components/base/Table.CellDate.vue'
+import Table from '~/components/base/Table.vue'
+import RunnerCard from '~/components/runner/RunnerCard.vue'
 
 const { t } = useI18n()
 const client = useClient()
@@ -17,13 +24,36 @@ onMounted(getRunners)
 
 <template>
   <AppPageForm vertical :title="t('title')" :text="t('text')">
-    <div class="flex flex-col w-full space-y-md">
-      <AdminSettingsRunnersRunner
-        v-for="runner in runners"
-        :key="runner.identity"
-        :runner="runner"
-      />
-    </div>
+    <Table
+      :rows="runners"
+      :columns="['identity', 'address', 'lastSeenAt', 'actions']">
+      <template #header="name">
+        {{ t(toCamelCase('header', name)) }}
+      </template>
+
+      <!-- Identity -->
+      <template #cell.identity="runner">
+        <RunnerCard :runner is-link />
+      </template>
+
+      <!-- Address -->
+      <template #cell.address="{ address }">
+        <span class="text-sm text-subtle">{{ address }}</span>
+      </template>
+
+      <!-- Last Seen At -->
+      <template #cell.lastSeenAt="{ lastSeenAt }">
+        <TableCellDate :created-at="lastSeenAt" />
+      </template>
+
+      <!-- Actions -->
+      <template #cell.actions="runner">
+        <AdminSettingsRunnersActions
+          :runner="runner"
+          @submit="() => getRunners()"
+        />
+      </template>
+    </Table>
 
     <!-- Claim Button -->
     <Hyperlink
@@ -47,31 +77,41 @@ onMounted(getRunners)
 en:
   title: Thread Runners
   text: Manage and monitor thread runner servers. Thread runners are responsible for executing background tasks and heavy computations.
-  claim: Register a new runner
-  header:
-    address: Address
+  claim: Claim a new runner
+  headerIdentity: Runner
+  headerAddress: Address
+  headerLastSeenAt: Last Seen
+  headerActions: ''
 fr:
-  title: Serveurs d'exécution
-  text: Gérez et surveillez les serveurs d'exécution de thread. Les serveurs d'exécution de thread sont responsables de l'exécution de tâches en arrière-plan et de calculs lourds.
-  claim: Enregistrer un nouveau serveur
-  header:
-    address: Adresse
+  title: Serveurs d'exécution de threads
+  text: Gérez et surveillez les serveurs d'exécution de threads. Les serveurs d'exécution de threads sont responsables de l'exécution de tâches en arrière-plan et de calculs lourds.
+  claim: Revendiquer un nouveau serveur d'exécution
+  headerIdentity: Serveur d'exécution
+  headerAddress: Adresse
+  headerLastSeenAt: Dernière vue
+  headerActions: ''
 de:
-  title: Thread-Server
-  text: Verwalten und überwachen Sie Thread-Server. Thread-Server sind für die Ausführung von Hintergrundaufgaben und schweren Berechnungen verantwortlich.
-  claim: Einen neuen Server registrieren
-  header:
-    address: Adresse
+  title: Thread-Ausführungsserver
+  text: Verwalten und überwachen Sie Thread-Ausführungsserver. Thread-Ausführungsserver sind für die Ausführung von Hintergrundaufgaben und schweren Berechnungen verantwortlich.
+  claim: Neuen Ausführungsserver beanspruchen
+  headerIdentity: Ausführungsserver
+  headerAddress: Adresse
+  headerLastSeenAt: Zuletzt gesehen
+  headerActions: ''
 es:
-  title: Servidores de hilos
-  text: Administre y supervise los servidores de hilos. Los servidores de hilos son responsables de ejecutar tareas en segundo plano y cálculos pesados.
-  claim: Registrar un nuevo servidor
-  header:
-    address: Dirección
+  title: Servidores de ejecución de hilos
+  text: Administre y supervise los servidores de ejecución de hilos. Los servidores de ejecución de hilos son responsables de ejecutar tareas en segundo plano y cálculos pesados.
+  claim: Reclamar un nuevo servidor de ejecución
+  headerIdentity: Servidor de ejecución
+  headerAddress: Dirección
+  headerLastSeenAt: Última vista
+  headerActions: ''
 zh:
-  title: 线程运行器
-  text: 管理和监控线程运行器服务器。线程运行器负责执行后台任务和大量计算。
-  claim: 注册新运行器
-  header:
-    address: 地址
+  title: 线程执行服务器
+  text: 管理和监控线程执行服务器。线程执行服务器负责执行后台任务和大量计算。
+  claim: 声明新执行服务器
+  headerIdentity: 执行服务器
+  headerAddress: 地址
+  headerLastSeenAt: 最后查看
+  headerActions: ''
 </i18n>
