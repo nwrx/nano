@@ -24,7 +24,6 @@
     "examples",
     "rollup.config.mjs",
     "vitest.config.ts",
-    "vitest.workspace.ts",
     "eslint.config.mjs"
   ],
   "exclude": [
