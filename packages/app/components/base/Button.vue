@@ -10,15 +10,22 @@ const props = defineProps<BaseButtonProps & {
   iconPrepend?: string
   iconExpand?: boolean
   iconFlip?: boolean
+  loading?: boolean
 }>()
 </script>
 
 <template>
   <BaseButton v-bind="props" class="button hover:button-hover space-x-xs group">
 
+    <!-- Loading -->
+    <BaseIcon
+      v-if="loading && iconExpand"
+      icon="i-line-md:loading-loop"
+    />
+
     <!-- Prepend -->
     <BaseIcon
-      v-if="iconPrepend || icon"
+      v-else-if="iconPrepend || icon"
       :icon="iconPrepend || icon"
       :load="iconLoad"
     />
@@ -30,9 +37,15 @@ const props = defineProps<BaseButtonProps & {
       </span>
     </slot>
 
+    <!-- Loading -->
+    <BaseIcon
+      v-if="loading && !iconExpand"
+      icon="i-line-md:loading-loop"
+    />
+
     <!-- Append -->
     <BaseIcon
-      v-if="iconAppend"
+      v-else-if="iconAppend"
       :icon="iconAppend"
       :load="iconLoad"
       class="transform transition-transform"

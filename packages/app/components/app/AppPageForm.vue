@@ -1,12 +1,14 @@
 <!-- eslint-disable @typescript-eslint/prefer-nullish-coalescing -->
 <script setup lang="ts">
 import { vMarkdown } from '#imports'
+import Button from '../base/Button.vue'
 
 const props = defineProps<{
   title?: string
   text?: string | string[]
   vertical?: boolean
   label?: string
+  loading?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -81,6 +83,7 @@ const showHeader = computed(() => (
         icon-expand
         class="button-success self-end mt-md"
         type="submit"
+        :loading="loading"
       />
     </form>
   </div>
