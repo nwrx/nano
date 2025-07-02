@@ -1,11 +1,15 @@
+<!-- eslint-disable vue/prop-name-casing -->
 <script setup lang="ts">
-import type { BaseButtonProps } from '@unshared/vue'
+import type { BaseButtonProps } from '@unshared/vue/BaseButton'
+import { BaseButton } from '@unshared/vue/BaseButton'
+import { BaseIcon } from '@unshared/vue/BaseIcon'
+import Keybind from '../base/Keybind.vue'
 
-const props = defineProps<{
+const props = defineProps<BaseButtonProps & {
   label: string
   icon?: string
   keybind?: string
-} & BaseButtonProps>()
+}>()
 </script>
 
 <template>

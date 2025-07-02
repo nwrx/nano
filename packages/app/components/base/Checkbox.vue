@@ -1,6 +1,8 @@
 <!-- eslint-disable vue/prop-name-casing -->
 <script setup lang="ts" generic="T, U extends ToggleType">
-import type { BaseInputToggleProps, ToggleType, ToggleValue } from '@unshared/vue'
+import type { BaseInputToggleProps } from '@unshared/vue/BaseInputToggle'
+import type { ToggleType, ToggleValue } from '@unshared/vue/useBaseInputToggle'
+import { BaseInputToggle } from '@unshared/vue/BaseInputToggle'
 
 const props = defineProps<BaseInputToggleProps<T, U> & {
   id?: string

@@ -1,18 +1,12 @@
 <!-- eslint-disable vue/prop-name-casing -->
 <script setup lang="ts">
-import type { BaseMenuProps } from '@unshared/vue'
+import type { BaseMenuProps } from '@unshared/vue/BaseMenu'
+import { BaseButton } from '@unshared/vue/BaseButton'
+import { BaseIcon } from '@unshared/vue/BaseIcon'
+import { BaseMenu } from '@unshared/vue/BaseMenu'
 
-const props = defineProps<BaseMenuProps & {
-  modelValue?: boolean
-}>()
-
-const emit = defineEmits<{
-  'update:modelValue': [value: boolean]
-}>()
-
-const model = useVModel(props, 'modelValue', emit, {
-  passive: true,
-})
+const props = defineProps<BaseMenuProps>()
+const model = defineModel({ default: false })
 </script>
 
 <template>
