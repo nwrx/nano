@@ -8,10 +8,6 @@ import { availableParallelism } from 'node:os'
 import * as ROUTES from './routes'
 import { ERRORS } from './utils'
 
-export type { ThreadRunnerStatus } from './routes/getStatus'
-export type { ThreadClientMessage, ThreadServerMessage } from './worker'
-export type { ThreadRunnerWorkerPoolStatus } from './worker/getWorkerPoolStatus'
-
 export class ModuleRunner extends ModuleBase {
   routes = ROUTES
   errors = ERRORS

@@ -1,24 +1,30 @@
-import type { ModuleRunner, ThreadRunnerWorkerPoolStatus } from '../application'
+import type { ModuleRunner } from '../application'
+import type { SystemStatus } from '../utils'
+import type { ThreadRunnerWorkerPoolStatus } from '../worker'
 import { createHttpRoute } from '@unserved/server'
-import os from 'node:os'
-import { authorize } from '../utils'
+import packageJson from '../../../package.json'
+import { authorize, getSystemStatus } from '../utils'
 import { getWorkerPoolStatus } from '../worker'
 
 export interface ThreadRunnerStatus {
+
+  /** Indicates if the system is operational. */
+  ok: boolean
+
+  /** Indicates if the runner is claimed. */
   isClaimed: boolean
-  isRunning: boolean
-  isReachable: boolean
-  workerPool: ThreadRunnerWorkerPoolStatus[]
-  freemem: number
-  totalmem: number
-  availmem: number
-  availableParallelismv: number
-  loadavg: number[]
-  cpus: os.CpuInfo[]
-  platform: string
-  release: string
-  type: string
+
+  /** The version of the application. */
   version: string
+
+  /** The uptime of the application in seconds. */
+  uptime: number
+
+  /** The system status. */
+  system: SystemStatus
+
+  /** The worker pool status. */
+  workerPool: ThreadRunnerWorkerPoolStatus[]
 }
 
 export function getStatus(this: ModuleRunner) {
@@ -27,19 +33,11 @@ export function getStatus(this: ModuleRunner) {
     async({ event }): Promise<ThreadRunnerStatus> => {
       authorize.call(this, event)
       return {
+        ok: true,
         isClaimed: this.runnerIsClaimed,
-        isRunning: this.runnerWorkerPool.running > 0,
-        isReachable: true,
-        freemem: os.freemem(),
-        totalmem: os.totalmem(),
-        availmem: os.totalmem() - os.freemem(),
-        availableParallelismv: os.availableParallelism(),
-        loadavg: os.loadavg(),
-        cpus: os.cpus(),
-        platform: os.platform(),
-        release: os.release(),
-        type: os.type(),
-        version: os.version(),
+        version: packageJson.version,
+        uptime: Math.floor(process.uptime()),
+        system: getSystemStatus(),
         workerPool: await getWorkerPoolStatus.call(this),
       }
     },

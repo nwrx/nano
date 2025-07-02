@@ -33,10 +33,11 @@ describe.concurrent<Context>('GET /status', () => {
       const response = await application.fetch('/status', { method: 'GET', headers })
       const data = await response.json() as Record<string, unknown[]>
       expect(data).toMatchObject({
-        isClaimed: false,
-        isRunning: false,
-        isReachable: true,
-        workerPool: expect.any(Array),
+        ok: true,
+        isClaimed: moduleRunner.runnerIsClaimed,
+        version: expect.any(String),
+        uptime: expect.any(Number),
+        system: expect.any(Object),
       })
       expect(data.workerPool).toHaveLength(cpus().length - 1)
       expect(data.workerPool[0]).toStrictEqual({
