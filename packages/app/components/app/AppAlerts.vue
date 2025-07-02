@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import type { Alert } from '@unshared/vue'
-import { useAlerts, vMarkdown } from '#imports'
+import type { Alert } from '@unshared/vue/useAlerts'
+import { BaseAlerts } from '@unshared/vue/BaseAlerts'
+import { useAlerts } from '@unshared/vue/useAlerts'
+import { vMarkdown } from '~/utils/vMarkdown'
 
 const { alerts } = useAlerts()
 
