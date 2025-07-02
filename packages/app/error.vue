@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { NuxtError } from '#app'
+import { NuxtLayout } from '#components'
+import AppPageErrorBoundary from './components/app/AppPage.ErrorBoundary.vue'
 
 const props = defineProps<{
   error: NuxtError
