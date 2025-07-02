@@ -4,13 +4,13 @@ import type { Flow } from '../../flow'
 import { createThreadFromFlow } from '@nwrx/nano'
 import { COMPONENTS } from '@nwrx/nano/components'
 import { defineComponent, serializeSpecifier } from '@nwrx/nano/utils'
-import { assert, createRuleSet, createParser } from '@unshared/validation'
-import { assertFlow } from '../../flow'
-import { assertProject } from '../../project'
+import { assert, createParser, createRuleSet } from '@unshared/validation'
+import { assertFlow } from '../../flow/utils/assertFlow'
+import { assertProject } from '../../project/utils/assertProject'
 import { ModuleRegistry } from '../../registry'
-import { assertUser } from '../../user'
+import { assertUser } from '../../user/utils/assertUser'
 import { ModuleVault } from '../../vault'
-import { assertWorkspace } from '../../workspace'
+import { assertWorkspace } from '../../workspace/utils/assertWorkspace'
 import { EditorSession } from './createEditorSession'
 
 /** Schema to validate the options to resolve the editor session. */
@@ -31,10 +31,10 @@ const GET_EDITOR_SESSION_OPTIONS_SCHEMA = createRuleSet(
 export type ResolveEditorSessionOptions = ReturnType<typeof GET_EDITOR_SESSION_OPTIONS_SCHEMA>
 
 /**
- * Given an ID, create or get the `FlowSession` that corresponds to the ID of the flow.
+ * Given an ID, create or get the `EditorSession` that corresponds to the ID of the flow.
  *
  * @param options The options to resolve the session.
- * @returns The `FlowSession` that corresponds to the given ID.
+ * @returns The `EditorSession` that corresponds to the given ID.
  */
 export function getEditorSession(this: ModuleFlowEditor, options: ResolveEditorSessionOptions): EditorSession {
   const moduleRegistry = this.getModule(ModuleRegistry)

@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/no-commented-code */
 /* eslint-disable sonarjs/todo-tag */
 import type { Thread } from '@nwrx/nano'
 import type { Peer } from 'crossws'
