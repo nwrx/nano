@@ -2,7 +2,7 @@ import type { ObjectLike } from '@unshared/types'
 import type { ComponentResolver, ReferenceResolver } from '../utils'
 import type { Node } from './addNode'
 import type { ThreadEventMap } from './events'
-import { Emitter } from '../utils/createEmitter'
+import { Emitter } from '@unshared/functions/createEmitter'
 import { DEFAULT_COMPONENT_RESOLVER } from '../utils/defaultComponentResolver'
 import { DEFAULT_REFERENCE_RESOLVER } from '../utils/defaultReferenceResolver'
 
