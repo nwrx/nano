@@ -2,7 +2,7 @@ import type { Tool } from '../../utils/toolSchema'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js'
 import { defineComponent } from '../../utils/defineComponent'
-import { toolSchema } from '../../utils/toolSchema'
+import { TOOL_SCHEMA } from '../../utils/toolSchema'
 
 export const mcp = defineComponent(
   {
@@ -21,7 +21,7 @@ export const mcp = defineComponent(
         title: 'Tools',
         description: 'The tools available at the endpoint.',
         type: 'array',
-        items: toolSchema,
+        items: TOOL_SCHEMA,
       },
     },
   },
