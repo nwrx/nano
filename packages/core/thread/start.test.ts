@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-import { defineComponent, ERRORS as E, toolSchema } from '../utils'
+import { defineComponent, ERRORS as E, TOOL_SCHEMA } from '../utils'
 import { addLink } from './addLink'
 import { addNode } from './addNode'
 import { createThread } from './createThread'
@@ -70,7 +70,7 @@ const callingTool = defineComponent(
     isTrusted: true,
     inputs: {
       tool: {
-        ...toolSchema,
+        ...TOOL_SCHEMA,
       },
       parameters: {
         type: 'object',

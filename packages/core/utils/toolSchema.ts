@@ -1,10 +1,10 @@
 import type { InferSchema, Schema } from './defineComponent'
 
 /** A tool is a function that can be used by a node to extend it's functionality. */
-export type Tool = InferSchema<typeof toolSchema>
+export type Tool = InferSchema<typeof TOOL_SCHEMA>
 
 /** The JSON schema of a tool. */
-export const toolSchema = {
+export const TOOL_SCHEMA = {
   type: 'object',
   additionalProperties: false,
   required: [
