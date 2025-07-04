@@ -49,9 +49,9 @@ export function parseSpecifier(specifier: string): SpecifierObject {
   }
 
   // --- If no registry is provided, handle the remaining parts.
-  // --- 2 -> workspace/collection/name
-  // --- 1 -> collection/name
-  // --- 0 -> name
+  // --- 3 -> workspace/collection/name
+  // --- 2 -> collection/name
+  // --- 1 -> name
   else {
     const pathParts = mainPart.split('/')
     if (pathParts.length === 3) [workspace, collection, name] = pathParts
