@@ -1,6 +1,6 @@
 import type { Component } from './defineComponent'
 import type { SpecifierObject } from './parseSpecifier'
-import { COMPONENTS } from '../components/components'
+import { COMPONENTS } from '../components'
 
 export function DEFAULT_COMPONENT_RESOLVER(specifier: SpecifierObject): Component | undefined {
   if (specifier.workspace !== 'default') return
