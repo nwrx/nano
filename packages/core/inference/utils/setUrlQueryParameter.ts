@@ -4,13 +4,13 @@ import { serializeRequestParameter } from './serializeRequestParameter'
 
 export function setUrlQueryParameter(
   url: URL,
-  mapping: ProviderParameter,
-  parameters: Record<string, unknown>,
+  parameter: ProviderParameter,
+  options: Record<string, unknown>,
 ): URL {
 
   // --- Get the value from the parameters.
-  const { path } = mapping
-  const value = getParameterValue(mapping, parameters)
+  const { path } = parameter
+  const value = getParameterValue(parameter, options)
   if (!value) return url
 
   // --- Apply the value to the URL query.

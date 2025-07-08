@@ -4,14 +4,14 @@ import { serializeRequestParameter } from './serializeRequestParameter'
 
 export function setRequestHeader(
   init: RequestInit,
-  mapping: ProviderParameter,
-  parameters: Record<string, unknown>,
+  parameter: ProviderParameter,
+  options: Record<string, unknown>,
 ): RequestInit {
 
   // --- Get and serialize the value for the header.
-  const { path } = mapping
+  const { path } = parameter
   const { headers = new Headers() } = init
-  const value = getParameterValue(mapping, parameters)
+  const value = getParameterValue(parameter, options)
   if (!value) return init
 
   // --- Ensure the value is a string. Additionally, if the path is `Authorization`,

@@ -2,17 +2,20 @@ import type { ProviderParameter } from './defineProviderOptions'
 import { Validator } from 'jsonschema'
 
 /**
- * Processes a provider parameter mapping to extract and validate its value from the provided parameters.
+ * Processes a provider parameter mapping to extract and validate its value from the provided options.
  *
- * @param definition The provider parameter mapping containing the name and schema of the parameter.
- * @param parameters The parameters object containing potential values for the parameter.
+ * @param parameter The provider parameter mapping containing the name and schema of the parameter.
+ * @param options The options object containing potential values for the parameter.
  * @returns The validated value of the parameter.
  */
-export function getParameterValue(definition: ProviderParameter, parameters: Record<string, unknown>): unknown {
-  const { name, schema = {} } = definition
+export function getParameterValue(
+  parameter: ProviderParameter,
+  options: Record<string, unknown>,
+): unknown {
+  const { name, schema = {} } = parameter
 
   // --- Get the value from the parameters.
-  let value = parameters[name]
+  let value = options[name]
   if (value === undefined) {
     if (schema.default !== undefined)
       value = schema.default

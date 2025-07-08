@@ -3,13 +3,13 @@ import { getParameterValue } from './getParameterValue'
 
 export function setRequestBody(
   init: RequestInit,
-  mapping: ProviderParameter,
-  parameters: Record<string, unknown>,
+  parameter: ProviderParameter,
+  options: Record<string, unknown>,
 ): RequestInit {
 
   // --- Get the value from the parameters.
-  const { path } = mapping
-  const value = getParameterValue(mapping, parameters)
+  const { path } = parameter
+  const value = getParameterValue(parameter, options)
   if (!value) return init
 
   // --- Get the current body or initialize it if not present.
