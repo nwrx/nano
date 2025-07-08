@@ -13,7 +13,7 @@ export function generateText(this: Provider, request: TextGeneration.Request): R
   const {
     model,
     messages = [],
-    parameters = {},
+    options = {},
     abortSignal = new AbortController().signal,
   } = request
 
@@ -22,7 +22,7 @@ export function generateText(this: Provider, request: TextGeneration.Request): R
     name,
     baseUrl,
     features = {},
-    parameters: mappings = [],
+    parameters: providerParameters = [],
     fetch = globalThis.fetch,
   } = this.provider
 
@@ -36,10 +36,10 @@ export function generateText(this: Provider, request: TextGeneration.Request): R
   if (!features.textGeneration.onResponse) throw new Error(`The provider "${name}" does not have a valid onResponse method for text generation.`)
 
   // --- Merge the adapter's features with the provider's features.
-  const { path, parameters: featureMappings = [], onRequest, onResponse } = features.textGeneration
+  const { path, parameters: featureParameters = [], onRequest, onResponse } = features.textGeneration
 
   // --- Merge the mappings from the provider, adapter, and feature.
-  const mergedMappings = [...mappings, ...featureMappings]
+  const parameters = [...providerParameters, ...featureParameters]
 
   // --- Get the adapter and prepare URL and RequestInit for the fetch request.
   const url = joinUrl(baseUrl, path)
@@ -83,7 +83,7 @@ export function generateText(this: Provider, request: TextGeneration.Request): R
           // --- Prepare the `URL` and `RequestInit` for the fetch request.
           this.dispatch('textGenerationStart', request)
           await onRequest(context)
-          applyParameters({ url, init, parameters: mergedMappings, options: parameters })
+          applyParameters({ url, init, parameters, options })
 
           // --- Make the request to the provider's API.
           this.dispatch('request', { url: context.url, init: context.init })

@@ -21,7 +21,7 @@ export namespace TextGeneration {
     model: string
     tools?: Tool[]
     messages: MessageLike[]
-    parameters?: Record<string, unknown>
+    options?: Record<string, unknown>
     abortSignal?: AbortSignal
   }
 
