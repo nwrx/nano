@@ -1,4 +1,4 @@
-import { defineLanguageModel } from '../inference'
+import { defineLanguageModel } from '../../inference'
 import { openaiOnRequest, openaiOnResponse, openaiSearchModels } from './openai'
 
 export const codestral = defineLanguageModel({
