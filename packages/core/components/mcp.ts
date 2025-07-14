@@ -1,8 +1,8 @@
-import type { Tool } from '../../utils/toolSchema'
+import type { Tool } from '../utils/toolSchema'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js'
-import { defineComponent } from '../../utils/defineComponent'
-import { TOOL_SCHEMA } from '../../utils/toolSchema'
+import { defineComponent } from '../utils/defineComponent'
+import { TOOL_SCHEMA } from '../utils/toolSchema'
 
 export const mcp = defineComponent(
   {

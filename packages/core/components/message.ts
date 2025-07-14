@@ -1,4 +1,4 @@
-import { defineComponent } from '../../utils'
+import { defineComponent } from '../utils/defineComponent'
 
 export const message = defineComponent(
   {
@@ -7,9 +7,24 @@ export const message = defineComponent(
         'title': 'Role',
         'description': 'The role of the message.',
         'type': 'string',
-        'enum': ['user', 'assistant', 'system', 'tool'],
-        'x-enum-labels': ['User', 'Assistant', 'System', 'Tool'],
-        'x-enum-icons': ['i-mdi-account', 'i-mdi-robot', 'i-mdi-shield-account', 'i-mdi-cog'],
+        'enum': [
+          'user',
+          'assistant',
+          'system',
+          'tool',
+        ],
+        'x-enum-labels': [
+          'User',
+          'Assistant',
+          'System',
+          'Tool',
+        ],
+        'x-enum-icons': [
+          'i-mdi-account',
+          'i-mdi-robot',
+          'i-mdi-shield-account',
+          'i-mdi-cog',
+        ],
       },
       content: {
         title: 'Content',

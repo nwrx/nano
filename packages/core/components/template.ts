@@ -1,4 +1,4 @@
-import { defineComponent } from '../../utils/defineComponent'
+import { defineComponent } from '../utils/defineComponent'
 
 export const template = defineComponent(
   {
@@ -73,7 +73,7 @@ export const template = defineComponent(
         const defaultPart = variableContent.slice(defaultIndex + 2).trim()
         // Attempt to parse a quoted default value
         defaultValue = (defaultPart.startsWith('"') && defaultPart.endsWith('"'))
-        || (defaultPart.startsWith('\'') && defaultPart.endsWith('\''))
+          || (defaultPart.startsWith('\'') && defaultPart.endsWith('\''))
           ? defaultPart.slice(1, -1)
           : defaultPart
       }

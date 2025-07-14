@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { EXP_UUID } from '@unshared/validation'
-import { addNode, createThread, getNodeComponent, startNode } from '../../thread'
-import { ERRORS } from '../../utils'
-import { ask } from './ask'
+import { addNode, createThread, getNodeComponent, startNode } from '../thread'
+import { ERRORS } from '../utils'
+import { question } from './question'
 
 describe('ask component', () => {
   beforeEach(() => {
@@ -25,10 +25,10 @@ describe('ask component', () => {
         },
       })
       thread.on('nodeQuestionRequest', (_, { id: eventId }) => {
-        thread.dispatch('nodeResponse', nodeId, { id: eventId, response: 'John Doe' })
+        thread.dispatch('nodeQuestionResponse', nodeId, { id: eventId, answer: 'John Doe' })
       })
       const result = await startNode(thread, nodeId)
-      expect(result).toStrictEqual({ response: 'John Doe' })
+      expect(result).toStrictEqual({ answer: 'John Doe' })
     })
 
     it('should dispatch the "nodeQuestionRequest" event', async() => {
@@ -120,7 +120,7 @@ describe('ask component', () => {
       const thread = createThread()
       const id = addNode(thread, 'ask')
       const component = await getNodeComponent(thread, id)
-      expect(component).toStrictEqual(ask)
+      expect(component).toStrictEqual(question)
     })
   })
 })

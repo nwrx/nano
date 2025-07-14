@@ -1,19 +1,31 @@
+/* eslint-disable @typescript-eslint/consistent-type-definitions */
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import { randomUUID } from 'node:crypto'
-import { defineComponent } from '../../utils/defineComponent'
+import { defineComponent } from '../utils/defineComponent'
 
 export interface EventConfirmRequest {
   id: string
-  question: string
+  title: string
   text?: string
   timeout?: number
+}
+
+export interface EventConfirmResponse {
+  id: string
+  response: boolean
+}
+
+export type EventMapConfirm = {
+  'nodeConfirmResponse': [nodeId: string, event: EventConfirmResponse]
+  'nodeConfirmRequest': [nodeId: string, event: EventConfirmRequest]
+  'nodeConfirmCancel': [nodeId: string, confirmId: string]
 }
 
 export const confirm = defineComponent(
   {
     isTrusted: true,
     inputs: {
-      question: {
+      title: {
         type: 'string',
         title: 'Question',
         description: 'The question to ask the user.',
@@ -43,8 +55,8 @@ export const confirm = defineComponent(
     },
   },
   async({ data, thread, nodeId }) => {
-    const { question, text, timeout = 60000 } = data
-    const eventConfirmRequest: EventConfirmRequest = { id: randomUUID(), question, text, timeout }
+    const { title: question, text, timeout = 60000 } = data
+    const eventConfirmRequest: EventConfirmRequest = { id: randomUUID(), title: question, text, timeout }
     let timeoutInstance: NodeJS.Timeout
 
     // --- If timeout is reached, reject the promise with an error.
@@ -59,20 +71,34 @@ export const confirm = defineComponent(
       }
 
       // --- If a response is received, resolve the promise with the response.
-      const stopOnResponse = thread.on('nodeResponse', (thisId, event) => {
+      const stopOnResponse = thread.on('nodeConfirmResponse', (thisId, event) => {
         if (thisId === nodeId && event.id === eventConfirmRequest.id) {
           if (timeoutInstance) clearTimeout(timeoutInstance)
           stopOnAbort()
+          stopOnCancel()
           stopOnResponse()
-          resolve({ response: event.response as boolean })
+          resolve({ response: event.response })
         }
       })
 
-      // --- If the user cancels, reject the promise with an error.
+      // --- If the confirm request was canceled, reject the promise with an error.
+      const stopOnCancel = thread.on('nodeConfirmCancel', (thisId, confirmId) => {
+        if (thisId === nodeId && confirmId === eventConfirmRequest.id) {
+          if (timeoutInstance) clearTimeout(timeoutInstance)
+          stopOnAbort()
+          stopOnCancel()
+          stopOnResponse()
+          const error = new Error('Canceled by user.')
+          reject(error)
+        }
+      })
+
+      // --- If the thread is aborted, reject the promise with an error.
       const stopOnAbort = thread.on('abort', () => {
         const error = new Error('Aborted by user.')
         if (timeoutInstance) clearTimeout(timeoutInstance)
         stopOnAbort()
+        stopOnCancel()
         stopOnResponse()
         reject(error)
       })

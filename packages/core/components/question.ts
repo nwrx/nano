@@ -1,36 +1,43 @@
+/* eslint-disable @typescript-eslint/consistent-type-definitions */
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import { randomUUID } from 'node:crypto'
-import { defineComponent } from '../../utils/defineComponent'
+import { defineComponent } from '../utils/defineComponent'
 
-export type QuestionChoiceValue = boolean | number | string
+export type QuestionAnswer = boolean | number | string
 
 export interface QuestionChoice {
-  value: QuestionChoiceValue
+  value: QuestionAnswer
   label: string
   description?: string
   icon?: string
   imageUrl?: string
 }
 
-export interface EventQuestion {
+export interface EventQuestionRequest {
   id: string
-  question: string
+  title: string
   text?: string
   timeout?: number
-  defaultValue?: QuestionChoiceValue
+  defaultValue?: QuestionAnswer
   choices?: QuestionChoice[]
 }
 
-export interface EventResponse {
+export interface EventQuestionResponse {
   id: string
-  response: QuestionChoiceValue
+  answer: QuestionAnswer
 }
 
-export const ask = defineComponent(
+export type EventMapQuestion = {
+  'nodeQuestionResponse': [nodeId: string, event: EventQuestionResponse]
+  'nodeQuestionRequest': [nodeId: string, event: EventQuestionRequest]
+  'nodeQuestionCancel': [nodeId: string, questionId: string]
+}
+
+export const question = defineComponent(
   {
     isTrusted: true,
     inputs: {
-      question: {
+      title: {
         'type': 'string',
         'title': 'Question',
         'description': 'The question to ask the user.',
@@ -105,9 +112,9 @@ export const ask = defineComponent(
       },
     },
     outputs: {
-      response: {
-        title: 'Response',
-        description: 'The response from the user.',
+      answer: {
+        title: 'Answer',
+        description: 'The answer from the user.',
         oneOf: [
           { type: 'string' },
           { type: 'number' },
@@ -117,8 +124,8 @@ export const ask = defineComponent(
     },
   },
   async({ data, thread, nodeId }) => {
-    const { question, text, defaultValue, timeout, choices } = data
-    const eventQuestion: EventQuestion = { id: randomUUID(), question, text, timeout, choices, defaultValue }
+    const { title: question, text, defaultValue, timeout, choices } = data
+    const eventQuestion: EventQuestionRequest = { id: randomUUID(), title: question, text, timeout, choices, defaultValue }
 
     // --- If timeout is reached, reject the promise with an error.
     return new Promise((resolve, reject) => {
@@ -145,13 +152,13 @@ export const ask = defineComponent(
       })
 
       // --- If a response is received, resolve the promise with the response.
-      const stopOnResponse = thread.on('nodeResponse', (id, event) => {
+      const stopOnResponse = thread.on('nodeQuestionResponse', (id, event) => {
         if (id === nodeId && event.id === eventQuestion.id) {
           stopOnAbort()
           stopOnCancel()
           stopOnResponse()
           if (timeoutInstance) clearTimeout(timeoutInstance)
-          resolve({ response: event.response })
+          resolve({ answer: event.answer })
         }
       })
 

@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/consistent-type-definitions */
 import type { ObjectLike } from '@unshared/types'
 import { createClient } from '@unshared/client'
 import { randomUUID } from 'node:crypto'
-import { defineComponent } from '../../utils/defineComponent'
+import { defineComponent } from '../utils/defineComponent'
 
-export interface EventRequest {
+export interface EventFetchRequest {
   id: string
   url: string
   body: ObjectLike
@@ -13,19 +14,26 @@ export interface EventRequest {
   parameters: ObjectLike
 }
 
-export interface EventRequestResponse {
+export interface EventFetchResponse {
   id: string
   status: number
   statusText: string
 }
 
-export interface EventRequestError {
+export interface EventFetchError {
   id: string
   status: number
   statusText: string
 }
 
-export const client = defineComponent(
+export type EventMapFetch = {
+  'nodeFetchRequest': [nodeId: string, event: EventFetchRequest]
+  'nodeFetchResponse': [nodeId: string, event: EventFetchResponse]
+  'nodeFetchError': [nodeId: string, event: EventFetchError]
+  'nodeFetchCancel': [nodeId: string, fetchId: string]
+}
+
+export const fetch = defineComponent(
   {
     isTrusted: true,
     inputs: {
@@ -140,21 +148,23 @@ export const client = defineComponent(
   async({ data, thread, nodeId }) => {
     const { url, method, query, body, headers = {}, parameters = {} } = data
 
-    const client = createClient()
+    const client = createClient({
+      signal: thread.abortController.signal,
+    })
 
     // --- Fetch the data from the API endpoint.
     const id = randomUUID()
-    thread.dispatch('nodeRequest', nodeId, { id, url, method, query, body, headers, parameters })
+    thread.dispatch('nodeFetchRequest', nodeId, { id, url, method, query, body, headers, parameters })
     const response = await client.fetch(url, { method, query, body, headers })
     const { ok, status, statusText } = response
 
     // --- Handle errors and return the response body.
     if (!ok) {
-      thread.dispatch('nodeRequestError', nodeId, { id, status, statusText })
+      thread.dispatch('nodeFetchError', nodeId, { id, status, statusText })
       throw new Error(`Failed to fetch: ${statusText}`)
     }
 
-    thread.dispatch('nodeRequestResponse', nodeId, { id, status, statusText })
+    thread.dispatch('nodeFetchResponse', nodeId, { id, status, statusText })
     return new Proxy({}, {
       get(target, key) {
         if (key === 'text') return response.text()

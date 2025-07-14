@@ -1,4 +1,4 @@
-import { defineComponent } from '../../utils/defineComponent'
+import { defineComponent } from '../utils/defineComponent'
 
 export const input = defineComponent(
   {

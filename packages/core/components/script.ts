@@ -1,7 +1,7 @@
 import { transform } from 'esbuild'
-import { implementFetch, implementHeaders, implementTextDecoder, implementTextEncoder } from '../../sandbox'
-import { wrapInSandbox } from '../../sandbox/wrapInSandbox'
-import { defineComponent } from '../../utils/defineComponent'
+import { implementFetch, implementHeaders, implementTextDecoder, implementTextEncoder } from '../sandbox'
+import { wrapInSandbox } from '../sandbox/wrapInSandbox'
+import { defineComponent } from '../utils/defineComponent'
 
 export const script = defineComponent(
   {

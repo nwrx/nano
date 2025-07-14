@@ -1,5 +1,12 @@
-import { isArrayBufferView } from 'node:util/types'
-import { defineComponent } from '../../utils/defineComponent'
+/* eslint-disable @typescript-eslint/consistent-type-definitions */
+import { defineComponent } from '../utils/defineComponent'
+
+export type EventMapOutput = {
+  'nodeOutput': [nodeId: string, name: string, value: unknown]
+  'nodeOutputDeltaStart': [nodeId: string, name: string]
+  'nodeOutputDelta': [nodeId: string, name: string, value: string | Uint8Array]
+  'nodeOutputDeltaEnd': [nodeId: string, name: string]
+}
 
 export const output = defineComponent(
   {

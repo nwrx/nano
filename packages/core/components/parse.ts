@@ -1,5 +1,5 @@
 import * as YAML from 'yaml'
-import { defineComponent } from '../../utils/defineComponent'
+import { defineComponent } from '../utils/defineComponent'
 
 export const parse = defineComponent(
   {
