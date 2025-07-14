@@ -45,6 +45,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.12.1",
+    "@nwrx/ai": "workspace:*",
     "@types/json-schema": "7.0.15",
     "@unshared/client": "0.6.5",
     "@unshared/collection": "0.6.5",

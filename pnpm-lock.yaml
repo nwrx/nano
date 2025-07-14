@@ -427,6 +427,9 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: 1.12.1
         version: 1.12.1
+      '@nwrx/ai':
+        specifier: workspace:*
+        version: link:../ai
       '@types/json-schema':
         specifier: 7.0.15
         version: 7.0.15

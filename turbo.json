@@ -13,8 +13,13 @@
     "tsconfig.json"
   ],
   "tasks": {
+    "@nwrx/ai#build": {
+      "outputs": ["dist/**"],
+      "outputLogs": "new-only"
+    },
     "@nwrx/nano#build": {
       "outputs": ["dist/**"],
+      "dependsOn": ["@nwrx/ai#build"],
       "outputLogs": "new-only"
     },
     "@nwrx/nano-api#build": {
@@ -43,7 +48,6 @@
       "dependsOn": ["@nwrx/nano-app#build"],
       "persistent": true
     },
-
     "dev": {
       "outputs": [".nuxt/**", ".output/**", "dist/**"],
       "persistent": true
