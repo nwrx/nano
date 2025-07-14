@@ -10,7 +10,7 @@ import { serializeError } from './serializeError.mjs'
  * @typedef Thread
  * @type {import('@nwrx/nano').Thread}
  *
- * @typedef ThreadEventName
+ * @typedef ThreadEventNames
  * @type {ReadonlyArray<keyof import('@nwrx/nano').ThreadEventMap>}
  *
  * @typedef MessagePort
@@ -29,36 +29,48 @@ import { serializeError } from './serializeError.mjs'
  * @type {import('@nwrx/nano').FlowV1}
  */
 
-/** @type {ThreadEventName} */
+/** @type {ThreadEventNames} */
 const EVENTS_TO_PROXY = [
   'start',
   'error',
   'abort',
   'input',
   'done',
+
+  // node
   'nodeState',
   'nodeError',
-  'nodeEvent',
+  'nodeTrace',
   'nodeStart',
   'nodeDone',
+
+  // output
   'nodeOutput',
   'nodeOutputDeltaStart',
   'nodeOutputDelta',
   'nodeOutputDeltaEnd',
-  'nodeResponse',
-  'nodeQuestionRequest',
-  'nodeQuestionCancel',
+
+  // fetch
+  'nodeFetchRequest',
+  'nodeFetchResponse',
+  'nodeFetchError',
+  'nodeFetchCancel',
+
+  // confirm
   'nodeConfirmRequest',
-  'nodeMessage',
-  'nodeMessageDeltaStart',
-  'nodeMessageDelta',
-  'nodeMessageDeltaEnd',
-  'nodeToolRequest',
-  'nodeToolResponse',
-  'nodeToolError',
-  'nodeRequest',
-  'nodeRequestResponse',
-  'nodeRequestError',
+  'nodeConfirmResponse',
+  'nodeConfirmCancel',
+
+  // question
+  'nodeQuestionRequest',
+  'nodeQuestionResponse',
+  'nodeQuestionCancel',
+
+  // chat
+  'nodeChatRequest',
+  'nodeChatResponse',
+  'nodeChatEvent',
+  'nodeChatError',
 ]
 
 /**

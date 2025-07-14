@@ -1,5 +1,5 @@
 import type { ThreadInputObject } from '@nwrx/nano'
-import { assert, assertObjectStrict, createRuleSet, createParser } from '@unshared/validation'
+import { assert, assertObjectStrict, createParser, createRuleSet } from '@unshared/validation'
 
 export const THREAD_CLIENT_MESSAGE_SCHEMA = createRuleSet(
 
