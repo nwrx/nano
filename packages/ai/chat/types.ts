@@ -1,6 +1,5 @@
 import type { MaybePromise } from '@unshared/types'
 import type { Schema } from 'jsonschema'
-import type { Client } from '../createClient'
 import type { Provider, ProviderFeatureOptions } from '../utils'
 
 export namespace Chat {

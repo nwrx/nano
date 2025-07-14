@@ -77,7 +77,7 @@ export type ProviderOptions<T extends Provider> =
 export type ProviderFeatureOptions<T extends Provider, F extends ProviderFeatureName> =
   T extends Partial<Record<F, { parameters: infer U extends ProviderParameters }>>
     ? ParametersValues<U>
-    : never
+    : Record<string, unknown>
 
 /** Infer the provider options based on the provider name. */
 export type ProviderByName<T extends ProviderName> =
