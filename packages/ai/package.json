@@ -1,0 +1,106 @@
+{
+  "name": "@nwrx/ai",
+  "type": "module",
+  "version": "0.0.1",
+  "license": "MIT",
+  "sideEffects": false,
+  "author": "Nanoworks <dev@nwrx.io>",
+  "bugs": "https://github.com/nwrx/nano-ce/issues",
+  "homepage": "https://github.com/nwrx/nano-ce#readme",
+  "repository": {
+    "directory": "packages/core",
+    "type": "git",
+    "url": "git@github.com:nwrx/nano-ce.git"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./chat": {
+      "types": "./dist/chat/index.d.ts",
+      "import": "./dist/chat/index.js",
+      "require": "./dist/chat/index.cjs"
+    },
+    "./embeddings": {
+      "types": "./dist/embeddings/index.d.ts",
+      "import": "./dist/embeddings/index.js",
+      "require": "./dist/embeddings/index.cjs"
+    },
+    "./image": {
+      "types": "./dist/image/index.d.ts",
+      "import": "./dist/image/index.js",
+      "require": "./dist/image/index.cjs"
+    },
+    "./providers": {
+      "types": "./dist/providers/index.d.ts",
+      "import": "./dist/providers/index.js",
+      "require": "./dist/providers/index.cjs"
+    },
+    "./models": {
+      "types": "./dist/models/index.d.ts",
+      "import": "./dist/models/index.js",
+      "require": "./dist/models/index.cjs"
+    },
+    "./speech": {
+      "types": "./dist/speech/index.d.ts",
+      "import": "./dist/speech/index.js",
+      "require": "./dist/speech/index.cjs"
+    },
+    "./transcript": {
+      "types": "./dist/transcript/index.d.ts",
+      "import": "./dist/transcript/index.js",
+      "require": "./dist/transcript/index.cjs"
+    },
+    "./utils": {
+      "types": "./dist/utils/index.d.ts",
+      "import": "./dist/utils/index.js",
+      "require": "./dist/utils/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch"
+  },
+  "dependencies": {
+    "@unshared/functions": "0.6.5",
+    "@unshared/string": "0.6.5",
+    "@unshared/types": "0.6.5"
+  },
+  "devDependencies": {
+    "@anthropic-ai/sdk": "0.56.0",
+    "jsonschema": "1.5.0",
+    "msw": "2.7.3",
+    "openai": "5.8.2"
+  },
+  "tsup": {
+    "entry": {
+      "index": "index.ts",
+      "embeddings": "embeddings/index.ts",
+      "image": "image/index.ts",
+      "providers": "providers/index.ts",
+      "models": "models/index.ts",
+      "chat": "chat/index.ts",
+      "speech": "speech/index.ts",
+      "transcript": "transcript/index.ts",
+      "utils": "utils/index.ts"
+    },
+    "format": [
+      "esm",
+      "cjs"
+    ],
+    "target": "node20",
+    "dts": true,
+    "shims": true,
+    "splitting": false,
+    "sourcemap": true,
+    "treeshaking": false,
+    "experimental-dts": true
+  }
+}
