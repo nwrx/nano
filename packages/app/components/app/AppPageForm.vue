@@ -1,7 +1,7 @@
 <!-- eslint-disable @typescript-eslint/prefer-nullish-coalescing -->
 <script setup lang="ts">
 import { vMarkdown } from '#imports'
-import Button from '../base/Button.vue'
+import Button from '~/components/base/Button.vue'
 
 const props = defineProps<{
   title?: string

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { RouteRecord } from 'vue-router'
 import { BaseIcon } from '@unshared/vue/BaseIcon'
-import Hyperlink from '../base/Hyperlink.vue'
+import Hyperlink from '~/components/base/Hyperlink.vue'
 
 const props = defineProps<{
   items: string[]

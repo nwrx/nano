@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Pattern from '../base/Pattern.vue'
+import Pattern from '~/components/base/Pattern.vue'
 const props = defineProps<{
   stack?: string
   message?: unknown
