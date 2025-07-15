@@ -1,24 +1,22 @@
 <script setup lang="ts">
 import type { ThreadRunnerObject } from '@nwrx/nano-api'
-import AdminSettingsRunnerDangerZoneDialogRelease from '~/components/runner/AdminSettingsRunner.DangerZone.DialogRelease.vue'
-import AdminSettingsRunnerDangerZoneDialogSetAddress from '~/components/runner/AdminSettingsRunner.DangerZone.DialogSetAddress.vue'
-import AdminSettingsRunnerDangerZoneDialogToggle from '~/components/runner/AdminSettingsRunner.DangerZone.DialogToggle.vue'
 import AppPageFormAction from '~/components/app/AppPageForm.Action.vue'
 import AppPageFormActions from '~/components/app/AppPageForm.Actions.vue'
 import AppPageForm from '~/components/app/AppPageForm.vue'
+import DialogDisable from './RunnerDialogDisable.vue'
+import DialogEnable from './RunnerDialogEnable.vue'
+import DialogRelease from './RunnerDialogRelease.vue'
+import DialogSetAddress from './RunnerDialogSetAddress.vue'
 
-const props = defineProps<{
-  runner: ThreadRunnerObject
-}>()
+// --- I/O.
+const props = defineProps<{ runner: ThreadRunnerObject }>()
+const emit = defineEmits<{ refresh: [] }>()
 
-const emit = defineEmits<{
-  refresh: []
-}>()
-
+// --- Model.
 const { t } = useI18n()
-
 const showSetAddressDialog = ref(false)
-const showToggleDialog = ref(false)
+const showEnableDialog = ref(false)
+const showDisableDialog = ref(false)
 const showReleaseDialog = ref(false)
 const isDisabled = computed(() => props.runner.disabledAt)
 </script>
@@ -41,7 +39,7 @@ const isDisabled = computed(() => props.runner.disabledAt)
         :title="isDisabled ? t('enableTitle') : t('disableTitle')"
         :text="isDisabled ? t('enableText') : t('disableText')"
         :label="isDisabled ? t('enableLabel') : t('disableLabel')"
-        @click="() => showToggleDialog = true"
+        @click="() => isDisabled ? showEnableDialog = true : showDisableDialog = true"
       />
       <AppPageFormAction
         class="border-danger"
@@ -56,21 +54,28 @@ const isDisabled = computed(() => props.runner.disabledAt)
   </AppPageForm>
 
   <!-- Set address dialog -->
-  <AdminSettingsRunnerDangerZoneDialogSetAddress
+  <DialogSetAddress
     v-model="showSetAddressDialog"
     :runner="runner"
     @submit="() => emit('refresh')"
   />
 
-  <!-- Enable/Disable dialog -->
-  <AdminSettingsRunnerDangerZoneDialogToggle
-    v-model="showToggleDialog"
+  <!-- Enable dialog -->
+  <DialogEnable
+    v-model="showEnableDialog"
+    :runner="runner"
+    @submit="() => emit('refresh')"
+  />
+
+  <!-- Disable dialog -->
+  <DialogDisable
+    v-model="showDisableDialog"
     :runner="runner"
     @submit="() => emit('refresh')"
   />
 
   <!-- Release dialog -->
-  <AdminSettingsRunnerDangerZoneDialogRelease
+  <DialogRelease
     v-model="showReleaseDialog"
     :runner="runner"
     @submit="() => emit('refresh')"

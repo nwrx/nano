@@ -3,38 +3,31 @@ import type { ThreadRunnerObject } from '@nwrx/nano-api'
 import Dialog from '~/components/base/Dialog.vue'
 import InputText from '~/components/base/InputText.vue'
 
-const props = defineProps<{
-  modelValue?: boolean
-  runner: ThreadRunnerObject
-}>()
-
-const emit = defineEmits<{
-  'update:modelValue': [boolean]
-  'submit': []
-}>()
+// --- I/O.
+const props = defineProps<{ runner: ThreadRunnerObject }>()
+const emit = defineEmits<{ 'refresh': [] }>()
 
 // --- Model.
 const { t } = useI18n()
 const client = useClient()
 const alerts = useAlerts()
-const address = ref('')
+const address = ref<string>()
+const isOpen = defineModel({ default: false })
+watch(isOpen, () => address.value = props.runner.address, { immediate: true })
 
+// --- Methods.
 async function setRunnerAddress() {
   await client.request('PUT /api/runners/:identity', {
-    data: {
-      identity: props.runner.identity,
-      address: address.value,
-    },
+    parameters: { identity: props.runner.identity },
+    body: { address: address.value },
     onSuccess: () => {
       alerts.success(t('success', { identity: props.runner.identity }))
-      emit('submit')
+      emit('refresh')
     },
   })
 }
 
 // --- State.
-const isOpen = useVModel(props, 'modelValue', emit)
-watch(isOpen, () => address.value = props.runner.address || '', { immediate: true })
 </script>
 
 <template>
@@ -49,6 +42,8 @@ watch(isOpen, () => address.value = props.runner.address || '', { immediate: tru
     :label-confirm="t('confirm')"
     :disabled="address === (runner.address || '')"
     @confirm="() => setRunnerAddress()">
+
+    <!-- Set new address -->
     <InputText
       v-model="address"
       :label="t('addressLabel')"

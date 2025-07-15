@@ -8,6 +8,7 @@ import Hyperlink from '~/components/base/Hyperlink.vue'
 const props = defineProps<{
   runner: ThreadRunnerObject
   isLink?: boolean
+  inline?: boolean
 }>()
 
 const linkTo = computed(() => ({
@@ -20,7 +21,10 @@ const linkTo = computed(() => ({
   <BaseButton
     :as="isLink ? NuxtLink : 'div'"
     :to="isLink ? linkTo : undefined"
-    class="flex items-center space-x-md">
+    class="flex items-center space-x-md"
+    :class="{
+      'b b-app rd p-4 bg-subtle': !inline,
+    }">
 
     <!-- Status icon -->
     <BaseIcon
@@ -31,10 +35,27 @@ const linkTo = computed(() => ({
 
     <!-- Identity & Address -->
     <div class="flex flex-col items-start">
-      <Hyperlink class="text-sm font-medium text-app">
-        <span v-text="runner.identity" />
+
+      <!-- If link -->
+      <Hyperlink v-if="isLink">
+        <span
+          class="text-sm font-medium text-app font-mono"
+          v-text="runner.identity"
+        />
       </Hyperlink>
-      <span class="text-xs text-subtle" v-text="runner.address" />
+
+      <!-- If not -->
+      <span
+        v-else
+        class="text-sm font-medium text-app font-mono"
+        v-text="runner.identity"
+      />
+
+      <!-- Address -->
+      <span
+        class="text-xs text-subtle font-mono"
+        v-text="runner.address"
+      />
     </div>
   </BaseButton>
 </template>

@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import type { ThreadRunnerObject } from '@nwrx/nano-api'
+import DialogDisable from './RunnerDialogDisable.vue'
+import DialogEnable from './RunnerDialogEnable.vue'
+import DialogRelease from './RunnerDialogRelease.vue'
+import DialogSetAddress from './RunnerDialogSetAddress.vue'
 
 const props = defineProps<{
   runner: ThreadRunnerObject
@@ -11,7 +15,8 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const showSetAddress = ref(false)
-const showToggle = ref(false)
+const showEnable = ref(false)
+const showDisable = ref(false)
 const showRelease = ref(false)
 const isDisabled = computed(() => Boolean(props.runner.disabledAt))
 </script>
@@ -27,9 +32,16 @@ const isDisabled = computed(() => Boolean(props.runner.disabledAt))
         />
         <ContextMenuDivider />
         <ContextMenuItem
-          :label="isDisabled ? t('enable') : t('disable')"
-          :icon="isDisabled ? 'i-carbon:play' : 'i-carbon:pause'"
-          @click="() => showToggle = true"
+          v-if="isDisabled"
+          :label="t('enable')"
+          icon="i-carbon:play"
+          @click="() => showEnable = true"
+        />
+        <ContextMenuItem
+          v-else
+          :label="t('disable')"
+          icon="i-carbon:pause"
+          @click="() => showDisable = true"
         />
         <ContextMenuItem
           :label="t('release')"
@@ -40,21 +52,28 @@ const isDisabled = computed(() => Boolean(props.runner.disabledAt))
     </ContextMenu>
 
     <!-- Set Address Dialog -->
-    <AdminSettingsRunnerDangerZoneDialogSetAddress
+    <DialogSetAddress
       v-model="showSetAddress"
       :runner="runner"
       @submit="() => emit('submit')"
     />
 
-    <!-- Enable/Disable Dialog -->
-    <AdminSettingsRunnerDangerZoneDialogToggle
-      v-model="showToggle"
+    <!-- Enable Dialog -->
+    <DialogEnable
+      v-model="showEnable"
+      :runner="runner"
+      @submit="() => emit('submit')"
+    />
+
+    <!-- Disable Dialog -->
+    <DialogDisable
+      v-model="showDisable"
       :runner="runner"
       @submit="() => emit('submit')"
     />
 
     <!-- Release Dialog -->
-    <AdminSettingsRunnerDangerZoneDialogRelease
+    <DialogRelease
       v-model="showRelease"
       :runner="runner"
       @submit="() => emit('submit')"

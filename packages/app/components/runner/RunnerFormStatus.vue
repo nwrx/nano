@@ -10,15 +10,16 @@ import Records from '~/components/base/Records.vue'
 
 type Channel = WebSocketChannel<ChannelConnectOptions<typeof application, 'WS /ws/runners/:identity'>>
 
-const props = defineProps<{
-  runner: ThreadRunnerObject
-}>()
+// --- I/O.
+const props = defineProps<{ runner: ThreadRunnerObject }>()
 
+// --- Emits.
 const { t } = useI18n()
 const client = useClient()
 const channel = ref<Channel>()
 const status = ref<Partial<ThreadRunnerStatus>>({})
 
+// --- Map raw values to readable formats.
 const readableStatus = computed(() => ({
   uptime: formatDuration(status.value.uptime),
   systemUptime: formatDuration(status.value.system?.uptime),

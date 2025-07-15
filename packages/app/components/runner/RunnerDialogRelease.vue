@@ -3,37 +3,28 @@ import type { ThreadRunnerObject } from '@nwrx/nano-api'
 import Dialog from '~/components/base/Dialog.vue'
 import InputText from '~/components/base/InputText.vue'
 
-const props = defineProps<{
-  modelValue?: boolean
-  runner: ThreadRunnerObject
-}>()
-
-const emit = defineEmits<{
-  'update:modelValue': [boolean]
-  'submit': []
-}>()
+// --- I/O.
+const props = defineProps<{ runner: ThreadRunnerObject }>()
+const emit = defineEmits<{ 'refresh': [] }>()
 
 // --- Model.
 const { t } = useI18n()
 const client = useClient()
 const alerts = useAlerts()
-const confirmIdentity = ref('')
+const confirm = ref('')
+const isOpen = defineModel({ default: false })
+watch(isOpen, () => confirm.value = '', { immediate: true })
 
+// --- Methods.
 async function releaseRunner() {
   await client.request('DELETE /api/runners/:identity', {
-    data: {
-      identity: props.runner.identity,
-    },
+    parameters: { identity: props.runner.identity },
     onSuccess: () => {
       alerts.success(t('success', { identity: props.runner.identity }))
-      emit('submit')
+      emit('refresh')
     },
   })
 }
-
-// --- State.
-const isOpen = useVModel(props, 'modelValue', emit)
-watch(isOpen, () => confirmIdentity.value = '', { immediate: true })
 </script>
 
 <template>
@@ -46,10 +37,10 @@ watch(isOpen, () => confirmIdentity.value = '', { immediate: true })
     :text="t('text', { identity: runner.identity })"
     :label-cancel="t('cancel')"
     :label-confirm="t('confirm')"
-    :disabled="confirmIdentity !== runner.identity"
+    :disabled="confirm !== runner.identity"
     @confirm="() => releaseRunner()">
     <InputText
-      v-model="confirmIdentity"
+      v-model="confirm"
       :label="t('label')"
       :placeholder="runner.identity"
     />

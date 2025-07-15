@@ -6,8 +6,8 @@ import Hyperlink from '~/components/base/Hyperlink.vue'
 import TableCellDate from '~/components/base/Table.CellDate.vue'
 import Table from '~/components/base/Table.vue'
 import RunnerCard from '~/components/runner/RunnerCard.vue'
-import AdminSettingsRunnerActions from './AdminSettingsRunner.Actions.vue'
-import AdminSettingsRunnersDialogClaim from './AdminSettingsRunner.DialogClaim.vue'
+import RunnerActions from './RunnerActions.vue'
+import RunnersDialogClaim from './RunnerDialogClaim.vue'
 
 const { t } = useI18n()
 const client = useClient()
@@ -27,19 +27,14 @@ onMounted(getRunners)
   <AppPageForm vertical :title="t('title')" :text="t('text')">
     <Table
       :rows="runners"
-      :columns="['identity', 'address', 'lastSeenAt', 'actions']">
+      :columns="['identity', 'lastSeenAt', 'actions']">
       <template #header="name">
         {{ t(toCamelCase('header', name)) }}
       </template>
 
       <!-- Identity -->
       <template #cell.identity="runner">
-        <RunnerCard :runner is-link />
-      </template>
-
-      <!-- Address -->
-      <template #cell.address="{ address }">
-        <span class="text-sm text-subtle">{{ address }}</span>
+        <RunnerCard :runner is-link inline />
       </template>
 
       <!-- Last Seen At -->
@@ -49,7 +44,7 @@ onMounted(getRunners)
 
       <!-- Actions -->
       <template #cell.actions="runner">
-        <AdminSettingsRunnerActions
+        <RunnerActions
           :runner="runner"
           @submit="() => getRunners()"
         />
@@ -67,7 +62,7 @@ onMounted(getRunners)
     />
 
     <!-- Claim Dialog -->
-    <AdminSettingsRunnersDialogClaim
+    <RunnersDialogClaim
       v-model="showClaimDialog"
       @submit="() => getRunners()"
     />

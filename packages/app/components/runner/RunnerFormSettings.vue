@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import type { ThreadRunnerObject } from '@nwrx/nano-api'
-import { CONSTANTS } from '#imports'
 import AppPageForm from '~/components/app/AppPageForm.vue'
 import InputText from '~/components/base/InputText.vue'
+import { CONSTANTS } from '~/utils/constants'
 
+// --- I/O.
 defineProps<{ runner: ThreadRunnerObject }>()
 
+// --- Model.
 const { t } = useI18n()
 </script>
 

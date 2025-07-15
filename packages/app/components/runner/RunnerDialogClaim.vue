@@ -1,18 +1,19 @@
 <script setup lang="ts">
-const props = defineProps<{
-  modelValue: boolean
-}>()
+import Dialog from '~/components/base/Dialog.vue'
+import InputText from '~/components/base/InputText.vue'
 
-const emit = defineEmits<{
-  'submit': [address: string]
-}>()
+// --- I/O.
+const emit = defineEmits<{ 'submit': [address: string] }>()
 
+// --- Model.
 const { t } = useI18n()
 const client = useClient()
 const alerts = useAlerts()
-const model = useVModel(props, 'modelValue', emit, { passive: true })
 const address = ref('')
+const isOpen = defineModel({ default: false })
+watch(isOpen, () => address.value = '', { immediate: true })
 
+// --- Methods.
 async function claimRunner() {
   await client.requestAttempt('POST /api/runners', {
     data: {
@@ -24,13 +25,11 @@ async function claimRunner() {
     },
   })
 }
-
-watch(model, () => address.value = '', { immediate: true })
 </script>
 
 <template>
   <Dialog
-    v-model="model"
+    v-model="isOpen"
     class-hint="hint-success"
     class-button="button-success"
     icon="i-carbon:cloud-service-management"
@@ -40,6 +39,8 @@ watch(model, () => address.value = '', { immediate: true })
     :label-confirm="t('confirm')"
     :disabled="!address"
     @confirm="() => claimRunner()">
+
+    <!-- Claim new runner at address -->
     <InputText
       v-model="address"
       :placeholder="t('addressPlaceholder')"
