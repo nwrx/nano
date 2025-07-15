@@ -14,7 +14,13 @@ const emit = defineEmits<{ click: [] }>()
 </script>
 
 <template>
-  <div class="flex items-center space-x-md border-t first:border-t-0 p-md">
+  <div
+    class="
+      flex items-end md:items-center
+      flex-col md:flex-row
+      space-y-md md:space-y-0 md:space-x-md
+      b-t first:b-t-0 p-md
+    ">
 
     <!-- Description -->
     <div class="grow">

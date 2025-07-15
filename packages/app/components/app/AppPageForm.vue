@@ -9,6 +9,7 @@ const props = defineProps<{
   vertical?: boolean
   label?: string
   loading?: boolean
+  classForm?: string
 }>()
 
 const emit = defineEmits<{
@@ -64,11 +65,12 @@ const showHeader = computed(() => (
 
     <!-- Form -->
     <form
-      class="flex items-start flex-col gap-md grow lg:basis-2/3"
-      :class="{
+      class="flex items-start flex-col gap-md grow"
+      :class="[classForm, {
         'lg:mt-0': !vertical && showHeader,
+        'lg:basis-2/3': !vertical,
         'mt-lg': showHeader,
-      }"
+      }]"
       @submit.prevent="() => emit('submit')">
 
       <!-- Form content -->
