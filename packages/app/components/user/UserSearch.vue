@@ -1,74 +1,72 @@
 <script setup lang="ts">
 import type { UserObject } from '@nwrx/nano-api'
+import InputList from '~/components/base/InputList.vue'
 
-const props = defineProps<{
-  modelValue: string[]
-  multiple?: boolean
-  search?: string
-}>()
+// --- Props.
+const props = defineProps<{ multiple?: boolean }>()
 
-const emit = defineEmits<{
-  'update:search': [value: string]
-  'update:modelValue': [value: string[]]
-}>()
-
+// --- Model.
 const { t } = useI18n()
-const search = useVModel(props, 'search', emit, { passive: true, defaultValue: '' })
-const isOpen = useVModel(props, 'modelValue', emit, { passive: true, defaultValue: [] })
-const options = computed(() => ({ search: search.value, limit: 5, withProfile: true }))
-
+const search = ref('')
 const client = useClient()
+const model = defineModel<string>({ required: false })
 const users = ref([]) as Ref<UserObject[]>
-async function getUsers() {
+const placeholder = computed(() => (props.multiple ? t('hintMultiple') : t('hintSingle')))
+
+// --- Methods.
+async function searchUsers() {
   await client.requestAttempt('GET /api/users', {
-    data: { ... unref(options) },
-    onData: data => users.value = data,
+    query: {
+      search: search.value,
+      withProfile: true,
+    },
+    onData: (data) => {
+      users.value = data
+    },
   })
 }
 
-watch(search, (search) => {
-  if (search) void getUsers()
-  else users.value = []
-})
-
-function handleSelect(username: string) {
-  if (isOpen.value.includes(username)) isOpen.value = isOpen.value.filter(u => u !== username)
-  else isOpen.value = props.multiple ? [...isOpen.value, username] : [username]
+function getUserAvatarUrl(username: string) {
+  const apiUrl = useRuntimeConfig().public.apiUrl
+  const avatarUrl = `/api/users/${username}/avatar`
+  return apiUrl ? new URL(avatarUrl, apiUrl).href : avatarUrl
 }
+
+watch(search, searchUsers, { immediate: true })
 </script>
 
 <template>
-  <div>
-    <!-- Search -->
-    <InputText
-      v-model="search"
-      icon="i-carbon:user"
-      :label="t('search.label')"
-      class="mb-md"
-    />
-
-    <!-- Results -->
-    <Collapse :model-value="true">
-      <UserCard
-        v-for="user in users"
-        :key="user.username"
-        :display-name="user.displayName"
-        :username="user.username"
-        @click="() => handleSelect(user.username)"
-      />
-    </Collapse>
-  </div>
+  <InputList
+    v-model="model"
+    v-model:search="search"
+    icon="i-carbon:user"
+    class-option-text="text-muted"
+    class-option-label="font-medium"
+    :placeholder="placeholder"
+    :multiple="multiple"
+    :options="users"
+    :option-image="(option) => getUserAvatarUrl(option.username)"
+    :option-value="(option) => option.username"
+    :option-label="(option) => option.displayName || option.username"
+    :option-text="(option) => option.username"
+    @focus="() => searchUsers()"
+  />
 </template>
 
 <i18n lang="yaml">
 en:
-  search.label: Search for a user by name or username
+  hintSingle: Search users
+  hintMultiple: Search multiple users
 fr:
-  search.label: "Rechercher un utilisateur par nom ou nom d'utilisateur"
+  hintSingle: Rechercher des utilisateurs
+  hintMultiple: Rechercher plusieurs utilisateurs
 de:
-  search.label: Suche nach einem Benutzer nach Namen oder Benutzernamen
+  hintSingle: Nach Benutzern suchen
+  hintMultiple: Nach mehreren Benutzern suchen
 es:
-  search.label: Buscar un usuario por nombre o nombre de usuario
+  hintSingle: Buscar usuarios
+  hintMultiple: Buscar varios usuarios
 zh:
-  search.label: 通过姓名或用户名搜索用户
+  hintSingle: 搜索用户
+  hintMultiple: 搜索多个用户
 </i18n>
