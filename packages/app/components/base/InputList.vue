@@ -13,12 +13,17 @@ const props = defineProps<BaseInputListProps<T, V, M> & {
   classIcon?: string
   classInput?: string
   classGroup?: string
+  classOptionText?: string
+  classOptionLabel?: string
+  optionsCompact?: boolean
   optionIcon?: (value: T) => string
   optionText?: (value: T) => string
 }>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: M extends true ? V[] : V]
+  'focus': []
+  'blur': []
 }>()
 
 // --- Focus the input when the group is clicked.
@@ -67,7 +72,7 @@ const search = useVModel(props as { search: string }, 'search', emit, { passive:
           input hover:input-hover
           disabled:input-disabled
           active:input-focus
-          transition
+          transition h-10
         "
         @click="(event) => handleGroupClick(event)">
 
@@ -85,28 +90,30 @@ const search = useVModel(props as { search: string }, 'search', emit, { passive:
           v-model:search="search"
           class="flex w-full">
 
+          <!-- Search Input -->
           <template #search>
             <input
               v-model="search"
               class="w-full outline-none bg-transparent"
-              @focus="() => isFocused = true"
-              @blur="() => isFocused = false">
+              :placeholder="model ? '' : placeholder"
+              @focus="() => { isFocused = true; emit('focus') }"
+              @blur="() => { isFocused = false; emit('blur') }">
           </template>
 
+          <!-- Values -->
           <template #values="{ values }">
-            <div class="flex flex-wrap gap-xs">
+            <div class="flex flex-wrap gap-xs" :class="{ 'mr-sm': values.some(option => option.isSelected()) }">
               <Badge
                 v-for="option in values.filter(option => option.isSelected())"
                 :key="option.label"
                 :label="option.label"
                 :icon="optionIcon ? optionIcon(option.option) : undefined"
-                class="flex items-center gap-xs p-xs bg-subtle rd-r-md space-x-xs"
               />
             </div>
-
           </template>
 
-          <template #options="{ options }">
+          <!-- Menu -->
+          <template #options="slot">
             <Transition
               :duration="100"
               leave-active-class="transition"
@@ -126,23 +133,55 @@ const search = useVModel(props as { search: string }, 'search', emit, { passive:
                 <!-- When no options are available, show a message. -->
                 <ul>
                   <li
-                    v-for="option in options"
+                    v-for="option in slot.options"
                     :key="option.label"
-                    class="flex items-center gap-sm p-xs hover:bg-emphasized rounded-md cursor-pointer"
-                    :class="{ 'bg-emphasized': option.isSelected() }"
-                    @mousedown="() => option.toggle()">
+                    class="
+                      flex items-center rd-md cursor-pointer
+                      b b-transparent hover:b-active
+                    "
+                    :class="{
+                      'bg-emphasized': option.isSelected(),
+                      'p-xs gap-sm': optionsCompact,
+                      'px-md py-sm gap-md': !optionsCompact,
+                    }"
+                    @mousedown="() => {
+                      option.toggle()
+                      slot.close()
+                    }">
+
+                    <!-- Icon -->
                     <BaseIcon
                       v-if="optionIcon"
                       :icon="optionIcon(option.option)"
                       class="size-4"
                     />
-                    <h3 class="text-sm" :class="{ 'font-bold': option.isSelected() }">
-                      {{ option.label }}
-                    </h3>
-                    <p v-if="optionText" class="text-xs text-subtle">
-                      {{ optionText(option.option) }}
-                    </p>
-                    <div class="grow" />
+
+                    <!-- Label -->
+                    <div
+                      class="flex"
+                      :class="{
+                        'flex-col-reverse': !optionsCompact,
+                        'flex-row': optionsCompact,
+                      }">
+
+                      <h3
+                        class="text-sm"
+                        :class="[classOptionLabel, { 'font-bold': option.isSelected() }]"
+                        v-text="option.label"
+                      />
+
+                      <!-- Text -->
+                      <p
+                        v-if="optionText"
+                        class="text-xs text-subtle"
+                        :class="classOptionText"
+                        v-text="optionText(option.option)"
+                      />
+                    </div>
+
+                    <!-- Spacer -->
+                    <div class="flex-1" />
+
                     <BaseIcon
                       v-if="option.isSelected()"
                       icon="i-carbon:dot-mark"
