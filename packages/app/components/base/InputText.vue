@@ -1,6 +1,8 @@
 <!-- eslint-disable vue/prop-name-casing -->
 <script setup lang="ts" generic="T">
-import type { BaseInputTextProps } from '@unshared/vue'
+import type { BaseInputTextProps } from '@unshared/vue/BaseInputText'
+import { BaseIcon } from '@unshared/vue/BaseIcon'
+import { BaseInputText } from '@unshared/vue/BaseInputText'
 
 const props = defineProps<BaseInputTextProps<T> & {
   label?: string
@@ -65,7 +67,6 @@ const isFocused = ref(false)
           input hover:input-hover
           disabled:input-disabled
           active:input-focus
-          transition
         "
         @click="(event) => handleGroupClick(event)">
 
