@@ -8,6 +8,7 @@ const slots = defineSlots<BaseTableSlots<T, K>>()
 
 <template>
   <div class="w-full b b-app rd">
+    <!-- @vue-expect-error: false-positive, generics are matching -->
     <BaseTable
       v-bind="props"
       class="w-full"

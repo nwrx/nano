@@ -3,7 +3,7 @@
 import type { BaseButtonProps } from '@unshared/vue/BaseButton'
 import { BaseButton } from '@unshared/vue/BaseButton'
 import { BaseIcon } from '@unshared/vue/BaseIcon'
-import Keybind from '../base/Keybind.vue'
+import Keybind from '~/components/base/Keybind.vue'
 
 const props = defineProps<BaseButtonProps & {
   label: string

@@ -2,7 +2,7 @@
 import type { FlowNodeObject } from '@nwrx/nano-api'
 import type { Schema } from '@nwrx/nano/utils'
 import { BaseIcon } from '@unshared/vue/BaseIcon'
-import Collapse from '../base/Collapse.vue'
+import Collapse from '~/components/base/Collapse.vue'
 import EditorNodeInputGroup from './EditorNodeInput.Group.vue'
 import EditorNodeInputLabel from './EditorNodeInput.Label.vue'
 import EditorNodeInputTableProperty from './EditorNodeInputTable.Property.vue'

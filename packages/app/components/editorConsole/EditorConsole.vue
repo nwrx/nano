@@ -11,7 +11,7 @@ import type { ThreadServerMessage } from '@nwrx/nano-runner'
 import Button from '~/components/base/Button.vue'
 import DataSheet from '~/components/base/DataSheet.vue'
 import TabsItem from '~/components/base/Tabs.Item.vue'
-import Collapse from '../base/Collapse.vue'
+import Collapse from '~/components/base/Collapse.vue'
 
 defineProps<{
   view?: EditorView
