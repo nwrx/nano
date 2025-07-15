@@ -15,9 +15,11 @@ const props = defineProps<BaseInputListProps<T, V, M> & {
   classGroup?: string
   classOptionText?: string
   classOptionLabel?: string
+  classOptionImage?: string
   optionsCompact?: boolean
   optionIcon?: (value: T) => string
   optionText?: (value: T) => string
+  optionImage?: (value: T) => string
 }>()
 
 const emit = defineEmits<{
@@ -155,6 +157,14 @@ const search = useVModel(props as { search: string }, 'search', emit, { passive:
                       :icon="optionIcon(option.option)"
                       class="size-4"
                     />
+
+                    <!-- Image -->
+                    <img
+                      v-if="optionImage"
+                      :src="optionImage(option.option)"
+                      :class="classOptionImage"
+                      class="size-8 object-cover rounded"
+                      alt="">
 
                     <!-- Label -->
                     <div
