@@ -14,13 +14,14 @@ const props = defineProps<BaseButtonProps & {
 </script>
 
 <template>
-  <BaseButton v-bind="props" class="hyperlink space-x-xs relative group">
+  <BaseButton v-bind="props" class="hyperlink space-x-xs text-start relative group">
 
     <!-- Prepend -->
     <BaseIcon
       v-if="iconPrepend || icon"
       :icon="iconPrepend || icon"
       :load="iconLoad"
+      class="size-4 mr-xs"
     />
 
     <!-- Content -->
