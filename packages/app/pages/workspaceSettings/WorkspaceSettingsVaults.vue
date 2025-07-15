@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import AppPageContainer from '~/components/app/AppPage.Container.vue'
+import WorkspaceSettingsVariables from '~/components/vaultVariable/WorkspaceSettingsVariables.vue'
+import WorkspaceSettingsVaults from '~/components/vault/WorkspaceSettingsVaults.vue'
+
 definePageMeta({
   name: 'WorkspaceSettingsVaults',
   path: '/:workspace/settings/vaults',

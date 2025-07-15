@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import type { VaultType } from '@nwrx/nano-api'
+import WorkspaceSettingsVaultCreateHashicorp from '~/components/vault/WorkspaceSettingsVaultCreate.Hashicorp.vue'
+import WorkspaceSettingsVaultCreateLocal from '~/components/vault/WorkspaceSettingsVaultCreate.Local.vue'
+import WorkspaceSettingsVaultCreate from '~/components/vault/WorkspaceSettingsVaultCreate.vue'
 
 definePageMeta({
   name: 'WorkspaceSettingsVaultCreate',

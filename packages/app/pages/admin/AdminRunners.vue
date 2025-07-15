@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import AdminSettingsRunners from '~/components/runner/AdminSettingsRunner.Table.vue'
+import AppPageContainer from '~/components/app/AppPage.Container.vue'
+
 definePageMeta({
   name: 'AdminSettingsRunners',
   path: '/admin/runners',
@@ -6,17 +9,17 @@ definePageMeta({
   group: 'admin-server',
   icon: 'i-carbon:bare-metal-server-02',
   title: {
-    en: 'Runners',
-    fr: 'Travailleurs',
-    de: 'Runner',
+    en: 'Thread Runners',
+    fr: 'Serveurs d\'exécution',
+    de: 'Thread-Runners',
     es: 'Ejecutores',
-    zh: '运行器',
+    zh: '线程运行器',
   },
   description: {
     en: 'Manage compute runners and execution environments.',
-    fr: 'Gérer les travailleurs de calcul et les environnements d\'exécution.',
-    de: 'Verwalten Sie Rechenläufer und Ausführungsumgebungen.',
-    es: 'Administre los ejecutores de cómputo y entornos de ejecución.',
+    fr: 'Gérer les serveurs d\'exécution et les environnements de calcul.',
+    de: 'Verwalten Sie Compute-Runners und Ausführungsumgebungen.',
+    es: 'Gestionar ejecutores y entornos de ejecución.',
     zh: '管理计算运行器和执行环境。',
   },
 })

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
   name: 'WorkspaceChat',
-  path: '/:workspace/chat/:id?',
+  path: '/:workspace/chats',
   middleware: ['redirect-when-guest', 'abort-reserved'],
   layout: 'workspace',
   icon: 'i-carbon:chat-bot',

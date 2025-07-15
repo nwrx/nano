@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import MyAvatar from '~/components/my/MyAvatar.vue'
+import MyDangerZone from '~/components/my/MyDangerZone.vue'
+import MyProfile from '~/components/my/MyProfile.vue'
+
 definePageMeta({
   name: 'UserSettings',
   path: '/settings',
@@ -27,8 +31,8 @@ const user = useSession()
 
 <template>
   <AppPageContainer v-if="user.data.username" contained>
-    <UserSettingsProfile :username="user.data.username" />
-    <UserSettingsAvatar :username="user.data.username" />
-    <UserSettingsDangerZone :username="user.data.username" />
+    <MyProfile />
+    <MyAvatar />
+    <MyDangerZone />
   </AppPageContainer>
 </template>
