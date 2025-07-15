@@ -1,5 +1,6 @@
 import { format } from 'date-fns/format'
 import { formatDistanceToNow } from 'date-fns/formatDistanceToNow'
+import { formatDuration as fnsFormatDuration } from 'date-fns/formatDuration'
 import { de } from 'date-fns/locale/de'
 import { enUS as en } from 'date-fns/locale/en-US'
 import { es } from 'date-fns/locale/es'
@@ -46,4 +47,27 @@ export function formatDateFromNow(date?: string): string {
   const key = locale.value ? locale.value.split('-')[0] : 'en'
   const localeObject = { de, en, fr, zh, es }[key]
   return formatDistanceToNow(date, { addSuffix: true, locale: localeObject })
+}
+
+/**
+ * Return the formated duration in seconds.
+ *
+ * @param seconds The duration in seconds.
+ * @returns The formatted duration.
+ * @example formatDuration(60) // "1 minute"
+ */
+export function formatDuration(seconds?: number): string {
+  if (!seconds || seconds < 0) return '-'
+  const { locale } = useI18n()
+  const key = locale.value ? locale.value.split('-')[0] : 'en'
+  const localeObject = { de, en, fr, zh, es }[key]
+  const duration = {
+    seconds: seconds % 60,
+    minutes: Math.floor(seconds / 60) % 60,
+    hours: Math.floor(seconds / 3600) % 24,
+    days: Math.floor(seconds / 86400) % 30,
+    months: Math.floor(seconds / 2592000) % 12,
+    years: Math.floor(seconds / 31536000),
+  }
+  return fnsFormatDuration(duration, { locale: localeObject, zero: false })
 }
