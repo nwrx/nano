@@ -1,12 +1,20 @@
 <script setup lang="ts">
-defineProps<{ username: string }>()
+import AppPageFormAction from '~/components/app/AppPageForm.Action.vue'
+import AppPageFormActions from '~/components/app/AppPageForm.Actions.vue'
+import AppPageForm from '~/components/app/AppPageForm.vue'
+import DialogDelete from './MyDialogDelete.vue'
+import DialogRename from './MyDialogRename.vue'
+
 const { t } = useI18n()
+const user = useSession()
 const showRenameDialog = ref(false)
 const showDeleteDialog = ref(false)
 </script>
 
 <template>
-  <AppPageForm :title="t('title')" :text="t('text')">
+  <AppPageForm
+    :title="t('title')"
+    :text="t('text')">
 
     <!-- Actions -->
     <AppPageFormActions class="b-danger">
@@ -31,15 +39,15 @@ const showDeleteDialog = ref(false)
     </AppPageFormActions>
 
     <!-- Rename user dialog -->
-    <UserSettingsDangerZoneDialogRename
+    <DialogRename
       v-model="showRenameDialog"
-      :username="username"
+      :username="user.data.username"
     />
 
     <!-- Delete user dialog -->
-    <UserSettingsDangerZoneDialogDelete
+    <DialogDelete
       v-model="showDeleteDialog"
-      :username="username"
+      :username="user.data.username"
     />
   </AppPageForm>
 </template>
