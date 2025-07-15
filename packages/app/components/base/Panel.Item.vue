@@ -7,10 +7,6 @@ const props = defineProps<BaseButtonProps & {
   icon?: string
   description?: string
 }>()
-
-const slots = defineSlots<{
-  menu?: []
-}>()
 </script>
 
 <template>
@@ -24,45 +20,32 @@ const slots = defineSlots<{
     class="
       flex items-center px-md py-sm space-x-sm w-full
       cursor-pointer select-none
-      b-b b-app
+      b b-transparent b-b-app hover:b-active
     ">
 
     <!-- Icon -->
     <BaseIcon
       v-if="icon"
       :icon="icon"
-      class="size-5 text-prominent shrink-0 mr-sm"
+      class="size-5 text-prominent shrink-0"
     />
 
     <!-- Title -->
-    <div class="flex min-w-0 grow flex-row space-x-sm">
-      <p class="text-sm line-clamp-1 text-start font-medium">
+    <div class="flex min-w-0 grow flex-row space-x-sm text-start">
+      <span v-if="label" class="text-sm font-medium whitespace-nowrap">
         {{ label }}
-      </p>
+      </span>
 
       <!-- Description -->
-      <p v-if="description" class="text-sm text-subtle line-clamp-1 text-start">
+      <span v-if="description" class="text-sm text-subtle line-clamp-1">
         {{ description }}
-      </p>
+      </span>
     </div>
 
     <!-- Spacer -->
     <div class="grow" />
 
     <!-- Actions -->
-    <div v-if="slots.menu" class="flex items-center space-x-xs">
-      <ContextMenu x="left" y="above">
-        <template #default="{ open }">
-          <BaseIcon
-            icon="i-carbon:overflow-menu-vertical"
-            class="size-5 hover:text-prominent transition"
-            @click.stop="() => open()"
-          />
-        </template>
-        <template #menu>
-          <slot name="menu" />
-        </template>
-      </ContextMenu>
-    </div>
+    <slot name="menu" />
   </BaseButton>
 </template>
