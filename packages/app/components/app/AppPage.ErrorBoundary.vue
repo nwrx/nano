@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Pattern from '../base/Pattern.vue'
 const props = defineProps<{
   stack?: string
   message?: unknown
@@ -19,14 +20,7 @@ const errorMessage = computed(() => (
 </script>
 
 <template>
-  <div
-    class="
-      absolute inset-0 space-y-md
-      flex flex-col items-center justify-center
-      rd-app b b-app bg-app p-md
-      bg-banknote-primary-850
-      dark
-  ">
+  <Pattern class="absolute inset-0 space-y-md flex flex-col items-center justify-centerrd-app">
 
     <!-- Error Message -->
     <div>
@@ -54,7 +48,7 @@ const errorMessage = computed(() => (
       icon-expand
       @click="() => emit('clearError')"
     />
-  </div>
+  </Pattern>
 </template>
 
 <style>
