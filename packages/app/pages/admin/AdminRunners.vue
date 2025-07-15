@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import AdminSettingsRunners from '~/components/runner/AdminSettingsRunner.Table.vue'
 import AppPageContainer from '~/components/app/AppPage.Container.vue'
+import RunnerTable from '~/components/runner/RunnerTable.vue'
 
 definePageMeta({
   name: 'AdminSettingsRunners',
@@ -27,6 +27,6 @@ definePageMeta({
 
 <template>
   <AppPageContainer contained>
-    <AdminSettingsRunners />
+    <RunnerTable />
   </AppPageContainer>
 </template>
