@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import type { ThreadRunnerObject } from '@nwrx/nano-api'
 import { toCamelCase } from '@unshared/string/toCamelCase'
-import AdminSettingsRunnersDialogClaim from '~/components/adminSettings/AdminSettingsRunners.DialogClaim.vue'
 import AppPageForm from '~/components/app/AppPageForm.vue'
 import Hyperlink from '~/components/base/Hyperlink.vue'
 import TableCellDate from '~/components/base/Table.CellDate.vue'
 import Table from '~/components/base/Table.vue'
 import RunnerCard from '~/components/runner/RunnerCard.vue'
+import AdminSettingsRunnerActions from './AdminSettingsRunner.Actions.vue'
+import AdminSettingsRunnersDialogClaim from './AdminSettingsRunner.DialogClaim.vue'
 
 const { t } = useI18n()
 const client = useClient()
@@ -48,7 +49,7 @@ onMounted(getRunners)
 
       <!-- Actions -->
       <template #cell.actions="runner">
-        <AdminSettingsRunnersActions
+        <AdminSettingsRunnerActions
           :runner="runner"
           @submit="() => getRunners()"
         />

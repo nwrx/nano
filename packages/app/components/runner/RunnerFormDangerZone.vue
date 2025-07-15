@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { ThreadRunnerObject } from '@nwrx/nano-api'
-import AdminSettingsRunnerDangerZoneDialogRelease from '~/components/adminSettings/AdminSettingsRunner.DangerZone.DialogRelease.vue'
-import AdminSettingsRunnerDangerZoneDialogSetAddress from '~/components/adminSettings/AdminSettingsRunner.DangerZone.DialogSetAddress.vue'
-import AdminSettingsRunnerDangerZoneDialogToggle from '~/components/adminSettings/AdminSettingsRunner.DangerZone.DialogToggle.vue'
+import AdminSettingsRunnerDangerZoneDialogRelease from '~/components/runner/AdminSettingsRunner.DangerZone.DialogRelease.vue'
+import AdminSettingsRunnerDangerZoneDialogSetAddress from '~/components/runner/AdminSettingsRunner.DangerZone.DialogSetAddress.vue'
+import AdminSettingsRunnerDangerZoneDialogToggle from '~/components/runner/AdminSettingsRunner.DangerZone.DialogToggle.vue'
 import AppPageFormAction from '~/components/app/AppPageForm.Action.vue'
 import AppPageFormActions from '~/components/app/AppPageForm.Actions.vue'
 import AppPageForm from '~/components/app/AppPageForm.vue'
@@ -37,7 +37,7 @@ const isDisabled = computed(() => props.runner.disabledAt)
       <AppPageFormAction
         class="border-danger"
         :class-button="isDisabled ? 'button-success' : 'button-danger'"
-        :icon="isDisabled ? 'i-carbon:play' : 'i-carbon:pause'"
+        :icon="isDisabled ? 'i-carbon:play-outline' : 'i-carbon:pause'"
         :title="isDisabled ? t('enableTitle') : t('disableTitle')"
         :text="isDisabled ? t('enableText') : t('disableText')"
         :label="isDisabled ? t('enableLabel') : t('disableLabel')"
