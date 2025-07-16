@@ -7,9 +7,9 @@ definePageMeta({
 </script>
 
 <template>
-  <Authentication>
-    <AuthenticationCard>
-      <AuthenticationFormTotp />
-    </AuthenticationCard>
-  </Authentication>
+  <AuthBackground>
+    <AuthCard>
+      TODO
+    </AuthCard>
+  </AuthBackground>
 </template>

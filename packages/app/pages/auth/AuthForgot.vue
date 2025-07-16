@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import AuthBackground from '~/components/auth/AuthBackground.vue'
+import AuthCard from '~/components/auth/AuthCard.vue'
+
 definePageMeta({
   name: 'AuthenticationForgot',
   path: '/forgot-password',
@@ -7,9 +10,9 @@ definePageMeta({
 </script>
 
 <template>
-  <Authentication>
-    <AuthenticationCard>
-      <AuthenticationFormSignin />
-    </AuthenticationCard>
-  </Authentication>
+  <AuthBackground>
+    <AuthCard>
+      TODO
+    </AuthCard>
+  </AuthBackground>
 </template>

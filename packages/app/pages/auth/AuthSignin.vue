@@ -1,4 +1,13 @@
+<!-- eslint-disable sonarjs/no-hardcoded-passwords -->
 <script setup lang="ts">
+import AuthBackground from '~/components/auth/AuthBackground.vue'
+import AuthCard from '~/components/auth/AuthCard.vue'
+import AuthDivider from '~/components/auth/AuthDivider.vue'
+import AuthFooter from '~/components/auth/AuthFooter.vue'
+import AuthFormSso from '~/components/auth/AuthFormSso.vue'
+import Button from '~/components/base/Button.vue'
+import InputText from '~/components/base/InputText.vue'
+
 definePageMeta({
   name: 'Authentication',
   path: '/login',
@@ -25,10 +34,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <Authentication>
-    <AuthenticationCard>
-      <AuthenticationFormSso />
-      <AuthenticationDivider>or</AuthenticationDivider>
+  <AuthBackground>
+    <AuthCard>
+      <AuthFormSso />
+      <AuthDivider>or</AuthDivider>
       <form
         class="flex flex-col space-y-2"
         @submit.prevent="() => session.signinWithPassword({ username, password })">
@@ -58,20 +67,18 @@ onMounted(() => {
           icon-append="i-carbon:login"
         />
       </form>
-    </AuthenticationCard>
-
+    </AuthCard>
     <!-- Terms of service -->
-    <AuthenticationFooter
+    <AuthFooter
       text="Forgot your password?"
       label="Recover your account"
       :to="{ name: 'AuthenticationForgot' }"
     />
-
     <!-- Sign-in footer -->
-    <AuthenticationFooter
+    <AuthFooter
       text="Don't have an account?"
       label="Sign up"
       :to="{ name: 'AuthenticationSignup' }"
     />
-  </Authentication>
+  </AuthBackground>
 </template>
