@@ -1,5 +1,12 @@
 <!-- eslint-disable unicorn/prevent-abbreviations -->
 <script setup lang="ts">
+import AppLayout from '~/components/app/AppLayout.vue'
+import AppPageHeader from '~/components/app/AppPage.Header.vue'
+import AppPage from '~/components/app/AppPage.vue'
+import AppPageFormBreadcrumb from '~/components/app/AppPageForm.Breadcrumb.vue'
+import AppPageNavGroup from '~/components/app/AppPageNav.Group.vue'
+import AppPageNav from '~/components/app/AppPageNav.vue'
+
 const { t } = useI18n()
 const route = useRoute()
 </script>
@@ -27,6 +34,11 @@ const route = useRoute()
 
         <!-- Content -->
         <div class="relative w-full">
+          <AppPageFormBreadcrumb
+            v-if="route.meta.parent"
+            class="sticky top-0 z-1"
+            :items="[route.meta.parent]"
+          />
           <NuxtPage transition />
         </div>
       </div>
