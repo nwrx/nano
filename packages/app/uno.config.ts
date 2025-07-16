@@ -1,6 +1,6 @@
 import type { Theme as ThemeUno } from 'unocss/preset-uno'
 import { presetUnshared } from '@unshared/unocss-preset'
-import { defineConfig, presetIcons, presetTypography, presetUno } from 'unocss'
+import { defineConfig, presetIcons, presetTypography, presetWind3 } from 'unocss'
 import { presetTheme } from 'unocss-preset-theme'
 import * as THEME from './theme'
 import { COLORS } from './utils/constants'
@@ -13,6 +13,8 @@ type Theme =
   & THEME.ThemeInput
   & THEME.ThemeTab
   & ThemeUno
+
+const BORDER_RADIUS = '0.5rem'
 
 export default defineConfig<Theme>({
 
@@ -155,7 +157,7 @@ export default defineConfig<Theme>({
     },
 
     borderRadius: {
-      DEFAULT: '0.25rem',
+      DEFAULT: BORDER_RADIUS,
       card: '1rem',
       app: '1rem',
     },
@@ -196,7 +198,7 @@ export default defineConfig<Theme>({
     // Input
     inputColor: {
       'DEFAULT': COLORS.primary[900],
-      'hover': `${COLORS.primary[900]}80`,
+      'hover': COLORS.primary[900],
       'focus': COLORS.primary[900],
       'error': COLORS.danger[600],
       'disabled': `${COLORS.primary[900]}C0`,
@@ -237,21 +239,21 @@ export default defineConfig<Theme>({
     inputVariant: {
       DEFAULT: {
         fontSize: '0.875rem',
-        borderRadius: '0.25rem',
+        borderRadius: BORDER_RADIUS,
         borderSize: '1px',
         paddingX: '0.75rem',
         paddingY: '0.5rem',
       },
       lg: {
         fontSize: '1.25rem',
-        borderRadius: '0.25rem',
+        borderRadius: BORDER_RADIUS,
         borderSize: '1px',
         paddingX: '1.5rem',
         paddingY: '1rem',
       },
       sm: {
         fontSize: '0.875rem',
-        borderRadius: '0.25rem',
+        borderRadius: BORDER_RADIUS,
         borderSize: '1px',
         paddingX: '0.75rem',
         paddingY: '0.25rem',
@@ -266,21 +268,21 @@ export default defineConfig<Theme>({
         paddingRight: '0.5rem',
         fontWeight: '500',
         borderWidth: '1px',
-        borderRadius: '0.25rem',
+        borderRadius: BORDER_RADIUS,
       },
       sm: {
         height: '1.25rem',
         fontSize: '0.75rem',
         fontWeight: '600',
         borderWidth: '1px',
-        borderRadius: '0.25rem',
+        borderRadius: BORDER_RADIUS,
       },
       lg: {
         height: '2.5rem',
         fontWeight: '600',
         fontSize: '1.25rem',
         borderWidth: '2px',
-        borderRadius: '0.25rem',
+        borderRadius: BORDER_RADIUS,
       },
     },
     badgeColor: {
@@ -292,7 +294,7 @@ export default defineConfig<Theme>({
       warning: COLORS.warning[900],
     },
     badgeBorderColor: {
-      DEFAULT: COLORS.primary[100],
+      DEFAULT: `${COLORS.primary[900]}40`,
       primary: COLORS.primary[200],
       secondary: COLORS.secondary[200],
       success: COLORS.success[200],
@@ -331,13 +333,13 @@ export default defineConfig<Theme>({
     hintSize: {
       DEFAULT: {
         fontSize: '0.875rem',
-        borderRadius: '0.25rem',
+        borderRadius: BORDER_RADIUS,
         borderSize: '1px',
         padding: '1rem',
       },
       lg: {
         fontSize: '1.25rem',
-        borderRadius: '0.25rem',
+        borderRadius: BORDER_RADIUS,
         borderSize: '1px',
         padding: '1.5rem',
       },
@@ -351,10 +353,10 @@ export default defineConfig<Theme>({
       secondary: COLORS.secondary[500],
       success: COLORS.success[800],
       danger: COLORS.danger[50],
-      warning: COLORS.warning[500],
+      warning: COLORS.warning[900],
     },
     buttonBackground: {
-      DEFAULT: COLORS.primary[100],
+      DEFAULT: COLORS.primary[50],
       light: COLORS.primary[50],
       primary: COLORS.primary[100],
       secondary: COLORS.secondary[200],
@@ -363,23 +365,23 @@ export default defineConfig<Theme>({
       warning: COLORS.warning[200],
     },
     buttonBorderColor: {
-      DEFAULT: COLORS.primary[100],
+      DEFAULT: `${COLORS.primary[900]}30`,
       light: COLORS.primary[50],
       primary: COLORS.primary[200],
       secondary: COLORS.secondary[200],
       success: COLORS.success[300],
       danger: COLORS.danger[400],
-      warning: COLORS.warning[500],
+      warning: COLORS.warning[900],
     },
     buttonVariant: {
       DEFAULT: {
         fontSize: '0.875rem',
-        borderRadius: '0.25rem',
+        borderRadius: BORDER_RADIUS,
         borderWidth: '1px',
-        paddingLeft: '0.50rem',
-        paddingRight: '0.50rem',
-        paddingTop: '0.375rem',
-        paddingBottom: '0.375rem',
+        paddingLeft: '0.75rem',
+        paddingRight: '0.75rem',
+        paddingTop: '0.5rem',
+        paddingBottom: '0.5rem',
         opacity: '0.8',
       },
       hover: {
@@ -388,7 +390,7 @@ export default defineConfig<Theme>({
       sm: {
         fontSize: '0.75rem',
         fontWeight: '600',
-        borderRadius: '0.25rem',
+        borderRadius: BORDER_RADIUS,
         borderWidth: '1px',
         paddingLeft: '0.25rem',
         paddingRight: '0.25rem',
@@ -398,12 +400,27 @@ export default defineConfig<Theme>({
       lg: {
         fontSize: '1rem',
         fontWeight: '600',
-        borderRadius: '0.25rem',
+        borderRadius: BORDER_RADIUS,
         borderWidth: '1px',
         paddingLeft: '1rem',
         paddingRight: '1rem',
         paddingTop: '0.5rem',
         paddingBottom: '0.5rem',
+      },
+      fab: {
+        width: '2.5rem',
+        height: '2.5rem',
+        borderRadius: BORDER_RADIUS,
+        fontSize: '1.5rem',
+        fontWeight: '600',
+        borderWidth: '1px',
+        paddingLeft: '0',
+        paddingRight: '0',
+        paddingTop: '0',
+        paddingBottom: '0',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
       },
     },
 
@@ -445,7 +462,7 @@ export default defineConfig<Theme>({
     },
     tabVariant: {
       DEFAULT: {
-        borderRadius: '0.25rem',
+        borderRadius: BORDER_RADIUS,
         fontSize: '0.875rem',
         borderWidth: '1px',
         paddingLeft: '0.75rem',
@@ -479,7 +496,7 @@ export default defineConfig<Theme>({
      * the core utilities and the preflight styles that are used to
      * normalize the styles across different browsers.
      */
-    presetUno({
+    presetWind3({
       preflight: true,
     }),
 
@@ -649,7 +666,7 @@ export default defineConfig<Theme>({
             warning: COLORS.warning[400],
           },
           buttonBackground: {
-            DEFAULT: COLORS.primary[850],
+            DEFAULT: COLORS.primary[900],
             light: COLORS.primary[800],
             primary: COLORS.primary[500],
             secondary: COLORS.secondary[500],
@@ -658,7 +675,7 @@ export default defineConfig<Theme>({
             warning: `${COLORS.warning[500]}40`,
           },
           buttonBorderColor: {
-            DEFAULT: COLORS.primary[500],
+            DEFAULT: `${COLORS.primary[50]}30`,
             light: COLORS.primary[800],
             primary: COLORS.primary[600],
             secondary: COLORS.secondary[500],
