@@ -2,10 +2,11 @@
 import type { UserObject } from '@nwrx/nano-api'
 import InputList from '~/components/base/InputList.vue'
 
-// --- Props.
-const props = defineProps<{ multiple?: boolean }>()
+const props = defineProps<{
+  multiple?: boolean
+}>()
 
-// --- Model.
+// --- State.
 const { t } = useI18n()
 const search = ref('')
 const client = useClient()
@@ -32,6 +33,7 @@ function getUserAvatarUrl(username: string) {
   return apiUrl ? new URL(avatarUrl, apiUrl).href : avatarUrl
 }
 
+// --- Lifecycle.
 watch(search, searchUsers, { immediate: true })
 </script>
 
