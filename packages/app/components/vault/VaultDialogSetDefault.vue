@@ -1,12 +1,10 @@
 <script setup lang="ts">
 const props = defineProps<{
-  modelValue?: boolean
   workspace: string
   vault: string
 }>()
 
 const emit = defineEmits<{
-  'update:modelValue': [boolean]
   'submit': []
 }>()
 
@@ -14,6 +12,7 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const client = useClient()
 const alerts = useAlerts()
+const isOpen = defineModel({ default: false })
 
 async function setDefaultVault() {
   await client.requestAttempt('PUT /api/workspaces/:workspace/vaults/:vault/default', {
@@ -27,9 +26,6 @@ async function setDefaultVault() {
     },
   })
 }
-
-// --- State.
-const isOpen = useVModel(props, 'modelValue', emit)
 </script>
 
 <template>

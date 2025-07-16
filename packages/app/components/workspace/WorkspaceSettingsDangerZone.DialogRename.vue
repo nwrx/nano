@@ -6,58 +6,60 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:modelValue': [boolean]
-  'submit': []
+  'submit': [string]
 }>()
 
 // --- Model.
 const { t } = useI18n()
 const client = useClient()
 const alerts = useAlerts()
-const confirmName = ref('')
+const name = ref('')
 
-async function archiveWorkspace() {
-  await client.request('DELETE /api/workspaces/:workspace', {
+async function renameWorkspace() {
+  await client.request('PUT /api/workspaces/:workspace', {
     data: {
       workspace: props.workspace,
+      name: name.value,
     },
     onSuccess: () => {
-      alerts.success(t('success', { name: props.workspace }))
-      emit('submit')
+      alerts.success(t('success', { name: name.value }))
+      emit('submit', name.value)
     },
   })
 }
 
 // --- State.
 const isOpen = useVModel(props, 'modelValue', emit)
-watch(isOpen, () => confirmName.value = '', { immediate: true })
+watch(isOpen, () => name.value = props.workspace, { immediate: true })
 </script>
 
 <template>
   <Dialog
     v-model="isOpen"
-    icon="i-carbon:archive"
+    icon="i-carbon:label"
     class-hint="hint-warning"
     class-button="button-warning"
     :title="t('title', { name: workspace })"
     :text="t('text', { name: workspace })"
     :label-cancel="t('cancel')"
     :label-confirm="t('confirm')"
-    :disabled="confirmName !== workspace"
-    @confirm="() => archiveWorkspace()">
+    :disabled="name === workspace"
+    @confirm="() => renameWorkspace()">
     <InputText
-      v-model="confirmName"
-      :label="t('label')"
-      :placeholder="workspace"
+      v-model="name"
+      class="mt-2"
+      :text-before="`${CONSTANTS.appHost}/`"
+      :hint="t('label')"
     />
   </Dialog>
 </template>
 
 <i18n lang="yaml">
 en:
-  title: Archive workspace
-  text: Move your workspace to the archive.
-  label: Type the workspace name to confirm
+  title: Rename workspace
+  text: Change the name of your workspace.
+  label: Define the new workspace name
   cancel: Cancel
-  confirm: Archive
-  success: Workspace "{name}" archived.
+  confirm: Rename
+  success: Workspace renamed to **{name}**.
 </i18n>

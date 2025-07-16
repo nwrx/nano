@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import DialogRemove from './VariablesDialogRemove.vue'
+import DialogUpdate from './VariablesDialogUpdate.vue'
+
 defineProps<{
   workspace: string
   variable: string
@@ -32,7 +35,7 @@ const showRemoveDialog = ref(false)
     </ContextMenu>
 
     <!-- Update dialog -->
-    <WorkspaceSettingsVariablesDialogUpdate
+    <DialogUpdate
       v-model="showUpdateDialog"
       :workspace="workspace"
       :variable="variable"
@@ -41,7 +44,7 @@ const showRemoveDialog = ref(false)
     />
 
     <!-- Remove dialog -->
-    <WorkspaceSettingsVariablesDialogRemove
+    <DialogRemove
       v-model="showRemoveDialog"
       :workspace="workspace"
       :variable="variable"

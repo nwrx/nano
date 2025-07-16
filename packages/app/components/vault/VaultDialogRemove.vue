@@ -1,12 +1,10 @@
 <script setup lang="ts">
 const props = defineProps<{
-  modelValue?: boolean
   workspace: string
   vault: string
 }>()
 
 const emit = defineEmits<{
-  'update:modelValue': [boolean]
   'submit': []
 }>()
 
@@ -15,6 +13,8 @@ const { t } = useI18n()
 const client = useClient()
 const alerts = useAlerts()
 const confirm = ref('')
+const isOpen = defineModel({ default: false })
+watch(isOpen, () => { confirm.value = '' }, { immediate: true })
 
 async function removeVault() {
   await client.requestAttempt('DELETE /api/workspaces/:workspace/vaults/:vault', {
@@ -30,8 +30,6 @@ async function removeVault() {
 }
 
 // --- State.
-const isOpen = useVModel(props, 'modelValue', emit)
-watch(isOpen, () => { confirm.value = '' }, { immediate: true })
 </script>
 
 <template>

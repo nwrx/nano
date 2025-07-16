@@ -1,12 +1,10 @@
 <script setup lang="ts">
 const props = defineProps<{
-  modelValue?: boolean
   workspace: string
   vault: string
 }>()
 
 const emit = defineEmits<{
-  'update:modelValue': [boolean]
   'submit': []
 }>()
 
@@ -14,9 +12,11 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const client = useClient()
 const alerts = useAlerts()
+const isOpen = defineModel({ default: false })
 
-async function enableVault() {
-  await client.requestAttempt('PUT /api/workspaces/:workspace/vaults/:vault/enabled', {
+// --- Methods.
+async function disableVault() {
+  await client.requestAttempt('PUT /api/workspaces/:workspace/vaults/:vault/disable', {
     data: {
       workspace: props.workspace,
       vault: props.vault,
@@ -27,30 +27,27 @@ async function enableVault() {
     },
   })
 }
-
-// --- State.
-const isOpen = useVModel(props, 'modelValue', emit)
 </script>
 
 <template>
   <Dialog
     v-model="isOpen"
-    icon="i-carbon:checkmark"
-    class-hint="hint-success"
-    class-button="button-success"
+    icon="i-carbon:close"
+    class-hint="hint-danger"
+    class-button="button-danger"
     :title="t('title', { workspace, vault })"
     :text="t('text', { workspace, vault })"
     :label-confirm="t('confirm')"
     :label-cancel="t('cancel')"
-    @confirm="() => enableVault()"
+    @confirm="() => disableVault()"
   />
 </template>
 
 <i18n lang="yaml">
 en:
-  title: Enable the **{workspace}/{vault}** vault?
-  text: Enabling this vault will allow all flows within the **{workspace}** workspace to read and write secrets from this vault. Are you sure you want to proceed?
-  confirm: Enable this vault
+  title: Disable the **{workspace}/{vault}** vault?
+  text: Disabling this vault will prevent all flows within the **{workspace}** workspace from reading and writing secrets from this vault. Are you sure you want to proceed?
+  confirm: Disable this vault
   cancel: Keep this vault
-  success: The **{workspace}/{vault}** vault has been enabled.
+  success: The **{workspace}/{vault}** vault has been disabled.
 </i18n>
