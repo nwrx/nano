@@ -115,15 +115,11 @@ export class McpGateway extends BaseEntity {
       identity: this.identity,
       lastSeenAt: this.lastSeenAt.toISOString(),
       disabledAt: this.disabledAt ? this.disabledAt.toISOString() : undefined,
+      disabledBy: withDisabledBy && this.disabledBy ? this.disabledBy.serialize() : undefined,
 
       // Relations
       manager: withManager
-        ? this.manager?.serialize({
-          withDeleted,
-          withCreatedBy,
-          withUpdatedBy,
-          withDisabledBy,
-        })
+        ? this.manager?.serialize({ withDeleted, withCreatedBy, withUpdatedBy, withDisabledBy })
         : undefined,
 
       // Audit
@@ -131,8 +127,8 @@ export class McpGateway extends BaseEntity {
       createdBy: withCreatedBy ? this.createdBy?.serialize() : undefined,
       updatedAt: withUpdatedBy ? this.updatedAt?.toISOString() : undefined,
       updatedBy: withUpdatedBy ? this.updatedBy?.serialize() : undefined,
+      deletedAt: withDeleted && this.deletedAt ? this.deletedAt.toISOString() : undefined,
       deletedBy: withDeleted && this.deletedBy ? this.deletedBy.serialize() : undefined,
-      disabledBy: withDisabledBy && this.disabledBy ? this.disabledBy.serialize() : undefined,
     }
   }
 }
@@ -150,6 +146,7 @@ export interface McpGatewayObject {
   identity: string
   lastSeenAt: string
   disabledAt?: string
+  disabledBy?: UserObject
 
   // Relations
   manager?: McpManagerObject
@@ -159,6 +156,6 @@ export interface McpGatewayObject {
   createdBy?: UserObject
   updatedAt?: string
   updatedBy?: UserObject
+  deletedAt?: string
   deletedBy?: UserObject
-  disabledBy?: UserObject
 }

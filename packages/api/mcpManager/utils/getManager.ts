@@ -36,6 +36,7 @@ export async function getManager(this: ModuleMcpManager, options: GetManagerOpti
     withGateways = false,
     withCreatedBy = false,
     withUpdatedBy = false,
+    withDisabledBy = false,
   } = GET_MANAGER_OPTIONS_SCHEMA(options)
 
   // --- Assert that the user is a super administrator.
@@ -51,8 +52,8 @@ export async function getManager(this: ModuleMcpManager, options: GetManagerOpti
       gateways: withGateways,
       createdBy: withCreatedBy,
       updatedBy: withUpdatedBy,
+      disabledBy: withDisabledBy,
       deletedBy: withDeleted,
-      disabledBy: withDeleted,
     },
   })
 

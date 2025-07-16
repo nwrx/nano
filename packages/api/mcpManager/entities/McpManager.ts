@@ -113,8 +113,11 @@ export class McpManager extends BaseEntity {
     return {
       address: this.address,
       identity: this.identity,
-      disabledAt: this.disabledAt?.toISOString(),
       lastSeenAt: this.lastSeenAt.toISOString(),
+
+      // Disabled
+      disabledAt: this.disabledAt?.toISOString(),
+      disabledBy: withDisabledBy ? this.disabledBy?.serialize() : undefined,
 
       // Relations
       gateways: withGateways
@@ -132,7 +135,7 @@ export class McpManager extends BaseEntity {
       updatedBy: withUpdatedBy ? this.updatedBy?.serialize() : undefined,
       updatedAt: withUpdatedBy ? this.updatedAt.toISOString() : undefined,
       deletedBy: withDeleted ? this.deletedBy?.serialize() : undefined,
-      disabledBy: withDisabledBy ? this.disabledBy?.serialize() : undefined,
+      deletedAt: withDeleted ? this.deletedAt?.toISOString() : undefined,
     }
   }
 }
@@ -150,6 +153,7 @@ export interface McpManagerObject {
   identity: string
   lastSeenAt: string
   disabledAt: string | undefined
+  disabledBy?: UserObject
 
   // Relations
   gateways?: McpGatewayObject[]
@@ -159,6 +163,6 @@ export interface McpManagerObject {
   createdBy?: UserObject
   updatedAt?: string
   updatedBy?: UserObject
+  deletedAt?: string
   deletedBy?: UserObject
-  disabledBy?: UserObject
 }

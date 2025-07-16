@@ -65,8 +65,8 @@ export async function searchManager(this: ModuleMcpManager, options: SearchManag
       gateways: withGateways,
       createdBy: withCreatedBy,
       updatedBy: withUpdatedBy,
-      deletedBy: withDeleted,
       disabledBy: withDisabledBy,
+      deletedBy: withDeleted,
     },
   })
 }
