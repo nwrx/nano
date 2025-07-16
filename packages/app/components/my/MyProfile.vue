@@ -81,12 +81,12 @@ onMounted(() => {
 <i18n lang="yaml">
 en:
   title: Public Profile
-  submitLabel: Save Profile
-  description: Customize how others see you in the community. Your public profile helps teammates and collaborators learn more about you.
+  submitLabel: Save Changes
+  description: Customize how others see you in the community. Your public profile helps teammates and collaborators connect with you and understand your expertise.
   displayNameLabel: Display Name
   displayNamePlaceholder: How should others see your name?
   biographyLabel: About You
-  biographyPlaceholder: Tell others about yourself, your interests, or what you're working on...
+  biographyPlaceholder: Share your background, interests, or current projects...
   websiteLabel: Website
   websitePlaceholder: Your personal website or portfolio
   companyLabel: Organization
@@ -94,12 +94,12 @@ en:
   successMessage: Profile updated successfully!
 fr:
   title: Profil Public
-  submitLabel: Enregistrer le profil
-  description: Personnalisez la façon dont les autres vous voient dans la communauté. Votre profil public aide vos coéquipiers et collaborateurs à en apprendre davantage sur vous.
+  submitLabel: Enregistrer les modifications
+  description: Personnalisez la façon dont les autres vous voient dans la communauté. Votre profil public aide vos coéquipiers et collaborateurs à se connecter avec vous et comprendre votre expertise.
   displayNameLabel: Nom d'affichage
   displayNamePlaceholder: Comment les autres devraient-ils voir votre nom ?
   biographyLabel: À propos de vous
-  biographyPlaceholder: Parlez aux autres de vous, de vos intérêts ou de ce sur quoi vous travaillez...
+  biographyPlaceholder: Partagez votre parcours, vos intérêts ou vos projets actuels...
   websiteLabel: Site web
   websitePlaceholder: Votre site web personnel ou portfolio
   companyLabel: Organisation
@@ -107,12 +107,12 @@ fr:
   successMessage: Profil mis à jour avec succès !
 de:
   title: Öffentliches Profil
-  submitLabel: Profil speichern
-  description: Gestalten Sie, wie andere Sie in der Community sehen. Ihr öffentliches Profil hilft Teammitgliedern und Mitarbeitern, mehr über Sie zu erfahren.
+  submitLabel: Änderungen speichern
+  description: Gestalten Sie, wie andere Sie in der Community sehen. Ihr öffentliches Profil hilft Teammitgliedern und Mitarbeitern, sich mit Ihnen zu vernetzen und Ihre Expertise zu verstehen.
   displayNameLabel: Anzeigename
   displayNamePlaceholder: Wie sollen andere Ihren Namen sehen?
   biographyLabel: Über Sie
-  biographyPlaceholder: Erzählen Sie anderen von sich, Ihren Interessen oder woran Sie arbeiten...
+  biographyPlaceholder: Teilen Sie Ihren Hintergrund, Ihre Interessen oder aktuelle Projekte...
   websiteLabel: Website
   websitePlaceholder: Ihre persönliche Website oder Portfolio
   companyLabel: Organisation
@@ -120,12 +120,12 @@ de:
   successMessage: Profil erfolgreich aktualisiert!
 es:
   title: Perfil Público
-  submitLabel: Guardar perfil
-  description: Personaliza cómo otros te ven en la comunidad. Tu perfil público ayuda a compañeros y colaboradores a conocerte mejor.
+  submitLabel: Guardar cambios
+  description: Personaliza cómo otros te ven en la comunidad. Tu perfil público ayuda a compañeros y colaboradores a conectar contigo y entender tu experiencia.
   displayNameLabel: Nombre para mostrar
   displayNamePlaceholder: ¿Cómo deberían ver otros tu nombre?
   biographyLabel: Acerca de ti
-  biographyPlaceholder: Cuéntales a otros sobre ti, tus intereses o en qué estás trabajando...
+  biographyPlaceholder: Comparte tu experiencia, intereses o proyectos actuales...
   websiteLabel: Sitio web
   websitePlaceholder: Tu sitio web personal o portafolio
   companyLabel: Organización
@@ -133,12 +133,12 @@ es:
   successMessage: ¡Perfil actualizado exitosamente!
 zh:
   title: 公开档案
-  submitLabel: 保存档案
-  description: 自定义他人在社区中如何看待您。您的公开档案帮助团队成员和合作者更好地了解您。
+  submitLabel: 保存更改
+  description: 自定义他人在社区中如何看待您。您的公开档案帮助团队成员和合作者与您联系并了解您的专业知识。
   displayNameLabel: 显示名称
   displayNamePlaceholder: 其他人应该如何看到您的姓名？
   biographyLabel: 关于您
-  biographyPlaceholder: 告诉其他人关于您自己、您的兴趣或您正在从事的工作...
+  biographyPlaceholder: 分享您的背景、兴趣或当前项目...
   websiteLabel: 网站
   websitePlaceholder: 您的个人网站或作品集
   companyLabel: 组织
