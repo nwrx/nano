@@ -39,13 +39,13 @@ const showDeleteDialog = ref(false)
     </AppPageFormActions>
 
     <!-- Rename user dialog -->
-    <MyDialogDelete
+    <MyDialogRename
       v-model="showRenameDialog"
       :username="user.data.username"
     />
 
     <!-- Delete user dialog -->
-    <MyDialogRename
+    <MyDialogDelete
       v-model="showDeleteDialog"
       :username="user.data.username"
     />
