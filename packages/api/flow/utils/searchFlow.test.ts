@@ -4,7 +4,7 @@ import type { FlowPermission } from './assertFlowPermission'
 import { EXP_UUID } from '@unshared/validation'
 import { createTestContext } from '../../__fixtures__'
 import { FLOW_PERMISSIONS } from './assertFlowPermission'
-import { searchFlow } from './searchProjects'
+import { searchFlow } from './searchFlow'
 
 interface TestMatrixOptions {
   isPublic?: boolean
@@ -21,7 +21,7 @@ async function createResult(context: Context, options: TestMatrixOptions) {
   return await searchFlow.call(context.moduleFlow, { user, project })
 }
 
-describe('searchProjects', () => {
+describe('searchFlow', () => {
   beforeEach<Context>(createTestContext)
 
   // Public or private project
