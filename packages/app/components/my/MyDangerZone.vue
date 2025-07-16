@@ -19,8 +19,8 @@ const showDeleteDialog = ref(false)
     <!-- Actions -->
     <AppPageFormActions class="b-danger">
       <AppPageFormAction
-        class="b-danger"
-        class-button="button-danger"
+        class="b-warning"
+        class-button="button-warning"
         icon="i-carbon:edit"
         :text="t('actionsRenameText')"
         :title="t('actionsRenameTitle')"
