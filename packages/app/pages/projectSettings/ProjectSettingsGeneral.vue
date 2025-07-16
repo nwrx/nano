@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import AppPageContainer from '~/components/app/AppPage.Container.vue'
+import ProjectFormDangerZone from '~/components/project/ProjectFormDangerZone.vue'
+import ProjectFormGeneral from '~/components/project/ProjectFormGeneral.vue'
+
 definePageMeta({
   name: 'ProjectSettings',
   path: '/:workspace/:project/settings',
@@ -30,7 +34,13 @@ const project = computed(() => route.params.project as string)
 
 <template>
   <AppPageContainer contained>
-    <ProjectSettingsGeneral :workspace :project />
-    <ProjectSettingsDangerZone :workspace :project />
+    <ProjectFormGeneral
+      :workspace="workspace"
+      :project="project"
+    />
+    <ProjectFormDangerZone
+      :workspace="workspace"
+      :project="project"
+    />
   </AppPageContainer>
 </template>
