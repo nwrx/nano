@@ -1,6 +1,9 @@
 <!-- eslint-disable vue/prop-name-casing -->
 <script setup lang="ts" generic="T, V, M extends boolean">
 import type { BaseInputListProps } from '@unshared/vue'
+import { BaseIcon } from '@unshared/vue/BaseIcon'
+import { BaseInputList } from '@unshared/vue/BaseInputList'
+import Badge from './Badge.vue'
 
 const props = defineProps<BaseInputListProps<T, V, M> & {
   label?: string
