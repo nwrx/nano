@@ -53,7 +53,7 @@ onMounted(getVariables)
 
       <!-- Name -->
       <template #cell.name="variable">
-        <VariableCard :variable="variable" />
+        <VariableCard :variable is-link inline />
       </template>
 
       <!-- Created At -->

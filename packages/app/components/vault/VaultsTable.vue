@@ -1,31 +1,53 @@
 <script setup lang="ts">
 import type { VaultObject } from '@nwrx/nano-api'
-const props = defineProps<{ workspace: string }>()
+import { toCamelCase } from '@unshared/string/toCamelCase'
+import AppPageForm from '~/components/app/AppPageForm.vue'
+import Hyperlink from '~/components/base/Hyperlink.vue'
+import TableCellDate from '~/components/base/Table.CellDate.vue'
+import Table from '~/components/base/Table.vue'
+import VaultCard from './VaultCard.vue'
 
+const props = defineProps<{
+  workspace: string
+}>()
+
+// --- State.
 const { t } = useI18n()
 const client = useClient()
 const vaults = ref([]) as Ref<VaultObject[]>
 
+// --- Methods.
 async function getVaults() {
   await client.requestAttempt('GET /api/workspaces/:workspace/vaults', {
-    data: { workspace: props.workspace },
+    parameters: { workspace: props.workspace },
     onData: data => vaults.value = data,
   })
 }
 
+// --- Computed.
+const linkCreateTo = computed(() => ({
+  name: 'WorkspaceSettingsVaultCreate',
+  params: { workspace: props.workspace },
+}))
+
+// --- Lifecycle.
 onMounted(getVaults)
 </script>
 
 <template>
-  <AppPageForm vertical :title="t('title')" :text="t('text')">
+  <AppPageForm
+    :title="t('title')"
+    :text="t('text')">
+
+    <!-- Table -->
     <Table :rows="vaults" :columns="['name', 'createdAt', 'actions']">
       <template #header="name">
-        {{ t(`header.${name}`) }}
+        {{ t(toCamelCase('header', name)) }}
       </template>
 
       <!-- Name -->
       <template #cell.name="vault">
-        <VaultCard :vault="vault" />
+        <VaultCard :vault="vault" is-link inline />
       </template>
 
       <!-- Created At -->
@@ -35,7 +57,7 @@ onMounted(getVaults)
 
       <!-- Actions -->
       <template #cell.actions="vault">
-        <WorkspaceSettingsVaultsActions :workspace="workspace" :vault="vault" />
+        <VaultsActions :workspace="workspace" :vault="vault" />
       </template>
     </Table>
 
@@ -45,8 +67,8 @@ onMounted(getVaults)
       class="text-sm ml-auto mb-4"
       icon="i-carbon:add"
       icon-append="i-carbon:chevron-right"
-      :label="t('create')"
-      :to="{ name: 'WorkspaceSettingsVaultCreate', params: { workspace } }"
+      :label="t('createVault')"
+      :to="linkCreateTo"
     />
   </AppPageForm>
 </template>
@@ -55,15 +77,4 @@ onMounted(getVaults)
 en:
   title: Vaults
   text: View and manage your workspace vaults. Vaults are used to securely store and manage secrets that are used in your flows. Allowing you to securely share and manage your secrets across your workspace.
-  create: Create a new vault for this workspace
-  header:
-    name: Vault Name
-    createdAt: ''
-    actions: ''
-  type:
-    local: Local
-    hashicorp: HashiCorp
-    aws: AWS
-    gcp: GCP
-    azure: Azure
 </i18n>

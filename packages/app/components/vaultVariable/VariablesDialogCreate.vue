@@ -1,40 +1,45 @@
 <script setup lang="ts">
+import Dialog from '~/components/base/Dialog.vue'
+import InputText from '~/components/base/InputText.vue'
+import VaultSearch from '~/components/vault/VaultSearch.vue'
+
 const props = defineProps<{
-  modelValue?: boolean
   workspace: string
 }>()
 
 const emit = defineEmits<{
-  'update:modelValue': [boolean]
   'submit': []
 }>()
 
-// --- Model.
+// --- State.
 const { t } = useI18n()
 const client = useClient()
 const alerts = useAlerts()
-
 const vault = ref('')
 const name = ref('')
 const value = ref('')
+const isOpen = defineModel<boolean>({ default: false })
 
+// --- Methods.
 async function createVariable() {
-  await client.requestAttempt('POST /api/workspaces/:workspace/vaults/:vault/variables', {
-    data: {
-      workspace: props.workspace,
-      vault: vault.value,
-      name: name.value,
-      value: value.value,
+  await client.requestAttempt(
+    'POST /api/workspaces/:workspace/vaults/:vault/variables',
+    {
+      data: {
+        workspace: props.workspace,
+        vault: vault.value,
+        name: name.value,
+        value: value.value,
+      },
+      onSuccess: () => {
+        emit('submit')
+        alerts.success(t('success'))
+      },
     },
-    onSuccess: () => {
-      emit('submit')
-      alerts.success(t('success'))
-    },
-  })
+  )
 }
 
-// --- State.
-const isOpen = useVModel(props, 'modelValue', emit)
+// --- Lifecycle.
 watch(isOpen, () => {
   vault.value = ''
   name.value = ''
@@ -54,6 +59,7 @@ watch(isOpen, () => {
     :label-confirm="t('confirm')"
     @confirm="() => createVariable()">
     <div class="space-y-4">
+
       <!-- Vault selector -->
       <VaultSearch
         v-model="vault"
@@ -63,18 +69,18 @@ watch(isOpen, () => {
       <!-- Variable name -->
       <InputText
         v-model="name"
-        :placeholder="t('form.name.placeholder')"
-        :label="t('form.name.label')"
-        :hint="t('form.name.hint')"
+        :placeholder="t('formNamePlaceholder')"
+        :label="t('formNameLabel')"
+        :hint="t('formNameHint')"
       />
 
       <!-- Variable value -->
       <InputText
         v-model="value"
         type="textarea"
-        :placeholder="t('form.value.placeholder')"
-        :label="t('form.value.label')"
-        :hint="t('form.value.hint')"
+        :placeholder="t('formValuePlaceholder')"
+        :label="t('formValueLabel')"
+        :hint="t('formValueHint')"
       />
     </div>
   </Dialog>
@@ -87,24 +93,58 @@ en:
   cancel: Cancel
   confirm: Create variable
   success: Variable created successfully
-  form:
-    vault:
-      label: Vault
-      hint: Select the vault where this variable will be stored
-    name:
-      label: Variable name
-      placeholder: Enter variable name
-      hint: Use only alphanumeric characters, underscores, and hyphens
-    value:
-      label: Variable value
-      placeholder: Enter the secret value
-      hint: This value will be securely stored and accessible only to authorized users
-  validation:
-    vault:
-      required: Please select a vault
-    name:
-      required: Variable name is required
-      pattern: Variable name can only contain letters, numbers, underscores, and hyphens
-    value:
-      required: Variable value is required
+  formNameLabel: Variable name
+  formNamePlaceholder: Enter variable name
+  formNameHint: Use only alphanumeric characters, underscores, and hyphens
+  formValueLabel: Variable value
+  formValuePlaceholder: Enter the secret value
+  formValueHint: This value will be securely stored and accessible only to authorized users
+fr:
+  title: Créer une nouvelle variable dans l'espace de travail **{workspace}**
+  text: Créez une variable pour stocker des informations sensibles qui peuvent être utilisées en toute sécurité dans votre espace de travail.
+  cancel: Annuler
+  confirm: Créer la variable
+  success: Variable créée avec succès
+  formNameLabel: Nom de la variable
+  formNamePlaceholder: Entrez le nom de la variable
+  formNameHint: Utilisez uniquement des caractères alphanumériques, des traits de soulignement et des traits d'union
+  formValueLabel: Valeur de la variable
+  formValuePlaceholder: Entrez la valeur secrète
+  formValueHint: Cette valeur sera stockée de manière sécurisée et accessible uniquement aux utilisateurs autorisés
+de:
+  title: Erstellen Sie eine neue Variable im Arbeitsbereich **{workspace}**
+  text: Erstellen Sie eine Variable, um sensible Informationen zu speichern, die sicher in Ihrem Arbeitsbereich verwendet werden können.
+  cancel: Abbrechen
+  confirm: Variable erstellen
+  success: Variable erfolgreich erstellt
+  formNameLabel: Variablenname
+  formNamePlaceholder: Variablennamen eingeben
+  formNameHint: Verwenden Sie nur alphanumerische Zeichen, Unterstriche und Bindestriche
+  formValueLabel: Variablenwert
+  formValuePlaceholder: Geben Sie den geheimen Wert ein
+  formValueHint: Dieser Wert wird sicher gespeichert und ist nur für autorisierte Benutzer zugänglich
+es:
+  title: Crear una nueva variable en el espacio de trabajo **{workspace}**
+  text: Cree una variable para almacenar información sensible que pueda utilizarse de forma segura en su espacio de trabajo.
+  cancel: Cancelar
+  confirm: Crear variable
+  success: Variable creada con éxito
+  formNameLabel: Nombre de variable
+  formNamePlaceholder: Ingrese el nombre de la variable
+  formNameHint: Utilice solo caracteres alfanuméricos, guiones bajos y guiones
+  formValueLabel: Valor de la variable
+  formValuePlaceholder: Ingrese el valor secreto
+  formValueHint: Este valor se almacenará de forma segura y solo será accesible para usuarios autorizados
+zh:
+  title: 在 **{workspace}** 工作区中创建新变量
+  text: 创建一个变量来存储敏感信息，可以在您的工作区中安全地使用。
+  cancel: 取消
+  confirm: 创建变量
+  success: 变量创建成功
+  formNameLabel: 变量名称
+  formNamePlaceholder: 输入变量名称
+  formNameHint: 仅使用字母数字字符、下划线和连字符
+  formValueLabel: 变量值
+  formValuePlaceholder: 输入密钥值
+  formValueHint: 此值将被安全存储，只有授权用户才能访问
 </i18n>

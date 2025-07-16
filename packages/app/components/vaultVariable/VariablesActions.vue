@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import ContextMenuItem from '~/components/base/ContextMenu.Item.vue'
+import ContextMenu from '~/components/base/ContextMenu.vue'
 import DialogRemove from './VariablesDialogRemove.vue'
 import DialogUpdate from './VariablesDialogUpdate.vue'
 
@@ -9,7 +11,8 @@ defineProps<{
 }>()
 
 const emit = defineEmits<{
-  'submit': []
+  'update': []
+  'remove': []
 }>()
 
 const { t } = useI18n()
@@ -23,12 +26,12 @@ const showRemoveDialog = ref(false)
       <template #menu>
         <ContextMenuItem
           icon="i-carbon:edit"
-          :label="t('actions.update')"
+          :label="t('updateLabel')"
           @click="() => showUpdateDialog = true"
         />
         <ContextMenuItem
           icon="i-carbon:delete"
-          :label="t('actions.remove')"
+          :label="t('removeLabel')"
           @click="() => showRemoveDialog = true"
         />
       </template>
@@ -40,7 +43,7 @@ const showRemoveDialog = ref(false)
       :workspace="workspace"
       :variable="variable"
       :vault="vault"
-      @submit="() => emit('submit')"
+      @submit="() => emit('update')"
     />
 
     <!-- Remove dialog -->
@@ -49,14 +52,25 @@ const showRemoveDialog = ref(false)
       :workspace="workspace"
       :variable="variable"
       :vault="vault"
-      @submit="() => emit('submit')"
+      @submit="() => emit('remove')"
     />
   </div>
 </template>
 
 <i18n lang="yaml">
 en:
-  actions:
-    update: Update value
-    remove: Delete variable
+  removeLabel: Remove variable
+  updateLabel: Update variable
+fr:
+  removeLabel: Supprimer la variable
+  updateLabel: Mettre à jour la variable
+de:
+  removeLabel: Variable entfernen
+  updateLabel: Variable aktualisieren
+es:
+  removeLabel: Eliminar variable
+  updateLabel: Actualizar variable
+zh:
+  removeLabel: 删除变量
+  updateLabel: 更新变量
 </i18n>
