@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { FlowNodeObject } from '@nwrx/nano-api'
 import type { ThreadServerMessage } from '@nwrx/nano-runner'
-import Collapse from '../base/Collapse.vue'
-import DataSheet from '../base/DataSheet.vue'
+import Collapse from '~/components/base/Collapse.vue'
+import DataSheet from '~/components/base/DataSheet.vue'
 import ThreadMessagesMessageHeader from './ThreadMessages.MessageHeader.vue'
 
 defineProps<{
