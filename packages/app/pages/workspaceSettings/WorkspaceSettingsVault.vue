@@ -1,7 +1,11 @@
 <script setup lang="ts">
+import AppPageContainer from '~/components/app/AppPage.Container.vue'
+import VaultFormProjects from '~/components/vault/VaultFormProjects.vue'
+import VaultFormSettings from '~/components/vault/VaultFormSettings.vue'
+import VaultFormUsers from '~/components/vault/VaultFormUsers.vue'
+
 definePageMeta({
   name: 'WorkspaceSettingsVault',
-  parent: 'WorkspaceSettingsVaults',
   path: '/:workspace/settings/vaults/:vault',
   middleware: 'redirect-when-guest',
   layout: 'workspace-settings',
@@ -29,8 +33,8 @@ const vault = computed(() => route.params.vault as string)
 
 <template>
   <AppPageContainer contained>
-    <WorkspaceSettingsVaultGeneral :workspace :vault />
-    <WorkspaceSettingsVaultAssignments :workspace :vault />
-    <WorkspaceSettingsVaultProjectAssignments :workspace :vault />
+    <VaultFormSettings :workspace :vault />
+    <VaultFormUsers :workspace :vault />
+    <VaultFormProjects :workspace :vault />
   </AppPageContainer>
 </template>

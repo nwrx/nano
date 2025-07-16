@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppPageContainer from '~/components/app/AppPage.Container.vue'
-import WorkspaceSettingsVariables from '~/components/vaultVariable/WorkspaceSettingsVariables.vue'
-import WorkspaceSettingsVaults from '~/components/vault/WorkspaceSettingsVaults.vue'
+import VaultsTable from '~/components/vault/VaultsTable.vue'
+import VariablesTable from '~/components/vaultVariable/VariablesTable.vue'
 
 definePageMeta({
   name: 'WorkspaceSettingsVaults',
@@ -32,7 +32,7 @@ const workspace = computed(() => route.params.workspace as string)
 
 <template>
   <AppPageContainer contained>
-    <WorkspaceSettingsVaults :workspace="workspace" />
-    <WorkspaceSettingsVariables :workspace="workspace" />
+    <VaultsTable :workspace="workspace" />
+    <VariablesTable :workspace="workspace" />
   </AppPageContainer>
 </template>
