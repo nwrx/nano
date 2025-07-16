@@ -1,6 +1,7 @@
+import type { EventStream } from '@unserved/server'
 import type { ModuleMcpManager } from '..'
 import type { NmcpManager } from '../utils'
-import { createHttpRoute } from '@unserved/server'
+import { createEventStream, createHttpRoute } from '@unserved/server'
 import { assert, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { getManager, getManagerClient } from '../utils'
@@ -13,7 +14,7 @@ export function mcpManagerStatus(this: ModuleMcpManager) {
         identity: assert.stringNotEmpty,
       }),
     },
-    async({ event, parameters }): Promise<NmcpManager.Status> => {
+    async({ event, parameters }): Promise<EventStream<NmcpManager.Status> | NmcpManager.Status> => {
       const moduleUser = this.getModule(ModuleUser)
       const { user } = await moduleUser.authenticate(event)
       const { identity } = parameters
@@ -22,8 +23,10 @@ export function mcpManagerStatus(this: ModuleMcpManager) {
       const manager = await getManager.call(this, { identity, user })
       const client = getManagerClient.call(this, manager)
 
-      // --- Query and return the status of the MCP manager.
-      return await client.getStatus()
+      // --- Send as a stream or as a single status.
+      const eventStream = createEventStream<NmcpManager.Status>(event)
+      client.subscribe(eventStream)
+      return eventStream
     },
   )
 }

@@ -1,6 +1,5 @@
-import type { ServerErrorName } from '@unserved/server'
+import type { EventStream, ServerErrorName } from '@unserved/server'
 import type { ObjectLike } from '@unshared/types'
-import type { Peer } from 'crossws'
 import type { McpGateway } from '../entities'
 import type { NmcpGateway } from './types'
 import { createError } from '@unserved/server'
@@ -33,13 +32,13 @@ export class McpGatewayClient {
   interval: NodeJS.Timeout | undefined
 
   /** The set of subscribed peers. */
-  peers = new Set<Peer>()
+  peers = new Set<EventStream<NmcpGateway.Status>>()
 
   startPolling(): void {
     this.interval = setInterval(() => {
       this.getStatus()
-        .then((status) => { for (const peer of this.peers) peer.send(status) })
-        .catch(() => { for (const peer of this.peers) peer.send({}) },
+        .then((status) => { for (const peer of this.peers) void peer.sendMessage(status) })
+        .catch(() => {},
         )
     }, 1000)
   }
@@ -51,12 +50,12 @@ export class McpGatewayClient {
     }
   }
 
-  subscribe(peer: Peer): void {
+  subscribe(peer: EventStream<NmcpGateway.Status>): void {
     this.peers.add(peer)
     if (this.interval === undefined) this.startPolling()
   }
 
-  unsubscribe(peer: Peer): void {
+  unsubscribe(peer: EventStream<NmcpGateway.Status>): void {
     this.peers.delete(peer)
     if (this.peers.size === 0) this.stopPolling()
   }

@@ -1,5 +1,4 @@
-import type { ServerErrorName } from '@unserved/server'
-import type { Peer } from 'crossws'
+import type { EventStream, ServerErrorName } from '@unserved/server'
 import type { McpManager } from '../entities'
 import type { NmcpManager } from './types'
 import { createError } from '@unserved/server'
@@ -21,14 +20,16 @@ export class McpManagerClient {
   interval: NodeJS.Timeout | undefined
 
   /** The set of subscribed peers. */
-  peers = new Set<Peer>()
+  peers = new Set<EventStream<NmcpManager.Status>>()
 
   startPolling() {
     this.interval = setInterval(() => {
       this.getStatus()
-        .then((status) => { for (const peer of this.peers) peer.send(status) })
-        .catch(() => { for (const peer of this.peers) peer.send({}) },
-        )
+        .then((status) => {
+          for (const peer of this.peers)
+            void peer.sendMessage(status)
+        })
+        .catch(() => {})
     }, 1000)
   }
 
@@ -39,12 +40,13 @@ export class McpManagerClient {
     }
   }
 
-  subscribe(peer: Peer) {
+  subscribe(peer: EventStream<NmcpManager.Status>) {
     this.peers.add(peer)
     if (this.interval === undefined) this.startPolling()
+    peer.h3EventStream.onClosed(() => this.unsubscribe(peer))
   }
 
-  unsubscribe(peer: Peer) {
+  unsubscribe(peer: EventStream<NmcpManager.Status>) {
     this.peers.delete(peer)
     if (this.peers.size === 0) this.stopPolling()
   }
@@ -134,6 +136,13 @@ export class McpManagerClient {
   async getServer(name: string): Promise<NmcpManager.Server> {
     return await this.client.request('GET /api/v1/servers/{name}', {
       parameters: { name },
+    }).catch((error: Error) => {
+      if (error.message === 'fetch failed') {
+        const address = this.client.options.baseUrl!
+        const message = error.message
+        throw ERRORS.MCP_MANAGER_NOT_REACHABLE(address, message)
+      }
+      throw error
     }) as Promise<NmcpManager.Server>
   }
 
