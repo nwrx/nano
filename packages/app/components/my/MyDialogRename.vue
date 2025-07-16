@@ -7,17 +7,16 @@ const emit = defineEmits<{
   'submit': [string]
 }>()
 
-// --- Model.
+// --- State.
 const { t } = useI18n()
 const user = useSession()
 const client = useClient()
 const alerts = useAlerts()
 const newUsername = ref<string>()
-
-// --- State.
 const isOpen = defineModel({ default: false })
 watch(isOpen, () => newUsername.value = user.data.username, { immediate: true })
 
+// --- Methods.
 async function changeUsername() {
   if (!newUsername.value) return
   await client.requestAttempt('PUT /api/users/:username', {
@@ -34,7 +33,7 @@ async function changeUsername() {
 <template>
   <Dialog
     v-model="isOpen"
-    class-hint="hint-danger"
+    class-hint="hint-warning"
     icon="i-carbon:edit"
     :title="t('title', { username: user.data.username })"
     :text="t('text', { username: user.data.username })"

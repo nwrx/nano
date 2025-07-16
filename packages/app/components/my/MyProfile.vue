@@ -9,7 +9,7 @@ const client = useClient()
 const alerts = useAlerts()
 const profile = ref<UserObject>({} as UserObject)
 
-async function getUser() {
+async function getProfile() {
   if (!user.data.username) return
   await client.requestAttempt('GET /api/users/:username', {
     parameters: { username: user.data.username },
@@ -25,19 +25,12 @@ async function saveProfile() {
     body: { ...profile.value },
     onSuccess: () => {
       alerts.success(t('successMessage'))
-      void getUser()
+      void getProfile()
     },
   })
 }
 
-onMounted(() => {
-  profile.value = {
-    displayName: user.data.displayName,
-    biography: user.data.biography,
-    website: user.data.website,
-    company: user.data.company,
-  } as UserObject
-})
+onMounted(getProfile)
 </script>
 
 <template>

@@ -7,14 +7,12 @@ const emit = defineEmits<{
   'submit': []
 }>()
 
-// --- Model.
+// --- State.
 const { t } = useI18n()
 const user = useSession()
 const client = useClient()
 const alerts = useAlerts()
 const confirmUsername = ref('')
-
-// --- State.
 const isOpen = defineModel({ default: false })
 watch(isOpen, () => confirmUsername.value = '', { immediate: true })
 

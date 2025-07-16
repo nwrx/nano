@@ -3,11 +3,13 @@ import AppPageForm from '~/components/app/AppPageForm.vue'
 import Button from '~/components/base/Button.vue'
 import InputImage from '~/components/base/InputImage.vue'
 
+// --- State.
 const { t } = useI18n()
 const user = useSession()
 const client = useClient()
 const alerts = useAlerts()
 
+// --- Methods.
 async function uploadAvatar(file: File) {
   if (!user.data.username) return
   await client.requestAttempt('PUT /api/users/:username/avatar', {
