@@ -17,7 +17,6 @@ const workspaceRoutes = useRouteGroup('nav-items-workspace')
   <AppLayout>
     <AppPage>
       <AppPageHeader
-        class="z-10"
         :icon="route.meta.icon"
         :title="[workspace, localize(route.meta.title)]"
         :description="localize(route.meta.description)">
