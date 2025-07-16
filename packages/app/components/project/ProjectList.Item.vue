@@ -8,7 +8,6 @@ type UseProjectChannel = WebSocketChannel<ChannelConnectOptions<typeof applicati
 
 const props = defineProps<ProjectObject & {
   workspace: string
-  modelValue?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -18,7 +17,6 @@ const emit = defineEmits<{
   flowDownload: [flow: string]
   flowDuplicate: [flow: string]
   flowImport: [file: File]
-  'update:modelValue': [value: boolean]
 }>()
 
 const { t } = useI18n()
@@ -45,7 +43,7 @@ async function subscribe() {
       if (message.event === 'flowCreated') flows.value = [...flows.value, message.flow]
       if (message.event === 'flowDeleted') flows.value = flows.value.filter(flow => flow.name !== message.name)
     },
-  })
+  }).open()
 }
 
 async function unsubscribe() {
@@ -54,8 +52,8 @@ async function unsubscribe() {
   channel = undefined
 }
 
-const model = useVModel(props, 'modelValue', emit, { passive: true })
-watch(model, value => (value ? subscribe() : unsubscribe()), { immediate: true })
+const isOpen = defineModel({ default: false })
+watch(isOpen, value => (value ? subscribe() : unsubscribe()), { immediate: true })
 
 // --- Dropzone for importing flows.
 const dropzone = ref<HTMLDivElement>()
@@ -100,7 +98,7 @@ async function deleteFlow(flow: string) {
     <Dropzone
       :is-over="isOverDropZone"
       :text="t('dropZone', { title })"
-      :vertical="model"
+      :vertical="isOpen"
     />
 
     <!-- Header -->
@@ -112,12 +110,12 @@ async function deleteFlow(flow: string) {
         border border-app bg-subtle
         cursor-pointer group
       "
-      @click="() => { model = !model }">
+      @click="() => { isOpen = !isOpen }">
 
       <!-- Dropdown toggle -->
       <BaseIcon
         icon="i-carbon:chevron-down"
-        :class="{ 'rotate-180': model }"
+        :class="{ 'rotate-180': isOpen }"
         class="cursor-pointer shrink-0 size-8 opacity-40 group-hover:opacity-100 transition duration-slow"
       />
 
@@ -161,9 +159,9 @@ async function deleteFlow(flow: string) {
     <!-- Flow list -->
     <BaseCollapse
       vertical
-      :is-open="model"
+      :is-open="isOpen"
       :duration="300"
-      :class="{ 'op-0': model !== true }"
+      :class="{ 'op-0': isOpen !== true }"
       class="b-l b-app ml-lg pl-lg transition-all duration-slow">
       <div class="space-y-md py-md">
         <ProjectListItemFlow
