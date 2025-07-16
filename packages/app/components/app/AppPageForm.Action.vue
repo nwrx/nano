@@ -16,13 +16,13 @@ const emit = defineEmits<{ click: [] }>()
 <template>
   <div
     class="
-      flex items-end md:items-center
+      flex items-start md:items-center
       flex-col md:flex-row
       space-y-md md:space-y-0 md:space-x-md
       b-t first:b-t-0 p-md
     ">
 
-    <!-- Description -->
+    <!-- Title & Description -->
     <div class="grow">
       <h3 class="text-base font-medium">
         <slot name="title">
@@ -45,7 +45,7 @@ const emit = defineEmits<{ click: [] }>()
       :label="label"
       :icon-append="icon"
       :class="classButton"
-      class="shrink-0"
+      class="ml-auto shrink-0"
       @click="() => emit('click')"
     />
   </div>
