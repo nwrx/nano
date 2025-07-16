@@ -4,6 +4,7 @@ import type { BaseButtonProps } from '@unshared/vue'
 
 const props = defineProps<BaseButtonProps & {
   icon?: string
+  disabled?: boolean
 }>()
 </script>
 
@@ -16,9 +17,12 @@ const props = defineProps<BaseButtonProps & {
     "
     class="
       flex items-center gap-sm cursor-pointer
-      text-app rd-t px-sm py-xs
+      text-app px-md py-xs
       hover:bg-prominent
-    ">
+    "
+    :class="{
+      'cursor-not-allowed opacity-50': disabled,
+    }">
 
     <!-- Icon -->
     <BaseIcon

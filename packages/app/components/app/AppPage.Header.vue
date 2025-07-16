@@ -6,18 +6,23 @@ defineProps<{
   title: MaybeArray<string | undefined>
   description: string
 }>()
+
+const slots = defineSlots<{
+  default: []
+  menu: []
+}>()
 </script>
 
 <template>
   <div
     class="
       sticky top-0 w-full z-1 b-b b-app
-      flex justify-between w-full px-lg h-24
-      text-app shrink-0 bg-subtle
+      flex flex-col justify-between w-full
+      text-app shrink-0
     ">
 
     <!-- Title -->
-    <div class="flex items-center gap-md self-center">
+    <div class="flex items-center gap-md self-start p-lg w-full bg-subtle">
 
       <!-- Icon -->
       <div v-if="icon" class="bg-prominent rounded p-sm mr-md b b-app">
@@ -36,10 +41,17 @@ defineProps<{
       <span v-else class="text-4xl font-medium ">
         {{ title }}
       </span>
+
+      <!-- Menu -->
+      <div v-if="slots.menu" class="ml-auto">
+        <slot name="menu" />
+      </div>
     </div>
 
     <!-- Tabs -->
-    <div class="flex items-center justify-end gap-md mt-auto">
+    <div
+      v-if="slots.default"
+      class="flex items-center justify-end b-t b-app">
       <slot />
     </div>
   </div>
