@@ -7,6 +7,7 @@ import type { Peer } from 'crossws'
 import type { ThreadRunner } from '../entities'
 import { createClient } from '@unserved/client'
 import { createError } from '@unserved/server'
+import { toConstantCase } from '@unshared/string'
 import { ERRORS } from './errors'
 
 export type ThreadRunnerChannel = WebSocketChannel<ChannelConnectOptions<ModuleRunner, 'WS /threads/:id'>>
@@ -24,6 +25,11 @@ export class ThreadRunnerClient {
     this.client.options.headers = { Authorization: `Bearer ${token}` }
   }
 
+  set address(address: string) {
+    this.options.address = address
+    this.client.options.baseUrl = /^https?:\/\//.test(address) ? address : `http://${address}`
+  }
+
   get address() {
     return this.options.address
   }
@@ -37,10 +43,14 @@ export class ThreadRunnerClient {
   }
 
   /***************************************************************************/
-  /* Polling                                                                 */
+  /* Subscriptions                                                           */
   /***************************************************************************/
 
+  /** The interval for polling the thread runner status. */
   interval: NodeJS.Timeout | undefined
+
+  /** The set of subscribed peers. */
+  peers = new Set<Peer>()
 
   startPolling() {
     this.interval = setInterval(() => {
@@ -48,7 +58,7 @@ export class ThreadRunnerClient {
         .then((status) => { for (const peer of this.peers) peer.send(status) })
         .catch(() => { for (const peer of this.peers) peer.send({}) },
         )
-    }, 100)
+    }, 1000)
   }
 
   stopPolling() {
@@ -57,12 +67,6 @@ export class ThreadRunnerClient {
       this.interval = undefined
     }
   }
-
-  /***************************************************************************/
-  /* Subscriptions                                                           */
-  /***************************************************************************/
-
-  peers = new Set<Peer>()
 
   subscribe(peer: Peer) {
     this.peers.add(peer)
@@ -79,10 +83,14 @@ export class ThreadRunnerClient {
   /***************************************************************************/
   client = createClient<ModuleRunner>({
     onFailure: async(response) => {
-      const data = await response.json() as { data: ObjectLike }
+      const data = await response.json() as { data?: ObjectLike }
+      const name = data.data
+        ? (data.data.name as ServerErrorName)
+        : `E_${toConstantCase(response.statusText)}` as ServerErrorName
+      const message: string = data.data ? (data.data.message as string) : response.statusText
       throw createError({
-        name: data.data.name as ServerErrorName,
-        message: data.data.message as string,
+        name,
+        message,
         statusCode: response.status,
         statusMessage: response.statusText,
       })
@@ -90,11 +98,13 @@ export class ThreadRunnerClient {
   })
 
   async claim(): Promise<{ token: string; identity: string }> {
-    const { token, identity } = await this.client.request('POST /claim').catch((error: TypeError) => {
-      // @ts-expect-error: The error object has a `code` property.
-      const code = error.cause.code as string
-      throw code ? ERRORS.THREAD_RUNNER_NOT_REACHABLE(this.address, code) : error
-    })
+    const { token, identity } = await this.client.request('POST /claim')
+      .catch((error: TypeError) => {
+        // @ts-expect-error: `code` is not always present in the error.
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const message: string = error.cause?.code ?? error.message
+        throw ERRORS.THREAD_RUNNER_NOT_REACHABLE(this.address, message)
+      })
     this.options.token = token
     this.client.options.headers = { Authorization: `Bearer ${token}` }
     return { token, identity }

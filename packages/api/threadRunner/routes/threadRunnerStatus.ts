@@ -7,7 +7,7 @@ import { ModuleUser } from '../../user'
 export function threadRunnerStatus(this: ModuleThreadRunner) {
   return createHttpRoute(
     {
-      name: 'GET /api/runners/:identity',
+      name: 'GET /api/runners/:identity/status',
       parseParameters: createParser({
         identity: assertStringNotEmpty,
       }),

@@ -32,7 +32,7 @@ describe<Context>('GET /api/runners/:runner', () => {
       const { identity } = await ThreadRunner.findOneByOrFail({})
 
       // Check the status for the claimed runner.
-      const response = await application.fetch(`/api/runners/${identity}`, { method: 'GET', headers })
+      const response = await application.fetch(`/api/runners/${identity}/status`, { method: 'GET', headers })
       const data = await response.json() as ThreadRunnerStatus
       expect(response).toMatchObject({ status: 200, statusText: 'OK' })
       expect(data).toStrictEqual({
@@ -64,7 +64,7 @@ describe<Context>('GET /api/runners/:runner', () => {
       // Check the status for the claimed runner.
       // moduleThreadRunner.threadRunners.get(id)!.ping = async() => { throw new Error('Unreachable') }
       moduleThreadRunner.threadRunners.get(id)!.getStatus = () => Promise.reject(new Error('Unreachable'))
-      const response = await application.fetch(`/api/runners/${identity}`, { method: 'GET', headers })
+      const response = await application.fetch(`/api/runners/${identity}/status`, { method: 'GET', headers })
       const data = await response.json() as { address: string; status: unknown }
       expect(response).toMatchObject({ status: 503, statusText: 'Service Unavailable' })
       expect(data).toStrictEqual({
@@ -83,18 +83,18 @@ describe<Context>('GET /api/runners/:runner', () => {
   describe<Context>('errors', (it) => {
     it('should fail with status 404 when runner is not found', async({ application, setupUser }) => {
       const { headers } = await setupUser({ isSuperAdministrator: true })
-      const response = await application.fetch('/api/runners/not-found', { method: 'GET', headers })
+      const response = await application.fetch('/api/runners/not-found/status', { method: 'GET', headers })
       expect(response).toMatchObject({ status: 404, statusText: 'Not Found' })
     })
 
     it('should fail with status 403 when user is not a super administrator', async({ application, setupUser }) => {
       const { headers } = await setupUser({ isSuperAdministrator: false })
-      const response = await application.fetch('/api/runners/random-identity', { method: 'GET', headers })
+      const response = await application.fetch('/api/runners/random-identity/status', { method: 'GET', headers })
       expect(response).toMatchObject({ status: 403, statusText: 'Forbidden' })
     })
 
     it('should fail with status 401 when user is not authenticated', async({ application }) => {
-      const response = await application.fetch('/api/runners/random-identity', { method: 'GET' })
+      const response = await application.fetch('/api/runners/random-identity/status', { method: 'GET' })
       expect(response).toMatchObject({ status: 401, statusText: 'Unauthorized' })
     })
   })

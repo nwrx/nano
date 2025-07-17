@@ -1,12 +1,12 @@
 import { createError } from '@unserved/server'
 
 export const ERRORS = {
-  THREAD_RUNNER_NOT_FOUND: (id: string) => createError({
+  THREAD_RUNNER_NOT_FOUND: (identity: string) => createError({
     name: 'E_THREAD_RUNNER_NOT_FOUND',
     statusCode: 404,
     statusMessage: 'Not Found',
-    message: `Thread runner with ID "${id}" was not found in the database`,
-    data: { id },
+    message: `Thread runner with identity "${identity}" was not found in the database`,
+    data: { identity },
   }),
   THREAD_RUNNER_FORBIDDEN: () => createError({
     name: 'E_THREAD_RUNNER_FORBIDDEN',
