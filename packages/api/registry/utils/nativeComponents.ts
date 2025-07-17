@@ -25,8 +25,8 @@ export const NATIVE_COMPONENTS = {
     categories: ['control', 'built-by-nanoworks'],
     collection: 'core',
   },
-  ask: {
-    title: 'Ask',
+  question: {
+    title: 'Question',
     icon: 'https://api.iconify.design/carbon:help.svg',
     description: 'Ask for user input and await the response. This will interrupt the flow until the user provides a response.',
     categories: ['control', 'built-by-nanoworks'],
@@ -55,7 +55,7 @@ export const NATIVE_COMPONENTS = {
     categories: ['processing', 'built-by-nanoworks', 'llm'],
     collection: 'core',
   },
-  client: {
+  fetch: {
     title: 'Client',
     icon: 'https://api.iconify.design/carbon:http.svg',
     description: 'Client processing provider. Client provides powerful processing capabilities for a variety of use cases.',
@@ -81,45 +81,6 @@ export const NATIVE_COMPONENTS = {
     icon: 'https://api.iconify.design/carbon:prompt-template.svg',
     description: 'Template processing provider. Template provides powerful processing capabilities for a variety of use cases.',
     categories: ['processing', 'built-by-nanoworks'],
-    collection: 'core',
-  },
-
-  // Models
-  anthropic: {
-    title: 'Anthropic',
-    icon: 'https://api.iconify.design/carbon:models.svg',
-    description: 'Anthropic LLM model provider. Anthropic provides powerful LLM models for a variety of use cases.',
-    categories: ['models', 'built-by-nanoworks', 'llm'],
-    collection: 'anthropic',
-  },
-  openai: {
-    title: 'OpenAI',
-    icon: 'https://api.iconify.design/carbon:models.svg',
-    description: 'OpenAI LLM model provider. OpenAI provides powerful LLM models for a variety of use cases.',
-    categories: ['models', 'built-by-nanoworks', 'llm'],
-    collection: 'openai',
-  },
-  groq: {
-    title: 'Groq',
-    icon: 'https://api.iconify.design/carbon:processing.svg',
-    description: 'Groq processing provider. Groq provides powerful processing capabilities for a variety of use cases.',
-    categories: ['models', 'built-by-nanoworks', 'llm'],
-    collection: 'groq',
-  },
-  mistralai: {
-    title: 'MistralAI',
-    icon: 'https://api.iconify.design/carbon:models.svg',
-    description: 'MistralAI LLM model provider. MistralAI provides powerful LLM models for a variety of use cases.',
-    categories: ['models', 'built-by-nanoworks', 'llm'],
-    collection: 'mistral',
-  },
-
-  // Storage
-  messages: {
-    title: 'Messages',
-    icon: 'https://api.iconify.design/carbon:storage.svg',
-    description: 'Messages storage provider. Messages provides powerful storage capabilities for a variety of use cases.',
-    categories: ['storage', 'built-by-nanoworks'],
     collection: 'core',
   },
 
