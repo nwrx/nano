@@ -43,5 +43,5 @@ export async function installCollectionIcon(this: ModuleIconCollection, options:
   // --- Create the icon entity and save it to the database.
   const { Icon } = moduleIcon.getRepositories()
   const icon = Icon.create({ name: iconName, file: iconFile, isSample, collection })
-  await Icon.save(icon)
+  await Icon.upsert(icon, { conflictPaths: ['name'] })
 }

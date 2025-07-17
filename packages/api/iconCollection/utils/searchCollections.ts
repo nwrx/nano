@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/no-nested-conditional */
 // Search icon collections based on a search term in the database
 // Superadmin only
 
@@ -15,6 +16,7 @@ export const SEARCH_COLLECTIONS_OPTIONS_SCHEMA = createParser({
   limit: [[assert.undefined], [assert.numberInteger]],
   page: [[assert.undefined], [assert.numberInteger]],
   withIcons: [[assert.undefined], [assert.boolean]],
+  withIconsCount: [[assert.undefined], [assert.boolean]],
   withCreatedBy: [[assert.undefined], [assert.boolean]],
   withUpdatedBy: [[assert.undefined], [assert.boolean]],
   withDisabledBy: [[assert.undefined], [assert.boolean]],
@@ -37,6 +39,7 @@ export async function searchCollections(this: ModuleIconCollection, options: Sea
     page = 1,
     limit = 16,
     withIcons = false,
+    withIconsCount = false,
     withCreatedBy = false,
     withUpdatedBy = false,
     withDisabledBy = false,
@@ -58,12 +61,31 @@ export async function searchCollections(this: ModuleIconCollection, options: Sea
     ],
     take: limit,
     skip: (page - 1) * limit,
-    order: { name: 'ASC' },
+    order: {
+      status: 'ASC',
+      name: 'ASC',
+    },
     relations: {
-      icons: withIcons,
+      icons: withIcons || withIconsCount,
       createdBy: withCreatedBy,
       updatedBy: withUpdatedBy,
       disabledBy: withDisabledBy,
+    },
+    // @ts-expect-error: ignore
+    select: {
+      id: true,
+      name: true,
+      title: true,
+      status: true,
+      version: true,
+      metadata: true,
+      createdAt: withCreatedBy,
+      createdBy: withCreatedBy,
+      updatedAt: withUpdatedBy,
+      updatedBy: withUpdatedBy,
+      disabledAt: withDisabledBy,
+      disabledBy: withDisabledBy,
+      icons: withIcons ? true : (withIconsCount ? { id: true } : false),
     },
   })
 }

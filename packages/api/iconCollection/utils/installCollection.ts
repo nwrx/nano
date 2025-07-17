@@ -33,25 +33,26 @@ export async function installCollection(this: ModuleIconCollection, options: Get
   let index = 0
   const total = Object.keys(data.icons).length
   for (const name in data.icons) {
-    await this.iconEventBus.broadcast({
-      event: 'installIconStart',
-      icon: name,
-      collection: name,
-      currentIcon: index,
-      totalIcons: total,
-    })
     await installCollectionIcon.call(this, { name, data, collection })
-    await this.iconEventBus.broadcast({
-      event: 'installIconDone',
-      icon: name,
-      collection: collection.name,
-      currentIcon: index,
-      totalIcons: total,
-    })
+
+    // --- Every 10 icons, broadcast the progress.
+    const isIndex10 = index % 10 === 0
+    const isIndexLast = index === total - 1
+    if (isIndexLast || isIndex10) {
+      await this.iconEventBus.broadcast({
+        event: 'installIconDone',
+        icon: name,
+        collection: collection.name,
+        currentIcon: index,
+        totalIcons: total,
+      })
+    }
     index++
   }
 
   // --- Broadcast the completion of the collection installation.
+  const { IconCollection } = this.getRepositories()
+  collection.status = 'Installed'
+  await IconCollection.save(collection)
   await this.iconEventBus.broadcast({ event: 'installDone', collection: name })
-
 }

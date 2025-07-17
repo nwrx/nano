@@ -13,6 +13,7 @@ export function iconCollectionSearch(this: ModuleIconCollection) {
         search: [[assert.undefined], [assert.string]],
         page: [[assert.undefined], [assert.stringNumber, Number.parseInt]],
         limit: [[assert.undefined], [assert.stringNumber, Number.parseInt]],
+        withIconsCount: [[assert.undefined], [assert.string, parseBoolean]],
         withCreatedBy: [[assert.undefined], [assert.string, parseBoolean]],
         withUpdatedBy: [[assert.undefined], [assert.string, parseBoolean]],
         withDisabledBy: [[assert.undefined], [assert.string, parseBoolean]],

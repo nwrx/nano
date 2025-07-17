@@ -1,4 +1,4 @@
-import { IconifyInfo } from '@iconify/types'
+import type { IconifyInfo } from '@iconify/types'
 import { BaseEntity, transformerDate, transformerJson } from '@unserved/server'
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm'
 import { Icon } from '../../icon'
@@ -47,41 +47,6 @@ export class IconCollection extends BaseEntity {
    */
   @Column('varchar', { length: 50, default: 'NotInstalled' })
   status: IconCollectionStatus
-
-  /**
-   * The name of the author of the set. It is used to display the name of the author
-   * in the UI and allow the users to search the icons by their sets.
-   */
-  @Column('varchar', { length: 255 })
-  author: string
-
-  /**
-   * The url of the author of the set. It is used to display the url of the author
-   * in the UI and allow the users to search the icons by their sets.
-   */
-  @Column('varchar', { length: 255, nullable: true })
-  authorUrl?: string
-
-  /**
-   * The licence of the set. It is used to display the licence of the set in the UI
-   * and allow the users to search the icons by their sets.
-   */
-  @Column('varchar', { length: 255 })
-  license: string
-
-  /**
-   * The url of the licence of the set. It is used to display the url of the licence
-   * in the UI and allow the users to search the icons by their sets.
-   */
-  @Column('varchar', { length: 255, nullable: true })
-  licenseUrl?: string
-
-  /**
-   * The SPDX identifier of the licence of the set. It is used to display the SPDX identifier
-   * of the licence in the UI and allow the users to search the icons by their sets.
-   */
-  @Column('varchar', { length: 50, nullable: true })
-  licenseSpdx?: string
 
   /**
    * The metadata of the set. It is used to provide additional information about the set
@@ -145,16 +110,20 @@ export class IconCollection extends BaseEntity {
    * @returns The serialized object of the icon collection.
    */
   serialize(): IconCollectionObject {
+    const iconCountTotal = this.metadata.total ?? 0
+    const iconCountInstalled = this.icons?.length ?? 0
     return {
       name: this.name,
       title: this.title,
-      version: this.version,
       status: this.status,
-      license: this.license,
-      licenseUrl: this.licenseUrl,
-      licenseSpdx: this.licenseSpdx,
-      author: this.author,
-      authorUrl: this.authorUrl,
+      version: this.version,
+      license: this.metadata.license.title,
+      licenseUrl: this.metadata.license.url,
+      licenseSpdx: this.metadata.license.spdx,
+      author: this.metadata.author.name,
+      authorUrl: this.metadata.author.url,
+      iconCountTotal: Math.max(iconCountInstalled, iconCountTotal),
+      iconCountInstalled,
 
       // --- Metadata
       createdAt: this.createdAt.toISOString(),
@@ -170,13 +139,15 @@ export class IconCollection extends BaseEntity {
 export interface IconCollectionObject {
   name: string
   title: string
-  version: string
+  version?: string
   license?: string
   licenseUrl?: string
   licenseSpdx?: string
   author: string
   authorUrl?: string
   status: IconCollectionStatus
+  iconCountTotal: number
+  iconCountInstalled?: number
 
   // --- Metadata
   createdAt?: string
