@@ -27,6 +27,8 @@ export type NavItemGroup =
   // Workspace
   | 'workspace-billing'
   | 'workspace-mcp'
+  | 'workspace-mcp-pool'
+  | 'workspace-mcp-server'
   | 'workspace-security'
   | 'workspace-settings'
 
@@ -62,6 +64,7 @@ export type RouteGroup =
   | 'nav-items-bottom'
   | 'nav-items-top'
   | 'nav-items-workspace'
+  | NavItemGroup
 
 declare module 'vue-router' {
   export interface RouteMeta {
