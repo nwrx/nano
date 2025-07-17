@@ -58,11 +58,11 @@ export class VaultVariable<T = any> extends BaseEntity {
   serialize(options: SerializeOptions = {}): VaultVariableObject {
     return {
       name: this.name,
-      createdBy: this.createdBy?.serialize(),
-      updatedBy: this.updatedBy?.serialize(),
       deletedAt: this.deletedAt?.toISOString(),
       createdAt: this.createdAt.toISOString(),
       updatedAt: this.updatedAt.toISOString(),
+      createdBy: options.withCreatedBy ? this.createdBy?.serialize() : undefined,
+      updatedBy: options.withUpdatedBy ? this.updatedBy?.serialize() : undefined,
       vault: options.withVault ? this.vault?.serialize() : undefined,
     }
   }
@@ -70,14 +70,16 @@ export class VaultVariable<T = any> extends BaseEntity {
 
 interface SerializeOptions {
   withVault?: boolean
+  withCreatedBy?: boolean
+  withUpdatedBy?: boolean
 }
 
 export interface VaultVariableObject {
   name: string
+  createdAt: string
+  updatedAt: string
   createdBy?: UserObject
   updatedBy?: UserObject
   deletedAt?: string
-  createdAt: string
-  updatedAt: string
   vault?: VaultObject
 }

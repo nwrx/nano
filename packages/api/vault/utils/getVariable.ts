@@ -1,4 +1,5 @@
 import type { Loose } from '@unshared/types'
+import type { VaultVariable } from '../entities'
 import type { ModuleVault } from '../index'
 import { assert, createParser } from '@unshared/validation'
 import { assertWorkspace } from '../../workspace'
@@ -30,7 +31,7 @@ export type GetVariableOptions = Loose<ReturnType<typeof GET_VARIABLE_OPTIONS_SC
  *   name: 'MY_SECRET'
  * })
  */
-export async function getVariable(this: ModuleVault, options: GetVariableOptions) {
+export async function getVariable(this: ModuleVault, options: GetVariableOptions): Promise<VaultVariable> {
   const { workspace, vault, name } = GET_VARIABLE_OPTIONS_SCHEMA(options)
   const { VaultVariable } = this.getRepositories()
   const variable = await VaultVariable.findOneBy({ vault, name })
