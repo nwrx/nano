@@ -73,4 +73,4 @@ export const TOOL_SCHEMA = {
       }],
     },
   },
-} satisfies Schema
+} as const satisfies Schema
