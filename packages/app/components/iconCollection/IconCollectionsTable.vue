@@ -19,14 +19,20 @@ collections.options.withCreatedBy = true
 collections.options.withUpdatedBy = true
 collections.options.withDisabledBy = true
 
+onMounted(() => {
+  void collections.searchCollections(true)
+  void collections.subscribeToEvents()
+})
+
 watchThrottled(
   () => collections.options.search,
   () => collections.searchCollections(),
-  { immediate: true, throttle: 100 },
+  { throttle: 100 },
 )
 
-onMounted(collections.subscribeToEvents)
-onUnmounted(collections.unsubscribeFromEvents)
+onBeforeRouteLeave(() => {
+  void collections.unsubscribeFromEvents()
+})
 </script>
 
 <template>
