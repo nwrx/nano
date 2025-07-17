@@ -57,19 +57,16 @@ export class McpManagerClient {
 
   client = createClient<NmcpManager.Schema>({
     onFailure: async(response) => {
-      const data = await response.text()
-      try {
-        const error = JSON.parse(data) as NmcpManager.Error
-        throw createError(error)
-      }
-      catch {
-        throw createError({
-          name: toConstantCase('E_MCP_MANAGER', response.statusText) as ServerErrorName,
-          message: data,
-          statusCode: response.status,
-          statusMessage: response.statusText,
-        })
-      }
+      const text = await response.text()
+      let data: NmcpManager.Error | undefined
+      try { data = JSON.parse(text) as NmcpManager.Error }
+      catch { /* ignore */ }
+      throw createError({
+        name: data.name ?? toConstantCase('E_MCP_MANAGER', response.statusText) as ServerErrorName,
+        message: data?.message ?? text,
+        statusCode: data.statusCode ?? response.status,
+        statusMessage: data.statusMessage ?? response.statusText,
+      })
     },
   })
 
