@@ -19,7 +19,7 @@ const route = useRoute()
 
         <!-- Content -->
         <div class="relative w-full">
-          <NuxtPage transition />
+          <NuxtPage />
         </div>
 
         <!-- Side menu -->

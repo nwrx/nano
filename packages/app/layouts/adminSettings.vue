@@ -39,7 +39,7 @@ const route = useRoute()
             class="sticky top-0 z-1"
             :items="[route.meta.parent]"
           />
-          <NuxtPage transition />
+          <NuxtPage />
         </div>
       </div>
     </AppPage>

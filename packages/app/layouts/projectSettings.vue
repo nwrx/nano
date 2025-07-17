@@ -27,7 +27,7 @@ const project = computed(() => route.params.project as string)
 
         <!-- Content -->
         <div class="relative w-full">
-          <NuxtPage transition />
+          <NuxtPage />
         </div>
       </div>
     </AppPage>
