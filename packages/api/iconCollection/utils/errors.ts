@@ -25,4 +25,16 @@ export const ERRORS = {
     statusText: response.statusText,
     statusCode: response.status,
   }),
+  ICON_COLLECTION_ALREADY_ENABLED: (name: string) => createError({
+    name: 'E_ICON_COLLECTION_ALREADY_ENABLED',
+    message: `Icon collection "${name}" is already enabled`,
+    statusText: 'Conflict',
+    statusCode: 409,
+  }),
+  ICON_COLLECTION_ALREADY_DISABLED: (name: string) => createError({
+    name: 'E_ICON_COLLECTION_ALREADY_DISABLED',
+    message: `Icon collection "${name}" is already disabled`,
+    statusText: 'Conflict',
+    statusCode: 409,
+  }),
 }
