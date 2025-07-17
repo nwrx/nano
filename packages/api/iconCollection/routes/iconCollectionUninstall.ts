@@ -4,7 +4,7 @@ import { assert, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { deleteCollection } from '../utils'
 
-export function iconCollectionDelete(this: ModuleIconCollection) {
+export function iconCollectionUninstall(this: ModuleIconCollection) {
   return createHttpRoute(
     {
       name: 'DELETE /api/icons/collections/:name',

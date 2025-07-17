@@ -6,7 +6,7 @@ import { assert, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { getImportTask } from '../utils'
 
-export function iconCollectionImport(this: ModuleIconCollection) {
+export function iconCollectionInstall(this: ModuleIconCollection) {
   return createHttpRoute(
     {
       name: 'POST /api/icons/collections/:name',
