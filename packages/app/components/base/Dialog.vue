@@ -28,6 +28,8 @@ const emit = defineEmits<{
   open: []
   close: []
   confirm: []
+  // eslint-disable-next-line vue/no-unused-emit-declarations
+  submit: []
 }>()
 
 defineSlots<{
