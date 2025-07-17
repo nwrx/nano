@@ -3,6 +3,14 @@ import Consola from 'consola'
 import { ModuleChat } from './chat'
 import { ModuleFlow } from './flow'
 import { ModuleFlowEditor } from './flowEditor'
+import { ModuleIcon } from './icon'
+import { ModuleIconCollection } from './iconCollection'
+import { ModuleMcpGateway } from './mcpGateway'
+import { ModuleMcpManager } from './mcpManager'
+import { ModuleMcpPool } from './mcpPool'
+import { ModuleMcpServer } from './mcpServer'
+import { ModuleMcpServerArgument } from './mcpServerArgument'
+import { ModuleMcpServerVariable } from './mcpServerVariable'
 import { ModuleProject } from './project'
 import { ModuleRegistry } from './registry'
 import { ModuleStorage } from './storage'
@@ -35,8 +43,16 @@ export const application = new Application(
     ModuleChat,
     ModuleHealth,
     ModuleThread,
+    ModuleIcon,
+    ModuleIconCollection,
     ModuleThreadRunner,
     ModuleRegistry,
+    ModuleMcpManager,
+    ModuleMcpGateway,
+    ModuleMcpPool,
+    ModuleMcpServer,
+    ModuleMcpServerArgument,
+    ModuleMcpServerVariable,
   ],
   {
     prefix: 'NANO',
