@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/no-nested-conditional */
 import type { Loose } from '@unshared/types'
 import type { IconCollection } from '../entities'
 import type { ModuleIconCollection } from '../index'
@@ -8,8 +9,11 @@ import { assertUser } from '../../user/utils/assertUser'
 export const GET_COLLECTION_OPTIONS_SCHEMA = createParser({
   user: assertUser,
   name: assert.stringNotEmpty,
-  withFile: [[assert.undefined], [assert.boolean]],
   withIcons: [[assert.undefined], [assert.boolean]],
+  withIconsCount: [[assert.undefined], [assert.boolean]],
+  withCreatedBy: [[assert.undefined], [assert.boolean]],
+  withUpdatedBy: [[assert.undefined], [assert.boolean]],
+  withDisabledBy: [[assert.undefined], [assert.boolean]],
 })
 
 export type GetCollectionOptions = Loose<ReturnType<typeof GET_COLLECTION_OPTIONS_SCHEMA>>
@@ -26,8 +30,11 @@ export async function getCollection(this: ModuleIconCollection, options: GetColl
   const {
     name,
     user,
-    withFile = false,
     withIcons = false,
+    withIconsCount = false,
+    withCreatedBy = false,
+    withUpdatedBy = false,
+    withDisabledBy = false,
   } = GET_COLLECTION_OPTIONS_SCHEMA(options)
 
   // --- Check if the user is a super administrator.
@@ -38,7 +45,26 @@ export async function getCollection(this: ModuleIconCollection, options: GetColl
   const collection = await IconCollection.findOne({
     where: { name },
     relations: {
-      icons: withIcons ? { file: withFile } : undefined,
+      icons: withIcons || withIconsCount,
+      createdBy: withCreatedBy,
+      updatedBy: withUpdatedBy,
+      disabledBy: withDisabledBy,
+    },
+    // @ts-expect-error: ignore
+    select: {
+      id: true,
+      name: true,
+      title: true,
+      status: true,
+      version: true,
+      metadata: true,
+      createdAt: withCreatedBy,
+      createdBy: withCreatedBy,
+      updatedAt: withUpdatedBy,
+      updatedBy: withUpdatedBy,
+      disabledAt: withDisabledBy,
+      disabledBy: withDisabledBy,
+      icons: withIcons ? true : (withIconsCount ? { id: true } : false),
     },
   })
 
