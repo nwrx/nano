@@ -37,7 +37,7 @@ export async function getThreadSession(this: ModuleThread, options: ThreadSessio
     autoReconnect: true,
     reconnectDelay: 300,
     reconnectLimit: 3,
-  })
+  }).open()
 
   // --- Store events in the database.
   const { ThreadEvent } = this.getRepositories()
