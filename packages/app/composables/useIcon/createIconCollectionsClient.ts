@@ -10,7 +10,8 @@ export function createIconCollectionsClient() {
   const options = ref<IconCollectionSearchOptions>({})
 
   const isSearching = ref(false)
-  async function searchCollections() {
+  async function searchCollections(allowCache = false) {
+    if (allowCache && data.value.length > 0) return
     options.value.page = 1
     isSearching.value = true
     await client.requestAttempt(
@@ -58,9 +59,9 @@ export function createIconCollectionsClient() {
   let subscribers = 0
   let abortController = new AbortController()
 
-  async function subscribeToEvents() {
+  function subscribeToEvents() {
     subscribers += 1
-    await client.requestAttempt(
+    void client.requestAttempt(
       'GET /api/icons/collections/events',
       {
         signal: abortController.signal,

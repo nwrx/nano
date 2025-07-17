@@ -13,6 +13,7 @@ export interface CachedComposableInstance<T extends Function = Function> {
 export interface CreateCachedComposableOptions<T extends Function = Function> {
   cacheKey?: (...args: Parameters<T>) => string
   cacheMap?: Map<string, CachedComposableInstance<T>>
+  isPersistent?: boolean
 }
 
 /**
@@ -28,10 +29,12 @@ export function createCachedComposable<T extends Function>(composable: T, option
   const {
     cacheKey = (...args: unknown[]) => args.join('/'),
     cacheMap: instances = new Map<string, CachedComposableInstance<T>>(),
+    isPersistent = false,
   } = options
 
   // --- Handle disposal of cached instances.
   function dispose(key: string) {
+    if (isPersistent) return
     const instance = instances.get(key)
     if (!instance) return
     instance.subscribers -= 1
