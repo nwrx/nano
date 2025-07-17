@@ -15,6 +15,7 @@ const props = defineProps<BaseInputTextProps<T> & {
   classIcon?: string
   classInput?: string
   classGroup?: string
+  isLoading?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -75,7 +76,7 @@ const isFocused = ref(false)
           v-if="iconPrepend || icon"
           :icon="iconPrepend! || icon!"
           :class="classIcon"
-          class="size-4 pointer-events-none mr-sm"
+          class="size-4 pointer-events-none mr-sm shrink-0"
         />
 
         <!-- Input -->
@@ -89,12 +90,19 @@ const isFocused = ref(false)
           @blur="() => isFocused = false"
         />
 
+        <!-- Loading -->
+        <BaseIcon
+          v-if="isLoading"
+          icon="i-line-md:loading-loop"
+          class="size-4 pointer-events-none ml-sm shrink-0"
+        />
+
         <!-- Icon -->
         <BaseIcon
-          v-if="iconAppend"
+          v-else-if="iconAppend"
           :icon="iconAppend"
           :class="classIcon"
-          class="size-4 pointer-events-none ml-sm"
+          class="size-4 pointer-events-none ml-sm shrink-0"
         />
       </div>
 
