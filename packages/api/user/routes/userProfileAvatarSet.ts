@@ -54,7 +54,7 @@ export function userSetAvatar(this: ModuleUser) {
       const userToUpdate = await getUser.call(this, { user, username, withProfile: true })
       userToUpdate.profile!.avatar = await moduleStorage.upload({
         data: file,
-        pool: 'default',
+        pool: 'Default',
         name: `avatar-${userToUpdate.username}`,
         type: file.type,
         size: file.size,
