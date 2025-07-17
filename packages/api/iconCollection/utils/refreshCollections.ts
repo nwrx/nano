@@ -52,11 +52,6 @@ export async function refreshCollections(
     collection.metadata = metadata
     collection.version = metadata.version ?? '0.0.1'
     collection.updatedAt = new Date()
-    collection.author = metadata.author.name
-    collection.authorUrl = metadata.author.name
-    collection.license = metadata.license.title
-    collection.licenseUrl = metadata.license.url
-    collection.licenseSpdx = metadata.license.spdx
     collection.createdBy = user
     collection.updatedBy = user
   }

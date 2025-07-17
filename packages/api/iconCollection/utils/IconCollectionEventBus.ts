@@ -33,13 +33,32 @@ export namespace IconCollectionEventData {
     collection: string
     error: string
   }
+
+  export interface Enabled {
+    event: 'enabled'
+    collection: string
+  }
+
+  export interface Disabled {
+    event: 'disabled'
+    collection: string
+  }
+
+  export interface Uninstalled {
+    event: 'uninstalled'
+    collection: string
+  }
 }
 
 export type IconCollectionEvents =
+  | IconCollectionEventData.Disabled
+  | IconCollectionEventData.Enabled
   | IconCollectionEventData.InstallDone
+  | IconCollectionEventData.InstallError
   | IconCollectionEventData.InstallIconDone
   | IconCollectionEventData.InstallIconStart
   | IconCollectionEventData.InstallStart
+  | IconCollectionEventData.Uninstalled
 
 export class IconCollectionEventBus {
   constructor() {}

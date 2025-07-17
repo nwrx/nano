@@ -27,6 +27,7 @@ export function iconCollectionDisable(this: ModuleIconCollection) {
       // --- Save the updated record.
       const { IconCollection } = this.getRepositories()
       await IconCollection.save(collection)
+      await this.iconEventBus.broadcast({ event: 'disabled', collection: name })
     },
   )
 }
