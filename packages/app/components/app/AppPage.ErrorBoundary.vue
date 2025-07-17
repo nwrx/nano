@@ -20,7 +20,7 @@ const errorMessage = computed(() => (
 </script>
 
 <template>
-  <Pattern class="absolute inset-0 space-y-md flex flex-col items-center justify-centerrd-app">
+  <Pattern class="absolute inset-0 space-y-md flex flex-col items-center justify-center rd-app">
 
     <!-- Error Message -->
     <div>
