@@ -5,7 +5,7 @@ import type { Loose } from '@unshared/types'
 import type { IconCollection } from '../entities'
 import type { ModuleIconCollection } from '../index'
 import { assert, createParser } from '@unshared/validation'
-import { Like } from 'typeorm'
+import { ILike } from 'typeorm'
 import { ModuleUser } from '../../user'
 import { assertUser } from '../../user/utils/assertUser'
 
@@ -15,6 +15,9 @@ export const SEARCH_COLLECTIONS_OPTIONS_SCHEMA = createParser({
   limit: [[assert.undefined], [assert.numberInteger]],
   page: [[assert.undefined], [assert.numberInteger]],
   withIcons: [[assert.undefined], [assert.boolean]],
+  withCreatedBy: [[assert.undefined], [assert.boolean]],
+  withUpdatedBy: [[assert.undefined], [assert.boolean]],
+  withDisabledBy: [[assert.undefined], [assert.boolean]],
 })
 
 export type SearchCollectionsOptions = Loose<ReturnType<typeof SEARCH_COLLECTIONS_OPTIONS_SCHEMA>>
@@ -28,7 +31,20 @@ export type SearchCollectionsOptions = Loose<ReturnType<typeof SEARCH_COLLECTION
  */
 export async function searchCollections(this: ModuleIconCollection, options: SearchCollectionsOptions): Promise<IconCollection[]> {
   const moduleUser = this.getModule(ModuleUser)
-  const { search, user, limit = 10, page = 1, withIcons } = SEARCH_COLLECTIONS_OPTIONS_SCHEMA(options)
+  const {
+    search = '',
+    user,
+    page = 1,
+    limit = 16,
+    withIcons = false,
+    withCreatedBy = false,
+    withUpdatedBy = false,
+    withDisabledBy = false,
+  } = SEARCH_COLLECTIONS_OPTIONS_SCHEMA(options)
+
+  // --- Create the search operator.
+  const searchSafe = search.replaceAll(/[^\d\sa-z]/gi, '')
+  const searchOperator = searchSafe.length > 2 ? ILike(`%${searchSafe}%`) : undefined
 
   // --- Check if the user is a super administrator.
   if (!user.isSuperAdministrator) throw moduleUser.errors.USER_UNAUTHORIZED()
@@ -36,10 +52,18 @@ export async function searchCollections(this: ModuleIconCollection, options: Sea
   // --- Search for collections by name.
   const { IconCollection } = this.getRepositories()
   return IconCollection.find({
-    where: { name: Like(`%${search}%`) },
+    where: [
+      { name: searchOperator },
+      { title: searchOperator },
+    ],
     take: limit,
     skip: (page - 1) * limit,
-    relations: { icons: withIcons },
     order: { name: 'ASC' },
+    relations: {
+      icons: withIcons,
+      createdBy: withCreatedBy,
+      updatedBy: withUpdatedBy,
+      disabledBy: withDisabledBy,
+    },
   })
 }

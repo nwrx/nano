@@ -2,7 +2,7 @@ import type { ModuleIconCollection } from '../index'
 import { createHttpRoute } from '@unserved/server'
 import { assert, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
-import { deleteCollection } from '../utils'
+import { uninstallCollection } from '../utils'
 
 export function iconCollectionUninstall(this: ModuleIconCollection) {
   return createHttpRoute(
@@ -18,7 +18,7 @@ export function iconCollectionUninstall(this: ModuleIconCollection) {
       const { name } = parameters
 
       // --- Delete the icon collection
-      await deleteCollection.call(this, { user, name })
+      await uninstallCollection.call(this, { user, name })
     },
   )
 }

@@ -28,15 +28,10 @@ export async function refreshCollections(
   // --- Check if the user is a super administrator.
   if (!user.isSuperAdministrator) throw moduleUser.errors.USER_UNAUTHORIZED()
 
-  // --- Build the URL for searching collections.
-  const url = new URL('/collections', this.iconIconifyUrl)
-  const response = await fetch(url)
-  if (!response.ok) throw this.errors.ICON_ICONIFY_FETCH_FAILED(response)
-  const remoteCollections = await fetchCollectionsMetadata.call(this)
-
-  // --- Get the existing collections in the database.
+  // --- Get the remote and local collections.
   const { IconCollection } = this.getRepositories()
   const allCollections = await IconCollection.find()
+  const remoteCollections = await fetchCollectionsMetadata.call(this)
 
   // --- Create or update collections in the database.
   for (const [name, metadata] of Object.entries(remoteCollections)) {

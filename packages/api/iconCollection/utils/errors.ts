@@ -7,23 +7,27 @@ export const ERRORS = {
     statusText: 'Not Found',
     statusCode: 404,
   }),
-  ICON_COLLECTION_ALREADY_EXISTS: (name: string) => createError({
-    name: 'E_ICON_COLLECTION_ALREADY_EXISTS',
-    message: `Icon collection "${name}" already exists`,
+
+  // Install.
+  ICON_COLLECTION_DOWNLOAD_METADATA_FAILED: (response: Response) => createError({
+    name: 'E_ICON_COLLECTION_DOWNLOAD_METADATA_FAILED',
+    message: `Failed to download icon collection metadata: ${response.statusText}`,
+    statusText: response.statusText,
+    statusCode: response.status,
+  }),
+  ICON_COLLECTION_DOWNLOAD_DATA_FAILED: (response: Response) => createError({
+    name: 'E_ICON_COLLECTION_DOWNLOAD_DATA_FAILED',
+    message: `Failed to download icon collection data: ${response.statusText}`,
+    statusText: response.statusText,
+    statusCode: response.status,
+  }),
+
+  // Conflicts.
+  ICON_COLLECTION_ALREADY_INSTALLED: (name: string) => createError({
+    name: 'E_ICON_COLLECTION_ALREADY_INSTALLED',
+    message: `Icon collection "${name}" is already installed`,
     statusText: 'Conflict',
     statusCode: 409,
-  }),
-  ICON_ICONIFY_FETCH_FAILED: (response: Response) => createError({
-    name: 'E_ICONIFY_FETCH_FAILED',
-    message: response.statusText,
-    statusText: response.statusText,
-    statusCode: response.status,
-  }),
-  ICON_ICONIFY_IMPORT_FAILED: (response: Response) => createError({
-    name: 'E_ICONIFY_IMPORT_FAILED',
-    message: response.statusText,
-    statusText: response.statusText,
-    statusCode: response.status,
   }),
   ICON_COLLECTION_ALREADY_ENABLED: (name: string) => createError({
     name: 'E_ICON_COLLECTION_ALREADY_ENABLED',

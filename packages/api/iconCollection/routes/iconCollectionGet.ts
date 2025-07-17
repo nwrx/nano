@@ -1,10 +1,9 @@
-import type { IconCollectionMetadata } from '../entities'
+import type { IconCollectionObject } from '../entities'
 import type { ModuleIconCollection } from '../index'
 import { createHttpRoute } from '@unserved/server'
-import { parseBoolean } from '@unshared/string/parseBoolean'
 import { assert, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
-import { getCollection, getCollectionRemote } from '../utils'
+import { getCollection } from '../utils'
 
 export function iconCollectionGet(this: ModuleIconCollection) {
   return createHttpRoute(
@@ -13,22 +12,15 @@ export function iconCollectionGet(this: ModuleIconCollection) {
       parseParameters: createParser({
         name: [assert.stringNotEmpty],
       }),
-      parseQuery: createParser({
-        remote: [[assert.undefined], [assert.string, parseBoolean]],
-      }),
     },
-    async({ event, parameters, query }): Promise<IconCollectionMetadata> => {
+    async({ event, parameters }): Promise<IconCollectionObject> => {
       const moduleUser = this.getModule(ModuleUser)
       const { user } = await moduleUser.authenticate(event)
       const { name } = parameters
-      const { remote = false } = query
-
-      // --- Get remote collection from Iconify API
-      if (remote) return await getCollectionRemote.call(this, { user, name })
 
       // --- Get local collection from database
       const collection = await getCollection.call(this, { user, name })
-      return collection.metadata
+      return collection.serialize()
     },
   )
 }
