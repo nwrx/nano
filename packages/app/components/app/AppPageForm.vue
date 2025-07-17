@@ -8,8 +8,8 @@ const props = defineProps<{
   text?: string | string[]
   vertical?: boolean
   label?: string
-  loading?: boolean
   classForm?: string
+  onSubmit?: () => any
 }>()
 
 const emit = defineEmits<{
@@ -71,7 +71,7 @@ const showHeader = computed(() => (
         'lg:basis-2/3': !vertical,
         'mt-lg': showHeader,
       }]"
-      @submit.prevent="() => emit('submit')">
+      @submit.prevent>
 
       <!-- Form content -->
       <slot />
@@ -85,7 +85,7 @@ const showHeader = computed(() => (
         icon-expand
         class="button-success self-end mt-md"
         type="submit"
-        :loading="loading"
+        @click="() => onSubmit ? onSubmit() : emit('submit')"
       />
     </form>
   </div>
