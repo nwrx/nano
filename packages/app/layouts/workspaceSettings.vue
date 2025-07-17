@@ -1,8 +1,11 @@
 <!-- eslint-disable unicorn/prevent-abbreviations -->
 <script setup lang="ts">
+import AppLayout from '~/components/app/AppLayout.vue'
+import AppPage from '~/components/app/AppPage.vue'
+import WorkspaceHeader from '~/components/workspace/WorkspaceHeader.vue'
+
 const { t } = useI18n()
 const route = useRoute()
-const workspace = computed(() => route.params.workspace as string)
 </script>
 
 <template>
@@ -10,11 +13,7 @@ const workspace = computed(() => route.params.workspace as string)
     <AppPage>
 
       <!-- Header -->
-      <AppPageHeader
-        :icon="route.meta.icon"
-        :title="[workspace, localize(route.meta.title)]"
-        :description="localize(route.meta.description)"
-      />
+      <WorkspaceHeader />
 
       <!-- Side menu -->
       <div class="flex w-full h-full overflow-x-hidden overflow-y-auto">
@@ -31,7 +30,7 @@ const workspace = computed(() => route.params.workspace as string)
             class="sticky top-0"
             :items="[route.meta.parent, route.name as string]"
           />
-          <NuxtPage transition />
+          <NuxtPage />
         </div>
       </div>
     </AppPage>
