@@ -1,6 +1,6 @@
 import { BaseEntity } from '@unserved/server'
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
-import { IconCollection, IconCollectionObject } from '../../iconCollection'
+import { IconCollection } from '../../iconCollection'
 import { StorageFile } from '../../storage'
 
 /**
@@ -51,25 +51,9 @@ export class Icon extends BaseEntity {
   collection: IconCollection
 
   /**
-   * @param options Options to control the serialization of the icon.
-   * @returns The object representation of the icon.
+   * @returns The string representation of the icon.
    */
-  serialize(options: SerializeOptions = {}): IconObject {
-    const { withCollection = false } = options
-    return {
-      name: this.name,
-      description: this.description ?? undefined,
-      collection: withCollection ? this.collection.serialize() : undefined,
-    }
+  serialize(): string {
+    return this.name
   }
-}
-
-interface SerializeOptions {
-  withCollection?: boolean
-}
-
-export interface IconObject {
-  name: string
-  description?: string
-  collection?: IconCollectionObject
 }

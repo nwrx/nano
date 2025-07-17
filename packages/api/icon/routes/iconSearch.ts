@@ -13,7 +13,7 @@ export function iconSearch(this: ModuleIcon) {
         limit: [[assert.undefined], [assert.stringNumber, Number.parseInt]],
       }),
     },
-    async({ query }) => {
+    async({ query }): Promise<string[]> => {
       const icons = await searchIcons.call(this, query)
       return icons.map(x => x.serialize())
     },

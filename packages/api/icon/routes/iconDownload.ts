@@ -5,7 +5,7 @@ import { setHeader } from 'h3'
 import { ModuleStorage } from '../../storage'
 import { getIcon } from '../utils'
 
-export function iconGet(this: ModuleIcon) {
+export function iconDownload(this: ModuleIcon) {
   return createHttpRoute(
     {
       name: 'GET /api/icons/:name',

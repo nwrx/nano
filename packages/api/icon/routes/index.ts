@@ -1,2 +1,2 @@
-export * from './iconGet'
+export * from './iconDownload'
 export * from './iconSearch'
