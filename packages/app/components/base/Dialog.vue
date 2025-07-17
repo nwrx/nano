@@ -3,10 +3,12 @@
 <script setup lang="ts" generic="T">
 import type { BaseDialogProps, BaseDialogSlotProps } from '@unshared/vue/BaseDialog'
 import type { VNode } from '#imports'
+import { BaseButton } from '@unshared/vue/BaseButton'
+import { BaseDialog } from '@unshared/vue/BaseDialog'
 import { vMarkdown } from '#imports'
+import Hyperlink from '~/components/base/Hyperlink.vue'
 
-const props = defineProps<BaseDialogProps<T> & {
-  modelValue?: boolean
+defineProps<BaseDialogProps<T> & {
   title?: string
   text?: string
   icon?: string
@@ -19,6 +21,7 @@ const props = defineProps<BaseDialogProps<T> & {
   labelCancel?: string
   persistent?: boolean
   teleport?: string
+  onConfirm?: () => any
 }>()
 
 const emit = defineEmits<{
@@ -33,8 +36,8 @@ defineSlots<{
   container: (slot: BaseDialogSlotProps<T>) => VNode
 }>()
 
-const { t, locale } = useI18n()
-const isOpen = useVModel(props as { modelValue: boolean }, 'modelValue')
+const { t } = useI18n()
+const isOpen = defineModel({ default: false })
 
 // Quick fix to emit `open` event when dialog is opened
 watch(isOpen, value => value && emit('open'))
@@ -57,7 +60,7 @@ watch(isOpen, value => value && emit('open'))
     />
 
     <!-- Dialog -->
-    <LazyBaseDialog
+    <BaseDialog
       v-slot="slot"
       v-model="isOpen"
       as="div"
@@ -120,14 +123,18 @@ watch(isOpen, value => value && emit('open'))
                   icon-append="i-carbon:chevron-right"
                   icon-expand
                   :disabled="disabled"
-                  @click="() => slot.returnValue(true)"
+                  @click="async() => {
+                    if (!onConfirm) return slot.returnValue(true)
+                    await onConfirm()
+                    slot.close()
+                  }"
                 />
               </div>
             </slot>
           </div>
         </slot>
       </div>
-    </LazyBaseDialog>
+    </BaseDialog>
   </Teleport>
 </template>
 
