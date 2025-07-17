@@ -3,6 +3,7 @@ import { presetUnshared } from '@unshared/unocss-preset'
 import { defineConfig, presetIcons, presetTypography, presetWind3 } from 'unocss'
 import { presetTheme } from 'unocss-preset-theme'
 import * as THEME from './theme'
+import ICON_SAFELIST from './theme/iconSafelists.json'
 import { COLORS } from './utils/constants'
 
 type Theme =
@@ -59,6 +60,7 @@ export default defineConfig<Theme>({
     'bg-token-property',
     'bg-token-operator',
     'bg-token-punctuation',
+    ...ICON_SAFELIST,
   ],
 
   /**
@@ -506,6 +508,9 @@ export default defineConfig<Theme>({
      */
     presetIcons({
       cdn: 'https://esm.sh/',
+      collections: {
+        carbon: () => import('@iconify-json/carbon/icons.json').then(i => i.default),
+      },
     }),
 
     /**

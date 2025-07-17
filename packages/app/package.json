@@ -12,6 +12,7 @@
     "storybook": "storybook dev"
   },
   "devDependencies": {
+    "@iconify-json/carbon": "1.2.10",
     "@nuxt/eslint": "1.2.0",
     "@nuxt/fonts": "0.11.0",
     "@nuxt/image": "1.9.0",
@@ -40,6 +41,7 @@
     "@unshared/client": "0.6.6",
     "@unshared/color": "0.6.6",
     "@unshared/eslint-config": "0.6.6",
+    "@unshared/fs": "0.6.6",
     "@unshared/functions": "0.6.6",
     "@unshared/string": "0.6.6",
     "@unshared/types": "0.6.6",
