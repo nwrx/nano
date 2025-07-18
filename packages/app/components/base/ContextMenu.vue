@@ -5,7 +5,9 @@ import { BaseButton } from '@unshared/vue/BaseButton'
 import { BaseIcon } from '@unshared/vue/BaseIcon'
 import { BaseMenu } from '@unshared/vue/BaseMenu'
 
-const props = defineProps<BaseMenuProps>()
+const props = defineProps<BaseMenuProps & {
+  compact?: boolean
+}>()
 const model = defineModel({ default: false })
 </script>
 
@@ -26,7 +28,7 @@ const model = defineModel({ default: false })
           @click="() => slotProps.toggle()">
           <BaseIcon
             icon="i-carbon:overflow-menu-vertical"
-            class="size-6"
+            :class="compact ? 'size-4' : 'size-6'"
           />
         </BaseButton>
       </slot>
