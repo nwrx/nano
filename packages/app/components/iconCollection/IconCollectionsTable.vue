@@ -7,7 +7,7 @@ import UserAudit from '~/components/user/UserAudit.vue'
 import { useIconCollections } from '~/composables/useIcon'
 import IconCollectionActions from './IconCollectionActions.vue'
 import IconCollectionBadge from './IconCollectionBadge.vue'
-import IconCollectionTableCard from './IconCollectionTableCard.vue'
+import IconCollectionTableCard from './IconCollectionsTable.Card.vue'
 
 // --- State.
 const { t } = useI18n()
