@@ -19,7 +19,7 @@ export function iconCollectionUninstall(this: ModuleIconCollection) {
 
       // --- Delete the icon collection
       await uninstallCollection.call(this, { user, name })
-      await this.iconEventBus.broadcast({ event: 'uninstalled', collection: name })
+      await this.iconEventBus.sendMessage({ event: 'uninstalled', collection: name })
     },
   )
 }

@@ -28,7 +28,7 @@ export function iconCollectionEnable(this: ModuleIconCollection) {
       // --- Save the updated record.
       const { IconCollection } = this.getRepositories()
       await IconCollection.save(collection)
-      await this.iconEventBus.broadcast({ event: 'enabled', collection: name })
+      await this.iconEventBus.sendMessage({ event: 'enabled', collection: name })
     },
   )
 }

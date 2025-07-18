@@ -1,7 +1,7 @@
-import { ModuleBase } from '@unserved/server'
+import type { IconCollectionEvents } from './utils'
+import { createEventBus, ModuleBase } from '@unserved/server'
 import * as ENTITIES from './entities'
 import * as ROUTES from './routes'
-import { IconCollectionEventBus } from './utils'
 import { ERRORS } from './utils'
 
 export * from './entities'
@@ -36,7 +36,7 @@ export class ModuleIconCollection extends ModuleBase {
 
   iconCdn = 'https://esm.sh/'
   iconIconifyUrl = 'https://api.iconify.design/'
-  iconEventBus = new IconCollectionEventBus()
+  iconEventBus = createEventBus<IconCollectionEvents>()
   iconInstallLock = new Map<string, Promise<void>>()
 
   constructor(options: Partial<ModuleIconCollectionOptions> = {}) {

@@ -26,7 +26,7 @@ export async function installCollection(this: ModuleIconCollection, options: Get
   if (collection.status === 'Installed') throw this.errors.ICON_COLLECTION_ALREADY_INSTALLED(name)
 
   // --- Download the icon data and for each icon, create and save it in the database.
-  await this.iconEventBus.broadcast({ event: 'installStart', collection: name })
+  await this.iconEventBus.sendMessage({ event: 'installStart', collection: name })
   const data = await fetchCollectionData.call(this, name)
 
   // --- If the collection is not found, throw an error.
@@ -39,7 +39,7 @@ export async function installCollection(this: ModuleIconCollection, options: Get
     const isIndex10 = index % 10 === 0
     const isIndexLast = index === total - 1
     if (isIndexLast || isIndex10) {
-      await this.iconEventBus.broadcast({
+      await this.iconEventBus.sendMessage({
         event: 'installIconDone',
         icon: name,
         collection: collection.name,
@@ -54,5 +54,5 @@ export async function installCollection(this: ModuleIconCollection, options: Get
   const { IconCollection } = this.getRepositories()
   collection.status = 'Installed'
   await IconCollection.save(collection)
-  await this.iconEventBus.broadcast({ event: 'installDone', collection: name })
+  await this.iconEventBus.sendMessage({ event: 'installDone', collection: name })
 }
