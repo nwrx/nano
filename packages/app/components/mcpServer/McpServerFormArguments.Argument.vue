@@ -63,7 +63,7 @@ const isVariable = computed(() => {
     <Actions
       class="ml-auto"
       :workspace="workspace"
-      :pool="pool"
+      :name="pool"
       :server="server"
       :argument="argument"
     />

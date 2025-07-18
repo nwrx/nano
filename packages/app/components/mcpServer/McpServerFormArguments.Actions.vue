@@ -6,8 +6,8 @@ import DialogRemove from './McpServerFormArguments.DialogRemove.vue'
 
 defineProps<{
   workspace: string
-  pool: string
   server: string
+  name: string
   argument: McpServerArgumentObject
 }>()
 
@@ -44,8 +44,8 @@ const showRemoveDialog = ref(false)
     <DialogEdit
       v-model="showEditDialog"
       :workspace="workspace"
-      :pool="pool"
-      :server="server"
+      :pool="name"
+      :name="server"
       :argument="argument"
     />
 
@@ -53,8 +53,8 @@ const showRemoveDialog = ref(false)
     <DialogLink
       v-model="showLinkDialog"
       :workspace="workspace"
-      :pool="pool"
-      :server="server"
+      :pool="name"
+      :name="server"
       :argument="argument"
     />
 
@@ -62,8 +62,8 @@ const showRemoveDialog = ref(false)
     <DialogRemove
       v-model="showRemoveDialog"
       :workspace="workspace"
-      :pool="pool"
-      :server="server"
+      :pool="name"
+      :name="server"
       :argument="argument"
     />
   </div>

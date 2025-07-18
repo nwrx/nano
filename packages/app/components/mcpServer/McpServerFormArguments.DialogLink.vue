@@ -2,45 +2,19 @@
 import type { McpServerArgumentObject } from '@nwrx/nano-api'
 import Dialog from '~/components/base/Dialog.vue'
 import VariableSearch from '~/components/vaultVariable/VariableSearch.vue'
+import { useMcpServer } from '~/composables/useMcp'
 
 const props = defineProps<{
   workspace: string
   pool: string
-  server: string
+  name: string
   argument: McpServerArgumentObject
-}>()
-
-const emit = defineEmits<{
-  'submit': []
 }>()
 
 // --- Model.
 const { t } = useI18n()
-const client = useClient()
-const alerts = useAlerts()
+const server = useMcpServer(props)
 const selectedVariable = ref<string>()
-
-// --- Submit.
-async function submit() {
-  await client.requestAttempt(
-    'PUT /api/workspaces/:workspace/pools/:pool/servers/:server/arguments/:position',
-    {
-      parameters: {
-        workspace: props.workspace,
-        pool: props.pool,
-        server: props.server,
-      },
-      body: {
-        position: props.argument.position,
-        variable: selectedVariable.value,
-      },
-      onSuccess: () => {
-        emit('submit')
-        alerts.success(t('success'))
-      },
-    },
-  )
-}
 
 // --- State.
 const isOpen = defineModel({ default: false })
@@ -61,12 +35,12 @@ watch(isOpen, () => {
     icon="i-carbon:password"
     class-hint="hint-warning"
     class-button="button-warning"
-    :title="t('title', { position: props.argument.position, server: props.server })"
+    :title="t('title', { position: argument.position, server: name })"
     :text="t('text')"
     :label-confirm="t('confirm')"
     :label-cancel="t('cancel')"
     :disabled="!selectedVariable"
-    @confirm="() => submit()">
+    @confirm="() => server.updateArgument(argument.position, { variable: selectedVariable })">
 
     <!-- Search -->
     <VariableSearch

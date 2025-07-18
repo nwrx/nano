@@ -2,43 +2,19 @@
 import type { McpServerArgumentObject } from '@nwrx/nano-api'
 import Dialog from '~/components/base/Dialog.vue'
 import InputText from '~/components/base/InputText.vue'
+import { useMcpServer } from '~/composables/useMcp'
 
 const props = defineProps<{
   workspace: string
   pool: string
-  server: string
+  name: string
   argument: McpServerArgumentObject
-}>()
-
-const emit = defineEmits<{
-  'submit': []
 }>()
 
 // --- Model.
 const { t } = useI18n()
-const client = useClient()
-const alerts = useAlerts()
+const server = useMcpServer(props)
 const value = ref<string>()
-
-// --- Submit.
-async function submit() {
-  await client.requestAttempt(
-    'PUT /api/workspaces/:workspace/pools/:pool/servers/:server/arguments/:position',
-    {
-      data: {
-        workspace: props.workspace,
-        pool: props.pool,
-        server: props.server,
-        position: props.argument.position,
-        value: value.value,
-      },
-      onSuccess: () => {
-        emit('submit')
-        alerts.success(t('success'))
-      },
-    },
-  )
-}
 
 // --- State.
 const isOpen = defineModel({ default: false })
@@ -55,11 +31,11 @@ watch(isOpen, () => {
     icon="i-carbon:edit"
     class-hint="hint-warning"
     class-button="button-warning"
-    :title="t('title', { position: props.argument.position, server: props.server })"
+    :title="t('title', { position: argument.position, server: name })"
     :text="t('text')"
     :label-confirm="t('confirm')"
     :label-cancel="t('cancel')"
-    @confirm="() => submit()">
+    @confirm="() => server.updateArgument(argument.position, { value })">
     <InputText
       v-model="value"
       type="textarea"

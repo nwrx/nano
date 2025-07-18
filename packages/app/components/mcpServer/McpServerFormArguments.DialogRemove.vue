@@ -1,42 +1,18 @@
 <script setup lang="ts">
 import type { McpServerArgumentObject } from '@nwrx/nano-api'
 import Dialog from '~/components/base/Dialog.vue'
+import { useMcpServer } from '~/composables/useMcp'
 
 const props = defineProps<{
   workspace: string
   pool: string
-  server: string
+  name: string
   argument: McpServerArgumentObject
-}>()
-
-const emit = defineEmits<{
-  'submit': []
 }>()
 
 // --- Model.
 const { t } = useI18n()
-const client = useClient()
-const alerts = useAlerts()
-
-async function removeArgument() {
-  await client.requestAttempt(
-    'DELETE /api/workspaces/:workspace/pools/:pool/servers/:server/arguments/:position',
-    {
-      data: {
-        workspace: props.workspace,
-        pool: props.pool,
-        server: props.server,
-        position: props.argument.position,
-      },
-      onSuccess: () => {
-        emit('submit')
-        alerts.success(t('success'))
-      },
-    },
-  )
-}
-
-// --- State.
+const server = useMcpServer(props)
 const isOpen = defineModel({ default: false })
 </script>
 
@@ -46,11 +22,11 @@ const isOpen = defineModel({ default: false })
     icon="i-carbon:delete"
     class-hint="hint-danger"
     class-button="button-danger"
-    :title="t('title', { position: props.argument.position, server: props.server })"
+    :title="t('title', { position: argument.position, server: name })"
     :text="t('text')"
     :label-confirm="t('confirm')"
     :label-cancel="t('cancel')"
-    @confirm="() => removeArgument()">
+    @confirm="() => server.removeArgument(argument.position)">
 
     <div class="rd b b-app">
       <div class="flex items-center gap-sm p-sm mb-sm b-b b-dashed b-app">
