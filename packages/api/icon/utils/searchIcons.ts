@@ -1,7 +1,7 @@
 import type { Loose } from '@unshared/types'
 import type { ModuleIcon } from '../index'
 import { assert, createParser } from '@unshared/validation'
-import { ILike } from 'typeorm'
+import { ILike, In, IsNull } from 'typeorm'
 
 /** Options schema for the `searchIcons` function. */
 export const SEARCH_ICON_OPTIONS_SCHEMA = createParser({
@@ -27,6 +27,10 @@ export async function searchIcons(this: ModuleIcon, options: SearchIconOptions) 
   return await Icon.find({
     where: {
       name: search ? ILike(`%${search}%`) : undefined,
+      collection: {
+        deletedAt: IsNull(),
+        status: In(['Installed', 'Outdated']),
+      },
     },
     order: { name: 'ASC' },
     take: limit,

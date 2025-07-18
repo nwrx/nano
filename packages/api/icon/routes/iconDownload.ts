@@ -14,24 +14,27 @@ export function iconDownload(this: ModuleIcon) {
       }),
       parseQuery: createParser({
         color: [[assert.undefined], [assert.string]],
+        width: [[assert.undefined], [assert.stringNumber, Number.parseInt]],
+        height: [[assert.undefined], [assert.stringNumber, Number.parseInt]],
+        size: [[assert.undefined], [assert.stringNumber, Number.parseInt]],
       }),
     },
     async({ event, parameters, query }) => {
       const moduleStorage = this.getModule(ModuleStorage)
       const { name } = parameters
-      const { color } = query
+      const { color, size, height = size, width = size } = query
 
       // --- Get the icon and respond if no color is specified.
-      const icon = await getIcon.call(this, { name, withFile: true })
-      if (!color) return moduleStorage.respondWith(event, icon.file!)
+      const icon = await getIcon.call(this, { name, withFile: true, withCollection: true })
+      if (!color && !height && !width) return moduleStorage.respondWith(event, icon.file!)
 
       // --- If a color is specified, we need to modify the SVG.
       const file = await moduleStorage.download(icon.file!)
       let svg = await file.getText()
-      svg = svg.replaceAll('currentColor', color)
-      svg.replaceAll(/width="[^"]+"/g, 'width="24px"')
-      svg.replaceAll(/height="[^"]+"/g, 'height="24px"')
-      setHeader(event, 'Content-Type', await file.getContentType())
+      if (color) svg = svg.replaceAll('currentColor', color)
+      if (width) svg.replaceAll(/width="[^"]+"/g, `width="${width}px"`)
+      if (height) svg.replaceAll(/height="[^"]+"/g, `height="${height}px"`)
+      setHeader(event, 'Content-Type', icon.file!.type)
       setHeader(event, 'Content-Length', svg.length)
       setHeader(event, 'Cache-Control', 'public, max-age=31536000')
       return svg
