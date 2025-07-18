@@ -221,7 +221,6 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
   }
 
   async function createArguments(options: McpServerCreateArgumentOptions) {
-    await sleep(CONSTANTS.niceDelay)
     await client.requestAttempt(
       'POST /api/workspaces/:workspace/pools/:pool/servers/:server/arguments',
       {
@@ -242,7 +241,6 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
   }
 
   async function updateArgument(position: number, options: McpServerUpdateArgumentOptions) {
-    await sleep(CONSTANTS.niceDelay)
     await client.requestAttempt(
       'PUT /api/workspaces/:workspace/pools/:pool/servers/:server/arguments/:position',
       {
@@ -263,7 +261,6 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
   }
 
   async function removeArgument(position: number) {
-    await sleep(CONSTANTS.niceDelay)
     await client.requestAttempt(
       'DELETE /api/workspaces/:workspace/pools/:pool/servers/:server/arguments/:position',
       {
