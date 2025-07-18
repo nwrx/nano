@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import McpServerFormDangerZone from '~/components/mcpServer/McpServerFormDangerZone.vue'
-import McpServerFormSettings from '~/components/mcpServer/McpServerFormSettings.vue'
+import FormHeader from '~/components/mcpServer/McpServerFormHeader.vue'
+import FormTools from '~/components/mcpServer/McpServerFormTools.vue'
 
 definePageMeta({
   name: 'WorkspaceMcpServerTools',
@@ -8,7 +8,7 @@ definePageMeta({
   middleware: ['redirect-when-guest', 'abort-reserved'],
   layout: 'workspace-mcp',
   icon: 'i-carbon:tools',
-  // groups: ['workspace-mcp-server'],
+  groups: ['workspace-mcp-server'],
   title: {
     en: 'Integrations',
     fr: 'Intégrations',
@@ -33,6 +33,17 @@ const selectedServer = computed(() => route.params.server as string)
 
 <template>
   <div>
-    <!-- TODO -->
+    <FormHeader
+      :workspace="workspace"
+      :pool="selectedPool"
+      :name="selectedServer"
+      class="sticky top-0 z-1"
+    />
+    <FormTools
+      class="p-lg !m-0"
+      :workspace="workspace"
+      :pool="selectedPool"
+      :name="selectedServer"
+    />
   </div>
 </template>

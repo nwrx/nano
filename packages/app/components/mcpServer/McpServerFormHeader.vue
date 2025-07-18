@@ -8,7 +8,8 @@ const props = defineProps<{
   name: string
 }>()
 
-const server = computed(() => useMcpServer(props))
+const server = useMcpServer(props)
+onMounted(() => server.fetchServer(true))
 </script>
 
 <template>

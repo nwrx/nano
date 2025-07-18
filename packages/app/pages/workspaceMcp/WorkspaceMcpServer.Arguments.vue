@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import FormArguments from '~/components/mcpServer/McpServerFormArguments.vue'
 import FormArgumentsCreate from '~/components/mcpServer/McpServerFormArgumentsCreate.vue'
+import FormHeader from '~/components/mcpServer/McpServerFormHeader.vue'
 
 definePageMeta({
   name: 'WorkspaceMcpServerArguments',
@@ -33,6 +34,12 @@ const selectedServer = computed(() => route.params.server as string)
 
 <template>
   <div>
+    <FormHeader
+      :workspace="workspace"
+      :pool="selectedPool"
+      :name="selectedServer"
+      class="sticky top-0 z-1"
+    />
     <FormArgumentsCreate
       class="p-lg !m-0"
       :workspace="workspace"

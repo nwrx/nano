@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import FormHeader from '~/components/mcpServer/McpServerFormHeader.vue'
 import FormStatus from '~/components/mcpServer/McpServerFormStatus.vue'
 
 definePageMeta({
@@ -32,6 +33,12 @@ const selectedServer = computed(() => route.params.server as string)
 
 <template>
   <div>
+    <FormHeader
+      :workspace="workspace"
+      :pool="selectedPool"
+      :name="selectedServer"
+      class="sticky top-0 z-1"
+    />
     <FormStatus
       class="p-lg !m-0"
       :workspace="workspace"

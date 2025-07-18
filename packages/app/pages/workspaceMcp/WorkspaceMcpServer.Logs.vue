@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import McpServerFormDangerZone from '~/components/mcpServer/McpServerFormDangerZone.vue'
+import FormHeader from '~/components/mcpServer/McpServerFormHeader.vue'
 import McpServerFormSettings from '~/components/mcpServer/McpServerFormSettings.vue'
 
 definePageMeta({
@@ -33,6 +34,12 @@ const selectedServer = computed(() => route.params.server as string)
 
 <template>
   <div>
+    <FormHeader
+      :workspace="workspace"
+      :pool="selectedPool"
+      :name="selectedServer"
+      class="sticky top-0 z-1"
+    />
     <!-- TODO -->
   </div>
 </template>
