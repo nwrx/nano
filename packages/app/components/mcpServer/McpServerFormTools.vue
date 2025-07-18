@@ -1,47 +1,25 @@
 <script setup lang="ts">
-import type { McpServerObject } from '@nwrx/nano-api'
+import AppPageFormEmpty from '~/components/app/AppPageForm.Empty.vue'
 import AppPageForm from '~/components/app/AppPageForm.vue'
 import Button from '~/components/base/Button.vue'
+import { useMcpServer } from '~/composables/useMcp'
 
 const props = defineProps<{
-  server: McpServerObject
   workspace: string
   pool: string
-}>()
-
-const emit = defineEmits<{
-  refresh: []
+  name: string
 }>()
 
 const { t } = useI18n()
-const client = useClient()
-const alerts = useAlerts()
-const isLoading = ref(false)
-const tools = computed(() => {
-  if (!props.server) return []
-  if (!props.server.tools) return []
-  return props.server.tools
-})
+const server = useMcpServer(props)
+server.options.withTools = true
+onMounted(server.fetchServer)
 
-// --- Fetch server tools
-async function refreshTools() {
-  if (isLoading.value) return
-  isLoading.value = true
-  await client.requestAttempt('GET /api/workspaces/:workspace/pools/:pool/servers/:server/tools', {
-    parameters: {
-      workspace: props.workspace,
-      pool: props.pool,
-      server: props.server.name,
-    },
-    onSuccess: () => {
-      alerts.success(t('refreshSuccess'))
-    },
-    onEnd: () => {
-      isLoading.value = false
-      emit('refresh')
-    },
-  })
-}
+// --- Return an empty array if tools are not available.
+const tools = computed(() => {
+  if (!server.data.tools) return []
+  return server.data.tools
+})
 </script>
 
 <template>
@@ -54,32 +32,28 @@ async function refreshTools() {
     <div class="b b-app w-full bg-subtle rd">
 
       <!-- No Tools -->
-      <div v-if="tools.length === 0" class="text-center p-lg text-subtle">
-        <div class="mb-md">
-          <BaseIcon icon="i-carbon:tools" class="size-12 mx-auto opacity-50" />
-        </div>
-        <p class="text-lg font-medium mb-sm">
-          {{ t('noToolsTitle') }}
-        </p>
-        <p class="text-sm">
-          {{ t('noToolsText') }}
-        </p>
-      </div>
+      <AppPageFormEmpty
+        v-if="tools.length === 0"
+        :title="t('noToolsTitle')"
+        :text="t('noToolsText')"
+        icon="i-carbon:tools"
+      />
 
       <!-- Lines -->
       <template v-else>
         <div
-          v-for="tool in server.tools"
+          v-for="tool in tools"
           :key="tool.name"
           class="
           flex items-center px-xs
           b b-transparent b-t-app
+          first:rd-t last:rd-b
           hover:b-active hover:b
         ">
 
           <!-- Tool -->
-          <div class="font-mono whitespace-nowrap">
-            <span class="text-subtle hidden lg:inline">{{ server.name }}.</span>
+          <div class="text-xs font-mono">
+            <span class="text-subtle hidden lg:inline">{{ server.data.name }}.</span>
             <span class="text-app font-semibold">{{ tool.name }}</span>
           </div>
 
@@ -87,7 +61,7 @@ async function refreshTools() {
           <span class="flex-1 min-w-16" />
 
           <!-- Description -->
-          <span class="text-subtle line-clamp-1">{{ tool.description }}</span>
+          <span class="text-xs text-subtle line-clamp-1">{{ tool.description }}</span>
         </div>
       </template>
     </div>
@@ -95,10 +69,9 @@ async function refreshTools() {
     <!-- Actions -->
     <div class="w-full flex items-center justify-between pt-md">
       <Button
-        :loading="isLoading"
         icon-prepend="i-carbon:renew"
-        :label="t('refreshTools')"
-        @click="() => refreshTools()"
+        :label="t('fetchTools')"
+        @click="() => server.fetchTools({ refresh: true })"
       />
 
       <div class="flex items-center space-x-sm text-sm text-subtle">
@@ -115,7 +88,7 @@ en:
   text: View the tools and capabilities exposed by this MCP server instance
   noToolsTitle: No Tools Available
   noToolsText: This MCP server doesn't expose any tools or the server is not running
-  refreshTools: Refresh Tools
+  fetchTools: Refresh Tools
   toolsCount: '{count} tool(s) available'
   refreshSuccess: Tools refreshed successfully
 </i18n>
