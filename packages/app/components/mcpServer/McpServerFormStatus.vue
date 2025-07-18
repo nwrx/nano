@@ -79,7 +79,7 @@ const readableStatus = computed(() => {
         <template #fields>
           <RecordsField :label="t('pool')" :value="server.status.remoteSpec.pool" />
           <RecordsField :label="t('image')" :value="server.status.remoteSpec.image" />
-          <RecordsField :label="t('command')" :value="readableStatus.remoteCommand" />
+          <RecordsField :label="t('command')" :value="readableStatus.remoteCommand" :default-value="t('commandDefault')" />
           <RecordsField :label="t('transport')" :value="readableStatus.remoteTransport" />
           <RecordsField :label="t('idleTimeout')" :value="readableStatus.remoteIdleTimeout" />
         </template>
@@ -89,7 +89,7 @@ const readableStatus = computed(() => {
       <RecordsEntry :title="t('localSpec')" icon="i-carbon:cloud-satellite">
         <template #fields>
           <RecordsField :label="t('image')" :value="server.status.localSpec.image" />
-          <RecordsField :label="t('command')" :value="readableStatus.localCommand" />
+          <RecordsField :label="t('command')" :value="readableStatus.localCommand" :default-value="t('commandDefault')" />
           <RecordsField :label="t('transport')" :value="readableStatus.localTransport" />
           <RecordsField :label="t('idleTimeout')" :value="readableStatus.localIdleTimeout" />
         </template>
@@ -99,14 +99,12 @@ const readableStatus = computed(() => {
     <!-- Actions -->
     <div class="w-full flex items-center justify-between pt-md">
       <Button
-        :loading="server.isLoading"
         icon-prepend="i-carbon:renew"
         :label="t('refreshStatus')"
         @click="() => server.fetchStatus()"
       />
 
       <Button
-        :loading="server.isSynchronizing"
         class="button-success"
         icon-prepend="i-carbon:upload"
         :label="t('synchronizeServer')"
@@ -133,6 +131,7 @@ en:
   pool: Pool
   image: Image
   command: Command
+  commandDefault: Default command
   transport: Transport
   idleTimeout: Idle Timeout
   refreshStatus: Refresh Status
@@ -160,6 +159,7 @@ fr:
   pool: Pool
   image: Image
   command: Commande
+  commandDefault: Commande par défaut
   transport: Transport
   idleTimeout: "Délai d'Inactivité"
   refreshStatus: Actualiser le Statut
@@ -187,6 +187,7 @@ de:
   pool: Pool
   image: Image
   command: Befehl
+  commandDefault: Standard-Befehl
   transport: Transport
   idleTimeout: Leerlauf-Timeout
   refreshStatus: Status Aktualisieren
@@ -214,6 +215,7 @@ es:
   pool: Pool
   image: Imagen
   command: Comando
+  commandDefault: Comando predeterminado
   transport: Transporte
   idleTimeout: Tiempo de Espera de Inactividad
   refreshStatus: Actualizar Estado
@@ -241,6 +243,7 @@ zh:
   pool: 池
   image: 镜像
   command: 命令
+  commandDefault: 默认命令
   transport: 传输方式
   idleTimeout: 空闲超时
   refreshStatus: 刷新状态

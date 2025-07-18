@@ -1,13 +1,22 @@
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
   label?: string
   value?: number | string
+  defaultValue?: number | string
 }>()
 
 defineSlots<{
   label?: []
   value?: []
+  defaultValue?: []
 }>()
+
+const isEmpty = computed(() =>
+  props.value === undefined
+  || props.value === null
+  || props.value === ''
+  || (typeof props.value === 'number' && Number.isNaN(props.value)),
+)
 </script>
 
 <template>
@@ -21,9 +30,15 @@ defineSlots<{
     </span>
 
     <!-- Value -->
-    <span class="text-sm text-app font-medium">
+    <span v-if="!isEmpty" class="text-sm text-app font-medium">
       <slot name="value">
         {{ value }}
+      </slot>
+    </span>
+
+    <span v-else class="text-sm text-subtle italic">
+      <slot name="defaultValue">
+        {{ defaultValue }}
       </slot>
     </span>
   </div>
