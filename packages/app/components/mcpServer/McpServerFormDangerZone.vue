@@ -18,7 +18,7 @@ const props = defineProps<{
 // --- State.
 const { t } = useI18n()
 const server = useMcpServer(props)
-onMounted(server.fetchServer)
+onMounted(() => void server.fetchServer())
 
 // --- Flags.
 const showRenameDialog = ref(false)

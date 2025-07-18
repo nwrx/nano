@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import AppLayout from '~/components/app/AppLayout.vue'
 import AppPage from '~/components/app/AppPage.vue'
-import McpPoolList from '~/components/mcpPool/McpPool.List.vue'
+import McpPoolList from '~/components/mcpPool/McpPoolList.vue'
 import McpServerVerticalTabs from '~/components/mcpServer/McpServerVerticalTabs.vue'
 import WorkspaceHeader from '~/components/workspace/WorkspaceHeader.vue'
 
@@ -32,12 +32,14 @@ watch(
             <!-- Select -->
             <McpPoolList
               :workspace="workspace"
-              class="b-r b-app h-full overflow-y-auto grow max-w-sm w-full"
+              class="b-r b-app h-full overflow-y-auto grow max-w-sm"
             />
 
             <!-- Content -->
-            <div ref="contentElement" class="flex flex-col h-full overflow-y-auto w-full">
-              <NuxtPage class="grow" />
+            <div ref="contentElement" class="flex flex-col h-full w-full">
+              <div class="relative h-full w-full overflow-x-hidden">
+                <NuxtPage class="absolute inset-0" />
+              </div>
             </div>
 
             <!-- Server Panel Selector -->

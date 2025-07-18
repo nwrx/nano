@@ -14,7 +14,7 @@ const props = defineProps<{
 const { t } = useI18n()
 const formData = ref({} as McpServerObject)
 const server = useMcpServer(props)
-onMounted(server.fetchServer)
+onMounted(() => void server.fetchServer())
 
 // --- Lifecycle.
 watch(() => server.data, serverData => formData.value = serverData, { immediate: true })
