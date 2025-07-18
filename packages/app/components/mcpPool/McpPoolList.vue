@@ -69,10 +69,12 @@ const isOpen = computed({
 
       <!-- Expand/Contact Fab -->
       <Button
+        eager
         class="button-fab shrink-0"
         :class="{ 'bg-transparent b-transparent hover:bg-transparent': !isOpen }"
         :icon="isOpen ? 'i-carbon:side-panel-close-filled' : 'i-carbon:side-panel-open'"
         @click="() => isOpen = !isOpen"
+        @mousedown.stop
       />
     </div>
 
