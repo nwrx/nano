@@ -11,14 +11,12 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const route = useRoute()
-const isOpen = ref(false)
 const selectedPool = computed(() => route.params.pool as string)
 const selectedServer = computed(() => route.params.server as string)
 
 // --- Data.
 const pools = useMcpPools(props)
 pools.options.withServers = true
-
 watchThrottled(
   () => pools.options.search,
   () => void pools.fetchPools(),
@@ -29,6 +27,13 @@ watchThrottled(
 const showCreatePoolDialog = ref(false)
 const showCreateServerDialog = ref(false)
 const showCreateServerPool = ref('')
+
+// --- Open/Close State.
+const settings = useLocalSettings()
+const isOpen = computed({
+  get: () => settings.value.integrationPanelOpen,
+  set: value => settings.value.integrationPanelOpen = value,
+})
 </script>
 
 <template>

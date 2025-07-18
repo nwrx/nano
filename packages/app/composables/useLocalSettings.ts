@@ -21,6 +21,10 @@ export interface LocalSettings {
 
   // Chat states
   chatPanelOpen?: boolean
+
+  // Integration states
+  integrationPanelOpen?: boolean
+  integrationPanelOpenedGroups?: string[]
 }
 
 export const useLocalSettings = createGlobalState(() =>
@@ -33,4 +37,7 @@ export const useLocalSettings = createGlobalState(() =>
     editorPanelTab: 'node',
     editorConsoleTab: 'view',
     editorPanelWidth: 512,
+
+    integrationPanelOpen: true,
+    integrationPanelOpenedGroups: [],
   }))
