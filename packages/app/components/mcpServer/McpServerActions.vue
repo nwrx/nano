@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { McpPoolObject, McpServerObject } from '@nwrx/nano-api'
+import type { McpServerObject } from '@nwrx/nano-api'
 import ContextMenuDivider from '~/components/base/ContextMenu.Divider.vue'
 import ContextMenuItem from '~/components/base/ContextMenu.Item.vue'
 import ContextMenu from '~/components/base/ContextMenu.vue'
@@ -9,9 +9,9 @@ import DialogEnable from './McpServerDialogEnable.vue'
 import DialogRename from './McpServerDialogRename.vue'
 
 const props = defineProps<{
-  pool: McpPoolObject
-  server: McpServerObject
   workspace: string
+  pool: string
+  server: McpServerObject
 }>()
 
 const emit = defineEmits<{
@@ -29,19 +29,7 @@ const isDisabled = computed(() => Boolean(props.server.disabledAt))
 
 <template>
   <div class="flex h-full items-center justify-center">
-    <ContextMenu x="right" y="top" @mousedown.stop>
-      <template #default="slotProps">
-        <BaseButton
-          eager
-          class="flex items-center justify-center aspect-square rd hover:bg-prominent"
-          @click="() => slotProps.toggle()">
-          <BaseIcon
-            icon="i-carbon:menu"
-            class="size-4"
-          />
-        </BaseButton>
-      </template>
-
+    <ContextMenu x="right" y="top" compact @mousedown.stop>
       <template #menu="slotProps">
         <ContextMenuItem
           :label="t('edit')"
@@ -81,7 +69,7 @@ const isDisabled = computed(() => Boolean(props.server.disabledAt))
     <DialogRename
       v-model="showRenameDialog"
       :workspace="workspace"
-      :pool="pool.name"
+      :pool="pool"
       :name="server.name"
       @submit="() => emit('refresh')"
     />
@@ -90,7 +78,7 @@ const isDisabled = computed(() => Boolean(props.server.disabledAt))
     <DialogEnable
       v-model="showEnableDialog"
       :workspace="workspace"
-      :pool="pool.name"
+      :pool="pool"
       :name="server.name"
       @submit="() => emit('refresh')"
     />
@@ -99,7 +87,7 @@ const isDisabled = computed(() => Boolean(props.server.disabledAt))
     <DialogDisable
       v-model="showDisableDialog"
       :workspace="workspace"
-      :pool="pool.name"
+      :pool="pool"
       :name="server.name"
       @submit="() => emit('refresh')"
     />
@@ -108,7 +96,7 @@ const isDisabled = computed(() => Boolean(props.server.disabledAt))
     <DialogDelete
       v-model="showDeleteDialog"
       :workspace="workspace"
-      :pool="pool.name"
+      :pool="pool"
       :name="server.name"
       @submit="() => emit('refresh')"
     />
