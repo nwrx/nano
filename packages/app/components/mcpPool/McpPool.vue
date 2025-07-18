@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import type { McpPoolObject } from '@nwrx/nano-api'
 import McpPoolDangerZone from './McpPool.DangerZone.vue'
-import McpPoolGeneral from './McpPool.General.vue'
-import McpPoolHeader from './McpPool.Header.vue'
+import McpPoolGeneral from './McpPoolFormSettings.vue'
 import McpPoolSpecs from './McpPool.Specs.vue'
 import McpPoolStatus from './McpPool.Status.vue'
+import McpPoolHeader from './McpPoolFormHeader.vue'
 
 const props = defineProps<{
   name: string
@@ -37,21 +37,6 @@ watch(() => props, getPool, { immediate: true })
       class="sticky top-0 z-1"
       :pool="pool"
     />
-
-    <div v-if="panel === 'settings'">
-      <McpPoolGeneral
-        class="p-lg !m-0"
-        :pool="pool"
-        :workspace="workspace"
-        @refresh="() => getPool()"
-      />
-      <McpPoolDangerZone
-        class="p-lg !m-0"
-        :pool="pool"
-        :workspace="workspace"
-        @refresh="() => getPool()"
-      />
-    </div>
 
     <div v-if="panel === 'status'">
       <McpPoolSpecs
