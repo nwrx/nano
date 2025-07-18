@@ -37,7 +37,8 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
   const fetchLock = createResolvable<void>()
   fetchLock.resolve()
 
-  async function fetchServer() {
+  async function fetchServer(allowCache = false) {
+    if (allowCache && data.value.name === server) return
     if (fetchLock.isPending) return fetchLock.promise
     fetchLock.reset()
     await client.requestAttempt(
