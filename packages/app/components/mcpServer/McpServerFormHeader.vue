@@ -14,10 +14,10 @@ onMounted(() => server.fetchServer(true))
 
 <template>
   <div class="flex flex-col justify-center items-start p-lg bg-subtle b-b b-app min-h-32">
-    <h3 v-if="server" class="text-2xl font-medium">
+    <h3 class="text-2xl font-medium">
       {{ server.data.title }}
     </h3>
-    <p v-if="server" class="text-sm text-subtle">
+    <p class="text-sm text-subtle">
       {{ server.data.description }}
     </p>
   </div>
