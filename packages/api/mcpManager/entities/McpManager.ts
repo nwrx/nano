@@ -129,7 +129,7 @@ export class McpManager extends BaseEntity {
         }))
         : undefined,
 
-      // Audit
+      // Metadata
       createdBy: withCreatedBy ? this.createdBy?.serialize() : undefined,
       createdAt: withCreatedBy ? this.createdAt.toISOString() : undefined,
       updatedBy: withUpdatedBy ? this.updatedBy?.serialize() : undefined,
