@@ -4,6 +4,7 @@ import type { BaseTableProps, BaseTableSlots } from '@unshared/vue'
 import { BaseTable } from '@unshared/vue/BaseTable'
 import { useInfiniteScroll } from '@vueuse/core'
 import InputText from './InputText.vue'
+import Pattern from './Pattern.vue'
 
 const props = defineProps<BaseTableProps<T, K>& {
   showSearch?: boolean
@@ -29,8 +30,8 @@ useInfiniteScroll(
     canLoadMore.value = afterCount > beforeCount
   },
   {
-    distance: 10,
-    throttle: 100,
+    distance: 0,
+    throttle: 500,
     canLoadMore: () => canLoadMore.value,
   },
 )
@@ -49,7 +50,7 @@ useInfiniteScroll(
       />
     </div>
 
-    <div ref="element" class="w-full b b-app rd max-h-128 overflow-y-auto">
+    <div ref="element" class="flex flex-col w-full b b-app rd min-h-128 max-h-128 overflow-y-auto">
       <!-- @vue-expect-error: false-positive, generics are matching -->
       <BaseTable
         v-bind="props"
@@ -57,13 +58,16 @@ useInfiniteScroll(
         class-header-row="sticky top-0 bg-subtle z-10"
         class-header-cell="font-medium first:pl-lg px-md last:pr-lg py-sm text-sm text-start"
         class-cell="first:pl-lg px-md last:pr-lg py-sm text-sm text-start last:text-end"
-        class-row="b-t b-app hover:bg-subtle">
+        class-row="b-b b-app hover:bg-subtle">
 
         <!-- Passthrough slots -->
         <template v-for="(_, name) in slots" #[name]="slot">
           <slot :name="name" v-bind="slot" />
         </template>
       </BaseTable>
+
+      <!-- Fill the rest with -->
+      <Pattern class="grow b-0" />
     </div>
   </div>
 </template>
