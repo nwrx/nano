@@ -57,15 +57,15 @@ export async function searchServerVariables(this: ModuleMcpServerVariable, optio
       server: { id: server.id },
       name: searchOperator,
     },
-    withDeleted,
-    relations: {
-      server: withServer ? { pool: true } : true,
-      variable: withVariable ? { vault: withVault } : false,
-      createdBy: withCreatedBy,
-      updatedBy: withUpdatedBy,
-    },
     order,
     take: limit,
     skip: (page - 1) * limit,
+    withDeleted,
+    relations: {
+      server: withServer ? { pool: true } : false,
+      variable: (withVariable || withVault) ? { vault: withVault } : false,
+      createdBy: withCreatedBy,
+      updatedBy: withUpdatedBy,
+    },
   })
 }

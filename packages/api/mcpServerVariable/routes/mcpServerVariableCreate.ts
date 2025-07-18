@@ -6,7 +6,7 @@ import { ModuleMcpPool } from '../../mcpPool'
 import { ModuleMcpServer } from '../../mcpServer'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
-import { createMcpServerVariable } from '../utils'
+import { createServerVariable } from '../utils'
 
 export function mcpServerVariableCreate(this: ModuleMcpServerVariable) {
   return createHttpRoute(
@@ -41,7 +41,7 @@ export function mcpServerVariableCreate(this: ModuleMcpServerVariable) {
       // --- Create the MCP server variables.
       const serverVariables: McpServerVariable[] = []
       for (const variable of body.variables) {
-        const serverVariable = await createMcpServerVariable.call(this, { user, server, workspace, ...variable })
+        const serverVariable = await createServerVariable.call(this, { user, server, workspace, ...variable })
         serverVariables.push(serverVariable)
       }
 

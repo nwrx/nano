@@ -29,7 +29,7 @@ export type CreateMcpServerVariableOptions = Loose<ReturnType<typeof CREATE_MCP_
  * @example
  *
  * // Assign a vault variable to an MCP server as an environment variable.
- * const serverVariable = await moduleMcp.createMcpServerVariable({
+ * const serverVariable = await moduleMcp.createServerVariable({
  *   user,
  *   server,
  *   vault,
@@ -38,7 +38,7 @@ export type CreateMcpServerVariableOptions = Loose<ReturnType<typeof CREATE_MCP_
  * })
  *
  * // Assign a vault variable to an MCP server as a mounted file.
- * const serverVariable = await moduleMcp.createMcpServerVariable({
+ * const serverVariable = await moduleMcp.createServerVariable({
  *   user,
  *   server,
  *   vault,
@@ -46,7 +46,7 @@ export type CreateMcpServerVariableOptions = Loose<ReturnType<typeof CREATE_MCP_
  *   mountAtPath: '/app/config/database.conf'
  * })
  */
-export async function createMcpServerVariable(this: ModuleMcpServerVariable, options: CreateMcpServerVariableOptions) {
+export async function createServerVariable(this: ModuleMcpServerVariable, options: CreateMcpServerVariableOptions) {
   const { user, server, workspace, name, value, variable, mountAtPath } = CREATE_MCP_SERVER_VARIABLE_OPTIONS_SCHEMA(options)
 
   // --- Assert that either value or variable is provided, but not both.

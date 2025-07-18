@@ -23,7 +23,7 @@ export function mcpServerVariableSearch(this: ModuleMcpServerVariable) {
         page: [[assert.undefined], [assert.stringNotEmpty, assert.number]],
         limit: [[assert.undefined], [assert.stringNotEmpty, assert.number]],
         order: [[assert.undefined], [assert.stringNotEmpty, assert.objectStrict]],
-        withServer: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],
+        withValue: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],
         withVault: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],
         withVariable: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],
         withCreatedBy: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],
@@ -45,7 +45,7 @@ export function mcpServerVariableSearch(this: ModuleMcpServerVariable) {
 
       // --- Get MCP server variables from the workspace with the provided query parameters.
       const variables = await searchServerVariables.call(this, { server, ...query })
-      return variables.map(variable => variable.serialize())
+      return variables.map(variable => variable.serialize(query))
     },
   )
 }

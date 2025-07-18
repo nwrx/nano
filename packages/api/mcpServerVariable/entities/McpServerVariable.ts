@@ -10,7 +10,7 @@ import { VaultVariable, VaultVariableObject } from '../../vault'
  * or configuration values.
  */
 @Entity({ name: 'McpServerVariable' })
-@Index(['server', 'variable', 'deletedAt'], { unique: true })
+@Index(['name', 'server', 'variable', 'deletedAt'], { unique: true })
 export class McpServerVariable extends BaseEntity {
 
   /**
@@ -31,7 +31,7 @@ export class McpServerVariable extends BaseEntity {
    * @example '/app/config/database.conf'
    */
   @Column('varchar', { length: 500, nullable: true })
-  mountAtPath?: string
+  mountAtPath?: string | null
 
   /**
    * The MCP server that has access to the variable.
@@ -57,45 +57,90 @@ export class McpServerVariable extends BaseEntity {
   variable?: null | VaultVariable
 
   /**
-   * The user that created this variable assignment.
+   * The user responsible for registering the MCP server variable. This user must be
+   * a super administrator in order to register a MCP server variable. This is used
+   * to ensure that only authorized users can register MCP server variables.
+   *
+   * @example User { ... }
    */
   @JoinColumn()
-  @ManyToOne(() => User, { nullable: false, onDelete: 'RESTRICT' })
+  @ManyToOne(() => User, { nullable: false })
   createdBy?: User
 
   /**
-   * The user that last updated this variable assignment.
+   * The user that updated the MCP server variable. This is used to track who made
+   * changes to the MCP server variable and is useful for auditing purposes. This field
+   * is optional and may be undefined if the MCP server variable has not been updated
+   * since it was created.
+   *
+   * @example User { ... }
    */
   @JoinColumn()
-  @ManyToOne(() => User, { nullable: true, onDelete: 'RESTRICT' })
+  @ManyToOne(() => User, { nullable: true })
   updatedBy?: null | User
 
   /**
+   * The user that deleted the MCP server variable. This is used to track who
+   * deleted the MCP server variable and is useful for auditing purposes. This field
+   * is optional and may be undefined if the MCP server variable has not been deleted
+   * since it was created.
+   */
+  @JoinColumn()
+  @ManyToOne(() => User, { nullable: true })
+  deletedBy?: null | User
+
+  /**
+   * @param options The options to use when serializing the MCP server variable.
    * @returns The serialized object representation of the `McpServerVariable`.
    */
-  serialize(): McpServerVariableObject {
+  serialize(options: SerializeOptions = {}): McpServerVariableObject {
+    const {
+      withValue = false,
+      withVault = false,
+      withVariable = false,
+      withCreatedBy = false,
+      withUpdatedBy = false,
+      withDeleted = false,
+    } = options
     return {
       name: this.name,
-      mountAtPath: this.mountAtPath,
-      server: this.server?.serialize(),
-      value: this.value,
-      variable: this.variable?.serialize(),
-      createdBy: this.createdBy?.serialize(),
-      createdAt: this.createdAt.toISOString(),
-      updatedAt: this.updatedAt.toISOString(),
-      updatedBy: this.updatedBy?.serialize(),
+      mountAtPath: this.mountAtPath ?? undefined,
+
+      // Relationships
+      value: withValue ? this.value ?? undefined : undefined,
+      variable: withVariable ? this.variable?.serialize({ withVault }) : undefined,
+
+      // Metadata
+      createdBy: withCreatedBy ? this.createdBy?.serialize() : undefined,
+      createdAt: withCreatedBy ? this.createdAt.toISOString() : undefined,
+      updatedBy: withUpdatedBy ? this.updatedBy?.serialize() : undefined,
+      updatedAt: withUpdatedBy ? this.updatedAt.toISOString() : undefined,
+      deletedBy: withDeleted ? this.deletedBy?.serialize() : undefined,
+      deletedAt: withDeleted ? this.deletedAt?.toISOString() : undefined,
     }
   }
+}
+
+interface SerializeOptions {
+  withValue?: boolean
+  withVault?: boolean
+  withVariable?: boolean
+  withCreatedBy?: boolean
+  withUpdatedBy?: boolean
+  withDeleted?: boolean
 }
 
 export interface McpServerVariableObject {
   name: string
   mountAtPath?: string
-  server?: McpServerObject
-  value?: null | string
+  value?: string
   variable?: VaultVariableObject
+
+  // Metadata
   createdBy?: UserObject
+  createdAt?: string
   updatedBy?: UserObject
-  createdAt: string
-  updatedAt: string
+  updatedAt?: string
+  deletedBy?: UserObject
+  deletedAt?: string
 }
