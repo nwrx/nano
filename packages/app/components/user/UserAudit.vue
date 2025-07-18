@@ -19,7 +19,7 @@ const classText = 'text-xs font-normal text-subtle line-clamp-1 text-end'
   <div class="flex justify-end items-center space-x-sm">
 
     <!-- Disabled By -->
-    <template v-if="disabledAt">
+    <template v-if="disabledAt && disabledBy">
       <div>
         <span :class="classText">{{ t('disabledAt') }}</span>
         <span :class="classText"> {{ formatDateFromNow(disabledAt) }}</span>
@@ -32,7 +32,7 @@ const classText = 'text-xs font-normal text-subtle line-clamp-1 text-end'
     </template>
 
     <!-- Updated By -->
-    <template v-else-if="updatedAt">
+    <template v-else-if="updatedAt && updatedBy">
       <div>
         <span :class="classText">{{ t('updatedAt') }}</span>
         <span :class="classText"> {{ formatDateFromNow(updatedAt) }}</span>
@@ -45,7 +45,7 @@ const classText = 'text-xs font-normal text-subtle line-clamp-1 text-end'
     </template>
 
     <!-- Created By -->
-    <template v-else-if="createdAt">
+    <template v-else-if="createdAt && createdBy">
       <div>
         <span :class="classText">{{ t('createdAt') }}</span>
         <span :class="classText"> {{ formatDateFromNow(createdAt) }}</span>
