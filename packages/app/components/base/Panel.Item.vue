@@ -14,7 +14,7 @@ const props = defineProps<BaseButtonProps & {
     v-bind="props"
     eager
     :class="{
-      'bg-subtle': isActive,
+      'hover:bg-subtle !b-active': isActive,
       'hover:bg-subtle': !isActive,
     }"
     class="

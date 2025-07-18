@@ -8,6 +8,7 @@ import Collapse from './Collapse.vue'
 defineProps<BaseButtonProps & {
   icon?: string
   description?: string
+  classButton?: string
 }>()
 
 const model = defineModel({ default: false })
@@ -25,7 +26,7 @@ const model = defineModel({ default: false })
         bg-app hover:bg-subtle
         b b-transparent b-b-app hover:b-active
       "
-      :class="{ 'bg-emphasized': model }"
+      :class="[classButton, { 'bg-emphasized': model }]"
       @click="() => model = !model">
 
       <!-- Arrow/Toggle Icon -->
