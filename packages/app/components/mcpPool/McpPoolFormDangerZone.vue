@@ -29,7 +29,7 @@ const isDisabled = computed(() => false)
   <AppPageForm :title="t('title')" :text="t('text')">
     <AppPageFormActions class="border-danger">
       <AppPageFormAction
-        class-button="button-primary"
+        class-button="button-warning"
         icon="i-carbon:edit"
         :title="t('renameTitle')"
         :text="t('renameText')"
@@ -37,6 +37,7 @@ const isDisabled = computed(() => false)
         @click="() => showRenameDialog = true"
       />
       <AppPageFormAction
+        v-if="isDisabled"
         class="border-danger"
         class-button="button-success"
         icon="i-carbon:play"
@@ -46,6 +47,7 @@ const isDisabled = computed(() => false)
         @click="() => showEnableDialog = true"
       />
       <AppPageFormAction
+        v-else
         class="border-danger"
         class-button="button-warning"
         icon="i-carbon:pause"
