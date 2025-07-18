@@ -50,7 +50,7 @@ const isFocused = ref(false)
     <div class="flex items-stretch w-full">
       <div
         v-if="textBefore"
-        class="flex items-center justify-center input input-disabled rounded-r-0 border-r-0"
+        class="flex items-center justify-center input rounded-r-0 border-r-0"
         v-text="textBefore"
       />
 
@@ -85,7 +85,7 @@ const isFocused = ref(false)
           v-model="model"
           :label="label"
           :class="classInput"
-          class="w-full outline-none bg-transparent"
+          class="w-full outline-none bg-transparent placeholder:text-subtle"
           @focus="() => isFocused = true"
           @blur="() => isFocused = false"
         />
