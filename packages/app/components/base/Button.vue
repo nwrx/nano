@@ -17,6 +17,7 @@ const props = defineProps<BaseButtonProps & {
   <BaseButton
     v-slot="slots"
     v-bind="props"
+    :class="{ 'op-50 pointer-events-none': disabled }"
     class="button hover:button-hover space-x-xs group">
 
     <!-- Loading -->
