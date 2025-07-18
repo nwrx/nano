@@ -20,8 +20,8 @@ export class McpServerVariable extends BaseEntity {
    *
    * @example 'DATABASE_PASSWORD'
    */
-  @Column('varchar', { length: 255, nullable: true })
-  name?: string
+  @Column('varchar', { length: 255 })
+  name: string
 
   /**
    * The file path where the variable should be mounted in the container.
@@ -89,7 +89,7 @@ export class McpServerVariable extends BaseEntity {
 }
 
 export interface McpServerVariableObject {
-  name?: string
+  name: string
   mountAtPath?: string
   server?: McpServerObject
   value?: null | string

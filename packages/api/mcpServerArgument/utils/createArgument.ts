@@ -4,13 +4,15 @@ import type { ModuleMcpServerArgument } from '../index'
 import { assert, createParser } from '@unshared/validation'
 import { assertMcpServer } from '../../mcpServer/utils/assertMcpServer'
 import { assertUser } from '../../user'
-import { assertVaultVariable } from '../../vault'
+import { ModuleVault } from '../../vault'
+import { assertWorkspace } from '../../workspace'
 
 export const CREATE_MCP_SERVER_ARGUMENT_OPTIONS_SCHEMA = createParser({
   user: assertUser,
   server: assertMcpServer,
+  workspace: assertWorkspace,
   value: [[assert.undefined], [assert.stringNotEmpty]],
-  variable: [[assert.undefined], [assertVaultVariable]],
+  variable: [[assert.undefined], [assert.stringNotEmpty]],
 })
 
 /** The options for creating an MCP server argument. */
@@ -29,6 +31,7 @@ export type CreateMcpServerArgumentOptions = Loose<ReturnType<typeof CREATE_MCP_
  * const serverArgument = await moduleMcp.createMcpServerArgument({
  *   user,
  *   server,
+ *   workspace,
  *   value: '--verbose'
  * })
  *
@@ -36,14 +39,15 @@ export type CreateMcpServerArgumentOptions = Loose<ReturnType<typeof CREATE_MCP_
  * const serverArgument = await moduleMcp.createMcpServerArgument({
  *   user,
  *   server,
- *   variable: apiKeyVariable
+ *   workspace,
+ *   variable: 'my-vault/my-variable',
  * })
  */
 export async function createArgument(
   this: ModuleMcpServerArgument,
   options: CreateMcpServerArgumentOptions,
 ): Promise<McpServerArgument> {
-  const { user, server, value, variable } = CREATE_MCP_SERVER_ARGUMENT_OPTIONS_SCHEMA(options)
+  const { user, server, workspace, value, variable } = CREATE_MCP_SERVER_ARGUMENT_OPTIONS_SCHEMA(options)
 
   // --- Assert that either value or variable is provided, but not both.
   if ((value && variable) || (!value && !variable))
@@ -53,12 +57,20 @@ export async function createArgument(
   const { McpServerArgument } = this.getRepositories()
   const position = await McpServerArgument.countBy({ server })
 
-  // --- Create the MCP server argument.
-  return McpServerArgument.create({
-    position,
-    server,
-    value,
-    variable,
-    createdBy: user,
-  })
+  // --- Create the MCP server argument
+  if (value) {
+    return McpServerArgument.create({ position, server, value, createdBy: user })
+  }
+
+  // --- If a vault variable is provided, we need to fetch it.
+  else if (variable) {
+    const [vaultName, variableName] = variable.split('/')
+    const moduleVault = this.getModule(ModuleVault)
+    const vault = await moduleVault.getVault({ user, workspace, name: vaultName, permission: 'Read' })
+    const vaultVariable = await moduleVault.getVariable({ workspace, vault, name: variableName })
+    return McpServerArgument.create({ position, server, value, variable: vaultVariable, createdBy: user })
+  }
+
+  // --- If neither value nor variable is provided, throw an error.
+  throw this.errors.MCP_SERVER_ARGUMENT_INVALID_SOURCE()
 }

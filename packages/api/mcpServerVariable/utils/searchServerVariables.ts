@@ -3,7 +3,7 @@ import type { FindOptionsOrder } from 'typeorm'
 import type { McpServerVariable } from '../entities'
 import type { ModuleMcpServerVariable } from '../index'
 import { assert, createParser } from '@unshared/validation'
-import { ILike, IsNull } from 'typeorm'
+import { ILike } from 'typeorm'
 import { assertMcpServer } from '../../mcpServer/utils/assertMcpServer'
 
 /** The parser function for the `searchMcpServerVariables` function. */
@@ -56,10 +56,10 @@ export async function searchServerVariables(this: ModuleMcpServerVariable, optio
     where: {
       server: { id: server.id },
       name: searchOperator,
-      deletedAt: withDeleted ? undefined : IsNull(),
     },
+    withDeleted,
     relations: {
-      server: withServer ? { pool: true } : false,
+      server: withServer ? { pool: true } : true,
       variable: withVariable ? { vault: withVault } : false,
       createdBy: withCreatedBy,
       updatedBy: withUpdatedBy,

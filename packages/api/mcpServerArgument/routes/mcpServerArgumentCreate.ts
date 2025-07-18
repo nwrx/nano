@@ -5,7 +5,6 @@ import { assert, createParser } from '@unshared/validation'
 import { ModuleMcpPool } from '../../mcpPool'
 import { ModuleMcpServer } from '../../mcpServer'
 import { ModuleUser } from '../../user'
-import { ModuleVault } from '../../vault'
 import { ModuleWorkspace } from '../../workspace'
 import { createArgument } from '../utils'
 
@@ -38,38 +37,16 @@ export function mcpServerArgumentCreate(this: ModuleMcpServerArgument) {
       const server = await moduleServer.getServer({ workspace, pool, name: parameters.server })
 
       // --- Assert that either value or variable is provided, but not both.
-      const args: McpServerArgument[] = []
+      const serverArguments: McpServerArgument[] = []
       for (const argument of body.arguments) {
-        if (argument.value && argument.variable)
-          throw this.errors.MCP_SERVER_ARGUMENT_INVALID_SOURCE()
-
-        // --- Create the MCP server argument
-        if (argument.value) {
-          const { value } = argument
-          const entity = await createArgument.call(this, { user, server, value })
-          args.push(entity)
-        }
-
-        // --- If a vault variable is provided, we need to fetch it.
-        else if (argument.variable) {
-          const [vaultName, variableName] = argument.variable.split('/')
-          const moduleVault = this.getModule(ModuleVault)
-          const vault = await moduleVault.getVault({ user, workspace, name: vaultName, permission: 'Read' })
-          const variable = await moduleVault.getVariable({ workspace, vault, name: variableName })
-          const entity = await createArgument.call(this, { user, server, variable })
-          args.push(entity)
-        }
-
-        // --- If neither value nor variable is provided, throw an error.
-        else {
-          throw this.errors.MCP_SERVER_ARGUMENT_INVALID_SOURCE()
-        }
+        const serverArgument = await createArgument.call(this, { user, server, workspace, ...argument })
+        serverArguments.push(serverArgument)
       }
 
-      // --- Return the serialized arguments
+      // --- Save and return the serialized arguments
       const { McpServerArgument } = this.getRepositories()
-      await McpServerArgument.save(args)
-      return args.map(argument => argument.serialize())
+      await McpServerArgument.save(serverArguments)
+      return serverArguments.map(argument => argument.serialize())
     },
   )
 }
