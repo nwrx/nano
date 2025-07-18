@@ -14,7 +14,7 @@ export function mcpServerArgumentRemove(this: ModuleMcpServerArgument) {
         workspace: assert.stringNotEmpty,
         pool: assert.stringNotEmpty,
         server: assert.stringNotEmpty,
-        position: [assert.stringNumber, Number.parseInt],
+        position: [[assert.numberInteger], [assert.stringNumber, Number.parseInt]],
       }),
     },
     async({ event, parameters }): Promise<void> => {

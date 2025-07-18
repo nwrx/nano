@@ -17,7 +17,7 @@ export function mcpServerArgumentUpdate(this: ModuleMcpServerArgument) {
         workspace: assert.stringNotEmpty,
         pool: assert.stringNotEmpty,
         server: assert.stringNotEmpty,
-        position: assert.numberInteger,
+        position: [[assert.numberInteger], [assert.stringNumber, Number.parseInt]],
       }),
       parseBody: createParser({
         value: [[assert.undefined], [assert.stringNotEmpty]],
