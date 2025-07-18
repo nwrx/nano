@@ -22,9 +22,21 @@ export function createMcpPoolsClient(parameters: CreateMcpPoolsClientOptions) {
     )
   }
 
+  const createPool = async(name: string) => {
+    await client.requestAttempt(
+      'POST /api/workspaces/:workspace/pools',
+      {
+        parameters: { workspace },
+        data: { name },
+        onSuccess: () => fetchPools(),
+      },
+    )
+  }
+
   return toReactive({
     data,
     options,
     fetchPools,
+    createPool,
   })
 }

@@ -6,6 +6,7 @@ import type {
 import type {
   McpServerCreateArgumentOptions,
   McpServerFetchOptions,
+  McpServerFetchToolsOptions,
   McpServerUpdateArgumentOptions,
   McpServerUpdateOptions,
   McpServerUpdateSpecOptions,
@@ -322,6 +323,23 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
     )
   }
 
+  /***************************************************************************/
+  /* Tools                                                                   */
+  /***************************************************************************/
+
+  async function fetchTools(options: McpServerFetchToolsOptions = {}) {
+    await client.requestAttempt(
+      'GET /api/workspaces/:workspace/pools/:pool/servers/:server/tools',
+      {
+        parameters: { workspace, pool, server },
+        query: { ...options },
+        onData: ({ tools }) => {
+          data.value.tools = tools
+        },
+      },
+    )
+  }
+
   return toReactive({
     data,
     args,
@@ -346,5 +364,6 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
     removeArgument,
     fetchStatus,
     syncronizeServer,
+    fetchTools,
   })
 }

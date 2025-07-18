@@ -5,11 +5,11 @@ import { createResolvable } from '@unshared/functions/createResolvable'
 
 export interface UseMcpPoolOptions {
   workspace: string
-  pool: string
+  name: string
 }
 
 export function createMcpPoolClient(parameters: UseMcpPoolOptions) {
-  const { workspace, pool } = parameters
+  const { workspace, name: pool } = parameters
   const client = useClient()
   const alerts = useAlerts()
 
@@ -22,7 +22,8 @@ export function createMcpPoolClient(parameters: UseMcpPoolOptions) {
   const isFetching = createResolvable<void>()
   isFetching.resolve()
 
-  async function fetchPool() {
+  async function fetchPool(allowCache = false) {
+    if (!allowCache && data.value.name === pool) return
     if (isFetching.isPending) return isFetching.promise
     isFetching.reset()
     await client.requestAttempt('GET /api/workspaces/:workspace/pools/:pool', {
