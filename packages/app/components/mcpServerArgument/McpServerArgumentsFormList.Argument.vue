@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { McpServerArgumentObject } from '@nwrx/nano-api'
 import { BaseIcon } from '@unshared/vue/BaseIcon'
-import Actions from './McpServerFormArguments.Actions.vue'
+import Actions from './McpServerArgumentsActions.vue'
 
 const props = defineProps<{
   workspace: string

@@ -2,7 +2,7 @@
 import AppPageFormEmpty from '~/components/app/AppPageForm.Empty.vue'
 import AppPageForm from '~/components/app/AppPageForm.vue'
 import { useMcpServer } from '~/composables/useMcp'
-import Argument from './McpServerFormArguments.Argument.vue'
+import Argument from './McpServerArgumentsFormList.Argument.vue'
 
 const props = defineProps<{
   workspace: string

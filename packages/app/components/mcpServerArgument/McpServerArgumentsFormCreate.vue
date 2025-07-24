@@ -2,8 +2,8 @@
 import AppPageFormTabs from '~/components/app/AppPageForm.Tabs.vue'
 import AppPageFormTabsItem from '~/components/app/AppPageForm.TabsItem.vue'
 import AppPageForm from '~/components/app/AppPageForm.vue'
-import FromValue from './McpServerFormArgumentsCreate.FromValue.vue'
-import FromVariable from './McpServerFormArgumentsCreate.FromVariable.vue'
+import FromValue from './McpServerArgumentsFormCreate.FromValue.vue'
+import FromVariable from './McpServerArgumentsFormCreate.FromVariable.vue'
 
 defineProps<{
   workspace: string

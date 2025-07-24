@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { McpServerArgumentObject } from '@nwrx/nano-api'
-import DialogEdit from './McpServerFormArguments.DialogEdit.vue'
-import DialogLink from './McpServerFormArguments.DialogLink.vue'
-import DialogRemove from './McpServerFormArguments.DialogRemove.vue'
+import DialogEdit from './McpServerArgumentsDialogEdit.vue'
+import DialogLink from './McpServerArgumentsDialogLink.vue'
+import DialogRemove from './McpServerArgumentsDialogRemove.vue'
 
 defineProps<{
   workspace: string
