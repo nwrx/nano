@@ -109,7 +109,7 @@ export default defineConfig<Theme>({
 
       // App
       'app': COLORS.primary[900],
-      'subtle': `${COLORS.primary[900]}80`,
+      'subtle': `${COLORS.primary[900]}A0`,
       'emphasized': `${COLORS.primary[900]}C0`,
       'prominent': COLORS.primary[600],
       'active': COLORS.primary[50],
