@@ -52,9 +52,16 @@ const readableStatus = computed(() => {
     <Records>
       <div class="flex items-center space-x-md p-lg">
         <Badge
-          :label="server.status.isSynchronized ? t('statusSynchronized') : t('statusNotSynchronized')"
-          :class="server.status.isSynchronized ? 'badge-success' : 'badge-danger'"
-          :icon="server.status.isSynchronized ? 'i-carbon:checkmark' : 'i-carbon:close'"
+          v-if="server.status.isSynchronized"
+          :label="t('statusSynchronized')"
+          class="badge-success"
+          icon="i-carbon:checkmark"
+        />
+        <Badge
+          v-else
+          :label="t('statusNotSynchronized')"
+          class="badge-danger"
+          icon="i-carbon:close"
         />
         <Badge
           :label="server.status.phase"
