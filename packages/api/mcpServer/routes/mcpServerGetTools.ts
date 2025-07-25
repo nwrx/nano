@@ -39,6 +39,8 @@ export function mcpServerRefreshTools(this: ModuleMcpServer) {
       const { McpServer } = this.getRepositories()
       const client = await getMcpServerClient.call(this, { workspace, pool, server })
       const { tools } = await client.listTools() as { tools: Tool[] }
+
+      // --- Save the tools to the MCP server entity.
       server.tools = tools
       await McpServer.save(server)
       return { tools }
