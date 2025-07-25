@@ -17,7 +17,11 @@ const server = useMcpServer(props)
 onMounted(() => void server.fetchServer())
 
 // --- Lifecycle.
-watch(() => server.data, serverData => formData.value = serverData, { immediate: true })
+watch(
+  () => server.data,
+  serverData => formData.value = serverData,
+  { immediate: true },
+)
 </script>
 
 <template>
