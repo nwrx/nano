@@ -62,10 +62,10 @@ export class McpManagerClient {
       try { data = JSON.parse(text) as NmcpManager.Error }
       catch { /* ignore */ }
       throw createError({
-        name: data.name ?? toConstantCase('E_MCP_MANAGER', response.statusText) as ServerErrorName,
+        name: data?.name ?? toConstantCase('E_MCP_MANAGER', response.statusText) as ServerErrorName,
         message: data?.message ?? text,
-        statusCode: data.statusCode ?? response.status,
-        statusMessage: data.statusMessage ?? response.statusText,
+        statusCode: data?.statusCode ?? response.status,
+        statusMessage: data?.statusMessage ?? response.statusText,
       })
     },
   })

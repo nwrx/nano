@@ -4,22 +4,26 @@ import type { McpGateway } from '../entities'
 import type { NmcpGateway } from './types'
 import { createError } from '@unserved/server'
 import { createClient } from '@unshared/client'
+import { toConstantCase } from '@unshared/string/toConstantCase'
 import { ERRORS } from './errors'
 
 export class McpGatewayClient {
   constructor(gateway: McpGateway) {
     const { address } = gateway
-    this.client.options.baseUrl = /^https?:\/\//.test(address) ? address : `http://${address}`
+    this.client.options.baseUrl = address
   }
 
   client = createClient<NmcpGateway.Schema>({
     onFailure: async(response) => {
-      const data = await response.json() as { data: ObjectLike }
+      const text = await response.text()
+      let data: NmcpGateway.Error | undefined
+      try { data = JSON.parse(text) as NmcpGateway.Error }
+      catch { /* ignore */ }
       throw createError({
-        name: data.data.name as ServerErrorName,
-        message: data.data.message as string,
-        statusCode: response.status,
-        statusMessage: response.statusText,
+        name: data?.name ?? toConstantCase('E_MCP_GATEWAY', response.statusText) as ServerErrorName,
+        message: data?.message ?? text,
+        statusCode: data?.statusCode ?? response.status,
+        statusMessage: data?.statusMessage ?? response.statusText,
       })
     },
   })

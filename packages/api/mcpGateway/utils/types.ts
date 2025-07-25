@@ -1,3 +1,4 @@
+import type { ServerErrorName } from '@unserved/server'
 import type { OpenAPIResolved, OperationById, OperationOptions, OperationResult } from '@unshared/client/openapi'
 import type { MCP_GATEWAY_SCHEMA } from './schemaGateway'
 
@@ -10,4 +11,12 @@ export namespace NmcpGateway {
 
   /** The result of the getGatewayHealthStatus operation. */
   export type Status = OperationResult<Schema, OperationById<Schema, 'getGatewayHealthStatus'>>
+
+  /** The body of an error response from the MCP gateway. */
+  export interface Error {
+    name: ServerErrorName
+    message: string
+    statusCode: number
+    statusMessage: string
+  }
 }
