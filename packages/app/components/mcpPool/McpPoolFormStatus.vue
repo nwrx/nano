@@ -1,84 +1,20 @@
 <script setup lang="ts">
-import type { McpPoolObject, McpPoolStatus } from '@nwrx/nano-api'
 import AppPageForm from '~/components/app/AppPageForm.vue'
 import Badge from '~/components/base/Badge.vue'
 import Button from '~/components/base/Button.vue'
 import RecordsEntry from '~/components/base/Records.Entry.vue'
 import RecordsField from '~/components/base/Records.Field.vue'
 import Records from '~/components/base/Records.vue'
+import { useMcpPool } from '~/composables/useMcp'
 
 const props = defineProps<{
-  pool: McpPoolObject
   workspace: string
+  name: string
 }>()
 
 const { t } = useI18n()
-const client = useClient()
-const alerts = useAlerts()
-
-// --- Pool status reactive state
-const status = ref<McpPoolStatus>({
-  isSynchronized: false,
-  activeServersCount: 0,
-  managedServersCount: 0,
-  pendingServersCount: 0,
-  totalServersCount: 0,
-  unmanagedServersCount: 0,
-  remoteSpec: {
-    defaultIdleTimeout: 0,
-    maxServersActive: 0,
-    maxServersLimit: 0,
-  },
-  localSpec: {
-    defaultIdleTimeout: 0,
-    maxServersActive: 0,
-    maxServersLimit: 0,
-  },
-})
-
-const isLoading = ref(false)
-const isSynchronizing = ref(false)
-
-// --- Fetch pool status
-async function fetchStatus() {
-  if (isLoading.value) return
-  isLoading.value = true
-  await client.requestAttempt('GET /api/workspaces/:workspace/pools/:pool/status', {
-    data: {
-      workspace: props.workspace,
-      pool: props.pool.name,
-    },
-    onData: (data: McpPoolStatus) => {
-      status.value = data
-    },
-    onEnd: () => {
-      isLoading.value = false
-    },
-  })
-}
-
-// --- Synchronize pool
-async function synchronizePool() {
-  if (isSynchronizing.value) return
-  isSynchronizing.value = true
-  await client.requestAttempt('POST /api/workspaces/:workspace/pools/:pool/synchronize', {
-    data: {
-      workspace: props.workspace,
-      pool: props.pool.name,
-    },
-    onSuccess: () => {
-      alerts.success(t('synchronizeSuccessMessage'))
-      void fetchStatus()
-    },
-    onEnd: () => {
-      isSynchronizing.value = false
-    },
-  })
-}
-
-// --- Lifecycle
-onMounted(fetchStatus)
-watch(() => props.pool, fetchStatus, { immediate: true })
+const pool = useMcpPool(props)
+onMounted(pool.fetchStatus)
 </script>
 
 <template>
@@ -92,22 +28,22 @@ watch(() => props.pool, fetchStatus, { immediate: true })
       <!-- Server Status Badges -->
       <div class="flex items-center space-x-md p-lg">
         <Badge
-          :label="status.isSynchronized ? t('statusSyncronized') : t('statusNotSyncronized')"
-          :class="status.isSynchronized ? 'badge-success' : 'badge-danger'"
-          :icon="status.isSynchronized ? 'i-carbon:checkmark' : 'i-carbon:close'"
+          :label="pool.status.isSynchronized ? t('statusSyncronized') : t('statusNotSyncronized')"
+          :class="pool.status.isSynchronized ? 'badge-success' : 'badge-danger'"
+          :icon="pool.status.isSynchronized ? 'i-carbon:checkmark' : 'i-carbon:close'"
         />
         <Badge
-          :label="t('activeServersLabel', { count: status.activeServersCount })"
+          :label="t('activeServersLabel', { count: pool.status.activeServersCount })"
           class="badge-success font-normal"
           icon="i-carbon:play-outline"
         />
         <Badge
-          :label="t('pendingServersLabel', { count: status.pendingServersCount })"
+          :label="t('pendingServersLabel', { count: pool.status.pendingServersCount })"
           class="badge-warning font-normal"
           icon="i-carbon:time"
         />
         <Badge
-          :label="t('totalServersLabel', { count: status.totalServersCount })"
+          :label="t('totalServersLabel', { count: pool.status.totalServersCount })"
           class="badge-primary font-normal"
           icon="i-carbon:box"
         />
@@ -116,20 +52,20 @@ watch(() => props.pool, fetchStatus, { immediate: true })
       <!-- Server Counts -->
       <RecordsEntry :title="t('serverCountsTitle')" icon="i-carbon:box">
         <template #fields>
-          <RecordsField :label="t('activeServersField')" :value="status.activeServersCount" />
-          <RecordsField :label="t('managedServersField')" :value="status.managedServersCount" />
-          <RecordsField :label="t('unmanagedServersField')" :value="status.unmanagedServersCount" />
-          <RecordsField :label="t('pendingServersField')" :value="status.pendingServersCount" />
-          <RecordsField :label="t('totalServersField')" :value="status.totalServersCount" />
+          <RecordsField :label="t('activeServersField')" :value="pool.status.activeServersCount" />
+          <RecordsField :label="t('managedServersField')" :value="pool.status.managedServersCount" />
+          <RecordsField :label="t('unmanagedServersField')" :value="pool.status.unmanagedServersCount" />
+          <RecordsField :label="t('pendingServersField')" :value="pool.status.pendingServersCount" />
+          <RecordsField :label="t('totalServersField')" :value="pool.status.totalServersCount" />
         </template>
       </RecordsEntry>
 
       <!-- Remote spec -->
       <RecordsEntry :title="t('remoteSpecTitle')" icon="i-carbon:cloud">
         <template #fields>
-          <RecordsField :label="t('defaultIdleTimeoutField')" :value="status.remoteSpec?.defaultIdleTimeout" />
-          <RecordsField :label="t('maxActiveServersField')" :value="status.remoteSpec?.maxServersActive" />
-          <RecordsField :label="t('maxServerLimitField')" :value="status.remoteSpec?.maxServersLimit" />
+          <RecordsField :label="t('defaultIdleTimeoutField')" :value="pool.status.remoteSpec?.defaultIdleTimeout" />
+          <RecordsField :label="t('maxActiveServersField')" :value="pool.status.remoteSpec?.maxServersActive" />
+          <RecordsField :label="t('maxServerLimitField')" :value="pool.status.remoteSpec?.maxServersLimit" />
         </template>
       </RecordsEntry>
 
@@ -138,9 +74,9 @@ watch(() => props.pool, fetchStatus, { immediate: true })
       <!-- Remote spec -->
       <RecordsEntry :title="t('localSpecTitle')" icon="i-carbon:cloud-satellite">
         <template #fields>
-          <RecordsField :label="t('defaultIdleTimeoutField')" :value="status.localSpec?.defaultIdleTimeout" />
-          <RecordsField :label="t('maxActiveServersField')" :value="status.localSpec?.maxServersActive" />
-          <RecordsField :label="t('maxServerLimitField')" :value="status.localSpec?.maxServersLimit" />
+          <RecordsField :label="t('defaultIdleTimeoutField')" :value="pool.status.localSpec?.defaultIdleTimeout" />
+          <RecordsField :label="t('maxActiveServersField')" :value="pool.status.localSpec?.maxServersActive" />
+          <RecordsField :label="t('maxServerLimitField')" :value="pool.status.localSpec?.maxServersLimit" />
         </template>
       </RecordsEntry>
     </Records>
@@ -148,18 +84,16 @@ watch(() => props.pool, fetchStatus, { immediate: true })
     <!-- Actions -->
     <div class="w-full flex items-center justify-between pt-md">
       <Button
-        :loading="isLoading"
         icon-prepend="i-carbon:renew"
         :label="t('refreshStatusAction')"
-        @click="() => fetchStatus()"
+        @click="() => pool.fetchStatus()"
       />
 
       <Button
-        :loading="isSynchronizing"
-        class="button-primary"
+        class="button-success"
         icon-prepend="i-carbon:upload"
         :label="t('synchronizePoolAction')"
-        @click="() => synchronizePool()"
+        @click="() => pool.synchronizePool()"
       />
     </div>
   </AppPageForm>

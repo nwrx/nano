@@ -1,6 +1,7 @@
-import type { McpPoolObject } from '@nwrx/nano-api'
+import type { McpPoolObject, McpPoolStatus } from '@nwrx/nano-api'
 import type { McpPoolFetchOptions, McpPoolUpdateOptions } from './types'
 import { createResolvable } from '@unshared/functions/createResolvable'
+import { sleep } from '@unshared/functions/sleep'
 // import { getMcpPoolStatusIcon } from './getMcpPoolStatusIcon'
 
 export interface UseMcpPoolOptions {
@@ -146,8 +147,46 @@ export function createMcpPoolClient(parameters: UseMcpPoolOptions) {
     )
   }
 
+  /***************************************************************************/
+  /* Status                                                                  */
+  /***************************************************************************/
+
+  const status = ref({}) as Ref<McpPoolStatus>
+
+  async function fetchStatus() {
+    await sleep(CONSTANTS.niceDelay)
+    await client.requestAttempt(
+      'GET /api/workspaces/:workspace/pools/:pool/status',
+      {
+        parameters: { workspace, pool },
+        onData: (statusData) => { status.value = statusData },
+      },
+    )
+  }
+
+  async function synchronizePool() {
+    await sleep(CONSTANTS.niceDelay)
+    await client.requestAttempt(
+      'POST /api/workspaces/:workspace/pools/:pool/synchronize',
+      {
+        parameters: { workspace, pool },
+        onSuccess: async() => {
+          await fetchStatus()
+          alerts.success(localize({
+            en: `The pool **${pool}** has been synchronized successfully.`,
+            fr: `Le pool **${pool}** a été synchronisé avec succès.`,
+            de: `Der Pool **${pool}** wurde erfolgreich synchronisiert.`,
+            es: `El pool **${pool}** se ha sincronizado correctamente.`,
+            zh: `池 **${pool}** 已成功同步。`,
+          }))
+        },
+      },
+    )
+  }
+
   return toReactive({
     data,
+    status,
     options,
     isLoading,
     linkTo: { name: 'WorkspaceMcpPool', params: { workspace, pool } },
@@ -160,5 +199,7 @@ export function createMcpPoolClient(parameters: UseMcpPoolOptions) {
     enablePool,
     disablePool,
     removePool,
+    fetchStatus,
+    synchronizePool,
   })
 }

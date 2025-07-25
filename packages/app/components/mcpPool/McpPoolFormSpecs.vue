@@ -1,51 +1,29 @@
 <script setup lang="ts">
-import type { McpPoolObject } from '@nwrx/nano-api'
 import AppPageForm from '~/components/app/AppPageForm.vue'
 import InputText from '~/components/base/InputText.vue'
+import { useMcpPool } from '~/composables/useMcp'
 
 const props = defineProps<{
-  pool: McpPoolObject
   workspace: string
-}>()
-
-const emit = defineEmits<{
-  refresh: []
+  name: string
 }>()
 
 const { t } = useI18n()
-const client = useClient()
-const alerts = useAlerts()
+const pool = useMcpPool(props)
+pool.options.withSpec = true
+onMounted(pool.fetchPool)
 
 const defaultIdleTimeout = ref<number>()
 const maxServersLimit = ref<number>()
 const maxServersActive = ref<number>()
 
 onMounted(() => {
-  if (!props.pool) return
-  if (!props.pool.spec) return
-  maxServersLimit.value = props.pool.spec.maxServersLimit
-  maxServersActive.value = props.pool.spec.maxServersActive
-  defaultIdleTimeout.value = props.pool.spec.defaultIdleTimeout
+  if (!pool.data) return
+  if (!pool.data.spec) return
+  maxServersLimit.value = pool.data.spec.maxServersLimit
+  maxServersActive.value = pool.data.spec.maxServersActive
+  defaultIdleTimeout.value = pool.data.spec.defaultIdleTimeout
 })
-
-// --- Handle form submission
-async function handleSubmit() {
-  await client.requestAttempt('PUT /api/workspaces/:workspace/pools/:pool', {
-    data: {
-      workspace: props.workspace,
-      pool: props.pool.name,
-      spec: {
-        defaultIdleTimeout: defaultIdleTimeout.value,
-        maxServersLimit: maxServersLimit.value,
-        maxServersActive: maxServersActive.value,
-      },
-    },
-    onSuccess: () => {
-      alerts.success(t('successUpdate'))
-      emit('refresh')
-    },
-  })
-}
 </script>
 
 <template>
@@ -54,7 +32,13 @@ async function handleSubmit() {
     :title="t('title')"
     :text="t('description')"
     :label="t('submitLabel')"
-    @submit="() => handleSubmit()">
+    @submit="() => pool.updatePool({
+      spec: {
+        defaultIdleTimeout,
+        maxServersLimit,
+        maxServersActive,
+      },
+    })">
 
     <!-- Timeout and Server Limits -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-md w-full">
