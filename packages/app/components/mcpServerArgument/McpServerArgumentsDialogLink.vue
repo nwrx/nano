@@ -2,7 +2,7 @@
 import type { McpServerArgumentObject } from '@nwrx/nano-api'
 import Dialog from '~/components/base/Dialog.vue'
 import VariableSearch from '~/components/vaultVariable/VariableSearch.vue'
-import { useMcpServer } from '~/composables/useMcp'
+import { useMcpServerArguments } from '~/composables/useMcp'
 
 const props = defineProps<{
   workspace: string
@@ -13,7 +13,7 @@ const props = defineProps<{
 
 // --- Model.
 const { t } = useI18n()
-const server = useMcpServer(props)
+const args = useMcpServerArguments(props)
 const selectedVariable = ref<string>()
 
 // --- State.
@@ -40,7 +40,7 @@ watch(isOpen, () => {
     :label-confirm="t('confirm')"
     :label-cancel="t('cancel')"
     :disabled="!selectedVariable"
-    @confirm="() => server.updateArgument(argument.position, { variable: selectedVariable })">
+    @confirm="() => args.updateArgument(argument.position, { variable: selectedVariable })">
 
     <!-- Search -->
     <VariableSearch

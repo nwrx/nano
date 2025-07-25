@@ -1,6 +1,6 @@
 import { BaseEntity } from '@unserved/server'
 import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm'
-import { McpServer, McpServerObject } from '../../mcpServer'
+import { McpServer } from '../../mcpServer'
 import { User, UserObject } from '../../user'
 import { VaultVariable, VaultVariableObject } from '../../vault'
 
@@ -60,6 +60,13 @@ export class McpServerArgument extends BaseEntity {
   updatedBy?: null | User
 
   /**
+   * The user that deleted this argument assignment.
+   */
+  @JoinColumn()
+  @ManyToOne(() => User, { nullable: true, onDelete: 'RESTRICT' })
+  deletedBy?: null | User
+
+  /**
    * @param options The options to use when serializing the `McpServerArgument`.
    * @returns The serialized object representation of the `McpServerArgument`.
    */
@@ -68,41 +75,45 @@ export class McpServerArgument extends BaseEntity {
       withValue = false,
       withVault = false,
       withVariable = false,
-      withPool = false,
-      withServer = false,
       withCreatedBy = false,
       withUpdatedBy = false,
+      withDeleted = false,
     } = options
     return {
       position: this.position,
-      createdAt: this.createdAt.toISOString(),
-      updatedAt: this.updatedAt.toISOString(),
       value: withValue ? this.value ?? undefined : undefined,
-      server: withServer ? this.server?.serialize({ withPool }) : undefined,
-      variable: withVariable ? this.variable?.serialize({ withVault }) : undefined,
+      variable: withVariable && this.variable ? this.variable.serialize({ withVault }) : undefined,
+
+      // Metadata
       createdBy: withCreatedBy ? this.createdBy?.serialize() : undefined,
+      createdAt: this.createdAt.toISOString(),
       updatedBy: withUpdatedBy ? this.updatedBy?.serialize() : undefined,
+      updatedAt: this.updatedAt.toISOString(),
+      deletedBy: withDeleted && this.deletedBy ? this.deletedBy.serialize() : undefined,
+      deletedAt: this.deletedAt?.toISOString(),
     }
   }
 }
 
-export interface SerializeOptions {
+interface SerializeOptions {
   withValue?: boolean
   withVault?: boolean
-  withPool?: boolean
-  withServer?: boolean
   withVariable?: boolean
   withCreatedBy?: boolean
   withUpdatedBy?: boolean
+  withDeleted?: boolean
 }
 
 export interface McpServerArgumentObject {
   position: number
-  createdAt: string
-  updatedAt: string
-  server?: McpServerObject
   value?: string
   variable?: VaultVariableObject
+
+  // Metadata
   createdBy?: UserObject
+  createdAt?: string
   updatedBy?: UserObject
+  updatedAt?: string
+  deletedBy?: UserObject
+  deletedAt?: string
 }

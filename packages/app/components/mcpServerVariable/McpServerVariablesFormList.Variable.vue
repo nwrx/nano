@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { McpServerVariableObject } from '@nwrx/nano-api'
 import { BaseIcon } from '@unshared/vue/BaseIcon'
-import Actions from './McpServerVariablesActions.vue'
 import UserAudit from '~/components/user/UserAudit.vue'
+import Actions from './McpServerVariablesActions.vue'
 
 const props = defineProps<{
   workspace: string
@@ -22,7 +22,7 @@ const isVariable = computed(() => {
   <div class="flex items-center px-md py-sm gap-md">
 
     <!-- Icon -->
-    <div class="b b-app bg-app rd p-2">
+    <div class="b b-app rd p-2">
       <BaseIcon
         :icon="isVariable ? 'i-carbon:password' : 'i-carbon:code'"
         class="text-app"
@@ -33,15 +33,15 @@ const isVariable = computed(() => {
     <div v-if="variable && variable.variable">
 
       <!-- Name and optional mount path -->
-      <div class="flex items-center gap-sm text-sm mt-1">
+      <div class="flex items-center gap-sm text-sm">
         <span class="font-semibold" v-text="variable.name" />
         <span v-if="variable.mountAtPath">
           → {{ variable.mountAtPath }}
         </span>
       </div>
-      
+
       <!-- Variable -->
-      <div class="flex items-center text-subtle text-xs font-mono gap-sm">
+      <div class="flex items-center text-subtle text-xs font-mono gap-xs">
         <span v-text="variable.variable.vault?.name" />
         <BaseIcon icon="i-carbon:arrow-right size-3" />
         <span v-text="variable.variable.name" />
@@ -56,9 +56,7 @@ const isVariable = computed(() => {
       />
       <div class="flex items-center gap-sm text-xs text-subtle">
         <span v-text="variable.name" />
-        <span v-if="variable.mountAtPath">
-          → {{ variable.mountAtPath }}
-        </span>
+        <span v-if="variable.mountAtPath">→ {{ variable.mountAtPath }}</span>
       </div>
       <p
         class="text-app font-mono"
@@ -70,12 +68,12 @@ const isVariable = computed(() => {
     <div class="flex-1" />
 
     <!-- Audit -->
-     <UserAudit
-       :created-at="variable.createdAt"
-       :created-by="variable.createdBy"
-       :updated-at="variable.updatedAt"
-       :updated-by="variable.updatedBy"
-       />
+    <UserAudit
+      :created-at="variable.createdAt"
+      :created-by="variable.createdBy"
+      :updated-at="variable.updatedAt"
+      :updated-by="variable.updatedBy"
+    />
 
     <!-- Actions -->
     <Actions

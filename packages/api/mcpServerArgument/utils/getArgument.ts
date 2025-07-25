@@ -9,7 +9,7 @@ const GET_ARGUMENT_OPTIONS_SCHEMA = createParser({
 })
 
 /** The options for getting an MCP server argument. */
- type GetArgumentOptions = Loose<ReturnType<typeof GET_ARGUMENT_OPTIONS_SCHEMA>>
+type GetArgumentOptions = Loose<ReturnType<typeof GET_ARGUMENT_OPTIONS_SCHEMA>>
 
 /**
  * Gets an MCP server argument by its position.

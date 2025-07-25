@@ -1,6 +1,6 @@
 import { BaseEntity } from '@unserved/server'
 import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm'
-import { McpServer, McpServerObject } from '../../mcpServer'
+import { McpServer } from '../../mcpServer'
 import { User, UserObject } from '../../user'
 import { VaultVariable, VaultVariableObject } from '../../vault'
 
@@ -31,7 +31,7 @@ export class McpServerVariable extends BaseEntity {
    * @example '/app/config/database.conf'
    */
   @Column('varchar', { length: 500, nullable: true })
-  mountAtPath?: string | null
+  mountAtPath?: null | string
 
   /**
    * The MCP server that has access to the variable.

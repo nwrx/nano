@@ -16,3 +16,7 @@ export type McpServerFetchToolsOptions = RouteRequestQuery<typeof application, '
 export type McpServerVariablesFetchOptions = RouteRequestQuery<typeof application, 'GET /api/workspaces/:workspace/pools/:pool/servers/:server/variables'>
 export type McpServerVariableCreateOptions = RouteRequestBody<typeof application, 'POST /api/workspaces/:workspace/pools/:pool/servers/:server/variables'>
 export type McpServerVariableUpdateOptions = RouteRequestBody<typeof application, 'PUT /api/workspaces/:workspace/pools/:pool/servers/:server/variables/:name'>
+
+export type McpServerArgumentsFetchOptions = RouteRequestQuery<typeof application, 'GET /api/workspaces/:workspace/pools/:pool/servers/:server/arguments'>
+export type McpServerArgumentUpdateOptions = RouteRequestBody<typeof application, 'PUT /api/workspaces/:workspace/pools/:pool/servers/:server/arguments/:position'>
+export type McpServerArgumentCreateOptions = RouteRequestBody<typeof application, 'POST /api/workspaces/:workspace/pools/:pool/servers/:server/arguments'>

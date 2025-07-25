@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Button from '~/components/base/Button.vue'
 import VariableSearch from '~/components/vaultVariable/VariableSearch.vue'
-import { useMcpServer } from '~/composables/useMcp'
+import { useMcpServerArguments } from '~/composables/useMcp'
 
 const props = defineProps<{
   workspace: string
@@ -10,7 +10,7 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
-const server = useMcpServer(props)
+const args = useMcpServerArguments(props)
 const argumentsValues = ref<string[]>([''])
 const argumentsToSubmit = computed(() => argumentsValues.value
   .filter(variable => variable.trim() !== '')
@@ -61,7 +61,7 @@ const argumentsToSubmit = computed(() => argumentsValues.value
         class="button-success"
         :label="t('createSubmit')"
         @click="async() => {
-          await server.createArguments({ arguments: argumentsToSubmit })
+          await args.createArguments({ arguments: argumentsToSubmit })
           argumentsValues = [''] // Reset the input after submission
         }"
       />

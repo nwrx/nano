@@ -23,8 +23,6 @@ export function mcpServerArgumentSearch(this: ModuleMcpServerArgument) {
         page: [[assert.undefined], [assert.stringNotEmpty, assert.number]],
         limit: [[assert.undefined], [assert.stringNotEmpty, assert.number]],
         order: [[assert.undefined], [assert.stringNotEmpty, assert.objectStrict]],
-        withPool: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],
-        withServer: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],
         withValue: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],
         withVault: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],
         withVariable: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],

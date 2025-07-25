@@ -2,7 +2,7 @@
 import type { McpServerArgumentObject } from '@nwrx/nano-api'
 import Dialog from '~/components/base/Dialog.vue'
 import InputText from '~/components/base/InputText.vue'
-import { useMcpServer } from '~/composables/useMcp'
+import { useMcpServerArguments } from '~/composables/useMcp'
 
 const props = defineProps<{
   workspace: string
@@ -13,7 +13,7 @@ const props = defineProps<{
 
 // --- Model.
 const { t } = useI18n()
-const server = useMcpServer(props)
+const args = useMcpServerArguments(props)
 const value = ref<string>()
 
 // --- State.
@@ -35,7 +35,7 @@ watch(isOpen, () => {
     :text="t('text')"
     :label-confirm="t('confirm')"
     :label-cancel="t('cancel')"
-    @confirm="() => server.updateArgument(argument.position, { value })">
+    @confirm="() => args.updateArgument(argument.position, { value })">
     <InputText
       v-model="value"
       type="textarea"

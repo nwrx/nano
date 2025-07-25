@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { McpServerArgumentObject } from '@nwrx/nano-api'
 import { BaseIcon } from '@unshared/vue/BaseIcon'
+import UserAudit from '~/components/user/UserAudit.vue'
 import Actions from './McpServerArgumentsActions.vue'
 
 const props = defineProps<{
@@ -58,6 +59,16 @@ const isVariable = computed(() => {
         v-text="argument.value"
       />
     </div>
+    <!-- Spacer -->
+    <div class="flex-1" />
+
+    <!-- Audit -->
+    <UserAudit
+      :created-at="argument.createdAt"
+      :created-by="argument.createdBy"
+      :updated-at="argument.updatedAt"
+      :updated-by="argument.updatedBy"
+    />
 
     <!-- Actions -->
     <Actions

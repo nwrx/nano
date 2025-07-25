@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppPageFormEmpty from '~/components/app/AppPageForm.Empty.vue'
 import AppPageForm from '~/components/app/AppPageForm.vue'
-import { useMcpServer } from '~/composables/useMcp'
+import { useMcpServerArguments } from '~/composables/useMcp'
 import Argument from './McpServerArgumentsFormList.Argument.vue'
 
 const props = defineProps<{
@@ -11,8 +11,12 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
-const server = useMcpServer(props)
-onMounted(server.fetchArguments)
+const args = useMcpServerArguments(props)
+args.options.withVault = true
+args.options.withVariable = true
+args.options.withCreatedBy = true
+args.options.withUpdatedBy = true
+onMounted(args.fetchArguments)
 </script>
 
 <template>
@@ -21,7 +25,7 @@ onMounted(server.fetchArguments)
 
       <!-- No Tools -->
       <AppPageFormEmpty
-        v-if="server.args.length === 0"
+        v-if="args.data.length === 0"
         :title="t('noArgumentsTitle')"
         :text="t('noArgumentsText')"
         icon="i-carbon:code"
@@ -29,7 +33,7 @@ onMounted(server.fetchArguments)
 
       <!-- List of Arguments -->
       <Argument
-        v-for="(argument, index) in server.args"
+        v-for="(argument, index) in args.data"
         :key="index"
         :workspace="workspace"
         :pool="pool"
@@ -43,10 +47,10 @@ onMounted(server.fetchArguments)
 <i18n lang="yaml">
 en:
   noArgumentsTitle: No Arguments
-  noArgumentsText: This server has no arguments defined yet. You can add one or more arguments in the section above.
+  noArgumentsText: This server has no args defined yet. You can add one or more args in the section above.
 fr:
   noArgumentsTitle: Aucun Argument
-  noArgumentsText: Ce serveur n'a pas encore d'arguments définis. Vous pouvez en ajouter un ou plusieurs dans la section ci-dessus.
+  noArgumentsText: Ce serveur n'a pas encore d'args définis. Vous pouvez en ajouter un ou plusieurs dans la section ci-dessus.
 de:
   noArgumentsTitle: Keine Argumente
   noArgumentsText: Dieser Server hat noch keine Argumente definiert. Sie können ein oder mehrere Argumente im obigen Abschnitt hinzufügen.
