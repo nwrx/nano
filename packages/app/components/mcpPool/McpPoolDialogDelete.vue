@@ -24,7 +24,7 @@ const isOpen = defineModel({ default: false })
     :text="t('text', { name })"
     :label-cancel="t('cancel')"
     :label-submit="t('delete')"
-    @submit="() => pool.removePool()">
+    @confirm="() => pool.removePool()">
 
     <!-- Pool Card -->
     <McpPoolCard

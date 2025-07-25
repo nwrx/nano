@@ -27,7 +27,7 @@ watch(isOpen, () => newName.value = props.name, { immediate: true })
     :text="t('text', { name })"
     :label-cancel="t('cancel')"
     :label-submit="t('rename')"
-    @submit="() => pool.renamePool(newName)">
+    @confirm="() => pool.renamePool(newName)">
 
     <!-- Pool Card -->
     <McpPoolCard
