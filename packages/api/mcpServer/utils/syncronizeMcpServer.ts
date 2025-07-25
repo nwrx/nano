@@ -33,16 +33,20 @@ export async function syncronizeMcpServer(this: ModuleMcpServer, option: Syncron
   const manager = await modulePool.getPoolManager({ workspace, pool })
   const client = moduleManager.getManagerClient(manager)
 
+  // --- If the `command` is empty, it should be `undefined`.
+  let command = server.spec.command
+  if (command !== undefined && command.join('').trim() === '')
+    command = undefined
+
   // --- Get the MCP server manager client.
   const exists = await client.serverExists(server.id)
   if (exists) {
     await client.updateServer(server.id, {
       pool: pool.id,
       image: server.spec.image,
-      command: server.spec.command,
+      command,
       // transport: server.spec.transport,
       idleTimeout: server.spec.idleTimeout,
-      // command: server.spec.command,
     })
   }
   else {
@@ -50,7 +54,7 @@ export async function syncronizeMcpServer(this: ModuleMcpServer, option: Syncron
       name: server.id,
       pool: pool.id,
       image: server.spec.image,
-      command: server.spec.command,
+      command,
       // transport: server.spec.transport,
       idleTimeout: server.spec.idleTimeout,
     })
