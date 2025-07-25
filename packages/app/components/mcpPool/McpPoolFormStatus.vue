@@ -120,9 +120,9 @@ en:
   maxActiveServersField: Max Active Servers
   maxServerLimitField: Server Limit
   refreshStatusAction: Refresh Status
-  synchronizePoolAction: Synchronize Resource
-  synchronizeSuccessMessage: Resource synchronized successfully
-  synchronizeErrorMessage: Failed to synchronize resource
+  synchronizePoolAction: Apply Specifications
+  synchronizeSuccessMessage: Specifications applied successfully
+  synchronizeErrorMessage: Failed to apply specifications
 fr:
   title: État des Ressources
   text: Surveillez les métriques de serveur en temps réel et la configuration des ressources. Suivez les connexions actives, les requêtes en attente et l'état de synchronisation de vos ressources de serveurs MCP.
@@ -143,9 +143,9 @@ fr:
   maxActiveServersField: Serveurs Actifs Maximum
   maxServerLimitField: Limite de Serveurs
   refreshStatusAction: Actualiser l'État
-  synchronizePoolAction: Synchroniser la Ressource
-  synchronizeSuccessMessage: Ressource synchronisée avec succès
-  synchronizeErrorMessage: Échec de la synchronisation de la ressource
+  synchronizePoolAction: Appliquer les Spécifications
+  synchronizeSuccessMessage: Spécifications appliquées avec succès
+  synchronizeErrorMessage: Échec de l'application des spécifications
 de:
   title: Ressourcenstatus
   text: Überwachen Sie Echtzeit-Server-Metriken und Ressourcenkonfiguration. Verfolgen Sie aktive Verbindungen, ausstehende Anfragen und den Synchronisationsstatus Ihrer MCP-Server-Ressourcen.
@@ -166,9 +166,9 @@ de:
   maxActiveServersField: Max. Aktive Server
   maxServerLimitField: Server-Limit
   refreshStatusAction: Status Aktualisieren
-  synchronizePoolAction: Ressource Synchronisieren
-  synchronizeSuccessMessage: Ressource erfolgreich synchronisiert
-  synchronizeErrorMessage: Ressource-Synchronisation fehlgeschlagen
+  synchronizePoolAction: Spezifikationen Anwenden
+  synchronizeSuccessMessage: Spezifikationen erfolgreich angewendet
+  synchronizeErrorMessage: Spezifikationen-Anwendung fehlgeschlagen
 es:
   title: Estado de Recursos
   text: Monitoree métricas de servidor en tiempo real y configuración de recursos. Rastree conexiones activas, solicitudes pendientes y estado de sincronización en sus recursos de servidores MCP.
@@ -189,9 +189,9 @@ es:
   maxActiveServersField: Servidores Activos Máximos
   maxServerLimitField: Límite de Servidores
   refreshStatusAction: Actualizar Estado
-  synchronizePoolAction: Sincronizar Recurso
-  synchronizeSuccessMessage: Recurso sincronizado exitosamente
-  synchronizeErrorMessage: Error al sincronizar el recurso
+  synchronizePoolAction: Aplicar Especificaciones
+  synchronizeSuccessMessage: Especificaciones aplicadas exitosamente
+  synchronizeErrorMessage: Error al aplicar las especificaciones
 zh:
   title: 资源状态
   text: 监控实时服务器指标和资源配置。跟踪您的 MCP 服务器资源中的活跃连接、待处理请求和同步状态。
@@ -212,7 +212,7 @@ zh:
   maxActiveServersField: 最大活跃服务器数
   maxServerLimitField: 服务器限制
   refreshStatusAction: 刷新状态
-  synchronizePoolAction: 同步资源
-  synchronizeSuccessMessage: 资源同步成功
-  synchronizeErrorMessage: 资源同步失败
+  synchronizePoolAction: 应用规格
+  synchronizeSuccessMessage: 规格应用成功
+  synchronizeErrorMessage: 规格应用失败
 </i18n>

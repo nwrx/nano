@@ -114,7 +114,7 @@ const readableStatus = computed(() => {
       <Button
         class="button-success"
         icon-prepend="i-carbon:upload"
-        :label="t('synchronizeServer')"
+        :label="t('applyServer')"
         @click="() => server.syncronizeServer()"
       />
     </div>
@@ -142,8 +142,8 @@ en:
   transport: Transport
   idleTimeout: Idle Timeout
   refreshStatus: Refresh Status
-  synchronizeServer: Synchronize Server
-  synchronizeSuccessMessage: Server synchronized successfully
+  applyServer: Apply Specifications
+  applySuccessMessage: Specifications applied successfully
   never: Never
   transportUnknown: Unknown
   transportDefaultPort: default port
@@ -170,8 +170,8 @@ fr:
   transport: Transport
   idleTimeout: "Délai d'Inactivité"
   refreshStatus: Actualiser le Statut
-  synchronizeServer: Synchroniser le Serveur
-  synchronizeSuccessMessage: Serveur synchronisé avec succès
+  applyServer: Appliquer les Spécifications
+  applySuccessMessage: Spécifications appliquées avec succès
   never: Jamais
   transportUnknown: Inconnu
   transportDefaultPort: port par défaut
@@ -198,8 +198,8 @@ de:
   transport: Transport
   idleTimeout: Leerlauf-Timeout
   refreshStatus: Status Aktualisieren
-  synchronizeServer: Server Synchronisieren
-  synchronizeSuccessMessage: Server erfolgreich synchronisiert
+  applyServer: Spezifikationen Anwenden
+  applySuccessMessage: Spezifikationen erfolgreich angewendet
   never: Nie
   transportUnknown: Unbekannt
   transportDefaultPort: Standard-Port
@@ -226,8 +226,8 @@ es:
   transport: Transporte
   idleTimeout: Tiempo de Espera de Inactividad
   refreshStatus: Actualizar Estado
-  synchronizeServer: Sincronizar Servidor
-  synchronizeSuccessMessage: Servidor sincronizado exitosamente
+  applyServer: Aplicar Especificaciones
+  applySuccessMessage: Especificaciones aplicadas exitosamente
   never: Nunca
   transportUnknown: Desconocido
   transportDefaultPort: puerto predeterminado
@@ -254,8 +254,8 @@ zh:
   transport: 传输方式
   idleTimeout: 空闲超时
   refreshStatus: 刷新状态
-  synchronizeServer: 同步服务器
-  synchronizeSuccessMessage: 服务器同步成功
+  applyServer: 应用规格
+  applySuccessMessage: 规格应用成功
   never: 从未
   transportUnknown: 未知
   transportDefaultPort: 默认端口
