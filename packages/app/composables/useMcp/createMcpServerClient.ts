@@ -1,13 +1,10 @@
 import type {
-  McpServerArgumentObject,
   McpServerObject,
   McpServerStatus,
 } from '@nwrx/nano-api'
 import type {
-  McpServerCreateArgumentOptions,
   McpServerFetchOptions,
   McpServerFetchToolsOptions,
-  McpServerUpdateArgumentOptions,
   McpServerUpdateOptions,
   McpServerUpdateSpecOptions,
 } from './types'
@@ -199,87 +196,6 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
   }
 
   /***************************************************************************/
-  /* Arguments                                                               */
-  /***************************************************************************/
-
-  const args = ref([]) as Ref<McpServerArgumentObject[]>
-  const isFetchingArguments = createResolvable<void>()
-  isFetchingArguments.resolve()
-
-  async function fetchArguments() {
-    if (isFetchingArguments.isPending) return isFetchingArguments.promise
-    isFetchingArguments.reset()
-    await client.requestAttempt(
-      'GET /api/workspaces/:workspace/pools/:pool/servers/:server/arguments',
-      {
-        parameters: { workspace, pool, server },
-        query: { withValue: true, withVariable: true, withVault: true },
-        onData: (argsData) => { args.value = argsData },
-        onEnd: () => { isFetchingArguments.resolve() },
-      },
-    )
-  }
-
-  async function createArguments(options: McpServerCreateArgumentOptions) {
-    await client.requestAttempt(
-      'POST /api/workspaces/:workspace/pools/:pool/servers/:server/arguments',
-      {
-        parameters: { workspace, pool, server },
-        body: { ...options },
-        onSuccess: async() => {
-          await fetchArguments()
-          alerts.success(localize({
-            en: `The argument has been added successfully to the server **${fullName}**.`,
-            fr: `L'argument a été ajouté avec succès au serveur **${fullName}**.`,
-            de: `Das Argument wurde erfolgreich zum Server **${fullName}** hinzugefügt.`,
-            es: `El argumento se ha añadido correctamente al servidor **${fullName}**.`,
-            zh: `参数已成功添加到服务器 **${fullName}**。`,
-          }))
-        },
-      },
-    )
-  }
-
-  async function updateArgument(position: number, options: McpServerUpdateArgumentOptions) {
-    await client.requestAttempt(
-      'PUT /api/workspaces/:workspace/pools/:pool/servers/:server/arguments/:position',
-      {
-        parameters: { workspace, pool, server, position },
-        body: { ...options },
-        onSuccess: async() => {
-          await fetchArguments()
-          alerts.success(localize({
-            en: `The argument at position **${position}** has been updated successfully.`,
-            fr: `L'argument à la position **${position}** a été mis à jour avec succès.`,
-            de: `Das Argument an Position **${position}** wurde erfolgreich aktualisiert.`,
-            es: `El argumento en la posición **${position}** se ha actualizado correctamente.`,
-            zh: `位置为 **${position}** 的参数已成功更新。`,
-          }))
-        },
-      },
-    )
-  }
-
-  async function removeArgument(position: number) {
-    await client.requestAttempt(
-      'DELETE /api/workspaces/:workspace/pools/:pool/servers/:server/arguments/:position',
-      {
-        parameters: { workspace, pool, server, position },
-        onSuccess: async() => {
-          await fetchArguments()
-          alerts.success(localize({
-            en: `The argument at position **${position}** has been removed successfully.`,
-            fr: `L'argument à la position **${position}** a été supprimé avec succès.`,
-            de: `Das Argument an Position **${position}** wurde erfolgreich entfernt.`,
-            es: `El argumento en la posición **${position}** se ha eliminado correctamente.`,
-            zh: `位置为 **${position}** 的参数已成功删除。`,
-          }))
-        },
-      },
-    )
-  }
-
-  /***************************************************************************/
   /* Status                                                                  */
   /***************************************************************************/
 
@@ -339,7 +255,6 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
 
   return toReactive({
     data,
-    args,
     status,
     options,
     fullName,
@@ -355,10 +270,6 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
     enableServer,
     disableServer,
     removeServer,
-    fetchArguments,
-    createArguments,
-    updateArgument,
-    removeArgument,
     fetchStatus,
     syncronizeServer,
     fetchTools,
