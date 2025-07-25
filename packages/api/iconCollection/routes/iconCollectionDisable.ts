@@ -19,7 +19,7 @@ export function iconCollectionDisable(this: ModuleIconCollection) {
 
       // --- Get the icon collection by name
       const collection = await getCollection.call(this, { user, name })
-      if (collection.disabledAt) throw this.errors.ICON_COLLECTION_ALREADY_DISABLED(name)
+      if (collection.disabledAt !== null) throw this.errors.ICON_COLLECTION_ALREADY_DISABLED(name)
       collection.disabledAt = new Date()
       collection.disabledBy = user
       collection.updatedBy = user
