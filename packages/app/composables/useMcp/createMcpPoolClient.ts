@@ -167,7 +167,7 @@ export function createMcpPoolClient(parameters: UseMcpPoolOptions) {
   async function synchronizePool() {
     await sleep(CONSTANTS.niceDelay)
     await client.requestAttempt(
-      'POST /api/workspaces/:workspace/pools/:pool/synchronize',
+      'POST /api/workspaces/:workspace/pools/:pool/apply',
       {
         parameters: { workspace, pool },
         onSuccess: async() => {

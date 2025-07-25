@@ -8,13 +8,13 @@ import { assertMcpPool } from './assertMcpPool'
 import { DEFAULT_MCP_POOL_SPEC } from './constants'
 import { getMcpPoolManager } from './getMcpPoolManager'
 
-const SYNCRONIZE_MCP_POOL_OPTIONS_SCHEMA = createParser({
+const APPLY_MCP_POOL_OPTIONS_SCHEMA = createParser({
   workspace: assertWorkspace,
   pool: assertMcpPool,
 })
 
 /** The options for synchronizing an MCP pool. */
-export type SyncronizeMcpPoolOptions = Loose<ReturnType<typeof SYNCRONIZE_MCP_POOL_OPTIONS_SCHEMA>>
+export type ApplyMcpPoolOptions = Loose<ReturnType<typeof APPLY_MCP_POOL_OPTIONS_SCHEMA>>
 
 /**
  * Synchronize an MCP pool with the MCP manager. This function will call the
@@ -24,9 +24,9 @@ export type SyncronizeMcpPoolOptions = Loose<ReturnType<typeof SYNCRONIZE_MCP_PO
  * @param option The options for synchronizing the MCP pool.
  * @returns The MCP pool entity after synchronization.
  */
-export async function syncronizeMcpPool(this: ModuleMcpPool, option: SyncronizeMcpPoolOptions): Promise<void> {
+export async function applyMcpPool(this: ModuleMcpPool, option: ApplyMcpPoolOptions): Promise<void> {
   const moduleManager = this.getModule(ModuleMcpManager)
-  const { workspace, pool } = SYNCRONIZE_MCP_POOL_OPTIONS_SCHEMA(option)
+  const { workspace, pool } = APPLY_MCP_POOL_OPTIONS_SCHEMA(option)
 
   // --- Get the MCP pool manager client.
   const manager = await getMcpPoolManager.call(this, { workspace, pool })

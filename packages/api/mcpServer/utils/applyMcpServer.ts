@@ -8,14 +8,14 @@ import { assertMcpPool } from '../../mcpPool/utils/assertMcpPool'
 import { assertWorkspace } from '../../workspace/utils/assertWorkspace'
 import { assertMcpServer } from './assertMcpServer'
 
-const SYNCRONIZE_MCP_SERVER_OPTIONS_SCHEMA = createParser({
+const APPLY_MCP_SERVER_OPTIONS_SCHEMA = createParser({
   workspace: assertWorkspace,
   pool: assertMcpPool,
   server: assertMcpServer,
 })
 
 /** The options for synchronizing an MCP server. */
-export type SyncronizeMcpServerOptions = Loose<ReturnType<typeof SYNCRONIZE_MCP_SERVER_OPTIONS_SCHEMA>>
+export type ApplyMcpServerOptions = Loose<ReturnType<typeof APPLY_MCP_SERVER_OPTIONS_SCHEMA>>
 
 /**
  * Synchronize an MCP server with the MCP manager.
@@ -24,10 +24,10 @@ export type SyncronizeMcpServerOptions = Loose<ReturnType<typeof SYNCRONIZE_MCP_
  * @param option The options for synchronizing the MCP server.
  * @returns The MCP server entity after synchronization.
  */
-export async function syncronizeMcpServer(this: ModuleMcpServer, option: SyncronizeMcpServerOptions) {
+export async function applyMcpServer(this: ModuleMcpServer, option: ApplyMcpServerOptions) {
   const modulePool = this.getModule(ModuleMcpPool)
   const moduleManager = this.getModule(ModuleMcpManager)
-  const { workspace, pool, server } = SYNCRONIZE_MCP_SERVER_OPTIONS_SCHEMA(option)
+  const { workspace, pool, server } = APPLY_MCP_SERVER_OPTIONS_SCHEMA(option)
 
   // --- Get the MCP pool manager client.
   const manager = await modulePool.getPoolManager({ workspace, pool })

@@ -4,12 +4,12 @@ import { assert, createParser } from '@unshared/validation'
 import { ModuleMcpPool } from '../../mcpPool'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
-import { getMcpServer, syncronizeMcpServer } from '../utils'
+import { applyMcpServer, getMcpServer } from '../utils'
 
-export function mcpServerSyncronize(this: ModuleMcpServer) {
+export function mcpServerApply(this: ModuleMcpServer) {
   return createHttpRoute(
     {
-      name: 'POST /api/workspaces/:workspace/pools/:pool/servers/:server/synchronize',
+      name: 'POST /api/workspaces/:workspace/pools/:pool/servers/:server/apply',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         pool: assert.stringNotEmpty,
@@ -28,7 +28,7 @@ export function mcpServerSyncronize(this: ModuleMcpServer) {
       const server = await getMcpServer.call(this, { workspace, pool, name: parameters.server })
 
       // --- Synchronize the MCP server.
-      await syncronizeMcpServer.call(this, { workspace, pool, server })
+      await applyMcpServer.call(this, { workspace, pool, server })
     },
   )
 }

@@ -219,7 +219,7 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
   async function syncronizeServer() {
     await sleep(CONSTANTS.niceDelay)
     await client.requestAttempt(
-      'POST /api/workspaces/:workspace/pools/:pool/servers/:server/synchronize',
+      'POST /api/workspaces/:workspace/pools/:pool/servers/:server/apply',
       {
         parameters: { workspace, pool, server },
         onSuccess: async() => {
