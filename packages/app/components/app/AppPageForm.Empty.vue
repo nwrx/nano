@@ -27,7 +27,7 @@ defineProps<{
     </p>
 
     <!-- Text -->
-    <p class="text-sm">
+    <p class="text-sm max-w-sm mx-auto">
       <slot>
         {{ text }}
       </slot>
