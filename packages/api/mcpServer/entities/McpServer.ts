@@ -1,11 +1,11 @@
 /* eslint-disable unicorn/no-null */
 import type { Tool } from '@modelcontextprotocol/sdk/types.js'
 import type { McpServerSpec } from '../utils/assertMcpServerSpec'
-import type { McpManagerServerPhase } from '../utils/types'
 import { BaseEntity, transformerDate, transformerJson } from '@unserved/server'
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from 'typeorm'
 import { McpPool, McpPoolObject } from '../../mcpPool'
 import { McpServerArgument } from '../../mcpServerArgument'
+import { McpServerEvent } from '../../mcpServerEvent'
 import { McpServerVariable } from '../../mcpServerVariable'
 import { User, UserObject } from '../../user'
 import { DEFAULT_MCP_SERVER_SPEC } from '../utils/constants'
@@ -46,14 +46,6 @@ export class McpServer extends BaseEntity {
   description = ''
 
   /**
-   * The last phase the server was in. This is used to track the server's
-   * lifecycle and can be used to determine if the server is currently running,
-   * stopped, or in another state.
-   */
-  @Column('varchar', { nullable: true })
-  lastPhase: McpManagerServerPhase
-
-  /**
    * The pool that manages this server. This is a reference to the
    * `McpPool` entity that contains the server. The pool is responsible for
    * managing the server's default configuration and allows for limiting the
@@ -79,6 +71,16 @@ export class McpServer extends BaseEntity {
    */
   @Column('varchar', { nullable: true, transformer: transformerJson, default: '[]' })
   tools: null | Tool[]
+
+  /**
+   * The events that occurred on the server. This field is used to track
+   * the server's lifecycle and can be used to debug issues or monitor the server's
+   * performance. It is a one-to-many relationship with the `McpServerEvent` entity.
+   * Each event is associated with a specific server and contains information about
+   * the event's origin, data, and any associated thread.
+   */
+  @OneToMany(() => McpServerEvent, event => event.server)
+  events?: McpServerEvent[]
 
   /**
    * The arguments assigned to the server. These arguments can be used to
@@ -146,7 +148,6 @@ export class McpServer extends BaseEntity {
     return {
       name: this.name,
       title: this.title,
-      lastPhase: this.lastPhase,
       description: this.description,
       disabledAt: this.disabledAt?.toISOString() ?? null,
       disabledBy: withDisabledBy ? this.disabledBy?.serialize() : undefined,
@@ -181,7 +182,6 @@ export interface McpServerObject {
   name: string
   title: string
   description: string
-  lastPhase?: McpManagerServerPhase
   disabledBy?: UserObject
   disabledAt: null | string
 

@@ -10,6 +10,7 @@ import { ModuleMcpManager } from './mcpManager'
 import { ModuleMcpPool } from './mcpPool'
 import { ModuleMcpServer } from './mcpServer'
 import { ModuleMcpServerArgument } from './mcpServerArgument'
+import { ModuleMcpServerEvent } from './mcpServerEvent'
 import { ModuleMcpServerVariable } from './mcpServerVariable'
 import { ModuleProject } from './project'
 import { ModuleRegistry } from './registry'
@@ -51,6 +52,7 @@ export const application = new Application(
     ModuleMcpGateway,
     ModuleMcpPool,
     ModuleMcpServer,
+    ModuleMcpServerEvent,
     ModuleMcpServerArgument,
     ModuleMcpServerVariable,
   ],
