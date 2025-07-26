@@ -1,19 +1,16 @@
-import type { McpError } from '@modelcontextprotocol/sdk/types.js'
 import type { Loose } from '@unshared/types'
 import type { ModuleMcpServer } from '../index'
-import { Client } from '@modelcontextprotocol/sdk/client/index.js'
-import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js'
 import { createParser } from '@unshared/validation'
-import packageJson from '../../../../package.json' assert { type: 'json' }
 import { ModuleMcpPool } from '../../mcpPool'
 import { assertMcpPool } from '../../mcpPool/utils/assertMcpPool'
 import { assertWorkspace } from '../../workspace/utils/assertWorkspace'
 import { assertMcpServer } from './assertMcpServer'
+import { createMcpServerClient } from './createMcpServerClient'
 
 const GET_MCP_SERVER_CLIENT_OPTIONS_SCHEMA = createParser({
+  workspace: assertWorkspace,
   pool: assertMcpPool,
   server: assertMcpServer,
-  workspace: assertWorkspace,
 })
 
 /** The options for getting an MCP server client. */
@@ -30,19 +27,16 @@ export async function getMcpServerClient(this: ModuleMcpServer, options: GetMcpS
   const modulePool = this.getModule(ModuleMcpPool)
   const { workspace, pool, server } = GET_MCP_SERVER_CLIENT_OPTIONS_SCHEMA(options)
 
-  // --- Instantiate the MCP transport.
-  const gateway = await modulePool.getPoolGateway({ workspace, pool })
-  const baseUrl = /^https?:\/\//.test(gateway.address) ? gateway.address : `http://${gateway.address}`
-  const url = new URL(`/${server.id}/sse`, baseUrl)
-  const transport = new SSEClientTransport(url)
+  // --- If the client already exists, return it.
+  const exists = this.mcpServerClients.get(server.id)
+  if (exists) return exists
 
-  // --- Connect to the MCP client and list tools.
-  try {
-    const client = new Client({ name: 'nano', version: packageJson.version })
-    await client.connect(transport)
-    return client
-  }
-  catch (error) {
-    throw this.errors.MCP_SERVER_CONNECTION_FAILED(error as McpError)
-  }
+  // --- Get the manager and gateway for the MCP pool.
+  const manager = await modulePool.getPoolManager({ workspace, pool })
+  const gateway = await modulePool.getPoolGateway({ workspace, pool })
+
+  // --- Create the MCP server client and watch logs.
+  const client = createMcpServerClient.call(this, { manager, gateway, server })
+  this.mcpServerClients.set(server.id, client)
+  return client
 }

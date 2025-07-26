@@ -1,20 +1,10 @@
-import type { OpenAPIResolved, OperationById, OperationResult } from '@unshared/client/openapi'
-import type { MCP_MANAGER_SCHEMA } from '../../mcpManager/utils/schemaManager'
-import type { McpServerSpec } from './assertMcpServerSpec'
+import type { NmcpManager } from '../../mcpManager'
 
-export type McpManagerSchema = OpenAPIResolved<typeof MCP_MANAGER_SCHEMA>
-export type McpManagerServerBody = OperationResult<McpManagerSchema, OperationById<McpManagerSchema, 'getServerByName'>>
-export type McpManagerServerPhase = McpManagerServerBody['status']['phase']
+export type McpServerStatus =
+  | NmcpManager.ServerStatus & { isReachable: true }
+  | { isReachable: false }
 
-export interface McpServerStatus {
-  isSynchronized: boolean
-  startedAt: null | string
-  stoppedAt: null | string
-  lastRequestAt: null | string
-  phase: McpManagerServerPhase
-  // conditions: []
-  totalRequests: 0
-  currentConnections: 0
-  localSpec: McpServerSpec
-  remoteSpec: McpManagerServerBody
+export interface McpServerLog {
+  timestamp: string
+  message: string
 }

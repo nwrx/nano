@@ -1,3 +1,4 @@
+import type { UUID } from 'node:crypto'
 import { ModuleBase } from '@unserved/server'
 import { ModuleMcpManager } from '../mcpManager'
 import { ModuleUser } from '../user'
@@ -17,5 +18,6 @@ export class ModuleMcpServer extends ModuleBase {
   entities = ENTITIES
   errors = UTILS.ERRORS
   dependencies = [ModuleUser, ModuleVault, ModuleMcpManager]
+  mcpServerClients = new Map<UUID, UTILS.McpServerClient>()
   getServer = UTILS.getMcpServer.bind(this)
 }
