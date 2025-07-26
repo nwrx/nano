@@ -7,7 +7,7 @@ export const MCP_MANAGER_SCHEMA = {
   info: {
     title: 'NMCP',
     summary: 'Kubernetes operator for managing MCP servers',
-    version: '',
+    version: '0.2.1',
   },
   paths: {
     '/api/v1/servers': {
@@ -34,16 +34,18 @@ export const MCP_MANAGER_SCHEMA = {
                     args: null,
                     command: null,
                     env: [],
-                    id: '551cc3e7-0a04-4b08-b0ad-f48cf2f06d96',
+                    id: 'd605b00f-7e45-4e92-a868-8d5eaa72d3a7',
                     idleTimeout: 60,
                     image: 'mcp/fetch:latest',
                     name: 'example-server',
                     pool: 'default',
                     status: {
                       conditions: [],
+                      createdAt: '1970-01-01T00:00:00Z',
                       currentConnections: 0,
                       lastRequestAt: null,
                       phase: 'Idle',
+                      requestedAt: null,
                       startedAt: null,
                       stoppedAt: null,
                       totalRequests: 0,
@@ -56,16 +58,18 @@ export const MCP_MANAGER_SCHEMA = {
                     args: null,
                     command: null,
                     env: [],
-                    id: '87c79f52-6cdd-4658-8827-ca021061b921',
+                    id: 'a239fe03-065c-458e-82ab-89e4826d097f',
                     idleTimeout: 60,
                     image: 'mcp/fetch:latest',
                     name: 'example-server',
                     pool: 'default',
                     status: {
                       conditions: [],
+                      createdAt: '1970-01-01T00:00:00Z',
                       currentConnections: 0,
                       lastRequestAt: null,
                       phase: 'Idle',
+                      requestedAt: null,
                       startedAt: null,
                       stoppedAt: null,
                       totalRequests: 0,
@@ -110,16 +114,18 @@ export const MCP_MANAGER_SCHEMA = {
                   args: null,
                   command: null,
                   env: [],
-                  id: '41436d80-3f72-4d3b-961d-8661855c2a86',
+                  id: '0c2ecf1c-ace3-431d-b960-5919e20d6bf5',
                   idleTimeout: 60,
                   image: 'mcp/fetch:latest',
                   name: 'example-server',
                   pool: 'default',
                   status: {
                     conditions: [],
+                    createdAt: '1970-01-01T00:00:00Z',
                     currentConnections: 0,
                     lastRequestAt: null,
                     phase: 'Idle',
+                    requestedAt: null,
                     startedAt: null,
                     stoppedAt: null,
                     totalRequests: 0,
@@ -154,16 +160,73 @@ export const MCP_MANAGER_SCHEMA = {
                   args: null,
                   command: null,
                   env: [],
-                  id: 'abd1c8b5-c19c-4d42-8ab6-071f3a47f826',
+                  id: 'ee00237c-7ef9-4218-b44a-deb19504cbbc',
                   idleTimeout: 60,
                   image: 'mcp/fetch:latest',
                   name: 'example-server',
                   pool: 'default',
                   status: {
                     conditions: [],
+                    createdAt: '1970-01-01T00:00:00Z',
                     currentConnections: 0,
                     lastRequestAt: null,
                     phase: 'Idle',
+                    requestedAt: null,
+                    startedAt: null,
+                    stoppedAt: null,
+                    totalRequests: 0,
+                  },
+                  transport: {
+                    type: 'stdio',
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      put: {
+        tags: [
+          'Server',
+        ],
+        summary: 'Update Server',
+        description: 'Updates the configuration of an existing `MCPServer`. This allows modifying the container image, arguments, environment variables, transport configuration, and other settings while maintaining the server\'s identity.',
+        operationId: 'updateServerByName',
+        requestBody: {
+          description: '`MCPServer` custom resource definition',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/MCPServerSpec',
+              },
+            },
+          },
+          required: true,
+        },
+        responses: {
+          200: {
+            description: 'The `MCPServer` was patched successfully.',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/MCPServerBody',
+                },
+                example: {
+                  args: null,
+                  command: null,
+                  env: [],
+                  id: '908a0988-748c-44b8-b3f2-98476eb675ea',
+                  idleTimeout: 60,
+                  image: 'mcp/fetch:latest',
+                  name: 'example-server',
+                  pool: 'default',
+                  status: {
+                    conditions: [],
+                    createdAt: '1970-01-01T00:00:00Z',
+                    currentConnections: 0,
+                    lastRequestAt: null,
+                    phase: 'Idle',
+                    requestedAt: null,
                     startedAt: null,
                     stoppedAt: null,
                     totalRequests: 0,
@@ -196,69 +259,18 @@ export const MCP_MANAGER_SCHEMA = {
                   args: null,
                   command: null,
                   env: [],
-                  id: '99923bb6-a35d-471d-83ca-47abfcad9ff5',
+                  id: '3cce7092-4cc2-4eff-a8fa-8a2502cd47d7',
                   idleTimeout: 60,
                   image: 'mcp/fetch:latest',
                   name: 'example-server',
                   pool: 'default',
                   status: {
                     conditions: [],
+                    createdAt: '1970-01-01T00:00:00Z',
                     currentConnections: 0,
                     lastRequestAt: null,
                     phase: 'Idle',
-                    startedAt: null,
-                    stoppedAt: null,
-                    totalRequests: 0,
-                  },
-                  transport: {
-                    type: 'stdio',
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-      patch: {
-        tags: [
-          'Server',
-        ],
-        summary: 'Patch Server',
-        description: 'Updates the configuration of an existing `MCPServer`. This allows modifying the container image, arguments, environment variables, transport configuration, and other settings while maintaining the server\'s identity.',
-        operationId: 'patchServerByName',
-        requestBody: {
-          description: '`MCPServer` custom resource definition',
-          content: {
-            'application/json': {
-              schema: {
-                $ref: '#/components/schemas/MCPServerSpec',
-              },
-            },
-          },
-          required: true,
-        },
-        responses: {
-          200: {
-            description: 'The `MCPServer` was patched successfully.',
-            content: {
-              'application/json': {
-                schema: {
-                  $ref: '#/components/schemas/MCPServerBody',
-                },
-                example: {
-                  args: null,
-                  command: null,
-                  env: [],
-                  id: '0118e0f4-f5d5-4fa5-9c20-dccff7a101ba',
-                  idleTimeout: 60,
-                  image: 'mcp/fetch:latest',
-                  name: 'example-server',
-                  pool: 'default',
-                  status: {
-                    conditions: [],
-                    currentConnections: 0,
-                    lastRequestAt: null,
-                    phase: 'Idle',
+                    requestedAt: null,
                     startedAt: null,
                     stoppedAt: null,
                     totalRequests: 0,
@@ -296,7 +308,7 @@ export const MCP_MANAGER_SCHEMA = {
                   {
                     defaultIdleTimeout: 60,
                     defaultResources: {},
-                    id: 'd550d162-6b76-4aa4-8fff-0206a4b6bc9f',
+                    id: '7a7d899c-b894-43c5-9a75-c0fcc91f6604',
                     maxServersActive: 100,
                     maxServersLimit: 100,
                     name: 'example-pool',
@@ -311,7 +323,7 @@ export const MCP_MANAGER_SCHEMA = {
                   {
                     defaultIdleTimeout: 60,
                     defaultResources: {},
-                    id: '653b90bc-8493-4392-9d6c-c0066ca67bee',
+                    id: '982a2cf9-c3f3-48f6-b17d-8882f661bf42',
                     maxServersActive: 100,
                     maxServersLimit: 100,
                     name: 'example-pool',
@@ -358,7 +370,7 @@ export const MCP_MANAGER_SCHEMA = {
                 example: {
                   defaultIdleTimeout: 60,
                   defaultResources: {},
-                  id: '8870b78c-e256-4487-b87f-8e2554315c86',
+                  id: '902f3dbe-32a7-434e-8ea5-49d189a79b37',
                   maxServersActive: 100,
                   maxServersLimit: 100,
                   name: 'example-pool',
@@ -395,7 +407,53 @@ export const MCP_MANAGER_SCHEMA = {
                 example: {
                   defaultIdleTimeout: 60,
                   defaultResources: {},
-                  id: '75f621a8-ab1d-4dca-b11c-07ed125be476',
+                  id: 'c3e25ab9-7da5-4450-bcc8-70560a3bf82c',
+                  maxServersActive: 100,
+                  maxServersLimit: 100,
+                  name: 'example-pool',
+                  status: {
+                    activeServersCount: 0,
+                    managedServersCount: 0,
+                    pendingServersCount: 0,
+                    totalServersCount: 0,
+                    unmanagedServersCount: 0,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      put: {
+        tags: [
+          'Pool',
+        ],
+        summary: 'Update Pool',
+        description: 'Updates the configuration of an existing `MCPPool`. This allows modifying server limits, resource allocations, and idle timeout settings without recreating the pool.',
+        operationId: 'updatePoolByName',
+        requestBody: {
+          description: '`McpPool` custom resource definition',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/MCPPoolSpec',
+              },
+            },
+          },
+          required: true,
+        },
+        responses: {
+          200: {
+            description: 'The `MCPPool` was updated successfully.',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/MCPPoolBody',
+                },
+                example: {
+                  defaultIdleTimeout: 60,
+                  defaultResources: {},
+                  id: 'e0c7457d-0227-4696-bffd-492db9cd04aa',
                   maxServersActive: 100,
                   maxServersLimit: 100,
                   name: 'example-pool',
@@ -430,53 +488,7 @@ export const MCP_MANAGER_SCHEMA = {
                 example: {
                   defaultIdleTimeout: 60,
                   defaultResources: {},
-                  id: '6a4a342b-1b3e-4eb6-9f37-3a705125b734',
-                  maxServersActive: 100,
-                  maxServersLimit: 100,
-                  name: 'example-pool',
-                  status: {
-                    activeServersCount: 0,
-                    managedServersCount: 0,
-                    pendingServersCount: 0,
-                    totalServersCount: 0,
-                    unmanagedServersCount: 0,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-      patch: {
-        tags: [
-          'Pool',
-        ],
-        summary: 'Patch Pool',
-        description: 'Updates the configuration of an existing `MCPPool`. This allows modifying server limits, resource allocations, and idle timeout settings without recreating the pool.',
-        operationId: 'patchPoolByName',
-        requestBody: {
-          description: '`McpPool` custom resource definition',
-          content: {
-            'application/json': {
-              schema: {
-                $ref: '#/components/schemas/MCPPoolSpec',
-              },
-            },
-          },
-          required: true,
-        },
-        responses: {
-          200: {
-            description: 'The `MCPPool` was patched successfully.',
-            content: {
-              'application/json': {
-                schema: {
-                  $ref: '#/components/schemas/MCPPoolBody',
-                },
-                example: {
-                  defaultIdleTimeout: 60,
-                  defaultResources: {},
-                  id: '55a5e856-bf78-4f97-8eb1-89cd8dd9951c',
+                  id: 'e9f62a66-cbc8-4d9d-a48e-204261db8177',
                   maxServersActive: 100,
                   maxServersLimit: 100,
                   name: 'example-pool',
@@ -514,181 +526,183 @@ export const MCP_MANAGER_SCHEMA = {
                   ok: true,
                   system: {
                     arch: 'x86_64',
-                    availableParallelismv: 32,
-                    availmem: 83580698624,
+                    availableParallelism: 32,
+                    cpuAverageLoad: [
+                      1.74,
+                      2.48,
+                      4.79,
+                    ],
+                    cpuAverageSpeed: 4296,
                     cpus: [
                       {
-                        frequency: 5600,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 5691,
                         usage: 0,
                       },
                       {
-                        frequency: 5600,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 5640,
                         usage: 0,
                       },
                       {
-                        frequency: 5661,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 5613,
                         usage: 0,
                       },
                       {
-                        frequency: 5660,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 5652,
                         usage: 0,
                       },
                       {
-                        frequency: 5700,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 5667,
                         usage: 0,
                       },
                       {
-                        frequency: 5700,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 800,
                         usage: 0,
                       },
                       {
-                        frequency: 5600,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 5667,
                         usage: 0,
                       },
                       {
-                        frequency: 800,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 5177,
                         usage: 0,
                       },
                       {
-                        frequency: 5699,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 5642,
                         usage: 0,
                       },
                       {
-                        frequency: 5700,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 5700,
                         usage: 0,
                       },
                       {
-                        frequency: 5600,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 5666,
                         usage: 0,
                       },
                       {
-                        frequency: 800,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 5649,
                         usage: 0,
                       },
                       {
-                        frequency: 5600,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 5628,
                         usage: 0,
                       },
                       {
-                        frequency: 5600,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 5600,
                         usage: 0,
                       },
                       {
-                        frequency: 5600,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 5670,
                         usage: 0,
                       },
                       {
-                        frequency: 800,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 5673,
                         usage: 0,
                       },
                       {
-                        frequency: 4400,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 4400,
                         usage: 0,
                       },
                       {
-                        frequency: 4369,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 4398,
                         usage: 0,
                       },
                       {
-                        frequency: 4398,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 4400,
                         usage: 0,
                       },
                       {
-                        frequency: 800,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 4362,
                         usage: 0,
                       },
                       {
-                        frequency: 800,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 800,
                         usage: 0,
                       },
                       {
-                        frequency: 800,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 800,
                         usage: 0,
                       },
                       {
-                        frequency: 4391,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 800,
                         usage: 0,
                       },
                       {
-                        frequency: 4408,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 4400,
                         usage: 0,
                       },
                       {
-                        frequency: 800,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 4404,
                         usage: 0,
                       },
                       {
-                        frequency: 4410,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 4401,
                         usage: 0,
                       },
                       {
-                        frequency: 800,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 4402,
                         usage: 0,
                       },
                       {
-                        frequency: 800,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 800,
                         usage: 0,
                       },
                       {
-                        frequency: 800,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 4388,
                         usage: 0,
                       },
                       {
-                        frequency: 800,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 4400,
                         usage: 0,
                       },
                       {
-                        frequency: 4400,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 800,
                         usage: 0,
                       },
                       {
-                        frequency: 800,
                         model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 4401,
                         usage: 0,
                       },
                     ],
                     family: 'unix',
-                    freemem: 70920318976,
-                    loadavg: [
-                      0.25,
-                      0.51,
-                      0.62,
-                    ],
+                    memoryAvailable: 75045277696,
+                    memoryFree: 64659726336,
+                    memoryTotal: 101004070912,
+                    memoryUsed: 25958793216,
                     platform: 'linux',
                     release: 'Linux (NixOS 24.11)',
-                    totalmem: 101001527296,
-                    uptime: 11666,
+                    uptime: 198792,
                     version: 'Linux 6.6.88',
                   },
                   uptime: 0,
@@ -1474,7 +1488,7 @@ export const MCP_MANAGER_SCHEMA = {
         description: '`MCPServerPhase` represents the current lifecycle phase of the server',
         oneOf: [
           {
-            description: 'Server is not running and has no traffic',
+            description: 'Server is not running and has no traffic or resources allocated. This is the initial state of the server when it is created.',
             type: 'string',
             enum: [
               'Idle',
@@ -1488,17 +1502,17 @@ export const MCP_MANAGER_SCHEMA = {
             ],
           },
           {
-            description: 'Server is currently running and processing requests. Meaning it\'s Pod and Service are up and running.',
-            type: 'string',
-            enum: [
-              'Running',
-            ],
-          },
-          {
             description: 'Server is starting up and not yet ready to process requests (e.g., waiting for resources to be created or initialized).',
             type: 'string',
             enum: [
               'Starting',
+            ],
+          },
+          {
+            description: 'Server is currently running and processing requests. Meaning it\'s Pod and Service are up and running.',
+            type: 'string',
+            enum: [
+              'Ready',
             ],
           },
           {
@@ -1512,7 +1526,7 @@ export const MCP_MANAGER_SCHEMA = {
             description: 'Server is in an error state and not processing requests (e.g., due to a failure in the server or its resources).',
             type: 'string',
             enum: [
-              'Failed',
+              'Degraded',
             ],
           },
         ],
@@ -1593,6 +1607,12 @@ export const MCP_MANAGER_SCHEMA = {
               $ref: '#/components/schemas/io.k8s.apimachinery.pkg.apis.meta.v1.Condition',
             },
           },
+          createdAt: {
+            description: 'The last time the server was started',
+            default: '1970-01-01T00:00:00Z',
+            type: 'string',
+            format: 'date-time',
+          },
           currentConnections: {
             description: 'Number of current connections to the server',
             type: 'integer',
@@ -1611,8 +1631,16 @@ export const MCP_MANAGER_SCHEMA = {
             description: 'Current phase of the server lifecycle',
             $ref: '#/components/schemas/MCPServerPhase',
           },
+          requestedAt: {
+            description: 'The last time the server was requested to start',
+            type: [
+              'string',
+              'null',
+            ],
+            format: 'date-time',
+          },
           startedAt: {
-            description: 'Time when the server was started',
+            description: 'The last time the server was started',
             type: [
               'string',
               'null',
@@ -1620,7 +1648,7 @@ export const MCP_MANAGER_SCHEMA = {
             format: 'date-time',
           },
           stoppedAt: {
-            description: 'Time when the server was stopped',
+            description: 'The last time the server was stopped',
             type: [
               'string',
               'null',
@@ -1644,7 +1672,7 @@ export const MCP_MANAGER_SCHEMA = {
         ],
         properties: {
           port: {
-            description: 'Port number for SSE transport, required when type is \'sse\'',
+            description: 'Port number for SSE transport, required when type is \'sse\' or \'streamable-http\'',
             type: 'integer',
           },
           type: {
@@ -1653,6 +1681,7 @@ export const MCP_MANAGER_SCHEMA = {
             enum: [
               'stdio',
               'sse',
+              'streamable-http',
             ],
           },
         },
@@ -1673,7 +1702,7 @@ export const MCP_MANAGER_SCHEMA = {
           },
           system: {
             description: 'Optional system information.',
-            $ref: '#/components/schemas/StatusSystem',
+            $ref: '#/components/schemas/SystemStatus',
           },
           uptime: {
             description: 'The uptime of the application in seconds.',
@@ -3546,19 +3575,21 @@ export const MCP_MANAGER_SCHEMA = {
           },
         ],
       },
-      'StatusSystem': {
+      'SystemStatus': {
         type: 'object',
         required: [
           'arch',
-          'availableParallelismv',
-          'availmem',
+          'availableParallelism',
+          'cpuAverageLoad',
+          'cpuAverageSpeed',
           'cpus',
           'family',
-          'freemem',
-          'loadavg',
+          'memoryAvailable',
+          'memoryFree',
+          'memoryTotal',
+          'memoryUsed',
           'platform',
           'release',
-          'totalmem',
           'uptime',
           'version',
         ],
@@ -3567,36 +3598,13 @@ export const MCP_MANAGER_SCHEMA = {
             description: 'The architecture of the CPU (e.g., `x86_64`, `arm64`).',
             type: 'string',
           },
-          availableParallelismv: {
+          availableParallelism: {
             description: 'The number of available parallelism threads.',
             type: 'integer',
             format: 'uint',
             minimum: 0,
           },
-          availmem: {
-            description: 'The amount of available memory in bytes (total memory - free memory).',
-            type: 'integer',
-            format: 'uint64',
-            minimum: 0,
-          },
-          cpus: {
-            description: 'A list of CPU information.',
-            type: 'array',
-            items: {
-              $ref: '#/components/schemas/StatusSystemCpu',
-            },
-          },
-          family: {
-            description: 'The family of the CPU architecture (e.g., `x86`, `arm`).',
-            type: 'string',
-          },
-          freemem: {
-            description: 'The amount of free memory in bytes.',
-            type: 'integer',
-            format: 'uint64',
-            minimum: 0,
-          },
-          loadavg: {
+          cpuAverageLoad: {
             description: 'The load average over the last 1, 5, and 15 minutes.',
             type: 'array',
             items: {
@@ -3606,6 +3614,47 @@ export const MCP_MANAGER_SCHEMA = {
             maxItems: 3,
             minItems: 3,
           },
+          cpuAverageSpeed: {
+            description: 'The average CPU speed in MHz.',
+            type: 'integer',
+            format: 'uint64',
+            minimum: 0,
+          },
+          cpus: {
+            description: 'A list of CPU information.',
+            type: 'array',
+            items: {
+              $ref: '#/components/schemas/SystemStatusCpu',
+            },
+          },
+          family: {
+            description: 'The family of the CPU architecture (e.g., `x86`, `arm`).',
+            type: 'string',
+          },
+          memoryAvailable: {
+            description: 'The amount of available memory in bytes (total memory - free memory).',
+            type: 'integer',
+            format: 'uint64',
+            minimum: 0,
+          },
+          memoryFree: {
+            description: 'The amount of free memory in bytes.',
+            type: 'integer',
+            format: 'uint64',
+            minimum: 0,
+          },
+          memoryTotal: {
+            description: 'The total amount of memory in bytes.',
+            type: 'integer',
+            format: 'uint64',
+            minimum: 0,
+          },
+          memoryUsed: {
+            description: 'The amount of used memory in bytes.',
+            type: 'integer',
+            format: 'uint64',
+            minimum: 0,
+          },
           platform: {
             description: 'The platform the system is running on (e.g., `linux`, `windows`, `darwin`).',
             type: 'string',
@@ -3613,12 +3662,6 @@ export const MCP_MANAGER_SCHEMA = {
           release: {
             description: 'The release version of the operating system.',
             type: 'string',
-          },
-          totalmem: {
-            description: 'The total amount of memory in bytes.',
-            type: 'integer',
-            format: 'uint64',
-            minimum: 0,
           },
           uptime: {
             description: 'The uptime of the system in seconds.',
@@ -3632,23 +3675,23 @@ export const MCP_MANAGER_SCHEMA = {
           },
         },
       },
-      'StatusSystemCpu': {
+      'SystemStatusCpu': {
         type: 'object',
         required: [
-          'frequency',
           'model',
+          'speed',
           'usage',
         ],
         properties: {
-          frequency: {
+          model: {
+            description: 'The model of the CPU (e.g., `Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz`).',
+            type: 'string',
+          },
+          speed: {
             description: 'The frequency of the CPU in MHz.',
             type: 'integer',
             format: 'uint64',
             minimum: 0,
-          },
-          model: {
-            description: 'The model of the CPU (e.g., `Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz`).',
-            type: 'string',
           },
           usage: {
             description: 'The CPU usage percentage.',

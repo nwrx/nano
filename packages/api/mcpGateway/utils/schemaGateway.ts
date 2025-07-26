@@ -17,6 +17,41 @@ export const MCP_GATEWAY_SCHEMA = {
         summary: 'Server SSE',
         description: 'Establishes a Server-Sent Events (SSE) connection to the server. This allows for real-time updates and notifications from the server. Returns a stream of JSON messages.',
         operationId: 'getServerSse',
+        parameters: [
+          {
+            in: 'query',
+            name: 'timeout',
+            description: 'The maximum time to wait for the server to be ready before sending the message.',
+            schema: {
+              description: 'The maximum time to wait for the server to be ready before sending the message.',
+              type: [
+                'integer',
+                'null',
+              ],
+              format: 'uint64',
+              minimum: 0,
+            },
+            style: 'form',
+          },
+        ],
+      },
+    },
+    '/{name}/logs': {
+      get: {
+        tags: [
+          'Server',
+        ],
+        summary: 'Get Server Logs',
+        description: 'Retrieves the logs for the server. This is useful for debugging and monitoring server activity.',
+        operationId: 'getServerLogs',
+        responses: {
+          200: {
+            description: 'plain text',
+            content: {
+              'text/plain; charset=utf-8': {},
+            },
+          },
+        },
       },
     },
     '/{name}/message': {
@@ -36,6 +71,21 @@ export const MCP_GATEWAY_SCHEMA = {
             schema: {
               description: 'The ID of the session to which the message should be sent.',
               type: 'string',
+            },
+            style: 'form',
+          },
+          {
+            in: 'query',
+            name: 'timeout',
+            description: 'The maximum time to wait for the server to be ready before sending the message.',
+            schema: {
+              description: 'The maximum time to wait for the server to be ready before sending the message.',
+              type: [
+                'integer',
+                'null',
+              ],
+              format: 'uint64',
+              minimum: 0,
             },
             style: 'form',
           },
@@ -67,11 +117,11 @@ export const MCP_GATEWAY_SCHEMA = {
     '/health/status': {
       get: {
         tags: [
-          'Health',
+          'Get Status',
         ],
-        summary: 'Gateway Health Status',
+        summary: 'Health',
         description: 'Retrieves the health status of the gateway service, including version information and current timestamp. This endpoint provides a comprehensive health check that includes service availability and metadata.',
-        operationId: 'getGatewayHealthStatus',
+        operationId: 'getHealthStatus',
         responses: {
           204: {
             description: 'The gateway service is healthy and operational.',
@@ -86,25 +136,30 @@ export const MCP_GATEWAY_SCHEMA = {
                     arch: 'x86_64',
                     availableParallelism: 32,
                     cpuAverageLoad: [
-                      2.62,
-                      1.55,
-                      1.14,
+                      1.74,
+                      2.48,
+                      4.79,
                     ],
-                    cpuAverageSpeed: 4180,
+                    cpuAverageSpeed: 4156,
                     cpus: [
                       {
                         model: 'Intel(R) Core(TM) i9-14900K',
-                        speed: 5495,
+                        speed: 5600,
                         usage: 0,
                       },
                       {
                         model: 'Intel(R) Core(TM) i9-14900K',
-                        speed: 5500,
+                        speed: 5601,
                         usage: 0,
                       },
                       {
                         model: 'Intel(R) Core(TM) i9-14900K',
-                        speed: 5500,
+                        speed: 5600,
+                        usage: 0,
+                      },
+                      {
+                        model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 5652,
                         usage: 0,
                       },
                       {
@@ -119,22 +174,72 @@ export const MCP_GATEWAY_SCHEMA = {
                       },
                       {
                         model: 'Intel(R) Core(TM) i9-14900K',
-                        speed: 5513,
+                        speed: 5600,
                         usage: 0,
                       },
                       {
                         model: 'Intel(R) Core(TM) i9-14900K',
-                        speed: 4899,
+                        speed: 5177,
                         usage: 0,
                       },
                       {
                         model: 'Intel(R) Core(TM) i9-14900K',
-                        speed: 5513,
+                        speed: 5600,
                         usage: 0,
                       },
                       {
                         model: 'Intel(R) Core(TM) i9-14900K',
-                        speed: 5596,
+                        speed: 5600,
+                        usage: 0,
+                      },
+                      {
+                        model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 5600,
+                        usage: 0,
+                      },
+                      {
+                        model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 5548,
+                        usage: 0,
+                      },
+                      {
+                        model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 5466,
+                        usage: 0,
+                      },
+                      {
+                        model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 5600,
+                        usage: 0,
+                      },
+                      {
+                        model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 5600,
+                        usage: 0,
+                      },
+                      {
+                        model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 5599,
+                        usage: 0,
+                      },
+                      {
+                        model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 4398,
+                        usage: 0,
+                      },
+                      {
+                        model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 4371,
+                        usage: 0,
+                      },
+                      {
+                        model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 4398,
+                        usage: 0,
+                      },
+                      {
+                        model: 'Intel(R) Core(TM) i9-14900K',
+                        speed: 4421,
                         usage: 0,
                       },
                       {
@@ -144,37 +249,12 @@ export const MCP_GATEWAY_SCHEMA = {
                       },
                       {
                         model: 'Intel(R) Core(TM) i9-14900K',
-                        speed: 5565,
+                        speed: 800,
                         usage: 0,
                       },
                       {
                         model: 'Intel(R) Core(TM) i9-14900K',
-                        speed: 5500,
-                        usage: 0,
-                      },
-                      {
-                        model: 'Intel(R) Core(TM) i9-14900K',
-                        speed: 5063,
-                        usage: 0,
-                      },
-                      {
-                        model: 'Intel(R) Core(TM) i9-14900K',
-                        speed: 5500,
-                        usage: 0,
-                      },
-                      {
-                        model: 'Intel(R) Core(TM) i9-14900K',
-                        speed: 5537,
-                        usage: 0,
-                      },
-                      {
-                        model: 'Intel(R) Core(TM) i9-14900K',
-                        speed: 5500,
-                        usage: 0,
-                      },
-                      {
-                        model: 'Intel(R) Core(TM) i9-14900K',
-                        speed: 4396,
+                        speed: 800,
                         usage: 0,
                       },
                       {
@@ -184,32 +264,22 @@ export const MCP_GATEWAY_SCHEMA = {
                       },
                       {
                         model: 'Intel(R) Core(TM) i9-14900K',
-                        speed: 4401,
+                        speed: 4334,
                         usage: 0,
                       },
                       {
                         model: 'Intel(R) Core(TM) i9-14900K',
-                        speed: 4401,
+                        speed: 4393,
                         usage: 0,
                       },
                       {
                         model: 'Intel(R) Core(TM) i9-14900K',
-                        speed: 4395,
+                        speed: 4446,
                         usage: 0,
                       },
                       {
                         model: 'Intel(R) Core(TM) i9-14900K',
-                        speed: 4397,
-                        usage: 0,
-                      },
-                      {
-                        model: 'Intel(R) Core(TM) i9-14900K',
-                        speed: 4394,
-                        usage: 0,
-                      },
-                      {
-                        model: 'Intel(R) Core(TM) i9-14900K',
-                        speed: 4398,
+                        speed: 800,
                         usage: 0,
                       },
                       {
@@ -229,38 +299,18 @@ export const MCP_GATEWAY_SCHEMA = {
                       },
                       {
                         model: 'Intel(R) Core(TM) i9-14900K',
-                        speed: 4371,
-                        usage: 0,
-                      },
-                      {
-                        model: 'Intel(R) Core(TM) i9-14900K',
-                        speed: 4355,
-                        usage: 0,
-                      },
-                      {
-                        model: 'Intel(R) Core(TM) i9-14900K',
-                        speed: 800,
-                        usage: 0,
-                      },
-                      {
-                        model: 'Intel(R) Core(TM) i9-14900K',
-                        speed: 800,
-                        usage: 0,
-                      },
-                      {
-                        model: 'Intel(R) Core(TM) i9-14900K',
-                        speed: 4390,
+                        speed: 4401,
                         usage: 0,
                       },
                     ],
                     family: 'unix',
-                    memoryAvailable: 78143299584,
-                    memoryFree: 58842976256,
-                    memoryTotal: 101001527296,
-                    memoryUsed: 22858227712,
+                    memoryAvailable: 75049664512,
+                    memoryFree: 64664113152,
+                    memoryTotal: 101004070912,
+                    memoryUsed: 25954406400,
                     platform: 'linux',
                     release: 'Linux (NixOS 24.11)',
-                    uptime: 33787,
+                    uptime: 198792,
                     version: 'Linux 6.6.88',
                   },
                   uptime: 0,
@@ -277,9 +327,9 @@ export const MCP_GATEWAY_SCHEMA = {
         tags: [
           'Health',
         ],
-        summary: 'Gateway Health Ping',
+        summary: 'Ping',
         description: 'Simple health check endpoint that returns a basic HTTP 200 status. This lightweight endpoint is ideal for load balancers, monitoring systems, and automated health checks that only need to verify gateway service availability.',
-        operationId: 'pingGatewayHealth',
+        operationId: 'ping',
         responses: {
           204: {
             description: 'The gateway service is alive and responding to requests.',
@@ -1929,6 +1979,15 @@ export const MCP_GATEWAY_SCHEMA = {
           sessionId: {
             description: 'The ID of the session to which the message should be sent.',
             type: 'string',
+          },
+          timeout: {
+            description: 'The maximum time to wait for the server to be ready before sending the message.',
+            type: [
+              'integer',
+              'null',
+            ],
+            format: 'uint64',
+            minimum: 0,
           },
         },
       },
@@ -4727,6 +4786,20 @@ export const MCP_GATEWAY_SCHEMA = {
             },
           },
         ],
+      },
+      SseQuery: {
+        type: 'object',
+        properties: {
+          timeout: {
+            description: 'The maximum time to wait for the server to be ready before sending the message.',
+            type: [
+              'integer',
+              'null',
+            ],
+            format: 'uint64',
+            minimum: 0,
+          },
+        },
       },
       SubscribeRequestMethod: {
         type: 'string',
