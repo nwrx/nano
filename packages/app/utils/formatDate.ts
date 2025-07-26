@@ -39,10 +39,11 @@ export function formatDateTime(date?: Date | number | string): string {
  * Return the formatted date according to the current locale.
  *
  * @param date The date to format.
+ * @param fallback The fallback value to return if the date is not provided.
  * @returns The formatted date.
  */
-export function formatDateFromNow(date?: string): string {
-  if (!date) return '-'
+export function formatDateFromNow(date?: string, fallback = '-'): string {
+  if (!date) return fallback
   const { locale } = useI18n()
   const key = locale.value ? locale.value.split('-')[0] : 'en'
   const localeObject = { de, en, fr, zh, es }[key]
