@@ -6,6 +6,8 @@ import * as ENTITIES from './entities'
 import * as ROUTES from './routes'
 import * as UTILS from './utils'
 
+export * from './entities'
+
 export class ModuleThread extends ModuleBase {
   routes = ROUTES
   entities = ENTITIES
