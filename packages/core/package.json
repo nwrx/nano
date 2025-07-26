@@ -44,7 +44,7 @@
     "dev": "tsup --watch"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "1.12.1",
+    "@modelcontextprotocol/sdk": "1.17.0",
     "@nwrx/ai": "workspace:*",
     "@types/json-schema": "7.0.15",
     "@unshared/client": "0.6.6",
