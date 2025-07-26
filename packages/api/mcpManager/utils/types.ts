@@ -20,6 +20,9 @@ export namespace NmcpManager {
   export type CreateServerOptions = OpenAPIV3.RequestBody<OperationById<Schema, 'createServer'>>
   export type UpdateServerOptions = OpenAPIV3.RequestBody<OperationById<Schema, 'patchServerByName'>>
 
+  /** The status of a server. */
+  export type ServerStatus = Server['status']
+
   /** The body of an error response from the MCP manager. */
   export interface Error {
     name: ServerErrorName
