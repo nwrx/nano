@@ -1,14 +1,14 @@
+import type { EventStream } from '@unserved/server'
 import type { ModuleMcpServer } from '..'
 import type { McpServerStatus } from '../utils'
 import { createHttpRoute } from '@unserved/server'
 import { assert, createParser } from '@unshared/validation'
-import { ModuleMcpManager } from '../../mcpManager'
 import { ModuleMcpPool } from '../../mcpPool'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
-import { getMcpServer } from '../utils'
+import { getMcpServer, getMcpServerClient } from '../utils'
 
-export function mcpServerStatus(this: ModuleMcpServer) {
+export function mcpServerGetStatus(this: ModuleMcpServer) {
   return createHttpRoute(
     {
       name: 'GET /api/workspaces/:workspace/pools/:pool/servers/:server/status',
@@ -18,10 +18,9 @@ export function mcpServerStatus(this: ModuleMcpServer) {
         server: assert.stringNotEmpty,
       }),
     },
-    async({ event, parameters }): Promise<McpServerStatus> => {
+    async({ event, parameters }): Promise<EventStream<McpServerStatus>> => {
       const moduleUser = this.getModule(ModuleUser)
       const modulePool = this.getModule(ModuleMcpPool)
-      const moduleManager = this.getModule(ModuleMcpManager)
       const moduleWorkspace = this.getModule(ModuleWorkspace)
       const { user } = await moduleUser.authenticate(event)
 
@@ -31,18 +30,8 @@ export function mcpServerStatus(this: ModuleMcpServer) {
       const server = await getMcpServer.call(this, { workspace, pool, name: parameters.server })
 
       // --- Get the status via the MCP pool manager client.
-      const manager = await modulePool.getPoolManager({ workspace, pool })
-      const client = moduleManager.getManagerClient(manager)
-      const { status, ...remote } = await client.getServer(server.id)
-
-      // --- Check if the server is synchronized.
-      const isSynchronized = server.spec.image === remote.image
-      return {
-        isSynchronized,
-        ...status,
-        localSpec: server.spec,
-        remoteSpec: remote,
-      }
+      const client = await getMcpServerClient.call(this, { workspace, pool, server })
+      return client.status.subscribe(event)
     },
   )
 }
