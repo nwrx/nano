@@ -65,7 +65,7 @@ const showHeader = computed(() => (
 
     <!-- Form -->
     <form
-      class="flex items-start flex-col gap-md grow"
+      class="flex items-start flex-col gap-md grow overflow-x-clip"
       :class="[classForm, {
         'lg:mt-0': !vertical && showHeader,
         'lg:basis-2/3': !vertical,
