@@ -1,4 +1,6 @@
+import type { JSONRPCMessage } from '@modelcontextprotocol/sdk/types.js'
 import type {
+  McpServerLog,
   McpServerObject,
   McpServerStatus,
 } from '@nwrx/nano-api'
@@ -199,25 +201,19 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
   /* Status                                                                  */
   /***************************************************************************/
 
-  const status = ref({
-    currentConnections: 0,
-    localSpec: {},
-    remoteSpec: {},
-  }) as Ref<McpServerStatus>
+  const status = ref({ isReachable: false }) as Ref<McpServerStatus>
 
   async function fetchStatus() {
-    await sleep(CONSTANTS.niceDelay)
     await client.requestAttempt(
       'GET /api/workspaces/:workspace/pools/:pool/servers/:server/status',
       {
         parameters: { workspace, pool, server },
-        onData: (statusData) => { status.value = statusData },
+        onData: ({ data }) => { status.value = data },
       },
     )
   }
 
-  async function syncronizeServer() {
-    await sleep(CONSTANTS.niceDelay)
+  async function applySpecifications() {
     await client.requestAttempt(
       'POST /api/workspaces/:workspace/pools/:pool/servers/:server/apply',
       {
@@ -253,6 +249,13 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
     )
   }
 
+  /***************************************************************************/
+  /* Logs                                                                    */
+  /***************************************************************************/
+
+  const logs = ref<McpServerLog[]>([])
+  const messages = ref<JSONRPCMessage[]>([])
+
   return toReactive({
     data,
     status,
@@ -271,7 +274,35 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
     disableServer,
     removeServer,
     fetchStatus,
-    syncronizeServer,
+    applySpecifications,
     fetchTools,
+
+    logs,
+    subscribeToLogs: async() => {
+      const abortController = new AbortController()
+      tryOnScopeDispose(() => abortController.abort())
+      await client.requestAttempt(
+        'GET /api/workspaces/:workspace/pools/:pool/servers/:server/logs',
+        {
+          parameters: { workspace, pool, server },
+          signal: abortController.signal,
+          onData: ({ data }) => logs.value.push(data),
+        },
+      )
+    },
+
+    messages,
+    subscribeToMessages: async() => {
+      const abortController = new AbortController()
+      tryOnScopeDispose(() => abortController.abort())
+      await client.requestAttempt(
+        'GET /api/workspaces/:workspace/pools/:pool/servers/:server/messages',
+        {
+          parameters: { workspace, pool, server },
+          signal: abortController.signal,
+          onData: ({ data }) => messages.value.push(data),
+        },
+      )
+    },
   })
 }

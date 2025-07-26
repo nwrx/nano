@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import McpServerFormDangerZone from '~/components/mcpServer/McpServerFormDangerZone.vue'
 import FormHeader from '~/components/mcpServer/McpServerFormHeader.vue'
-import McpServerFormSettings from '~/components/mcpServer/McpServerFormSettings.vue'
+import FormLogs from '~/components/mcpServer/McpServerFormLogs.vue'
+import FormMessages from '~/components/mcpServer/McpServerFormMessages.vue'
 
 definePageMeta({
   name: 'WorkspaceMcpServerLogs',
   path: '/:workspace/pools/:pool/servers/:server/logs',
   middleware: ['redirect-when-guest', 'abort-reserved'],
   layout: 'workspace-mcp',
-  icon: 'i-carbon:box',
-  // groups: ['workspace-mcp-server'],
+  icon: 'i-carbon:logs',
+  groups: ['workspace-mcp-server'],
   title: {
     en: 'Integrations',
     fr: 'Intégrations',
@@ -40,6 +40,17 @@ const selectedServer = computed(() => route.params.server as string)
       :name="selectedServer"
       class="sticky top-0 z-1"
     />
-    <!-- TODO -->
+    <FormLogs
+      class="p-lg !m-0"
+      :workspace="workspace"
+      :pool="selectedPool"
+      :name="selectedServer"
+    />
+    <FormMessages
+      class="p-lg !m-0"
+      :workspace="workspace"
+      :pool="selectedPool"
+      :name="selectedServer"
+    />
   </div>
 </template>

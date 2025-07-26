@@ -1,7 +1,6 @@
 <!-- eslint-disable unicorn/no-null -->
 <script setup lang="ts">
-import type { McpServerStatus } from '@nwrx/nano-api'
-import { toCamelCase } from '@unshared/string/toCamelCase'
+import AppPageFormEmpty from '~/components/app/AppPageForm.Empty.vue'
 import AppPageForm from '~/components/app/AppPageForm.vue'
 import Badge from '~/components/base/Badge.vue'
 import Button from '~/components/base/Button.vue'
@@ -9,6 +8,7 @@ import RecordsEntry from '~/components/base/Records.Entry.vue'
 import RecordsField from '~/components/base/Records.Field.vue'
 import Records from '~/components/base/Records.vue'
 import { useMcpServer } from '~/composables/useMcp'
+import { formatDateFromNow } from '~/utils/formatDate'
 
 const props = defineProps<{
   workspace: string
@@ -19,27 +19,6 @@ const props = defineProps<{
 const { t } = useI18n()
 const server = useMcpServer(props)
 onMounted(server.fetchStatus)
-
-function toReadableTransport(transport?: McpServerStatus['localSpec']['transport']) {
-  if (!transport) return t('transportUnknown')
-  const key = toCamelCase('transport', transport.type)
-  return t(key, { port: transport.port ?? t('transportDefaultPort') })
-}
-
-const readableStatus = computed(() => {
-  const status = server.status
-  return ({
-    statusStartedAt: status.startedAt ? formatDateFromNow(status.startedAt) : t('never'),
-    statusStoppedAt: status.stoppedAt ? new Date(status.stoppedAt).toLocaleString() : t('never'),
-    statusLastRequestAt: status.lastRequestAt ? new Date(status.lastRequestAt).toLocaleString() : t('never'),
-    localTransport: toReadableTransport(status.localSpec.transport),
-    localIdleTimeout: formatDuration(status.localSpec.idleTimeout),
-    localCommand: status.localSpec.command ? status.localSpec.command.join(' ') : '',
-    remoteTransport: toReadableTransport(status.remoteSpec.transport),
-    remoteIdleTimeout: formatDuration(status.remoteSpec.idleTimeout),
-    remoteCommand: status.remoteSpec.command ? status.remoteSpec.command.join(' ') : '',
-  })
-})
 </script>
 
 <template>
@@ -52,72 +31,49 @@ const readableStatus = computed(() => {
     <Records>
       <div class="flex items-center space-x-md p-lg">
         <Badge
-          v-if="server.status.isSynchronized"
-          :label="t('statusSynchronized')"
-          class="badge-success"
-          icon="i-carbon:checkmark"
-        />
-        <Badge
-          v-else
-          :label="t('statusNotSynchronized')"
+          v-if="!server.status.isReachable"
+          :label="t('statusUnreachable')"
           class="badge-danger"
           icon="i-carbon:close"
         />
         <Badge
+          v-else
           :label="server.status.phase"
           :icon="server.statusIcon"
           :class="server.statusBadge"
         />
       </div>
 
-      <!-- Server Runtime -->
-      <RecordsEntry :title="t('serverStatus')" icon="i-carbon:play-outline">
+      <!-- Show status details -->
+      <RecordsEntry
+        v-if="server.status.isReachable"
+        :title="t('serverStatus')"
+        icon="i-carbon:play-outline">
         <template #fields>
           <RecordsField :label="t('totalRequests')" :value="server.status.totalRequests" />
           <RecordsField :label="t('currentConnections')" :value="server.status.currentConnections" />
-          <RecordsField :label="t('startedAt')" :value="readableStatus.statusStartedAt" />
-          <RecordsField :label="t('stoppedAt')" :value="readableStatus.statusStoppedAt" />
-          <RecordsField :label="t('lastRequestAt')" :value="readableStatus.statusLastRequestAt" />
+          <RecordsField :label="t('startedAt')" :value=" formatDateFromNow(server.status.startedAt, t('never'))" />
+          <RecordsField :label="t('stoppedAt')" :value="formatDateFromNow(server.status.stoppedAt, t('never'))" />
+          <RecordsField :label="t('lastRequestAt')" :value="formatDateFromNow(server.status.lastRequestAt, t('never'))" />
         </template>
       </RecordsEntry>
 
-      <!-- Remote Spec -->
-      <RecordsEntry :title="t('remoteSpec')" icon="i-carbon:cloud">
-        <template #fields>
-          <RecordsField :label="t('pool')" :value="server.status.remoteSpec.pool" />
-          <RecordsField :label="t('image')" :value="server.status.remoteSpec.image" />
-          <RecordsField :label="t('command')" :value="readableStatus.remoteCommand" :default-value="t('commandDefault')" />
-          <RecordsField :label="t('transport')" :value="readableStatus.remoteTransport" />
-          <RecordsField :label="t('idleTimeout')" :value="readableStatus.remoteIdleTimeout" />
-        </template>
-      </RecordsEntry>
-
-      <!-- Local Spec -->
-      <RecordsEntry :title="t('localSpec')" icon="i-carbon:cloud-satellite">
-        <template #fields>
-          <RecordsField :label="t('image')" :value="server.status.localSpec.image" />
-          <RecordsField :label="t('command')" :value="readableStatus.localCommand" :default-value="t('commandDefault')" />
-          <RecordsField :label="t('transport')" :value="readableStatus.localTransport" />
-          <RecordsField :label="t('idleTimeout')" :value="readableStatus.localIdleTimeout" />
-        </template>
-      </RecordsEntry>
+      <!-- If the server is not reachable or does not exists in Kubernetes -->
+      <AppPageFormEmpty
+        v-else
+        icon="i-carbon:warning-alt"
+        :title="t('serverStatusNotReachable')"
+        :text="t('serverStatusNotReachableText')"
+      />
     </Records>
 
     <!-- Actions -->
-    <div class="w-full flex items-center justify-between pt-md">
-      <Button
-        icon-prepend="i-carbon:renew"
-        :label="t('refreshStatus')"
-        @click="() => server.fetchStatus()"
-      />
-
-      <Button
-        class="button-success"
-        icon-prepend="i-carbon:upload"
-        :label="t('applyServer')"
-        @click="() => server.syncronizeServer()"
-      />
-    </div>
+    <Button
+      class="button-success"
+      icon-prepend="i-carbon:upload"
+      :label="t('applyServer')"
+      @click="() => server.applySpecifications()"
+    />
   </AppPageForm>
 </template>
 
@@ -125,141 +81,71 @@ const readableStatus = computed(() => {
 en:
   title: Server Status
   text: Monitor the current status and configuration of your MCP server instance
-  statusSynchronized: Synchronized
-  statusNotSynchronized: Not Synchronized
-  serverStatus: Server Runtime
+  statusUnreachable: Unreachable
+  serverStatus: Server Status
   totalRequests: Total Requests
   currentConnections: Current Connections
   startedAt: Started At
   stoppedAt: Stopped At
   lastRequestAt: Last Request At
-  remoteSpec: Remote Configuration
-  localSpec: Local Configuration
-  pool: Pool
-  image: Image
-  command: Command
-  commandDefault: Default command
-  transport: Transport
-  idleTimeout: Idle Timeout
-  refreshStatus: Refresh Status
-  applyServer: Apply Specifications
-  applySuccessMessage: Specifications applied successfully
+  serverStatusNotReachable: Server Not Reachable
+  serverStatusNotReachableText: The server is currently not reachable or does not exist in the infrastructure. Check your configuration or try applying the server specifications.
+  applyServer: Apply Server
   never: Never
-  transportUnknown: Unknown
-  transportDefaultPort: default port
-  transportStdio: Standard I/O
-  transportSse: 'Server-Sent Events ({port})'
-  transportStreamableHttp: 'Streamable HTTP ({port})'
 fr:
-  title: Statut du Serveur
-  text: Surveillez le statut actuel et la configuration de votre instance de serveur MCP
-  statusSynchronized: Synchronisé
-  statusNotSynchronized: Non Synchronisé
-  serverStatus: Exécution du Serveur
-  totalRequests: Requêtes Totales
+  title: État du Serveur
+  text: Surveillez l'état actuel et la configuration de votre instance de serveur MCP
+  statusUnreachable: Injoignable
+  serverStatus: État du Serveur
+  totalRequests: Total des Requêtes
   currentConnections: Connexions Actuelles
   startedAt: Démarré À
   stoppedAt: Arrêté À
   lastRequestAt: Dernière Requête À
-  remoteSpec: Configuration Distante
-  localSpec: Configuration Locale
-  pool: Pool
-  image: Image
-  command: Commande
-  commandDefault: Commande par défaut
-  transport: Transport
-  idleTimeout: "Délai d'Inactivité"
-  refreshStatus: Actualiser le Statut
-  applyServer: Appliquer les Spécifications
-  applySuccessMessage: Spécifications appliquées avec succès
+  serverStatusNotReachable: Serveur Non Joignable
+  serverStatusNotReachableText: Le serveur n'est actuellement pas joignable ou n'existe pas dans l'infrastructure. Vérifiez votre configuration ou essayez d'appliquer les spécifications du serveur.
+  applyServer: Appliquer le Serveur
   never: Jamais
-  transportUnknown: Inconnu
-  transportDefaultPort: port par défaut
-  transportStdio: Entrée/Sortie Standard
-  transportSse: 'Événements Envoyés par le Serveur ({port})'
-  transportStreamableHttp: 'HTTP Diffusable ({port})'
 de:
   title: Server-Status
   text: Überwachen Sie den aktuellen Status und die Konfiguration Ihrer MCP-Server-Instanz
-  statusSynchronized: Synchronisiert
-  statusNotSynchronized: Nicht Synchronisiert
-  serverStatus: Server-Laufzeit
-  totalRequests: Gesamtanfragen
+  statusUnreachable: Nicht Erreichbar
+  serverStatus: Server-Status
+  totalRequests: Gesamte Anfragen
   currentConnections: Aktuelle Verbindungen
   startedAt: Gestartet Um
   stoppedAt: Gestoppt Um
   lastRequestAt: Letzte Anfrage Um
-  remoteSpec: Remote-Konfiguration
-  localSpec: Lokale Konfiguration
-  pool: Pool
-  image: Image
-  command: Befehl
-  commandDefault: Standard-Befehl
-  transport: Transport
-  idleTimeout: Leerlauf-Timeout
-  refreshStatus: Status Aktualisieren
-  applyServer: Spezifikationen Anwenden
-  applySuccessMessage: Spezifikationen erfolgreich angewendet
-  never: Nie
-  transportUnknown: Unbekannt
-  transportDefaultPort: Standard-Port
-  transportStdio: Standard Ein-/Ausgabe
-  transportSse: 'Server-Sent Events ({port})'
-  transportStreamableHttp: 'Streamable HTTP ({port})'
+  serverStatusNotReachable: Server Nicht Erreichbar
+  serverStatusNotReachableText: Der Server ist derzeit nicht erreichbar oder existiert nicht in der Infrastruktur. Überprüfen Sie Ihre Konfiguration oder versuchen Sie, die Server-Spezifikationen anzuwenden.
+  applyServer: Server Anwenden
+  never: Niemals
 es:
   title: Estado del Servidor
   text: Monitoree el estado actual y la configuración de su instancia de servidor MCP
-  statusSynchronized: Sincronizado
-  statusNotSynchronized: No Sincronizado
-  serverStatus: Tiempo de Ejecución del Servidor
-  totalRequests: Solicitudes Totales
+  statusUnreachable: No Alcanzable
+  serverStatus: Estado del Servidor
+  totalRequests: Total de Solicitudes
   currentConnections: Conexiones Actuales
   startedAt: Iniciado En
   stoppedAt: Detenido En
   lastRequestAt: Última Solicitud En
-  remoteSpec: Configuración Remota
-  localSpec: Configuración Local
-  pool: Pool
-  image: Imagen
-  command: Comando
-  commandDefault: Comando predeterminado
-  transport: Transporte
-  idleTimeout: Tiempo de Espera de Inactividad
-  refreshStatus: Actualizar Estado
-  applyServer: Aplicar Especificaciones
-  applySuccessMessage: Especificaciones aplicadas exitosamente
+  serverStatusNotReachable: Servidor No Alcanzable
+  serverStatusNotReachableText: El servidor actualmente no es alcanzable o no existe en la infraestructura. Verifique su configuración o intente aplicar las especificaciones del servidor.
+  applyServer: Aplicar Servidor
   never: Nunca
-  transportUnknown: Desconocido
-  transportDefaultPort: puerto predeterminado
-  transportStdio: Entrada/Salida Estándar
-  transportSse: 'Eventos Enviados por el Servidor ({port})'
-  transportStreamableHttp: 'HTTP Transmisible ({port})'
 zh:
   title: 服务器状态
   text: 监控您的 MCP 服务器实例的当前状态和配置
-  statusSynchronized: 已同步
-  statusNotSynchronized: 未同步
-  serverStatus: 服务器运行时
+  statusUnreachable: 无法访问
+  serverStatus: 服务器状态
   totalRequests: 总请求数
   currentConnections: 当前连接数
   startedAt: 启动时间
   stoppedAt: 停止时间
   lastRequestAt: 最后请求时间
-  remoteSpec: 远程配置
-  localSpec: 本地配置
-  pool: 池
-  image: 镜像
-  command: 命令
-  commandDefault: 默认命令
-  transport: 传输方式
-  idleTimeout: 空闲超时
-  refreshStatus: 刷新状态
-  applyServer: 应用规格
-  applySuccessMessage: 规格应用成功
+  serverStatusNotReachable: 服务器无法访问
+  serverStatusNotReachableText: 服务器当前无法访问或在基础设施中不存在。请检查您的配置或尝试应用服务器规格。
+  applyServer: 应用服务器
   never: 从未
-  transportUnknown: 未知
-  transportDefaultPort: 默认端口
-  transportStdio: 标准输入输出
-  transportSse: '服务器发送事件 ({port})'
-  transportStreamableHttp: '可流式 HTTP ({port})'
 </i18n>

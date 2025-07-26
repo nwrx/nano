@@ -13,6 +13,7 @@ const props = defineProps<{
 const { t } = useI18n()
 const image = ref('')
 const command = ref('')
+const idleTimeout = ref('60')
 const server = useMcpServer(props)
 server.options.withSpec = true
 onMounted(server.fetchServer)
@@ -26,6 +27,7 @@ watch(
     const spec = server.data.spec
     image.value = spec.image || 'mcp/fetch:latest'
     command.value = spec.command ? spec.command.join(' ') : '/usr/local/bin/mcp-server'
+    idleTimeout.value = String(spec.idleTimeout ?? 60)
   },
   { immediate: true },
 )
@@ -36,7 +38,11 @@ watch(
     :title="t('title')"
     :text="t('description')"
     :label="t('submitLabel')"
-    @submit="() => server.updateSpecifications({ image, command: command.split(' ') })">
+    @submit="() => server.updateSpecifications({
+      image,
+      idleTimeout: Number.parseInt(idleTimeout, 10),
+      command: command.split(' '),
+    })">
 
     <!-- Image -->
     <InputText
@@ -53,6 +59,15 @@ watch(
       :label="t('commandLabel')"
       :placeholder="t('commandPlaceholder')"
       :hint="t('commandHint')"
+    />
+
+    <!-- Idle Timeout -->
+    <InputText
+      v-model="idleTimeout"
+      :label="t('idleTimeoutLabel')"
+      :placeholder="t('idleTimeoutPlaceholder')"
+      :hint="t('idleTimeoutHint')"
+      required
     />
   </AppPageForm>
 </template>

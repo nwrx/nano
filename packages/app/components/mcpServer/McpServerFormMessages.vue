@@ -12,7 +12,7 @@ const props = defineProps<{
 // --- State.
 const { t } = useI18n()
 const server = useMcpServer(props)
-onMounted(() => void server.subscribeToLogs())
+onMounted(() => void server.subscribeToMessages())
 </script>
 
 <template>
@@ -22,11 +22,13 @@ onMounted(() => void server.subscribeToLogs())
     :text="t('description')">
 
     <!-- Logs -->
-    <div class="bg-layout p-4 rd b b-app max-h-2xl overflow-auto w-full">
-      <div v-for="log in server.logs" :key="log.timestamp" class="mb-2">
+    <div class="bg-layout rd b b-app max-h-2xl overflow-auto w-full">
+      <div
+        v-for="(message, index) in server.messages"
+        :key="index"
+        class="p-md b-b b-dashed b-app">
         <div class="flex gap-2">
-          <span class="text-sm text-layout-subtle font-mono">{{ log.timestamp }}</span>
-          <span class="text-sm text-layout font-mono whitespace-pre">{{ log.message }}</span>
+          <span class="text-sm text-layout font-mono whitespace-pre">{{ message }}</span>
         </div>
       </div>
     </div>
