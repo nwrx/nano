@@ -26,7 +26,7 @@ watch(isOpen, () => newName.value = props.name, { immediate: true })
     :title="t('title')"
     :text="t('text', { name })"
     :label-cancel="t('cancel')"
-    :label-submit="t('rename')"
+    :label-confirm="t('rename')"
     @confirm="() => pool.renamePool(newName)">
 
     <!-- Pool Card -->

@@ -23,7 +23,7 @@ const isOpen = defineModel({ default: false })
     :title="t('title')"
     :text="t('text', { name })"
     :label-cancel="t('cancel')"
-    :label-submit="t('delete')"
+    :label-confirm="t('delete')"
     @confirm="() => pool.removePool()">
 
     <!-- Pool Card -->
