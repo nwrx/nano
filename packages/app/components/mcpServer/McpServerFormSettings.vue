@@ -19,7 +19,7 @@ onMounted(() => void server.fetchServer())
 // --- Lifecycle.
 watch(
   () => server.data,
-  serverData => formData.value = serverData,
+  serverData => formData.value = { ...serverData },
   { immediate: true },
 )
 </script>
