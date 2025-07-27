@@ -1,93 +1,55 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { vMarkdown } from '~/utils/vMarkdown'
 
 const props = defineProps<{
-  message: string
+  title?: string
+  text?: string
   position?: 'bottom' | 'left' | 'right' | 'top'
-  size?: 'lg' | 'md' | 'sm'
-  variant?: 'danger' | 'primary' | 'success' | 'warning'
   disabled?: boolean
   persistent?: boolean
 }>()
 
-const disabled = computed(() => props.disabled ?? false)
-const persistent = computed(() => props.persistent ?? false)
-const isVisible = ref(false)
-
-const position = computed(() => {
-  const { position = 'bottom' } = props
+const isVisible = defineModel({ default: false })
+const classes = computed(() => {
+  const { position = 'top' } = props
   return {
-    'tooltip': true,
-    'tooltip-top': position === 'top',
-    'tooltip-bottom': position === 'bottom',
-    'tooltip-left': position === 'left',
-    'tooltip-right': position === 'right',
-  }
-})
-
-const widthSize = computed(() => {
-  const { size = 'md' } = props
-  return {
-    'w-60': size === 'lg',
-    'w-40': size === 'md',
-    'w-20': size === 'sm',
-  }
-})
-
-const color = computed(() => {
-  const { variant = 'primary' } = props
-  return {
-    'bg-primary-500 dark:text-primary-100 text-white': variant === 'primary',
-    'dark:bg-secondary-600 bg-secondary-500': variant === 'warning',
-    'dark:bg-success-800 bg-success-500': variant === 'success',
-    'dark:bg-danger-800 bg-danger-500': variant === 'danger',
+    'left-0': position === 'left',
+    'right-0': position === 'right',
+    'top-full left-0': position === 'top',
+    'bottom-0': position === 'bottom',
   }
 })
 </script>
 
 <template>
   <div
-    class="tooltiped"
+    class="relative"
     @mouseenter="() => isVisible = true"
     @mouseleave="() => isVisible = false"
     @click="() => isVisible = false">
-    <slot></slot>
-    <div class="relative">
-      <Transition>
-        <div v-if="isVisible && !disabled || persistent && !disabled" class="tooltip absolute inline-block z-10 p-1 m-2 rounded-xl text-align-center font-size-4" :class="[position, color, widthSize]">
-          <span>{{ message }}</span>
-        </div>
-      </Transition>
+
+    <!-- Content -->
+    <slot />
+
+    <!-- Tooltip -->
+    <div
+      v-if="(isVisible || persistent) && !disabled"
+      class="absolute inline-block backdrop-blur-lg text-app min-w-md z-10 pt-md"
+      :class="classes">
+
+      <!-- Title -->
+      <div class="b b-app rd">
+        <h3 v-if="title" class="text-base font-semibold p-md b-b b-app bg-subtle/60">
+          {{ title }}
+        </h3>
+
+        <!-- Text -->
+        <p
+          v-if="text"
+          v-markdown="text"
+          class="text-base font-normal p-md bg-app/60 "
+        />
+      </div>
     </div>
   </div>
 </template>
-
-<style>
-.tooltip {
-  opacity: v-bind('persistent ? 1 : 0');
-  transition: opacity 0.2s ease-in-out !important;
-}
-.tooltip-top {
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-}
-.tooltip-bottom {
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-}
-.tooltip-left {
-  right: 100%;
-  top: 50%;
-  transform: translateY(-50%);
-}
-.tooltip-right {
-  left: 100%;
-  top: 50%;
-  transform: translateY(-50%);
-}
-.tooltiped:hover .tooltip {
-  opacity: 1;
-}
-</style>
