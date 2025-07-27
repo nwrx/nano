@@ -25,7 +25,8 @@ const icon = computed(() => {
 const classes = computed(() => {
   if (!props.condition) return ''
   if (props.condition.status === 'True') return 'badge-success'
-  return ''
+  if (props.condition.status === 'False') return ''
+  return 'badge-warning'
 })
 </script>
 
