@@ -1,6 +1,7 @@
 export * from './getMcpServerStatusBadge'
 export * from './getMcpServerStatusColor'
 export * from './getMcpServerStatusIcon'
+export * from './types'
 export * from './useMcpPool'
 export * from './useMcpPools'
 export * from './useMcpServer'

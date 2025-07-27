@@ -201,25 +201,12 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
   /* Status                                                                  */
   /***************************************************************************/
 
-  const status = ref({ isReachable: false }) as Ref<McpServerStatus>
-
-  async function fetchStatus() {
-    await client.requestAttempt(
-      'GET /api/workspaces/:workspace/pools/:pool/servers/:server/status',
-      {
-        parameters: { workspace, pool, server },
-        onData: ({ data }) => { status.value = data },
-      },
-    )
-  }
-
   async function applySpecifications() {
     await client.requestAttempt(
       'POST /api/workspaces/:workspace/pools/:pool/servers/:server/apply',
       {
         parameters: { workspace, pool, server },
-        onSuccess: async() => {
-          await fetchStatus()
+        onSuccess: () => {
           alerts.success(localize({
             en: `The server **${fullName}** has been synchronized successfully.`,
             fr: `Le serveur **${fullName}** a été synchronisé avec succès.`,
@@ -249,16 +236,12 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
     )
   }
 
-  /***************************************************************************/
-  /* Logs                                                                    */
-  /***************************************************************************/
-
   const logs = ref<McpServerLog[]>([])
   const messages = ref<JSONRPCMessage[]>([])
+  const status = ref({ isReachable: false }) as Ref<McpServerStatus>
 
   return toReactive({
     data,
-    status,
     options,
     fullName,
     linkTo: { name: 'WorkspaceMcpServer', params: { workspace, pool, server } },
@@ -273,9 +256,52 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
     enableServer,
     disableServer,
     removeServer,
-    fetchStatus,
     applySpecifications,
     fetchTools,
+
+    /***************************************************************************/
+    /* Lifecycle                                                              */
+    /***************************************************************************/
+
+    shutdown: async() => {
+      await client.requestAttempt(
+        'POST /api/workspaces/:workspace/pools/:pool/servers/:server/shutdown',
+        {
+          parameters: { workspace, pool, server },
+          onSuccess: () => {
+            alerts.success(localize({
+              en: `The server **${fullName}** has been shutdown successfully.`,
+              fr: `Le serveur **${fullName}** a été arrêté avec succès.`,
+              de: `Der Server **${fullName}** wurde erfolgreich heruntergefahren.`,
+              es: `El servidor **${fullName}** se ha apagado correctamente.`,
+              zh: `服务器 **${fullName}** 已成功关闭。`,
+            }))
+          },
+        },
+      )
+    },
+
+    request: async() => {
+      await client.requestAttempt(
+        'POST /api/workspaces/:workspace/pools/:pool/servers/:server/request',
+        {
+          parameters: { workspace, pool, server },
+          onSuccess: () => {
+            alerts.success(localize({
+              en: `The server **${fullName}** has been requested successfully.`,
+              fr: `Le serveur **${fullName}** a été demandé avec succès.`,
+              de: `Der Server **${fullName}** wurde erfolgreich angefordert.`,
+              es: `El servidor **${fullName}** se ha solicitado correctamente.`,
+              zh: `服务器 **${fullName}** 已成功请求。`,
+            }))
+          },
+        },
+      )
+    },
+
+    /***************************************************************************/
+    /* Logs                                                                    */
+    /***************************************************************************/
 
     logs,
     subscribeToLogs: async() => {
@@ -291,6 +317,26 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
       )
     },
 
+    /***************************************************************************/
+    /* Status                                                                  */
+    /***************************************************************************/
+    status,
+    subscribeToStatus: async() => {
+      const abortController = new AbortController()
+      tryOnScopeDispose(() => abortController.abort())
+      await client.requestAttempt(
+        'GET /api/workspaces/:workspace/pools/:pool/servers/:server/status',
+        {
+          parameters: { workspace, pool, server },
+          signal: abortController.signal,
+          onData: ({ data }) => status.value = data,
+        },
+      )
+    },
+
+    /***************************************************************************/
+    /* Messages                                                                */
+    /***************************************************************************/
     messages,
     subscribeToMessages: async() => {
       const abortController = new AbortController()
