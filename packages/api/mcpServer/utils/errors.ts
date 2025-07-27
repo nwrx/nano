@@ -1,5 +1,7 @@
 import type { McpError } from '@modelcontextprotocol/sdk/types.js'
+import type { ServerErrorName } from '@unserved/server'
 import { createError } from '@unserved/server'
+import { toConstantCase } from '@unshared/string/toConstantCase'
 
 export const ERRORS = {
   MCP_SERVER_NOT_FOUND: (workspace: string, pool: string, name: string) => createError({
@@ -60,7 +62,7 @@ export const ERRORS = {
     else if (error.code === -32603) [statusMessage, statusCode] = ['Internal Error', 500]
     else if (error.code === -32700) [statusMessage, statusCode] = ['Parse Error', 400]
     return createError({
-      name: 'E_MCP_SERVER_REQUEST_ERROR',
+      name: toConstantCase('E_MCP_SERVER', statusMessage) as ServerErrorName,
       statusCode,
       statusMessage,
       message: error.message,
