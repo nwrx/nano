@@ -105,6 +105,22 @@ export class McpGatewayClient {
       body,
     })
   }
+
+  /***************************************************************************/
+  /* Lifecycle                                                              */
+  /***************************************************************************/
+
+  async request(name: string): Promise<void> {
+    await this.client.request('POST /{name}/request', {
+      parameters: { name },
+    })
+  }
+
+  async shutdown(name: string): Promise<void> {
+    await this.client.request('POST /{name}/shutdown', {
+      parameters: { name },
+    })
+  }
 }
 
 export function createGatewayClient(gateway: McpGateway): McpGatewayClient {

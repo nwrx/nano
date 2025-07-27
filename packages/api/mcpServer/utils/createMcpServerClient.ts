@@ -12,7 +12,7 @@ import { createEventBus } from '@unserved/server'
 import { fetch, request } from '@unshared/client/utils'
 import { createParser } from '@unshared/validation'
 import packageJson from '../../../../package.json' assert { type: 'json' }
-import { assertMcpGateway, type McpGateway } from '../../mcpGateway'
+import { assertMcpGateway, type McpGateway, ModuleMcpGateway } from '../../mcpGateway'
 import { assertMcpManager, ModuleMcpManager } from '../../mcpManager'
 import { assertMcpServer } from './assertMcpServer'
 
@@ -52,7 +52,6 @@ export class McpServerClient {
     // --- When the transport is closed, clear the client instance so that
     // --- a new client will be created on the next request.
     transport.onclose = () => {
-      console.log(`MCP client transport closed for server ${this.server.id}.`)
       this.client = undefined
       void this.logs.sendMessage({ timestamp: new Date().toISOString(), message: 'MCP client transport closed.' })
     }
@@ -76,7 +75,6 @@ export class McpServerClient {
   public logs = createEventBus<McpServerLog>({
     onMount: () => void this.subscribeToLogs(),
     onUnmount: () => {
-      console.log(`MCP server logs for ${this.server.id} unmounted.`)
       this.logsAbortController.abort()
       this.logsAbortController = new AbortController()
     },
@@ -164,7 +162,7 @@ export class McpServerClient {
 
   public messages = createEventBus<JSONRPCMessage>({
     onMount: () => {
-      void request('GET /{id}/sse', {
+      request('GET /{id}/sse', {
         baseUrl: this.gateway.address,
         parameters: { id: this.server.id },
         signal: this.messagesAbortController.signal,
@@ -172,12 +170,32 @@ export class McpServerClient {
           if (message.event === 'message') return this.messages.sendMessage(message.data)
         },
       })
+        .catch((error: Error) => {
+          if (error.name === 'AbortError') return
+          void this.messages.sendError(error)
+        })
     },
     onUnmount: () => {
       this.messagesAbortController.abort()
       this.messagesAbortController = new AbortController()
     },
   })
+
+  /***************************************************************************/
+  /* Lifecycle                                                               */
+  /***************************************************************************/
+
+  async request(): Promise<void> {
+    const moduleGateway = this.moduleServer.getModule(ModuleMcpGateway)
+    const client = moduleGateway.getGatewayClient(this.gateway)
+    await client.request(this.server.id)
+  }
+
+  async shutdown(): Promise<void> {
+    const moduleGateway = this.moduleServer.getModule(ModuleMcpGateway)
+    const client = moduleGateway.getGatewayClient(this.gateway)
+    await client.shutdown(this.server.id)
+  }
 
   /***************************************************************************/
   /* Requests                                                                */

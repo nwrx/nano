@@ -10,7 +10,7 @@ export namespace NmcpGateway {
   export type Message = OperationOptions<Schema, OperationById<Schema, 'postServerSseMessage'>>
 
   /** The result of the getGatewayHealthStatus operation. */
-  export type Status = OperationResult<Schema, OperationById<Schema, 'getGatewayHealthStatus'>>
+  export type Status = OperationResult<Schema, OperationById<Schema, 'getHealthStatus'>>
 
   /** The body of an error response from the MCP gateway. */
   export interface Error {
