@@ -1,43 +1,35 @@
-import type { ModuleMcpServer } from '../index'
+import type { ModuleMcpServer } from '..'
 import { createHttpRoute } from '@unserved/server'
 import { assert, createParser } from '@unshared/validation'
 import { ModuleMcpPool } from '../../mcpPool'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
-import { getMcpServer } from '../utils'
+import { getMcpServer, getMcpServerClient } from '../utils'
 
-export function mcpServerUpdate(this: ModuleMcpServer) {
+export function mcpServerShutdown(this: ModuleMcpServer) {
   return createHttpRoute(
     {
-      name: 'PUT /api/workspaces/:workspace/pools/:pool/servers/:server',
+      name: 'POST /api/workspaces/:workspace/pools/:pool/servers/:server/shutdown',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         pool: assert.stringNotEmpty,
         server: assert.stringNotEmpty,
       }),
-      parseBody: createParser({
-        title: [[assert.undefined], [assert.string]],
-        description: [[assert.undefined], [assert.string]],
-      }),
     },
-    async({ event, parameters, body }): Promise<void> => {
+    async({ event, parameters }): Promise<void> => {
       const moduleUser = this.getModule(ModuleUser)
       const modulePool = this.getModule(ModuleMcpPool)
       const moduleWorkspace = this.getModule(ModuleWorkspace)
       const { user } = await moduleUser.authenticate(event)
 
-      // --- Get the workspace and pool.
+      // --- Get the workspace, pool and server.
       const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Read' })
-      const pool = await modulePool.getPool({ user, workspace, name: parameters.pool, permission: 'Write' })
+      const pool = await modulePool.getPool({ user, workspace, name: parameters.pool, permission: 'Read', withManager: true })
       const server = await getMcpServer.call(this, { workspace, pool, name: parameters.server })
 
-      // --- Update the MCP server
-      const { McpServer } = this.getRepositories()
-      if (body.title !== undefined) server.title = body.title
-      if (body.description !== undefined) server.description = body.description
-
-      // --- Save the updated server
-      await McpServer.save(server)
+      // --- Shutdown the MCP server.
+      const client = await getMcpServerClient.call(this, { workspace, pool, server })
+      await client.shutdown()
     },
   )
 }

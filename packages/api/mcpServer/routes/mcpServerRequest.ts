@@ -4,12 +4,12 @@ import { assert, createParser } from '@unshared/validation'
 import { ModuleMcpPool } from '../../mcpPool'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
-import { applyMcpServer, getMcpServer } from '../utils'
+import { getMcpServer, getMcpServerClient } from '../utils'
 
-export function mcpServerApply(this: ModuleMcpServer) {
+export function mcpServerRequest(this: ModuleMcpServer) {
   return createHttpRoute(
     {
-      name: 'POST /api/workspaces/:workspace/pools/:pool/servers/:server/apply',
+      name: 'POST /api/workspaces/:workspace/pools/:pool/servers/:server/request',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         pool: assert.stringNotEmpty,
@@ -18,8 +18,8 @@ export function mcpServerApply(this: ModuleMcpServer) {
     },
     async({ event, parameters }): Promise<void> => {
       const moduleUser = this.getModule(ModuleUser)
-      const moduleWorkspace = this.getModule(ModuleWorkspace)
       const modulePool = this.getModule(ModuleMcpPool)
+      const moduleWorkspace = this.getModule(ModuleWorkspace)
       const { user } = await moduleUser.authenticate(event)
 
       // --- Get the workspace, pool and server.
@@ -27,8 +27,9 @@ export function mcpServerApply(this: ModuleMcpServer) {
       const pool = await modulePool.getPool({ user, workspace, name: parameters.pool, permission: 'Write', withManager: true })
       const server = await getMcpServer.call(this, { workspace, pool, name: parameters.server })
 
-      // --- Synchronize the MCP server.
-      await applyMcpServer.call(this, { workspace, pool, server })
+      // --- Request the MCP server.
+      const client = await getMcpServerClient.call(this, { workspace, pool, server })
+      await client.request()
     },
   )
 }
