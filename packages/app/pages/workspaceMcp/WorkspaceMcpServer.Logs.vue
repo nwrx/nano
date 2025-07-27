@@ -8,7 +8,7 @@ definePageMeta({
   path: '/:workspace/pools/:pool/servers/:server/logs',
   middleware: ['redirect-when-guest', 'abort-reserved'],
   layout: 'workspace-mcp',
-  icon: 'i-carbon:logs',
+  icon: 'i-carbon:message-queue',
   groups: ['workspace-mcp-server'],
   title: {
     en: 'Integrations',
