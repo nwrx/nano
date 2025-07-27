@@ -1,6 +1,7 @@
 import type { Loose } from '@unshared/types'
 import type { Project } from '../entities'
 import type { ModuleProject } from '../index'
+import { toSlug } from '@unshared/string/toSlug'
 import { assert, createParser } from '@unshared/validation'
 import { assertUser } from '../../user'
 import { assertWorkspace } from '../../workspace'
@@ -9,7 +10,6 @@ const CREATE_PROJECT_OPTIONS = createParser({
   workspace: assertWorkspace,
   user: assertUser,
   name: assert.stringNotEmpty,
-  title: [[assert.undefined], [assert.stringNotEmpty]],
   isPublic: [[assert.undefined], [assert.boolean]],
 })
 
@@ -27,7 +27,7 @@ export type CreateProjectOptions = Loose<ReturnType<typeof CREATE_PROJECT_OPTION
  */
 export async function createProject(this: ModuleProject, options: CreateProjectOptions): Promise<Project> {
   const { Project, ProjectAssignment } = this.getRepositories()
-  const { user, name, title = name, workspace, isPublic } = CREATE_PROJECT_OPTIONS(options)
+  const { user, name, workspace, isPublic } = CREATE_PROJECT_OPTIONS(options)
 
   // --- Check if the project already exists in the workspace.
   const exists = await Project.countBy({ name, workspace })
@@ -35,5 +35,6 @@ export async function createProject(this: ModuleProject, options: CreateProjectO
 
   // --- Create the project and assign the user as the owner.
   const assignment = ProjectAssignment.create({ user, permission: 'Owner' })
-  return Project.create({ name, title, workspace, isPublic, createdBy: user, assignments: [assignment] })
+  const project = Project.create({ name, title: toSlug(name), workspace, isPublic, createdBy: user, assignments: [assignment] })
+  return Project.save(project)
 }
