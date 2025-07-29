@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/consistent-type-definitions */
-import type { Chat, ProviderName } from '@nwrx/ai'
+import type { Chat, Provider } from '@nwrx/ai'
 import { createClient } from '@nwrx/ai'
 import { defineComponent } from '../utils/defineComponent'
 import { TOOL_SCHEMA } from '../utils/toolSchema'
+import { PROVIDER_SCHEMA } from './provider'
 
 export type EventMapChat = {
   'nodeChatRequest': [nodeId: string, requestId: string, event: Chat.Context]
@@ -16,14 +17,16 @@ export const inference = defineComponent(
     isTrusted: true,
     inputs: {
       provider: {
-        title: 'Provider',
-        description: 'The provider to use for inference.',
-        type: 'string',
+        'title': 'Provider',
+        'description': 'The provider to use for inference.',
+        'x-control': 'reference/provider',
+        ...PROVIDER_SCHEMA,
       },
       model: {
-        title: 'Model',
-        description: 'The language model used to generate the completion.',
-        type: 'string',
+        'title': 'Model',
+        'description': 'The language model used to generate the completion.',
+        'type': 'string',
+        'x-control': 'reference/provider-model',
       },
       tools: {
         title: 'Tools',
@@ -36,6 +39,11 @@ export const inference = defineComponent(
         title: 'Messages',
         description: 'The message to generate a completion for.',
         default: [],
+        type: 'array',
+        items: {
+          type: 'object',
+          additionalProperties: true,
+        },
       },
       options: {
         'title': 'Options',
@@ -56,17 +64,17 @@ export const inference = defineComponent(
     },
   },
   async({ data, nodeId, thread }) => {
-    const { provider: providerName, model, tools, messages, options } = data
-    const provider = createClient(providerName as ProviderName, options)
+    const { provider, model, tools, messages, options } = data
+    const client = createClient(provider as unknown as Provider, options)
 
     // --- Pass the events from the provider to the thread.
-    provider.on('chatRequest', (requestId, context) => thread.dispatch('nodeChatRequest', nodeId, requestId, context))
-    provider.on('chatResponse', (requestId, context) => thread.dispatch('nodeChatResponse', nodeId, requestId, context))
-    provider.on('chatEvent', (requestId, event) => thread.dispatch('nodeChatEvent', nodeId, requestId, event))
-    provider.on('chatError', (requestId, error) => thread.dispatch('nodeChatError', nodeId, requestId, error))
+    client.on('chatRequest', (requestId, context) => thread.dispatch('nodeChatRequest', nodeId, requestId, context))
+    client.on('chatResponse', (requestId, context) => thread.dispatch('nodeChatResponse', nodeId, requestId, context))
+    client.on('chatEvent', (requestId, event) => thread.dispatch('nodeChatEvent', nodeId, requestId, event))
+    client.on('chatError', (requestId, error) => thread.dispatch('nodeChatError', nodeId, requestId, error))
 
     // --- Generate the completion.
-    const completion = await provider.generateText({
+    const completion = await client.generateText({
       model,
       tools,
       messages: messages as Chat.Message[],

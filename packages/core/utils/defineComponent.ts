@@ -23,10 +23,7 @@ export type SchemaControl =
   | 'textarea'
   | 'markdown'
   | 'json'
-  | 'tags'
-  | 'variable'
-  | 'language-model'
-  | 'language-model-tool'
+  | `reference/${string}`
 
 export type SchemaXType =
   | 'stream'
