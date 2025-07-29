@@ -147,6 +147,15 @@ export function createClient<T extends Provider>(provider: T, options?: Provider
  * @returns A new instance of the `Provider` class.
  */
 export function createClient<T extends ProviderName>(name: T, options?: ProviderOptionsByName<T>): Client<ProviderByName<T>>
+
+/**
+ * Instantiate a new `Client` based on the given provider or provider name.
+ *
+ * @param providerOrName The provider instance or the name of the provider.
+ * @param options Optional additional options to configure the provider.
+ * @returns A new instance of the `Client` class.
+ */
+export function createClient(providerOrName: Provider | ProviderName, options?: Record<string, unknown>): Client
 export function createClient(providerOrName: Provider | ProviderName, options?: Record<string, unknown>): Client {
   if (typeof providerOrName !== 'string') return new Client(providerOrName, options)
   if (providerOrName in PROVIDERS) return new Client(PROVIDERS[providerOrName], options)
