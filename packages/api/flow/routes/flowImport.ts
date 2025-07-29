@@ -39,8 +39,8 @@ export function flowImport(this: ModuleFlow) {
       else throw new Error('Invalid file type. Only JSON and YAML files are supported.')
 
       // --- Ensure the data is valid.
-      const { name = getRandomName(), title = name, description } = createParser({
-        name: [[assertUndefined], [assertStringNotEmpty, toSlug]],
+      const { name, title = name, description } = createParser({
+        name: [[assertUndefined, getRandomName], [assertStringNotEmpty, toSlug]],
         title: [[assertUndefined], [assertString]],
         description: [[assertUndefined], [assertString]],
       })(data)
