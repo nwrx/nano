@@ -1,36 +1,36 @@
 <script setup lang="ts">
-import type { ProjectObject } from '@nwrx/nano-api'
+import { useProjects } from '~/composables/useProject'
+import ProjectListItem from './ProjectList.Item.vue'
 
 const props = defineProps<{
-  workspace?: string
-  projects?: ProjectObject[]
-  modelValue?: Record<string, boolean>
+  workspace: string
 }>()
 
-const emit = defineEmits<{
-  projectDelete: [project: string]
-  flowCreate: [project: string]
-  flowDelete: [project: string, flow: string]
-  flowImport: [project: string, file: File]
-  flowDuplicate: [project: string, flow: string]
-  'update:modelValue': [value: Record<string, boolean>]
-}>()
+const localSettings = useLocalSettings()
+function setOpen(name: string, value: boolean) {
+  localSettings.value.workspaceOpenProjects ??= {}
+  localSettings.value.workspaceOpenProjects[name] = value
+}
 
-const model = useVModel(props, 'modelValue', emit, {
-  passive: true,
-  defaultValue: {},
-}) as ComputedRef<Record<string, boolean>>
+const projects = useProjects(props)
+projects.options.withCreatedBy = true
+projects.options.withUpdatedBy = true
+
+onMounted(() => {
+  void projects.searchProjects()
+  void projects.subscribeToEvents()
+})
 </script>
 
 <template>
-  <div v-if="workspace" class="flex flex-col w-full">
+  <div class="flex flex-col w-full">
     <ProjectListItem
-      v-for="project in projects"
+      v-for="project in projects.data"
       :key="project.name"
-      v-model:model-value="model[project.name]"
-      v-bind="project"
       :workspace="workspace"
-      class="pb-md"
+      :project="project"
+      :model-value="localSettings.workspaceOpenProjects?.[project.name]"
+      @update:model-value="(value) => setOpen(project.name, value)"
     />
   </div>
 </template>

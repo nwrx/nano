@@ -1,42 +1,19 @@
 <script setup lang="ts">
 import Dialog from '~/components/base/Dialog.vue'
 import InputText from '~/components/base/InputText.vue'
+import { useProject } from '~/composables/useProject'
 
 const props = defineProps<{
   workspace: string
   project: string
 }>()
 
-const emit = defineEmits<{
-  'submit': []
-}>()
-
 // --- State.
 const { t } = useI18n()
-const client = useClient()
-const alerts = useAlerts()
 const confirm = ref('')
+const { removeProject } = useProject(props)
 const isOpen = defineModel({ default: false })
 watch(isOpen, () => confirm.value = '', { immediate: true })
-
-async function deleteProject() {
-  await client.requestAttempt(
-    'DELETE /api/workspaces/:workspace/projects/:project',
-    {
-      parameters: {
-        workspace: props.workspace,
-        project: props.project,
-      },
-      onSuccess: () => {
-        emit('submit')
-        alerts.success(t('success', {
-          workspace: props.workspace,
-          project: props.project,
-        }))
-      },
-    },
-  )
-}
 </script>
 
 <template>
@@ -50,13 +27,14 @@ async function deleteProject() {
     :label-cancel="t('cancel')"
     :label-confirm="t('confirm')"
     :disabled="confirm !== project"
-    @confirm="() => deleteProject()">
+    @confirm="() => removeProject()">
 
     <!-- Conform input -->
     <InputText
       v-model="confirm"
       :text-before="`${CONSTANTS.appHost}/${workspace}/`"
-      :placeholder="t('confirmLabel')"
+      :label="t('confirmLabel')"
+      :placeholder="project"
     />
   </Dialog>
 </template>

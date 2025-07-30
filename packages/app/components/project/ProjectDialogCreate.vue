@@ -1,21 +1,18 @@
 <script setup lang="ts">
-import type { InputText } from '#components'
 import type { ComponentInstance } from 'vue'
-import { toSlug } from '@unshared/string/toSlug'
+import Dialog from '~/components/base/Dialog.vue'
+import InputText from '~/components/base/InputText.vue'
+import { useProjects } from '~/composables/useProject'
 
 const props = defineProps<{
-  modelValue: boolean
   workspace: string
 }>()
 
-const emit = defineEmits<{
-  'submit': [title: string]
-}>()
-
 const { t } = useI18n()
-const isOpen = useVModel(props, 'modelValue', emit, { passive: true })
-const title = ref<string>('')
+const projects = useProjects(props)
+const name = ref<string>('')
 const input = ref<ComponentInstance<typeof InputText>>()
+const isOpen = defineModel({ default: false })
 
 // --- When the dialog is opened, focus the input. Since the `input`
 // --- element is nested inside `InputText`, we need to go several
@@ -28,31 +25,28 @@ watchEffect(async() => {
   const inputElement = inputElementContainer.querySelector('input')
   if (inputElement) inputElement.focus()
 })
-
-function submit() {
-  emit('submit', title.value)
-  isOpen.value = false
-}
 </script>
 
 <template>
-  <AppDialog
+  <Dialog
     v-model="isOpen"
-    class-container="max-w-3xl !w-3/4"
-    @confirm="() => emit('submit', title)">
+    class-container="max-w-3xl !w-3/4">
 
     <template #container>
       <InputText
         ref="input"
-        v-model="title"
-        :parse="toSlug"
+        v-model="name"
         :placeholder="t('placeholder')"
         class-input="h-24 text-3xl sm:text-4xl px-xl"
-        @keydown.enter="() => submit()"
+        @keydown.enter="() => {
+          projects.createProject({ name })
+          name = ''
+          isOpen = false
+        }"
       />
     </template>
 
-  </AppDialog>
+  </Dialog>
 </template>
 
 <i18n lang="yaml">

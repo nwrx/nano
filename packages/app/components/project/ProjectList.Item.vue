@@ -1,105 +1,38 @@
-<!-- eslint-disable unicorn/prefer-ternary -->
 <!-- eslint-disable vue/no-setup-props-reactivity-loss -->
 <script setup lang="ts">
-import type { application, FlowObject, ProjectObject } from '@nwrx/nano-api'
-import type { ChannelConnectOptions } from '@unserved/client'
-import type { WebSocketChannel } from '@unshared/client/websocket'
-type UseProjectChannel = WebSocketChannel<ChannelConnectOptions<typeof application, 'WS /ws/workspaces/:workspace/projects/:project'>>
+import type { ProjectObject } from '@nwrx/nano-api'
+import { BaseButton } from '@unshared/vue/BaseButton'
+import { BaseIcon } from '@unshared/vue/BaseIcon'
+import ProjectActions from './ProjectActions.vue'
 
-const props = defineProps<ProjectObject & {
+const props = defineProps<{
   workspace: string
+  project: ProjectObject
 }>()
-
-const emit = defineEmits<{
-  delete: []
-  flowCreate: []
-  flowDelete: [flow: string]
-  flowDownload: [flow: string]
-  flowDuplicate: [flow: string]
-  flowImport: [file: File]
-}>()
-
-const { t } = useI18n()
-const routes = useRouteLocation()
-const client = useClient()
-const alerts = useAlerts()
-const flows = ref<FlowObject[]>([])
-
-let channel: undefined | UseProjectChannel
-tryOnScopeDispose(() => {
-  if (!channel) return
-  void channel.close()
-})
-
-async function subscribe() {
-  if (channel) return
-  channel = await client.connect('WS /ws/workspaces/:workspace/projects/:project', {
-    data: {
-      workspace: props.workspace,
-      project: props.name,
-    },
-    onMessage: (message) => {
-      if (message.event === 'flows') flows.value = message.flows
-      if (message.event === 'flowCreated') flows.value = [...flows.value, message.flow]
-      if (message.event === 'flowDeleted') flows.value = flows.value.filter(flow => flow.name !== message.name)
-    },
-  }).open()
-}
-
-async function unsubscribe() {
-  if (!channel) return
-  await channel.close()
-  channel = undefined
-}
 
 const isOpen = defineModel({ default: false })
-watch(isOpen, value => (value ? subscribe() : unsubscribe()), { immediate: true })
 
 // --- Dropzone for importing flows.
-const dropzone = ref<HTMLDivElement>()
-const { isOverDropZone } = useDropZone(dropzone, {
-  onDrop: (files) => {
-    if (!files) return
-    if (files.length === 0) return
-    emit('flowImport', files[0])
-  },
-})
-
-async function createFlow() {
-  await client.requestAttempt('POST /api/workspaces/:workspace/projects/:project/flows', {
-    data: {
-      workspace: props.workspace,
-      project: props.name,
-    },
-    onSuccess: () => {
-      alerts.success(t('flowCreated'))
-    },
-  })
-}
-
-async function deleteFlow(flow: string) {
-  await client.requestAttempt('DELETE /api/workspaces/:workspace/projects/:project/flows/:flow', {
-    data: {
-      workspace: props.workspace,
-      project: props.name,
-      flow,
-    },
-    onSuccess: () => {
-      alerts.success(t('flowDeleted'))
-    },
-  })
-}
+// const dropzone = ref<HTMLDivElement>()
+// const { isOverDropZone } = useDropZone(dropzone, {
+//   onDrop: (files) => {
+//     if (!files) return
+//     if (files.length === 0) return
+//   },
+// })
 </script>
 
 <template>
   <div ref="dropzone" class="w-full h-full relative">
 
     <!-- Dropzone -->
-    <Dropzone
+    <!--
+      <Dropzone
       :is-over="isOverDropZone"
       :text="t('dropZone', { title })"
       :vertical="isOpen"
-    />
+      />
+    -->
 
     <!-- Header -->
     <BaseButton
@@ -107,8 +40,9 @@ async function deleteFlow(flow: string) {
       class="
         flex items-center justify-start
         p-md pr-xl gap-md rounded w-full
-        border border-app bg-subtle
+        bg-subtle
         cursor-pointer group
+        b b-app hover:b-active
       "
       @click="() => { isOpen = !isOpen }">
 
@@ -119,72 +53,56 @@ async function deleteFlow(flow: string) {
         class="cursor-pointer shrink-0 size-8 opacity-40 group-hover:opacity-100 transition duration-slow"
       />
 
-      <!-- Header -->
+      <!-- Title and description -->
       <div class="text-left grow">
-        <h3 class="text-lg font-medium" v-text="title" />
-        <p class="text-sm text-subtle line-clamp-2" v-text="description" />
+        <h3 class="text-lg font-medium">
+          {{ project.title || project.name }}
+        </h3>
+        <p class="text-sm text-subtle line-clamp-2">
+          {{ project.description }}
+        </p>
       </div>
 
       <!-- Collaborators -->
       <!-- <ProjectListItemAssigments :assignments="assignments" /> -->
 
       <!-- CTA -->
-      <ContextMenu x="right" y="top" @mousedown.stop>
-        <template #menu="{ close }">
-          <ContextMenuItem
-            :label="t('menu.settings')"
-            icon="i-carbon:settings"
-            keybind="Ctrl + Shift + S"
-            :to="routes.getProjectSettingsRoute(workspace, name)"
-            @click="() => close()"
-          />
-          <ContextMenuItem
-            :label="t('menu.access')"
-            icon="i-carbon:group"
-            keybind="Ctrl + Shift + C"
-            :to="routes.getProjectSettingsRoute(workspace, name)"
-            @click="() => close()"
-          />
-          <ContextMenuDivider />
-          <ContextMenuItem
-            :label="t('menu.delete')"
-            icon="i-carbon:delete"
-            keybind="Backspace"
-            @click="() => { emit('delete'); close() }"
-          />
-        </template>
-      </ContextMenu>
+      <ProjectActions
+        :workspace="workspace"
+        :project="project.name"
+      />
     </BaseButton>
 
     <!-- Flow list -->
-    <BaseCollapse
+    <!--
+      <BaseCollapse
       vertical
       :is-open="isOpen"
       :duration="300"
       :class="{ 'op-0': isOpen !== true }"
       class="b-l b-app ml-lg pl-lg transition-all duration-slow">
       <div class="space-y-md py-md">
-        <ProjectListItemFlow
-          v-for="flow in flows"
-          :key="flow.name"
-          v-bind="flow"
-          :workspace="workspace"
-          :project="name"
-          icon="i-carbon:flow"
-          class="shrink-0"
-        />
+      <ProjectListItemFlow
+      v-for="flow in flows"
+      :key="flow.name"
+      v-bind="flow"
+      :workspace="workspace"
+      :project="name"
+      icon="i-carbon:flow"
+      class="shrink-0"
+      />
 
-        <!-- Create flow button -->
-        <Hyperlink
-          :label="t('createFlow')"
-          class="text-sm my-md"
-          icon-prepend="i-carbon:flow"
-          icon-append="i-carbon:chevron-right"
-          icon-expand
-          @click="() => createFlow()"
-        />
+      <Hyperlink
+      :label="t('createFlow')"
+      class="text-sm my-md"
+      icon-prepend="i-carbon:flow"
+      icon-append="i-carbon:chevron-right"
+      icon-expand
+      @click="() => createFlow()"
+      />
       </div>
-    </BaseCollapse>
+      </BaseCollapse>
+    -->
   </div>
 </template>
 

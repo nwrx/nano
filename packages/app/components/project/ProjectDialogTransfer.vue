@@ -2,44 +2,16 @@
 import Dialog from '~/components/base/Dialog.vue'
 import UserSearch from '~/components/user/UserSearch.vue'
 
-const props = defineProps<{
+defineProps<{
   workspace: string
   project: string
 }>()
 
-const emit = defineEmits<{
-  'submit': []
-}>()
-
-// --- State.
 const { t } = useI18n()
-const client = useClient()
 const alerts = useAlerts()
-const selectedUsers = ref<string[]>([])
+const selectedUsers = ref<string>()
 const isOpen = defineModel({ default: false })
-watch(isOpen, () => selectedUsers.value = [], { immediate: true })
-
-async function transferProject() {
-  if (selectedUsers.value.length === 0) return
-
-  await client.requestAttempt('PUT /api/workspaces/:workspace/projects/:project/workspace', {
-    parameters: {
-      workspace: props.workspace,
-      project: props.project,
-    },
-    body: {
-      newWorkspace: selectedUsers.value[0],
-    },
-    onSuccess: () => {
-      emit('submit')
-      alerts.success(t('success', {
-        workspace: props.workspace,
-        project: props.project,
-        newWorkspace: selectedUsers.value[0],
-      }))
-    },
-  })
-}
+watch(isOpen, () => selectedUsers.value = undefined)
 </script>
 
 <template>
@@ -52,8 +24,8 @@ async function transferProject() {
     :text="t('text', { workspace, project })"
     :label-cancel="t('cancel')"
     :label-confirm="t('confirm')"
-    :disabled="selectedUsers.length === 0"
-    @confirm="() => transferProject()">
+    :disabled="!selectedUsers"
+    @confirm="() => alerts.error('Not implemented yet')">
     <UserSearch
       v-model="selectedUsers"
       class="mt-2"

@@ -1,5 +1,10 @@
 <!-- eslint-disable sonarjs/no-commented-code -->
 <script setup lang="ts">
+import AppPageContainer from '~/components/app/AppPage.Container.vue'
+import Hyperlink from '~/components/base/Hyperlink.vue'
+import ProjectDialogCreate from '~/components/project/ProjectDialogCreate.vue'
+import ProjectList from '~/components/project/ProjectList.vue'
+
 definePageMeta({
   name: 'Workspace',
   path: '/:workspace',
@@ -25,55 +30,30 @@ definePageMeta({
 
 const { t } = useI18n()
 const route = useRoute()
-const workspaceName = computed(() => route.params.workspace as string)
-const workspace = useWorkspace(workspaceName)
-
+const workspace = computed(() => route.params.workspace as string)
 const isDialogCreateProjectOpen = ref(false)
-const localSettings = useLocalSettings()
-onMounted(async() => {
-  await workspace.getWorkspace()
-  await workspace.searchProjects()
-})
-
-// const bookmarkFlows = computed(() => workspace.data.value
-//   ?.flatMap(project => (project.flows ?? []).map(flow => ({
-//     ...flow,
-//     workspace: workspaceName.value,
-//     project: project.name,
-//   })))
-//   ?.slice(0, 3) ?? [])
 </script>
 
 <template>
-  <AppPageContainer contained class="space-y-lg">
-
-    <!-- Bookmarks -->
-    <!-- <ProjectBookmarks :flows="bookmarkFlows" /> -->
-
-    <ProjectList
-      v-model="localSettings.workspaceOpenProjects"
-      :workspace="workspaceName"
-      :projects="workspace.projects.value"
-      :base-url="CONSTANTS.appHost"
-    />
+  <AppPageContainer contained>
 
     <!-- Create project button -->
-    <div class="flex items-center space-x-md">
-      <Button
-        link
-        variant="primary"
+    <div class="flex items-center justify-end space-x-md mb-lg">
+      <Hyperlink
         icon="i-carbon:add"
         :label="t('createProject')"
         @click="() => isDialogCreateProjectOpen = true"
       />
     </div>
 
+    <!-- Bookmarks -->
+    <!-- <ProjectBookmarks :flows="bookmarkFlows" /> -->
+    <ProjectList :workspace="workspace" />
+
     <!-- Create project dialog -->
-    <ProjectListDialogCreate
+    <ProjectDialogCreate
       v-model="isDialogCreateProjectOpen"
-      :workspace="workspaceName"
-      :base-url="CONSTANTS.appHost"
-      @submit="options => workspace.createProject(options)"
+      :workspace="workspace"
     />
   </AppPageContainer>
 </template>

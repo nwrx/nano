@@ -1,60 +1,18 @@
 <script setup lang="ts">
-import type { ProjectObject } from '@nwrx/nano-api'
+import AppPageForm from '~/components/app/AppPageForm.vue'
+import { useProject } from '~/composables/useProject'
 
 const props = defineProps<{
   workspace: string
   project: string
 }>()
 
-// --- State.
 const { t } = useI18n()
-const client = useClient()
-const alerts = useAlerts()
-const data = ref<ProjectObject>({} as ProjectObject)
-
-// --- Methods.
-async function getProject() {
-  await client.requestAttempt(
-    'GET /api/workspaces/:workspace/projects/:project',
-    {
-      parameters: {
-        workspace: props.workspace,
-        project: props.project,
-      },
-      onData: (project) => {
-        data.value = project
-      },
-    },
-  )
-}
-
-async function updateProject() {
-  await client.requestAttempt(
-    'PUT /api/workspaces/:workspace/projects/:project',
-    {
-      parameters: {
-        workspace: props.workspace,
-        project: props.project,
-      },
-      body: {
-        ...data.value,
-      },
-      onSuccess: () => {
-        alerts.success(t('successMessage', {
-          workspace: props.workspace,
-          project: props.project,
-        }))
-      },
-    },
-  )
-}
-
-// --- Lifecycle.
-watch(
-  () => [props.workspace, props.project],
-  () => getProject(),
-  { immediate: true },
-)
+const project = useProject(props)
+onMounted(() => {
+  void project.fetchProject()
+  void project.subscribeToEvents()
+})
 </script>
 
 <template>
@@ -62,21 +20,22 @@ watch(
     :title="t('title')"
     :text="t('description')"
     :label="t('submitLabel')"
-    @submit="() => updateProject()">
+    @submit="() => project.updateProject(project.data)">
+
     <InputText
       disabled
-      :model-value="data.name"
+      :model-value="props.project"
       :text-before="`${CONSTANTS.appHost}/${workspace}/`"
       :hint="t('nameHint')"
     />
     <InputText
-      v-model="data.title"
+      v-model="project.data.title"
       icon="i-carbon:label"
       :label="t('titleLabel')"
       :placeholder="t('titlePlaceholder')"
     />
     <InputText
-      v-model="data.description"
+      v-model="project.data.description"
       :placeholder="t('descriptionPlaceholder')"
       type="textarea"
       class-input="!h-32"
