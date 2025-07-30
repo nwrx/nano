@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/todo-tag */
 import type { Loose } from '@unshared/types'
 import type { Flow } from '../entities'
 import type { ModuleFlow } from '../index'
@@ -15,6 +16,9 @@ const GET_FLOW_OPTIONS_SCHEMA = createParser({
   workspace: assertWorkspace,
   project: assertProject,
   permission: assertFlowPermission,
+  withCreatedBy: [[assert.undefined], [assert.boolean]],
+  withUpdatedBy: [[assert.undefined], [assert.boolean]],
+  withDeleted: [[assert.undefined], [assert.boolean]],
 })
 
 /** The options to resolve the project with. */
@@ -27,7 +31,16 @@ export type GetFlowOptions = Loose<ReturnType<typeof GET_FLOW_OPTIONS_SCHEMA>>
  * @returns The resolved flow.
  */
 export async function getFlow(this: ModuleFlow, options: GetFlowOptions): Promise<Flow> {
-  const { user, workspace, project, name, permission } = GET_FLOW_OPTIONS_SCHEMA(options)
+  const {
+    user,
+    workspace,
+    project,
+    name,
+    permission,
+    withCreatedBy = false,
+    withUpdatedBy = false,
+    withDeleted = false,
+  } = GET_FLOW_OPTIONS_SCHEMA(options)
 
   // --- Get the flow.
   const { Flow } = this.getRepositories()
@@ -35,7 +48,15 @@ export async function getFlow(this: ModuleFlow, options: GetFlowOptions): Promis
     where: user
       ? [{ name, project, isPublic: true }, { name, project, assignments: { user, permission: In(['Owner', 'Read']) } }]
       : [{ name, project, isPublic: true }],
+    withDeleted,
+    relations: {
+      createdBy: withCreatedBy,
+      updatedBy: withUpdatedBy,
+      deletedBy: withDeleted,
+    },
   })
+
+  // @TODO: Assert that user is owner when `withDeleted` is true.
 
   // --- Return the project if it is public and no user is provided.
   if (!flow) throw this.errors.FLOW_NOT_FOUND(workspace.name, project.name, name)

@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/todo-tag */
 import type { Loose } from '@unshared/types'
 import type { FindOptionsOrder, FindOptionsWhere } from 'typeorm'
 import type { Flow } from '../entities'
@@ -15,6 +16,9 @@ export const SEARCH_FLOW_OPTIONS_SCHEMA = createParser({
   page: [[assert.undefined], [assert.number]],
   limit: [[assert.undefined], [assert.number]],
   order: [[assert.undefined], [assert.objectStrict as (value: unknown) => asserts value is FindOptionsOrder<Flow>]],
+  withCreatedBy: [[assert.undefined], [assert.boolean]],
+  withUpdatedBy: [[assert.undefined], [assert.boolean]],
+  withDeleted: [[assert.undefined], [assert.boolean]],
 })
 
 /** The options to search for projects. */
@@ -37,6 +41,9 @@ export async function searchFlow(this: ModuleFlow, options: SearchFlowOptions): 
     page = 1,
     limit = 10,
     order = { name: 'ASC' },
+    withCreatedBy = false,
+    withUpdatedBy = false,
+    withDeleted = false,
   } = SEARCH_FLOW_OPTIONS_SCHEMA(options)
 
   // --- Sanitize the search string.
@@ -57,6 +64,8 @@ export async function searchFlow(this: ModuleFlow, options: SearchFlowOptions): 
     )
   }
 
+  // @TODO: Assert that user is owner when `withDeleted` is true.
+
   // --- If the project is not found, throw an error.
   const { Flow } = this.getRepositories()
   return await Flow.find({
@@ -64,5 +73,11 @@ export async function searchFlow(this: ModuleFlow, options: SearchFlowOptions): 
     order,
     take: limit,
     skip: (page - 1) * limit,
+    withDeleted,
+    relations: {
+      createdBy: withCreatedBy,
+      updatedBy: withUpdatedBy,
+      deletedBy: withDeleted,
+    },
   })
 }
