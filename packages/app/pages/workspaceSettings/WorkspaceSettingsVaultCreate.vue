@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { VaultType } from '@nwrx/nano-api'
-import WorkspaceSettingsVaultCreateHashicorp from '~/components/vault/WorkspaceSettingsVaultCreate.Hashicorp.vue'
-import WorkspaceSettingsVaultCreateLocal from '~/components/vault/WorkspaceSettingsVaultCreate.Local.vue'
-import WorkspaceSettingsVaultCreate from '~/components/vault/WorkspaceSettingsVaultCreate.vue'
+import FormCreateHashicorp from '~/components/vault/VaultFormCreate.Hashicorp.vue'
+import FormCreateLocal from '~/components/vault/VaultFormCreate.Local.vue'
+import FormCreate from '~/components/vault/VaultFormCreate.vue'
 
 definePageMeta({
   name: 'WorkspaceSettingsVaultCreate',
@@ -35,8 +35,20 @@ const name = ref('')
 
 <template>
   <AppPageContainer contained>
-    <WorkspaceSettingsVaultCreate v-model:type="type" v-model:name="name" :workspace="workspace" />
-    <WorkspaceSettingsVaultCreateLocal v-if="type === 'local'" :workspace="workspace" :name="name" />
-    <WorkspaceSettingsVaultCreateHashicorp v-else-if="type === 'hashicorp'" :workspace="workspace" :name="name" />
+    <FormCreate
+      v-model:type="type"
+      v-model:name="name"
+      :workspace="workspace"
+    />
+    <FormCreateLocal
+      v-if="type === 'local'"
+      :workspace="workspace"
+      :name="name"
+    />
+    <FormCreateHashicorp
+      v-else-if="type === 'hashicorp'"
+      :workspace="workspace"
+      :name="name"
+    />
   </AppPageContainer>
 </template>

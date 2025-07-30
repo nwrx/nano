@@ -1,4 +1,4 @@
-<script lang="ts">
+<script setup lang="ts">
 definePageMeta({
   name: 'AdminSettingsLogs',
   path: '/admin/logs',
