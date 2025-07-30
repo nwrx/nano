@@ -18,6 +18,8 @@ export function projectSearch(this: ModuleProject) {
         search: [[assert.undefined], [assert.stringNotEmpty]],
         page: [[assert.undefined], [assert.stringNotEmpty, Number.parseInt]],
         limit: [[assert.undefined], [assert.stringNotEmpty, Number.parseInt]],
+        sortBy: [[assert.undefined], [assert.stringEnum(['name', 'title', 'createdAt', 'updatedAt'])]],
+        sortDirection: [[assert.undefined], [assert.stringEnum(['ASC', 'DESC'])]],
         withCreatedBy: [[assert.undefined], [assert.string, parseBoolean]],
         withUpdatedBy: [[assert.undefined], [assert.string, parseBoolean]],
         withDeleted: [[assert.undefined], [assert.string, parseBoolean]],

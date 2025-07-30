@@ -1,5 +1,5 @@
 import type { Loose } from '@unshared/types'
-import type { FindOptionsOrder, FindOptionsWhere } from 'typeorm'
+import type { FindOptionsWhere } from 'typeorm'
 import type { Project } from '../entities'
 import type { ModuleProject } from '../index'
 import { assert, createParser } from '@unshared/validation'
@@ -14,7 +14,8 @@ export const SEARCH_PROJECTS_OPTIONS_SCHEMA = createParser({
   search: [[assert.undefined], [assert.string]],
   page: [[assert.undefined], [assert.number]],
   limit: [[assert.undefined], [assert.number]],
-  order: [[assert.undefined], [assert.objectStrict as (value: unknown) => asserts value is FindOptionsOrder<Project>]],
+  sortBy: [[assert.undefined], [assert.stringEnum(['name', 'title', 'createdAt', 'updatedAt'])]],
+  sortDirection: [[assert.undefined], [assert.stringEnum(['ASC', 'DESC'])]],
   withCreatedBy: [[assert.undefined], [assert.boolean]],
   withUpdatedBy: [[assert.undefined], [assert.boolean]],
   withDeleted: [[assert.undefined], [assert.boolean]],
@@ -39,7 +40,8 @@ export async function searchProjects(this: ModuleProject, options: SearchProject
     workspace,
     page = 1,
     limit = 10,
-    order = { name: 'ASC' },
+    sortBy = 'name',
+    sortDirection = 'ASC',
     withCreatedBy = false,
     withUpdatedBy = false,
     withDeleted = false,
@@ -67,7 +69,7 @@ export async function searchProjects(this: ModuleProject, options: SearchProject
   // --- If the project is not found, throw an error.
   return await Project.find({
     where,
-    order,
+    order: { [sortBy]: sortDirection },
     take: limit,
     skip: (page - 1) * limit,
     withDeleted,

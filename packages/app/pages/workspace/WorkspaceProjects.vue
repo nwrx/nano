@@ -31,30 +31,11 @@ definePageMeta({
 const { t } = useI18n()
 const route = useRoute()
 const workspace = computed(() => route.params.workspace as string)
-const isDialogCreateProjectOpen = ref(false)
 </script>
 
 <template>
   <AppPageContainer contained>
-
-    <!-- Create project button -->
-    <div class="flex items-center justify-end space-x-md mb-lg">
-      <Hyperlink
-        icon="i-carbon:add"
-        :label="t('createProject')"
-        @click="() => isDialogCreateProjectOpen = true"
-      />
-    </div>
-
-    <!-- Bookmarks -->
-    <!-- <ProjectBookmarks :flows="bookmarkFlows" /> -->
     <ProjectList :workspace="workspace" />
-
-    <!-- Create project dialog -->
-    <ProjectDialogCreate
-      v-model="isDialogCreateProjectOpen"
-      :workspace="workspace"
-    />
   </AppPageContainer>
 </template>
 
