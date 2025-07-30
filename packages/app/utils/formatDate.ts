@@ -15,7 +15,7 @@ import { zhCN as zh } from 'date-fns/locale/zh-CN'
  */
 export function formatDate(date?: Date | number | string): string {
   if (!date) return '-'
-  const { locale } = useI18n()
+  const { locale } = useLocale()
   const key = locale.value ? locale.value.split('-')[0] : 'en'
   const localeObject = { de, en, fr, zh, es }[key]
   return format(date, 'PP', { locale: localeObject })
@@ -29,7 +29,7 @@ export function formatDate(date?: Date | number | string): string {
  */
 export function formatDateTime(date?: Date | number | string): string {
   if (!date) return '-'
-  const { locale } = useI18n()
+  const { locale } = useLocale()
   const key = locale.value ? locale.value.split('-')[0] : 'en'
   const localeObject = { de, en, fr, zh, es }[key]
   return format(date, 'PPp', { locale: localeObject })
@@ -44,7 +44,7 @@ export function formatDateTime(date?: Date | number | string): string {
  */
 export function formatDateFromNow(date?: string, fallback = '-'): string {
   if (!date) return fallback
-  const { locale } = useI18n()
+  const { locale } = useLocale()
   const key = locale.value ? locale.value.split('-')[0] : 'en'
   const localeObject = { de, en, fr, zh, es }[key]
   return formatDistanceToNow(date, { addSuffix: true, locale: localeObject })
@@ -59,7 +59,7 @@ export function formatDateFromNow(date?: string, fallback = '-'): string {
  */
 export function formatDuration(seconds?: number): string {
   if (!seconds || seconds < 0) return '-'
-  const { locale } = useI18n()
+  const { locale } = useLocale()
   const key = locale.value ? locale.value.split('-')[0] : 'en'
   const localeObject = { de, en, fr, zh, es }[key]
   const duration = {
