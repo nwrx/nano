@@ -50,15 +50,15 @@ const isFocused = ref(false)
     <div class="flex items-stretch w-full">
       <div
         v-if="textBefore"
-        class="flex items-center justify-center input rounded-r-0 border-r-0"
+        class="flex items-center justify-center input rd-r-0 border-r-0"
         v-text="textBefore"
       />
 
       <!-- Input -->
       <div
         :class="[classGroup, {
-          'rounded-l-none': textBefore,
-          'rounded-r-none': textAfter,
+          'rd-l-none': textBefore,
+          'rd-r-none': textAfter,
           'cursor-text': !disabled,
           '!input-focus': isFocused,
           '!input-readonly': readonly,
@@ -109,7 +109,7 @@ const isFocused = ref(false)
       <!-- Text After -->
       <p
         v-if="textAfter"
-        class="flex items-center justify-center input input-readonly rounded-l-0 border-l-0"
+        class="flex items-center justify-center input input-readonly rd-l-0 border-l-0"
         v-text="textAfter"
       />
     </div>

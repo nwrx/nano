@@ -59,15 +59,15 @@ const search = useVModel(props as { search: string }, 'search', emit, { passive:
     <div class="flex items-stretch w-full">
       <div
         v-if="textBefore"
-        class="flex items-center justify-center input input-disabled rounded-r-0 border-r-0"
+        class="flex items-center justify-center input input-disabled rd-r-0 border-r-0"
         v-text="textBefore"
       />
 
       <!-- Input -->
       <div
         :class="[classGroup, {
-          'rounded-l-none': textBefore,
-          'rounded-r-none': textAfter,
+          'rd-l-none': textBefore,
+          'rd-r-none': textAfter,
           'cursor-text': !disabled,
           '!input-focus': isFocused,
           '!input-readonly': readonly,
@@ -141,7 +141,7 @@ const search = useVModel(props as { search: string }, 'search', emit, { passive:
                     v-for="option in slot.options"
                     :key="option.label"
                     class="
-                      flex items-center rd-md cursor-pointer
+                      flex items-center rd cursor-pointer
                       b b-transparent hover:b-active
                     "
                     :class="{
@@ -166,7 +166,7 @@ const search = useVModel(props as { search: string }, 'search', emit, { passive:
                       v-if="optionImage"
                       :src="optionImage(option.option)"
                       :class="classOptionImage"
-                      class="size-8 object-cover rounded"
+                      class="size-8 object-cover rd"
                       alt="">
 
                     <!-- Label -->
@@ -220,7 +220,7 @@ const search = useVModel(props as { search: string }, 'search', emit, { passive:
       <!-- Text After -->
       <p
         v-if="textAfter"
-        class="flex items-center justify-center input input-readonly rounded-l-0 border-l-0"
+        class="flex items-center justify-center input input-readonly rd-l-0 border-l-0"
         v-text="textAfter"
       />
     </div>
