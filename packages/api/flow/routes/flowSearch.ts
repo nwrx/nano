@@ -1,31 +1,35 @@
-import type { FlowObject } from '../entities'
-import type { ModuleFlow } from '../index'
+import type { FlowObject, ModuleFlow } from '..'
 import { createHttpRoute } from '@unserved/server'
 import { assert, createParser } from '@unshared/validation'
 import { ModuleProject } from '../../project'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
-import { getFlow } from '../utils'
+import { searchFlow } from '../utils'
 
-export function flowGet(this: ModuleFlow) {
+export function flowSearch(this: ModuleFlow) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/projects/:project/flows/:name',
+      name: 'GET /api/workspaces/:workspace/projects/:project/flows',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         project: assert.stringNotEmpty,
-        name: assert.stringNotEmpty,
+      }),
+      parseQuery: createParser({
+        search: [[assert.undefined], [assert.string]],
+        page: [[assert.undefined], [assert.stringNumber, Number.parseInt]],
+        limit: [[assert.undefined], [assert.stringNumber, Number.parseInt]],
+        order: [[assert.undefined], [assert.objectStrict]],
       }),
     },
-    async({ event, parameters }): Promise<FlowObject> => {
+    async({ event, parameters, query }): Promise<FlowObject[]> => {
       const moduleUser = this.getModule(ModuleUser)
       const moduleProject = this.getModule(ModuleProject)
       const moduleWorkspace = this.getModule(ModuleWorkspace)
-      const { user } = await moduleUser.authenticate(event)
+      const { user } = await moduleUser.authenticate(event, { optional: true })
       const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Read' })
       const project = await moduleProject.getProject({ user, workspace, name: parameters.project, permission: 'Read' })
-      const flow = await getFlow.call(this, { user, workspace, project, name: parameters.name, permission: 'Read' })
-      return flow.serialize()
+      const flows = await searchFlow.call(this, { user, project, ...query })
+      return flows.map(flow => flow.serialize())
     },
   )
 }

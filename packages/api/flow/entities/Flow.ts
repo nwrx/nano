@@ -2,7 +2,7 @@ import type { FlowV1 } from '@nwrx/nano'
 import { BaseEntity, transformerJson } from '@unserved/server'
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from 'typeorm'
 import { Project } from '../../project'
-import { User } from '../../user'
+import { User, UserObject } from '../../user'
 import { FlowAssignment } from './FlowAssignment'
 
 /**
@@ -66,32 +66,63 @@ export class Flow extends BaseEntity {
   isPublic = false
 
   /**
-   * The user who created the project. Note that this user is not necessarily the owner of
-   * the project. This field has no impact on the permissions of the project.
-   *
-   * @example User { ... }
-   */
-  @JoinColumn()
-  @ManyToOne(() => User, { nullable: false })
-  createdBy: undefined | User
-
-  /**
    * The assignments for this flow.
    */
   @OneToMany(() => FlowAssignment, assignment => assignment.flow, { cascade: ['insert'] })
   assignments: FlowAssignment[] | undefined
 
   /**
+   * The user that created the flow.
+   */
+  @JoinColumn()
+  @ManyToOne(() => User, { nullable: false })
+  createdBy?: User
+
+  /**
+   * The user that last updated the flow.
+   */
+  @JoinColumn()
+  @ManyToOne(() => User, { nullable: true })
+  updatedBy?: null | User
+
+  /**
+   * The user responsible for deleting the flow.
+   */
+  @JoinColumn()
+  @ManyToOne(() => User, { nullable: true })
+  deletedBy?: null | User
+
+  /**
+   * @param options The options to serialize the flow with.
    * @returns The object representation of the icon.
    */
-  serialize(): FlowObject {
+  serialize(options: SerializeOptions = {}): FlowObject {
+    const {
+      withCreatedBy = false,
+      withUpdatedBy = false,
+      withDeleted = false,
+    } = options
     return {
       name: this.name,
       title: this.title,
       description: this.description,
       isPublic: this.isPublic,
+
+      // Metadata
+      createdAt: withCreatedBy ? this.createdAt?.toISOString() : undefined,
+      createdBy: withCreatedBy ? this.createdBy?.serialize() : undefined,
+      updatedAt: withUpdatedBy ? this.updatedAt?.toISOString() : undefined,
+      updatedBy: withUpdatedBy ? this.updatedBy?.serialize() : undefined,
+      deletedAt: withDeleted ? this.deletedAt?.toISOString() : undefined,
+      deletedBy: withDeleted ? this.deletedBy?.serialize() : undefined,
     }
   }
+}
+
+interface SerializeOptions {
+  withCreatedBy?: boolean
+  withUpdatedBy?: boolean
+  withDeleted?: boolean
 }
 
 export interface FlowObject {
@@ -99,4 +130,12 @@ export interface FlowObject {
   title: string
   description?: string
   isPublic?: boolean
+
+  // Metadata
+  createdAt?: string
+  createdBy?: UserObject
+  updatedAt?: string
+  updatedBy?: UserObject
+  deletedAt?: string
+  deletedBy?: UserObject
 }

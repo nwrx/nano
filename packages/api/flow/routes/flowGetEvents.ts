@@ -1,23 +1,24 @@
-import type { FlowObject } from '../entities'
+import type { EventStream } from '@unserved/server'
 import type { ModuleFlow } from '../index'
+import type { FlowEvent } from '../utils'
 import { createHttpRoute } from '@unserved/server'
 import { assert, createParser } from '@unshared/validation'
 import { ModuleProject } from '../../project'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
-import { getFlow } from '../utils'
+import { getFlow, getFlowEventBus } from '../utils'
 
-export function flowGet(this: ModuleFlow) {
+export function flowGetEvents(this: ModuleFlow) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/projects/:project/flows/:name',
+      name: 'GET /api/workspaces/:workspace/projects/:project/flows/:name/events',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         project: assert.stringNotEmpty,
         name: assert.stringNotEmpty,
       }),
     },
-    async({ event, parameters }): Promise<FlowObject> => {
+    async({ event, parameters }): Promise<EventStream<FlowEvent>> => {
       const moduleUser = this.getModule(ModuleUser)
       const moduleProject = this.getModule(ModuleProject)
       const moduleWorkspace = this.getModule(ModuleWorkspace)
@@ -25,7 +26,8 @@ export function flowGet(this: ModuleFlow) {
       const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Read' })
       const project = await moduleProject.getProject({ user, workspace, name: parameters.project, permission: 'Read' })
       const flow = await getFlow.call(this, { user, workspace, project, name: parameters.name, permission: 'Read' })
-      return flow.serialize()
+      const eventBus = getFlowEventBus.call(this, { workspace, project, flow, createIfNotExists: true })!
+      return eventBus.subscribe(event)
     },
   )
 }

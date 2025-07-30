@@ -1,51 +1,35 @@
 import type { ModuleFlow } from '..'
 import { createHttpRoute } from '@unserved/server'
 import { toSlug } from '@unshared/string'
-import { assertStringNotEmpty, assertUndefined, createParser } from '@unshared/validation'
+import { assert, createParser, createRuleMap } from '@unshared/validation'
 import { ModuleProject } from '../../project'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
-import { getRandomName } from '../utils'
+import { createFlow, getRandomName } from '../utils'
 
 export function flowCreate(this: ModuleFlow) {
   return createHttpRoute(
     {
       name: 'POST /api/workspaces/:workspace/projects/:project/flows',
       parseParameters: createParser({
-        workspace: assertStringNotEmpty,
-        project: assertStringNotEmpty,
+        workspace: assert.stringNotEmpty,
+        project: assert.stringNotEmpty,
       }),
-      parseBody: createParser({
-        name: [[assertUndefined, getRandomName], [assertStringNotEmpty, toSlug]],
-      }),
+      parseBody: createParser(
+        [assert.undefined],
+        [createRuleMap({
+          name: [[assert.undefined, getRandomName], [assert.stringNotEmpty, toSlug]],
+        })],
+      ),
     },
     async({ event, parameters, body }) => {
       const moduleUser = this.getModule(ModuleUser)
       const moduleProject = this.getModule(ModuleProject)
       const moduleWorkspace = this.getModule(ModuleWorkspace)
       const { user } = await moduleUser.authenticate(event)
-
-      // --- Resolve the workspace and project and assert the user has access to them.
       const workspace = await moduleWorkspace.getWorkspace({ name: parameters.workspace, user, permission: 'Read' })
       const project = await moduleProject.getProject({ name: parameters.project, workspace, user, permission: 'Write' })
-
-      // --- Assert there is no flow with the same name.
-      const { Flow, FlowAssignment } = this.getRepositories()
-      const { name } = body
-      const exists = await Flow.countBy({ project, name })
-      if (exists) throw this.errors.FLOW_NAME_TAKEN(workspace.name, project.name, name)
-
-      // --- Create the flow and it's assignment.
-      const flow = Flow.create({ name, title: name, createdBy: user, project })
-      const assignment = FlowAssignment.create({ user, flow, permission: 'Owner' })
-      flow.assignments = [assignment]
-
-      // --- Broadcast the flow creation to the project's peers.
-      const observer = moduleProject.observers.get(project.id)
-      if (observer) observer.broadcast({ event: 'flowCreated', flow: flow.serialize() })
-
-      // --- Save the flow and return the serialized flow.
-      await Flow.save(flow)
+      const flow = await createFlow.call(this, { workspace, project, user, isPublic: false, ...body })
       return flow.serialize()
     },
   )

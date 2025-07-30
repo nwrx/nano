@@ -1,31 +1,33 @@
-import type { FlowObject } from '../entities'
 import type { ModuleFlow } from '../index'
 import { createHttpRoute } from '@unserved/server'
 import { assert, createParser } from '@unshared/validation'
 import { ModuleProject } from '../../project'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
-import { getFlow } from '../utils'
+import { getFlow, renameFlow } from '../utils'
 
-export function flowGet(this: ModuleFlow) {
+export function flowRename(this: ModuleFlow) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/projects/:project/flows/:name',
+      name: 'PUT /api/workspaces/:workspace/projects/:project/flows/:name/name',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         project: assert.stringNotEmpty,
         name: assert.stringNotEmpty,
       }),
+      parseBody: createParser({
+        name: assert.stringNotEmpty,
+      }),
     },
-    async({ event, parameters }): Promise<FlowObject> => {
+    async({ event, parameters, body }): Promise<void> => {
       const moduleUser = this.getModule(ModuleUser)
       const moduleProject = this.getModule(ModuleProject)
       const moduleWorkspace = this.getModule(ModuleWorkspace)
       const { user } = await moduleUser.authenticate(event)
       const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Read' })
-      const project = await moduleProject.getProject({ user, workspace, name: parameters.project, permission: 'Read' })
-      const flow = await getFlow.call(this, { user, workspace, project, name: parameters.name, permission: 'Read' })
-      return flow.serialize()
+      const project = await moduleProject.getProject({ user, workspace, name: parameters.project, permission: 'Write' })
+      const flow = await getFlow.call(this, { user, workspace, project, name: parameters.name, permission: 'Owner' })
+      await renameFlow.call(this, { workspace, project, flow, user, name: body.name })
     },
   )
 }

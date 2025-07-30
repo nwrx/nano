@@ -1,3 +1,4 @@
+import type { EventBus } from '@unserved/server'
 import { ModuleBase } from '@unserved/server'
 import { ModuleProject } from '../project'
 import { ModuleUser } from '../user'
@@ -19,6 +20,12 @@ export class ModuleFlow extends ModuleBase {
   routes = ROUTES
   entities = ENTITIES
   dependencies = [ModuleUser, ModuleProject]
+
+  /**
+   * A map of flow listeners that can be used to listen to flow events.
+   * The key is the flow ID, and the value is the event bus for that flow.
+   */
+  flowEventBuses = new Map<string, EventBus<UTILS.FlowEvent>>()
 
   /**
    * Resolves a flow by its name, project, and workspace.

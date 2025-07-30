@@ -1,4 +1,5 @@
 import type { Loose } from '@unshared/types'
+import type { FlowObject } from '../../flow'
 import type { RemoveEvent, RenameEvent } from '../../utils'
 import type { ProjectObject } from '../entities'
 import type { ModuleProject } from '../index'
@@ -8,6 +9,10 @@ import { assertWorkspace } from '../../workspace'
 import { assertProject } from './assertProject'
 
 export type ProjectEvent =
+  | { event: 'project.flow.created'; data: FlowObject }
+  | { event: 'project.flow.removed'; data: RemoveEvent }
+  | { event: 'project.flow.renamed'; data: RenameEvent }
+  | { event: 'project.flow.updated'; data: FlowObject }
   | { event: 'project.removed'; data: RemoveEvent }
   | { event: 'project.renamed'; data: RenameEvent }
   | { event: 'project.updated'; data: ProjectObject }

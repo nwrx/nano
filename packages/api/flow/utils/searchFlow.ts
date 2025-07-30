@@ -30,7 +30,14 @@ export type SearchFlowOptions = Loose<ReturnType<typeof SEARCH_FLOW_OPTIONS_SCHE
  * @returns The `Flow` with the given name.
  */
 export async function searchFlow(this: ModuleFlow, options: SearchFlowOptions): Promise<Flow[]> {
-  const { search = '', user, project, page = 1, limit = 10, order = { name: 'ASC' } } = SEARCH_FLOW_OPTIONS_SCHEMA(options)
+  const {
+    search = '',
+    user,
+    project,
+    page = 1,
+    limit = 10,
+    order = { name: 'ASC' },
+  } = SEARCH_FLOW_OPTIONS_SCHEMA(options)
 
   // --- Sanitize the search string.
   const searchSafe = search.replaceAll(/[^\d\sa-z]/gi, '')
