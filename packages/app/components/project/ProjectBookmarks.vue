@@ -7,8 +7,6 @@ defineProps<{
   // project: string
   flows: Array<FlowObject & { workspace: string; project: string }>
 }>()
-
-const routeLocation = useRouteLocation()
 </script>
 
 <template>
