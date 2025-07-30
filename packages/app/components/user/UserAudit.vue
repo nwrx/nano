@@ -28,7 +28,7 @@ const classDate = computed(() => ({
 }))
 
 const classTextContainer = computed(() => ({
-  'flex flex-col items-start': !props.inline,
+  'flex flex-col items-end': !props.inline,
   'flex items-center space-x-1': props.inline,
 }))
 </script>
