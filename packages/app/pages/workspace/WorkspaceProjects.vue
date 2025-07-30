@@ -1,8 +1,6 @@
 <!-- eslint-disable sonarjs/no-commented-code -->
 <script setup lang="ts">
 import AppPageContainer from '~/components/app/AppPage.Container.vue'
-import Hyperlink from '~/components/base/Hyperlink.vue'
-import ProjectDialogCreate from '~/components/project/ProjectDialogCreate.vue'
 import ProjectList from '~/components/project/ProjectList.vue'
 
 definePageMeta({
@@ -28,7 +26,6 @@ definePageMeta({
   },
 })
 
-const { t } = useI18n()
 const route = useRoute()
 const workspace = computed(() => route.params.workspace as string)
 </script>
@@ -38,26 +35,3 @@ const workspace = computed(() => route.params.workspace as string)
     <ProjectList :workspace="workspace" />
   </AppPageContainer>
 </template>
-
-<i18n lang="yaml">
-en:
-  title: Workspace
-  description: Create, edit, and delete your flows.
-  createProject: Create new project
-fr:
-  title: Espace de travail
-  description: Créez, éditez et supprimez vos flux.
-  createProject: Créer nouveau projet
-de:
-  title: Arbeitsbereich
-  description: Erstellen, bearbeiten und löschen Sie Ihre Flows.
-  createProject: Neues Projekt erstellen
-es:
-  title: Espacio de trabajo
-  description: Crea, edita y elimina tus flujos.
-  createProject: Crear nuevo proyecto
-zh:
-  title: 工作区
-  description: 创建、编辑和删除您的流程。
-  createProject: 创建新项目
-</i18n>
