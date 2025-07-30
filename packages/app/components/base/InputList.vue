@@ -6,6 +6,7 @@ import { BaseInputList } from '@unshared/vue/BaseInputList'
 import Badge from './Badge.vue'
 
 const props = defineProps<BaseInputListProps<T, V, M> & {
+  subtle?: boolean
   label?: string
   hint?: string
   icon?: string
@@ -86,7 +87,7 @@ const search = useVModel(props as { search: string }, 'search', emit, { passive:
           v-if="iconPrepend || icon"
           :icon="iconPrepend! || icon!"
           :class="classIcon"
-          class="size-4 pointer-events-none mr-sm"
+          class="size-4 pointer-events-none mr-sm shrink-0"
         />
 
         <BaseInputList
@@ -100,6 +101,7 @@ const search = useVModel(props as { search: string }, 'search', emit, { passive:
             <input
               v-model="search"
               class="w-full outline-none bg-transparent"
+              :class="{ 'op-0': subtle }"
               :placeholder="model ? '' : placeholder"
               @focus="() => { isFocused = true; emit('focus') }"
               @blur="() => { isFocused = false; emit('blur') }">
@@ -108,12 +110,22 @@ const search = useVModel(props as { search: string }, 'search', emit, { passive:
           <!-- Values -->
           <template #values="{ values }">
             <div class="flex flex-wrap gap-xs" :class="{ 'mr-sm': values.some(option => option.isSelected()) }">
-              <Badge
-                v-for="option in values.filter(option => option.isSelected())"
-                :key="option.label"
-                :label="option.label"
-                :icon="optionIcon ? optionIcon(option.option) : undefined"
-              />
+              <template v-if="subtle">
+                <span
+                  v-for="option in values.filter(option => option.isSelected())"
+                  :key="option.label"
+                  class="text-sm"
+                  v-text="option.label"
+                />
+              </template>
+              <template v-else>
+                <Badge
+                  v-for="option in values.filter(option => option.isSelected())"
+                  :key="option.label"
+                  :label="option.label"
+                  :icon="optionIcon ? optionIcon(option.option) : undefined"
+                />
+              </template>
             </div>
           </template>
 
@@ -158,7 +170,7 @@ const search = useVModel(props as { search: string }, 'search', emit, { passive:
                     <BaseIcon
                       v-if="optionIcon"
                       :icon="optionIcon(option.option)"
-                      class="size-4"
+                      class="size-4 shrink-0"
                     />
 
                     <!-- Image -->
@@ -166,7 +178,7 @@ const search = useVModel(props as { search: string }, 'search', emit, { passive:
                       v-if="optionImage"
                       :src="optionImage(option.option)"
                       :class="classOptionImage"
-                      class="size-8 object-cover rd"
+                      class="size-8 object-cover rd shrink-0"
                       alt="">
 
                     <!-- Label -->
