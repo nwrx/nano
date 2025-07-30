@@ -3,12 +3,14 @@ import InputText from '~/components/base/InputText.vue'
 import { useIcons } from '~/composables/useIcon'
 import IconDynamic from './IconDynamic.vue'
 
+const props = defineProps<{
+  isDark?: boolean
+}>()
+
 const { t } = useI18n()
 const icon = defineModel<string>()
 const icons = useIcons()
-const dark = useDark()
-
-icons.options.limit = 96
+icons.options.limit = 95
 
 watchThrottled(
   () => icons.options.search,
@@ -19,6 +21,9 @@ watchThrottled(
 onMounted(() => {
   void icons.searchIcons(true)
 })
+
+const localSettings = useLocalSettings()
+const isDark = computed(() => props.isDark ?? localSettings.value.themeColor === 'dark')
 
 const iconsWithSelection = computed(() => {
   if (!icon.value) return icons.data
@@ -35,7 +40,7 @@ const iconsWithSelection = computed(() => {
       v-if="icon"
       :name="icon"
       class="size-9 shrink-0 p-xs rd-sm b b-app"
-      :color="dark ? 'white' : 'black'"
+      :color="isDark ? 'white' : 'black'"
       :size="24"
       @click="() => icon = ''"
     />
@@ -44,7 +49,7 @@ const iconsWithSelection = computed(() => {
     <div
       v-else
       class="size-9 shrink-0 p-xs rd-sm b b-app flex items-center justify-center"
-      :class="dark ? 'text-white' : 'text-black'"
+      :class="isDark ? 'text-white' : 'text-black'"
     />
 
     <!-- Search -->
@@ -69,7 +74,7 @@ const iconsWithSelection = computed(() => {
         'b-active op-100': icon === iconName,
         ' b-transparent hover:b-active op-60 hover:op-100': icon !== iconName,
       }"
-      :color="dark ? 'white' : 'black'"
+      :color="isDark ? 'white' : 'black'"
       :size="24"
       @click="() => icon = iconName"
     />

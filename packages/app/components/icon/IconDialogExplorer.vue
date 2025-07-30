@@ -42,7 +42,7 @@ function confirmSelection() {
     @confirm="() => confirmSelection()">
 
     <!-- Explorer -->
-    <IconExplorer v-model="selectedIcon" />
+    <IconExplorer v-model="selectedIcon" is-dark />
   </Dialog>
 </template>
 

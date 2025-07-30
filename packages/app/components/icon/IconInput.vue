@@ -9,7 +9,7 @@ const showDialog = ref(false)
 <template>
   <!-- Trigger -->
   <Button
-    class="button-fab"
+    class="button-fab shrink-0"
     @click="() => showDialog = true">
     <IconDynamic
       :name="icon"
