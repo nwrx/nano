@@ -45,7 +45,7 @@ async function createVariable() {
 <template>
   <div>
     <!-- Variable Form -->
-    <div class="p-4 space-y-4 bg-subtle rd-t">
+    <div class="p-md space-y-md bg-subtle rd-t">
       <VariableSearch
         v-model="selectedVariable"
         :workspace="workspace"
@@ -53,7 +53,7 @@ async function createVariable() {
         :placeholder="t('variablePlaceholder')"
       />
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-md">
         <InputText
           v-model="variableName"
           :label="t('nameLabel')"

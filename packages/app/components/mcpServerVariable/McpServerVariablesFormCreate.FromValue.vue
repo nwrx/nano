@@ -38,7 +38,7 @@ async function createVariable() {
 <template>
   <div>
     <!-- Variable Form -->
-    <div class="p-4 space-y-4 bg-subtle rd-t">
+    <div class="p-md space-y-md bg-subtle rd-t">
       <InputText
         v-model="variableName"
         :label="t('nameLabel')"

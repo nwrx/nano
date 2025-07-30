@@ -3,12 +3,16 @@ import type { McpServerVariableObject } from '@nwrx/nano-api'
 import { BaseButton } from '@unshared/vue/BaseButton'
 import { BaseIcon } from '@unshared/vue/BaseIcon'
 
-defineProps<{
+const props = defineProps<{
   variable: McpServerVariableObject
   inline?: boolean
 }>()
 
 const { t } = useI18n()
+const isVariable = computed(() => {
+  if (!props.variable) return false
+  return !!props.variable.variable
+})
 </script>
 
 <template>
@@ -17,56 +21,69 @@ const { t } = useI18n()
     as="div"
     class="flex items-center space-x-md"
     :class="{
-      'b b-app rd p-4 bg-subtle': !inline,
+      'b b-app rd p-md bg-subtle': !inline,
     }">
 
     <!-- Variable Type Icon -->
-    <div class="b b-app rd p-2">
-      <BaseIcon
-        :icon="variable.variable ? 'i-carbon:password' : 'i-carbon:code'"
-        class="text-app size-4"
-      />
-    </div>
+    <div class="flex items-center gap-md">
 
-    <!-- Variable Name & Details -->
-    <div class="flex flex-col items-start flex-1">
-      <!-- Variable Name -->
-      <span
-        class="text-sm font-medium text-app font-mono"
-        v-text="variable.name"
-      />
-
-      <!-- Variable Details -->
-      <div class="text-xs text-subtle">
-        <!-- Linked Variable -->
-        <div v-if="variable.variable" class="flex items-center gap-1">
-          <span>{{ variable.variable.vault?.name }}</span>
-          <BaseIcon icon="i-carbon:arrow-right" class="size-3" />
-          <span class="font-mono">{{ variable.variable.name }}</span>
-        </div>
-        <!-- Raw Value -->
-        <div v-else class="font-mono">
-          {{ variable.value }}
-        </div>
+      <!-- Icon -->
+      <div class="rd p-sm b b-app bg-secondary-500 !text-black">
+        <BaseIcon :icon="isVariable ? 'i-carbon:password' : 'i-carbon:code'" class="size-5" />
       </div>
 
-      <!-- Mount Path -->
-      <div v-if="variable.mountAtPath" class="text-xs text-subtle font-mono mt-1">
-        {{ t('mountPath') }}: {{ variable.mountAtPath }}
+      <!-- Name and optional mount path -->
+      <div>
+        <div class="flex items-center gap-sm text-sm">
+          <span class="font-semibold line-clamp-1">
+            {{ variable.name }}
+          </span>
+          <template v-if="variable.mountAtPath">
+            <BaseIcon icon="i-carbon:arrow-right size-3" />
+            <span class="text-subtle line-clamp-1">
+              {{ variable.mountAtPath }}
+            </span>
+          </template>
+        </div>
+
+        <!-- Variable -->
+        <div
+          v-if="variable && variable.variable"
+          class="flex items-center text-subtle text-xs font-mono gap-xs">
+          <span class="line-clamp-1">{{ variable.variable.vault?.name }}</span>
+          <BaseIcon icon="i-carbon:arrow-right size-3" />
+          <span class="line-clamp-1">{{ variable.variable.name }}</span>
+        </div>
+
+        <!-- Value -->
+        <p v-else class="text-subtle text-xs font-mono line-clamp-1" :class="{ italic: !variable.value }">
+          {{ variable.value ?? t('variableRawValue') }}
+        </p>
       </div>
     </div>
+
+    <!-- Spacer -->
+    <div class="flex-1" />
+
+    <!-- Audit -->
+    <UserAudit
+      :created-at="variable.createdAt"
+      :created-by="variable.createdBy"
+      :updated-at="variable.updatedAt"
+      :updated-by="variable.updatedBy"
+    />
   </BaseButton>
 </template>
 
 <i18n lang="yaml">
 en:
-  mountPath: Mount Path
+  variableRawValue: Raw value
 fr:
-  mountPath: Chemin de Montage
+  variableRawValue: Valeur brute
 de:
-  mountPath: Mount-Pfad
+  variableRawValue: Rohwert
 es:
-  mountPath: Ruta de Montage
+  variableRawValue: Valor bruto
 zh:
-  mountPath: 挂载路径
+  variableRawValue: 原始值
 </i18n>
