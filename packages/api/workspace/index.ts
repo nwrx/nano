@@ -1,3 +1,4 @@
+import type { EventBus } from '@unserved/server'
 import { ModuleBase } from '@unserved/server'
 import { ModuleProject } from '../project'
 import { ModuleUser } from '../user'
@@ -15,7 +16,9 @@ export class ModuleWorkspace extends ModuleBase {
   entities = ENTITIES
   errors = UTILS.ERRORS
   dependencies = [ModuleUser, ModuleProject]
+  workspaceEventBus = new Map<string, EventBus<UTILS.WorkspaceEvent>>()
   assignWorkspace = UTILS.assignWorkspace.bind(this)
   createWorkspace = UTILS.createWorkspace.bind(this)
   getWorkspace = UTILS.getWorkspace.bind(this)
+  getEventBus = UTILS.getWorkspaceEventBus.bind(this)
 }

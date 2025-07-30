@@ -16,10 +16,8 @@ export function workspaceGetAssignments(this: ModuleWorkspace) {
     async({ event, parameters }): Promise<WorkspaceUserPermissions[]> => {
       const moduleUser = this.getModule(ModuleUser)
       const { user } = await moduleUser.authenticate(event, { optional: true })
-
-      // --- Get the workspace and its assignments.
       const workspace = await getWorkspace.call(this, { name: parameters.workspace, user, permission: 'Read' })
-      return await getWorkspaceAssignments.call(this, { workspace })
+      return getWorkspaceAssignments.call(this, { workspace })
     },
   )
 }

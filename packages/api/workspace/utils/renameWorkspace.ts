@@ -1,10 +1,12 @@
-import type { Workspace } from '../entities'
 import type { ModuleWorkspace } from '../index'
 import { toSlug } from '@unshared/string'
 import { assert, createParser } from '@unshared/validation'
+import { assertUser } from '../../user'
 import { assertWorkspace } from './assertWorkspace'
+import { getWorkspaceEventBus } from './getWorkspaceEventBus'
 
 const RENAME_WORKSPACE_OPTIONS = createParser({
+  user: assertUser,
   workspace: assertWorkspace,
   name: [assert.stringNotEmpty, toSlug],
 })
@@ -18,8 +20,8 @@ export type RenameWorkspaceOptions = Parameters<typeof RENAME_WORKSPACE_OPTIONS>
  * @param options The options to set the workspace name with.
  * @returns The workspace entity with updated name.
  */
-export async function renameWorkspace(this: ModuleWorkspace, options: RenameWorkspaceOptions): Promise<Workspace> {
-  const { workspace, name } = RENAME_WORKSPACE_OPTIONS(options)
+export async function renameWorkspace(this: ModuleWorkspace, options: RenameWorkspaceOptions): Promise<void> {
+  const { user, workspace, name } = RENAME_WORKSPACE_OPTIONS(options)
 
   // --- Check if the new name is already taken
   const { Workspace } = this.getRepositories()
@@ -27,6 +29,13 @@ export async function renameWorkspace(this: ModuleWorkspace, options: RenameWork
   if (exists > 0) throw this.errors.WORKSPACE_NAME_TAKEN(name)
 
   // --- Update the workspace name
+  const oldName = workspace.name
   workspace.name = name
-  return workspace
+  workspace.updatedBy = user
+  await Workspace.save(workspace)
+
+  // --- Notify listeners via the event bus.
+  const eventData = { name, oldName, by: user.username }
+  const eventBus = getWorkspaceEventBus.call(this, { workspace })
+  await eventBus?.sendMessage({ event: 'workspace.renamed', data: eventData })
 }

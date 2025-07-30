@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/todo-tag */
 import type { Loose } from '@unshared/types'
 import type { Workspace } from '../entities'
 import type { ModuleWorkspace } from '../index'
@@ -11,6 +12,10 @@ const GET_WORKSPACE_OPTIONS = createParser({
   name: assert.stringNotEmpty,
   user: [[assert.undefined], [assertUser]],
   permission: assertWorkspacePermission,
+  withCreatedBy: [[assert.undefined], [assert.boolean]],
+  withUpdatedBy: [[assert.undefined], [assert.boolean]],
+  withArchivedBy: [[assert.undefined], [assert.boolean]],
+  withDeleted: [[assert.undefined], [assert.boolean]],
 })
 
 /** The options to resolve the workspace with. */
@@ -27,7 +32,15 @@ export type ResolveWorkspaceOptions = Loose<ReturnType<typeof GET_WORKSPACE_OPTI
  * @example await getWorkspace({ name: 'my-workspace', permission: 'Read' }) // Workspace { ... }
  */
 export async function getWorkspace(this: ModuleWorkspace, options: ResolveWorkspaceOptions): Promise<Workspace> {
-  const { name, user, permission } = GET_WORKSPACE_OPTIONS(options)
+  const {
+    name,
+    user,
+    permission,
+    withCreatedBy = false,
+    withUpdatedBy = false,
+    withArchivedBy = false,
+    withDeleted = false,
+  } = GET_WORKSPACE_OPTIONS(options)
 
   // --- Get the workspace.
   const { Workspace } = this.getRepositories()
@@ -35,7 +48,16 @@ export async function getWorkspace(this: ModuleWorkspace, options: ResolveWorksp
     where: user
       ? [{ name, isPublic: true }, { name, assignments: { user, permission: In(['Owner', 'Read']) } }]
       : [{ name, isPublic: true }],
+    withDeleted,
+    relations: {
+      createdBy: withCreatedBy,
+      updatedBy: withUpdatedBy,
+      archivedBy: withArchivedBy,
+      deletedBy: withDeleted,
+    },
   })
+
+  // @TODO: Only 'Owner' can see deleted workspaces.
 
   // --- Abort early if the workspace is not found.
   // --- Return early if the user has read access.
