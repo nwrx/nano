@@ -13,12 +13,12 @@ const props = defineProps<BaseButtonProps & {
     v-bind="props"
     eager
     class-active="
-      !bg-active !text-active font-medium
+      !b-active font-medium
     "
     class="
       flex items-center gap-sm cursor-pointer
-      text-app px-md py-xs
-      hover:bg-prominent
+      text-app px-md py-xs b-b-2 b-transparent
+      hover:bg-prominent rd-t
     "
     :class="{
       'cursor-not-allowed opacity-50': disabled,

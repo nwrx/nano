@@ -18,11 +18,11 @@ const slots = defineSlots<{
     class="
       sticky top-0 w-full z-1 b-b b-app
       flex flex-col justify-between w-full
-      text-app shrink-0
+      text-app shrink-0 bg-subtle
     ">
 
     <!-- Title -->
-    <div class="flex items-center gap-md self-start p-lg w-full bg-subtle">
+    <div class="flex items-center gap-md self-start px-lg pt-lg pb-md w-full">
 
       <!-- Icon -->
       <div v-if="icon" class="bg-prominent rounded p-sm mr-md b b-app">
@@ -51,7 +51,7 @@ const slots = defineSlots<{
     <!-- Tabs -->
     <div
       v-if="slots.default"
-      class="flex items-center justify-end b-t b-app">
+      class="flex items-center justify-start b-app px-md">
       <slot />
     </div>
   </div>

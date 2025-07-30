@@ -43,9 +43,16 @@ const showHeader = computed(() => (
 
     <!-- Title and Text -->
     <div v-if="showHeader" class="w-full" :class="{ 'lg:basis-1/3': !vertical }">
-      <h2 class="text-2xl font-medium">
+      <h2 class="flex items-center text-2xl font-medium ">
+
+        <!-- Dot mark -->
+        <BaseIcon
+          icon="i-carbon:chevron-right"
+          class="text-secondary-500 size-6 mr-sm"
+        />
+
         <slot name="title">
-          {{ title }}
+          <span>{{ title }}</span>
         </slot>
       </h2>
       <p
