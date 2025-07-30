@@ -3,6 +3,7 @@ import type { McpServerArgumentObject } from '@nwrx/nano-api'
 import Dialog from '~/components/base/Dialog.vue'
 import VariableSearch from '~/components/vaultVariable/VariableSearch.vue'
 import { useMcpServerArguments } from '~/composables/useMcp'
+import McpServerArgumentCard from './McpServerArgumentCard.vue'
 
 const props = defineProps<{
   workspace: string
@@ -41,6 +42,12 @@ watch(isOpen, () => {
     :label-cancel="t('cancel')"
     :disabled="!selectedVariable"
     @confirm="() => args.updateArgument(argument.position, { variable: selectedVariable })">
+
+    <!-- Card -->
+    <McpServerArgumentCard
+      :argument="argument"
+      class="mb-md"
+    />
 
     <!-- Search -->
     <VariableSearch

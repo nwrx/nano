@@ -2,6 +2,7 @@
 import type { McpServerArgumentObject } from '@nwrx/nano-api'
 import Dialog from '~/components/base/Dialog.vue'
 import { useMcpServerArguments } from '~/composables/useMcp'
+import McpServerArgumentCard from './McpServerArgumentCard.vue'
 
 const props = defineProps<{
   workspace: string
@@ -27,51 +28,7 @@ const isOpen = defineModel({ default: false })
     :label-confirm="t('confirm')"
     :label-cancel="t('cancel')"
     @confirm="() => args.removeArgument(argument.position)">
-
-    <div class="rd b b-app">
-      <div class="flex items-center gap-sm p-sm mb-sm b-b b-dashed b-app">
-        <div class="b b-app rd p-2">
-          <BaseIcon
-            :icon="argument.variable ? 'i-carbon:password' : 'i-carbon:code'"
-            class="text-app"
-          />
-        </div>
-        <div>
-          <p class="text-sm font-medium">
-            {{ t('info.position') }}
-          </p>
-          <p class="text-sm text-subtle">
-            {{ argument.position }}
-          </p>
-        </div>
-      </div>
-
-      <!-- Variable Info -->
-      <div v-if="argument.variable" class="space-y-sm">
-        <div>
-          <p class="text-sm font-medium">
-            {{ t('info.linkedVariable') }}
-          </p>
-          <div class="flex items-center gap-sm text-sm text-subtle">
-            <span>{{ argument.variable.vault?.name }}</span>
-            <BaseIcon icon="i-carbon:arrow-right" />
-            <span class="font-mono">{{ argument.variable.name }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Raw Value Info -->
-      <div v-else>
-        <div>
-          <p class="text-sm font-medium">
-            {{ t('info.rawValue') }}
-          </p>
-          <p class="text-sm text-subtle font-mono">
-            {{ argument.value }}
-          </p>
-        </div>
-      </div>
-    </div>
+    <McpServerArgumentCard :argument="argument" />
   </Dialog>
 </template>
 
