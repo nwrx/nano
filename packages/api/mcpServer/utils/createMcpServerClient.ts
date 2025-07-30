@@ -105,13 +105,11 @@ export class McpServerClient {
           const lines = data.split('\n')
 
           // --- Keep the last line as remaining if it doesn't end with newline
+          // --- If line starts with a timestamp, extract it.
+          // --- Example: 2025-07-25T05:02:47.961887372Z
           remaining = lines.pop() ?? ''
-
           for (const line of lines) {
             if (!line.trim()) continue // Skip empty lines
-
-            // --- If line starts with a timestamp, extract it.
-            // --- Example: 2025-07-25T05:02:47.961887372Z
             let timestamp = new Date().toISOString()
             let message = line.trim()
             if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{9}Z/.test(line)) {
