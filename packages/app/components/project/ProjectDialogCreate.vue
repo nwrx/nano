@@ -17,9 +17,10 @@ const isOpen = defineModel({ default: false })
 // --- When the dialog is opened, focus the input. Since the `input`
 // --- element is nested inside `InputText`, we need to go several
 // --- levels deep to find it.
-watchEffect(async() => {
-  if (!isOpen.value) return
+watch(isOpen, async(isOpen) => {
+  if (!isOpen) return
   if (!input.value) return
+  name.value = ''
   await nextTick()
   const inputElementContainer = input.value.$el as HTMLInputElement
   const inputElement = inputElementContainer.querySelector('input')
@@ -40,7 +41,6 @@ watchEffect(async() => {
         class-input="h-24 text-3xl sm:text-4xl px-xl"
         @keydown.enter="() => {
           projects.createProject({ name })
-          name = ''
           isOpen = false
         }"
       />

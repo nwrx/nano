@@ -10,10 +10,10 @@ const props = defineProps<{
 
 // --- State.
 const { t } = useI18n()
-const confirm = ref('')
 const { removeProject } = useProject(props)
+const confirm = ref('')
 const isOpen = defineModel({ default: false })
-watch(isOpen, () => confirm.value = '', { immediate: true })
+watch(isOpen, () => confirm.value = '')
 </script>
 
 <template>

@@ -8,7 +8,6 @@ const props = defineProps<{
   project: string
 }>()
 
-// --- State.
 const { t } = useI18n()
 const { renameProject } = useProject(props)
 const name = ref('')

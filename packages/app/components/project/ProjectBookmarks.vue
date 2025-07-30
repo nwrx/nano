@@ -19,7 +19,6 @@ const routeLocation = useRouteLocation()
       v-bind="flow"
       :workspace="flow.workspace"
       :image-url="BOOKMARK_1_URL"
-      :to="routeLocation.getFlowRoute(flow.workspace, flow.project, flow.name)"
       class="pb-md"
     />
   </div>

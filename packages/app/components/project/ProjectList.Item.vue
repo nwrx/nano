@@ -3,44 +3,28 @@
 import type { ProjectObject } from '@nwrx/nano-api'
 import { BaseButton } from '@unshared/vue/BaseButton'
 import { BaseIcon } from '@unshared/vue/BaseIcon'
+import Collapse from '~/components/base/Collapse.vue'
+import FlowList from '~/components/flow/FlowList.vue'
+import IconDynamic from '~/components/icon/IconDynamic.vue'
+import UserAudit from '~/components/user/UserAudit.vue'
 import ProjectActions from './ProjectActions.vue'
 
-const props = defineProps<{
+defineProps<{
   workspace: string
   project: ProjectObject
 }>()
 
 const isOpen = defineModel({ default: false })
-
-// --- Dropzone for importing flows.
-// const dropzone = ref<HTMLDivElement>()
-// const { isOverDropZone } = useDropZone(dropzone, {
-//   onDrop: (files) => {
-//     if (!files) return
-//     if (files.length === 0) return
-//   },
-// })
 </script>
 
 <template>
-  <div ref="dropzone" class="w-full h-full relative">
-
-    <!-- Dropzone -->
-    <!--
-      <Dropzone
-      :is-over="isOverDropZone"
-      :text="t('dropZone', { title })"
-      :vertical="isOpen"
-      />
-    -->
-
-    <!-- Header -->
+  <div class="w-full h-full relative">
     <BaseButton
       eager
       class="
         flex items-center justify-start
-        p-md pr-xl gap-md rounded w-full
-        bg-subtle
+        p-md gap-md rounded w-full
+        bg-subtle hover:bg-emphasized
         cursor-pointer group
         b b-app hover:b-active
       "
@@ -49,16 +33,25 @@ const isOpen = defineModel({ default: false })
       <!-- Dropdown toggle -->
       <BaseIcon
         icon="i-carbon:chevron-down"
-        :class="{ 'rotate-180': isOpen }"
-        class="cursor-pointer shrink-0 size-8 opacity-40 group-hover:opacity-100 transition duration-slow"
+        :class="{ 'rotate-180 !op-100': isOpen }"
+        class="cursor-pointer shrink-0 size-8 op-0 group-hover:op-100 transition"
+      />
+
+      <!-- Icon -->
+      <IconDynamic
+        :name="project.icon"
+        fallback="i-carbon:folder"
+        :size="32"
+        load
+        class="size-8 shrink-0 text-app"
       />
 
       <!-- Title and description -->
       <div class="text-left grow">
-        <h3 class="text-lg font-medium">
+        <h3 class="text-lg font-medium line-clamp-1">
           {{ project.title || project.name }}
         </h3>
-        <p class="text-sm text-subtle line-clamp-2">
+        <p class="text-sm text-subtle line-clamp-1">
           {{ project.description }}
         </p>
       </div>
@@ -66,43 +59,31 @@ const isOpen = defineModel({ default: false })
       <!-- Collaborators -->
       <!-- <ProjectListItemAssigments :assignments="assignments" /> -->
 
-      <!-- CTA -->
+      <!-- User -->
+      <UserAudit
+        class="shrink-0"
+        :created-at="project.createdAt"
+        :created-by="project.createdBy"
+        :updated-at="project.updatedAt"
+        :updated-by="project.updatedBy"
+      />
+
+      <!-- Actions -->
       <ProjectActions
+        class="shrink-0 op-0 group-hover:op-100 transition"
         :workspace="workspace"
         :project="project.name"
       />
     </BaseButton>
 
     <!-- Flow list -->
-    <!--
-      <BaseCollapse
-      vertical
-      :is-open="isOpen"
-      :duration="300"
-      :class="{ 'op-0': isOpen !== true }"
-      class="b-l b-app ml-lg pl-lg transition-all duration-slow">
-      <div class="space-y-md py-md">
-      <ProjectListItemFlow
-      v-for="flow in flows"
-      :key="flow.name"
-      v-bind="flow"
-      :workspace="workspace"
-      :project="name"
-      icon="i-carbon:flow"
-      class="shrink-0"
+    <Collapse v-model="isOpen" class="b-l b-app ml-lg pl-lg">
+      <FlowList
+        :workspace="workspace"
+        :project="project.name"
+        class="pb-md pt-lg"
       />
-
-      <Hyperlink
-      :label="t('createFlow')"
-      class="text-sm my-md"
-      icon-prepend="i-carbon:flow"
-      icon-append="i-carbon:chevron-right"
-      icon-expand
-      @click="() => createFlow()"
-      />
-      </div>
-      </BaseCollapse>
-    -->
+    </Collapse>
   </div>
 </template>
 
