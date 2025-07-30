@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/todo-tag */
 import type { Loose } from '@unshared/types'
 import type { Project } from '../entities'
 import type { ModuleProject } from '../index'
@@ -13,6 +14,9 @@ const GET_PROJECT_OPTIONS_SCHEMA = createParser({
   user: [[assert.undefined], [assertUser]],
   name: assert.stringNotEmpty,
   permission: assertProjectPermission,
+  withCreatedBy: [[assert.undefined], [assert.boolean]],
+  withUpdatedBy: [[assert.undefined], [assert.boolean]],
+  withDeleted: [[assert.undefined], [assert.boolean]],
 })
 
 /** The options to resolve the project with. */
@@ -29,7 +33,15 @@ export type GetProjectOptions = Loose<ReturnType<typeof GET_PROJECT_OPTIONS_SCHE
  * @example await getProject({ name: 'my-project', workspace: 'my-workspace', permission: 'Read' }) // Project { ... }
  */
 export async function getProject(this: ModuleProject, options: GetProjectOptions): Promise<Project> {
-  const { name, workspace, user, permission } = GET_PROJECT_OPTIONS_SCHEMA(options)
+  const {
+    name,
+    workspace,
+    user,
+    permission,
+    withCreatedBy = false,
+    withUpdatedBy = false,
+    withDeleted = false,
+  } = GET_PROJECT_OPTIONS_SCHEMA(options)
 
   // --- Get the project.
   const { Project } = this.getRepositories()
@@ -37,7 +49,15 @@ export async function getProject(this: ModuleProject, options: GetProjectOptions
     where: user
       ? [{ name, workspace, isPublic: true }, { name, workspace, assignments: { user, permission: In(['Owner', 'Read']) } }]
       : [{ name, workspace, isPublic: true }],
+    withDeleted,
+    relations: {
+      createdBy: withCreatedBy,
+      updatedBy: withUpdatedBy,
+      deletedBy: withDeleted,
+    },
   })
+
+  // @TODO: Only 'Owner' can see deleted projects.
 
   // --- Return the project if it is public and no user is provided.
   if (!project) throw this.errors.PROJECT_NOT_FOUND(workspace.name, name)

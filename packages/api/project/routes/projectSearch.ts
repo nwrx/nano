@@ -1,7 +1,8 @@
 /* eslint-disable sonarjs/todo-tag */
 import type { ModuleProject } from '../index'
 import { createHttpRoute } from '@unserved/server'
-import { assertStringNotEmpty, assertUndefined, createParser } from '@unshared/validation'
+import { parseBoolean } from '@unshared/string/parseBoolean'
+import { assert, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
 import { searchProjects } from '../utils'
@@ -11,26 +12,24 @@ export function projectSearch(this: ModuleProject) {
     {
       name: 'GET /api/workspaces/:workspace/projects',
       parseParameters: createParser({
-        workspace: assertStringNotEmpty,
+        workspace: assert.stringNotEmpty,
       }),
       parseQuery: createParser({
-        search: [[assertUndefined], [assertStringNotEmpty]],
-        page: [[assertUndefined], [assertStringNotEmpty, Number.parseInt]],
-        limit: [[assertUndefined], [assertStringNotEmpty, Number.parseInt]],
+        search: [[assert.undefined], [assert.stringNotEmpty]],
+        page: [[assert.undefined], [assert.stringNotEmpty, Number.parseInt]],
+        limit: [[assert.undefined], [assert.stringNotEmpty, Number.parseInt]],
+        withCreatedBy: [[assert.undefined], [assert.string, parseBoolean]],
+        withUpdatedBy: [[assert.undefined], [assert.string, parseBoolean]],
+        withDeleted: [[assert.undefined], [assert.string, parseBoolean]],
       }),
     },
     async({ event, parameters, query }) => {
       const moduleUser = this.getModule(ModuleUser)
       const moduleWorkspace = this.getModule(ModuleWorkspace)
       const { user } = await moduleUser.authenticate(event, { optional: true })
-      const { search, page = 1, limit = 10 } = query
-
-      // --- Assert that the user has access and fetch the workspace.
       const workspace = await moduleWorkspace.getWorkspace({ name: parameters.workspace, user, permission: 'Read' })
-      const projects = await searchProjects.call(this, { user, page, limit, search, workspace })
-
-      // --- Return the projects.
-      return projects.map(project => project.serialize())
+      const projects = await searchProjects.call(this, { user, workspace, ...query })
+      return projects.map(project => project.serialize(query))
     },
   )
 }

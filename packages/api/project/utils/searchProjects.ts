@@ -10,11 +10,14 @@ import { assertWorkspace } from '../../workspace'
 /** The parser function for the `searchProjects` function. */
 export const SEARCH_PROJECTS_OPTIONS_SCHEMA = createParser({
   workspace: assertWorkspace,
-  search: [[assert.undefined], [assert.string]],
   user: [[assert.undefined], [assertUser]],
+  search: [[assert.undefined], [assert.string]],
   page: [[assert.undefined], [assert.number]],
   limit: [[assert.undefined], [assert.number]],
   order: [[assert.undefined], [assert.objectStrict as (value: unknown) => asserts value is FindOptionsOrder<Project>]],
+  withCreatedBy: [[assert.undefined], [assert.boolean]],
+  withUpdatedBy: [[assert.undefined], [assert.boolean]],
+  withDeleted: [[assert.undefined], [assert.boolean]],
 })
 
 /** The options to search for projects. */
@@ -30,7 +33,17 @@ export type SearchProjectsOptions = Loose<ReturnType<typeof SEARCH_PROJECTS_OPTI
  * @returns The `Project` with the given name.
  */
 export async function searchProjects(this: ModuleProject, options: SearchProjectsOptions): Promise<Project[]> {
-  const { search = '', user, workspace, page = 1, limit = 10, order = { name: 'ASC' } } = SEARCH_PROJECTS_OPTIONS_SCHEMA(options)
+  const {
+    search = '',
+    user,
+    workspace,
+    page = 1,
+    limit = 10,
+    order = { name: 'ASC' },
+    withCreatedBy = false,
+    withUpdatedBy = false,
+    withDeleted = false,
+  } = SEARCH_PROJECTS_OPTIONS_SCHEMA(options)
 
   // --- Get the repositories to query the database.
   const { Project } = this.getRepositories()
@@ -57,5 +70,11 @@ export async function searchProjects(this: ModuleProject, options: SearchProject
     order,
     take: limit,
     skip: (page - 1) * limit,
+    withDeleted,
+    relations: {
+      createdBy: withCreatedBy,
+      updatedBy: withUpdatedBy,
+      deletedBy: withDeleted,
+    },
   })
 }

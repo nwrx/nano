@@ -1,5 +1,6 @@
 import type { ModuleProject } from '../index'
 import { createHttpRoute } from '@unserved/server'
+import { parseBoolean } from '@unshared/string/parseBoolean'
 import { assert, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
@@ -13,18 +14,19 @@ export function projectGet(this: ModuleProject) {
         project: assert.stringNotEmpty,
         workspace: assert.stringNotEmpty,
       }),
+      parseQuery: createParser({
+        withCreatedBy: [[assert.undefined], [assert.string, parseBoolean]],
+        withUpdatedBy: [[assert.undefined], [assert.string, parseBoolean]],
+        withDeleted: [[assert.undefined], [assert.string, parseBoolean]],
+      }),
     },
-    async({ event, parameters }) => {
+    async({ event, parameters, query }) => {
       const moduleUser = this.getModule(ModuleUser)
       const moduleWorkspace = this.getModule(ModuleWorkspace)
       const { user } = await moduleUser.authenticate(event, { optional: true })
-
-      // --- Get the workspace and project.
       const workspace = await moduleWorkspace.getWorkspace({ name: parameters.workspace, user, permission: 'Read' })
-      const project = await getProject.call(this, { name: parameters.project, user, workspace, permission: 'Read' })
-
-      // --- Return the serialized project.
-      return project.serialize()
+      const project = await getProject.call(this, { name: parameters.project, user, workspace, permission: 'Read', ...query })
+      return project.serialize(query)
     },
   )
 }
