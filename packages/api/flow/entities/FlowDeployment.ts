@@ -48,9 +48,6 @@ export class FlowDeployment extends BaseEntity {
     return {
       version: this.version.toString(),
       notes: this.notes,
-      flowName: this.flow?.name,
-      projectName: this.flow?.project?.name,
-      workspaceName: this.flow?.project?.workspace?.name,
       createdAt: this.createdAt,
     }
   }
@@ -59,8 +56,5 @@ export class FlowDeployment extends BaseEntity {
 export interface FlowDeploymentObject {
   version: string
   notes?: string
-  flowName?: string
-  projectName?: string
-  workspaceName?: string
   createdAt: Date
 }
