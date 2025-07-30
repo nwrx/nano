@@ -1,5 +1,6 @@
 import { BaseEntity } from '@unserved/server'
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from 'typeorm'
+import { Icon } from '../../icon'
 import { User, UserObject } from '../../user'
 import { Workspace } from '../../workspace'
 import { ProjectAssignment } from './ProjectAssignment'
@@ -30,6 +31,15 @@ export class Project extends BaseEntity {
    */
   @Column('varchar')
   name: string
+
+  /**
+   * The icon of the project. It is used to display the project in the UI.
+   *
+   * @example 'mdi-file-document'
+   */
+  @JoinColumn()
+  @ManyToOne(() => Icon, { nullable: true, eager: true })
+  icon?: Icon | null
 
   /**
    * The name of the project as displayed in the UI.
@@ -98,6 +108,7 @@ export class Project extends BaseEntity {
     } = options
     return {
       name: this.name,
+      icon: this.icon?.name,
       title: this.title,
       description: this.description,
       isPublic: this.isPublic,
@@ -121,6 +132,7 @@ interface SerializeOptions {
 
 export interface ProjectObject {
   name: string
+  icon?: string
   title: string
   description: string
   isPublic: boolean

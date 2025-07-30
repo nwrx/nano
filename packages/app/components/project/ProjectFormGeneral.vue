@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import AppPageForm from '~/components/app/AppPageForm.vue'
+import InputText from '~/components/base/InputText.vue'
+import IconInput from '~/components/icon/IconInput.vue'
 import { useProject } from '~/composables/useProject'
 
 const props = defineProps<{
@@ -22,18 +24,27 @@ onMounted(() => {
     :label="t('submitLabel')"
     @submit="() => project.updateProject(project.data)">
 
+    <!-- Name -->
     <InputText
       disabled
       :model-value="props.project"
       :text-before="`${CONSTANTS.appHost}/${workspace}/`"
       :hint="t('nameHint')"
     />
-    <InputText
-      v-model="project.data.title"
-      icon="i-carbon:label"
-      :label="t('titleLabel')"
-      :placeholder="t('titlePlaceholder')"
-    />
+
+    <!-- Icon -->
+    <div class="flex items-end space-x-md w-full">
+      <IconInput v-model="project.data.icon" />
+
+      <!-- Title -->
+      <InputText
+        v-model="project.data.title"
+        :label="t('titleLabel')"
+        :placeholder="t('titlePlaceholder')"
+      />
+    </div>
+
+    <!-- Description -->
     <InputText
       v-model="project.data.description"
       :placeholder="t('descriptionPlaceholder')"

@@ -14,6 +14,7 @@ export function projectUpdate(this: ModuleProject) {
         workspace: assert.stringNotEmpty,
       }),
       parseBody: createParser({
+        icon: [[assert.undefined], [assert.string]],
         title: [[assert.undefined], [assert.string]],
         description: [[assert.undefined], [assert.string]],
       }),
@@ -22,10 +23,9 @@ export function projectUpdate(this: ModuleProject) {
       const moduleUser = this.getModule(ModuleUser)
       const moduleWorkspace = this.getModule(ModuleWorkspace)
       const { user } = await moduleUser.authenticate(event)
-      const { title, description } = body
       const workspace = await moduleWorkspace.getWorkspace({ name: parameters.workspace, user, permission: 'Read' })
       const project = await getProject.call(this, { name: parameters.project, workspace, user, permission: 'Write' })
-      await updateProject.call(this, { workspace, project, title, description })
+      await updateProject.call(this, { workspace, project, ...body })
     },
   )
 }
