@@ -2,7 +2,7 @@
 import type { McpPoolObject } from '@nwrx/nano-api'
 import PanelGroup from '~/components/base/Panel.Group.vue'
 import PanelItem from '~/components/base/Panel.Item.vue'
-import ActionsPool from '../mcpPool/McpPoolActions.vue'
+import Actions from '../mcpPool/McpPoolActions.vue'
 import McpPoolListServer from './McpPoolList.Server.vue'
 
 defineProps<{
@@ -48,7 +48,7 @@ const { t } = useI18n()
 
     <!-- Context menu -->
     <template #menu>
-      <ActionsPool
+      <Actions
         :workspace="workspace"
         :name="pool.name"
       />

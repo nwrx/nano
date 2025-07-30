@@ -2,7 +2,7 @@
 import type { McpServerObject } from '@nwrx/nano-api'
 import PanelItem from '~/components/base/Panel.Item.vue'
 import { getMcpServerStatusIcon } from '~/composables/useMcp'
-import ActionsServer from '../mcpServer/McpServerActions.vue'
+import Actions from '../mcpServer/McpServerActions.vue'
 
 const props = defineProps<{
   workspace: string
@@ -27,7 +27,7 @@ const linkTo = computed(() => {
 
 <template>
   <PanelItem
-    class="h-9"
+    class="h-9 group"
     :icon="getMcpServerStatusIcon(server)"
     :label="server.title || server.name"
     :description="server.title ? server.description : undefined"
@@ -36,7 +36,7 @@ const linkTo = computed(() => {
 
     <!-- Context menu -->
     <template #menu>
-      <ActionsServer
+      <Actions
         :workspace="workspace"
         :pool="pool"
         :server="server"

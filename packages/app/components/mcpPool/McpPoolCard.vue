@@ -14,13 +14,16 @@ const props = defineProps<{
 }>()
 
 const pool = useMcpPool(props)
+onMounted(() => {
+  void pool.fetchPool()
+})
 </script>
 
 <template>
   <BaseButton
     :as="isLink ? NuxtLink : 'div'"
     :to="isLink ? pool.linkTo : undefined"
-    class="flex items-center space-x-md"
+    class="flex items-center space-x-md h-18"
     :class="{ 'b b-app rd p-4 bg-subtle': !inline }">
 
     <!-- Status icon -->
