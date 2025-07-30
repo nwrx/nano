@@ -22,8 +22,6 @@ export function projectCreate(this: ModuleProject) {
       const moduleWorkspace = this.getModule(ModuleWorkspace)
       const { user } = await moduleUser.authenticate(event)
       const { name } = body
-
-      // --- Create the project in the workspace.
       const workspace = await moduleWorkspace.getWorkspace({ name: parameters.workspace, user, permission: 'Write' })
       const project = await createProject.call(this, { name, workspace, user })
       return project.serialize()

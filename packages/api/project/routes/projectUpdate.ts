@@ -1,37 +1,31 @@
 import type { ModuleProject } from '../index'
 import { createHttpRoute } from '@unserved/server'
-import { assertString, assertStringNotEmpty, assertUndefined, createParser } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
-import { getProject } from '../utils'
+import { getProject, updateProject } from '../utils'
 
 export function projectUpdate(this: ModuleProject) {
   return createHttpRoute(
     {
       name: 'PUT /api/workspaces/:workspace/projects/:project',
       parseParameters: createParser({
-        project: assertStringNotEmpty,
-        workspace: assertStringNotEmpty,
+        project: assert.stringNotEmpty,
+        workspace: assert.stringNotEmpty,
       }),
       parseBody: createParser({
-        title: [[assertUndefined], [assertStringNotEmpty]],
-        description: [[assertUndefined], [assertString]],
+        title: [[assert.undefined], [assert.string]],
+        description: [[assert.undefined], [assert.string]],
       }),
     },
     async({ event, parameters, body }): Promise<void> => {
       const moduleUser = this.getModule(ModuleUser)
       const moduleWorkspace = this.getModule(ModuleWorkspace)
-      const { Project } = this.getRepositories()
       const { user } = await moduleUser.authenticate(event)
-
-      // --- Get the workspace and project.
+      const { title, description } = body
       const workspace = await moduleWorkspace.getWorkspace({ name: parameters.workspace, user, permission: 'Read' })
       const project = await getProject.call(this, { name: parameters.project, workspace, user, permission: 'Write' })
-
-      // --- Update and save the project.
-      if (body.title) project.title = body.title
-      if (body.description) project.description = body.description
-      await Project.save(project)
+      await updateProject.call(this, { workspace, project, title, description })
     },
   )
 }

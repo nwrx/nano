@@ -4,7 +4,7 @@ import type { ModuleProject } from '../index'
 import { toSlug } from '@unshared/string/toSlug'
 import { assert, createParser } from '@unshared/validation'
 import { assertUser } from '../../user'
-import { assertWorkspace } from '../../workspace'
+import { assertWorkspace, ModuleWorkspace } from '../../workspace'
 
 const CREATE_PROJECT_OPTIONS = createParser({
   workspace: assertWorkspace,
@@ -35,6 +35,16 @@ export async function createProject(this: ModuleProject, options: CreateProjectO
 
   // --- Create the project and assign the user as the owner.
   const assignment = ProjectAssignment.create({ user, permission: 'Owner' })
-  const project = Project.create({ name, title: toSlug(name), workspace, isPublic, createdBy: user, assignments: [assignment] })
+  const project = Project.create({ name: toSlug(name), workspace, isPublic, createdBy: user, assignments: [assignment] })
+
+  // --- Notify the workspace event bus about the new project.
+  const moduleWorkspace = this.getModule(ModuleWorkspace)
+  const eventBus = moduleWorkspace.getEventBus({ workspace })
+  await eventBus?.sendMessage({
+    event: 'workspace.project.created',
+    data: project.serialize({ withCreatedBy: true }),
+  })
+
+  // --- Save and return the new project.
   return Project.save(project)
 }

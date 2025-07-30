@@ -1,3 +1,4 @@
+import type { EventBus } from '@unserved/server'
 import type { UUID } from 'node:crypto'
 import { ModuleBase } from '@unserved/server'
 import { ModuleFlow } from '../flow'
@@ -28,7 +29,7 @@ export class ModuleProject extends ModuleBase {
   ]
 
   /** A map of project listeners that can be used to listen to project events. */
-  observers = new Map<UUID, UTILS.ProjectObserver>()
+  projectsEventBus = new Map<UUID, EventBus<UTILS.ProjectEvent>>()
 
   /**
    * Resolve the {@linkcode Project} with the given name. The function will query the database
@@ -38,7 +39,22 @@ export class ModuleProject extends ModuleBase {
    *
    * @param options The options to find the project with.
    * @returns The {@linkcode Project} with the given name within the workspace.
-   * @example await getProject({ name: 'my-project', workspace: 'my-workspace', permission: 'Read' }) // Project { ... }
+   * @example
+   * const workspace = moduleWorkspace.getWorkspace({ name: 'my-workspace', permission: 'Read' })
+   * await moduleProject.getProject({ name: 'my-project', workspace, permission: 'Read' }) // Project { ... }
    */
   getProject = UTILS.getProject.bind(this)
+
+  /**
+   * Get or create the event bus for the project with the given ID. The event bus is used to
+   * broadcast events related to the project, such as project creation, deletion, and updates.
+   *
+   * @param options The options to get the event bus with.
+   * @returns The event bus for the project with the given ID.
+   * @example
+   * const workspace = moduleWorkspace.getWorkspace({ name: 'my-workspace', permission: 'Read' })
+   * const project = await moduleProject.getProject({ name: 'my-project', workspace, permission: 'Read' })
+   * const eventBus = moduleProject.getEventBus({ workspace, project }) // EventBus<ProjectEvent>
+   */
+  getEventBus = UTILS.getProjectEventBus.bind(this)
 }

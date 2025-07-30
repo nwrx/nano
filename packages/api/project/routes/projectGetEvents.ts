@@ -1,29 +1,27 @@
 import type { ModuleProject } from '../index'
-import type { ProjectUserPermissions } from '../utils'
 import { createHttpRoute } from '@unserved/server'
 import { assert, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
-import { getProject, getProjectAssignments } from '../utils'
+import { getProject, getProjectEventBus } from '../utils'
 
-export function projectAssignments(this: ModuleProject) {
+export function projectGetEvents(this: ModuleProject) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/projects/:project/assignments',
+      name: 'GET /api/workspaces/:workspace/projects/:project/events',
       parseParameters: createParser({
-        project: assert.stringNotEmpty,
         workspace: assert.stringNotEmpty,
+        project: assert.stringNotEmpty,
       }),
     },
-    async({ event, parameters }): Promise<ProjectUserPermissions[]> => {
+    async({ event, parameters }) => {
       const moduleUser = this.getModule(ModuleUser)
       const moduleWorkspace = this.getModule(ModuleWorkspace)
       const { user } = await moduleUser.authenticate(event, { optional: true })
-
-      // --- Get the workspace and project.
       const workspace = await moduleWorkspace.getWorkspace({ name: parameters.workspace, user, permission: 'Read' })
-      const project = await getProject.call(this, { name: parameters.project, user, workspace, permission: 'Read' })
-      return await getProjectAssignments.call(this, { project })
+      const project = await getProject.call(this, { name: parameters.project, workspace, user, permission: 'Read' })
+      const eventBus = getProjectEventBus.call(this, { workspace, project, createIfNotExists: true })!
+      return eventBus.subscribe(event)
     },
   )
 }
