@@ -6,7 +6,7 @@ import FormList from '~/components/mcpServerVariable/McpServerVariablesFormList.
 
 definePageMeta({
   name: 'WorkspaceMcpServerVariables',
-  path: '/:workspace/pools/:pool/servers/:server/variables',
+  path: '/:workspace/integrations/:pool/servers/:server/variables',
   middleware: ['redirect-when-guest', 'abort-reserved'],
   layout: 'workspace-mcp',
   icon: 'i-carbon:password',

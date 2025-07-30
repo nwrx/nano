@@ -3,17 +3,17 @@ import Pattern from '~/components/base/Pattern.vue'
 
 definePageMeta({
   name: 'WorkspaceMcp',
-  path: '/:workspace/pools',
+  path: '/:workspace/integrations',
   middleware: ['redirect-when-guest', 'abort-reserved'],
   layout: 'workspace-mcp',
   icon: 'i-carbon:connect',
   groups: ['nav-items-workspace'],
   title: {
-    en: 'Integration Hub',
-    fr: 'Hub d\'Intégration',
-    de: 'Integrations-Hub',
-    es: 'Centro de Integración',
-    zh: '集成中心',
+    en: 'Integrations',
+    fr: 'Intégrations',
+    de: 'Integrationen',
+    es: 'Integraciones',
+    zh: '集成',
   },
   description: {
     en: 'Connect and manage your MCP servers and third-party integrations.',

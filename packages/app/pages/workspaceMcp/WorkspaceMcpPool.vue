@@ -6,7 +6,7 @@ import FormSpecs from '~/components/mcpPool/McpPoolFormSpecs.vue'
 
 definePageMeta({
   name: 'WorkspaceMcpPool',
-  path: '/:workspace/pools/:pool',
+  path: '/:workspace/integrations/:pool',
   middleware: ['redirect-when-guest', 'abort-reserved'],
   layout: 'workspace-mcp',
   icon: 'i-carbon:box',

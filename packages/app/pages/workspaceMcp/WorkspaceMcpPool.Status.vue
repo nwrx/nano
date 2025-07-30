@@ -4,7 +4,7 @@ import FormStatus from '~/components/mcpPool/McpPoolFormStatus.vue'
 
 definePageMeta({
   name: 'WorkspaceMcpPoolStatus',
-  path: '/:workspace/pools/:pool/status',
+  path: '/:workspace/integrations/:pool/status',
   middleware: ['redirect-when-guest', 'abort-reserved'],
   layout: 'workspace-mcp',
   icon: 'i-carbon:box',

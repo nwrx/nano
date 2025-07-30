@@ -8,7 +8,7 @@ import FormTransport from '~/components/mcpServer/McpServerFormTransport.vue'
 
 definePageMeta({
   name: 'WorkspaceMcpServer',
-  path: '/:workspace/pools/:pool/servers/:server',
+  path: '/:workspace/integrations/:pool/servers/:server',
   middleware: ['redirect-when-guest', 'abort-reserved'],
   layout: 'workspace-mcp',
   icon: 'i-carbon:box',

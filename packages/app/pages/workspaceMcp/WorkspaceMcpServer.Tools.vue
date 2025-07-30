@@ -5,7 +5,7 @@ import FormTools from '~/components/mcpServer/McpServerFormTools.vue'
 
 definePageMeta({
   name: 'WorkspaceMcpServerTools',
-  path: '/:workspace/pools/:pool/servers/:server/tools',
+  path: '/:workspace/integrations/:pool/servers/:server/tools',
   middleware: ['redirect-when-guest', 'abort-reserved'],
   layout: 'workspace-mcp',
   icon: 'i-carbon:tools',

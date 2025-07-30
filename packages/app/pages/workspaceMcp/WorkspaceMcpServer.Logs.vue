@@ -6,7 +6,7 @@ import FormMessages from '~/components/mcpServer/McpServerFormMessages.vue'
 
 definePageMeta({
   name: 'WorkspaceMcpServerLogs',
-  path: '/:workspace/pools/:pool/servers/:server/logs',
+  path: '/:workspace/integrations/:pool/servers/:server/logs',
   middleware: ['redirect-when-guest', 'abort-reserved'],
   layout: 'workspace-mcp',
   icon: 'i-carbon:message-queue',

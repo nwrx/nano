@@ -6,7 +6,7 @@ import FormList from '~/components/mcpServerArgument/McpServerArgumentsFormList.
 
 definePageMeta({
   name: 'WorkspaceMcpServerArguments',
-  path: '/:workspace/pools/:pool/servers/:server/arguments',
+  path: '/:workspace/integrations/:pool/servers/:server/arguments',
   middleware: ['redirect-when-guest', 'abort-reserved'],
   layout: 'workspace-mcp',
   icon: 'i-carbon:terminal',
