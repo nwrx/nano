@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import UserAvatar from './UserAvatar.vue'
 
-defineProps<{
+const props = defineProps<{
+  inline?: boolean
   createdAt?: string
   createdBy?: { username: string }
   updatedAt?: string
@@ -11,8 +12,25 @@ defineProps<{
 }>()
 
 const { t } = useI18n()
-const classAvatar = 'size-6 rd-full'
-const classText = 'text-xs font-normal text-subtle line-clamp-1 text-end'
+const classAvatar = computed(() => ({
+  'size-6 rd-full': props.inline,
+  'size-8 rd-full': !props.inline,
+}))
+
+const classText = computed(() => ({
+  'text-xs font-normal text-subtle line-clamp-1 text-end': !props.inline,
+  'hidden': props.inline,
+}))
+
+const classDate = computed(() => ({
+  'text-xs font-normal text-app line-clamp-1': !props.inline,
+  'text-sm font-normal text-app': props.inline,
+}))
+
+const classTextContainer = computed(() => ({
+  'flex flex-col items-start': !props.inline,
+  'flex items-center space-x-1': props.inline,
+}))
 </script>
 
 <template>
@@ -20,9 +38,9 @@ const classText = 'text-xs font-normal text-subtle line-clamp-1 text-end'
 
     <!-- Disabled By -->
     <template v-if="disabledAt && disabledBy">
-      <div>
+      <div :class="classTextContainer">
         <span :class="classText">{{ t('disabledAt') }}</span>
-        <span :class="classText"> {{ formatDateFromNow(disabledAt) }}</span>
+        <span :class="classDate"> {{ formatDateFromNow(disabledAt) }}</span>
       </div>
       <UserAvatar
         v-if="disabledBy"
@@ -33,9 +51,9 @@ const classText = 'text-xs font-normal text-subtle line-clamp-1 text-end'
 
     <!-- Updated By -->
     <template v-else-if="updatedAt && updatedBy">
-      <div>
+      <div :class="classTextContainer">
         <span :class="classText">{{ t('updatedAt') }}</span>
-        <span :class="classText"> {{ formatDateFromNow(updatedAt) }}</span>
+        <span :class="classDate"> {{ formatDateFromNow(updatedAt) }}</span>
       </div>
       <UserAvatar
         v-if="updatedBy"
@@ -46,9 +64,9 @@ const classText = 'text-xs font-normal text-subtle line-clamp-1 text-end'
 
     <!-- Created By -->
     <template v-else-if="createdAt && createdBy">
-      <div>
+      <div :class="classTextContainer">
         <span :class="classText">{{ t('createdAt') }}</span>
-        <span :class="classText"> {{ formatDateFromNow(createdAt) }}</span>
+        <span :class="classDate"> {{ formatDateFromNow(createdAt) }}</span>
       </div>
       <UserAvatar
         v-if="createdBy"

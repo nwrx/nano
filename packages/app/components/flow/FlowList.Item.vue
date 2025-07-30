@@ -3,7 +3,9 @@
 import type { FlowObject } from '@nwrx/nano-api'
 import { BaseButton } from '@unshared/vue/BaseButton'
 import { BaseIcon } from '@unshared/vue/BaseIcon'
+import UserAudit from '~/components/user/UserAudit.vue'
 import { useFlow } from '~/composables/useFlow'
+import Hyperlink from '../base/Hyperlink.vue'
 import FlowActions from './FlowActions.vue'
 
 const props = defineProps<{
@@ -20,15 +22,12 @@ const { links } = useFlow({
 </script>
 
 <template>
-  <BaseButton
-    as="div"
-    eager
-    :to="links.editor"
+  <div
     class="
       flex items-center justify-between h-9 px-md space-x-md
-      bg-subtle hover:bg-emphasized last:rd-b
-       b b-app hover:b-active cursor-pointer group
-       not-last:b-b-transparent hover:not-last:b-b-active
+      bg-subtle hover:bg-emphasized last:rd-b first:rd-t
+       b b-app hover:b-emphasized transition group
+       not-last:b-b-transparent hover:not-last:b-b-emphasized
     ">
 
     <!-- Status Dot -->
@@ -47,14 +46,14 @@ const { links } = useFlow({
 
     <!-- Left - Name & Description -->
     <div class="flex gap-md w-full">
-
-      <!-- Title or Name -->
-      <h3 class="text-sm text-left font-mono line-clamp-1">
-        {{ flow.title || flow.name }}
-      </h3>
+      <Hyperlink
+        :to="links.editor"
+        :label="flow.title || flow.name"
+        class="text-sm text-left font-semibold text-app line-clamp-1 shrink-0"
+      />
 
       <!-- Description -->
-      <p class="text-sm text-subtle text-left line-clamp-1">
+      <p class="text-sm text-subtle text-left line-clamp-1 shrink">
         {{ flow.description }}
       </p>
 
@@ -77,6 +76,16 @@ const { links } = useFlow({
         </div>
       -->
 
+      <!-- User -->
+      <UserAudit
+        class="shrink-0 op-0 group-hover:op-100 transition"
+        :created-by="flow.createdBy"
+        :created-at="flow.createdAt"
+        :updated-by="flow.updatedBy"
+        :updated-at="flow.updatedAt"
+        inline
+      />
+
       <!-- CTA -->
       <FlowActions
         compact
@@ -86,7 +95,7 @@ const { links } = useFlow({
         :name="flow.name"
       />
     </div>
-  </BaseButton>
+  </div>
 </template>
 
 <i18n lang="yaml">

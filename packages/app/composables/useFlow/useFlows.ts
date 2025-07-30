@@ -18,7 +18,7 @@ export const useFlows = createCachedComposable(
 
     return toReactive({
       data,
-      subscribers,
+      options,
 
       searchFlows: async() => {
         if (lock.isPending) return lock.promise

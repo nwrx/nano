@@ -10,6 +10,8 @@ const props = defineProps <{
 
 const { t } = useI18n()
 const flows = useFlows(props)
+flows.options.withCreatedBy = true
+flows.options.withUpdatedBy = true
 const flowsSorted = computed(() => flows.data.toSorted((a, b) => a.name.localeCompare(b.name)))
 
 onMounted(() => {
