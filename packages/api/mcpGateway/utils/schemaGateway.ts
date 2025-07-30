@@ -3287,7 +3287,7 @@ export const MCP_GATEWAY_SCHEMA = {
               type: {
                 type: 'string',
                 enum: [
-                  'ref/resource',
+                  'reference/resource',
                 ],
               },
               uri: {
@@ -3308,7 +3308,7 @@ export const MCP_GATEWAY_SCHEMA = {
               type: {
                 type: 'string',
                 enum: [
-                  'ref/prompt',
+                  'reference/prompt',
                 ],
               },
             },
