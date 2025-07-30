@@ -102,4 +102,34 @@ fr:
   sortByUpdatedAt: Mis à jour le
   sortAsc: Ascendant
   sortDesc: Descendant
+de:
+  searchProjects: Projekte finden...
+  createNewProject: Neues Projekt erstellen
+  sortBy: Sortieren nach
+  sortByName: Name
+  sortByTitle: Titel
+  sortByCreatedAt: Erstellt am
+  sortByUpdatedAt: Aktualisiert am
+  sortAsc: Aufsteigend
+  sortDesc: Absteigend
+es:
+  searchProjects: Encontrar un proyecto...
+  createNewProject: Crear un nuevo proyecto
+  sortBy: Ordenar por
+  sortByName: Nombre
+  sortByTitle: Título
+  sortByCreatedAt: Creado el
+  sortByUpdatedAt: Actualizado el
+  sortAsc: Ascendente
+  sortDesc: Descendente
+zh:
+  searchProjects: 查找项目...
+  createNewProject: 创建新项目
+  sortBy: 排序方式
+  sortByName: 名称
+  sortByTitle: 标题
+  sortByCreatedAt: 创建时间
+  sortByUpdatedAt: 更新时间
+  sortAsc: 升序
+  sortDesc: 降序
 </i18n>
