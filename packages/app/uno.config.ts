@@ -15,7 +15,7 @@ type Theme =
   & THEME.ThemeTab
   & ThemeUno
 
-const BORDER_RADIUS = '0.5rem'
+const BORDER_RADIUS = '0.25rem'
 
 export default defineConfig<Theme>({
 
@@ -160,7 +160,6 @@ export default defineConfig<Theme>({
 
     borderRadius: {
       DEFAULT: BORDER_RADIUS,
-      card: '1rem',
       app: '1rem',
     },
 
