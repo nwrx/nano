@@ -85,10 +85,10 @@ export default defineConfig<Theme>({
       'layout-prominent': COLORS.primary[750],
 
       // Editor
-      'editor': COLORS.primary[50],
+      'editor': COLORS.primary[100],
       'editor-select': `${COLORS.primary[500]}20`,
       'editor-active': COLORS.primary[500],
-      'editor-node': `${COLORS.primary[100]}80`,
+      'editor-node': `${COLORS.primary[50]}80`,
       'editor-panel': `${COLORS.primary[70]}80`,
       'editor-panel-data': `${COLORS.primary[900]}10`,
 
@@ -131,7 +131,7 @@ export default defineConfig<Theme>({
       'success': COLORS.success[800],
 
       // App
-      'app': `${COLORS.primary[900]}20`,
+      'app': `${COLORS.primary[900]}40`,
       'subtle': `${COLORS.primary[500]}20`,
       'emphasized': `${COLORS.primary[500]}40`,
       'prominent': COLORS.primary[500],
@@ -546,7 +546,7 @@ export default defineConfig<Theme>({
             'layout-prominent': COLORS.primary[850],
 
             // Editor
-            'editor': COLORS.primary[930],
+            'editor': COLORS.primary[920],
             'editor-select': `${COLORS.primary[500]}40`,
             'editor-active': COLORS.primary[700],
             'editor-node': `${COLORS.primary[850]}80`,
