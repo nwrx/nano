@@ -55,6 +55,7 @@ const showDelete = ref(false)
 
   <!-- Delete Dialog -->
   <AdminSettingsUsersDialogDelete
+    v-if="showDelete"
     v-model="showDelete"
     :user="user"
     @submit="() => emit('submit')"
@@ -62,6 +63,7 @@ const showDelete = ref(false)
 
   <!-- Disable Dialog -->
   <AdminSettingsUsersDialogDisable
+    v-if="showDisable"
     v-model="showDisable"
     :user="user"
     @submit="() => emit('submit')"
@@ -69,6 +71,7 @@ const showDelete = ref(false)
 
   <!-- Enable Dialog -->
   <AdminSettingsUsersDialogEnable
+    v-if="showEnable"
     v-model="showEnable"
     :user="user"
     @submit="() => emit('submit')"
@@ -76,6 +79,7 @@ const showDelete = ref(false)
 
   <!-- Verify Dialog -->
   <AdminSettingsUsersDialogVerify
+    v-if="showVerify"
     v-model="showVerify"
     :user="user"
     @submit="() => emit('submit')"

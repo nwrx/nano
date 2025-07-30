@@ -2,19 +2,17 @@
 import ContextMenuDivider from '~/components/base/ContextMenu.Divider.vue'
 import ContextMenuItem from '~/components/base/ContextMenu.Item.vue'
 import ContextMenu from '~/components/base/ContextMenu.vue'
-import { useMcpPool } from '~/composables/useMcp'
 import DialogDelete from './McpPoolDialogDelete.vue'
 import DialogDisable from './McpPoolDialogDisable.vue'
 import DialogEnable from './McpPoolDialogEnable.vue'
 import DialogRename from './McpPoolDialogRename.vue'
 
-const props = defineProps<{
+defineProps<{
   workspace: string
   name: string
 }>()
 
 const { t } = useI18n()
-const pool = useMcpPool(props)
 const showRename = ref(false)
 const showEnable = ref(false)
 const showDisable = ref(false)
@@ -54,6 +52,7 @@ const isDisabled = computed(() => false)
 
     <!-- Rename Dialog -->
     <DialogRename
+      v-if="showRename"
       v-model="showRename"
       :workspace="workspace"
       :name="name"
@@ -61,6 +60,7 @@ const isDisabled = computed(() => false)
 
     <!-- Enable Dialog -->
     <DialogEnable
+      v-if="showEnable"
       v-model="showEnable"
       :workspace="workspace"
       :name="name"
@@ -68,6 +68,7 @@ const isDisabled = computed(() => false)
 
     <!-- Disable Dialog -->
     <DialogDisable
+      v-if="showDisable"
       v-model="showDisable"
       :workspace="workspace"
       :name="name"
@@ -75,6 +76,7 @@ const isDisabled = computed(() => false)
 
     <!-- Delete Dialog -->
     <DialogDelete
+      v-if="showDelete"
       v-model="showDelete"
       :workspace="workspace"
       :name="name"

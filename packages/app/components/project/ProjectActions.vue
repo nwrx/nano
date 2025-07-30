@@ -52,6 +52,7 @@ const showDeleteDialog = ref(false)
 
     <!-- Rename Dialog -->
     <ProjectDialogRename
+      v-if="showRenameDialog"
       v-model="showRenameDialog"
       :workspace="workspace"
       :project="project"
@@ -59,6 +60,7 @@ const showDeleteDialog = ref(false)
 
     <!-- Transfer Dialog -->
     <ProjectDialogTransfer
+      v-if="showTransferDialog"
       v-model="showTransferDialog"
       :workspace="workspace"
       :project="project"
@@ -66,6 +68,7 @@ const showDeleteDialog = ref(false)
 
     <!-- Delete Dialog -->
     <ProjectDialogDelete
+      v-if="showDeleteDialog"
       v-model="showDeleteDialog"
       :workspace="workspace"
       :project="project"

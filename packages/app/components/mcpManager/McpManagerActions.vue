@@ -48,6 +48,7 @@ const isDisabled = computed(() => Boolean(props.manager.disabledAt))
 
     <!-- Set Address Dialog -->
     <DialogSetAddress
+      v-if="showSetAddress"
       v-model="showSetAddress"
       :manager="manager"
       @submit="() => emit('refresh')"
@@ -55,6 +56,7 @@ const isDisabled = computed(() => Boolean(props.manager.disabledAt))
 
     <!-- Enable/Disable Dialog -->
     <DialogToggle
+      v-if="showToggle"
       v-model="showToggle"
       :manager="manager"
       @submit="() => emit('refresh')"
@@ -62,6 +64,7 @@ const isDisabled = computed(() => Boolean(props.manager.disabledAt))
 
     <!-- Release Dialog -->
     <DialogRelease
+      v-if="showRelease"
       v-model="showRelease"
       :manager="manager"
       @submit="() => emit('release')"

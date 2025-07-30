@@ -40,13 +40,14 @@ defineSlots<{
 
 const { t } = useI18n()
 const isOpen = defineModel({ default: false })
-
-// Quick fix to emit `open` event when dialog is opened
 watch(isOpen, value => value && emit('open'))
 </script>
 
 <template>
-  <Teleport :to="teleport ?? '#layout'" defer>
+  <Teleport
+    v-if="isOpen"
+    :to="teleport ?? '#layout'"
+    defer>
 
     <!-- Backdrop -->
     <div
@@ -66,9 +67,6 @@ watch(isOpen, value => value && emit('open'))
       v-slot="slot"
       v-model="isOpen"
       as="div"
-      :class="{
-        'pointer-events-none': !isOpen,
-      }"
       class="
         fixed inset-0 bg-transparent z-10 p-2xl
         inline-flex items-center justify-center backdrop:bg-transparent

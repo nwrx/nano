@@ -67,6 +67,7 @@ const isDisabled = computed(() => Boolean(props.server.disabledAt))
 
     <!-- Rename Dialog -->
     <DialogRename
+      v-if="showRenameDialog"
       v-model="showRenameDialog"
       :workspace="workspace"
       :pool="pool"
@@ -76,6 +77,7 @@ const isDisabled = computed(() => Boolean(props.server.disabledAt))
 
     <!-- Enable Dialog -->
     <DialogEnable
+      v-if="showEnableDialog"
       v-model="showEnableDialog"
       :workspace="workspace"
       :pool="pool"
@@ -85,6 +87,7 @@ const isDisabled = computed(() => Boolean(props.server.disabledAt))
 
     <!-- Disable Dialog -->
     <DialogDisable
+      v-if="showDisableDialog"
       v-model="showDisableDialog"
       :workspace="workspace"
       :pool="pool"
@@ -94,6 +97,7 @@ const isDisabled = computed(() => Boolean(props.server.disabledAt))
 
     <!-- Delete Dialog -->
     <DialogDelete
+      v-if="showDeleteDialog"
       v-model="showDeleteDialog"
       :workspace="workspace"
       :pool="pool"

@@ -42,6 +42,7 @@ const showRemoveDialog = ref(false)
 
     <!-- Edit Dialog -->
     <DialogEdit
+      v-if="showEditDialog"
       v-model="showEditDialog"
       :workspace="workspace"
       :pool="name"
@@ -51,6 +52,7 @@ const showRemoveDialog = ref(false)
 
     <!-- Link to Variable Dialog -->
     <DialogLink
+      v-if="showLinkDialog"
       v-model="showLinkDialog"
       :workspace="workspace"
       :pool="name"
@@ -60,6 +62,7 @@ const showRemoveDialog = ref(false)
 
     <!-- Remove Dialog -->
     <DialogRemove
+      v-if="showRemoveDialog"
       v-model="showRemoveDialog"
       :workspace="workspace"
       :pool="name"

@@ -75,6 +75,7 @@ const isDisabled = computed(() => server.data.disabledAt !== null)
 
     <!-- Rename server dialog -->
     <DialogRename
+      v-if="showRenameDialog"
       v-model="showRenameDialog"
       :workspace="workspace"
       :pool="pool"
@@ -83,6 +84,7 @@ const isDisabled = computed(() => server.data.disabledAt !== null)
 
     <!-- Enable dialog -->
     <DialogEnable
+      v-if="showEnableDialog"
       v-model="showEnableDialog"
       :workspace="workspace"
       :pool="pool"
@@ -91,6 +93,7 @@ const isDisabled = computed(() => server.data.disabledAt !== null)
 
     <!-- Disable dialog -->
     <DialogDisable
+      v-if="showDisableDialog"
       v-model="showDisableDialog"
       :workspace="workspace"
       :pool="pool"
@@ -99,6 +102,7 @@ const isDisabled = computed(() => server.data.disabledAt !== null)
 
     <!-- Delete dialog -->
     <DialogDelete
+      v-if="showDeleteDialog"
       v-model="showDeleteDialog"
       :workspace="workspace"
       :pool="pool"

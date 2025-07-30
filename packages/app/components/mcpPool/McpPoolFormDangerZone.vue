@@ -69,6 +69,7 @@ const isDisabled = computed(() => false)
 
     <!-- Rename Dialog -->
     <DialogRename
+      v-if="showRenameDialog"
       v-model="showRenameDialog"
       :workspace="workspace"
       :name="name"
@@ -76,6 +77,7 @@ const isDisabled = computed(() => false)
 
     <!-- Enable Dialog -->
     <DialogEnable
+      v-if="showEnableDialog"
       v-model="showEnableDialog"
       :workspace="workspace"
       :name="name"
@@ -83,6 +85,7 @@ const isDisabled = computed(() => false)
 
     <!-- Disable Dialog -->
     <DialogDisable
+      v-if="showDisableDialog"
       v-model="showDisableDialog"
       :workspace="workspace"
       :name="name"
@@ -90,6 +93,7 @@ const isDisabled = computed(() => false)
 
     <!-- Delete Dialog -->
     <DialogDelete
+      v-if="showDeleteDialog"
       v-model="showDeleteDialog"
       :workspace="workspace"
       :name="name"
