@@ -1,24 +1,36 @@
 <script setup lang="ts">
-const model = defineModel({ default: false })
+import type { VNode } from 'vue'
 
+defineProps<{
+  keepAlive?: boolean
+}>()
+
+const model = defineModel({ default: false })
 const isCollapsed = ref(false)
 const isCollapsing = ref(false)
-
 const duration = ref(150)
 let timeout: NodeJS.Timeout
+
+const slots = defineSlots<{
+  default: () => VNode
+}>()
 
 watch(model, () => {
   clearTimeout(timeout)
   if (model.value) isCollapsed.value = false
   else timeout = setTimeout(() => isCollapsed.value = true, duration.value)
-
   isCollapsing.value = true
   setTimeout(() => isCollapsing.value = false, duration.value)
-}, { immediate: true })
+})
+
+const isOpen = computed(() => model.value || isCollapsing.value)
+const view = computed(() => (isOpen.value ? slots.default : 'div'))
+const key = computed(() => (isOpen.value ? 'open' : 'closed'))
 </script>
 
 <template>
   <BaseCollapse
+    as="div"
     :is-open="model"
     :duration="duration"
     vertical
@@ -28,8 +40,8 @@ watch(model, () => {
       'overflow-hidden': isCollapsing,
       'op-50 pointer-events-none': model !== true,
     }">
-    <div v-if="model || isCollapsing">
-      <slot />
-    </div>
+    <KeepAlive :max="10">
+      <component :is="view" :key="key" />
+    </KeepAlive>
   </BaseCollapse>
 </template>
