@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppPageHeader from '~/components/app/AppPage.Header.vue'
+import AppPageHeaderTab from '~/components/app/AppPage.HeaderTab.vue'
 import ContextMenuItem from '~/components/base/ContextMenu.Item.vue'
 import ContextMenu from '~/components/base/ContextMenu.vue'
 import { useRouteGroup } from '~/composables/useRouteGroup'
@@ -17,18 +18,16 @@ const workspaceRoutes = useRouteGroup('nav-items-workspace')
     :description="localize(route.meta.description)">
 
     <!-- Tabs -->
-    <!--
-      <template #default>
+    <template #default>
       <AppPageHeaderTab
-      v-for="x in workspaceRoutes"
-      :key="x.name"
-      :icon="x.meta.icon"
-      :label="localize(x.meta.title)"
-      :to="{ name: x.name, params: { workspace } }"
-      :disabled="x.meta.isWorkInProgress"
+        v-for="x in workspaceRoutes"
+        :key="x.name"
+        :icon="x.meta.icon"
+        :label="localize(x.meta.title)"
+        :to="{ name: x.name, params: { workspace } }"
+        :disabled="x.meta.isWorkInProgress"
       />
-      </template>
-    -->
+    </template>
 
     <!-- Menu -->
     <template #menu>
