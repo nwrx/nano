@@ -20,6 +20,10 @@ onMounted(() => {
   void projects.searchProjects()
   void projects.subscribeToEvents()
 })
+
+onBeforeUnmount(() => {
+  void projects.unsubscribeFromEvents()
+})
 </script>
 
 <template>

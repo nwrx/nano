@@ -15,6 +15,10 @@ onMounted(() => {
   void project.fetchProject()
   void project.subscribeToEvents()
 })
+
+onBeforeUnmount(() => {
+  void project.unsubscribeFromEvents()
+})
 </script>
 
 <template>
