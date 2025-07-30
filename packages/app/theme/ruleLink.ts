@@ -22,7 +22,6 @@ export const ruleLink: DynamicRule<ThemeHyperlink> = [
         'display': 'inline-flex',
         'align-items': 'center',
         'justify-content': 'center',
-        'text-decoration': 'underline',
         'cursor': 'pointer',
         ...toCSSObject(variant),
       })

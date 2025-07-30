@@ -11,10 +11,16 @@ const props = defineProps<BaseButtonProps & {
   iconExpand?: boolean
   iconFlip?: boolean
 }>()
+
+const isHovered = ref(false)
 </script>
 
 <template>
-  <BaseButton v-bind="props" class="hyperlink space-x-xs text-start relative group">
+  <BaseButton
+    v-bind="props"
+    class="hyperlink space-x-xs text-start relative hover:hyperlink-hover"
+    @mouseover="() => isHovered = true"
+    @mouseleave="() => isHovered = false">
 
     <!-- Prepend -->
     <BaseIcon
@@ -38,8 +44,10 @@ const props = defineProps<BaseButtonProps & {
       :load="iconLoad"
       class="transform transition-transform"
       :class="{
-        'translate-x-0 group-hover:translate-x-1': iconExpand,
-        'rotate-0 group-hover:rotate-180': iconFlip,
+        'translate-x-0': iconExpand && !isHovered,
+        'translate-x-1': isHovered && !iconExpand,
+        'rotate-180': isHovered && iconFlip,
+        'rotate-0': iconFlip && !isHovered,
       }"
     />
 
@@ -47,9 +55,12 @@ const props = defineProps<BaseButtonProps & {
     <span
       class="
         absolute h-px w-full bg-current bottom-0 left-0
-        transform scale-x-0 group-hover:scale-x-100
-        transition-transform duration-fast !m-0
+        transform transition-transform duration-fast !m-0
       "
+      :class="{
+        'scale-x-100': isHovered,
+        'scale-x-0': !isHovered,
+      }"
     />
   </BaseButton>
 </template>

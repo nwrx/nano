@@ -437,7 +437,7 @@ export default defineConfig<Theme>({
         cursor: 'pointer',
       },
       hover: {
-        textDecoration: 'underline',
+        textDecoration: 'none',
         opacity: '1',
       },
     },
