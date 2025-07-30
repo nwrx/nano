@@ -15,7 +15,7 @@ type Theme =
   & THEME.ThemeTab
   & ThemeUno
 
-const BORDER_RADIUS = '0.25rem'
+const BORDER_RADIUS = '0.5rem'
 
 export default defineConfig<Theme>({
 
@@ -377,6 +377,7 @@ export default defineConfig<Theme>({
     buttonVariant: {
       DEFAULT: {
         fontSize: '0.875rem',
+        fontWeight: '500',
         borderRadius: BORDER_RADIUS,
         borderWidth: '1px',
         paddingLeft: '0.75rem',
