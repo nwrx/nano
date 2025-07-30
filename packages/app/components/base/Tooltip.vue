@@ -11,12 +11,12 @@ const props = defineProps<{
 
 const isVisible = defineModel({ default: false })
 const classes = computed(() => {
-  const { position = 'top' } = props
+  const { position = 'bottom' } = props
   return {
     'left-0': position === 'left',
     'right-0': position === 'right',
-    'top-full left-0': position === 'top',
-    'bottom-0': position === 'bottom',
+    'bottom-full left-0': position === 'top',
+    'top-full left-0': position === 'bottom',
   }
 })
 </script>
@@ -34,11 +34,11 @@ const classes = computed(() => {
     <!-- Tooltip -->
     <div
       v-if="(isVisible || persistent) && !disabled"
-      class="absolute inline-block backdrop-blur-lg text-app min-w-md z-10 pt-md"
+      class="absolute min-w-md pt-md"
       :class="classes">
 
       <!-- Title -->
-      <div class="b b-app rd">
+      <div class="b b-app rd backdrop-blur-lg">
         <h3 v-if="title" class="text-base font-semibold p-md b-b b-app bg-subtle/60">
           {{ title }}
         </h3>
