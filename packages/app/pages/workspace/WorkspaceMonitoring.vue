@@ -20,13 +20,8 @@ definePageMeta({
     es: 'Monitoree actividades y trazas en sus proyectos.',
     zh: '监视您项目中的活动和跟踪。',
   },
+  isWorkInProgress: true,
 })
-
-const { t } = useI18n()
-useHead(() => ({
-  title: t('title'),
-  meta: [{ name: 'description', content: t('description') }],
-}))
 
 const route = useRoute()
 const workspace = computed(() => route.params.workspace as string)

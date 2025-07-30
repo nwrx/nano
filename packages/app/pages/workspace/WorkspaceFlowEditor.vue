@@ -1,23 +1,24 @@
 <script setup lang="ts">
 import AppPage from '~/components/app/AppPage.vue'
 import Editor from '~/components/editor/Editor.vue'
-import { useEditorModel } from '~/composables/useEditor/useEditorModel'
-import { useEditorThread } from '~/composables/useEditor/useEditorThread'
+import { useEditorModel, useEditorThread, useFlowEditorComponents } from '~/composables/useEditor'
 
 definePageMeta({
-  name: 'ProjectFlowEditor',
-  path: '/:workspace/:project/:name',
+  name: 'FlowEditor',
+  path: '/:workspace/:project/:name/editor',
   middleware: ['redirect-when-guest', 'abort-reserved'],
 })
 
 // --- Parse the route parameters.
 const route = useRoute()
-const editor = useEditorModel({
-  name: route.params.name as string,
-  project: route.params.project as string,
+const options = {
   workspace: route.params.workspace as string,
-})
+  project: route.params.project as string,
+  name: route.params.name as string,
+}
 
+const editor = useEditorModel(options)
+const components = useFlowEditorComponents(options)
 const thread = useEditorThread({
   flow: route.params.name as string,
   project: route.params.project as string,
@@ -25,24 +26,14 @@ const thread = useEditorThread({
   nodes: toRef(editor.state.value.nodes),
 })
 
-// --- Fetch the categories.
-const categories = useRegistryCategories({
-  type: 'Purpose',
-  withComponents: true,
-  withCollection: true,
-  withWorkspace: true,
-  withInputs: true,
-  withOutputs: true,
-})
-
 useHead(() => ({
   title: editor.state.value.flow.title,
   meta: [{ title: 'description', content: editor.state.value.flow.description }],
 }))
 
-onMounted(async() => {
-  await categories.searchCategories()
-  await editor.connect()
+onMounted(() => {
+  void editor.connect()
+  void components.fetchComponents()
 })
 
 onBeforeRouteLeave(() => {
@@ -58,7 +49,7 @@ onBeforeRouteLeave(() => {
         :flow="editor.state.value.flow"
         :nodes="editor.state.value.nodes"
         :participants="editor.state.value.participants"
-        :categories="categories.categories.value"
+        :components="components.data"
         :messages-client="editor.messagesClient.value"
         :messages-server="editor.messagesServer.value"
         :search-options="editor.searchOptions"

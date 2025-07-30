@@ -20,6 +20,7 @@ definePageMeta({
     es: 'Interactúa con tus flujos a través de una interfaz de chat.',
     zh: '通过聊天界面与您的流进行交互。',
   },
+  isWorkInProgress: true,
 })
 
 const { t } = useI18n()
@@ -31,13 +32,6 @@ const chat = useChat(workspaceName)
 const workspace = useWorkspace(workspaceName, {
   withFlows: true,
 })
-
-useHead(() => ({
-  title: t('title'),
-  meta: [
-    { title: 'description', content: t('description') },
-  ],
-}))
 
 onMounted(async() => {
   await workspace.refresh()
