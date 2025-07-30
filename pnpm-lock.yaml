@@ -151,6 +151,9 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: 1.17.0
         version: 1.17.0
+      '@nwrx/ai':
+        specifier: workspace:*
+        version: link:../ai
       '@nwrx/nano':
         specifier: workspace:*
         version: link:../core

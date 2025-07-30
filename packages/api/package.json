@@ -30,6 +30,7 @@
     "@azure/storage-blob": "12.26.0",
     "@iconify/types": "2.0.0",
     "@modelcontextprotocol/sdk": "1.17.0",
+    "@nwrx/ai": "workspace:*",
     "@nwrx/nano": "workspace:*",
     "@nwrx/nano-runner": "workspace:*",
     "@types/node": "22.13.10",
