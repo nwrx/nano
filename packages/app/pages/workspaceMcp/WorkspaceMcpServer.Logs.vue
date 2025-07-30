@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppPageContainer from '~/components/app/AppPage.Container.vue'
 import FormHeader from '~/components/mcpServer/McpServerFormHeader.vue'
 import FormLogs from '~/components/mcpServer/McpServerFormLogs.vue'
 import FormMessages from '~/components/mcpServer/McpServerFormMessages.vue'
@@ -40,17 +41,17 @@ const selectedServer = computed(() => route.params.server as string)
       :name="selectedServer"
       class="sticky top-0 z-1"
     />
-    <FormLogs
-      class="p-lg !m-0"
-      :workspace="workspace"
-      :pool="selectedPool"
-      :name="selectedServer"
-    />
-    <FormMessages
-      class="p-lg !m-0"
-      :workspace="workspace"
-      :pool="selectedPool"
-      :name="selectedServer"
-    />
+    <AppPageContainer contained>
+      <FormLogs
+        :workspace="workspace"
+        :pool="selectedPool"
+        :name="selectedServer"
+      />
+      <FormMessages
+        :workspace="workspace"
+        :pool="selectedPool"
+        :name="selectedServer"
+      />
+    </AppPageContainer>
   </div>
 </template>

@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import AppPageContainer from '~/components/app/AppPage.Container.vue'
+import FormContainer from '~/components/mcpServer/McpServerFormContainer.vue'
 import FormDangerZone from '~/components/mcpServer/McpServerFormDangerZone.vue'
 import FormHeader from '~/components/mcpServer/McpServerFormHeader.vue'
 import FormSettings from '~/components/mcpServer/McpServerFormSettings.vue'
+import FormTransport from '~/components/mcpServer/McpServerFormTransport.vue'
 
 definePageMeta({
   name: 'WorkspaceMcpServer',
@@ -40,17 +43,27 @@ const selectedServer = computed(() => route.params.server as string)
       :name="selectedServer"
       class="sticky top-0 z-1"
     />
-    <FormSettings
-      class="p-lg !m-0"
-      :workspace="workspace"
-      :pool="selectedPool"
-      :name="selectedServer"
-    />
-    <FormDangerZone
-      class="p-lg !m-0"
-      :workspace="workspace"
-      :pool="selectedPool"
-      :name="selectedServer"
-    />
+    <AppPageContainer contained>
+      <FormSettings
+        :workspace="workspace"
+        :pool="selectedPool"
+        :name="selectedServer"
+      />
+      <FormContainer
+        :workspace="workspace"
+        :pool="selectedPool"
+        :name="selectedServer"
+      />
+      <FormTransport
+        :workspace="workspace"
+        :pool="selectedPool"
+        :name="selectedServer"
+      />
+      <FormDangerZone
+        :workspace="workspace"
+        :pool="selectedPool"
+        :name="selectedServer"
+      />
+    </AppPageContainer>
   </div>
 </template>

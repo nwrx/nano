@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppPageContainer from '~/components/app/AppPage.Container.vue'
 import FormHeader from '~/components/mcpServer/McpServerFormHeader.vue'
 import FormCreate from '~/components/mcpServerVariable/McpServerVariablesFormCreate.vue'
 import FormList from '~/components/mcpServerVariable/McpServerVariablesFormList.vue'
@@ -40,21 +41,17 @@ const selectedServer = computed(() => route.params.server as string)
       :name="selectedServer"
       class="sticky top-0 z-1"
     />
-
-    <div class="p-6 space-y-6">
-      <!-- Variables Creation Form -->
+    <AppPageContainer contained>
       <FormCreate
         :workspace="workspace"
         :pool="selectedPool"
         :name="selectedServer"
       />
-
-      <!-- Variables List -->
       <FormList
         :workspace="workspace"
         :pool="selectedPool"
         :name="selectedServer"
       />
-    </div>
+    </AppPageContainer>
   </div>
 </template>
