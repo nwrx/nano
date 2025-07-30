@@ -90,7 +90,7 @@ watch(() => props, () => {
 en:
   title: Transport settings
   description: Configure how the server communicates with the MCP server. This depends on the container image implementation and its capabilities. If unsure about the transport type, refer to the container image documentation.
-  submitLabel: Save settings
+  submitLabel: Save
   transportPortLabel: Transport port
   transportPortPlaceholder: '8080'
   transportPortHint: Port number for HTTP-based transports
@@ -103,7 +103,7 @@ en:
 fr:
   title: Paramètres de transport
   description: Configurez la communication entre le serveur et le serveur MCP. Cela dépend de l'implémentation de l'image conteneur et de ses capacités. En cas de doute sur le type de transport, consultez la documentation de l'image conteneur.
-  submitLabel: Sauvegarder les paramètres
+  submitLabel: Sauvegarder
   transportPortLabel: Port de transport
   transportPortPlaceholder: '8080'
   transportPortHint: Numéro de port pour les transports HTTP
@@ -116,7 +116,7 @@ fr:
 de:
   title: Transport-Einstellungen
   description: Konfigurieren Sie die Kommunikation zwischen Server und MCP-Server. Dies hängt von der Container-Image-Implementierung und deren Funktionen ab. Bei Unsicherheit über den Transport-Typ konsultieren Sie die Container-Image-Dokumentation.
-  submitLabel: Transport-Einstellungen aktualisieren
+  submitLabel: Speichern
   transportPortLabel: Transport-Port
   transportPortPlaceholder: '8080'
   transportPortHint: Port-Nummer für HTTP-basierte Transporte
@@ -129,7 +129,7 @@ de:
 es:
   title: Configuración de transporte
   description: Configure la comunicación entre el servidor y el servidor MCP. Esto depende de la implementación de la imagen del contenedor y sus capacidades. Si no está seguro del tipo de transporte, consulte la documentación de la imagen del contenedor.
-  submitLabel: Actualizar configuración de transporte
+  submitLabel: Guardar
   transportPortLabel: Puerto de transporte
   transportPortPlaceholder: '8080'
   transportPortHint: Número de puerto para transportes HTTP
@@ -142,7 +142,7 @@ es:
 zh:
   title: 传输设置
   description: 配置服务器与 MCP 服务器的通信方式。这取决于容器镜像的实现及其功能。如果不确定传输类型，请参考容器镜像文档。
-  submitLabel: 更新传输设置
+  submitLabel: 保存
   transportPortLabel: 传输端口
   transportPortPlaceholder: '8080'
   transportPortHint: HTTP 传输的端口号

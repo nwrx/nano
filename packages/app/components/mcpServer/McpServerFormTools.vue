@@ -24,7 +24,6 @@ const tools = computed(() => {
 
 <template>
   <AppPageForm
-    vertical
     :title="t('title')"
     :text="t('text')">
 

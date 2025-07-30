@@ -53,22 +53,25 @@ watch(
       required
     />
 
-    <!-- Command -->
-    <InputText
-      v-model="command"
-      :label="t('commandLabel')"
-      :placeholder="t('commandPlaceholder')"
-      :hint="t('commandHint')"
-    />
+    <!-- Command and Idle Timeout -->
+    <div class="flex flex-col md:flex-row gap-md w-full">
+      <!-- Command -->
+      <InputText
+        v-model="command"
+        :label="t('commandLabel')"
+        :placeholder="t('commandPlaceholder')"
+        :hint="t('commandHint')"
+      />
 
-    <!-- Idle Timeout -->
-    <InputText
-      v-model="idleTimeout"
-      :label="t('idleTimeoutLabel')"
-      :placeholder="t('idleTimeoutPlaceholder')"
-      :hint="t('idleTimeoutHint')"
-      required
-    />
+      <!-- Idle Timeout -->
+      <InputText
+        v-model="idleTimeout"
+        :label="t('idleTimeoutLabel')"
+        :placeholder="t('idleTimeoutPlaceholder')"
+        :hint="t('idleTimeoutHint')"
+        required
+      />
+    </div>
   </AppPageForm>
 </template>
 
@@ -82,7 +85,10 @@ en:
   commandLabel: Command
   commandPlaceholder: /usr/local/bin/mcp-server
   commandHint: Command to run inside the container (optional)
-  submitLabel: Save Configuration
+  idleTimeoutLabel: Idle Timeout
+  idleTimeoutPlaceholder: '60'
+  idleTimeoutHint: Time in seconds before the container is stopped when idle
+  submitLabel: Apply
 fr:
   title: Configuration du conteneur
   description: Configurez les paramètres du conteneur Docker, notamment l'image, la commande et les arguments pour exécuter le serveur MCP.
@@ -92,7 +98,10 @@ fr:
   commandLabel: Commande
   commandPlaceholder: /usr/local/bin/mcp-server
   commandHint: Commande à exécuter dans le conteneur (optionnel)
-  submitLabel: Enregistrer la configuration
+  idleTimeoutLabel: Délai d'inactivité
+  idleTimeoutPlaceholder: '60'
+  idleTimeoutHint: Temps en secondes avant l'arrêt du conteneur lors d'inactivité
+  submitLabel: Appliquer
 de:
   title: Container-Konfiguration
   description: Konfigurieren Sie die Docker-Container-Einstellungen einschließlich Image, Befehl und Argumente für die Ausführung des MCP-Servers.
@@ -102,7 +111,10 @@ de:
   commandLabel: Befehl
   commandPlaceholder: /usr/local/bin/mcp-server
   commandHint: Befehl, der im Container ausgeführt werden soll (optional)
-  submitLabel: Konfiguration speichern
+  idleTimeoutLabel: Leerlauf-Timeout
+  idleTimeoutPlaceholder: '60'
+  idleTimeoutHint: Zeit in Sekunden bevor der Container bei Inaktivität gestoppt wird
+  submitLabel: Anwenden
 es:
   title: Configuración del contenedor
   description: Configure los ajustes del contenedor Docker incluyendo la imagen, comando y argumentos para ejecutar el servidor MCP.
@@ -112,7 +124,10 @@ es:
   commandLabel: Comando
   commandPlaceholder: /usr/local/bin/mcp-server
   commandHint: Comando a ejecutar dentro del contenedor (opcional)
-  submitLabel: Guardar configuración
+  idleTimeoutLabel: Tiempo de inactividad
+  idleTimeoutPlaceholder: '60'
+  idleTimeoutHint: Tiempo en segundos antes de que el contenedor se detenga cuando esté inactivo
+  submitLabel: Aplicar
 zh:
   title: 容器配置
   description: 配置 Docker 容器设置，包括运行 MCP 服务器的镜像、命令和参数。
@@ -122,5 +137,8 @@ zh:
   commandLabel: 命令
   commandPlaceholder: /usr/local/bin/mcp-server
   commandHint: 在容器内运行的命令（可选）
-  submitLabel: 保存配置
+  idleTimeoutLabel: 空闲超时
+  idleTimeoutPlaceholder: '60'
+  idleTimeoutHint: 容器空闲时停止前的时间（秒）
+  submitLabel: 应用
 </i18n>

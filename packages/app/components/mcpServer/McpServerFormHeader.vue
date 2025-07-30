@@ -38,10 +38,15 @@ const conditions = computed(() => {
     <!-- Left -->
     <div class="flex flex-col items-start">
 
-      <!-- Title -->
-      <h2 class="text-lg font-semibold">
-        {{ server.data.title || server.data.name }}
-      </h2>
+      <!-- Raw name and Title -->
+      <div class="flex items-center space-x-md">
+        <h2 class="text-lg font-semibold">
+          {{ server.data.title || server.data.name }}
+        </h2>
+        <p class="text-lg font-mono text-subtle">
+          {{ pool }}/{{ server.data.name }}
+        </p>
+      </div>
 
       <!-- Description -->
       <p class="text-sm text-subtle">

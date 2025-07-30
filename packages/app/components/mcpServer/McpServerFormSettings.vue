@@ -65,7 +65,7 @@ watch(
 en:
   title: Server Settings
   description: Update the settings for the server in the pool
-  submitLabel: Update Server Settings
+  submitLabel: Save
   nameHint: Unique identifier for the server within the pool
   namePlaceholder: weather-service-server
   titleHint: Display name for the server
@@ -73,7 +73,7 @@ en:
   descriptionHint: Brief description of the server's functionality
   descriptionPlaceholder: A service that provides weather information and forecasts
 fr:
-  submitLabel: Mettre à jour les paramètres du serveur
+  submitLabel: Save
   nameHint: Identifiant unique du serveur dans le pool
   namePlaceholder: serveur-service-meteo
   titleHint: Nom d'affichage du serveur
@@ -81,7 +81,7 @@ fr:
   descriptionHint: Brève description de la fonctionnalité du serveur
   descriptionPlaceholder: Un service qui fournit des informations et prévisions météorologiques
 de:
-  submitLabel: Server-Einstellungen aktualisieren
+  submitLabel: Save
   nameHint: Eindeutige Kennung des Servers im Pool
   namePlaceholder: wetterdienst-server
   titleHint: Anzeigename des Servers
@@ -90,7 +90,7 @@ de:
   descriptionPlaceholder: Ein Dienst, der Wetterinformationen und -vorhersagen bereitstellt
   successUpate: Server-Einstellungen erfolgreich aktualisiert
 es:
-  submitLabel: Actualizar configuración del servidor
+  submitLabel: Save
   nameHint: Identificador único del servidor en el pool
   namePlaceholder: servidor-servicio-meteorologico
   titleHint: Nombre de visualización del servidor
@@ -98,7 +98,7 @@ es:
   descriptionHint: Breve descripción de la funcionalidad del servidor
   descriptionPlaceholder: Un servicio que proporciona información y pronósticos meteorológicos
 zh:
-  submitLabel: 更新服务器设置
+  submitLabel: Save
   nameHint: 池中服务器的唯一标识符
   namePlaceholder: 天气服务服务器
   titleHint: 服务器显示名称
