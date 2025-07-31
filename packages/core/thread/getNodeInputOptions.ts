@@ -1,17 +1,10 @@
 import type { OpenAPIV3 } from 'openapi-types'
 import type { SchemaOption } from '../utils'
 import type { Thread } from './createThread'
-import { getNodeData } from './getNodeData'
 import { getNodeInputSocket } from './getNodeInputSocket'
 
-export async function getNodeInputOptions(thread: Thread, id: string, name: string, query?: string): Promise<SchemaOption[]> {
+export async function getNodeInputOptions(thread: Thread, id: string, name: string): Promise<SchemaOption[]> {
   const socket = await getNodeInputSocket(thread, id, name)
-
-  // --- If `x-options` is provided, use it as the options.
-  if (typeof socket['x-options'] === 'function') {
-    const data = await getNodeData(thread, id, { skipErrors: true })
-    return socket['x-options'](data, query)
-  }
 
   // --- Fallback to the values in `oneOf` if it exists.
   if (Array.isArray(socket.oneOf)) {
