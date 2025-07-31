@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import type { VNode } from 'vue'
 
-defineProps<{
-  keepAlive?: boolean
-}>()
-
 const model = defineModel({ default: false })
 const isCollapsed = ref(false)
 const isCollapsing = ref(false)
@@ -40,7 +36,7 @@ const key = computed(() => (isOpen.value ? 'open' : 'closed'))
       'overflow-hidden': isCollapsing,
       'op-50 pointer-events-none': model !== true,
     }">
-    <KeepAlive :max="10">
+    <KeepAlive>
       <component :is="view" :key="key" />
     </KeepAlive>
   </BaseCollapse>
