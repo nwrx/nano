@@ -11,6 +11,23 @@ export type EventMapOutput = {
 export const output = defineComponent(
   {
     isTrusted: true,
+    name: 'output',
+    purpose: 'control',
+    icon: 'carbon:port-output',
+    title: {
+      en: 'Output',
+      fr: 'Sortie',
+      de: 'Ausgabe',
+      es: 'Salida',
+      zh: '输出',
+    },
+    description: {
+      en: 'Define output values for the flow execution, supporting streams and various data types.',
+      fr: 'Définir les valeurs de sortie pour l\'exécution du flux, supportant les flux et divers types de données.',
+      de: 'Ausgabewerte für die Flussausführung definieren, mit Unterstützung für Streams und verschiedene Datentypen.',
+      es: 'Definir valores de salida para la ejecución del flujo, soportando streams y varios tipos de datos.',
+      zh: '为流程执行定义输出值，支持流和各种数据类型。',
+    },
     inputs: {
       name: {
         'type': 'string',

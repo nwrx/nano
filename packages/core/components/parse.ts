@@ -4,6 +4,23 @@ import { defineComponent } from '../utils/defineComponent'
 export const parse = defineComponent(
   {
     isTrusted: true,
+    name: 'parse',
+    purpose: 'processing',
+    icon: 'carbon:object',
+    title: {
+      en: 'Parse',
+      fr: 'Analyser',
+      de: 'Parsen',
+      es: 'Analizar',
+      zh: '解析',
+    },
+    description: {
+      en: 'Parse JSON or YAML strings into structured objects.',
+      fr: 'Analyser les chaînes JSON ou YAML en objets structurés.',
+      de: 'JSON- oder YAML-Strings in strukturierte Objekte parsen.',
+      es: 'Analizar cadenas JSON o YAML en objetos estructurados.',
+      zh: '将JSON或YAML字符串解析为结构化对象。',
+    },
     inputs: {
       format: {
         'title': 'Format',

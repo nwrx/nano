@@ -36,6 +36,23 @@ export type EventMapQuestion = {
 export const question = defineComponent(
   {
     isTrusted: true,
+    name: 'question',
+    purpose: 'control',
+    icon: 'carbon:help',
+    title: {
+      en: 'Question',
+      fr: 'Question',
+      de: 'Frage',
+      es: 'Pregunta',
+      zh: '问题',
+    },
+    description: {
+      en: 'Ask users questions with customizable choices and timeout settings.',
+      fr: 'Poser des questions aux utilisateurs avec des choix personnalisables et des paramètres de délai.',
+      de: 'Benutzern Fragen mit anpassbaren Auswahlmöglichkeiten und Timeout-Einstellungen stellen.',
+      es: 'Hacer preguntas a los usuarios con opciones personalizables y configuraciones de tiempo límite.',
+      zh: '向用户提问，支持可自定义的选择和超时设置。',
+    },
     inputs: {
       title: {
         'type': 'string',

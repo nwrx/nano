@@ -3,6 +3,23 @@ import { defineComponent } from '../utils/defineComponent'
 export const gate = defineComponent(
   {
     isTrusted: true,
+    name: 'gate',
+    purpose: 'control',
+    icon: 'carbon:plug',
+    title: {
+      en: 'Logic Gate',
+      fr: 'Porte Logique',
+      de: 'Logikgatter',
+      es: 'Puerta Lógica',
+      zh: '逻辑门',
+    },
+    description: {
+      en: 'Control flow based on logical conditions using AND, OR, XOR, NAND, NOR, and XNOR gates.',
+      fr: 'Contrôler le flux basé sur des conditions logiques en utilisant les portes AND, OR, XOR, NAND, NOR et XNOR.',
+      de: 'Flusssteuerung basierend auf logischen Bedingungen mit AND-, OR-, XOR-, NAND-, NOR- und XNOR-Gattern.',
+      es: 'Controlar el flujo basado en condiciones lógicas usando puertas AND, OR, XOR, NAND, NOR y XNOR.',
+      zh: '使用AND、OR、XOR、NAND、NOR和XNOR门基于逻辑条件控制流程。',
+    },
     inputs: {
       condition: {
         'title': 'Condition',
@@ -11,12 +28,12 @@ export const gate = defineComponent(
         'enum': ['and', 'or', 'xor', 'nand', 'nor', 'xnor'] as const,
         'x-enum-labels': ['AND', 'OR', 'XOR', 'NAND', 'NOR', 'XNOR'],
         'x-enum-icons': [
-          'https://api.iconify.design/tabler:logic-and.svg',
-          'https://api.iconify.design/tabler:logic-or.svg',
-          'https://api.iconify.design/tabler:logic-xor.svg',
-          'https://api.iconify.design/tabler:logic-nand.svg',
-          'https://api.iconify.design/tabler:logic-nor.svg',
-          'https://api.iconify.design/tabler:logic-xnor.svg',
+          'tabler:logic-and',
+          'tabler:logic-or',
+          'tabler:logic-xor',
+          'tabler:logic-nand',
+          'tabler:logic-nor',
+          'tabler:logic-xnor',
         ],
         'x-enum-descriptions': [
           'Evaluates to true if all conditions are true.',

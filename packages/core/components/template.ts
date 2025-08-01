@@ -3,6 +3,23 @@ import { defineComponent } from '../utils/defineComponent'
 export const template = defineComponent(
   {
     isTrusted: true,
+    name: 'template',
+    purpose: 'processing',
+    icon: 'carbon:prompt-template',
+    title: {
+      en: 'Template',
+      fr: 'Modèle',
+      de: 'Vorlage',
+      es: 'Plantilla',
+      zh: '模板',
+    },
+    description: {
+      en: 'Generate strings from templates using variable placeholders.',
+      fr: 'Générer des chaînes à partir de modèles en utilisant des espaces réservés pour les variables.',
+      de: 'Zeichenfolgen aus Vorlagen generieren, die Platzhalter für Variablen verwenden.',
+      es: 'Generar cadenas a partir de plantillas utilizando marcadores de posición para variables.',
+      zh: '使用变量占位符从模板生成字符串。',
+    },
     inputs: {
       template: {
         'type': 'string',

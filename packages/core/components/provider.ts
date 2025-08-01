@@ -8,16 +8,13 @@ export const PROVIDER_SCHEMA = {
   properties: {
     name: {
       'type': 'string',
-      'title': 'Provider',
-      'description': 'The provider to use for inference.',
-      'x-control': 'select',
       'enum': Object.keys(PROVIDERS) as ProviderName[],
+      'x-control': 'reference/provider',
     },
     options: {
-      type: 'object',
-      title: 'Options',
-      description: 'The options for the provider.',
-      additionalProperties: true,
+      'type': 'object',
+      'additionalProperties': true,
+      'x-control': 'reference/provider-options',
     },
   },
 } as const satisfies Schema
@@ -25,6 +22,23 @@ export const PROVIDER_SCHEMA = {
 export const provider = defineComponent(
   {
     isTrusted: true,
+    name: 'provider',
+    purpose: 'integration',
+    icon: 'carbon:cloud-service',
+    title: {
+      en: 'Provider',
+      fr: 'Fournisseur',
+      de: 'Anbieter',
+      es: 'Proveedor',
+      zh: '提供商',
+    },
+    description: {
+      en: 'Configure AI service providers with authentication and options.',
+      fr: 'Configurer les fournisseurs de services IA avec authentification et options.',
+      de: 'KI-Service-Anbieter mit Authentifizierung und Optionen konfigurieren.',
+      es: 'Configurar proveedores de servicios de IA con autenticación y opciones.',
+      zh: '配置AI服务提供商的身份验证和选项。',
+    },
     inputs: PROVIDER_SCHEMA.properties,
     outputs: { provider: PROVIDER_SCHEMA },
   },

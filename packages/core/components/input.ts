@@ -3,6 +3,23 @@ import { defineComponent } from '../utils/defineComponent'
 export const input = defineComponent(
   {
     isTrusted: true,
+    name: 'input',
+    purpose: 'control',
+    icon: 'carbon:port-input',
+    title: {
+      en: 'Input',
+      fr: 'Entrée',
+      de: 'Eingabe',
+      es: 'Entrada',
+      zh: '输入',
+    },
+    description: {
+      en: 'Define input parameters for the flow execution.',
+      fr: 'Définir les paramètres d\'entrée pour l\'exécution du flux.',
+      de: 'Eingabeparameter für die Flussausführung definieren.',
+      es: 'Definir parámetros de entrada para la ejecución del flujo.',
+      zh: '为流程执行定义输入参数。',
+    },
     inputs: {
       name: {
         'type': 'string',

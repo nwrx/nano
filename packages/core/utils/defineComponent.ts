@@ -57,7 +57,7 @@ export type Schema = Omit<OpenAPIV3_1.SchemaObject, 'additionalProperties' | 'an
   'x-returns'?: Schema
   'x-resolves'?: Schema
   'x-control'?: SchemaControl
-  'x-internal'?: boolean
+  'x-hidden'?: boolean
   'x-optional'?: boolean
   'x-slider-min'?: number
   'x-slider-max'?: number
@@ -159,12 +159,64 @@ export type ProcessFunction<
 /* Component                                                             */
 /*************************************************************************/
 
+export type ComponentPurpose =
+  | 'control'
+  | 'integration'
+  | 'model'
+  | 'network'
+  | 'other'
+  | 'processing'
+
 export interface ComponentOptions<
   Inputs extends Record<string, Schema> = Record<string, Schema>,
   Outputs extends Record<string, Schema> = Record<string, Schema>,
   IsTrusted extends boolean = boolean,
 > {
+
+  /**
+   * The unique identifier of the component. This should be a string that uniquely identifies
+   * the component within the system.
+   */
+  name: string
+
+  /**
+   * The title of the component, used for display purposes. This can be a string or a
+   * localizable object with translations for different languages.
+   *
+   * @example { en: 'My Component', fr: 'Mon Composant' }
+   */
+  title?: string | Record<string, string>
+
+  /**
+   * The description of the component, used for display purposes. This can be a string or a
+   * localizable object with translations for different languages.
+   *
+   * @example { en: 'This is my component', fr: 'Ceci est mon composant' }
+   */
+  description?: string | Record<string, string>
+
+  /**
+   * The icon of the component, used for display purposes. This can be a string representing
+   * the icon name or a URL to an image.
+   */
+  icon?: string
+
+  /**
+   * The purpose of the component, used for categorization and display purposes. This can be
+   * one of the predefined purposes or a custom purpose.
+   */
+  purpose?: ComponentPurpose
+
+  /**
+   * The inputs of the component, defined as a record of schema objects. Each key represents
+   * an input name and its value is the schema for that input.
+   */
   inputs?: Inputs
+
+  /**
+   * The outputs of the component, defined as a record of schema objects. Each key represents
+   * an output name and its value is the schema for that output.
+   */
   outputs?: Outputs
 
   /**
@@ -200,6 +252,11 @@ export function defineComponent<
 ): Component<Inputs, Outputs, IsTrusted> {
   return {
     ['@instanceOf']: SYMBOL_COMPONENT,
+    name: options.name,
+    icon: options.icon,
+    purpose: options.purpose ?? 'other',
+    title: options.title,
+    description: options.description,
     inputs: options.inputs,
     outputs: options.outputs,
     isTrusted: options.isTrusted,

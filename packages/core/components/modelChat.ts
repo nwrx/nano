@@ -12,9 +12,26 @@ export type EventMapChat = {
   'nodeChatError': [nodeId: string, requestId: string, error: Error]
 }
 
-export const inference = defineComponent(
+export const modelChat = defineComponent(
   {
     isTrusted: true,
+    name: 'model-chat',
+    purpose: 'processing',
+    icon: 'carbon:machine-learning',
+    title: {
+      en: 'Inference',
+      fr: 'Inférence',
+      de: 'Inferenz',
+      es: 'Inferencia',
+      zh: '推理',
+    },
+    description: {
+      en: 'Generate text completions using AI language models with customizable parameters and tools.',
+      fr: 'Générer des complétions de texte en utilisant des modèles de langage IA avec des paramètres et outils personnalisables.',
+      de: 'Textvervollständigungen mit KI-Sprachmodellen und anpassbaren Parametern und Tools generieren.',
+      es: 'Generar completaciones de texto usando modelos de lenguaje de IA con parámetros y herramientas personalizables.',
+      zh: '使用AI语言模型生成文本补全，支持自定义参数和工具。',
+    },
     inputs: {
       provider: {
         'title': 'Provider',

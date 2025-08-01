@@ -8,6 +8,23 @@ export const mcp = defineComponent(
   {
     isTrusted: true,
     isToolSet: true,
+    name: 'mcp',
+    purpose: 'integration',
+    icon: 'carbon:web-services-container',
+    title: {
+      en: 'MCP',
+      fr: 'MCP',
+      de: 'MCP',
+      es: 'MCP',
+      zh: 'MCP',
+    },
+    description: {
+      en: 'Connect to Model Context Protocol servers to access external tools and capabilities.',
+      fr: 'Se connecter aux serveurs Model Context Protocol pour accéder aux outils et capacités externes.',
+      de: 'Verbindung zu Model Context Protocol-Servern für den Zugriff auf externe Tools und Funktionen.',
+      es: 'Conectar a servidores Model Context Protocol para acceder a herramientas y capacidades externas.',
+      zh: '连接到模型上下文协议服务器以访问外部工具和功能。',
+    },
     inputs: {
       endpoint: {
         'title': 'Endpoint',

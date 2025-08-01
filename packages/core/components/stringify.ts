@@ -4,6 +4,23 @@ import { defineComponent } from '../utils/defineComponent'
 export const stringify = defineComponent(
   {
     isTrusted: true,
+    name: 'stringify',
+    purpose: 'processing',
+    icon: 'carbon:string-text',
+    title: {
+      en: 'Stringify',
+      fr: 'Sérialiser',
+      de: 'Stringifizieren',
+      es: 'Serializar',
+      zh: '序列化',
+    },
+    description: {
+      en: 'Convert objects to JSON or YAML string format.',
+      fr: 'Convertir des objets au format de chaîne JSON ou YAML.',
+      de: 'Objekte in JSON- oder YAML-String-Format konvertieren.',
+      es: 'Convertir objetos a formato de cadena JSON o YAML.',
+      zh: '将对象转换为JSON或YAML字符串格式。',
+    },
     inputs: {
       format: {
         'title': 'Format',
@@ -18,8 +35,8 @@ export const stringify = defineComponent(
           'YAML',
         ],
         'x-enum-icons': [
-          'https://api.iconify.design/carbon:json.svg',
-          'https://api.iconify.design/carbon:yaml.svg',
+          'carbon:json',
+          'carbon:yaml',
         ],
         'x-enum-descriptions': [
           'The output string will be in JSON format.',

@@ -24,6 +24,23 @@ export type EventMapConfirm = {
 export const confirm = defineComponent(
   {
     isTrusted: true,
+    name: 'confirm',
+    purpose: 'control',
+    icon: 'carbon:checkmark-outline',
+    title: {
+      en: 'Confirm',
+      fr: 'Confirmer',
+      de: 'Bestätigen',
+      es: 'Confirmar',
+      zh: '确认',
+    },
+    description: {
+      en: 'Ask the user for confirmation.',
+      fr: 'Demander une confirmation à l’utilisateur.',
+      de: 'Fragt den Benutzer um Bestätigung.',
+      es: 'Pide confirmación al usuario.',
+      zh: '向用户请求确认。',
+    },
     inputs: {
       title: {
         type: 'string',

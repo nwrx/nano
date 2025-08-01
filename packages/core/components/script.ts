@@ -6,10 +6,25 @@ import { defineComponent } from '../utils/defineComponent'
 export const script = defineComponent(
   {
     isTrusted: true,
+    name: 'script',
+    purpose: 'processing',
+    icon: 'carbon:code',
+    title: {
+      en: 'Script',
+      fr: 'Script',
+      de: 'Skript',
+      es: 'Script',
+      zh: '脚本',
+    },
+    description: {
+      en: 'Execute JavaScript or TypeScript code in a sandboxed environment.',
+      fr: 'Exécuter du code JavaScript ou TypeScript dans un environnement isolé.',
+      de: 'JavaScript- oder TypeScript-Code in einer Sandbox-Umgebung ausführen.',
+      es: 'Ejecutar código JavaScript o TypeScript en un entorno aislado.',
+      zh: '在沙箱环境中执行JavaScript或TypeScript代码。',
+    },
     inputs: {
       language: {
-        'title': 'Language',
-        'description': 'The programming language of the script.',
         'default': 'javascript',
         'enum': [
           'javascript',
@@ -20,19 +35,14 @@ export const script = defineComponent(
           'TypeScript',
         ],
         'x-enum-icons': [
-          'https://api.iconify.design/logos:javascript.svg',
-          'https://api.iconify.design/logos:typescript-icon.svg',
+          'logos:javascript',
+          'logos:typescript-icon',
         ],
       },
       code: {
         type: 'string',
-        title: 'Code',
-        description: 'The code to execute.',
-        example: '({ data }) => { return data.value * 2 }',
       },
       input: {
-        'title': 'Input',
-        'description': 'The input data for the script.',
         'x-optional': true,
         'oneOf': [
           { type: 'array' },
@@ -45,8 +55,6 @@ export const script = defineComponent(
     },
     outputs: {
       result: {
-        title: 'Result',
-        description: 'The result of the script execution.',
         oneOf: [
           { type: 'array' },
           { type: 'object' },

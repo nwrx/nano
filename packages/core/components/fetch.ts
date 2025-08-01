@@ -36,6 +36,23 @@ export type EventMapFetch = {
 export const fetch = defineComponent(
   {
     isTrusted: true,
+    name: 'fetch',
+    purpose: 'processing',
+    icon: 'carbon:cloud-download',
+    title: {
+      en: 'Fetch',
+      fr: 'Récupérer',
+      de: 'Abrufen',
+      es: 'Obtener',
+      zh: '获取',
+    },
+    description: {
+      en: 'Make HTTP requests to external APIs and services.',
+      fr: 'Effectuer des requêtes HTTP vers des API et services externes.',
+      de: 'HTTP-Anfragen an externe APIs und Dienste stellen.',
+      es: 'Realizar solicitudes HTTP a APIs y servicios externos.',
+      zh: '向外部API和服务发出HTTP请求。',
+    },
     inputs: {
       url: {
         'type': 'string',
