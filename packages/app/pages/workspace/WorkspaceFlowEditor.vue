@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppPage from '~/components/app/AppPage.vue'
 import Editor from '~/components/editor/Editor.vue'
-import { useEditorModel, useEditorThread, useFlowEditorComponents } from '~/composables/useEditor'
+import { useEditorComponents, useEditorModel, useEditorThread } from '~/composables/useEditor'
 
 definePageMeta({
   name: 'FlowEditor',
@@ -18,7 +18,7 @@ const options = {
 }
 
 const editor = useEditorModel(options)
-const components = useFlowEditorComponents(options)
+const components = useEditorComponents(options)
 const thread = useEditorThread({
   flow: route.params.name as string,
   project: route.params.project as string,
@@ -31,13 +31,13 @@ useHead(() => ({
   meta: [{ title: 'description', content: editor.state.value.flow.description }],
 }))
 
-onMounted(() => {
-  void editor.connect()
-  void components.fetchComponents()
+onMounted(async() => {
+  await components.fetchComponents()
+  await editor.connect()
 })
 
 onBeforeRouteLeave(() => {
-  editor.send('userLeave')
+  editor.sendMessage('user.leave')
 })
 </script>
 
@@ -49,23 +49,28 @@ onBeforeRouteLeave(() => {
         :flow="editor.state.value.flow"
         :nodes="editor.state.value.nodes"
         :participants="editor.state.value.participants"
-        :components="components.data"
+
+        :components="components.data.components"
+        :component-groups="components.data.groups"
+
         :messages-client="editor.messagesClient.value"
         :messages-server="editor.messagesServer.value"
         :search-options="editor.searchOptions"
-        :get-flow-export="editor.getFlowExport"
+        :get-flow-export="editor.requestExport"
 
         :messages-thread="thread.messages"
 
-        @syncronize="() => editor.send('syncronize')"
-        @set-metadata="(...data) => editor.send('setMetadata', ...data)"
-        @create-nodes="(...data) => editor.send('createNodes', ...data)"
-        @clone-nodes="(...data) => editor.send('cloneNodes', ...data)"
-        @remove-nodes="(...data) => editor.send('removeNodes', ...data)"
-        @set-nodes-metadata="(...data) => editor.send('setNodesMetadata', ...data)"
-        @set-nodes-input-value="(...data) => editor.send('setNodesInputValue', ...data)"
-        @create-links="(link) => editor.send('createLinks', link)"
-        @remove-links="(...data) => editor.send('removeLinks', ...data)"
+        @request-reload="() => editor.sendMessage('request.reload')"
+        @metadata-update="(...data) => editor.sendMessage('metadata.update', ...data)"
+
+        @nodes-clone="(...data) => editor.sendMessage('nodes.clone', ...data)"
+        @nodes-create="(...data) => editor.sendMessage('nodes.create', ...data)"
+        @nodes-remove-="(...data) => editor.sendMessage('nodes.remove', ...data)"
+        @nodes-input-update="(...data) => editor.sendMessage('nodes.input.update', ...data)"
+        @nodes-links-create="(...data) => editor.sendMessage('nodes.links.create', ...data)"
+        @nodes-links-remove="(...data) => editor.sendMessage('nodes.links.remove', ...data)"
+        @nodes-metadata-update="(...data) => editor.sendMessage('nodes.metadata.update', ...data)"
+
         @clear-messages-client="() => editor.clearMessagesClient()"
         @clear-messages-server="() => editor.clearMessagesServer()"
 

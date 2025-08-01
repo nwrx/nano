@@ -1,28 +1,27 @@
 <script setup lang="ts">
-import type { RegistryComponentObject } from '@nwrx/nano-api'
+import type { Editor } from '@nwrx/nano-api'
 import type { DropPayload } from '~/utils/types'
+import IconDynamic from '~/components/icon/IconDynamic.vue'
+import { getComponentTypeColors } from '~/composables/useEditor'
 
 const props = defineProps<{
-  component: RegistryComponentObject
+  component: Editor.ComponentObject
 }>()
-
-const specifier = computed(() => [
-  props.component?.collection?.workspace?.name,
-  props.component?.collection?.name,
-  props.component?.name,
-].join('/'))
 
 // --- Drag start event handler.
 function onDragStart(event: DragEvent) {
   if (!event.dataTransfer) return
   event.dataTransfer.setData('application/json', JSON.stringify(({
     type: 'createNode',
-    kind: specifier.value,
+    kind: props.component.name,
+    inputs: props.component.defaultInputs,
+    metadata: props.component.defaultMetadata,
   } as DropPayload)))
 }
 
 // --- Collect all colors from the data and result schema.
 const colors = computed(() => getComponentTypeColors(props.component))
+const title = computed(() => (props.component.title ? localize(props.component.title) : props.component.name))
 </script>
 
 <template>
@@ -38,15 +37,22 @@ const colors = computed(() => getComponentTypeColors(props.component))
 
     <!-- Icon -->
     <div class="flex items-start space-x-sm">
-      <template v-if="component.icon">
-        <img v-if="!component.icon.endsWith('.svg')" :src="component.icon" class="size-6 rd">
-        <BaseIcon v-else :icon="component.icon" class="size-6" load />
-      </template>
+      <IconDynamic
+        :name="component.icon"
+        class="size-6"
+        load
+      />
 
       <!-- Name & Description -->
       <div class="w-full">
         <div class="text-base font-medium flex items-center w-full space-x-sm">
-          <span class="mr-auto" v-text="component.title" />
+
+          <!-- Title -->
+          <span class="mr-auto">
+            {{ title }}
+          </span>
+
+          <!-- Icon -->
           <BaseIcon
             v-for="color in colors"
             :key="color"
