@@ -52,7 +52,7 @@ export function flowEditor(this: ModuleFlowEditor) {
         peer.send({
           event: 'error',
           data: {
-            code: error instanceof Error ? error.name : 'E_UNKNOWN',
+            name: error instanceof Error ? error.name : 'E_UNKNOWN',
             message: error instanceof Error ? error.message : 'An unknown error occurred.',
           },
         })
