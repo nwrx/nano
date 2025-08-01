@@ -12,6 +12,5 @@ export class ModuleRegistry extends ModuleBase {
   entities = ENTITIES
   errors = UTILS.ERRORS
   routes = ROUTES
-  initialize = UTILS.initialize.bind(this)
   resolveComponent = UTILS.resolveComponent.bind(this)
 }
