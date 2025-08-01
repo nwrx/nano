@@ -10,9 +10,9 @@ import { onResponseError } from './onResponseError'
  * @returns A promise that resolves to a Models.Result containing the list of models.
  */
 export async function onResponseModels(context: Models.Context): Promise<Models.Result> {
-  const { response, request } = context
+  const { response } = context
   if (!response) throw new Error('Response is not defined in the context')
-  if (!response.ok) return onResponseError(request)
+  if (!response.ok) return onResponseError(context)
 
   // --- Map the response data to the Models.Result format.
   const data = await response.json() as ModelInfosPage
