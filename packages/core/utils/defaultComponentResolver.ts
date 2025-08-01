@@ -9,7 +9,5 @@ export function DEFAULT_COMPONENT_RESOLVER(specifier: SpecifierObject): Componen
   if (specifier.tag !== 'latest') return
 
   // --- Return the component if it exists in the components object.
-  return specifier.name in COMPONENTS
-    ? COMPONENTS[specifier.name as keyof typeof COMPONENTS]
-    : undefined
+  return COMPONENTS.find(x => x.name === specifier.name)
 }

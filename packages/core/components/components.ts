@@ -1,10 +1,11 @@
+import type { Component } from '../utils'
 import { confirm } from './confirm'
 import { fetch } from './fetch'
 import { gate } from './gate'
-import { inference } from './inference'
 import { input } from './input'
 import { mcp } from './mcp'
 import { message } from './message'
+import { modelChat } from './modelChat'
 import { output } from './output'
 import { parse } from './parse'
 import { passthrough } from './passthrough'
@@ -14,11 +15,11 @@ import { script } from './script'
 import { stringify } from './stringify'
 import { template } from './template'
 
-export const COMPONENTS = {
+export const COMPONENTS = [
   confirm,
   fetch,
   gate,
-  inference,
+  modelChat,
   input,
   script,
   mcp,
@@ -30,6 +31,4 @@ export const COMPONENTS = {
   question,
   stringify,
   template,
-} as const
-
-export type ComponentName = keyof typeof COMPONENTS
+] as const satisfies Component[]
