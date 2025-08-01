@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const isOpen = ref(false)
-const isOpenDebounced = refDebounced(isOpen, 100)
+const delay = computed(() => (isOpen.value ? 500 : 0))
+const isOpenDebounced = refDebounced(isOpen, delay)
 
 function handleClick(event: MouseEvent) {
   if (event.button !== 0) return
@@ -32,7 +33,7 @@ function handleClick(event: MouseEvent) {
         leave-to-class="op-0 scale-98">
         <div
           v-if="isOpenDebounced"
-          class="rd bg-editor-panel b b-editor backdrop-blur-2xl"
+          class="rd bg-editor-panel b b-editor backdrop-blur-2xl z-1000"
           @mousedown="(event: MouseEvent) => handleClick(event)">
           <slot name="tooltip" />
         </div>
