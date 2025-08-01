@@ -12,9 +12,9 @@ import { isNodeUsedAsTool } from './isNodeUsedAsTool'
  * @returns Whether the node is ready to start.
  */
 export function isNodeReadyToStart(thread: Thread, nodeId: string, links = getLinks(thread)): boolean {
-  const incommingLinks = links.filter(link => link.targetId === nodeId)
-  if (incommingLinks.length === 0) return true
-  for (const link of incommingLinks) {
+  const inputLinks = links.filter(link => link.targetId === nodeId)
+  if (inputLinks.length === 0) return true
+  for (const link of inputLinks) {
     const sourceNode = getNode(thread, link.sourceId)
     if (isNodeUsedAsTool(thread, link.sourceId, links)) continue
     if (sourceNode.state !== 'done') return false
