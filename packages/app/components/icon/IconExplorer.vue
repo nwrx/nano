@@ -24,7 +24,6 @@ onMounted(() => {
 
 const localSettings = useLocalSettings()
 const isDark = computed(() => props.isDark ?? localSettings.value.themeColor === 'dark')
-
 const iconsWithSelection = computed(() => {
   if (!icon.value) return icons.data
   if (icons.data.includes(icon.value)) return icons.data
