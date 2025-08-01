@@ -60,6 +60,7 @@ const isInstalling = computed(() => props.collection.status === 'Installing')
 
     <!-- Install Dialog -->
     <DialogInstall
+      v-if="showInstallDialog"
       v-model="showInstallDialog"
       :name="collection.name"
       @submit="() => emit('refresh')"
@@ -67,6 +68,7 @@ const isInstalling = computed(() => props.collection.status === 'Installing')
 
     <!-- Enable Dialog -->
     <DialogEnable
+      v-if="showEnableDialog"
       v-model="showEnableDialog"
       :name="collection.name"
       @submit="() => emit('refresh')"
@@ -74,6 +76,7 @@ const isInstalling = computed(() => props.collection.status === 'Installing')
 
     <!-- Disable Dialog -->
     <DialogDisable
+      v-if="showDisableDialog"
       v-model="showDisableDialog"
       :name="collection.name"
       @submit="() => emit('refresh')"
@@ -81,6 +84,7 @@ const isInstalling = computed(() => props.collection.status === 'Installing')
 
     <!-- Uninstall Dialog -->
     <DialogUninstall
+      v-if="showUninstallDialog"
       v-model="showUninstallDialog"
       :name="collection.name"
       @submit="() => emit('refresh')"
