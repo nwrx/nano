@@ -65,7 +65,7 @@ onBeforeRouteLeave(() => {
 
         @nodes-clone="(...data) => editor.sendMessage('nodes.clone', ...data)"
         @nodes-create="(...data) => editor.sendMessage('nodes.create', ...data)"
-        @nodes-remove-="(...data) => editor.sendMessage('nodes.remove', ...data)"
+        @nodes-remove="(...data) => editor.sendMessage('nodes.remove', ...data)"
         @nodes-input-update="(...data) => editor.sendMessage('nodes.input.update', ...data)"
         @nodes-links-create="(...data) => editor.sendMessage('nodes.links.create', ...data)"
         @nodes-links-remove="(...data) => editor.sendMessage('nodes.links.remove', ...data)"
