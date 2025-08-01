@@ -5,11 +5,9 @@ import { ModuleFlow } from '../../flow'
 import { ModuleProject } from '../../project'
 import { ModuleUser } from '../../user'
 import { ModuleWorkspace } from '../../workspace'
-import {
-  EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA,
-  EDITOR_SESSION_SERVER_MESSAGE_SCHEMA,
-  getEditorSession,
-} from '../utils'
+import { getEditorSession } from '../utils'
+import { MESSAGE_CLIENT_SCHEMA } from '../utils/clientEvent'
+import { EDITOR_SESSION_SERVER_MESSAGE_SCHEMA } from '../utils/serverEvent'
 
 export function flowEditor(this: ModuleFlowEditor) {
   return createWebSocketRoute(
@@ -20,7 +18,7 @@ export function flowEditor(this: ModuleFlowEditor) {
         project: assert.stringNotEmpty.withMessage('Project name is required.'),
         name: assert.stringNotEmpty.withMessage('Flow name is required.'),
       }),
-      parseClientMessage: EDITOR_SESSION_CLIENT_MESSAGE_SCHEMA,
+      parseClientMessage: MESSAGE_CLIENT_SCHEMA,
       parseServerMessage: EDITOR_SESSION_SERVER_MESSAGE_SCHEMA,
     },
     {

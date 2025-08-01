@@ -1,15 +1,15 @@
 import type { SchemaOption } from '@nwrx/nano/utils'
-import type { EditorState, FlowNodeObject } from './serializeSession'
+import type { EditorState, FlowNodeObject } from './serialize/serializeSession'
 import { assert, assertObjectStrict, createParser, createRuleSet } from '@unshared/validation'
 
 export const EDITOR_SESSION_SERVER_MESSAGE_SCHEMA = createRuleSet(
 
   [createParser({
-    event: assert.stringEquals('syncronize'),
+    event: assert.stringEquals('request.reload.result'),
     data: assertObjectStrict as () => EditorState,
   })],
   [createParser({
-    event: assert.stringEquals('metadataChanged'),
+    event: assert.stringEquals('metadata.changed'),
     data: assert.arrayOf({
       name: assert.stringEnum('name', 'title', 'description'),
       value: assert.notNull,
@@ -20,7 +20,7 @@ export const EDITOR_SESSION_SERVER_MESSAGE_SCHEMA = createRuleSet(
     message: assert.stringNotEmpty,
   })],
   [createParser({
-    event: assert.stringEquals('getFlowExportResult'),
+    event: assert.stringEquals('request.export.result'),
     data: assert.arrayOf(assert.stringNotEmpty),
   })],
 
@@ -29,15 +29,15 @@ export const EDITOR_SESSION_SERVER_MESSAGE_SCHEMA = createRuleSet(
   /***************************************************************************/
 
   [createParser({
-    event: assert.stringEquals('nodesCreated'),
+    event: assert.stringEquals('nodes.created'),
     data: assert.arrayOf(assertObjectStrict as () => FlowNodeObject),
   })],
   [createParser({
-    event: assert.stringEquals('nodesRemoved'),
+    event: assert.stringEquals('nodes.removed'),
     data: assert.arrayOf(assert.stringNotEmpty),
   })],
   [createParser({
-    event: assert.stringEquals('nodesMetadataChanged'),
+    event: assert.stringEquals('nodes.metadata.changed'),
     data: assert.arrayOf({
       id: assert.stringNotEmpty,
       name: assert.stringNotEmpty,
@@ -45,7 +45,7 @@ export const EDITOR_SESSION_SERVER_MESSAGE_SCHEMA = createRuleSet(
     }),
   })],
   [createParser({
-    event: assert.stringEquals('nodesInputChanged'),
+    event: assert.stringEquals('nodes.input.changed'),
     data: assert.arrayOf({
       id: assert.stringNotEmpty,
       name: assert.stringNotEmpty,
@@ -53,7 +53,7 @@ export const EDITOR_SESSION_SERVER_MESSAGE_SCHEMA = createRuleSet(
     }),
   })],
   [createParser({
-    event: assert.stringEquals('searchOptionsResult'),
+    event: assert.stringEquals('nodes.options.result'),
     data: assert.arrayOf({
       id: assert.stringNotEmpty,
       name: assert.stringNotEmpty,
@@ -78,7 +78,7 @@ export const EDITOR_SESSION_SERVER_MESSAGE_SCHEMA = createRuleSet(
     data: assert.arrayOf(assert.stringNotEmpty),
   })],
   [createParser({
-    event: assert.stringEquals('usersPositionChanged'),
+    event: assert.stringEquals('user.moved'),
     data: assert.arrayOf({
       id: assert.stringNotEmpty,
       x: assert.number,

@@ -2,12 +2,10 @@ import type { Peer } from 'crossws'
 import type { ModuleFlowEditor } from '..'
 import type { Flow } from '../../flow'
 import { createThreadFromFlow } from '@nwrx/nano'
-import { COMPONENTS } from '@nwrx/nano/components'
-import { defineComponent, serializeSpecifier } from '@nwrx/nano/utils'
+import { DEFAULT_COMPONENT_RESOLVER } from '@nwrx/nano/utils'
 import { assert, createParser, createRuleSet } from '@unshared/validation'
 import { assertFlow } from '../../flow/utils/assertFlow'
 import { assertProject } from '../../project/utils/assertProject'
-import { ModuleRegistry } from '../../registry'
 import { assertUser } from '../../user/utils/assertUser'
 import { ModuleVault } from '../../vault'
 import { assertWorkspace } from '../../workspace/utils/assertWorkspace'
@@ -28,7 +26,7 @@ const GET_EDITOR_SESSION_OPTIONS_SCHEMA = createRuleSet(
 )
 
 /** Options to resolve the editor session. */
-export type ResolveEditorSessionOptions = ReturnType<typeof GET_EDITOR_SESSION_OPTIONS_SCHEMA>
+export type GetEditorSessionOptions = ReturnType<typeof GET_EDITOR_SESSION_OPTIONS_SCHEMA>
 
 /**
  * Given an ID, create or get the `EditorSession` that corresponds to the ID of the flow.
@@ -36,8 +34,7 @@ export type ResolveEditorSessionOptions = ReturnType<typeof GET_EDITOR_SESSION_O
  * @param options The options to resolve the session.
  * @returns The `EditorSession` that corresponds to the given ID.
  */
-export function getEditorSession(this: ModuleFlowEditor, options: ResolveEditorSessionOptions): EditorSession {
-  const moduleRegistry = this.getModule(ModuleRegistry)
+export function getEditorSession(this: ModuleFlowEditor, options: GetEditorSessionOptions): EditorSession {
   const moduleVault = this.getModule(ModuleVault)
   const parsedOptions = GET_EDITOR_SESSION_OPTIONS_SCHEMA(options)
 
@@ -59,20 +56,9 @@ export function getEditorSession(this: ModuleFlowEditor, options: ResolveEditorS
 
   // --- Create the flow session and store it in memory.
   const thread = createThreadFromFlow(flow.data, {
-    componentResolvers: [async(specifierObject) => {
-      if (specifierObject.workspace === 'nanoworks' && specifierObject.registry === 'default') {
-        const component = COMPONENTS[specifierObject.name as keyof typeof COMPONENTS]
-        if (component) return component
-        throw new Error(`Component "${specifierObject.name}" not found in the collection "${specifierObject.collection}"`)
-      }
-
-      const specifier = serializeSpecifier(specifierObject)
-      const registryComponent = await moduleRegistry.resolveComponent({ specifier })
-      return defineComponent({
-        inputs: registryComponent.inputs,
-        outputs: registryComponent.outputs,
-      })
-    }],
+    componentResolvers: [
+      DEFAULT_COMPONENT_RESOLVER,
+    ],
     referenceResolvers: [async(type, ...values) => {
       if (type === 'Variables') {
         const [vault, name] = values
@@ -80,9 +66,7 @@ export function getEditorSession(this: ModuleFlowEditor, options: ResolveEditorS
       }
     }],
   })
-  const session = new EditorSession(this, { flow, project, thread, workspace })
+  const session = new EditorSession(this, project, flow, thread)
   this.flowEditorSessions.set(flow.id, session)
-
-  // --- Start monitoring the flow thread.
   return session
 }

@@ -5,9 +5,9 @@ import { ModuleUser } from '../user'
 import * as ROUTES from './routes'
 import * as UTILS from './utils'
 
-export type * from './utils/editorSessionClientMessage'
-export type * from './utils/editorSessionServerMessage'
-export type * from './utils/serializeSession'
+export type * from './utils/clientEvent'
+export type * from './utils/serverEvent'
+export type * from './utils/types'
 
 /**
  * The `ModuleFlow` module is used to manage the workflows and modules in the
