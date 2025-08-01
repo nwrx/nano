@@ -7,7 +7,6 @@ import type { Provider, ProviderFeatureName, ProviderFeatureOptions } from '../u
 export namespace Models {
   export interface Request<T extends Provider = Provider> {
     id?: string
-    provider: T
     signal?: AbortSignal
     options?: ProviderFeatureOptions<T, 'models'>
   }

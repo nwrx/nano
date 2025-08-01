@@ -10,7 +10,7 @@ export async function searchModels<T extends Provider = Provider>(
 ): Promise<Models.Result> {
 
   // --- Extract the provider and options from the client.
-  request ??= { provider: client.provider }
+  request ??= {}
   const { id = randomUUID(), signal, options } = request
   const { models, name, baseUrl, parameters } = client.provider
   if (!models) throw new Error(`Provider "${name}" does not support searching models`)
