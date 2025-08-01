@@ -1,14 +1,26 @@
 <script setup lang="ts">
-import type { FlowNodeObject } from '@nwrx/nano-api'
+import type { Editor } from '@nwrx/nano-api'
 import EditorTooltip from '~/components/editor/EditorTooltip.vue'
 import EditorNodeTooltip from '~/components/editorNode/EditorNodeTooltip.vue'
+import IconDynamic from '~/components/icon/IconDynamic.vue'
 
-defineProps<{
-  node?: FlowNodeObject
-  color?: string
+const props = defineProps<{
+  node?: Editor.NodeObject
+  component?: Editor.ComponentObject
 }>()
 
 const isGrabbing = ref(false)
+const title = computed(() => {
+  if (props.component) {
+    return props.component.title
+      ? localize(props.component.title)
+      : props.component.name
+  }
+  else if (props.node) {
+    return props.node.name || props.node.id
+  }
+  return 'NO_NAME'
+})
 </script>
 
 <template>
@@ -18,19 +30,31 @@ const isGrabbing = ref(false)
     @mouseup="() => isGrabbing = false">
 
     <!-- Tooltip -->
-    <EditorTooltip class="h-8 flex items-center justify-center">
-      <div v-if="node?.component.icon" class="size-8 flex items-center justify-center">
+    <EditorTooltip class="h-8 flex items-center justify-center space-x-sm px-sm">
+      <!--
+        <div v-if="component.icon" class="size-8 flex items-center justify-center">
         <BaseIcon :icon="node.component.icon" class="size-5 text-white rd" load />
-      </div>
+        </div>
+      -->
+
+      <IconDynamic
+        :name="component?.icon"
+        fallback="i-carbon:box"
+        class="size-5"
+        load
+      />
 
       <!-- Title -->
       <p class="font-medium text-white">
-        {{ node?.component.title || node?.name || 'MISSING_NODE_PROP' }}
+        {{ title }}
       </p>
 
       <!-- Tooltip content -->
       <template #tooltip>
-        <EditorNodeTooltip :node="node" />
+        <EditorNodeTooltip
+          :node="node"
+          :component="component"
+        />
       </template>
     </EditorTooltip>
   </div>

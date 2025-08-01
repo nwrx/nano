@@ -1,10 +1,10 @@
 /* eslint-disable sonarjs/cognitive-complexity */
 import type { Link } from '@nwrx/nano'
-import type { FlowNodeObject } from '@nwrx/nano-api'
+import type { Editor } from '@nwrx/nano-api'
 import { isReferenceLink } from './isReferenceLink'
 import { parseLink } from './parseLink'
 
-export function getLinks(nodes: FlowNodeObject[]): Link[] {
+export function getLinks(nodes: Editor.NodeObject[]): Link[] {
   const links: Link[] = []
   for (const { id: targetId, input } of nodes) {
     for (const targetName in input) {

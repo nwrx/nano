@@ -1,5 +1,5 @@
 /* eslint-disable sonarjs/todo-tag */
-import type { EditorSessionClientMessage, EditorSessionServerMessage, EditorState, ModuleFlowEditor } from '@nwrx/nano-api'
+import type { Editor, EditorSessionClientMessage, EditorSessionServerMessage, ModuleFlowEditor } from '@nwrx/nano-api'
 import type { SchemaOption } from '@nwrx/nano/utils'
 import type { ChannelConnectOptions } from '@unserved/client'
 import type { WebSocketChannel } from '@unshared/client/websocket'
@@ -12,7 +12,7 @@ export interface UseEditorModelOptions {
   name: string
 }
 
-export const INITIAL_EDITOR_STATE: EditorState = {
+export const INITIAL_EDITOR_STATE: Editor.State = {
   flow: { name: '', title: '', description: '' },
   nodes: [],
   participants: [],
@@ -23,12 +23,11 @@ export type EditorEventName = EditorSessionClientMessage['event']
 export type EditorEventPayload<K extends EditorEventName> = EditorSessionClientMessage extends infer T ? T extends { event: K } ? T : never : never
 export type EditorMethodParameters<K extends EditorEventName> = EditorEventPayload<K> extends { data: infer T extends any[] } ? T : []
 export type EditorMethod<K extends EditorEventName> = (...data: EditorMethodParameters<K>) => void
-export type EditorModel = ReturnType<typeof useEditorModel>
 
 export function useEditorModel(options: UseEditorModelOptions) {
   const client = useClient()
   const alerts = useAlerts()
-  const state = ref(INITIAL_EDITOR_STATE) as Ref<EditorState>
+  const state = ref(INITIAL_EDITOR_STATE) as Ref<Editor.State>
   const messagesServer = ref([]) as Ref<EditorSessionServerMessage[]>
   const messagesClient = ref([]) as Ref<EditorSessionClientMessage[]>
   let channel: EditorChannel | undefined
@@ -50,39 +49,39 @@ export function useEditorModel(options: UseEditorModelOptions) {
         /* Flow                                                                    */
         /***************************************************************************/
 
-        if (message.event === 'syncronize') {
+        if (message.event === 'request.reload.result') {
           state.value = { ...state.value, ...message.data }
         }
         else if (message.event === 'error') {
           alerts.error(message.message)
         }
-        else if (message.event === 'metadataChanged') {
-          // @ts-expect-error: `name` is a valid key in `EditorState['flow']`.
+        else if (message.event === 'metadata.changed') {
+          // @ts-expect-error: `name` is a valid key in `Editor.State['flow']`.
           for (const { name, value } of message.data) state.value.flow[name] = value
         }
 
         /***************************************************************************/
         /* Nodes                                                                   */
         /***************************************************************************/
-        else if (message.event === 'nodesCreated') {
+        else if (message.event === 'nodes.created') {
           state.value.nodes.push(...message.data)
           state.value.nodes = [...state.value.nodes]
         }
-        else if (message.event === 'nodesMetadataChanged') {
+        else if (message.event === 'nodes.metadata.changed') {
           for (const { id, name, value } of message.data) {
             const node = state.value.nodes.find(n => n.id === id)
             if (!node) return
             node.metadata[name] = value
           }
         }
-        else if (message.event === 'nodesInputChanged') {
+        else if (message.event === 'nodes.input.changed') {
           for (const { id, name, value } of message.data) {
             const node = state.value.nodes.find(n => n.id === id)
             if (!node) return
             node.input[name] = value
           }
         }
-        else if (message.event === 'nodesRemoved') {
+        else if (message.event ==='nodes.removed') {
           state.value.nodes = state.value.nodes.filter(n => !message.data.includes(n.id))
         }
 
@@ -94,7 +93,7 @@ export function useEditorModel(options: UseEditorModelOptions) {
           for (const peer of message.data)
             state.value.participants.push({ ...peer, position: { x: 0, y: 0 } })
         }
-        else if (message.event === 'usersPositionChanged') {
+        else if (message.event === 'user.moved') {
           for (const { id, x, y } of message.data) {
             const participant = state.value.participants.find(p => p.id === id)
             if (!participant) return
@@ -108,7 +107,7 @@ export function useEditorModel(options: UseEditorModelOptions) {
     }).open()
   }
 
-  function send<K extends EditorEventName>(event: K, ...data: EditorMethodParameters<K>) {
+  function sendMessage<K extends EditorEventName>(event: K, ...data: EditorMethodParameters<K>) {
     if (!channel) return alerts.error('The editor is not connected to the server.')
     const message = { event, data } as EditorSessionClientMessage
     messagesClient.value.push(message)
@@ -116,10 +115,10 @@ export function useEditorModel(options: UseEditorModelOptions) {
   }
 
   async function searchOptions(id: string, name: string, search: string) {
-    send('searchOptions', { id, name, search })
+    sendMessage('nodes.options.search', { id, name, search })
     return new Promise<SchemaOption[]>((resolve) => {
       const stop = channel!.on('message', (message) => {
-        if (message.event !== 'searchOptionsResult') return
+        if (message.event !== 'nodes.options.result') return
         if (message.data[0].id !== id) return
         if (message.data[0].name !== name) return
         resolve(message.data[0].options)
@@ -128,11 +127,11 @@ export function useEditorModel(options: UseEditorModelOptions) {
     })
   }
 
-  async function getFlowExport(format?: 'json' | 'yaml'): Promise<string> {
-    send('getFlowExport', { format })
+  async function requestExport(format: 'json' | 'yaml' = 'json'): Promise<string> {
+    sendMessage('request.export', { format })
     return new Promise<string>((resolve) => {
       const stop = channel!.on('message', (message) => {
-        if (message.event !== 'getFlowExportResult') return
+        if (message.event !== 'request.export.result') return
         resolve(message.data[0])
         stop()
       })
@@ -140,13 +139,16 @@ export function useEditorModel(options: UseEditorModelOptions) {
   }
 
   return {
-    connect,
-    send,
-    searchOptions,
-    getFlowExport,
     state,
+
+    connect,
+    sendMessage,
+    searchOptions,
+    requestExport,
+
     messagesServer,
     messagesClient,
+
     clearMessagesClient: () => messagesClient.value = [],
     clearMessagesServer: () => messagesServer.value = [],
   }

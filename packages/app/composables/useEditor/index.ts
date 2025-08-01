@@ -1,5 +1,6 @@
-export * from './getComponentColor'
 export * from './getSchemaTypeColor'
 export * from './isReference'
+export * from './useEditorComponents'
 export * from './useEditorModel'
+export * from './useEditorThread'
 export * from './useEditorView'

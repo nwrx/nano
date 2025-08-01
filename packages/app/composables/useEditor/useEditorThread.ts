@@ -1,6 +1,6 @@
 /* eslint-disable sonarjs/no-commented-code */
 import type { ThreadInputObject } from '@nwrx/nano'
-import type { application, FlowNodeObject } from '@nwrx/nano-api'
+import type { application, Editor } from '@nwrx/nano-api'
 import type { ThreadServerMessage } from '@nwrx/nano-runner'
 import type { ChannelConnectOptions } from '@unserved/client'
 import type { WebSocketChannel } from '@unshared/client/websocket'
@@ -14,7 +14,7 @@ export interface UseEditorThreadOptions {
   workspace: string
   project: string
   flow: string
-  nodes: Ref<FlowNodeObject[]>
+  nodes: Ref<Editor.NodeObject[]>
 }
 
 export function useEditorThread(options: UseEditorThreadOptions) {

@@ -1,11 +1,12 @@
+/* eslint-disable sonarjs/no-commented-code */
 /* eslint-disable unicorn/prevent-abbreviations */
 import type { Link } from '@nwrx/nano'
-import type { FlowNodeObject } from '@nwrx/nano-api'
+import type { Editor } from '@nwrx/nano-api'
 import type { Position } from '@vueuse/core'
 import type { ComponentInstance, CSSProperties, VNodeRef } from 'vue'
 import type EditorNode from '~/components/editorNode/EditorNode.vue'
+import { memoize } from '@unshared/functions/memoize'
 import { useAlerts } from '@unshared/vue/useAlerts'
-import { getComponentColor } from './getComponentColor'
 import { getLinks } from './getLinks'
 
 export interface FlowLinkProps {
@@ -20,13 +21,15 @@ export interface FlowLinkProps {
 export type EditorView = ReturnType<typeof useEditorView>
 
 export interface EditorViewOptions {
-  nodes?: Ref<FlowNodeObject[]>
-  handleCreateNodes?: (...values: Array<{ specifier: string; x: number; y: number }>) => void
-  handleCloneNodes?: (...values: Array<{ ids: string[]; origin: Position }>) => void
-  handleRemoveNodes?: (...values: string[]) => void
-  handleSetNodesMetadata?: (...values: Array<{ id: string; name: string; value: unknown }>) => void
-  handleCreateLinks?: (...values: Link[]) => void
-  handleRemoveLinks?: (...values: Link[]) => void
+  nodes?: Ref<Editor.NodeObject[]>
+  components?: Ref<Editor.ComponentObject[]>
+  componentGroups?: Ref<Editor.ComponentGroup[]>
+  handleNodesCreate?: (...values: Array<{ specifier: string; x: number; y: number }>) => void
+  handleNodesClone?: (...values: Array<{ ids: string[]; origin: Position }>) => void
+  handleNodesRemove?: (...values: string[]) => void
+  handleNodesMetadataUpdate?: (...values: Array<{ id: string; name: string; value: unknown }>) => void
+  handleNodesLinksCreate?: (...values: Link[]) => void
+  handleNodesLinksRemove?: (...values: Link[]) => void
 }
 
 export function useEditorView(options: EditorViewOptions = {}) {
@@ -35,13 +38,15 @@ export function useEditorView(options: EditorViewOptions = {}) {
 
   // --- Destructure the options.
   const {
-    nodes = ref<FlowNodeObject[]>([]),
-    handleCreateNodes = () => alerts.error('The "handleCreateNodes" method is not implemented.'),
-    handleCloneNodes = () => alerts.error('The "onCloneNodes" method is not implemented.'),
-    handleRemoveNodes = () => alerts.error('The "handleRemoveNodes" method is not implemented.'),
-    handleSetNodesMetadata = () => alerts.error('The "handleSetNodesMetadata" method is not implemented.'),
-    handleCreateLinks = () => alerts.error('The "handleCreateLinks" method is not implemented.'),
-    handleRemoveLinks = () => alerts.error('The "handleRemoveLinks" method is not implemented.'),
+    nodes = ref<Editor.NodeObject[]>([]),
+    components = ref<Editor.ComponentObject[]>([]),
+    componentGroups = ref<Editor.ComponentGroup[]>([]),
+    handleNodesCreate = () => alerts.error('The "handleNodesCreate" method is not implemented.'),
+    handleNodesClone = () => alerts.error('The "onCloneNodes" method is not implemented.'),
+    handleNodesRemove = () => alerts.error('The "handleNodesRemove" method is not implemented.'),
+    handleNodesMetadataUpdate = () => alerts.error('The "handleNodesMetadataUpdate" method is not implemented.'),
+    handleNodesLinksCreate = () => alerts.error('The "handleNodesLinksCreate" method is not implemented.'),
+    handleNodesLinksRemove = () => alerts.error('The "handleNodesLinksRemove" method is not implemented.'),
   } = options
 
   // --- View references.
@@ -186,6 +191,17 @@ export function useEditorView(options: EditorViewOptions = {}) {
     }
   }
 
+  const getNodeColor = memoize((node: Editor.NodeObject) => {
+    const component = components.value.find(x => x.name === node.name)
+    if (!component) return 'black'
+    // if (component.color) return component.color
+    const group = componentGroups.value.find(g => g.name === component.purpose)
+    if (group?.color) return group.color
+    return 'black'
+  }, {
+    getKey: (node: Editor.NodeObject) => node.id,
+  })
+
   return toReactive({
     setView,
     setViewContainer,
@@ -255,9 +271,9 @@ export function useEditorView(options: EditorViewOptions = {}) {
       }
     }),
 
-    getNodeStyle: (node: FlowNodeObject): CSSProperties => {
+    getNodeStyle: (node: Editor.NodeObject): CSSProperties => {
       const { x, y } = worldToView(node.metadata.position ?? { x: 0, y: 0 })
-      const color = getComponentColor(node.component)
+      const color = getNodeColor(node)
       const isSelected = nodeSelectedIds.value.has(node.id)
       return {
         'position': 'absolute',
@@ -265,18 +281,15 @@ export function useEditorView(options: EditorViewOptions = {}) {
         'top': `${y}px`,
         'zIndex': zIndexMap[node.id] ?? 1,
         'transition': isSelected ? 'none' : 'transform 0.1s ease',
-        '--un-ring-color': isSelected ? color : 'transparent',
-        '--un-ring-width': `${(isSelected ? 3 : 5) / (viewZoom.value ?? 1)}px`,
+        '--un-ring-color': color,
+        '--un-ring-width': `${(isSelected ? 5 : 1) / (viewZoom.value)}px`,
       }
     },
 
-    getNodeHeaderStyle: (node: FlowNodeObject): CSSProperties => {
-      const color = getComponentColor(node.component)
-      return {
-        backgroundColor: color,
-        cursor: nodeDragging.value ? 'grabbing' : 'pointer',
-      }
-    },
+    getNodeHeaderStyle: (node: Editor.NodeObject): CSSProperties => ({
+      backgroundColor: getNodeColor(node),
+      cursor: nodeDragging.value ? 'grabbing' : 'pointer',
+    }),
 
     /***************************************************************************/
     /* Screen                                                                  */
@@ -358,7 +371,7 @@ export function useEditorView(options: EditorViewOptions = {}) {
         }
 
         // --- Update the position of the selected nodes.
-        handleSetNodesMetadata(...nodeSelected.value.map(node => ({
+        handleNodesMetadataUpdate(...nodeSelected.value.map(node => ({
           id: node.id,
           name: 'position',
           value: node.metadata.position,
@@ -383,7 +396,7 @@ export function useEditorView(options: EditorViewOptions = {}) {
       // --- If a drag link is active, emit a link remove event.
       if (linkDragFrom.value && !linkDragTo.value) {
         // @ts-expect-error: edge case handled by the server.
-        handleRemoveLinks(linkDragFrom.value)
+        handleNodesLinksRemove(linkDragFrom.value)
         linkDragFrom.value = undefined
         event.stopPropagation()
       }
@@ -393,7 +406,7 @@ export function useEditorView(options: EditorViewOptions = {}) {
         const linkToCreate = { ...linkDragFrom.value, ...linkDragTo.value }
         const { sourceId, sourceName, sourcePath, targetId, targetName, targetPath } = linkToCreate
         if (sourceId && targetId && sourceName && targetName && sourceId !== targetId)
-          handleCreateLinks({ sourceId, sourceName, sourcePath, targetId, targetName, targetPath })
+          handleNodesLinksCreate({ sourceId, sourceName, sourcePath, targetId, targetName, targetPath })
         linkDragFrom.value = undefined
         linkDragTo.value = undefined
         event.stopPropagation()
@@ -432,15 +445,15 @@ export function useEditorView(options: EditorViewOptions = {}) {
       if (data.type === 'createNode') {
         if (!view.value) return
         const { x, y } = screenToWorld({ x: event.clientX, y: event.clientY })
-        handleCreateNodes({ specifier: data.kind, x, y })
+        handleNodesCreate({ specifier: data.kind, x, y })
       }
     },
 
     onScreenKeyDown: (event: KeyboardEvent) => {
       const isInputActive
         = document.activeElement instanceof HTMLInputElement
-        || document.activeElement instanceof HTMLTextAreaElement
-        || document.activeElement instanceof HTMLSelectElement
+          || document.activeElement instanceof HTMLTextAreaElement
+          || document.activeElement instanceof HTMLSelectElement
 
       // --- Grab the viewplane to move it around.
       if (event.key === ' ') {
@@ -459,12 +472,12 @@ export function useEditorView(options: EditorViewOptions = {}) {
         if (event.key === 'd' && event.ctrlKey) {
           event.preventDefault()
           const { x, y } = cursorWorld.value
-          handleCloneNodes({ ids: [...nodeSelectedIds.value], origin: { x, y } })
+          handleNodesClone({ ids: [...nodeSelectedIds.value], origin: { x, y } })
         }
 
         // --- Handle the delete key to remove the selected nodes.
         else if (event.key === 'Delete' || event.key === 'Backspace') {
-          handleRemoveNodes(...nodeSelectedIds.value)
+          handleNodesRemove(...nodeSelectedIds.value)
         }
 
         // --- Handle the move key to move the selected nodes.
@@ -477,7 +490,7 @@ export function useEditorView(options: EditorViewOptions = {}) {
           if (event.key === 'ArrowRight') offset.x += factor
 
           // --- Update the position of the selected nodes.
-          handleSetNodesMetadata(...nodeSelected.value.map(node => ({
+          handleNodesMetadataUpdate(...nodeSelected.value.map(node => ({
             id: node.id,
             name: 'position',
             value: {

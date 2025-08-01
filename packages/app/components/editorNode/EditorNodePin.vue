@@ -1,34 +1,17 @@
 <script setup lang="ts">
-import type { FlowNodeObject } from '@nwrx/nano-api'
+import type { Editor } from '@nwrx/nano-api'
 import type { Schema } from '@nwrx/nano/utils'
-import { isReferenceLink } from '~/composables/useEditor/isReferenceLink'
 import EditorNodeInputTooltip from '../editorNodeInput/EditorNodeInput.Tooltip.vue'
 
 const props = defineProps<{
   name?: string
   path?: string
-  node?: FlowNodeObject
+  node?: Editor.NodeObject
   schema?: Schema
   value?: unknown
   type?: 'source' | 'target'
+  isLinkable?: boolean
 }>()
-
-// --- Check if the model is a link reference.
-const isLinkValue = computed(() => {
-  if (!props.node) return false
-  if (!props.name) return false
-  const model = props.node.input[props.name]
-  return isReferenceLink(model)
-})
-
-// --- Flag that indicates if the input can be linked.
-const isLinkable = computed(() => {
-  const control = props.schema?.['x-control']
-  if (props.path) return true
-  if (props.path === '') return false
-  if (control === undefined) return true
-  return isLinkValue.value
-})
 
 const dataId = computed(() => {
   if (!props.node) return
@@ -44,9 +27,13 @@ const dataId = computed(() => {
 })
 
 const appearance = computed(() => {
-  if (!isLinkable.value) return 'dot'
   if (props.type === 'source') return 'right'
-  if (props.type === 'target') return 'left'
+  return props.isLinkable ? 'left' : 'dot'
+})
+
+const color = computed(() => {
+  if (!props.schema) return 'var(--color-gray-500)'
+  return getSchemaTypeColor(props.schema)
 })
 </script>
 
@@ -54,7 +41,7 @@ const appearance = computed(() => {
   <EditorTooltip class="self-start">
     <div
       :data-id="dataId"
-      :data-color="getSchemaTypeColor(schema)"
+      :data-color="color"
       class="w-6 h-8 flex items-center self-start transition duration-fast shrink-0 cursor-pointer"
       :class="{
         'pr-sm -translate-x-2px': appearance === 'left',
@@ -62,7 +49,7 @@ const appearance = computed(() => {
       }">
       <div
         class="h-2 shrink-0 transition duration-fast"
-        :style="{ backgroundColor: getSchemaTypeColor(schema) }"
+        :style="{ backgroundColor: color }"
         :class="{
           'w-4': appearance !== 'dot',
           'rd-r rd-l-sm': appearance === 'left',

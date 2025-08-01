@@ -1,4 +1,4 @@
-import type { RegistryComponentObject } from '@nwrx/nano-api'
+import type { FlowEditorComponent } from '@nwrx/nano-api'
 import type { Schema } from '@nwrx/nano/utils'
 
 export function getSchemaType(socket?: Schema) {
@@ -10,7 +10,6 @@ export function getSchemaType(socket?: Schema) {
 
 export function getSchemaTypeColor(socket?: Schema) {
   const typeRaw = getSchemaType(socket)
-  // // "string" | "number" | "boolean" | "object" | "function" | "stream" | "file" | "integer" | "null" | "array" | undefined
   if (typeRaw === 'string') return '#927721'
   if (typeRaw === 'number') return '#FF1648'
   if (typeRaw === 'boolean') return '#3386CF'
@@ -24,7 +23,7 @@ export function getSchemaTypeColor(socket?: Schema) {
   return '#888'
 }
 
-export function getComponentTypeColors(component: RegistryComponentObject) {
+export function getComponentTypeColors(component: FlowEditorComponent) {
   const colors = new Set<string>()
   if (component.inputs) {
     for (const name in component.inputs) {

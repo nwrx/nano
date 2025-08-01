@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FlowNodeObject } from '@nwrx/nano-api'
+import type { Editor } from '@nwrx/nano-api'
 import type { SchemaOption } from '@nwrx/nano/utils'
 import type { CSSProperties } from 'vue'
 import EditorNodeHeader from '~/components/editorNode/EditorNodeHeader.vue'
@@ -7,15 +7,16 @@ import EditorNodeInput from '~/components/editorNodeInput/EditorNodeInput.vue'
 import EditorNodeOutput from '~/components/editorNodeOutput/EditorNodeOutput.vue'
 
 defineProps<{
-  node?: FlowNodeObject
-  styleHeader?: CSSProperties
+  node: Editor.NodeObject
+  component: Editor.ComponentObject
+  styleHeader: CSSProperties
   searchOptions: (name: string, query: string) => Promise<SchemaOption[]>
 }>()
 
 const emit = defineEmits<{
   'release': []
   'grab': [MouseEvent]
-  'setInputValue': [name: string, value: unknown]
+  'inputUpdate': [name: string, value: unknown]
   'inputGrab': [name: string, path?: string]
   'inputAssign': [name: string, path?: string]
   'inputUnassign': []
@@ -31,27 +32,28 @@ const emit = defineEmits<{
     <!-- Node Header -->
     <EditorNodeHeader
       :node="node"
+      :component="component"
       :style="styleHeader"
       @mouseup="() => emit('release')"
       @mousedown.stop="(event) => emit('grab', event)"
     />
 
     <!-- Node Body -->
-    <div v-if="node" class="flex flex-col py-sm relative">
+    <div v-if="component" class="flex flex-col py-sm relative">
       <EditorNodeInput
-        v-for="(schema, name) in node.component.inputs"
+        v-for="(schema, name) in component.inputs"
         :key="name"
         :name="name"
         :node="node"
         :schema="schema"
         :search-options="searchOptions"
-        @set-value="(value) => emit('setInputValue', name, value)"
+        @update="(value) => emit('inputUpdate', name, value)"
         @grab="(path) => emit('inputGrab', name, path)"
         @assign="(path) => emit('inputAssign', name, path)"
         @unassign="() => emit('inputUnassign')"
       />
       <EditorNodeOutput
-        v-for="(schema, name) in node.component.outputs"
+        v-for="(schema, name) in component.outputs"
         :key="name"
         :name="name"
         :node="node"
