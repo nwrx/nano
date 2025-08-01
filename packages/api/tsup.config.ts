@@ -12,5 +12,6 @@ export default defineConfig({
   treeshake: false,
   splitting: false,
   sourcemap: true,
+  external: [/^@nwrx\/.*/],
   outExtension: () => ({ js: '.cjs' }),
 })
