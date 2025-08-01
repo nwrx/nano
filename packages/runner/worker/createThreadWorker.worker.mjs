@@ -1,6 +1,6 @@
 /* eslint-disable jsdoc/no-types */
 import { abort, createThreadFromFlow, start } from '@nwrx/nano'
-import { COMPONENTS } from '@nwrx/nano/components'
+import { DEFAULT_COMPONENT_RESOLVER } from '@nwrx/nano/utils'
 import { noop } from '@unshared/functions'
 import { randomUUID } from 'node:crypto'
 import { serialize } from './serialize.mjs'
@@ -82,14 +82,9 @@ export function createThreadWorker(port, flow) {
 
     // --- Create a thread from the flow.
     const thread = createThreadFromFlow(flow, {
-      componentResolvers: [(specifier) => {
-        if (specifier.registry !== 'default') return
-        if (specifier.workspace !== 'nanoworks') return
-        if (specifier.name in COMPONENTS === false) return
-        // @ts-expect-error: key exists
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        return COMPONENTS[specifier.name]
-      }],
+      componentResolvers: [
+        DEFAULT_COMPONENT_RESOLVER,
+      ],
 
       // --- Ask the main API to resolve the reference.
       referenceResolvers: [async(type, ...values) => {
