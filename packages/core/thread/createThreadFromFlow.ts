@@ -33,8 +33,7 @@ export function createThreadFromFlow(flow: FlowV1, options: ThreadOptions = {}):
     // --- If the key starts with an underscore, store it as metadata data.
     // --- Otherwise, store the value as initial data.
     for (const key in data) {
-      // @ts-expect-error: ignore input schema validation.
-      const value = data[key] as unknown
+      const value = data[key]
       if (key.startsWith('_')) metadata[key.slice(1)] = value
       else input[key] = value
     }
