@@ -1,5 +1,3 @@
-import type { COMPONENTS } from '../components'
-import type { Component, InferSchemaRecord } from '../utils'
 import type { Thread } from './createThread'
 import { serializeSpecifier } from '../utils'
 
@@ -7,12 +5,6 @@ export interface FlowV1Node {
   component: string
   [key: string]: unknown
 }
-
-export type FlowV1NodeMap<T> = {
-  [P in keyof T]: T[P] extends Component<infer U>
-    ? InferSchemaRecord<U> & { component: P }
-    : object
-}[keyof T]
 
 export interface FlowV1Metadata {
   name?: string
@@ -25,7 +17,7 @@ export interface FlowV1Metadata {
 
 export interface FlowV1 {
   version: '1'
-  nodes: Record<string, FlowV1Node | FlowV1NodeMap<typeof COMPONENTS>>
+  nodes: Record<string, FlowV1Node>
   metadata?: FlowV1Metadata
 }
 
