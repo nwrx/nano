@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import type { FlowObject } from '@nwrx/nano-api'
+import DataSheetRow from '~/components/base/DataSheet.Row.vue'
+import DataSheet from '~/components/base/DataSheet.vue'
+import EditorPanelHeader from './EditorPanel.Header.vue'
+import EditorPanelSection from './EditorPanel.Section.vue'
 
 defineProps<{
   flow?: FlowObject
 }>()
 
 const emit = defineEmits<{
-  'setMetadata': Array<{ name: string; value: unknown }>
+  'metadataUpdate': Array<{ name: string; value: unknown }>
 }>()
 
 const { t } = useI18n()
@@ -20,10 +24,10 @@ const settings = useLocalSettings()
     <EditorPanelHeader
       :name="flow?.title || flow?.name"
       :description="flow?.description"
-      :placeholder-name="t('meta.title')"
-      :placeholder-description="t('meta.description')"
-      @update:name="(value) => emit('setMetadata', { name: 'title', value })"
-      @update:description="(value) => emit('setMetadata', { name: 'description', value })"
+      :placeholder-name="t('metaTitle')"
+      :placeholder-description="t('metaDescription')"
+      @update:name="(value) => emit('metadataUpdate', { name: 'title', value })"
+      @update:description="(value) => emit('metadataUpdate', { name: 'description', value })"
     />
 
     <EditorPanelSection
@@ -33,10 +37,10 @@ const settings = useLocalSettings()
       text="Define the behavior of the HTTP trigger.">
       <DataSheet>
         <DataSheetRow
-          :name="t('settings.name')"
+          :name="t('settingsName')"
           is-editable
           :model-value="flow?.name"
-          @update:model-value="(value) => emit('setMetadata', { name: 'name', value })"
+          @update:model-value="(value) => emit('metadataUpdate', { name: 'name', value })"
         />
         <DataSheetRow
           name="Enabled"
@@ -57,9 +61,7 @@ const settings = useLocalSettings()
 
 <i18n lang="yaml">
 en:
-  meta:
-    title: Give your flow a name
-    description: Describe your flow in a few words.
-  settings:
-    name: Name
+  metaTitle: Give your flow a name
+  metaDescription: Describe your flow in a few words.
+  settingsName: Name
 </i18n>
