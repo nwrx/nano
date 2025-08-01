@@ -12,6 +12,12 @@ export const MESSAGE_CLIENT_NODES_REMOVE_SCHEMA = createParser({
 /** The type for the `removeNodes` event. */
 export type MessageClientNodesRemove = ReturnType<typeof MESSAGE_CLIENT_NODES_REMOVE_SCHEMA>
 
+/** The result type for the `nodes.removed` event. */
+export interface MessageServerNodesRemoved {
+  event: 'nodes.removed'
+  data: string[]
+}
+
 /**
  * Handle the `removeNodes` event in the editor session.
  *
@@ -20,11 +26,13 @@ export type MessageClientNodesRemove = ReturnType<typeof MESSAGE_CLIENT_NODES_RE
  * @returns A promise that resolves when the nodes are removed and saved.
  */
 export async function handleNodesRemove(this: EditorSession, event: MessageClientNodesRemove, peer: Peer): Promise<void> {
-  const removedNodes: string[] = []
+  const removedNodeIds: string[] = []
+
+  // --- Delete each node specified in the event data and collect any errors.
   for (const nodeId of event.data) {
     try {
       await removeNode(this.thread, nodeId)
-      removedNodes.push(nodeId)
+      removedNodeIds.push(nodeId)
     }
     catch (error) {
       peer.send({
@@ -35,6 +43,7 @@ export async function handleNodesRemove(this: EditorSession, event: MessageClien
   }
 
   // --- Broadcast the removed nodes to all peers in the session.
-  this.broadcast({ event: 'nodes.removed', data: removedNodes })
+  if (removedNodeIds.length === 0) return
+  this.broadcast({ event: 'nodes.removed', data: removedNodeIds })
   await this.saveFlow()
 }

@@ -14,6 +14,18 @@ export const MESSAGE_CLIENT_METADATA_UPDATE_SCHEMA = createParser({
 export type EventMetadataUpdate = ReturnType<typeof MESSAGE_CLIENT_METADATA_UPDATE_SCHEMA>
 
 /**
+ * The interface for the metadata changed message sent to the server.
+ * This message is broadcasted to all peers when metadata is updated.
+ */
+export interface MessageServerMetadataChanged {
+  event: 'metadata.changed'
+  data: Array<{
+    name: 'description' | 'name' | 'title'
+    value: unknown
+  }>
+}
+
+/**
  * Handle the `setMetadata` event in the editor session.
  *
  * @param event The event data containing metadata changes.

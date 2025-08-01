@@ -5,8 +5,6 @@ import { ModuleUser } from '../user'
 import * as ROUTES from './routes'
 import * as UTILS from './utils'
 
-export type * from './utils/clientEvent'
-export type * from './utils/serverEvent'
 export type * from './utils/types'
 
 /**

@@ -1,5 +1,6 @@
 import type { Peer } from 'crossws'
 import type { EditorSession } from '../createEditorSession'
+import type { Editor } from '../types'
 import { assert, createParser } from '@unshared/validation'
 import { serializeSession } from '../serialize'
 
@@ -10,6 +11,11 @@ export const MESSAGE_CLIENT_REQUEST_RELOAD_SCHEMA = createParser({
 
 /** The type for the `syncronize` event. */
 export type MessageClientRequestReload = ReturnType<typeof MESSAGE_CLIENT_REQUEST_RELOAD_SCHEMA>
+
+export interface MessageServerRequestReloadResult {
+  event: 'request.reload.result'
+  data: Editor.State
+}
 
 /**
  * Handle the `syncronize` event in the editor session.

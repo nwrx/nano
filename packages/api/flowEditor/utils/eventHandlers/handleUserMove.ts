@@ -12,6 +12,19 @@ export const MESSAGE_CLIENT_USER_MOVE_SCHEMA = createParser({
 export type MessageClientUserMove = ReturnType<typeof MESSAGE_CLIENT_USER_MOVE_SCHEMA>
 
 /**
+ * The interface for the user moved message sent to the server.
+ * This message is broadcasted to all peers when a user moves.
+ */
+export interface MessageServerUserMoved {
+  event: 'user.moved'
+  data: Array<{
+    id: string
+    x: number
+    y: number
+  }>
+}
+
+/**
  * Handle the `setUserPosition` event in the editor session.
  *
  * @param event The event data containing the user position.

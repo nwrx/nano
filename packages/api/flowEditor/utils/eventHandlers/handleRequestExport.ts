@@ -15,13 +15,19 @@ export const MESSAGE_CLIENT_REQUEST_EXPORT_SCHEMA = createParser({
 /** The type for the `getFlowExport` event. */
 export type MessageClientRequestExport = ReturnType<typeof MESSAGE_CLIENT_REQUEST_EXPORT_SCHEMA>
 
+/** The result type for the `request.export.result` event. */
+export interface MessageServerRequestExportResult {
+  event: 'request.export.result'
+  data: string
+}
+
 /**
  * Handle the `getFlowExport` event in the editor session.
  *
  * @param event The event data containing the export format.
  * @param peer The peer that sent the event.
  */
-export function handleExportRequest(this: EditorSession, event: MessageClientRequestExport, peer: Peer): void {
+export function handleRequestExport(this: EditorSession, event: MessageClientRequestExport, peer: Peer): void {
   const [{ format }] = event.data
   const data = serialize(this.thread, {
     name: this.flow.name,
@@ -34,5 +40,5 @@ export function handleExportRequest(this: EditorSession, event: MessageClientReq
     : YAML.stringify(data)
 
   // --- Send the formatted data back to the peer.
-  this.sendMessage(peer, { event: 'request.export.result', data: [formatted] })
+  this.sendMessage(peer, { event: 'request.export.result', data: formatted })
 }

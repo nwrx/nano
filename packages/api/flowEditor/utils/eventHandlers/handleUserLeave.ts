@@ -11,6 +11,17 @@ export const MESSAGE_CLIENT_USER_LEAVE_SCHEMA = createParser({
 export type MessageClientUserLeave = ReturnType<typeof MESSAGE_CLIENT_USER_LEAVE_SCHEMA>
 
 /**
+ * The interface for the user left message sent to the server.
+ * This message is broadcasted to all peers when a user leaves.
+ */
+export interface MessageServerUserLeft {
+  event: 'user.left'
+  data: {
+    id: string
+  }
+}
+
+/**
  * Handle the `userLeave` event in the editor session.
  *
  * @param event The event data for user leaving.

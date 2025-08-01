@@ -6,8 +6,7 @@ import type { Flow } from '../../flow'
 import type { Project } from '../../project'
 import type { User } from '../../user'
 import type { ModuleFlowEditor } from '../index'
-import type { EditorSessionClientMessage } from './clientEvent'
-import type { EditorSessionServerMessage } from './serverEvent'
+import type { Editor } from './types'
 import { serialize } from '@nwrx/nano'
 import { ModuleFlow } from '../../flow'
 import * as EventHandlers from './eventHandlers'
@@ -59,7 +58,7 @@ export class EditorSession {
 
     // --- Bind the peer to the participant.
     this.broadcast({
-      event: 'userJoined',
+      event: 'user.joined',
       data: [{ id: peer.id, color, name: user.profile?.displayName ?? user.username }],
     })
 
@@ -72,14 +71,14 @@ export class EditorSession {
 
   unsubscribe(peer: Peer) {
     this.participants = this.participants.filter(p => p.peer?.id !== peer.id)
-    this.broadcast({ event: 'userLeft', data: [peer.id] })
+    this.broadcast({ event: 'user.left', data: { id: peer.id } })
   }
 
-  sendMessage(peer: Peer, payload: EditorSessionServerMessage) {
-    peer.send(payload)
+  sendMessage(peer: Peer, message: Editor.MessageServer) {
+    peer.send(message)
   }
 
-  broadcast(payload: EditorSessionServerMessage, except?: Peer) {
+  broadcast(payload: Editor.MessageServer, except?: Peer) {
     for (const participant of this.participants) {
       if (!participant.peer) continue
       if (participant.peer.id === except?.id) continue
@@ -90,7 +89,7 @@ export class EditorSession {
       const payloadJson = JSON.stringify(payload)
       // for (const secret of payloadSecrets)
       //   payloadJson = payloadJson.replaceAll(secret, '********')
-      const payloadSafe = JSON.parse(payloadJson) as EditorSessionServerMessage
+      const payloadSafe = JSON.parse(payloadJson) as Editor.MessageServer
       participant.peer.send(payloadSafe)
     }
   }
@@ -105,19 +104,13 @@ export class EditorSession {
     }
   }
 
-  async handleMessage(peer: Peer, message: EditorSessionClientMessage) {
+  async handleMessage(peer: Peer, message: Editor.MessageClient) {
     try {
-
-      // Misc
       if (message.event === 'request.reload') return EventHandlers.handleRequestReload.call(this, message, peer)
-      if (message.event === 'request.export') return EventHandlers.handleExportRequest.call(this, message, peer)
+      if (message.event === 'request.export') return EventHandlers.handleRequestExport.call(this, message, peer)
       if (message.event === 'metadata.update') return EventHandlers.handleMetadataUpdate.call(this, message)
-
-      // User
       if (message.event === 'user.move') return EventHandlers.handleUserMove.call(this, message, peer)
       if (message.event === 'user.leave') return EventHandlers.handleUserLeave.call(this, message, peer)
-
-      // Nodes
       if (message.event === 'nodes.clone') return EventHandlers.handleNodesClone.call(this, message)
       if (message.event === 'nodes.create') return EventHandlers.handleNodesCreate.call(this, message)
       if (message.event === 'nodes.remove') return EventHandlers.handleNodesRemove.call(this, message, peer)
@@ -126,10 +119,18 @@ export class EditorSession {
       if (message.event === 'nodes.links.remove') return EventHandlers.handleNodesLinksRemove.call(this, message)
       if (message.event === 'nodes.metadata.update') return EventHandlers.handleNodesMetadataUpdate.call(this, message)
       if (message.event === 'nodes.options.search') return EventHandlers.handleNodesOptionsSearch.call(this, message, peer)
+      if (message.event === 'nodes.properties.search') return EventHandlers.handleNodesPropertiesSearch.call(this, message, peer)
     }
     catch (error) {
-      this.sendMessage(peer, { event: 'error', message: (error as Error).message })
-      console.error(error)
+      this.sendMessage(peer, {
+        event: 'error',
+        data: {
+          name: error instanceof Error ? error.name : 'E_UNKNOWN',
+          message: error instanceof Error ? error.message : 'An unknown error occurred',
+        },
+      })
+      if (import.meta.dev)
+        console.error(error)
     }
   }
 }

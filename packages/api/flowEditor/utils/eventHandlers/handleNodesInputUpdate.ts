@@ -16,6 +16,19 @@ export const MESSAGE_CLIENT_NODES_INPUT_UPDATE_SCHEMA = createParser({
 export type MessageClientNodesInputUpdate = ReturnType<typeof MESSAGE_CLIENT_NODES_INPUT_UPDATE_SCHEMA>
 
 /**
+ * The interface for the nodes input changed message sent to the server.
+ * This message is broadcasted to all peers when node inputs are updated.
+ */
+export interface MessageServerNodesInputChanged {
+  event: 'nodes.input.changed'
+  data: Array<{
+    id: string
+    name: string
+    value: unknown
+  }>
+}
+
+/**
  * Handle the `setNodesInputValue` event in the editor session.
  *
  * @param message The message containing the node input values to set.

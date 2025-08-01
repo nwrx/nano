@@ -1,6 +1,7 @@
 export * from './createEditorSession'
 export * from './errors'
 export * from './getEditorSession'
+export * from './messages'
 export * from './resolveComponent'
 export * from './serialize'
 export * from './types'

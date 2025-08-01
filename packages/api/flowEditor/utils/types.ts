@@ -1,6 +1,20 @@
 import type { Node } from '@nwrx/nano'
 import type { Component, Schema } from '@nwrx/nano/utils'
 import type { FlowObject } from '../../flow'
+import type {
+  MessageServerMetadataChanged,
+  MessageServerNodesCreated,
+  MessageServerNodesInputChanged,
+  MessageServerNodesMetadataChanged,
+  MessageServerNodesOptionsResult,
+  MessageServerNodesPropertiesResult,
+  MessageServerNodesRemoved,
+  MessageServerRequestExportResult,
+  MessageServerRequestReloadResult,
+  MessageServerUserLeft,
+  MessageServerUserMoved,
+} from './eventHandlers'
+import type { MESSAGE_CLIENT_SCHEMA } from './messages'
 
 export namespace Editor {
   export type ComponentPurpose =
@@ -60,4 +74,36 @@ export namespace Editor {
     es?: string
     zh?: string
   }
+
+  export type MessageClient = ReturnType<typeof MESSAGE_CLIENT_SCHEMA>
+  export type MessageClientEvent = MessageClient['event']
+
+  export interface MessageServerError {
+    event: 'error'
+    data: { name: string; message: string }
+  }
+
+  export interface MessageServerUserJoined {
+    event: 'user.joined'
+    data: Array<{
+      id: string
+      name: string
+      color: string
+    }>
+  }
+
+  export type MessageServer =
+    | MessageServerError
+    | MessageServerMetadataChanged
+    | MessageServerNodesCreated
+    | MessageServerNodesInputChanged
+    | MessageServerNodesMetadataChanged
+    | MessageServerNodesOptionsResult
+    | MessageServerNodesPropertiesResult
+    | MessageServerNodesRemoved
+    | MessageServerRequestExportResult
+    | MessageServerRequestReloadResult
+    | MessageServerUserJoined
+    | MessageServerUserLeft
+    | MessageServerUserMoved
 }

@@ -20,6 +20,12 @@ export const MESSAGE_CLIENT_NODES_CREATE_SCHEMA = createParser({
 /** The type for the `nodes.create` event. */
 export type MessageClientNodesCreate = ReturnType<typeof MESSAGE_CLIENT_NODES_CREATE_SCHEMA>
 
+/** The result type for the `nodes.created` event. */
+export interface MessageServerNodesCreated {
+  event: 'nodes.created'
+  data: Editor.NodeObject[]
+}
+
 /**
  * Handle the `nodes.create` event in the editor session.
  *
