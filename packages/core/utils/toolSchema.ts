@@ -17,7 +17,7 @@ export const TOOL_SCHEMA = {
       'type': 'string',
       'title': 'Node ID',
       'description': 'The ID of the node that the tool is associated with.',
-      'x-internal': true,
+      'x-hidden': true,
     },
     name: {
       type: 'string',
