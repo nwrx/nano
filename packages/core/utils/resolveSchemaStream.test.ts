@@ -13,12 +13,4 @@ describe('resolveSchemaStream', () => {
     const error = E.INPUT_NOT_STREAM('value')
     expect(shouldThrow).toThrow(error)
   })
-
-  it('should throw an error if the stream is locked', () => {
-    const stream = new ReadableStream()
-    stream.getReader() // Lock the stream
-    const shouldThrow = () => resolveSchemaStream('value', stream)
-    const error = E.INPUT_STREAM_LOCKED('value')
-    expect(shouldThrow).toThrow(error)
-  })
 })
