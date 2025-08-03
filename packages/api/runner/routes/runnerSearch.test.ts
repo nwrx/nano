@@ -7,12 +7,12 @@ describe<Context>('GET /api/runners', () => {
   beforeEach<Context>(async(context) => {
     await createTestContext(context)
     await context.application.createTestServer()
-    await context.runner.createTestServer()
+    await context.applicationRunner.createTestServer()
 
     // Stub global fetch for Unix socket support.
     vi.stubGlobal('fetch', async(url: string, options: RequestInit) => {
       const path = new URL(url).pathname
-      return context.runner.fetch(path, options)
+      return context.applicationRunner.fetch(path, options)
     })
   })
 
@@ -39,14 +39,14 @@ describe<Context>('GET /api/runners', () => {
       })
     })
 
-    it('should handle unreachable runners in the list', async({ application, setupUser, moduleThreadRunner }) => {
+    it('should handle unreachable runners in the list', async({ application, setupUser, moduleRunner }) => {
       const { headers } = await setupUser({ isSuperAdministrator: true })
       const body = JSON.stringify({ address: 'http://localhost' })
       await application.fetch('/api/runners', { method: 'POST', body, headers })
-      const { ThreadRunner } = moduleThreadRunner.getRepositories()
-      const { id } = await ThreadRunner.findOneByOrFail({})
-      moduleThreadRunner.threadRunners.get(id)!.ping = async() => { throw new Error('Unreachable') }
-      moduleThreadRunner.threadRunners.get(id)!.getStatus = async() => { throw new Error('Unreachable') }
+      const { Runner } = moduleRunner.getRepositories()
+      const { id } = await Runner.findOneByOrFail({})
+      moduleRunner.runnerClients.get(id)!.ping = async() => { throw new Error('Unreachable') }
+      moduleRunner.runnerClients.get(id)!.getStatus = async() => { throw new Error('Unreachable') }
       const response = await application.fetch('/api/runners', { method: 'GET', headers })
       const data = await response.json() as Array<{ address: string }>
       expect(response).toMatchObject({ status: 200, statusText: 'OK' })

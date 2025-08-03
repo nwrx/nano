@@ -1,10 +1,10 @@
-import type { ModuleThreadRunner } from '..'
-import type { ThreadRunnerObject } from '../entities'
+import type { ModuleRunner } from '..'
+import type { RunnerObject } from '../entities'
 import { createHttpRoute } from '@unserved/server'
 import { assert, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 
-export function updateThreadRunner(this: ModuleThreadRunner) {
+export function updateRunner(this: ModuleRunner) {
   return createHttpRoute(
     {
       name: 'PUT /api/runners/:identity',
@@ -15,7 +15,7 @@ export function updateThreadRunner(this: ModuleThreadRunner) {
         address: assert.stringNotEmpty,
       }),
     },
-    async({ event, parameters, body }): Promise<ThreadRunnerObject> => {
+    async({ event, parameters, body }): Promise<RunnerObject> => {
       const moduleUser = this.getModule(ModuleUser)
       const { user } = await moduleUser.authenticate(event)
 
@@ -23,19 +23,19 @@ export function updateThreadRunner(this: ModuleThreadRunner) {
       if (!user.isSuperAdministrator) throw moduleUser.errors.USER_FORBIDDEN()
 
       // --- Get runner from the database.
-      const { ThreadRunner } = this.getRepositories()
+      const { Runner } = this.getRepositories()
       const { identity } = parameters
-      const runner = await ThreadRunner.findOneBy({ identity })
+      const runner = await Runner.findOneBy({ identity })
       if (!runner) throw this.errors.THREAD_RUNNER_NOT_FOUND(identity)
 
       // --- Update the client.
-      const threadRunnerClient = this.threadRunners.get(runner.id)
-      if (!threadRunnerClient) throw this.errors.THREAD_RUNNER_NOT_FOUND(identity)
-      threadRunnerClient.address = body.address
+      const runnerClient = this.runnerClients.get(runner.id)
+      if (!runnerClient) throw this.errors.THREAD_RUNNER_NOT_FOUND(identity)
+      runnerClient.address = body.address
 
       // --- Update the runner address.
       runner.address = body.address
-      await ThreadRunner.save(runner)
+      await Runner.save(runner)
       return runner.serialize()
     },
   )

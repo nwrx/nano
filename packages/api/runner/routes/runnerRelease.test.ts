@@ -5,32 +5,32 @@ describe.sequential<Context>('DELETE /api/runners/:identity', () => {
   beforeEach<Context>(async(context) => {
     await createTestContext(context)
     await context.application.createTestServer()
-    await context.runner.createTestServer()
+    await context.applicationRunner.createTestServer()
 
     // Stub fetch to support Unix sockets
     vi.stubGlobal('fetch', async(url: string, options: RequestInit) => {
       const path = new URL(url).pathname
-      return context.runner.fetch(path, options)
+      return context.applicationRunner.fetch(path, options)
     })
   })
 
   afterEach<Context>(async(context) => {
     await context.application.destroy()
-    await context.runner.destroy()
+    await context.applicationRunner.destroy()
     vi.unstubAllGlobals()
   })
 
   describe<Context>('release', (it) => {
-    it('should release a thread runner successfully', async({ setupUser, application, moduleThreadRunner }) => {
+    it('should release a thread runner successfully', async({ setupUser, application, moduleRunner }) => {
       const { headers } = await setupUser({ isSuperAdministrator: true })
       const body = JSON.stringify({ address: 'http://localhost' })
       await application.fetch('/api/runners', { method: 'POST', body, headers })
-      const { ThreadRunner } = moduleThreadRunner.getRepositories()
-      const { identity } = await ThreadRunner.findOneByOrFail({})
+      const { Runner } = moduleRunner.getRepositories()
+      const { identity } = await Runner.findOneByOrFail({})
       const response = await application.fetch(`/api/runners/${identity}`, { method: 'DELETE', headers })
       expect(response).toMatchObject({ status: 204, statusText: 'No Content' })
-      expect(moduleThreadRunner.threadRunners.has(identity)).toBe(false)
-      const runner = await ThreadRunner.findOne({ where: { identity }, withDeleted: true })
+      expect(moduleRunner.runnerClients.has(identity)).toBe(false)
+      const runner = await Runner.findOne({ where: { identity }, withDeleted: true })
       expect(runner?.deletedAt).toBeTruthy()
     })
   })

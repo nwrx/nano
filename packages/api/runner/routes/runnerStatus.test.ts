@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import type { ThreadRunnerStatus } from '@nwrx/nano-runner'
+import type { RunnerStatus } from '@nwrx/nano-runner'
 import type { Context } from '../../__fixtures__'
 import { createTestContext } from '../../__fixtures__'
 
@@ -7,12 +7,12 @@ describe<Context>('GET /api/runners/:runner', () => {
   beforeEach<Context>(async(context) => {
     await createTestContext(context)
     await context.application.createTestServer()
-    await context.runner.createTestServer()
+    await context.applicationRunner.createTestServer()
 
     // Stub global fetch for Unix socket support.
     vi.stubGlobal('fetch', async(url: string, options: RequestInit) => {
       const path = new URL(url).pathname
-      return context.runner.fetch(path, options)
+      return context.applicationRunner.fetch(path, options)
     })
   })
 
@@ -23,17 +23,17 @@ describe<Context>('GET /api/runners/:runner', () => {
   })
 
   describe<Context>('success', (it) => {
-    it('should return status of the registered runner', async({ application, setupUser, moduleThreadRunner }) => {
+    it('should return status of the registered runner', async({ application, setupUser, moduleRunner }) => {
       const { headers } = await setupUser({ isSuperAdministrator: true })
       // Claim a runner first.
       const body = JSON.stringify({ address: 'http://localhost' })
       await application.fetch('/api/runners', { method: 'POST', body, headers })
-      const { ThreadRunner } = moduleThreadRunner.getRepositories()
-      const { identity } = await ThreadRunner.findOneByOrFail({})
+      const { Runner } = moduleRunner.getRepositories()
+      const { identity } = await Runner.findOneByOrFail({})
 
       // Check the status for the claimed runner.
       const response = await application.fetch(`/api/runners/${identity}/status`, { method: 'GET', headers })
-      const data = await response.json() as ThreadRunnerStatus
+      const data = await response.json() as RunnerStatus
       expect(response).toMatchObject({ status: 200, statusText: 'OK' })
       expect(data).toStrictEqual({
         availableParallelismv: expect.any(Number),
@@ -50,20 +50,20 @@ describe<Context>('GET /api/runners/:runner', () => {
         type: expect.any(String),
         version: expect.any(String),
         workerPool: expect.any(Array),
-      } as ThreadRunnerStatus)
+      } as RunnerStatus)
     })
 
-    it('should return 500 when the runner is unreachable', async({ application, setupUser, moduleThreadRunner }) => {
+    it('should return 500 when the runner is unreachable', async({ application, setupUser, moduleRunner }) => {
       const { headers } = await setupUser({ isSuperAdministrator: true })
       // Claim a runner first.
       const body = JSON.stringify({ address: 'http://localhost' })
       await application.fetch('/api/runners', { method: 'POST', body, headers })
-      const { ThreadRunner } = moduleThreadRunner.getRepositories()
-      const { id, identity } = await ThreadRunner.findOneByOrFail({})
+      const { Runner } = moduleRunner.getRepositories()
+      const { id, identity } = await Runner.findOneByOrFail({})
 
       // Check the status for the claimed runner.
-      // moduleThreadRunner.threadRunners.get(id)!.ping = async() => { throw new Error('Unreachable') }
-      moduleThreadRunner.threadRunners.get(id)!.getStatus = () => Promise.reject(new Error('Unreachable'))
+      // moduleRunner.runners.get(id)!.ping = async() => { throw new Error('Unreachable') }
+      moduleRunner.runnerClients.get(id)!.getStatus = () => Promise.reject(new Error('Unreachable'))
       const response = await application.fetch(`/api/runners/${identity}/status`, { method: 'GET', headers })
       const data = await response.json() as { address: string; status: unknown }
       expect(response).toMatchObject({ status: 503, statusText: 'Service Unavailable' })

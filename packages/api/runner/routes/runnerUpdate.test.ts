@@ -6,12 +6,12 @@ describe<Context>('PUT /api/runners/:identity', () => {
   beforeEach<Context>(async(context) => {
     await createTestContext(context)
     await context.application.createTestServer()
-    await context.runner.createTestServer()
+    await context.applicationRunner.createTestServer()
 
     // Stub global fetch for Unix socket support.
     vi.stubGlobal('fetch', async(url: string, options: RequestInit) => {
       const path = new URL(url).pathname
-      return context.runner.fetch(path, options)
+      return context.applicationRunner.fetch(path, options)
     })
   })
 
@@ -22,14 +22,14 @@ describe<Context>('PUT /api/runners/:identity', () => {
   })
 
   describe<Context>('success', (it) => {
-    it('should update a thread runner address successfully', async({ application, setupUser, moduleThreadRunner }) => {
+    it('should update a thread runner address successfully', async({ application, setupUser, moduleRunner }) => {
       const { headers } = await setupUser({ isSuperAdministrator: true })
 
       // Claim a runner first.
       const createBody = JSON.stringify({ address: 'http://localhost:3000' })
       await application.fetch('/api/runners', { method: 'POST', body: createBody, headers })
-      const { ThreadRunner } = moduleThreadRunner.getRepositories()
-      const { identity } = await ThreadRunner.findOneByOrFail({})
+      const { Runner } = moduleRunner.getRepositories()
+      const { identity } = await Runner.findOneByOrFail({})
 
       // Update the runner address.
       const updateBody = JSON.stringify({ address: 'http://localhost:4000' })
@@ -44,7 +44,7 @@ describe<Context>('PUT /api/runners/:identity', () => {
       })
 
       // Verify the address was updated in the database.
-      const updatedRunner = await ThreadRunner.findOneByOrFail({ identity })
+      const updatedRunner = await Runner.findOneByOrFail({ identity })
       expect(updatedRunner.address).toBe('http://localhost:4000')
     })
   })

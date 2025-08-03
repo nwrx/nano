@@ -1,10 +1,10 @@
-import type { ThreadRunnerStatus } from '@nwrx/nano-runner'
-import type { ModuleThreadRunner } from '../index'
+import type { RunnerStatus } from '@nwrx/nano-runner'
+import type { ModuleRunner } from '../index'
 import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 
-export function threadRunnerStatus(this: ModuleThreadRunner) {
+export function runnerStatus(this: ModuleRunner) {
   return createHttpRoute(
     {
       name: 'GET /api/runners/:identity/status',
@@ -12,7 +12,7 @@ export function threadRunnerStatus(this: ModuleThreadRunner) {
         identity: assertStringNotEmpty,
       }),
     },
-    async({ event, parameters }): Promise<ThreadRunnerStatus> => {
+    async({ event, parameters }): Promise<RunnerStatus> => {
       const moduleUser = this.getModule(ModuleUser)
       const { user } = await moduleUser.authenticate(event)
       const { identity } = parameters
@@ -21,14 +21,14 @@ export function threadRunnerStatus(this: ModuleThreadRunner) {
       if (!user?.isSuperAdministrator) throw moduleUser.errors.USER_FORBIDDEN()
 
       // --- Retrieve the thread runner from the database.
-      const { ThreadRunner } = this.getRepositories()
-      const threadRunner = await ThreadRunner.findOneBy({ identity })
-      if (!threadRunner) throw this.errors.THREAD_RUNNER_NOT_FOUND(identity)
+      const { Runner } = this.getRepositories()
+      const runner = await Runner.findOneBy({ identity })
+      if (!runner) throw this.errors.THREAD_RUNNER_NOT_FOUND(identity)
 
       // --- Retrieve the thread runner client and get its status.
-      const runner = this.threadRunners.get(threadRunner.id)
-      if (!runner) throw this.errors.THREAD_RUNNER_NOT_FOUND(identity)
-      return await runner.getStatus().catch((error: Error) => {
+      const client = this.runnerClients.get(runner.id)
+      if (!client) throw this.errors.THREAD_RUNNER_NOT_FOUND(identity)
+      return await client.getStatus().catch((error: Error) => {
         throw this.errors.THREAD_RUNNER_NOT_REACHABLE(identity, error.message)
       })
     },

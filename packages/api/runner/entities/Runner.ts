@@ -2,9 +2,9 @@ import { BaseEntity, transformerDate } from '@unserved/server'
 import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm'
 import { User, UserObject } from '../../user'
 
-@Entity({ name: 'ThreadRunner' })
+@Entity({ name: 'Runner' })
 @Index(['address', 'deletedAt'], { unique: true })
-export class ThreadRunner extends BaseEntity {
+export class Runner extends BaseEntity {
 
   /**
    * The base URL of the thread runner. This URL is used to make requests to
@@ -68,7 +68,7 @@ export class ThreadRunner extends BaseEntity {
   /**
    * @returns The serialized representation of the thread runner.
    */
-  serialize(): ThreadRunnerObject {
+  serialize(): RunnerObject {
     return {
       address: this.address,
       identity: this.identity,
@@ -80,7 +80,7 @@ export class ThreadRunner extends BaseEntity {
   }
 }
 
-export interface ThreadRunnerObject {
+export interface RunnerObject {
   address: string
   identity: string
   createdAt: string

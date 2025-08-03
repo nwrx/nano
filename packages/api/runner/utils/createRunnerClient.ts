@@ -4,30 +4,30 @@ import type { ServerErrorName } from '@unserved/server'
 import type { WebSocketChannel } from '@unshared/client/websocket'
 import type { ObjectLike } from '@unshared/types'
 import type { Peer } from 'crossws'
-import type { ThreadRunner } from '../entities'
+import type { Runner } from '../entities'
 import { createClient } from '@unserved/client'
 import { createError } from '@unserved/server'
 import { toConstantCase } from '@unshared/string'
 import { ERRORS } from './errors'
 
-export type ThreadRunnerChannel = WebSocketChannel<ChannelConnectOptions<ModuleRunner, 'WS /threads/:id'>>
+export type RunnerChannel = WebSocketChannel<ChannelConnectOptions<ModuleRunner, 'WS /threads/:id'>>
 
-export interface ThreadRunnerClientOptions {
+export interface RunnerClientOptions {
   address: string
   token?: string
-  runner: ThreadRunner
+  runner: Runner
 }
 
-export class ThreadRunnerClient {
-  constructor(private options: ThreadRunnerClientOptions) {
+export class RunnerClient {
+  constructor(private options: RunnerClientOptions) {
     const { address, token } = options
-    this.client.options.baseUrl = /^https?:\/\//.test(address) ? address : `http://${address}`
+    this.client.options.baseUrl = address
     this.client.options.headers = { Authorization: `Bearer ${token}` }
   }
 
   set address(address: string) {
     this.options.address = address
-    this.client.options.baseUrl = /^https?:\/\//.test(address) ? address : `http://${address}`
+    this.client.options.baseUrl = address
   }
 
   get address() {
@@ -124,6 +124,6 @@ export class ThreadRunnerClient {
   }
 }
 
-export function createThreadRunnerClient(options: ThreadRunnerClientOptions) {
-  return new ThreadRunnerClient(options)
+export function createRunnerClient(options: RunnerClientOptions) {
+  return new RunnerClient(options)
 }

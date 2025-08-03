@@ -1,11 +1,11 @@
-import type { ThreadRunnerStatus } from '@nwrx/nano-runner'
-import type { ModuleThreadRunner } from '..'
+import type { RunnerStatus } from '@nwrx/nano-runner'
+import type { ModuleRunner } from '..'
 import { createWebSocketRoute } from '@unserved/server'
 import { assert, createParser, createRuleSet } from '@unshared/validation'
 import { ModuleUser } from '../../user'
 
 // Same thing but as a websocket that polls every 5 seconds
-export function threadRunnerStatusSession(this: ModuleThreadRunner) {
+export function runnerStatusSession(this: ModuleRunner) {
   return createWebSocketRoute(
     {
       name: 'WS /ws/runners/:identity',
@@ -13,7 +13,7 @@ export function threadRunnerStatusSession(this: ModuleThreadRunner) {
         identity: assert.stringNotEmpty,
       }),
       parseServerMessage: createRuleSet([
-        assert.object as (value: unknown) => asserts value is ThreadRunnerStatus,
+        assert.object as (value: unknown) => asserts value is RunnerStatus,
       ]),
     },
     {
@@ -24,20 +24,20 @@ export function threadRunnerStatusSession(this: ModuleThreadRunner) {
 
         // --- Retrieve the thread runner from the database.
         const { identity } = parameters
-        const { ThreadRunner } = this.getRepositories()
-        const threadRunner = await ThreadRunner.findOneBy({ identity })
-        if (!threadRunner) throw this.errors.THREAD_RUNNER_NOT_FOUND(identity)
-        const threadRunnerClient = this.threadRunners.get(threadRunner.id)
-        if (!threadRunnerClient) throw this.errors.THREAD_RUNNER_NOT_FOUND(identity)
+        const { Runner } = this.getRepositories()
+        const runner = await Runner.findOneBy({ identity })
+        if (!runner) throw this.errors.THREAD_RUNNER_NOT_FOUND(identity)
+        const runnerClient = this.runnerClients.get(runner.id)
+        if (!runnerClient) throw this.errors.THREAD_RUNNER_NOT_FOUND(identity)
 
         // --- Subscribe to the thread runner status.
-        threadRunnerClient.subscribe(peer)
+        runnerClient.subscribe(peer)
       },
       onClose: ({ peer, parameters }) => {
         const { identity } = parameters
-        const threadRunnerClient = this.threadRunners.get(identity)
-        if (!threadRunnerClient) return
-        threadRunnerClient.unsubscribe(peer)
+        const runnerClient = this.runnerClients.get(identity)
+        if (!runnerClient) return
+        runnerClient.unsubscribe(peer)
       },
     },
   )

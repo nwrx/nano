@@ -1,6 +1,6 @@
-import type { ModuleThreadRunner } from '..'
+import type { ModuleRunner } from '..'
 import { IsNull } from 'typeorm'
-import { createThreadRunnerClient } from './createThreadRunnerClient'
+import { createRunnerClient } from './createRunnerClient'
 
 /**
  * Collect all enabled thread runners from the database, instantiate a client
@@ -12,11 +12,11 @@ import { createThreadRunnerClient } from './createThreadRunnerClient'
  * @example await initialize.call(this)
  */
 
-export async function initialize(this: ModuleThreadRunner) {
-  const { ThreadRunner } = this.getRepositories()
-  const runners = await ThreadRunner.findBy({ disabledAt: IsNull() })
+export async function initialize(this: ModuleRunner) {
+  const { Runner } = this.getRepositories()
+  const runners = await Runner.findBy({ disabledAt: IsNull() })
   for (const runner of runners) {
-    const client = createThreadRunnerClient({ address: runner.address, token: runner.token, runner })
-    this.threadRunners.set(runner.id, client)
+    const client = createRunnerClient({ address: runner.address, token: runner.token, runner })
+    this.runnerClients.set(runner.id, client)
   }
 }

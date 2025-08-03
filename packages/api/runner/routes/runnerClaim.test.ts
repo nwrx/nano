@@ -6,20 +6,20 @@ describe.sequential<Context>('POST /api/runners', () => {
   beforeEach<Context>(async(context) => {
     await createTestContext(context)
     await context.application.createTestServer()
-    await context.runner.createTestServer()
+    await context.applicationRunner.createTestServer()
 
     // --- Since the 'POST /api/runners' will be calling `fetch` on the runner and that
     // --- the runner listens on a Unix socket, we need to stub the global fetch function
     // --- with one that supports Unix sockets.
     vi.stubGlobal('fetch', async(url: string, options: RequestInit) => {
       const path = new URL(url).pathname
-      return context.runner.fetch(path, options)
+      return context.applicationRunner.fetch(path, options)
     })
   })
 
   afterEach<Context>(async(context) => {
     await context.application.destroy()
-    await context.runner.destroy()
+    await context.applicationRunner.destroy()
     vi.unstubAllGlobals()
   })
 
@@ -31,20 +31,20 @@ describe.sequential<Context>('POST /api/runners', () => {
       expect(response).toMatchObject({ status: 201, statusText: 'Created' })
     })
 
-    it('should register the thread runner', async({ setupUser, application, moduleThreadRunner }) => {
+    it('should register the thread runner', async({ setupUser, application, moduleRunner }) => {
       const { headers } = await setupUser({ isSuperAdministrator: true })
       const body = JSON.stringify({ address: 'http://localhost' })
       await application.fetch('/api/runners', { method: 'POST', body, headers })
-      const runner = moduleThreadRunner.threadRunners.entries().next().value![1]
+      const runner = moduleRunner.runnerClients.entries().next().value![1]
       expect(runner).toMatchObject({ address: 'http://localhost' })
     })
 
-    it('should store the thread runner in the database', async({ setupUser, application, moduleThreadRunner }) => {
+    it('should store the thread runner in the database', async({ setupUser, application, moduleRunner }) => {
       const { headers } = await setupUser({ isSuperAdministrator: true })
       const body = JSON.stringify({ address: 'http://localhost' })
       await application.fetch('/api/runners', { method: 'POST', body, headers })
-      const { ThreadRunner } = moduleThreadRunner.getRepositories()
-      const runners = await ThreadRunner.find()
+      const { Runner } = moduleRunner.getRepositories()
+      const runners = await Runner.find()
       expect(runners).toHaveLength(1)
       expect(runners[0]).toMatchObject({
         address: 'http://localhost',
@@ -71,8 +71,8 @@ describe.sequential<Context>('POST /api/runners', () => {
   })
 
   describe<Context>('errors', (it) => {
-    it('should respond with status 409 when already claimed', async({ setupUser, application, moduleRunner }) => {
-      moduleRunner.runnerIsClaimed = true
+    it('should respond with status 409 when already claimed', async({ setupUser, application, runner }) => {
+      runner.runnerIsClaimed = true
       const { headers } = await setupUser({ isSuperAdministrator: true })
       const body = JSON.stringify({ address: 'http://localhost' })
       const response = await application.fetch('/api/runners', { method: 'POST', body, headers })

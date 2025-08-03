@@ -1,11 +1,11 @@
-import type { ModuleThreadRunner } from '../index'
+import type { ModuleRunner } from '../index'
 import { createHttpRoute } from '@unserved/server'
 import { assertStringNotEmpty, createParser } from '@unshared/validation'
 import { setResponseStatus } from 'h3'
 import { ModuleUser } from '../../user'
-import { registerThreadRunner } from '../utils/registerThreadRunner'
+import { registerRunner } from '../utils/registerRunner'
 
-export function threadRunnerClaim(this: ModuleThreadRunner) {
+export function runnerClaim(this: ModuleRunner) {
   return createHttpRoute(
     {
       name: 'POST /api/runners',
@@ -15,7 +15,7 @@ export function threadRunnerClaim(this: ModuleThreadRunner) {
       const moduleUser = this.getModule(ModuleUser)
       const { user } = await moduleUser.authenticate(event)
       const { address } = body
-      await registerThreadRunner.call(this, { address, user })
+      await registerRunner.call(this, { address, user })
       setResponseStatus(event, 201)
     },
   )

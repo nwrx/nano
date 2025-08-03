@@ -1,12 +1,12 @@
-import type { ModuleThreadRunner } from '..'
-import type { ThreadRunner } from '../entities'
-import type { ThreadRunnerObject } from '../entities'
+import type { ModuleRunner } from '..'
+import type { Runner } from '../entities'
+import type { RunnerObject } from '../entities'
 import { createHttpRoute } from '@unserved/server'
 import { assert, createParser } from '@unshared/validation'
 import { type FindOptionsOrder, ILike } from 'typeorm'
 import { ModuleUser } from '../../user'
 
-export function searchThreadRunner(this: ModuleThreadRunner) {
+export function searchRunner(this: ModuleRunner) {
   return createHttpRoute(
     {
       name: 'GET /api/runners',
@@ -14,10 +14,10 @@ export function searchThreadRunner(this: ModuleThreadRunner) {
         search: [[assert.undefined], [assert.stringNotEmpty]],
         page: [[assert.undefined], [assert.stringNotEmpty, assert.number]],
         limit: [[assert.undefined], [assert.stringNotEmpty, assert.number]],
-        order: [[assert.undefined], [assert.stringNotEmpty, assert.objectStrict as (value: unknown) => asserts value is FindOptionsOrder<ThreadRunner>]],
+        order: [[assert.undefined], [assert.stringNotEmpty, assert.objectStrict as (value: unknown) => asserts value is FindOptionsOrder<Runner>]],
       }),
     },
-    async({ event, query }): Promise<ThreadRunnerObject[]> => {
+    async({ event, query }): Promise<RunnerObject[]> => {
       const moduleUser = this.getModule(ModuleUser)
       const { user } = await moduleUser.authenticate(event)
 
@@ -27,8 +27,8 @@ export function searchThreadRunner(this: ModuleThreadRunner) {
 
       // --- Get runners from the database.
       const { page = 1, limit = 10, search = '', order = { createdAt: 'DESC' } } = query
-      const { ThreadRunner } = this.getRepositories()
-      const runners = await ThreadRunner.find({
+      const { Runner } = this.getRepositories()
+      const runners = await Runner.find({
         where: [
           { address: ILike(`%${search}%`) },
           { identity: ILike(`%${search}%`) },

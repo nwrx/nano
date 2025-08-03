@@ -1,4 +1,4 @@
-import type { ThreadRunnerClient } from './utils/createThreadRunnerClient'
+import type { RunnerClient } from './utils/createRunnerClient'
 import { ModuleBase } from '@unserved/server'
 import { ModuleFlow } from '../flow'
 import { ModuleUser } from '../user'
@@ -7,14 +7,14 @@ import * as ROUTES from './routes'
 import * as UTILS from './utils'
 
 export * from './entities'
-export * from './utils/createThreadRunnerClient'
+export * from './utils/createRunnerClient'
 
-export class ModuleThreadRunner extends ModuleBase {
+export class ModuleRunner extends ModuleBase {
   routes = ROUTES
   entities = ENTITIES
   errors = UTILS.ERRORS
   dependencies = [ModuleUser, ModuleFlow]
-  threadRunners = new Map<string, ThreadRunnerClient>()
-  requestThreadRunner = UTILS.requestThreadRunner.bind(this)
+  runnerClients = new Map<string, RunnerClient>()
+  requestRunner = UTILS.requestRunner.bind(this)
   initialize = UTILS.initialize.bind(this)
 }
