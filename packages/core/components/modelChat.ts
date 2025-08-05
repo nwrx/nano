@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/consistent-type-definitions */
-import type { Chat, Provider } from '@nwrx/ai'
+import type { Chat, ProviderName } from '@nwrx/ai'
 import { createClient } from '@nwrx/ai'
 import { defineComponent } from '../utils/defineComponent'
 import { TOOL_SCHEMA } from '../utils/toolSchema'
@@ -58,8 +58,10 @@ export const modelChat = defineComponent(
         default: [],
         type: 'array',
         items: {
-          type: 'object',
-          additionalProperties: true,
+          oneOf: [
+            { type: 'object', additionalProperties: true },
+            { type: 'string' },
+          ],
         },
       },
       options: {
@@ -82,7 +84,7 @@ export const modelChat = defineComponent(
   },
   async({ data, nodeId, thread }) => {
     const { provider, model, tools, messages, options } = data
-    const client = createClient(provider as unknown as Provider, options)
+    const client = createClient(provider.name as unknown as ProviderName, provider.options)
 
     // --- Pass the events from the provider to the thread.
     client.on('chatRequest', (requestId, context) => thread.dispatch('nodeChatRequest', nodeId, requestId, context))
