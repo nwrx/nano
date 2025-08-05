@@ -28,6 +28,7 @@
     "crossws": "0.3.4",
     "h3": "1.15.3",
     "isolated-vm": "5.0.4",
+    "source-map-support": "0.5.21",
     "typeorm": "0.3.21"
   },
   "devDependencies": {

@@ -2,6 +2,7 @@
 /* eslint-disable unicorn/prefer-top-level-await */
 import type { ModuleBase } from '@unserved/server'
 import Consola from 'consola'
+import 'source-map-support/register.js'
 import { application } from './application'
 
 const PORT = Number.parseInt(process.env.PORT || '3010', 10)
