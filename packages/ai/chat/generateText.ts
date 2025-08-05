@@ -15,8 +15,8 @@ export async function generateText<T extends Provider = Provider>(
 
   // --- Extract the provider and options from the client.
   const { id = randomUUID(), messages = [], signal, options } = request
-  const { chat: chat, baseUrl, name, parameters } = client.provider
-  if (!chat) throw new Error(`Provider "${name}" does not support speech-to-text generation`)
+  const { chat, baseUrl, name, parameters } = client.provider
+  if (!chat) throw new Error(`Provider "${name}" does not support text completions.`)
 
   // --- Get the adapter and prepare URL and RequestInit for the fetch request.
   const url = joinUrl(baseUrl, chat.path)
