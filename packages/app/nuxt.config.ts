@@ -102,6 +102,7 @@ export default defineNuxtConfig({
       weights: ['200', '300', '400', '500', '600', '700', '800'],
       styles: ['normal', 'italic'],
       subsets: ['latin', 'latin-ext'],
+      preload: true,
     },
     families: [
       { name: 'IBM Plex Sans', provider: 'google' },
