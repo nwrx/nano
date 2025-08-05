@@ -6,16 +6,16 @@ import type { User } from '../user'
 import type { VaultPermission } from '../vault'
 import type { VaultConfiguration } from '../vault/utils'
 import type { Workspace, WorkspacePermission } from '../workspace'
-import { ModuleRunner } from '@nwrx/nano-runner'
+import { ModuleRunner as RunnerModuleRunner } from '@nwrx/nano-runner'
 import { createTestApplication, createTestEvent } from '@unserved/server'
 import { randomBytes } from 'node:crypto'
 import { ModuleFlow } from '../flow'
 import { ModuleProject } from '../project'
 import { ModuleRegistry } from '../registry'
+import { ModuleRunner } from '../runner'
 import { ModuleStorage } from '../storage'
 import { createStoragePoolFs } from '../storage/utils'
 import { ModuleThread } from '../thread'
-import { ModuleThreadRunner } from '../threadRunner'
 import { ModuleUser } from '../user'
 import { createSession, registerUser } from '../user/utils'
 import { ModuleVault } from '../vault'
@@ -76,7 +76,7 @@ export async function createTestContext(testContext: TestContext) {
     ModuleFlow,
     ModuleVault,
     ModuleThread,
-    ModuleThreadRunner,
+    ModuleRunner,
     ModuleRegistry,
   ], {
     storagePools: new Map([['default', createStoragePoolFs()]] as const),
@@ -85,10 +85,10 @@ export async function createTestContext(testContext: TestContext) {
     vaultDefaultLocalSecretKey: 'secret-key',
   })
 
-  const runner = await createTestApplication([ModuleRunner])
+  const applicationRunner = await createTestApplication([ModuleRunner])
   const context = {
     application,
-    runner,
+    applicationRunner,
 
     /************************************************/
     /* Module getters                               */
@@ -101,9 +101,9 @@ export async function createTestContext(testContext: TestContext) {
     get moduleFlow() { return application.getModule(ModuleFlow) },
     get moduleVault() { return application.getModule(ModuleVault) },
     get moduleThread() { return application.getModule(ModuleThread) },
-    get moduleThreadRunner() { return application.getModule(ModuleThreadRunner) },
+    get moduleRunner() { return application.getModule(ModuleRunner) },
     get moduleRegistry() { return application.getModule(ModuleRegistry) },
-    get moduleRunner() { return runner.getModule(ModuleRunner) },
+    get runner() { return applicationRunner.getModule(RunnerModuleRunner) },
 
     /************************************************/
     /* Context creation utilities                   */
