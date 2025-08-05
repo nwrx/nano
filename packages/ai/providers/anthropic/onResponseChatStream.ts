@@ -128,6 +128,13 @@ export async function onResponseChatStream(context: Chat.Context): Promise<void>
           pushEvent({ type: 'tool-input-end', id: event.index.toString() })
       }
 
+      // --- This is a ping event, which is used to keep the connection alive.
+      // --- We can ignore it, as it does not contain any useful information.
+      // @ts-expect-error: the `ping` event is not typed in `@anthropic-ai/sdk`
+      else if (event.type === 'ping') {
+        /* do nothing */
+      }
+
       else {
         console.warn('unknown payload', event)
       }
