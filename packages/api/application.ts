@@ -14,10 +14,10 @@ import { ModuleMcpServerEvent } from './mcpServerEvent'
 import { ModuleMcpServerVariable } from './mcpServerVariable'
 import { ModuleProject } from './project'
 import { ModuleRegistry } from './registry'
+import { ModuleRunner } from './runner'
 import { ModuleStorage } from './storage'
 import { createStoragePoolFs } from './storage/utils'
 import { ModuleThread } from './thread'
-import { ModuleThreadRunner } from './threadRunner'
 import { ModuleUser } from './user'
 import { ModuleVault } from './vault'
 import { ModuleWorkspace } from './workspace'
@@ -46,7 +46,7 @@ export const application = new Application(
     ModuleThread,
     ModuleIcon,
     ModuleIconCollection,
-    ModuleThreadRunner,
+    ModuleRunner,
     ModuleRegistry,
     ModuleMcpManager,
     ModuleMcpGateway,

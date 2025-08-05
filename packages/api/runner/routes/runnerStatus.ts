@@ -1,36 +1,25 @@
 import type { RunnerStatus } from '@nwrx/nano-runner'
+import type { EventStream } from '@unserved/server'
 import type { ModuleRunner } from '../index'
 import { createHttpRoute } from '@unserved/server'
-import { assertStringNotEmpty, createParser } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
+import { getRunner, getRunnerClient } from '../utils'
 
 export function runnerStatus(this: ModuleRunner) {
   return createHttpRoute(
     {
-      name: 'GET /api/runners/:identity/status',
+      name: 'GET /api/runners/:name/status',
       parseParameters: createParser({
-        identity: assertStringNotEmpty,
+        name: assert.stringNotEmpty,
       }),
     },
-    async({ event, parameters }): Promise<RunnerStatus> => {
+    async({ event, parameters }): Promise<EventStream<RunnerStatus>> => {
       const moduleUser = this.getModule(ModuleUser)
       const { user } = await moduleUser.authenticate(event)
-      const { identity } = parameters
-
-      // --- Assert the user is a super administrator.
-      if (!user?.isSuperAdministrator) throw moduleUser.errors.USER_FORBIDDEN()
-
-      // --- Retrieve the thread runner from the database.
-      const { Runner } = this.getRepositories()
-      const runner = await Runner.findOneBy({ identity })
-      if (!runner) throw this.errors.THREAD_RUNNER_NOT_FOUND(identity)
-
-      // --- Retrieve the thread runner client and get its status.
-      const client = this.runnerClients.get(runner.id)
-      if (!client) throw this.errors.THREAD_RUNNER_NOT_FOUND(identity)
-      return await client.getStatus().catch((error: Error) => {
-        throw this.errors.THREAD_RUNNER_NOT_REACHABLE(identity, error.message)
-      })
+      const runner = await getRunner.call(this, { user, ...parameters })
+      const client = getRunnerClient.call(this, { runner })
+      return client.status.subscribe(event)
     },
   )
 }

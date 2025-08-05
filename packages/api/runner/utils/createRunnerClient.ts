@@ -1,87 +1,26 @@
-import type { ModuleRunner } from '@nwrx/nano-runner'
-import type { ChannelConnectOptions } from '@unserved/client'
+import type { ModuleRunner as ModuleRunnerRemote, RunnerStatus } from '@nwrx/nano-runner'
 import type { ServerErrorName } from '@unserved/server'
-import type { WebSocketChannel } from '@unshared/client/websocket'
 import type { ObjectLike } from '@unshared/types'
-import type { Peer } from 'crossws'
 import type { Runner } from '../entities'
+import type { RunnerRegisterResult, RunnerThreadChannel } from './types'
 import { createClient } from '@unserved/client'
-import { createError } from '@unserved/server'
+import { createError, createEventBus } from '@unserved/server'
 import { toConstantCase } from '@unshared/string'
-import { ERRORS } from './errors'
-
-export type RunnerChannel = WebSocketChannel<ChannelConnectOptions<ModuleRunner, 'WS /threads/:id'>>
-
-export interface RunnerClientOptions {
-  address: string
-  token?: string
-  runner: Runner
-}
+import { createParser } from '@unshared/validation'
+import { assertRunner } from './assertRunner'
 
 export class RunnerClient {
-  constructor(private options: RunnerClientOptions) {
-    const { address, token } = options
+  constructor(public readonly runner: Runner) {
+    const { address, token } = runner
     this.client.options.baseUrl = address
     this.client.options.headers = { Authorization: `Bearer ${token}` }
-  }
-
-  set address(address: string) {
-    this.options.address = address
-    this.client.options.baseUrl = address
-  }
-
-  get address() {
-    return this.options.address
-  }
-
-  get token() {
-    return this.options.token
-  }
-
-  get runner() {
-    return this.options.runner
-  }
-
-  /***************************************************************************/
-  /* Subscriptions                                                           */
-  /***************************************************************************/
-
-  /** The interval for polling the thread runner status. */
-  interval: NodeJS.Timeout | undefined
-
-  /** The set of subscribed peers. */
-  peers = new Set<Peer>()
-
-  startPolling() {
-    this.interval = setInterval(() => {
-      this.getStatus()
-        .then((status) => { for (const peer of this.peers) peer.send(status) })
-        .catch(() => { for (const peer of this.peers) peer.send({}) },
-        )
-    }, 1000)
-  }
-
-  stopPolling() {
-    if (this.interval) {
-      clearInterval(this.interval)
-      this.interval = undefined
-    }
-  }
-
-  subscribe(peer: Peer) {
-    this.peers.add(peer)
-    if (this.interval === undefined) this.startPolling()
-  }
-
-  unsubscribe(peer: Peer) {
-    this.peers.delete(peer)
-    if (this.peers.size === 0) this.stopPolling()
   }
 
   /***************************************************************************/
   /* Client                                                                  */
   /***************************************************************************/
-  client = createClient<ModuleRunner>({
+
+  client = createClient<ModuleRunnerRemote>({
     onFailure: async(response) => {
       const data = await response.json() as { data?: ObjectLike }
       const name = data.data
@@ -97,17 +36,11 @@ export class RunnerClient {
     },
   })
 
-  async claim(): Promise<{ token: string; identity: string }> {
-    const { token, identity } = await this.client.request('POST /claim')
-      .catch((error: TypeError) => {
-        // @ts-expect-error: `code` is not always present in the error.
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const message: string = error.cause?.code ?? error.message
-        throw ERRORS.THREAD_RUNNER_NOT_REACHABLE(this.address, message)
-      })
-    this.options.token = token
-    this.client.options.headers = { Authorization: `Bearer ${token}` }
-    return { token, identity }
+  async claim(): Promise<RunnerRegisterResult> {
+    const result = await this.client.request('POST /claim')
+    this.client.options.headers = { Authorization: `Bearer ${result.token}` }
+    await this.client.request('GET /ping')
+    return result
   }
 
   async release() {
@@ -115,15 +48,70 @@ export class RunnerClient {
     this.client.options.headers = {}
   }
 
-  async ping() {
-    await this.client.request('GET /ping')
+  createThreadSession(): RunnerThreadChannel {
+    console.log({
+      token: this.runner.token,
+      address: this.runner.address,
+    })
+    return this.client.connect('WS /threads', {
+      query: { token: this.runner.token },
+      autoReconnect: true,
+      reconnectDelay: 300,
+      reconnectLimit: 3,
+    }) as RunnerThreadChannel
   }
 
-  async getStatus() {
+  /***************************************************************************/
+  /* Status                                                                  */
+  /***************************************************************************/
+
+  private statusInterval: NodeJS.Timeout | undefined
+  public async getStatus(): Promise<RunnerStatus> {
     return await this.client.request('GET /status')
+  }
+
+  public status = createEventBus<RunnerStatus>({
+    onMount: () => {
+      this.statusInterval = setInterval(() => {
+        this.getStatus()
+          .then((data: RunnerStatus) => this.status.sendMessage(data))
+          .catch((error: Error) => this.status.sendError(error))
+      }, 1000)
+    },
+    onUnmount: () => {
+      if (!this.statusInterval) return
+      clearInterval(this.statusInterval)
+      this.statusInterval = undefined
+    },
+  })
+
+  /***************************************************************************/
+  /* Cleanup                                                                */
+  /***************************************************************************/
+
+  public async dispose() {
+    clearInterval(this.statusInterval)
+    await this.release()
   }
 }
 
-export function createRunnerClient(options: RunnerClientOptions) {
-  return new RunnerClient(options)
+/** The schema for the {@linkcode createRunnerClient} function options. */
+export const CREATE_RUNNER_CLIENT_OPTIONS_SCHEMA = createParser({
+  runner: assertRunner,
+})
+
+/** The options for the {@linkcode createRunnerClient} function. */
+export type CreateRunnerClientOptions = ReturnType<typeof CREATE_RUNNER_CLIENT_OPTIONS_SCHEMA>
+
+/**
+ * Create a new {@linkcode RunnerClient} instance with the specified options.
+ * This client can be used to interact with a remote thread runner.
+ *
+ * @param options The options for creating the runner client.
+ * @returns A new instance of {@linkcode RunnerClient}.
+ * @example createRunnerClient({ address: 'http://localhost:3000', token: 'your-token' })
+ */
+export function createRunnerClient(options: CreateRunnerClientOptions) {
+  const { runner } = CREATE_RUNNER_CLIENT_OPTIONS_SCHEMA(options)
+  return new RunnerClient(runner)
 }

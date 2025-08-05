@@ -45,8 +45,7 @@ describe<Context>('GET /api/runners', () => {
       await application.fetch('/api/runners', { method: 'POST', body, headers })
       const { Runner } = moduleRunner.getRepositories()
       const { id } = await Runner.findOneByOrFail({})
-      moduleRunner.runnerClients.get(id)!.ping = async() => { throw new Error('Unreachable') }
-      moduleRunner.runnerClients.get(id)!.getStatus = async() => { throw new Error('Unreachable') }
+      moduleRunner.clients.get(id)!.getStatus = async() => { throw new Error('Unreachable') }
       const response = await application.fetch('/api/runners', { method: 'GET', headers })
       const data = await response.json() as Array<{ address: string }>
       expect(response).toMatchObject({ status: 200, statusText: 'OK' })

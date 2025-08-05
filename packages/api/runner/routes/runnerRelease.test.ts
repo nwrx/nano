@@ -29,7 +29,7 @@ describe.sequential<Context>('DELETE /api/runners/:identity', () => {
       const { identity } = await Runner.findOneByOrFail({})
       const response = await application.fetch(`/api/runners/${identity}`, { method: 'DELETE', headers })
       expect(response).toMatchObject({ status: 204, statusText: 'No Content' })
-      expect(moduleRunner.runnerClients.has(identity)).toBe(false)
+      expect(moduleRunner.clients.has(identity)).toBe(false)
       const runner = await Runner.findOne({ where: { identity }, withDeleted: true })
       expect(runner?.deletedAt).toBeTruthy()
     })

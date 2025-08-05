@@ -60,15 +60,6 @@ describe.sequential<Context>('createRunnerClient', () => {
     })
   })
 
-  describe<Context>('ping', (it) => {
-    it('should ping the thread runner', async() => {
-      const runner = new Runner()
-      const client = createRunnerClient({ runner, address: 'http://localhost' })
-      const result = await client.ping()
-      expect(result).toBeUndefined()
-    })
-  })
-
   describe<Context>('getStatus', (it) => {
     it('should get the status of the thread runner', async() => {
       const runner = new Runner()

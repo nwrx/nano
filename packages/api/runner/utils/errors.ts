@@ -1,55 +1,56 @@
 import { createError } from '@unserved/server'
 
 export const ERRORS = {
-  THREAD_RUNNER_NOT_FOUND: (identity: string) => createError({
-    name: 'E_THREAD_RUNNER_NOT_FOUND',
+  RUNNER_NOT_FOUND: (name: string) => createError({
+    name: 'E_RUNNER_NOT_FOUND',
     statusCode: 404,
     statusMessage: 'Not Found',
-    message: `Thread runner with identity "${identity}" was not found in the database`,
-    data: { identity },
+    message: `Runner with  "${name}" was not found in the database`,
+    data: { name },
   }),
-  THREAD_RUNNER_FORBIDDEN: () => createError({
-    name: 'E_THREAD_RUNNER_FORBIDDEN',
-    statusCode: 403,
-    statusMessage: 'Forbidden',
-    message: 'Cannot perform this operation on the thread runner',
-  }),
-  THREAD_RUNNER_NO_RUNNERS_AVAILABLE: () => createError({
-    name: 'E_THREAD_RUNNER_NO_RUNNERS_AVAILABLE',
+  RUNNER_NO_RUNNERS_AVAILABLE: () => createError({
+    name: 'E_RUNNER_NO_RUNNERS_AVAILABLE',
     statusCode: 503,
     statusMessage: 'Service Unavailable',
     message: 'No thread runners available',
   }),
 
   // Registration
-  THREAD_RUNNER_ALREADY_REGISTERED: (address: string) => createError({
-    name: 'E_THREAD_RUNNER_ALREADY_REGISTERED',
+  RUNNER_ALREADY_REGISTERED: (address: string) => createError({
+    name: 'E_RUNNER_ALREADY_REGISTERED',
     statusCode: 409,
     statusMessage: 'Conflict',
-    message: `Thread runner with base URL "${address}" is already registered in the database`,
+    message: `Runner with base URL "${address}" is already registered in the database`,
     data: { address },
   }),
-  THREAD_RUNNER_NOT_REACHABLE: (address: string, message?: string) => createError({
-    name: 'E_THREAD_RUNNER_NOT_REACHABLE',
+  RUNNER_NAME_TAKEN: (name: string) => createError({
+    name: 'E_RUNNER_NAME_TAKEN',
+    statusCode: 409,
+    statusMessage: 'Conflict',
+    message: `Runner with  "${name}" is already registered in the database`,
+    data: { name },
+  }),
+  RUNNER_NOT_REACHABLE: (address: string, message?: string) => createError({
+    name: 'E_RUNNER_NOT_REACHABLE',
     statusCode: 503,
     statusMessage: 'Service Unavailable',
-    message: `Thread runner with base URL "${address}" is not reachable: ${message}`,
+    message: `Runner with base URL "${address}" is not reachable: ${message}`,
     data: { address, message },
   }),
 
   // Enable/Disable
-  THREAD_RUNNER_ALREADY_ENABLED: (identity: string) => createError({
-    name: 'E_THREAD_RUNNER_ALREADY_ENABLED',
+  RUNNER_ALREADY_ENABLED: (name: string) => createError({
+    name: 'E_RUNNER_ALREADY_ENABLED',
     statusCode: 409,
     statusMessage: 'Conflict',
-    message: `Thread runner with ID "${identity}" is already enabled`,
-    data: { identity },
+    message: `Runner with ID "${name}" is already enabled`,
+    data: { name },
   }),
-  THREAD_RUNNER_ALREADY_DISABLED: (identity: string) => createError({
-    name: 'E_THREAD_RUNNER_ALREADY_DISABLED',
+  RUNNER_ALREADY_DISABLED: (name: string) => createError({
+    name: 'E_RUNNER_ALREADY_DISABLED',
     statusCode: 409,
     statusMessage: 'Conflict',
-    message: `Thread runner with ID "${identity}" is already disabled`,
-    data: { identity },
+    message: `Runner with name "${name}" is already disabled`,
+    data: { name },
   }),
 }

@@ -1,30 +1,50 @@
+import type { EventStream } from '@unserved/server'
 import type { ModuleRunner } from '..'
 import type { RunnerObject } from '../entities'
+import type { RunnerEvent } from '../utils'
 import { createHttpRoute } from '@unserved/server'
+import { parseBoolean } from '@unshared/string/parseBoolean'
 import { assert, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
+import { getRunner, getRunnerEvents } from '../utils'
 
-export function getRunner(this: ModuleRunner) {
+export function runnerGet(this: ModuleRunner) {
   return createHttpRoute(
     {
-      name: 'GET /api/runners/:identity',
+      name: 'GET /api/runners/:name',
       parseParameters: createParser({
-        identity: assert.stringNotEmpty,
+        name: assert.stringNotEmpty,
+      }),
+      parseQuery: createParser({
+        withCreatedBy: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],
+        withUpdatedBy: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],
+        withDisabledBy: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],
+        withDeleted: [[assert.undefined], [assert.stringNotEmpty, parseBoolean]],
       }),
     },
-    async({ event, parameters }): Promise<RunnerObject> => {
+    async({ event, parameters, query }): Promise<RunnerObject> => {
       const moduleUser = this.getModule(ModuleUser)
       const { user } = await moduleUser.authenticate(event)
+      const runner = await getRunner.call(this, { user, ...parameters, ...query })
+      return runner.serialize(query)
+    },
+  )
+}
 
-      // --- Assert the user is a super administrator.
-      if (!user.isSuperAdministrator) throw moduleUser.errors.USER_FORBIDDEN()
-
-      // --- Get runner from the database.
-      const { Runner } = this.getRepositories()
-      const { identity } = parameters
-      const runner = await Runner.findOneBy({ identity })
-      if (!runner) throw this.errors.THREAD_RUNNER_NOT_FOUND(identity)
-      return runner.serialize()
+export function runnerGetEvents(this: ModuleRunner) {
+  return createHttpRoute(
+    {
+      name: 'GET /api/runners/:name/events',
+      parseParameters: createParser({
+        name: assert.stringNotEmpty,
+      }),
+    },
+    async({ event, parameters }): Promise<EventStream<RunnerEvent>> => {
+      const moduleUser = this.getModule(ModuleUser)
+      const { user } = await moduleUser.authenticate(event)
+      const runner = await getRunner.call(this, { user, ...parameters })
+      const events = getRunnerEvents.call(this, { runner, createIfNotExists: true })
+      return events!.subscribe(event)
     },
   )
 }

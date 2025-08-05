@@ -35,7 +35,7 @@ describe.sequential<Context>('POST /api/runners', () => {
       const { headers } = await setupUser({ isSuperAdministrator: true })
       const body = JSON.stringify({ address: 'http://localhost' })
       await application.fetch('/api/runners', { method: 'POST', body, headers })
-      const runner = moduleRunner.runnerClients.entries().next().value![1]
+      const runner = moduleRunner.clients.entries().next().value![1]
       expect(runner).toMatchObject({ address: 'http://localhost' })
     })
 

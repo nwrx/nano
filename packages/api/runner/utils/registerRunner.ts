@@ -1,7 +1,8 @@
 import type { Loose } from '@unshared/types'
-import type { ModuleRunner } from '..'
+import type { Runner } from '../entities'
+import type { ModuleRunner } from '../index'
 import { assert, createParser } from '@unshared/validation'
-import { assertUser } from '../../user'
+import { assertUser, ModuleUser } from '../../user'
 import { createRunnerClient } from './createRunnerClient'
 
 /** The schema for the register thread runner options. */
@@ -19,36 +20,46 @@ export type RegisterRunnerOptions = Loose<ReturnType<typeof REGISTER_RUNNER_OPTI
  * thread runner client that can be used to interact with the thread runner.
  *
  * @param options The options to register the thread runner.
+ * @returns The created {@linkcode Runner} entity instance.
  * @example await registerRunner({ user, address: 'http://localhost:3000' })
  */
-export async function registerRunner(this: ModuleRunner, options: RegisterRunnerOptions) {
+export async function registerRunner(this: ModuleRunner, options: RegisterRunnerOptions): Promise<Runner> {
   const { address, user } = options
 
   // --- Assert the user is a super administrator.
-  if (!user.isSuperAdministrator) throw this.errors.THREAD_RUNNER_FORBIDDEN()
+  const moduleUser = this.getModule(ModuleUser)
+  if (!user.isSuperAdministrator) throw moduleUser.errors.USER_FORBIDDEN()
 
-  // --- Check if a thread runner with the same base URL already exists
+  // --- Check if a runner with the same base URL already exists.
   const { Runner } = this.getRepositories()
   const exists = await Runner.countBy({ address })
-  if (exists > 0) throw this.errors.THREAD_RUNNER_ALREADY_REGISTERED(address)
+  if (exists > 0) throw this.errors.RUNNER_ALREADY_REGISTERED(address)
 
   // --- Create the database record.
   const runner = Runner.create({
-    token: 'none',
+    name: '',
+    token: undefined,
     address,
-    identity: 'none',
     createdBy: user,
     lastSeenAt: new Date(),
   })
 
-  // --- Register, claim, and store the thread runner.
-  const client = createRunnerClient.call(this, { address, runner })
+  // --- Claim the runner and create a client.
+  const client = createRunnerClient({ runner })
   const { token, identity } = await client.claim()
-  await client.ping()
 
-  // --- Save the client and database record.
-  this.runnerClients.set(runner.id, client)
+  // --- Check if a runner with the same name already exists.
+  const existingRunner = await Runner.findOneBy({ name: identity })
+  if (existingRunner) throw this.errors.RUNNER_NAME_TAKEN(identity)
+
+  // --- Save the runner with the identity and token.
+  runner.name = identity
   runner.token = token
-  runner.identity = identity
   await Runner.save(runner)
+  this.clients.set(runner.id, client)
+
+  // --- Notify in the event bus and return the runner.
+  const data = runner.serialize({ withCreatedBy: true, withUpdatedBy: true })
+  await this.events.sendMessage({ event: 'runners.created', data })
+  return runner
 }

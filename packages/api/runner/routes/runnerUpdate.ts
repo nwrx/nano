@@ -1,42 +1,25 @@
-import type { ModuleRunner } from '..'
-import type { RunnerObject } from '../entities'
+import type { ModuleRunner } from '../index'
 import { createHttpRoute } from '@unserved/server'
 import { assert, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'
+import { getRunner, updateRunner } from '../utils'
 
-export function updateRunner(this: ModuleRunner) {
+export function runnerUpdate(this: ModuleRunner) {
   return createHttpRoute(
     {
-      name: 'PUT /api/runners/:identity',
+      name: 'PUT /api/runners/:name',
       parseParameters: createParser({
-        identity: assert.stringNotEmpty,
+        name: assert.stringNotEmpty,
       }),
       parseBody: createParser({
         address: assert.stringNotEmpty,
       }),
     },
-    async({ event, parameters, body }): Promise<RunnerObject> => {
+    async({ event, parameters, body }): Promise<void> => {
       const moduleUser = this.getModule(ModuleUser)
       const { user } = await moduleUser.authenticate(event)
-
-      // --- Assert the user is a super administrator.
-      if (!user.isSuperAdministrator) throw moduleUser.errors.USER_FORBIDDEN()
-
-      // --- Get runner from the database.
-      const { Runner } = this.getRepositories()
-      const { identity } = parameters
-      const runner = await Runner.findOneBy({ identity })
-      if (!runner) throw this.errors.THREAD_RUNNER_NOT_FOUND(identity)
-
-      // --- Update the client.
-      const runnerClient = this.runnerClients.get(runner.id)
-      if (!runnerClient) throw this.errors.THREAD_RUNNER_NOT_FOUND(identity)
-      runnerClient.address = body.address
-
-      // --- Update the runner address.
-      runner.address = body.address
-      await Runner.save(runner)
-      return runner.serialize()
+      const runner = await getRunner.call(this, { user, ...parameters })
+      await updateRunner.call(this, { user, runner, ...body })
     },
   )
 }

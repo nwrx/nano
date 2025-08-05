@@ -1,5 +1,6 @@
 import type { ModuleRunner } from '../index'
-import type { RunnerClient } from './createRunnerClient'
+import { IsNull } from 'typeorm'
+import { createRunnerClient, type RunnerClient } from './createRunnerClient'
 
 /**
  * Request a thread runner to run a flow. This will query all available thread
@@ -10,8 +11,21 @@ import type { RunnerClient } from './createRunnerClient'
  * @example await requestRunner().createThread({ version: '1', nodes: {} })
  */
 export async function requestRunner(this: ModuleRunner): Promise<RunnerClient> {
-  const clients = [...this.runnerClients.values()]
-  if (clients.length === 0) throw this.errors.THREAD_RUNNER_NO_RUNNERS_AVAILABLE()
+
+  // --- Check in the database and ensure all runners have a client.
+  const { Runner } = this.getRepositories()
+  const runners = await Runner.findBy({ disabledAt: IsNull() })
+  if (runners.length === 0) throw this.errors.RUNNER_NO_RUNNERS_AVAILABLE()
+  for (const runner of runners) {
+    const existingClient = this.clients.get(runner.id)
+    if (existingClient) continue
+    const client = createRunnerClient.call(this, { runner })
+    this.clients.set(runner.id, client)
+  }
+
+  // --- Ensure all runners are online.
+  const clients = [...this.clients.values()]
+  if (clients.length === 0) throw this.errors.RUNNER_NO_RUNNERS_AVAILABLE()
 
   // --- Find the thread runner with the lowest load.
   let minLoad = Infinity

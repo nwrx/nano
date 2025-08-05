@@ -24,7 +24,7 @@ describe<Context>('registerRunner', () => {
       const address = 'http://localhost'
       const { user } = await setupUser({ isSuperAdministrator: true })
       await registerRunner.call(moduleRunner, { address, user })
-      expect(moduleRunner.runnerClients.size).toBe(1)
+      expect(moduleRunner.clients.size).toBe(1)
     })
 
     it('should store the thread runner in the database', async({ setupUser, moduleRunner }) => {
