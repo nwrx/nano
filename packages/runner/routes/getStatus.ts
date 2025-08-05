@@ -1,12 +1,12 @@
 import type { ModuleRunner } from '../application'
 import type { SystemStatus } from '../utils'
-import type { ThreadRunnerWorkerPoolStatus } from '../worker'
+import type { RunnerWorkerPoolStatus } from '../worker'
 import { createHttpRoute } from '@unserved/server'
 import packageJson from '../../../package.json'
 import { authorize, getSystemStatus } from '../utils'
 import { getWorkerPoolStatus } from '../worker'
 
-export interface ThreadRunnerStatus {
+export interface RunnerStatus {
 
   /** Indicates if the system is operational. */
   ok: boolean
@@ -24,13 +24,13 @@ export interface ThreadRunnerStatus {
   system: SystemStatus
 
   /** The worker pool status. */
-  workerPool: ThreadRunnerWorkerPoolStatus[]
+  workerPool: RunnerWorkerPoolStatus[]
 }
 
 export function getStatus(this: ModuleRunner) {
   return createHttpRoute(
     { name: 'GET /status' },
-    async({ event }): Promise<ThreadRunnerStatus> => {
+    async({ event }): Promise<RunnerStatus> => {
       authorize.call(this, event)
       return {
         ok: true,

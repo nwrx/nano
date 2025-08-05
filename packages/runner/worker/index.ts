@@ -1,5 +1,4 @@
 export * from './createThreadWorker'
 export * from './deserialize'
 export * from './getWorkerPoolStatus'
-export * from './threadClientMessage'
-export * from './threadServerMessage'
+export * from './types'

@@ -1,40 +1,45 @@
 import type { ModuleRunner } from '../application'
 import type { ThreadWorkerMessage } from '../worker'
 import { createWebSocketRoute } from '@unserved/server'
-import { assertStringNotEmpty, assertStringUuid, createParser } from '@unshared/validation'
+import { assert, createParser } from '@unshared/validation'
 import { authorize } from '../utils'
-import { THREAD_CLIENT_MESSAGE_SCHEMA, THREAD_SERVER_MESSAGE_SCHEMA } from '../worker'
+import { CLIENT_MESSAGE_SCHEMA, createThreadWorker, SERVER_MESSAGE_SCHEMA } from '../worker'
 
-export function threadSession(this: ModuleRunner) {
+export function thread(this: ModuleRunner) {
   return createWebSocketRoute(
     {
-      name: 'WS /threads/:id',
-      parseParameters: createParser({ id: assertStringUuid }),
-      parseQuery: createParser({ token: assertStringNotEmpty }),
-      parseClientMessage: THREAD_CLIENT_MESSAGE_SCHEMA,
-      parseServerMessage: THREAD_SERVER_MESSAGE_SCHEMA,
+      name: 'WS /threads',
+      parseQuery: createParser({
+        token: assert.stringNotEmpty,
+      }),
+      parseClientMessage: CLIENT_MESSAGE_SCHEMA,
+      parseServerMessage: SERVER_MESSAGE_SCHEMA,
     },
     {
-      onOpen: ({ peer, parameters }) => {
+      onOpen: ({ peer }) => {
         authorize.call(this, peer)
-        const worker = this.runnerWorkerPorts.get(parameters.id)
-        if (!worker) throw this.errors.THREAD_NOT_FOUND(parameters.id)
-        worker.on('message', (message: ThreadWorkerMessage) => peer.send(message))
+        const promise = createThreadWorker.call(this)
+        this.runnerWorkerPorts.set(peer.id, promise)
+        void promise.then(worker => worker.on('message', message => peer.send(message)))
       },
-      onMessage: ({ peer, message, parameters }) => {
-        authorize.call(this, peer)
-        const worker = this.runnerWorkerPorts.get(parameters.id)
-        if (!worker) throw this.errors.THREAD_NOT_FOUND(parameters.id)
+      onMessage: async({ peer, message }) => {
+        const worker = await this.runnerWorkerPorts.get(peer.id)
+        if (!worker) throw new Error(`Worker not found for peer: ${peer.id}`)
         worker.postMessage(message)
       },
-      onClose: ({ parameters }) => {
-        const worker = this.runnerWorkerPorts.get(parameters?.id)
+      onClose: async({ peer }) => {
+        const worker = await this.runnerWorkerPorts.get(peer?.id)
         if (!worker) return
+        worker.removeAllListeners()
+        worker.unref()
         worker.close()
-        this.runnerWorkerPorts.delete(parameters.id)
+        this.runnerWorkerPorts.delete(peer.id)
       },
       onError: ({ peer, error }) => {
-        peer.send({ event: 'error', data: [error] } as ThreadWorkerMessage)
+        console.error('Error in thread session:', error)
+        const message: ThreadWorkerMessage = { event: 'worker.error', data: error }
+        peer.send(message)
+        peer.close(1000, 'Worker error occurred')
       },
     },
   )

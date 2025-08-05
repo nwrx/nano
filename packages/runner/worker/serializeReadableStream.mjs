@@ -8,7 +8,8 @@ import { serializeError } from './serializeError.mjs'
  * @typedef SerializedReadableStream
  * @type {import('./deserializeReadableStream').SerializedReadableStream}
  *
- * @typedef
+ * @typedef SerializedReadableStreamMessage
+ * @type {import('./deserializeReadableStream').SerializedReadableStreamMessage}
  */
 
 /**
@@ -28,13 +29,19 @@ export function serializeReadableStream(stream) {
   // --- an `end` event to the consumer.
   port2.on('message', async(event) => {
     try {
-      if (!reader) reader = stream.getReader()
+      reader ??= stream.getReader()
       if (event !== 'read') return
       const { done, value } = await reader.read()
-      port2.postMessage(done ? { event: 'end' } : { event: 'data', value })
+      const /** @type {SerializedReadableStreamMessage} */ message = done
+        ? { event: 'end' }
+        : { event: 'data', value }
+      port2.postMessage(message)
     }
     catch (error) {
-      port2.postMessage({ event: 'error', error: serializeError(error) })
+
+      /** @type {SerializedReadableStreamMessage} */
+      const message = { event: 'error', error: serializeError(error) }
+      port2.postMessage(message)
     }
   })
 

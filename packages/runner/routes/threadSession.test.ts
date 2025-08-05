@@ -1,10 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-base-to-string */
 import type { FlowV1 } from '@nwrx/nano'
 import type { TestApplication } from '@unserved/server'
-import type { ThreadWorkerMessage } from '../worker'
+import type { ThreadClientMessage, ThreadWorkerMessage } from '../worker'
 import { createTestApplication } from '@unserved/server'
-import { randomUUID } from 'node:crypto'
 import { WebSocket } from 'ws'
 import { ModuleRunner } from '../application'
 
@@ -14,30 +12,38 @@ interface Context {
   address: string
 }
 
-async function createConnection(context: Context, flow: FlowV1) {
+async function createConnection(context: Context) {
   const { application, moduleRunner } = context
-  const id = randomUUID()
-  const body = JSON.stringify({ flow })
-  await application.fetch(`/threads/${id}`, { method: 'POST', body, headers: { Authorization: `Bearer ${moduleRunner.runnerToken}` } })
-  const address = `ws+unix:${application.socketPath}:/threads/${id}?token=${moduleRunner.runnerToken}`
+  const messages: ThreadWorkerMessage[] = []
+  const address = `ws+unix:${application.socketPath}:/threads?token=${moduleRunner.runnerToken}`
   const ws = new WebSocket(address)
-  await new Promise<void>(resolve => ws.on('open', resolve))
-  return ws
+  await new Promise<void>((resolve, reject) => {
+    ws.on('open', resolve)
+    ws.on('error', reject)
+    ws.on('message', (data) => {
+      const utf8 = data.toString()
+      const message = JSON.parse(utf8) as ThreadWorkerMessage
+      messages.push(message)
+    })
+  })
+  return { ws, messages }
 }
 
-async function startThread(ws: WebSocket, data: Record<string, unknown>) {
-  ws.send(JSON.stringify({ event: 'workerStart', data: [data] }))
+function sendMessage(ws: WebSocket, message: ThreadClientMessage) {
+  ws.send(JSON.stringify(message))
+}
+
+async function receiveMessage(ws: WebSocket, event?: ThreadWorkerMessage['event']): Promise<ThreadWorkerMessage> {
   return await new Promise((resolve, reject) => {
-    ws.on('message', (message) => {
-      const utf8 = message.toString()
-      const data = JSON.parse(utf8) as ThreadWorkerMessage
-      if (data.event === 'done') resolve(data.data[0])
-      if (data.event === 'error') {
-        const error = new Error(data.data[0].message)
-        error.name = data.data[0].name
-        error.stack = data.data[0].stack
-        reject(error)
-      }
+    ws.on('message', (data) => {
+      const utf8 = data.toString()
+      const message = JSON.parse(utf8) as ThreadWorkerMessage
+      if (message.event === 'error') reject(message.data[0])
+      if (event && message.event !== event) return
+      resolve(message)
+    })
+    ws.on('error', (error) => {
+      reject(error)
     })
   })
 }
@@ -53,7 +59,7 @@ describe<Context>('WS /threads/:id', () => {
     await application.destroy()
   })
 
-  const flow: FlowV1 = {
+  const flow: FlowV1 & Record<string, unknown> = {
     version: '1',
     nodes: {
       inputName: {
@@ -75,42 +81,40 @@ describe<Context>('WS /threads/:id', () => {
     },
   }
 
-  describe<Context>('threadSession', (it) => {
+  describe<Context>('session', (it) => {
     it('should upgrade the connection to a WebSocket', async({ application }) => {
-      const body = JSON.stringify(flow)
-      const id = randomUUID()
-      await application.fetch(`/threads/${id}`, { method: 'POST', body })
-      const upgrade = await application.fetch(`/threads/${id}`)
+      const upgrade = await application.fetch('/threads')
       expect(upgrade).toMatchObject({ status: 426, statusText: 'Upgrade Required' })
     })
 
+    it('should load the flow and wait for `worker.loaded` event', async(context) => {
+      const { ws } = await createConnection(context)
+      sendMessage(ws, { event: 'worker.load', data: flow })
+      const message = await receiveMessage(ws, 'worker.loaded')
+      expect(message).toStrictEqual({ event: 'worker.loaded' })
+    })
+
     it('should start a thread and return the output', async(context) => {
-      const ws = await createConnection(context, flow)
-      const output = await startThread(ws, { name: 'Alice' })
-      expect(output).toStrictEqual({ greet: 'Hello, Alice!' })
+      const { ws, messages } = await createConnection(context)
+      sendMessage(ws, { event: 'worker.load', data: flow })
+      await receiveMessage(ws, 'worker.loaded')
+      sendMessage(ws, { event: 'worker.start', data: { name: 'Alice' } })
+      const result = await receiveMessage(ws, 'done')
+      expect(result).toStrictEqual({ event: 'done', data: [{ greet: 'Hello, Alice!' }] })
+      expect(messages).toHaveLength(19)
     })
 
-    it('should collect all the messages from the thread', async(context) => {
-      const ws = await createConnection(context, flow)
-      const messages: ThreadWorkerMessage[] = []
-      ws.on('message', message => messages.push(JSON.parse(message.toString())))
-      await startThread(ws, { name: 'Alice' })
-      expect(messages).toHaveLength(18)
+    it('should reload a flow that has been loaded', async(context) => {
+      const { ws } = await createConnection(context)
+      sendMessage(ws, { event: 'worker.load', data: flow })
+      await receiveMessage(ws, 'worker.loaded')
+      sendMessage(ws, { event: 'worker.start', data: { name: 'Alice' } })
+      await receiveMessage(ws, 'done')
+      sendMessage(ws, { event: 'worker.load', data: flow })
+      const message = await receiveMessage(ws, 'worker.loaded')
+      expect(message).toStrictEqual({ event: 'worker.loaded' })
     })
   })
 
-  describe<Context>('errors', (it) => {
-    it('should fail with "E_THREAD_NOT_FOUND" if the thread was not instantiated', async({ application, moduleRunner }) => {
-      const id = randomUUID()
-      const token = moduleRunner.runnerToken
-      const ws = new WebSocket(`ws+unix:${application.socketPath}:/threads/${id}?token=${token}`)
-      const data: Buffer = await new Promise(resolve => ws.on('message', resolve))
-      const utf8 = data.toString()
-      const event = JSON.parse(utf8) as ThreadWorkerMessage
-      expect(event).toMatchObject({
-        event: 'error',
-        data: [{ data: { name: 'E_THREAD_NOT_FOUND' } }],
-      })
-    })
-  })
+  describe<Context>('errors', (_) => {})
 })

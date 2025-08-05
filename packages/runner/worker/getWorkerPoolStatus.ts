@@ -1,9 +1,9 @@
 import type { ModuleRunner } from '../application'
 import type { getWorkerPoolStatus as getWorkerPoolStatusWorker } from './getWorkerPoolStatus.worker.mjs'
 
-export type ThreadRunnerWorkerPoolStatus = ReturnType<typeof getWorkerPoolStatusWorker>
+export type RunnerWorkerPoolStatus = ReturnType<typeof getWorkerPoolStatusWorker>
 
-export function getWorkerPoolStatus(this: ModuleRunner): Promise<ThreadRunnerWorkerPoolStatus[]> {
+export function getWorkerPoolStatus(this: ModuleRunner): Promise<RunnerWorkerPoolStatus[]> {
   type Module = typeof import('./getWorkerPoolStatus.worker.mjs').getWorkerPoolStatus
   const moduleId = new URL('getWorkerPoolStatus.worker.mjs', import.meta.url).pathname
 

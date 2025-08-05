@@ -1,24 +1,16 @@
-import type { FlowV1, ThreadEventMap } from '@nwrx/nano'
-import type { ReferenceType } from '@nwrx/nano/utils'
-import type { UUID } from 'node:crypto'
 import type { MessagePort } from 'node:worker_threads'
 import type { ModuleRunner } from '../application'
 import type { SerializedError } from './deserializeError'
+import type { ThreadWorkerMessage } from './types'
 import { createError } from '@unserved/server'
 import { MessageChannel } from 'node:worker_threads'
 import { deserializeError } from './deserializeError'
-
-export type ThreadWorkerMessage =
-  | { [K in keyof ThreadEventMap]: { event: K; data: ThreadEventMap[K] } }[keyof ThreadEventMap]
-  | { event: 'workerReady' }
-  | { event: 'workerResolveReference'; data: readonly [id: UUID, type: ReferenceType, values: string[]] }
 
 /**
  * Create a new thread worker for the given flow. This will initialize a new
  * thread in a worker thread (thread-ception) and return a wrapper around the
  * `MessagePort` that allows us to interact with the thread.
  *
- * @param flow The flow to create a thread for.
  * @returns A new thread worker instance.
  * @example
  * // Create a new thread worker for the given flow.
@@ -27,7 +19,7 @@ export type ThreadWorkerMessage =
  * // Start the thread with the given input object.
  * const result = await thread.start({ input: 'object' })
  */
-export async function createThreadWorker(this: ModuleRunner, flow: FlowV1): Promise<MessagePort> {
+export async function createThreadWorker(this: ModuleRunner): Promise<MessagePort> {
   type Module = typeof import('./createThreadWorker.worker.mjs').createThreadWorker
   const moduleId = new URL('createThreadWorker.worker.mjs', import.meta.url).pathname
   const { port1, port2 } = new MessageChannel()
@@ -37,7 +29,7 @@ export async function createThreadWorker(this: ModuleRunner, flow: FlowV1): Prom
   // --- multiple CPUs / threads.
   void this.runnerWorkerPool.spawn<Module>(moduleId, {
     name: 'createThreadWorker',
-    parameters: [port2, flow],
+    parameters: [port2],
   })
 
   // --- Wait for the worker to be ready before returning the thread.
@@ -45,7 +37,7 @@ export async function createThreadWorker(this: ModuleRunner, flow: FlowV1): Prom
     const callback = (message: ThreadWorkerMessage) => {
 
       // --- Wait for the worker to be ready before resolving the promise.
-      if (message.event === 'workerReady') {
+      if (message.event === 'worker.ready') {
         port1.off('message', callback)
         resolve()
       }
@@ -56,7 +48,7 @@ export async function createThreadWorker(this: ModuleRunner, flow: FlowV1): Prom
         port1.off('message', callback)
         const error = deserializeError(message.data[0] as SerializedError)
         reject(createError({
-          name: error.name as 'E_FLOW_ERROR',
+          name: error.name as 'E_',
           message: error.message,
           statusCode: error.name.startsWith('E_') ? 400 : 500,
           statusMessage: error.name.startsWith('E_') ? 'Bad Request' : 'Internal Server Error',

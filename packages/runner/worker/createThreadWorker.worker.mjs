@@ -17,10 +17,10 @@ import { serializeError } from './serializeError.mjs'
  * @type {import('worker_threads').MessagePort}
  *
  * @typedef ThreadServerMessage
- * @type {import('./threadServerMessage').ThreadServerMessage}
+ * @type {import('./types').ThreadServerMessage}
  *
  * @typedef ThreadClientMessage
- * @type {import('./threadClientMessage').ThreadClientMessage}
+ * @type {import('./types').ThreadClientMessage}
  *
  * @typedef TransferList
  * @type {import('node:worker_threads').TransferListItem[]}
@@ -67,8 +67,8 @@ const EVENTS_TO_PROXY = [
   'nodeQuestionCancel',
 
   // chat
-  'nodeChatRequest',
-  'nodeChatResponse',
+  // 'nodeChatRequest',
+  // 'nodeChatResponse',
   'nodeChatEvent',
   'nodeChatError',
 ]
@@ -76,77 +76,98 @@ const EVENTS_TO_PROXY = [
 /**
  * @param {MessagePort} port The port to use for IPC communication.
  * @param {FlowV1} flow The flow to create the thread from.
+ * @returns {Thread} The created thread.
  */
-export function createThreadWorker(port, flow) {
-  try {
+function loadThread(port, flow) {
+  const thread = createThreadFromFlow(flow, {
+    componentResolvers: [
+      DEFAULT_COMPONENT_RESOLVER,
+    ],
+    referenceResolvers: [async(type, ...values) => {
+      const id = randomUUID()
+      const /** @type {ThreadServerMessage} */ message = { event: 'worker.references.resolve', data: [id, type, values] }
+      port.postMessage(message)
 
-    // --- Create a thread from the flow.
-    const thread = createThreadFromFlow(flow, {
-      componentResolvers: [
-        DEFAULT_COMPONENT_RESOLVER,
-      ],
-
-      // --- Ask the main API to resolve the reference.
-      referenceResolvers: [async(type, ...values) => {
-        const id = randomUUID()
-
-        /** @type {ThreadServerMessage} */
-        const message = { event: 'workerResolveReference', data: [id, type, values] }
-        port.postMessage(message)
-
-        // --- Wait for the response from the main API.
-        /** @type {unknown} */
-        const value = await new Promise((resolve) => {
-          const callback = (/** @type {ThreadClientMessage} */ message) => {
-            if (message.event !== 'workerResolveReferenceResult') return
-            const [{ id: responseId, value }] = message.data
-            if (responseId !== id) return
-            port.off('message', callback)
-            resolve(value)
-          }
-          port.on('message', callback)
-        })
-        return value
-      }],
-    })
-
-    // --- Listen to all whitelisted events and forward them to the parent thread.
-    for (const event of EVENTS_TO_PROXY) {
-      thread.on(event, (...payload) => {
-
-        /** @type {TransferList} */
-        const transferList = []
-        const data = serialize(payload, transferList)
-        port.postMessage({ event, data }, transferList)
+      // --- Wait for the response from the main API.
+      const /** @type {unknown} */ value = await new Promise((resolve) => {
+        const callback = (/** @type {ThreadClientMessage} */ message) => {
+          if (message.event !== 'worker.references.result') return
+          const { id: responseId, value } = message.data
+          if (responseId !== id) return
+          port.off('message', callback)
+          resolve(value)
+        }
+        port.on('message', callback)
       })
-    }
+      return value
+    }],
+  })
+
+  // --- Listen to all whitelisted events and forward them to the parent thread.
+  for (const event of EVENTS_TO_PROXY) {
+    thread.on(event, (...payload) => {
+      const /** @type {TransferList} */ transferList = []
+      const data = serialize(payload, transferList)
+      port.postMessage({ event, data }, transferList)
+    })
+  }
+
+  // --- Return the thread.
+  return thread
+}
+
+/**
+ * @param {MessagePort} port The port to use for IPC communication.
+ */
+export function createThreadWorker(port) {
+  let /** @type {Thread | undefined} */ thread
+  try {
 
     // --- Listen to the parent thread for incoming instructions.
     port.on('message', (/** @type {ThreadClientMessage} */ message) => {
       try {
-        if (message.event === 'workerStart') {
-          const [data] = message.data
-          void start(thread, data).catch(noop)
+
+        // --- Load the flow and create a thread from it.
+        if (message.event === 'worker.load') {
+          if (thread) {
+            abort(thread)
+            thread.clear()
+          }
+          thread = loadThread(port, message.data)
+          port.postMessage({ event: 'worker.loaded' })
         }
-        else if (message.event === 'workerAbort') {
+
+        // --- Start the thread with the provided data as input.
+        if (message.event === 'worker.start') {
+          if (!thread) {
+            port.postMessage({ event: 'error', data: ['Flow not loaded'] })
+            return
+          }
+          void start(thread, message.data).catch(noop)
+        }
+
+        // --- Abort the thread if it is running.
+        else if (message.event === 'worker.abort') {
+          if (!thread) return
           abort(thread)
         }
       }
 
       // --- If an error occurs, serialize the error and send it to the parent thread.
       catch (error) {
-        port.postMessage({ event: 'error', data: [serializeError(error)] })
+        const /** @type {ThreadServerMessage} */ message = { event: 'error', data: [serializeError(error)] }
+        port.postMessage(message)
       }
     })
 
     // --- Notify the parent thread that the worker is ready to start.
-    /** @type {ThreadServerMessage} */
-    const message = { event: 'workerReady' }
+    const /** @type {ThreadServerMessage} */ message = { event: 'worker.ready' }
     port.postMessage(message)
   }
 
   // --- If an error occurs, serialize the error and send it to the parent thread.
   catch (error) {
-    port.postMessage({ event: 'error', data: [serializeError(error)] })
+    const /** @type {ThreadServerMessage} */ message = { event: 'error', data: [serializeError(error)] }
+    port.postMessage(message)
   }
 }
