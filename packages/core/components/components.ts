@@ -20,6 +20,10 @@ export const COMPONENTS = [
   fetch,
   gate,
   modelChat,
+  /* modelEmbed */
+  /* modelTranscript */
+  /* modelTranslate */
+  /* modelSpeech */
   input,
   script,
   mcp,
