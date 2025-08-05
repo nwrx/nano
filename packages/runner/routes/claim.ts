@@ -14,12 +14,11 @@ export function claim(this: ModuleRunner) {
       const address = this.runnerTrustProxy ? getRequestHeader(event, 'X-Forwarded-For') : getRequestIP(event)
       if (!address) throw this.errors.UNAUTHORIZED()
       this.runnerIsClaimed = true
-      this.runnerMasterAddress = address
 
-      // --- Respond with the token and identity.
+      // --- Respond with the token and name.
       return {
+        name: this.runnerName,
         token: this.runnerToken,
-        identity: this.runnerIdentity,
       }
     },
   )

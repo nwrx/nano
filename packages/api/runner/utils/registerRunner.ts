@@ -46,14 +46,14 @@ export async function registerRunner(this: ModuleRunner, options: RegisterRunner
 
   // --- Claim the runner and create a client.
   const client = createRunnerClient({ runner })
-  const { token, identity } = await client.claim()
+  const { token, name } = await client.claim()
 
   // --- Check if a runner with the same name already exists.
-  const existingRunner = await Runner.findOneBy({ name: identity })
-  if (existingRunner) throw this.errors.RUNNER_NAME_TAKEN(identity)
+  const existingRunner = await Runner.findOneBy({ name })
+  if (existingRunner) throw this.errors.RUNNER_NAME_TAKEN(name)
 
-  // --- Save the runner with the identity and token.
-  runner.name = identity
+  // --- Save the runner with the name and token.
+  runner.name = name
   runner.token = token
   await Runner.save(runner)
   this.clients.set(runner.id, client)

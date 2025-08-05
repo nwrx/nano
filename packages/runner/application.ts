@@ -13,7 +13,8 @@ export class ModuleRunner extends ModuleBase {
   entities = {}
 
   runnerToken = process.env.NODE_ENV === 'production' ? randomUUID() : '00000000-0000-0000-0000-000000000000'
-  runnerIdentity = process.env.NODE_ENV === 'production' ? randomUUID() : 'runner-1'
+  runnerName = process.env.NODE_ENV === 'production' ? randomUUID() : 'runner-1'
+  runnerTrustProxy = process.env.RUNNER_TRUST_PROXY === 'true'
   runnerIsClaimed = false
 
   runnerWorkerPoolSize = Math.max(availableParallelism() - 1, 1)
