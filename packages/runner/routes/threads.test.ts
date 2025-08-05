@@ -48,7 +48,7 @@ async function receiveMessage(ws: WebSocket, event?: ThreadWorkerMessage['event'
   })
 }
 
-describe<Context>('WS /threads/:id', () => {
+describe<Context>('WS /threads', () => {
   beforeEach<Context>(async(context) => {
     context.application = await createTestApplication([ModuleRunner])
     context.moduleRunner = context.application.getModule(ModuleRunner)
