@@ -3,8 +3,8 @@ import type { Chat } from '../../chat'
 import { toMessage } from './toMessage'
 
 export function onRequestChat(context: Chat.Context): void {
-  const { id, request: options, init, messages } = context
-  const { tools = [], model } = options
+  const { request, init, messages } = context
+  const { tools = [], model } = request
 
   // --- Adapt the `tools` to the Anthropic API request format.
   const normalizedTools = tools.map<ToolUnion>(tool => ({
@@ -39,11 +39,6 @@ export function onRequestChat(context: Chat.Context): void {
     max_tokens: 4096,
     tools: normalizedTools.length > 0 ? normalizedTools : undefined,
     tool_choice: normalizedTools.length > 0 ? { type: 'auto' } : undefined,
-
-    // Container identifier for reuse across requests. Since we may do multiple requests
-    // to continue a conversation, we need to specify the container ID to Anthropic.
-    // @ts-expect-error: `@anthropic-ai/sdk` does not have the `container` field in the type definitions.
-    container: id,
 
     // Additional parameters for the request will be handled by the adapter
     // and will be merged into the request body as needed.
