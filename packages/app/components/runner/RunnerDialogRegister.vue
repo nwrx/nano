@@ -1,30 +1,13 @@
 <script setup lang="ts">
 import Dialog from '~/components/base/Dialog.vue'
 import InputText from '~/components/base/InputText.vue'
+import { useRunners } from '~/composables/useRunner'
 
-// --- I/O.
-const emit = defineEmits<{ 'submit': [address: string] }>()
-
-// --- Model.
 const { t } = useI18n()
-const client = useClient()
-const alerts = useAlerts()
+const runners = useRunners()
 const address = ref('')
 const isOpen = defineModel({ default: false })
 watch(isOpen, () => address.value = '', { immediate: true })
-
-// --- Methods.
-async function claimRunner() {
-  await client.requestAttempt('POST /api/runners', {
-    data: {
-      address: address.value,
-    },
-    onSuccess: () => {
-      emit('submit', address.value)
-      alerts.success(t('success'))
-    },
-  })
-}
 </script>
 
 <template>
@@ -38,7 +21,7 @@ async function claimRunner() {
     :label-cancel="t('cancel')"
     :label-confirm="t('confirm')"
     :disabled="!address"
-    @confirm="() => claimRunner()">
+    @confirm="() => runners.register({ address })">
 
     <!-- Claim new runner at address -->
     <InputText

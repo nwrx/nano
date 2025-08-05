@@ -1,24 +1,21 @@
 <script setup lang="ts">
-import type { ThreadRunnerObject } from '@nwrx/nano-api'
+import type { RunnerObject } from '@nwrx/nano-api'
 import DialogDisable from './RunnerDialogDisable.vue'
 import DialogEnable from './RunnerDialogEnable.vue'
 import DialogRelease from './RunnerDialogRelease.vue'
+import DialogRename from './RunnerDialogRename.vue'
 import DialogSetAddress from './RunnerDialogSetAddress.vue'
 
-const props = defineProps<{
-  runner: ThreadRunnerObject
-}>()
-
-const emit = defineEmits<{
-  submit: []
+defineProps<{
+  runner: RunnerObject
 }>()
 
 const { t } = useI18n()
 const showSetAddress = ref(false)
+const showRename = ref(false)
 const showEnable = ref(false)
 const showDisable = ref(false)
 const showRelease = ref(false)
-const isDisabled = computed(() => Boolean(props.runner.disabledAt))
 </script>
 
 <template>
@@ -30,9 +27,14 @@ const isDisabled = computed(() => Boolean(props.runner.disabledAt))
           icon="i-carbon:network-1"
           @click="() => showSetAddress = true"
         />
+        <ContextMenuItem
+          :label="t('rename')"
+          icon="i-carbon:edit"
+          @click="() => showRename = true"
+        />
         <ContextMenuDivider />
         <ContextMenuItem
-          v-if="isDisabled"
+          v-if="runner.disabledAt"
           :label="t('enable')"
           icon="i-carbon:play"
           @click="() => showEnable = true"
@@ -53,30 +55,37 @@ const isDisabled = computed(() => Boolean(props.runner.disabledAt))
 
     <!-- Set Address Dialog -->
     <DialogSetAddress
+      v-if="showSetAddress"
       v-model="showSetAddress"
-      :runner="runner"
-      @submit="() => emit('submit')"
+      :name="runner.name"
+    />
+
+    <!-- Rename Dialog -->
+    <DialogRename
+      v-if="showRename"
+      v-model="showRename"
+      :name="runner.name"
     />
 
     <!-- Enable Dialog -->
     <DialogEnable
+      v-if="showEnable"
       v-model="showEnable"
-      :runner="runner"
-      @submit="() => emit('submit')"
+      :name="runner.name"
     />
 
     <!-- Disable Dialog -->
     <DialogDisable
+      v-if="showDisable"
       v-model="showDisable"
-      :runner="runner"
-      @submit="() => emit('submit')"
+      :name="runner.name"
     />
 
     <!-- Release Dialog -->
     <DialogRelease
+      v-if="showRelease"
       v-model="showRelease"
-      :runner="runner"
-      @submit="() => emit('submit')"
+      :name="runner.name"
     />
   </div>
 </template>
@@ -84,26 +93,31 @@ const isDisabled = computed(() => Boolean(props.runner.disabledAt))
 <i18n lang="yaml">
 en:
   setAddress: Set address
+  rename: Rename
   enable: Enable
   disable: Disable
   release: Release
 fr:
   setAddress: Définir l'adresse
+  rename: Renommer
   enable: Activer
   disable: Désactiver
   release: Libérer
 de:
   setAddress: Adresse festlegen
+  rename: Umbenennen
   enable: Aktivieren
   disable: Deaktivieren
   release: Freigeben
 es:
   setAddress: Establecer dirección
+  rename: Renombrar
   enable: Habilitar
   disable: Deshabilitar
   release: Liberar
 zh:
   setAddress: 设置地址
+  rename: 重命名
   enable: 启用
   disable: 禁用
   release: 释放

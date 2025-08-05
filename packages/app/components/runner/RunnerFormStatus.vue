@@ -1,57 +1,39 @@
 <script setup lang="ts">
-import type { application, ThreadRunnerObject } from '@nwrx/nano-api'
-import type { ThreadRunnerStatus } from '@nwrx/nano-runner'
-import type { ChannelConnectOptions } from '@unserved/client'
-import type { WebSocketChannel } from '@unshared/client/websocket'
 import AppPageForm from '~/components/app/AppPageForm.vue'
 import RecordsEntry from '~/components/base/Records.Entry.vue'
 import RecordsField from '~/components/base/Records.Field.vue'
 import Records from '~/components/base/Records.vue'
+import { useRunner } from '~/composables/useRunner'
 
-type Channel = WebSocketChannel<ChannelConnectOptions<typeof application, 'WS /ws/runners/:identity'>>
+const props = defineProps<{
+  name: string
+}>()
 
-// --- I/O.
-const props = defineProps<{ runner: ThreadRunnerObject }>()
-
-// --- Emits.
 const { t } = useI18n()
-const client = useClient()
-const channel = ref<Channel>()
-const status = ref<Partial<ThreadRunnerStatus>>({})
-
-// --- Map raw values to readable formats.
+const runner = useRunner(props)
 const readableStatus = computed(() => ({
-  uptime: formatDuration(status.value.uptime),
-  systemUptime: formatDuration(status.value.system?.uptime),
-  memoryFree: formatDataVolume(status.value.system?.memoryFree),
-  memoryTotal: formatDataVolume(status.value.system?.memoryTotal),
-  memoryAvailable: formatDataVolume(status.value.system?.availmem),
-  memoryUsed: formatDataVolume(status.value.system?.memoryUsed),
-  cpuCores: t('cpusCoresCount', { count: status.value.system?.cpus?.length ?? 0 }),
-  cpuModel: status.value.system?.cpus?.[0]?.model ?? t('cpusModelUnknown'),
-  cpuSpeed: formatFrequency(status.value.system?.cpuAverageSpeed),
-  cpuLoad: t('cpusLoadValue', { load: status.value.system?.cpuAverageLoad?.[0] ?? 0 }),
+  uptime: formatDuration(runner.status.uptime),
+  systemUptime: formatDuration(runner.status.system?.uptime),
+  memoryFree: formatDataVolume(runner.status.system?.memoryFree),
+  memoryTotal: formatDataVolume(runner.status.system?.memoryTotal),
+  memoryAvailable: formatDataVolume(runner.status.system?.availmem),
+  memoryUsed: formatDataVolume(runner.status.system?.memoryUsed),
+  cpuCores: t('cpusCoresCount', { count: runner.status.system?.cpus?.length ?? 0 }),
+  cpuModel: runner.status.system?.cpus?.[0]?.model ?? t('cpusModelUnknown'),
+  cpuSpeed: formatFrequency(runner.status.system?.cpuAverageSpeed),
+  cpuLoad: t('cpusLoadValue', { load: runner.status.system?.cpuAverageLoad?.[0] ?? 0 }),
 }))
 
-async function subscribe() {
-  if (!props.runner) return
-  channel.value = await client.connect('WS /ws/runners/:identity', {
-    autoReconnect: true,
-    reconnectDelay: 1000,
-    reconnectLimit: 3,
-    data: { identity: props.runner.identity },
-    onMessage: message => status.value = message,
-  }).open()
-}
+onMounted(() => {
+  void runner.fetch()
+  void runner.subscribeToEvents()
+  void runner.subscribeToStatus()
+})
 
-function unsubscribe() {
-  if (!channel.value) return
-  void channel.value.close()
-  channel.value = undefined
-}
-
-onMounted(subscribe)
-onUnmounted(unsubscribe)
+onBeforeUnmount(() => {
+  void runner.unsubscribeFromEvents()
+  void runner.unsubscribeFromStatus()
+})
 </script>
 
 <template>
@@ -64,23 +46,35 @@ onUnmounted(unsubscribe)
     <Records>
       <div class="flex items-center space-x-md p-lg">
         <Badge
-          class="font-normal"
-          :class="status.ok ? 'badge-success' : 'badge-danger'"
-          :icon="status.ok ? 'i-carbon:checkmark' : 'i-carbon:close'"
-          :label="status.ok ? t('connected') : t('disconnected')"
+          v-if="runner.status.ok"
+          class="font-normal badge-success"
+          icon="i-carbon:checkmark"
+          :label="t('connected')"
         />
         <Badge
-          class="font-normal"
-          :class="runner.disabledAt ? 'badge-warning' : 'badge-success'"
-          :icon="runner.disabledAt ? 'i-carbon:stop-outline' : 'i-carbon:play-outline'"
-          :label="runner.disabledAt ? t('disabled') : t('running')"
+          v-else
+          class="font-normal badge-danger"
+          icon="i-carbon:close"
+          :label="t('unreachable')"
+        />
+        <Badge
+          v-if="runner.data.disabledAt"
+          class="font-normal badge-warning"
+          icon="i-carbon:stop-outline"
+          :label="t('disabled')"
+        />
+        <Badge
+          v-else
+          class="font-normal badge-success"
+          icon="i-carbon:play-outline"
+          :label="t('running')"
         />
       </div>
 
       <!-- Memory -->
       <RecordsEntry :title="t('runner')" icon="i-carbon:process">
         <template #fields>
-          <RecordsField :label="t('runnerVersion')" :value="status.version" />
+          <RecordsField :label="t('runnerVersion')" :value="runner.status.version" />
           <RecordsField :label="t('runnerUptime')" :value="readableStatus.uptime" />
           <RecordsField :label="t('runnerSystemUptime')" :value="readableStatus.systemUptime" />
         </template>
@@ -89,11 +83,11 @@ onUnmounted(unsubscribe)
       <!-- Platform -->
       <RecordsEntry :title="t('platform')" icon="i-carbon:screen">
         <template #fields>
-          <RecordsField :label="t('platformArch')" :value="status.system?.arch" />
-          <RecordsField :label="t('platformFamily')" :value="status.system?.family" />
-          <RecordsField :label="t('platformPlatform')" :value="status.system?.platform" />
-          <RecordsField :label="t('platformRelease')" :value="status.system?.release" />
-          <RecordsField :label="t('platformVersion')" :value="status.system?.version" />
+          <RecordsField :label="t('platformArch')" :value="runner.status.system?.arch" />
+          <RecordsField :label="t('platformFamily')" :value="runner.status.system?.family" />
+          <RecordsField :label="t('platformPlatform')" :value="runner.status.system?.platform" />
+          <RecordsField :label="t('platformRelease')" :value="runner.status.system?.release" />
+          <RecordsField :label="t('platformVersion')" :value="runner.status.system?.version" />
         </template>
       </RecordsEntry>
 
@@ -125,7 +119,7 @@ en:
   text: Real-time monitoring dashboard for your runner server. Track performance metrics, system health, and resource utilization to ensure optimal operation.
   disabled: Disabled
   connected: Connected
-  disconnected: Disconnected
+  unreachable: Unreachable
   lastSeen: Last seen {distance}
   running: Running
   inactive: Inactive
@@ -157,7 +151,7 @@ fr:
   text: Tableau de bord de surveillance en temps réel pour votre serveur d'exécution. Suivez les métriques de performance, la santé du système et l'utilisation des ressources pour garantir un fonctionnement optimal.
   disabled: Désactivé
   connected: Connecté
-  disconnected: Déconnecté
+  unreachable: Inaccessible
   lastSeen: Vu pour la dernière fois {distance}
   running: En cours d'exécution
   inactive: Inactif
@@ -189,7 +183,7 @@ de:
   text: Echtzeit-Überwachungsdashboard für Ihren Runner-Server. Verfolgen Sie Leistungskennzahlen, Systemgesundheit und Ressourcennutzung, um einen optimalen Betrieb sicherzustellen.
   disabled: Deaktiviert
   connected: Verbunden
-  disconnected: Getrennt
+  unreachable: Nicht erreichbar
   lastSeen: Zuletzt gesehen {distance}
   running: Laufend
   inactive: Inaktiv
@@ -221,7 +215,7 @@ es:
   text: Panel de monitoreo en tiempo real para tu servidor runner. Sigue las métricas de rendimiento, la salud del sistema y la utilización de recursos para garantizar un funcionamiento óptimo.
   disabled: Deshabilitado
   connected: Conectado
-  disconnected: Desconectado
+  unreachable: Inalcanzable
   lastSeen: Última vez visto {distance}
   running: En ejecución
   inactive: Inactivo
@@ -253,7 +247,7 @@ zh:
   text: 您的运行器服务器的实时监控仪表板。跟踪性能指标、系统健康状况和资源利用率，以确保最佳运行。
   disabled: 已禁用
   connected: 已连接
-  disconnected: 已断开连接
+  unreachable: 无法访问
   lastSeen: 上次看到 {distance}
   running: 正在运行
   inactive: 不活跃

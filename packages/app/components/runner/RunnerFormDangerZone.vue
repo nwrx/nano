@@ -1,24 +1,34 @@
 <script setup lang="ts">
-import type { ThreadRunnerObject } from '@nwrx/nano-api'
 import AppPageFormAction from '~/components/app/AppPageForm.Action.vue'
 import AppPageFormActions from '~/components/app/AppPageForm.Actions.vue'
 import AppPageForm from '~/components/app/AppPageForm.vue'
+import { useRunner } from '~/composables/useRunner'
 import DialogDisable from './RunnerDialogDisable.vue'
 import DialogEnable from './RunnerDialogEnable.vue'
 import DialogRelease from './RunnerDialogRelease.vue'
+import DialogRename from './RunnerDialogRename.vue'
 import DialogSetAddress from './RunnerDialogSetAddress.vue'
 
-// --- I/O.
-const props = defineProps<{ runner: ThreadRunnerObject }>()
-const emit = defineEmits<{ refresh: [] }>()
+const props = defineProps<{
+  name: string
+}>()
 
-// --- Model.
 const { t } = useI18n()
+const runner = useRunner(props)
 const showSetAddressDialog = ref(false)
+const showRenameDialog = ref(false)
 const showEnableDialog = ref(false)
 const showDisableDialog = ref(false)
 const showReleaseDialog = ref(false)
-const isDisabled = computed(() => props.runner.disabledAt)
+
+onMounted(() => {
+  void runner.fetch()
+  void runner.subscribeToEvents()
+})
+
+onBeforeUnmount(() => {
+  void runner.unsubscribeFromEvents()
+})
 </script>
 
 <template>
@@ -34,12 +44,32 @@ const isDisabled = computed(() => props.runner.disabledAt)
       />
       <AppPageFormAction
         class="border-danger"
-        :class-button="isDisabled ? 'button-success' : 'button-danger'"
-        :icon="isDisabled ? 'i-carbon:play-outline' : 'i-carbon:pause'"
-        :title="isDisabled ? t('enableTitle') : t('disableTitle')"
-        :text="isDisabled ? t('enableText') : t('disableText')"
-        :label="isDisabled ? t('enableLabel') : t('disableLabel')"
-        @click="() => isDisabled ? showEnableDialog = true : showDisableDialog = true"
+        class-button="button-warning"
+        icon="i-carbon:edit"
+        :title="t('renameTitle')"
+        :text="t('renameText')"
+        :label="t('renameLabel')"
+        @click="() => showRenameDialog = true"
+      />
+      <AppPageFormAction
+        v-if="runner.data.disabledAt"
+        class="border-danger"
+        class-button="button-success"
+        icon="i-carbon:play-outline"
+        :title="t('enableTitle')"
+        :text="t('enableText')"
+        :label="t('enableLabel')"
+        @click="() => showEnableDialog = true"
+      />
+      <AppPageFormAction
+        v-else
+        class="border-danger"
+        class-button="button-danger"
+        icon="i-carbon:pause"
+        :title="t('disableTitle')"
+        :text="t('disableText')"
+        :label="t('disableLabel')"
+        @click="() => showDisableDialog = true"
       />
       <AppPageFormAction
         class="border-danger"
@@ -56,29 +86,31 @@ const isDisabled = computed(() => props.runner.disabledAt)
   <!-- Set address dialog -->
   <DialogSetAddress
     v-model="showSetAddressDialog"
-    :runner="runner"
-    @submit="() => emit('refresh')"
+    :name="name"
+  />
+
+  <!-- Rename dialog -->
+  <DialogRename
+    v-model="showRenameDialog"
+    :name="name"
   />
 
   <!-- Enable dialog -->
   <DialogEnable
     v-model="showEnableDialog"
-    :runner="runner"
-    @submit="() => emit('refresh')"
+    :name="name"
   />
 
   <!-- Disable dialog -->
   <DialogDisable
     v-model="showDisableDialog"
-    :runner="runner"
-    @submit="() => emit('refresh')"
+    :name="name"
   />
 
   <!-- Release dialog -->
   <DialogRelease
     v-model="showReleaseDialog"
-    :runner="runner"
-    @submit="() => emit('refresh')"
+    :name="name"
   />
 </template>
 
@@ -89,6 +121,9 @@ en:
   setAddressTitle: Change Runner Address
   setAddressText: Update the network endpoint where this runner instance can be reached. This may temporarily interrupt connectivity.
   setAddressLabel: Change Address
+  renameTitle: Rename Runner
+  renameText: Change the identifier of this runner instance. This will update references throughout the system.
+  renameLabel: Rename Runner
   enableTitle: Enable Runner
   enableText: Activate this runner to accept and process new execution requests. The runner will become available for workload distribution.
   enableLabel: Enable Runner
@@ -104,6 +139,9 @@ fr:
   setAddressTitle: Changer l'Adresse du Serveur d'Exécution
   setAddressText: Mettre à jour le point de terminaison réseau où cette instance de serveur d'exécution peut être atteinte. Cela peut temporairement interrompre la connectivité.
   setAddressLabel: Changer l'Adresse
+  renameTitle: Renommer le Serveur d'Exécution
+  renameText: Changer l'identifiant de cette instance de serveur d'exécution. Cela mettra à jour les références dans tout le système.
+  renameLabel: Renommer le Serveur d'Exécution
   enableTitle: Activer le Serveur d'Exécution
   enableText: Activer ce serveur d'exécution pour accepter et traiter de nouvelles demandes d'exécution. Le serveur d'exécution deviendra disponible pour la distribution de charge de travail.
   enableLabel: Activer le Serveur d'Exécution
@@ -119,6 +157,9 @@ de:
   setAddressTitle: Ausführungsserver-Adresse Ändern
   setAddressText: Aktualisieren Sie den Netzwerk-Endpunkt, unter dem diese Ausführungsserver-Instanz erreichbar ist. Dies kann die Konnektivität vorübergehend unterbrechen.
   setAddressLabel: Adresse Ändern
+  renameTitle: Ausführungsserver Umbenennen
+  renameText: Ändern Sie den Bezeichner dieser Ausführungsserver-Instanz. Dies wird Referenzen im gesamten System aktualisieren.
+  renameLabel: Ausführungsserver Umbenennen
   enableTitle: Ausführungsserver Aktivieren
   enableText: Aktivieren Sie diesen Ausführungsserver, um neue Ausführungsanfragen zu akzeptieren und zu verarbeiten. Der Ausführungsserver wird für die Workload-Verteilung verfügbar.
   enableLabel: Ausführungsserver Aktivieren
@@ -134,6 +175,9 @@ es:
   setAddressTitle: Cambiar Dirección del Servidor de Ejecución
   setAddressText: Actualizar el endpoint de red donde se puede alcanzar esta instancia del servidor de ejecución. Esto puede interrumpir temporalmente la conectividad.
   setAddressLabel: Cambiar Dirección
+  renameTitle: Renombrar Servidor de Ejecución
+  renameText: Cambiar el identificador de esta instancia del servidor de ejecución. Esto actualizará las referencias en todo el sistema.
+  renameLabel: Renombrar Servidor de Ejecución
   enableTitle: Habilitar Servidor de Ejecución
   enableText: Activar este servidor de ejecución para aceptar y procesar nuevas solicitudes de ejecución. El servidor de ejecución estará disponible para la distribución de carga de trabajo.
   enableLabel: Habilitar Servidor de Ejecución
@@ -149,6 +193,9 @@ zh:
   setAddressTitle: 更改执行服务器地址
   setAddressText: 更新可以访问此执行服务器实例的网络端点。这可能会暂时中断连接。
   setAddressLabel: 更改地址
+  renameTitle: 重命名执行服务器
+  renameText: 更改此执行服务器实例的标识符。这将更新整个系统中的引用。
+  renameLabel: 重命名执行服务器
   enableTitle: 启用执行服务器
   enableText: 激活此执行服务器以接受和处理新的执行请求。执行服务器将可用于工作负载分发。
   enableLabel: 启用执行服务器

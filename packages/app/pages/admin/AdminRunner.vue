@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ThreadRunnerObject } from '@nwrx/nano-api'
+import type { RunnerObject } from '@nwrx/nano-api'
 import AppPageContainer from '~/components/app/AppPage.Container.vue'
 import RunnerFormDangerZone from '~/components/runner/RunnerFormDangerZone.vue'
 import RunnerFormSettings from '~/components/runner/RunnerFormSettings.vue'
@@ -7,7 +7,7 @@ import RunnerFormStatus from '~/components/runner/RunnerFormStatus.vue'
 
 definePageMeta({
   name: 'AdminSettingsRunner',
-  path: '/admin/runners/:identity',
+  path: '/admin/runners/:name',
   layout: 'admin-settings',
   icon: 'i-carbon:bare-metal-server-02',
   parent: 'AdminSettingsRunners',
@@ -29,25 +29,13 @@ definePageMeta({
 
 // --- Model.
 const route = useRoute()
-const identity = computed(() => route.params.identity as string)
-const runner = ref<ThreadRunnerObject>()
-const client = useClient()
-
-// --- Methods.
-async function getRunner() {
-  await client.requestAttempt('GET /api/runners/:identity', {
-    parameters: { identity: identity.value },
-    onData: data => runner.value = data,
-  })
-}
-
-onMounted(getRunner)
+const name = computed(() => route.params.name as string)
 </script>
 
 <template>
-  <AppPageContainer v-if="runner" contained>
-    <RunnerFormSettings :runner="runner" />
-    <RunnerFormStatus :runner="runner" />
-    <RunnerFormDangerZone :runner="runner" @refresh="() => getRunner()" />
+  <AppPageContainer contained>
+    <RunnerFormSettings :name="name" />
+    <RunnerFormStatus :name="name" />
+    <RunnerFormDangerZone :name="name" />
   </AppPageContainer>
 </template>

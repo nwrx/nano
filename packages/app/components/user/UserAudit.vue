@@ -7,7 +7,7 @@ const props = defineProps<{
   createdBy?: { username: string }
   updatedAt?: string
   updatedBy?: { username: string }
-  disabledAt?: string
+  disabledAt?: null | string
   disabledBy?: { username: string }
 }>()
 
