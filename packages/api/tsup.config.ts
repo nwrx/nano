@@ -7,11 +7,16 @@ export default defineConfig({
   format: [
     'cjs',
   ],
-  clean: true,
-  minify: false,
-  treeshake: false,
+  target: 'node22',
+  platform: 'node',
+  shims: true,
+  minify: true,
+  treeshake: true,
   splitting: false,
   sourcemap: true,
   external: [/^@nwrx\/.*/],
   outExtension: () => ({ js: '.cjs' }),
+  esbuildOptions(options) {
+    options.chunkNames = 'chunks/[name]-[hash]'
+  },
 })

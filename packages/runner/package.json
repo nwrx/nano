@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "@types/ws": "8.18.0",
-    "tsup": "8.4.0",
+    "tsup": "8.5.0",
     "ws": "8.18.1"
   }
 }

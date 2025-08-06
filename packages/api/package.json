@@ -61,7 +61,7 @@
     "source-map-support": "0.5.21",
     "storybook": "8.6.7",
     "testcontainers": "10.20.0",
-    "tsup": "8.4.0",
+    "tsup": "8.5.0",
     "typeorm": "0.3.21",
     "unocss": "66.1.0-beta.5",
     "unocss-preset-theme": "0.14.1",

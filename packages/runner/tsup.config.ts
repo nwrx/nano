@@ -11,8 +11,8 @@ export default defineConfig({
   ],
   clean: true,
   minify: false,
-  treeshake: false,
-  splitting: false,
+  treeshake: true,
+  splitting: true,
   sourcemap: true,
   outExtension: () => ({ js: '.mjs' }),
 })

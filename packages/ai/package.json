@@ -18,44 +18,44 @@
       "require": "./dist/index.cjs"
     },
     "./chat": {
-      "types": "./dist/chat/index.d.ts",
-      "import": "./dist/chat/index.js",
-      "require": "./dist/chat/index.cjs"
+      "types": "./dist/chat.d.ts",
+      "import": "./dist/chat.js",
+      "require": "./dist/chat.cjs"
     },
     "./embeddings": {
-      "types": "./dist/embeddings/index.d.ts",
-      "import": "./dist/embeddings/index.js",
-      "require": "./dist/embeddings/index.cjs"
+      "types": "./dist/embeddings.d.ts",
+      "import": "./dist/embeddings.js",
+      "require": "./dist/embeddings.cjs"
     },
     "./image": {
-      "types": "./dist/image/index.d.ts",
-      "import": "./dist/image/index.js",
-      "require": "./dist/image/index.cjs"
+      "types": "./dist/image.d.ts",
+      "import": "./dist/image.js",
+      "require": "./dist/image.cjs"
     },
     "./providers": {
-      "types": "./dist/providers/index.d.ts",
-      "import": "./dist/providers/index.js",
-      "require": "./dist/providers/index.cjs"
+      "types": "./dist/providers.d.ts",
+      "import": "./dist/providers.js",
+      "require": "./dist/providers.cjs"
     },
     "./models": {
-      "types": "./dist/models/index.d.ts",
-      "import": "./dist/models/index.js",
-      "require": "./dist/models/index.cjs"
+      "types": "./dist/models.d.ts",
+      "import": "./dist/models.js",
+      "require": "./dist/models.cjs"
     },
     "./speech": {
-      "types": "./dist/speech/index.d.ts",
-      "import": "./dist/speech/index.js",
-      "require": "./dist/speech/index.cjs"
+      "types": "./dist/speech.d.ts",
+      "import": "./dist/speech.js",
+      "require": "./dist/speech.cjs"
     },
     "./transcript": {
-      "types": "./dist/transcript/index.d.ts",
-      "import": "./dist/transcript/index.js",
-      "require": "./dist/transcript/index.cjs"
+      "types": "./dist/transcript.d.ts",
+      "import": "./dist/transcript.js",
+      "require": "./dist/transcript.cjs"
     },
     "./utils": {
-      "types": "./dist/utils/index.d.ts",
-      "import": "./dist/utils/index.js",
-      "require": "./dist/utils/index.cjs"
+      "types": "./dist/utils.d.ts",
+      "import": "./dist/utils.js",
+      "require": "./dist/utils.cjs"
     }
   },
   "files": [
@@ -76,30 +76,7 @@
   "devDependencies": {
     "@anthropic-ai/sdk": "0.57.0",
     "msw": "2.7.3",
-    "openai": "5.8.2"
-  },
-  "tsup": {
-    "entry": {
-      "index": "index.ts",
-      "embeddings/index": "embeddings/index.ts",
-      "image/index": "image/index.ts",
-      "providers/index": "providers/index.ts",
-      "models/index": "models/index.ts",
-      "chat/index": "chat/index.ts",
-      "speech/index": "speech/index.ts",
-      "transcript/index": "transcript/index.ts",
-      "utils/index": "utils/index.ts"
-    },
-    "format": [
-      "esm",
-      "cjs"
-    ],
-    "target": "node20",
-    "dts": true,
-    "shims": true,
-    "splitting": true,
-    "sourcemap": true,
-    "treeshaking": true,
-    "experimental-dts": true
+    "openai": "5.8.2",
+    "tsup": "8.5.0"
   }
 }
