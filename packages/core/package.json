@@ -66,26 +66,8 @@
     "jsonschema": "1.5.0",
     "msw": "2.7.3",
     "openai": "5.8.2",
+    "tsup": "8.5.0",
     "zod": "3.24.2",
     "zod-to-json-schema": "3.24.5"
-  },
-  "tsup": {
-    "entry": {
-      "components": "components/index.ts",
-      "sandbox": "sandbox/index.ts",
-      "utils": "utils/index.ts",
-      "index": "index.ts"
-    },
-    "format": [
-      "esm",
-      "cjs"
-    ],
-    "target": "node20",
-    "dts": true,
-    "shims": true,
-    "splitting": false,
-    "sourcemap": true,
-    "treeshaking": false,
-    "experimental-dts": true
   }
 }
