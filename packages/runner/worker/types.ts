@@ -1,6 +1,7 @@
 import type { FlowV1 } from '@nwrx/nano'
 import type { ReferenceType } from '@nwrx/nano/utils'
 import type { UUID } from 'node:crypto'
+import type { SerializedError } from './deserializeError'
 import { type ThreadEventMap, type ThreadInputObject } from '@nwrx/nano'
 import { assert, createParser, createRuleSet } from '@unshared/validation'
 
@@ -46,7 +47,7 @@ export type ThreadServerMessage = ReturnType<typeof SERVER_MESSAGE_SCHEMA>
 /** Message that will be sent from te worker to the main thread. */
 export type ThreadWorkerMessage =
   | { [K in keyof ThreadEventMap]: { event: K; data: ThreadEventMap[K] } }[keyof ThreadEventMap]
-  | { event: 'worker.error'; data: Error }
+  | { event: 'worker.error'; data: SerializedError }
   | { event: 'worker.loaded' }
   | { event: 'worker.ready' }
   | { event: 'worker.references.resolve'; data: readonly [id: UUID, type: ReferenceType, values: string[]] }

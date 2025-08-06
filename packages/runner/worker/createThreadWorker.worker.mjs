@@ -1,7 +1,6 @@
 /* eslint-disable jsdoc/no-types */
 import { abort, createThreadFromFlow, start } from '@nwrx/nano'
 import { DEFAULT_COMPONENT_RESOLVER } from '@nwrx/nano/utils'
-import { noop } from '@unshared/functions'
 import { randomUUID } from 'node:crypto'
 import { serialize } from './serialize.mjs'
 import { serializeError } from './serializeError.mjs'
@@ -121,53 +120,50 @@ function loadThread(port, flow) {
  */
 export function createThreadWorker(port) {
   let /** @type {Thread | undefined} */ thread
-  try {
 
-    // --- Listen to the parent thread for incoming instructions.
-    port.on('message', (/** @type {ThreadClientMessage} */ message) => {
-      try {
+  /**
+   * @param {ThreadServerMessage} message The message to post to the parent thread.
+   */
+  function postMessage(message) {
+    port.postMessage(message)
+  }
 
-        // --- Load the flow and create a thread from it.
-        if (message.event === 'worker.load') {
-          if (thread) {
-            abort(thread)
-            thread.clear()
-          }
-          thread = loadThread(port, message.data)
-          port.postMessage({ event: 'worker.loaded' })
-        }
+  // --- Listen to the parent thread for incoming instructions.
+  port.on('message', (/** @type {ThreadClientMessage} */ message) => {
+    try {
 
-        // --- Start the thread with the provided data as input.
-        if (message.event === 'worker.start') {
-          if (!thread) {
-            port.postMessage({ event: 'error', data: ['Flow not loaded'] })
-            return
-          }
-          void start(thread, message.data).catch(noop)
-        }
-
-        // --- Abort the thread if it is running.
-        else if (message.event === 'worker.abort') {
-          if (!thread) return
+      // --- Load the flow and create a thread from it.
+      if (message.event === 'worker.load') {
+        if (thread) {
           abort(thread)
+          thread.clear()
         }
+        thread = loadThread(port, message.data)
+        postMessage({ event: 'worker.loaded' })
       }
 
-      // --- If an error occurs, serialize the error and send it to the parent thread.
-      catch (error) {
-        const /** @type {ThreadServerMessage} */ message = { event: 'error', data: [serializeError(error)] }
-        port.postMessage(message)
+      // --- Start the thread with the provided data as input.
+      if (message.event === 'worker.start') {
+        if (!thread) {
+          postMessage({ event: 'error', data: ['Flow not loaded'] })
+          return
+        }
+        void start(thread, message.data)
       }
-    })
 
-    // --- Notify the parent thread that the worker is ready to start.
-    const /** @type {ThreadServerMessage} */ message = { event: 'worker.ready' }
-    port.postMessage(message)
-  }
+      // --- Abort the thread if it is running.
+      else if (message.event === 'worker.abort') {
+        if (!thread) return
+        abort(thread)
+      }
+    }
 
-  // --- If an error occurs, serialize the error and send it to the parent thread.
-  catch (error) {
-    const /** @type {ThreadServerMessage} */ message = { event: 'error', data: [serializeError(error)] }
-    port.postMessage(message)
-  }
+    // --- If an error occurs, serialize the error and send it to the parent thread.
+    catch (error) {
+      port.postMessage({ event: 'worker.error', data: serializeError(error) })
+    }
+  })
+
+  // --- Notify the parent thread that the worker is ready to start.
+  port.postMessage({ event: 'worker.ready' })
 }
