@@ -18,7 +18,7 @@ export function release(this: ModuleRunner) {
       this.runnerMasterAddress = '127.0.0.1'
 
       // --- Stop all worker threads.
-      await this.runnerWorkerPool.destroy()
+      await this.workerPools.destroy()
     },
   )
 }

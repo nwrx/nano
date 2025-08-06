@@ -4,6 +4,7 @@ import { createWebSocketRoute } from '@unserved/server'
 import { assert, createParser } from '@unshared/validation'
 import { authorize } from '../utils'
 import { CLIENT_MESSAGE_SCHEMA, createThreadWorker, SERVER_MESSAGE_SCHEMA } from '../worker'
+import { serializeError } from '../worker/serializeError.mjs'
 
 export function thread(this: ModuleRunner) {
   return createWebSocketRoute(
@@ -19,25 +20,24 @@ export function thread(this: ModuleRunner) {
       onOpen: ({ peer }) => {
         authorize.call(this, peer)
         const promise = createThreadWorker.call(this)
-        this.runnerWorkerPorts.set(peer.id, promise)
+        this.threads.set(peer.id, promise)
         void promise.then(worker => worker.on('message', message => peer.send(message)))
       },
       onMessage: async({ peer, message }) => {
-        const worker = await this.runnerWorkerPorts.get(peer.id)
-        if (!worker) throw new Error(`Worker not found for peer: ${peer.id}`)
-        worker.postMessage(message)
+        const thread = await this.threads.get(peer.id)
+        if (!thread) throw this.errors.THREAD_NOT_INSTANTIATED(peer.id)
+        thread.postMessage(message)
       },
       onClose: async({ peer }) => {
-        const worker = await this.runnerWorkerPorts.get(peer?.id)
-        if (!worker) return
-        worker.removeAllListeners()
-        worker.unref()
-        worker.close()
-        this.runnerWorkerPorts.delete(peer.id)
+        const thread = await this.threads.get(peer?.id)
+        if (!thread) return
+        thread.removeAllListeners()
+        thread.unref()
+        thread.close()
+        this.threads.delete(peer.id)
       },
       onError: ({ peer, error }) => {
-        console.error('Error in thread session:', error)
-        const message: ThreadWorkerMessage = { event: 'worker.error', data: error }
+        const message: ThreadWorkerMessage = { event: 'worker.error', data: serializeError(error) }
         peer.send(message)
         peer.close(1000, 'Worker error occurred')
       },

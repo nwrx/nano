@@ -37,10 +37,10 @@ describe.concurrent<Context>('release', () => {
     it('should destroy all worker threads', async({ expect, application, moduleRunner }) => {
       const headers = { Authorization: `Bearer ${moduleRunner.runnerToken}` }
       await application.fetch('/claim', { method: 'POST' })
-      moduleRunner.runnerWorkerPool.initialize()
-      expect(moduleRunner.runnerWorkerPool.workers).not.toHaveLength(0)
+      moduleRunner.workerPools.initialize()
+      expect(moduleRunner.workerPools.workers).not.toHaveLength(0)
       await application.fetch('/release', { method: 'POST', headers })
-      expect(moduleRunner.runnerWorkerPool.workers).toHaveLength(0)
+      expect(moduleRunner.workerPools.workers).toHaveLength(0)
     })
   })
 

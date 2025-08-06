@@ -17,12 +17,12 @@ export class ModuleRunner extends ModuleBase {
   runnerTrustProxy = process.env.RUNNER_TRUST_PROXY === 'true'
   runnerIsClaimed = false
 
-  runnerWorkerPoolSize = Math.max(availableParallelism() - 1, 1)
-  runnerWorkerPorts = new Map<string, Promise<MessagePort>>()
-  runnerWorkerPool = createWorkerPool({
+  threads = new Map<string, Promise<MessagePort>>()
+  workerPoolSize = Math.max(availableParallelism() - 1, 1)
+  workerPools = createWorkerPool({
     resourceLimits: { stackSizeMb: 8 },
     argv: ['--untrusted-code-mitigations'],
-    size: this.runnerWorkerPoolSize,
+    size: this.workerPoolSize,
   })
 }
 

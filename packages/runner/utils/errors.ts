@@ -23,16 +23,10 @@ export const ERRORS = {
   }),
 
   // Thread
-  THREAD_NOT_FOUND: (id: string) => createError({
-    name: 'E_THREAD_NOT_FOUND',
-    message: `Thread with ID "${id}" not found`,
+  THREAD_NOT_INSTANTIATED: (id: string) => createError({
+    name: 'E_THREAD_NOT_INSTANTIATED',
+    message: `Thread with ID "${id}" is not instantiated`,
     statusCode: 404,
     statusMessage: 'Not Found',
-  }),
-  THREAD_ALREADY_INSTANTIATED: (id: string) => createError({
-    name: 'E_THREAD_ALREADY_INSTANTIATED',
-    message: `Thread with ID "${id}" is already instantiated`,
-    statusCode: 409,
-    statusMessage: 'Conflict',
   }),
 }

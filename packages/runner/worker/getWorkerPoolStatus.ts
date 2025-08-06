@@ -8,11 +8,11 @@ export function getWorkerPoolStatus(this: ModuleRunner): Promise<RunnerWorkerPoo
   const moduleId = new URL('getWorkerPoolStatus.worker.mjs', import.meta.url).pathname
 
   // --- Initialize the worker pool if it's empty.
-  if (this.runnerWorkerPool.workers.length === 0)
-    this.runnerWorkerPool.initialize()
+  if (this.workerPools.workers.length === 0)
+    this.workerPools.initialize()
 
   // --- Get the status of each worker.
-  const promises = this.runnerWorkerPool.workers.map(async worker => ({
+  const promises = this.workerPools.workers.map(async worker => ({
     running: worker.running,
     ...await worker.spawn<Module>(moduleId, { name: 'getWorkerPoolStatus' }),
   }))

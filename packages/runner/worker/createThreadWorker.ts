@@ -27,7 +27,7 @@ export async function createThreadWorker(this: ModuleRunner): Promise<MessagePor
   // --- Create a new thread that we can interact with in a separate worker.
   // --- This allows us to balance the load of running multiple threads across
   // --- multiple CPUs / threads.
-  void this.runnerWorkerPool.spawn<Module>(moduleId, {
+  void this.workerPools.spawn<Module>(moduleId, {
     name: 'createThreadWorker',
     parameters: [port2],
   })
