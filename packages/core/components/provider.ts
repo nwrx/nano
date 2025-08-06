@@ -24,7 +24,7 @@ export const provider = defineComponent(
     isTrusted: true,
     name: 'provider',
     purpose: 'integration',
-    icon: 'carbon:cloud-service',
+    icon: 'carbon:foundation-model',
     title: {
       en: 'Provider',
       fr: 'Fournisseur',
