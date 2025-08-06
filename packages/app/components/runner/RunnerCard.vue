@@ -32,7 +32,7 @@ const linkTo = computed(() => ({
       :class="runner.disabledAt ? 'text-danger' : 'text-success'"
     />
 
-    <!-- Identity & Address -->
+    <!-- Name & Address -->
     <div class="flex flex-col items-start">
 
       <!-- If link -->

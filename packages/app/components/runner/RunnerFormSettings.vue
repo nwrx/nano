@@ -51,7 +51,7 @@ en:
   title: Configuration
   text: Manage your runner infrastructure with precision. Each runner provides isolated execution environments with unique identities and secure network endpoints for optimal workload distribution.
   success: Runner address was successfully updated.
-  name: Identity
+  name: Name
   address: Address
   addressHint: The network endpoint where this runner can be reached (e.g., http://nano-runner-eu-west.acme.com)
   addressPlaceholder: Enter the runner address

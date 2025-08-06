@@ -36,7 +36,7 @@ onBeforeUnmount(() => {
         {{ t(toCamelCase('header', name)) }}
       </template>
 
-      <!-- Identity -->
+      <!-- Name -->
       <template #cell.name="runner">
         <RunnerCard :runner="runner" is-link inline />
       </template>
@@ -66,7 +66,7 @@ en:
   title: Thread Runners
   text: Manage and monitor thread runner servers. Thread runners are responsible for executing background tasks and heavy computations.
   claim: Claim a new runner
-  headerIdentity: Runner
+  headerName: Runner
   headerAddress: Address
   headerLastSeenAt: ''
   headerActions: ''
