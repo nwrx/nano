@@ -145,8 +145,15 @@ export function createThreadWorker(port) {
       // --- Start the thread with the provided data as input.
       if (message.event === 'worker.start') {
         if (!thread) {
-          postMessage({ event: 'error', data: ['Flow not loaded'] })
-          return
+          return postMessage({
+            event: 'worker.error',
+            data: {
+              '@instanceOf': 'Error',
+              'name': 'E_THREAD_NOT_LOADED',
+              'message': 'No thread loaded. Please load a flow before starting the thread.',
+            },
+          })
+
         }
         void start(thread, message.data)
       }
