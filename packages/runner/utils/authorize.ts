@@ -8,7 +8,7 @@ export function authorize(this: ModuleRunner, event: H3Event | Peer): void {
   // --- If the event is an H3 event, extract the address and user agent from the request.
   if (isEvent(event)) {
     const token = getRequestHeader(event, 'Authorization')?.replace(/^Bearer\s+/, '')
-    if (token !== this.runnerToken) throw this.errors.UNAUTHORIZED()
+    if (token !== this.token) throw this.errors.UNAUTHORIZED()
     return
   }
 
@@ -25,7 +25,7 @@ export function authorize(this: ModuleRunner, event: H3Event | Peer): void {
     const token = authorization
       ? authorization.replace(/^Bearer\s+/, '')
       : new URL(event.request.url).searchParams.get('token') ?? undefined
-    if (token !== this.runnerToken) throw this.errors.UNAUTHORIZED()
+    if (token !== this.token) throw this.errors.UNAUTHORIZED()
     return
   }
 

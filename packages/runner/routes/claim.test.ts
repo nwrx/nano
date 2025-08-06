@@ -28,24 +28,24 @@ describe.concurrent<Context>('claim', () => {
       const response = await application.fetch('/claim', { method: 'POST' })
       const data = await response.json() as Record<string, string>
       expect(data).toStrictEqual({
-        token: moduleRunner.runnerToken,
+        token: moduleRunner.token,
         identity: moduleRunner.runnerIdentity,
       })
     })
 
     it('should set the "runnerIsClaimed" flag', async({ application, moduleRunner }) => {
       await application.fetch('/claim', { method: 'POST' })
-      expect(moduleRunner.runnerIsClaimed).toStrictEqual(true)
+      expect(moduleRunner.isClaimed).toStrictEqual(true)
     })
 
     it('should set the "runnerMasterAddress" property from the "X-Forwarded-For" header', async({ application, moduleRunner }) => {
-      moduleRunner.runnerTrustProxy = true
+      moduleRunner.trustProxy = true
       await application.fetch('/claim', { method: 'POST', headers: { 'X-Forwarded-For': '0.0.0.0' } })
       expect(moduleRunner.runnerMasterAddress).toStrictEqual('0.0.0.0')
     })
 
     it('should set the "runnerMasterAddress" property from the socket address', async({ application, moduleRunner }) => {
-      moduleRunner.runnerTrustProxy = false
+      moduleRunner.trustProxy = false
       await application.fetch('/claim', { method: 'POST' })
       expect(moduleRunner.runnerMasterAddress).toStrictEqual('127.0.0.1')
     })

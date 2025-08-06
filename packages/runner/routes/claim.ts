@@ -8,17 +8,17 @@ export function claim(this: ModuleRunner) {
       name: 'POST /claim',
     },
     ({ event }) => {
-      if (this.runnerIsClaimed) throw this.errors.RUNNER_ALREADY_CLAIMED()
+      if (this.isClaimed) throw this.errors.RUNNER_ALREADY_CLAIMED()
 
       // --- Claim the runner and assign the request's remote address as the master address.
-      const address = this.runnerTrustProxy ? getRequestHeader(event, 'X-Forwarded-For') : getRequestIP(event)
+      const address = this.trustProxy ? getRequestHeader(event, 'X-Forwarded-For') : getRequestIP(event)
       if (!address) throw this.errors.UNAUTHORIZED()
-      this.runnerIsClaimed = true
+      this.isClaimed = true
 
       // --- Respond with the token and name.
       return {
-        name: this.runnerName,
-        token: this.runnerToken,
+        name: this.name,
+        token: this.token,
       }
     },
   )

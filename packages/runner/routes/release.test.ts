@@ -20,22 +20,22 @@ describe.concurrent<Context>('release', () => {
 
   describe<Context>('release', (it) => {
     it('should respond with status 200', async({ expect, application, moduleRunner }) => {
-      const headers = { Authorization: `Bearer ${moduleRunner.runnerToken}` }
+      const headers = { Authorization: `Bearer ${moduleRunner.token}` }
       await application.fetch('/claim', { method: 'POST' })
       const response = await application.fetch('/release', { method: 'POST', headers })
       expect(response).toMatchObject({ status: 204, statusText: 'No Content' })
     })
 
     it('should reset the runner claimed state', async({ expect, application, moduleRunner }) => {
-      const headers = { Authorization: `Bearer ${moduleRunner.runnerToken}` }
+      const headers = { Authorization: `Bearer ${moduleRunner.token}` }
       await application.fetch('/claim', { method: 'POST' })
       await application.fetch('/release', { method: 'POST', headers })
-      expect(moduleRunner.runnerIsClaimed).toStrictEqual(false)
+      expect(moduleRunner.isClaimed).toStrictEqual(false)
       expect(moduleRunner.runnerMasterAddress).toBe('127.0.0.1')
     })
 
     it('should destroy all worker threads', async({ expect, application, moduleRunner }) => {
-      const headers = { Authorization: `Bearer ${moduleRunner.runnerToken}` }
+      const headers = { Authorization: `Bearer ${moduleRunner.token}` }
       await application.fetch('/claim', { method: 'POST' })
       moduleRunner.workerPools.initialize()
       expect(moduleRunner.workerPools.workers).not.toHaveLength(0)
@@ -46,14 +46,14 @@ describe.concurrent<Context>('release', () => {
 
   describe<Context>('not claimed', (it) => {
     it('should respond with status 409', async({ expect, application, moduleRunner }) => {
-      const headers = { Authorization: `Bearer ${moduleRunner.runnerToken}` }
+      const headers = { Authorization: `Bearer ${moduleRunner.token}` }
       const response = await application.fetch('/release', { method: 'POST', headers })
       expect(response.status).toStrictEqual(409)
       expect(response.statusText).toStrictEqual('Conflict')
     })
 
     it('should respond with an error message', async({ expect, application, moduleRunner }) => {
-      const headers = { Authorization: `Bearer ${moduleRunner.runnerToken}` }
+      const headers = { Authorization: `Bearer ${moduleRunner.token}` }
       const response = await application.fetch('/release', { method: 'POST', headers })
       const data = await response.json() as Record<string, string>
       expect(data).toMatchObject({

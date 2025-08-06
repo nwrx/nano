@@ -11,10 +11,10 @@ export function release(this: ModuleRunner) {
       authorize.call(this, event)
 
       // --- Check if the runner is not claimed.
-      if (!this.runnerIsClaimed) throw this.errors.RUNNER_NOT_CLAIMED()
+      if (!this.isClaimed) throw this.errors.RUNNER_NOT_CLAIMED()
 
       // --- Release the runner.
-      this.runnerIsClaimed = false
+      this.isClaimed = false
       this.runnerMasterAddress = '127.0.0.1'
 
       // --- Stop all worker threads.

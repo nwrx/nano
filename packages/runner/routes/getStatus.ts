@@ -34,7 +34,7 @@ export function getStatus(this: ModuleRunner) {
       authorize.call(this, event)
       return {
         ok: true,
-        isClaimed: this.runnerIsClaimed,
+        isClaimed: this.isClaimed,
         version: packageJson.version,
         uptime: Math.floor(process.uptime()),
         system: getSystemStatus(),

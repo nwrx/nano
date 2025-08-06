@@ -12,10 +12,10 @@ export class ModuleRunner extends ModuleBase {
   errors = ERRORS
   entities = {}
 
-  runnerToken = process.env.NODE_ENV === 'production' ? randomUUID() : '00000000-0000-0000-0000-000000000000'
-  runnerName = process.env.NODE_ENV === 'production' ? randomUUID() : 'runner-1'
-  runnerTrustProxy = process.env.RUNNER_TRUST_PROXY === 'true'
-  runnerIsClaimed = false
+  name = process.env.NODE_ENV === 'production' ? randomUUID() : 'runner-1'
+  token = process.env.NODE_ENV === 'production' ? randomUUID() : '00000000-0000-0000-0000-000000000000'
+  trustProxy = process.env.RUNNER_TRUST_PROXY === 'true'
+  isClaimed = false
 
   threads = new Map<string, Promise<MessagePort>>()
   workerPoolSize = Math.max(availableParallelism() - 1, 1)

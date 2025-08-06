@@ -22,19 +22,19 @@ describe.concurrent<Context>('GET /status', () => {
 
   describe<Context>('getStatus', (it) => {
     it('should respond with status 200', async({ application, moduleRunner }) => {
-      const headers = { Authorization: `Bearer ${moduleRunner.runnerToken}` }
+      const headers = { Authorization: `Bearer ${moduleRunner.token}` }
       const response = await application.fetch('/status', { method: 'GET', headers })
       expect(response.status).toStrictEqual(200)
       expect(response.statusText).toStrictEqual('OK')
     })
 
     it('should respond with the worker pool status', async({ application, moduleRunner }) => {
-      const headers = { Authorization: `Bearer ${moduleRunner.runnerToken}` }
+      const headers = { Authorization: `Bearer ${moduleRunner.token}` }
       const response = await application.fetch('/status', { method: 'GET', headers })
       const data = await response.json() as Record<string, unknown[]>
       expect(data).toMatchObject({
         ok: true,
-        isClaimed: moduleRunner.runnerIsClaimed,
+        isClaimed: moduleRunner.isClaimed,
         version: expect.any(String),
         uptime: expect.any(Number),
         system: expect.any(Object),

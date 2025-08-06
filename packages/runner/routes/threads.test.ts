@@ -15,7 +15,7 @@ interface Context {
 async function createConnection(context: Context) {
   const { application, moduleRunner } = context
   const messages: ThreadWorkerMessage[] = []
-  const address = `ws+unix:${application.socketPath}:/threads?token=${moduleRunner.runnerToken}`
+  const address = `ws+unix:${application.socketPath}:/threads?token=${moduleRunner.token}`
   const ws = new WebSocket(address)
   await new Promise<void>((resolve, reject) => {
     ws.on('open', resolve)
