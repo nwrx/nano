@@ -1,8 +1,8 @@
 export interface SerializedError {
   '@instanceOf': 'Error'
-  message: string
-  stack: string
   name: string
+  stack?: string
+  message: string
   context?: Record<string, unknown>
 }
 
