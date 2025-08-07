@@ -7,7 +7,7 @@ import { assert, createParser, createRuleSet } from '@unshared/validation'
 
 const CLIENT_MESSAGE_WORKER_LOAD = createParser({
   event: assert.stringEquals('worker.load'),
-  data: assert.objectStrict<FlowV1 & Partial<Record<string, unknown>>>,
+  data: assert.objectStrict as (v: unknown) => asserts v is FlowV1,
 })
 
 const CLIENT_MESSAGE_WORKER_START = createParser({
