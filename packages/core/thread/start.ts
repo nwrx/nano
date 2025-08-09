@@ -53,7 +53,8 @@ export async function start(thread: Thread, input: Record<string, ThreadInputVal
 
   // --- Return the output object and clean up the event listeners.
   return resolvable.promise
-    .then((output) => {
+    .then(async(output) => {
+      await new Promise(resolve => setTimeout(resolve, 1))
       thread.dispatch('done', output)
       return output
     })
