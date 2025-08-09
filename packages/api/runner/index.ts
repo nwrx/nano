@@ -18,5 +18,5 @@ export class ModuleRunner extends ModuleBase {
   clients = new Map<string, UTILS.RunnerClient>()
   events = createEventBus<UTILS.RunnersEvent>()
   eventsByRunner = new Map<string, EventBus<UTILS.RunnerEvent>>()
-  requestRunner = UTILS.requestRunner.bind(this)
+  requestRunnerClient = UTILS.requestRunnerClient.bind(this)
 }

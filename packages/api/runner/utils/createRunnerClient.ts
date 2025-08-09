@@ -1,8 +1,8 @@
-import type { ModuleRunner as ModuleRunnerRemote, RunnerStatus } from '@nwrx/nano-runner'
+import type { ModuleRunner as ModuleRunnerRemote } from '@nwrx/nano-runner'
 import type { ServerErrorName } from '@unserved/server'
 import type { ObjectLike } from '@unshared/types'
 import type { Runner } from '../entities'
-import type { RunnerRegisterResult, RunnerThreadChannel } from './types'
+import type { RunnerRegisterResult, RunnerStatus, RunnerThreadChannel } from './types'
 import { createClient } from '@unserved/client'
 import { createError, createEventBus } from '@unserved/server'
 import { toConstantCase } from '@unshared/string'
@@ -45,14 +45,13 @@ export class RunnerClient {
 
   async release() {
     await this.client.request('POST /release')
-    this.client.options.headers = {}
   }
 
+  /***************************************************************************/
+  /* Client                                                                  */
+  /***************************************************************************/
+
   createThreadSession(): RunnerThreadChannel {
-    console.log({
-      token: this.runner.token,
-      address: this.runner.address,
-    })
     return this.client.connect('WS /threads', {
       query: { token: this.runner.token },
       autoReconnect: true,

@@ -8,9 +8,11 @@ import { createRunnerClient, type RunnerClient } from './createRunnerClient'
  * available, this will throw an error.
  *
  * @returns A `Runner` instance that can be used to interact with the thread.
- * @example await requestRunner().createThread({ version: '1', nodes: {} })
+ * @example
+ * const client = await requestRunnerClient()
+ * await client.createThreadSession()
  */
-export async function requestRunner(this: ModuleRunner): Promise<RunnerClient> {
+export async function requestRunnerClient(this: ModuleRunner): Promise<RunnerClient> {
 
   // --- Check in the database and ensure all runners have a client.
   const { Runner } = this.getRepositories()

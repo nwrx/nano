@@ -72,7 +72,7 @@ describe.sequential<Context>('POST /api/runners', () => {
 
   describe<Context>('errors', (it) => {
     it('should respond with status 409 when already claimed', async({ setupUser, application, runner }) => {
-      runner.runnerIsClaimed = true
+      runner.isClaimed = true
       const { headers } = await setupUser({ isSuperAdministrator: true })
       const body = JSON.stringify({ address: 'http://localhost' })
       const response = await application.fetch('/api/runners', { method: 'POST', body, headers })

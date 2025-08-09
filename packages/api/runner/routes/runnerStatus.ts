@@ -1,6 +1,6 @@
-import type { RunnerStatus } from '@nwrx/nano-runner'
 import type { EventStream } from '@unserved/server'
 import type { ModuleRunner } from '../index'
+import type { RunnerStatus } from '../utils'
 import { createHttpRoute } from '@unserved/server'
 import { assert, createParser } from '@unshared/validation'
 import { ModuleUser } from '../../user'

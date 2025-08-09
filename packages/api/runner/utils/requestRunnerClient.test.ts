@@ -1,6 +1,6 @@
 import type { RunnerClient } from './createRunnerClient'
 import { type Context, createTestContext } from '../../__fixtures__'
-import { requestRunner } from './requestRunner'
+import { requestRunnerClient } from './requestRunnerClient'
 
 function createMockRunner(cpuUsage: { user: number; system: number }) {
   return {
@@ -26,7 +26,7 @@ describe<Context>('requestRunner', () => {
       moduleRunner.clients.set('runner1', runner1)
       moduleRunner.clients.set('runner2', runner2)
       moduleRunner.clients.set('runner3', runner3)
-      const selectedRunner = await requestRunner.call(moduleRunner)
+      const selectedRunner = await requestRunnerClient.call(moduleRunner)
       expect(selectedRunner).toBe(runner2)
     })
 
@@ -35,12 +35,12 @@ describe<Context>('requestRunner', () => {
       const runner2 = createMockRunner({ user: 10, system: 10 })
       moduleRunner.clients.set('runner1', runner1)
       moduleRunner.clients.set('runner2', runner2)
-      const selectedRunner = await requestRunner.call(moduleRunner)
+      const selectedRunner = await requestRunnerClient.call(moduleRunner)
       expect(selectedRunner).toBe(runner2)
     })
 
     it('should throw when a runner is not available', async({ moduleRunner }) => {
-      const shouldReject = requestRunner.call(moduleRunner)
+      const shouldReject = requestRunnerClient.call(moduleRunner)
       const error = moduleRunner.errors.THREAD_RUNNER_NO_RUNNERS_AVAILABLE()
       await expect(shouldReject).rejects.toThrow(error)
     })
