@@ -26,4 +26,4 @@ export const useClient = createSharedComposable(() => createClient({
     }
   },
 
-})) as () => Client<Routes<typeof application>, Channels<typeof application>>
+})) as <T = typeof application>() => Client<Routes<T>, Channels<T>>
