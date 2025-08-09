@@ -85,11 +85,11 @@ export default defineConfig<Theme>({
       'layout-prominent': COLORS.primary[750],
 
       // Editor
-      'editor': COLORS.primary[100],
+      'editor': COLORS.primary[50],
       'editor-select': `${COLORS.primary[500]}20`,
       'editor-active': COLORS.primary[500],
       'editor-node': `${COLORS.primary[50]}80`,
-      'editor-panel': `${COLORS.primary[70]}80`,
+      'editor-panel': `${COLORS.primary[100]}20`,
       'editor-panel-data': `${COLORS.primary[900]}10`,
 
       // Code
