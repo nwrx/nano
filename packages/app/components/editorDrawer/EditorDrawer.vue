@@ -81,7 +81,7 @@ watch(
     <!-- Groups -->
     <div
       ref="menuItems"
-      class="bg-editor-panel rounded border border-editor backdrop-blur-2xl max-w-16">
+      class="bg-editor-panel rd b b-app backdrop-blur-2xl max-w-16">
       <EditorDrawerGroup
         v-for="group in componentGroups"
         :key="group.name"
@@ -97,7 +97,7 @@ watch(
       :style="menuContainerStyle"
       class="
         min-w-64 max-w-96
-        bg-editor-panel rd b b-editor backdrop-blur-md
+        bg-editor-panel rd b b-app backdrop-blur-md
         transition-all duration-150 overflow-hidden
       ">
 
