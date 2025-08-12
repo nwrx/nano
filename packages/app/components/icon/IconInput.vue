@@ -9,7 +9,7 @@ const showDialog = ref(false)
 <template>
   <!-- Trigger -->
   <Button
-    class="button-fab shrink-0"
+    class="button-fab shrink-0 hover:input-hover bg-transparent"
     @click="() => showDialog = true">
     <IconDynamic
       :name="icon"
