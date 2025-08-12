@@ -1,12 +1,19 @@
 import type { ThreadServerMessage } from '@nwrx/nano-runner'
 import { BaseEntity, transformerJson } from '@unserved/server'
-import { UUID } from 'node:crypto'
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
 import { Runner } from '../../runner'
 import { Thread } from './Thread'
 
 @Entity({ name: 'ThreadEvent' })
 export class ThreadEvent extends BaseEntity {
+
+  /**
+   * The index of the event in the thread's event history. This is used to
+   * maintain the order of events and to allow for efficient retrieval of
+   * events in the thread's history.
+   */
+  @Column('int')
+  index: number
 
   /**
    * The thread that this event belongs to. This is used to track the history
@@ -36,20 +43,22 @@ export class ThreadEvent extends BaseEntity {
    * @example { event: 'nodeStarted', data: [{ nodeId: '123', inputs: { ... } }] }
    */
   @Column('json', { default: '{}', transformer: transformerJson })
-  data: ThreadServerMessage
+  message: ThreadServerMessage
 
   /**
    * @returns The serialized representation of the thread event.
    */
   serialize(): ThreadEventObject {
     return {
-      ...this.data,
+      index: this.index,
+      message: this.message,
       createdAt: this.createdAt.toISOString(),
     }
   }
 }
 
-export type ThreadEventObject =
-  | ThreadServerMessage & { createdAt: string }
-  | { event: 'thread.start'; data: { id: UUID } }
-  | { event: 'thread.stop'; data: { id: UUID } }
+export interface ThreadEventObject {
+  index: number
+  message: ThreadServerMessage
+  createdAt: string
+}

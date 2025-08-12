@@ -1,4 +1,4 @@
-import type { ThreadRunnerChannel } from '../threadRunner'
+import type { EventBus } from '@unserved/server'
 import { ModuleBase } from '@unserved/server'
 import { ModuleFlow } from '../flow'
 import { ModuleUser } from '../user'
@@ -13,8 +13,5 @@ export class ModuleThread extends ModuleBase {
   entities = ENTITIES
   errors = UTILS.ERRORS
   dependencies = [ModuleUser, ModuleFlow]
-  threadSessions = new Map<string, ThreadRunnerChannel>()
-  getThread = UTILS.getThread.bind(this)
-  createThread = UTILS.createThread.bind(this)
-  getThreadSession = UTILS.getThreadSession.bind(this)
+  sessions = new Map<string, EventBus<ENTITIES.ThreadEventObject>>()
 }

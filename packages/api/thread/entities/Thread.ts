@@ -1,4 +1,5 @@
 import type { FlowV1 } from '@nwrx/nano'
+import type { FlowSchema } from '../../flow'
 import { BaseEntity, transformerJson } from '@unserved/server'
 import { UUID } from 'node:crypto'
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm'
@@ -21,6 +22,14 @@ export class Thread extends BaseEntity {
   flow?: Flow
 
   /**
+   * The schema of the flow at the time the thread was created. This is used to
+   * ensure that the thread can be restored to the state it was in when it was
+   * created, even if the flow has changed since then.
+   */
+  @Column('text', { transformer: transformerJson })
+  schema: FlowSchema
+
+  /**
    * The data of the flow at the time the thread was created. Since the flow can
    * change over time, this property represents the source of truth for the flow
    * data at the time the thread was created.
@@ -36,7 +45,7 @@ export class Thread extends BaseEntity {
    *
    * @example [ThreadEvent { ... }]
    */
-  @OneToMany(() => ThreadEvent, event => event.thread, { cascade: true })
+  @OneToMany(() => ThreadEvent, event => event.thread)
   events?: ThreadEvent[]
 
   /**
@@ -66,6 +75,7 @@ export class Thread extends BaseEntity {
    */
   serialize(options: SerializeOptions = {}): ThreadObject {
     const {
+      withSchema = true,
       withEvents = false,
       withCreatedBy = true,
       withUpdatedBy = false,
@@ -73,6 +83,7 @@ export class Thread extends BaseEntity {
     } = options
     return {
       id: this.id,
+      schema: withSchema ? this.schema : undefined,
       events: withEvents ? this.events?.map(event => event.serialize()) : undefined,
 
       // Metadata
@@ -87,6 +98,7 @@ export class Thread extends BaseEntity {
 }
 
 interface SerializeOptions {
+  withSchema?: boolean
   withEvents?: boolean
   withCreatedBy?: boolean
   withUpdatedBy?: boolean
@@ -95,6 +107,7 @@ interface SerializeOptions {
 
 export interface ThreadObject {
   id: UUID
+  schema?: FlowSchema
   events?: ThreadEventObject[]
 
   // Metadata
