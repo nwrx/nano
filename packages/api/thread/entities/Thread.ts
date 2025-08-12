@@ -1,5 +1,6 @@
 import type { FlowV1 } from '@nwrx/nano'
 import { BaseEntity, transformerJson } from '@unserved/server'
+import { UUID } from 'node:crypto'
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm'
 import { Flow } from '../../flow'
 import { User, UserObject } from '../../user'
@@ -17,7 +18,7 @@ export class Thread extends BaseEntity {
    */
   @JoinColumn()
   @ManyToOne(() => Flow, { nullable: false, onDelete: 'RESTRICT' })
-  flow: Flow | undefined
+  flow?: Flow
 
   /**
    * The data of the flow at the time the thread was created. Since the flow can
@@ -30,40 +31,77 @@ export class Thread extends BaseEntity {
   data: FlowV1
 
   /**
-   * The user that created the thread. This is used to determine who created the
-   * thread and who has the permission to view and modify the thread.
-   *
-   * @example User { ... }
-   */
-  @JoinColumn()
-  @ManyToOne(() => User, { nullable: false, onDelete: 'RESTRICT' })
-  createdBy: undefined | User
-
-  /**
    * The events that occurred in the thread. This can be used to track the flow
    * behavior and restore the flow to a previous state if needed.
    *
    * @example [ThreadEvent { ... }]
    */
   @OneToMany(() => ThreadEvent, event => event.thread, { cascade: true })
-  events: null | ThreadEvent[] | undefined
+  events?: ThreadEvent[]
 
   /**
+   * The user that created the thread.
+   */
+  @JoinColumn()
+  @ManyToOne(() => User, { nullable: false })
+  createdBy?: User
+
+  /**
+   * The user that last updated the thread.
+   */
+  @JoinColumn()
+  @ManyToOne(() => User, { nullable: true })
+  updatedBy?: null | User
+
+  /**
+   * The user responsible for deleting the thread.
+   */
+  @JoinColumn()
+  @ManyToOne(() => User, { nullable: true })
+  deletedBy?: null | User
+
+  /**
+   * @param options Options to control serialization.
    * @returns The serialize representation of the thread.
    */
-  serialize(): ThreadObject {
+  serialize(options: SerializeOptions = {}): ThreadObject {
+    const {
+      withEvents = false,
+      withCreatedBy = true,
+      withUpdatedBy = false,
+      withDeleted = false,
+    } = options
     return {
       id: this.id,
-      createdAt: this.createdAt.toISOString(),
-      createdBy: this.createdBy?.serialize(),
-      events: this.events?.map(event => event.serialize()),
+      events: withEvents ? this.events?.map(event => event.serialize()) : undefined,
+
+      // Metadata
+      createdAt: withCreatedBy ? this.createdAt?.toISOString() : undefined,
+      createdBy: withCreatedBy ? this.createdBy?.serialize() : undefined,
+      updatedAt: withUpdatedBy ? this.updatedAt?.toISOString() : undefined,
+      updatedBy: withUpdatedBy ? this.updatedBy?.serialize() : undefined,
+      deletedAt: withDeleted ? this.deletedAt?.toISOString() : undefined,
+      deletedBy: withDeleted ? this.deletedBy?.serialize() : undefined,
     }
   }
 }
 
+interface SerializeOptions {
+  withEvents?: boolean
+  withCreatedBy?: boolean
+  withUpdatedBy?: boolean
+  withDeleted?: boolean
+}
+
 export interface ThreadObject {
-  id: string
-  createdAt: string
-  createdBy?: UserObject
+  id: UUID
   events?: ThreadEventObject[]
+
+  // Metadata
+  createdAt?: string
+  createdBy?: UserObject
+  updatedAt?: string
+  updatedBy?: UserObject
+  deletedAt?: string
+  deletedBy?: UserObject
 }
