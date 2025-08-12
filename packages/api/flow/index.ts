@@ -9,6 +9,7 @@ import * as UTILS from './utils'
 export * from './entities'
 export * from './utils/assertFlow'
 export * from './utils/assertFlowPermission'
+export type * from './utils/types'
 
 /**
  * The `ModuleFlow` module is used to manage the workflows and modules in the
