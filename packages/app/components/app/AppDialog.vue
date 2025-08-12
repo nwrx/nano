@@ -97,7 +97,7 @@ function close() {
           </div>
 
           <!-- Hint -->
-          <div v-if="title || Boolean(slots.title)" class="flex space-x-md p-md border-x-0 hint rd-0" :class="classHint">
+          <div v-if="text || Boolean(slots.text)" class="flex space-x-md p-md border-x-0 hint rd-0" :class="classHint">
             <BaseIcon v-if="icon" :icon="icon" class="size-4 shrink-0 mt-xs" />
             <slot name="text" v-bind="slot">
               <p v-markdown="text" class="text-sm" />
