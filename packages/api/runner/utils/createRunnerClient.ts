@@ -1,6 +1,7 @@
 import type { ModuleRunner as ModuleRunnerRemote } from '@nwrx/nano-runner'
 import type { ServerErrorName } from '@unserved/server'
 import type { ObjectLike } from '@unshared/types'
+import type { UUID } from 'node:crypto'
 import type { Runner } from '../entities'
 import type { RunnerRegisterResult, RunnerStatus, RunnerThreadChannel } from './types'
 import { createClient } from '@unserved/client'
@@ -51,8 +52,9 @@ export class RunnerClient {
   /* Client                                                                  */
   /***************************************************************************/
 
-  createThreadSession(): RunnerThreadChannel {
-    return this.client.connect('WS /threads', {
+  createThreadSession(id: UUID): RunnerThreadChannel {
+    return this.client.connect('WS /threads/:id', {
+      parameters: { id },
       query: { token: this.runner.token },
       autoReconnect: true,
       reconnectDelay: 300,
