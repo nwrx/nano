@@ -9,11 +9,11 @@ import { getFlow, renameFlow } from '../utils'
 export function flowRename(this: ModuleFlow) {
   return createHttpRoute(
     {
-      name: 'PUT /api/workspaces/:workspace/projects/:project/flows/:name/name',
+      name: 'PUT /api/workspaces/:workspace/projects/:project/flows/:flow/name',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         project: assert.stringNotEmpty,
-        name: assert.stringNotEmpty,
+        flow: assert.stringNotEmpty,
       }),
       parseBody: createParser({
         name: assert.stringNotEmpty,
@@ -26,7 +26,7 @@ export function flowRename(this: ModuleFlow) {
       const { user } = await moduleUser.authenticate(event)
       const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Read' })
       const project = await moduleProject.getProject({ user, workspace, name: parameters.project, permission: 'Write' })
-      const flow = await getFlow.call(this, { user, workspace, project, name: parameters.name, permission: 'Owner' })
+      const flow = await getFlow.call(this, { user, workspace, project, name: parameters.flow, permission: 'Owner' })
       await renameFlow.call(this, { workspace, project, flow, user, name: body.name })
     },
   )

@@ -11,11 +11,11 @@ import { getFlow } from '../utils'
 export function flowGet(this: ModuleFlow) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/projects/:project/flows/:name',
+      name: 'GET /api/workspaces/:workspace/projects/:project/flows/:flow',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         project: assert.stringNotEmpty,
-        name: assert.stringNotEmpty,
+        flow: assert.stringNotEmpty,
       }),
       parseQuery: createParser({
         withCreatedBy: [[assert.undefined], [assert.string, parseBoolean]],
@@ -30,7 +30,7 @@ export function flowGet(this: ModuleFlow) {
       const { user } = await moduleUser.authenticate(event)
       const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Read' })
       const project = await moduleProject.getProject({ user, workspace, name: parameters.project, permission: 'Read' })
-      const flow = await getFlow.call(this, { user, workspace, project, name: parameters.name, permission: 'Read', ...query })
+      const flow = await getFlow.call(this, { user, workspace, project, name: parameters.flow, permission: 'Read', ...query })
       return flow.serialize(query)
     },
   )

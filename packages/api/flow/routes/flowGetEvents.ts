@@ -11,11 +11,11 @@ import { getFlow, getFlowEventBus } from '../utils'
 export function flowGetEvents(this: ModuleFlow) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/projects/:project/flows/:name/events',
+      name: 'GET /api/workspaces/:workspace/projects/:project/flows/:flow/events',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         project: assert.stringNotEmpty,
-        name: assert.stringNotEmpty,
+        flow: assert.stringNotEmpty,
       }),
     },
     async({ event, parameters }): Promise<EventStream<FlowEvent>> => {
@@ -25,7 +25,7 @@ export function flowGetEvents(this: ModuleFlow) {
       const { user } = await moduleUser.authenticate(event)
       const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Read' })
       const project = await moduleProject.getProject({ user, workspace, name: parameters.project, permission: 'Read' })
-      const flow = await getFlow.call(this, { user, workspace, project, name: parameters.name, permission: 'Read' })
+      const flow = await getFlow.call(this, { user, workspace, project, name: parameters.flow, permission: 'Read' })
       const eventBus = getFlowEventBus.call(this, { workspace, project, flow, createIfNotExists: true })!
       return eventBus.subscribe(event)
     },

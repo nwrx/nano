@@ -9,11 +9,11 @@ import { getFlow, updateFlow } from '../utils'
 export function flowUpdate(this: ModuleFlow) {
   return createHttpRoute(
     {
-      name: 'PUT /api/workspaces/:workspace/projects/:project/flows/:name',
+      name: 'PUT /api/workspaces/:workspace/projects/:project/flows/:flow',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         project: assert.stringNotEmpty,
-        name: assert.stringNotEmpty,
+        flow: assert.stringNotEmpty,
       }),
       parseBody: createParser({
         title: [[assert.undefined], [assert.string]],
@@ -27,7 +27,7 @@ export function flowUpdate(this: ModuleFlow) {
       const { user } = await moduleUser.authenticate(event)
       const workspace = await moduleWorkspace.getWorkspace({ user, name: parameters.workspace, permission: 'Read' })
       const project = await moduleProject.getProject({ user, workspace, name: parameters.project, permission: 'Write' })
-      const flow = await getFlow.call(this, { user, workspace, project, name: parameters.name, permission: 'Write' })
+      const flow = await getFlow.call(this, { user, workspace, project, name: parameters.flow, permission: 'Write' })
       await updateFlow.call(this, { workspace, project, flow, user, title: body.title, description: body.description })
     },
   )
