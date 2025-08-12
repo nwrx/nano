@@ -135,7 +135,8 @@ export function createThreadWorker(port) {
       // --- Load the flow and create a thread from it.
       if (message.event === 'worker.load') {
         if (thread) {
-          abort(thread)
+          thread.abortController?.abort()
+          thread.abortController = new AbortController()
           thread.clear()
         }
         thread = loadThread(port, message.data)
