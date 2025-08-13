@@ -72,7 +72,7 @@ function confirm() {
           :key="value"
           v-markdown="value"
           class="
-            markdown w-1/2 h-full b-l b-editor p-lg text-app
+            markdown w-1/2 h-full b-l b-app p-lg text-app
             overflow-y-auto transition absolute select-text
           "
         />

@@ -1,20 +1,22 @@
 <script setup lang="ts">
-import type { FlowNodeObject } from '@nwrx/nano-api'
+import type { Editor } from '@nwrx/nano-api'
 import type { Schema } from '@nwrx/nano/utils'
 import EditorNodePin from '~/components/editorNode/EditorNodePin.vue'
-import { isReferenceLink } from '~/composables/useEditor/isReferenceLink'
+import EditorNodeInputValueBadge from './EditorNodeInput.ValueBadge.vue'
+import EditorNodeInputTableButton from './EditorNodeInputTable.Button.vue'
 import EditorNodeInputTablePropertyBoolean from './EditorNodeInputTable.PropertyBoolean.vue'
 import EditorNodeInputTablePropertyName from './EditorNodeInputTable.PropertyName.vue'
 import EditorNodeInputTablePropertyNumber from './EditorNodeInputTable.PropertyNumber.vue'
 import EditorNodeInputTablePropertyString from './EditorNodeInputTable.PropertyString.vue'
 
 const props = defineProps<{
-  name?: string
-  node?: FlowNodeObject
-  schema?: Schema
-  isLast?: boolean
-  isFirst?: boolean
-  usedProperties?: string[]
+  name: string
+  node: Editor.NodeObject
+  schema: Schema
+  properties: Record<string, Schema>
+  isLast: boolean
+  isFirst: boolean
+  usedProperties: string[]
 }>()
 
 const emit = defineEmits<{
@@ -29,18 +31,25 @@ const path = defineModel('propertyPath', { default: '' })
 const value = defineModel('propertyValue')
 
 // --- Get the property schema based on the dynamic name.
-const propertySchema = computed(() => {
-  if (!props.schema) return { type: 'string' } as Schema
-  if (!path.value) return { type: 'string' } as Schema
-  const schemaProperty = props.schema.properties?.[path.value]
+const valueSchema = computed<Schema | undefined>(() => {
+  if (!path.value) return
+
+  // --- Get the schema for the property based on the path.
+  const schemaProperty = props.properties[path.value]
   const schemaAdditional = props.schema.additionalProperties
   if (schemaProperty) return schemaProperty
   if (typeof schemaAdditional === 'object') return schemaAdditional
-  return { type: 'string' } as Schema
+
+  // --- If no schema could be found, attempt to get a schema based on the value.
+  if (typeof value.value === 'boolean') return { type: 'boolean' }
+  if (typeof value.value === 'number') return { type: 'number' }
+  if (typeof value.value === 'string') return { type: 'string' }
 })
 
 // --- Only property with a path are linkable.
 const isLinkable = computed(() => !!path.value)
+const isHovered = ref(false)
+const isValueRefence = computed(() => isReference(value.value))
 
 // --- Check if the value is a reference link.
 // const isLinkValue = computed(() => {
@@ -49,64 +58,91 @@ const isLinkable = computed(() => !!path.value)
 //   const model = props.node.input[props.name]
 //   return isReferenceLink(model)
 // })
+
+function handleMouseEnter() {
+  isHovered.value = true
+  if (isLinkable.value) emit('assign')
+}
+function handleMouseLeave() {
+  isHovered.value = false
+  if (isLinkable.value) emit('unassign')
+}
 </script>
 
 <template>
   <div
     class="
-      flex items-center h-8 b b-transparent b-t-editor bg-emphasized b-b
+      b b-transparent b-t-editor bg-emphasized b-b
       hover:b hover:b-active
     "
-    @mouseenter="() => isLinkable && emit('assign')"
-    @mouseleave="() => isLinkable && emit('unassign')">
+    @mouseenter="() => handleMouseEnter()"
+    @mouseleave="() => handleMouseLeave()">
 
-    <EditorNodePin
-      :node="node"
-      :name="name"
-      :path="path"
-      :schema="propertySchema"
-      type="target"
-      @mousedown="() => isLinkable && emit('grab')"
-    />
+    <!-- Pin for linking -->
+    <div class="flex items-center h-8 ">
+      <EditorNodePin
+        :node="node"
+        :name="name"
+        :path="path"
+        type="target"
+        :schema="valueSchema"
+        :is-linkable="isLinkable"
+        @mousedown="() => isLinkable && emit('grab')"
+      />
 
-    <!-- Select property -->
-    <EditorNodeInputTablePropertyName
-      v-model:path="path"
-      :properties="schema?.properties"
-      :additional-properties="schema?.additionalProperties"
-      :used-properties="usedProperties"
-    />
+      <!-- Select property -->
+      <EditorNodeInputTablePropertyName
+        v-model:path="path"
+        :properties="properties"
+        :used-properties="usedProperties"
+        :additional-properties="schema.additionalProperties"
+      />
 
-    <!-- Value -->
-    <div class="b-l b-editor w-full h-full">
-      <EditorNodeInputTablePropertyBoolean
-        v-if="propertySchema.type === 'boolean'"
-        v-model="value"
-      />
-      <EditorNodeInputTablePropertyNumber
-        v-else-if="propertySchema.type === 'number'"
-        v-model="value"
-        :max="propertySchema['x-slider-max']"
-        :min="propertySchema['x-slider-min']"
-        :step="propertySchema['x-slider-step']"
-        :default-value="propertySchema.default"
-      />
-      <EditorNodeInputTablePropertyString
-        v-else
-        v-model="value"
-      />
+      <!-- Value -->
+      <div class="flex items-center b-l b-app w-full h-full">
+        <EditorNodeInputValueBadge
+          v-if="isValueRefence"
+          :value="value"
+          class="px-sm"
+        />
+        <span v-else-if="!valueSchema" class="text-subtle text-sm px-sm line-clamp-1 w-full italic">
+          Select a property...
+        </span>
+        <EditorNodeInputTablePropertyBoolean
+          v-else-if="valueSchema.type === 'boolean'"
+          v-model="value"
+        />
+        <EditorNodeInputTablePropertyNumber
+          v-else-if="valueSchema.type === 'number'"
+          v-model="value"
+          :max="valueSchema['x-slider-max']"
+          :min="valueSchema['x-slider-min']"
+          :step="valueSchema['x-slider-step']"
+          :default-value="valueSchema.default"
+        />
+        <EditorNodeInputTablePropertyString
+          v-else-if="valueSchema.type === 'string'"
+          v-model="value"
+          :enum="valueSchema.enum"
+        />
+      </div>
+
+      <!-- Actions -->
+      <div
+        class="flex h-full items-center ml-auto op-0"
+        :class="{ 'op-100': isHovered }">
+        <EditorNodeInputTableButton
+          icon="i-carbon:close"
+          @click="() => emit('removeProperty')"
+        />
+        <EditorNodeInputTableButton
+          icon="i-carbon:add"
+          @click="() => emit('addProperty')"
+        />
+      </div>
     </div>
 
-    <!-- Add -->
-    <div class="flex h-full items-center ml-auto op-0 group-hover:op-100">
-      <EditorNodeInputTableButton
-        icon="i-carbon:close"
-        @click="() => emit('removeProperty')"
-      />
-      <EditorNodeInputTableButton
-        icon="i-carbon:add"
-        @click="() => emit('addProperty')"
-      />
-    </div>
+    <!-- If the field is an array, show additional properties. -->
+
   </div>
 </template>

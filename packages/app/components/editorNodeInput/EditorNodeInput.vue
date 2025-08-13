@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FlowNodeObject } from '@nwrx/nano-api'
+import type { Editor } from '@nwrx/nano-api'
 import type { Schema, SchemaOption } from '@nwrx/nano/utils'
 import { isReferenceLink } from '~/composables/useEditor/isReferenceLink'
 import EditorNodePin from '../editorNode/EditorNodePin.vue'
@@ -10,20 +10,19 @@ import EditorNodeInputText from './EditorNodeInputText.vue'
 import EditorNodeInputTextarea from './EditorNodeInputTextarea.vue'
 
 const props = defineProps<{
-  name?: string
-  node?: FlowNodeObject
-  schema?: Schema
-  searchOptions?: (name: string, query: string) => Promise<SchemaOption[]>
+  name: string
+  node: Editor.NodeObject
+  schema: Schema
+  searchOptions: (query: string) => Promise<SchemaOption[]>
+  searchProperties: (query: string) => Promise<Record<string, Schema>>
 }>()
 
 const emit = defineEmits<{
   'grab': [string | undefined]
   'assign': [string | undefined]
   'unassign': []
-  'setValue': [unknown]
+  'update': [unknown]
 }>()
-
-const control = computed(() => props.schema?.['x-control'])
 
 // --- Reactive value of the input.
 const value = computed({
@@ -32,11 +31,11 @@ const value = computed({
     if (!props.name) return
     return props.node.input[props.name]
   },
-  set: (value: any) => emit('setValue', value),
+  set: (value: any) => emit('update', value),
 })
 
-// --- Check if the model is a link reference.
-const isLinkValue = computed(() => {
+// --- Check if the input is linked to a reference.
+const isLinked = computed(() => {
   if (!props.node) return false
   if (!props.name) return false
   const model = props.node.input[props.name]
@@ -44,16 +43,27 @@ const isLinkValue = computed(() => {
 })
 
 // --- Flag that indicates if the input can be linked.
+const control = computed(() => props.schema?.['x-control'])
 const isLinkable = computed(() => {
   if (control.value === undefined) return true
-  return isLinkValue.value
+  if (control.value === 'reference/provider') return true
+  return isLinked.value
+})
+
+// --- Check if we should display the `Table` control.
+const isTableInput = computed(() => {
+  if (control.value === 'reference/provider-options') return true
+  return control.value === 'table'
 })
 </script>
 
 <template>
   <div
     class="flex items-center w-full relative pr-md py-2px group"
-    :class="{ 'hover:bg-emphasized cursor-pointer': isLinkable }"
+    :class="{
+      'hover:bg-emphasized cursor-pointer': isLinkable,
+      'b b-transparent hover:b-active': control === undefined,
+    }"
     @mousedown.stop="() => isLinkable && emit('grab', undefined)"
     @mouseenter="() => isLinkable && emit('assign', undefined)"
     @mouseleave="() => isLinkable && emit('unassign')">
@@ -63,12 +73,21 @@ const isLinkable = computed(() => {
       :node="node"
       :name="name"
       :schema="schema"
+      :is-linkable="isLinkable"
       type="target"
+      :path="undefined"
+    />
+
+    <!-- Link Control -->
+    <EditorNodeInputLink
+      v-if="control === undefined || isLinked"
+      :name="name"
+      :schema="schema"
     />
 
     <!-- Text Control -->
     <EditorNodeInputText
-      v-if="control === 'text'"
+      v-else-if="control === 'text'"
       v-model="value"
       :node="node"
       :name="name"
@@ -84,37 +103,27 @@ const isLinkable = computed(() => {
       :schema="schema"
     />
 
-    <!-- Select Control -->
-    <EditorNodeInputSelect
-      v-else-if="control === 'select' || control === 'variable'"
-      v-model="value"
-      :node="node"
-      :name="name"
-      :schema="schema"
-      :search-options="async(query) => {
-        if (!searchOptions) return []
-        if (!name) return []
-        return searchOptions(name, query)
-      }"
-    />
-
     <!-- Table Control -->
     <EditorNodeInputTable
-      v-else-if="control === 'table'"
+      v-else-if="isTableInput"
       v-model="value"
       :node="node"
       :name="name"
       :schema="schema"
+      :search-properties="searchProperties"
       @grab="path => emit('grab', path)"
       @assign="path => emit('assign', path)"
       @unassign="() => emit('unassign')"
     />
 
-    <!-- Link Control -->
-    <EditorNodeInputLink
-      v-else-if="control === undefined"
+    <!-- Select Control -->
+    <EditorNodeInputSelect
+      v-else-if="control === 'select' || control.startsWith('reference/')"
+      v-model="value"
+      :node="node"
       :name="name"
       :schema="schema"
+      :search-options="(query) => searchOptions(query)"
     />
 
     <!-- Debug -->

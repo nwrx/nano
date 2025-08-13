@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FlowNodeObject } from '@nwrx/nano-api'
+import type { Editor } from '@nwrx/nano-api'
 import type { Schema } from '@nwrx/nano/utils'
 import type { ComponentInstance } from 'vue'
 import EditorNodeInputGroup from './EditorNodeInput.Group.vue'
@@ -7,9 +7,9 @@ import EditorNodeInputLabel from './EditorNodeInput.Label.vue'
 import EditorNodeInputValue from './EditorNodeInput.Value.vue'
 
 defineProps<{
-  name?: string
-  node?: FlowNodeObject
-  schema?: Schema
+  name: string
+  node: Editor.NodeObject
+  schema: Schema
 }>()
 
 const value = defineModel()
@@ -38,19 +38,7 @@ function handleClick() {
       v-model="value"
       :name="name"
       :schema="schema"
+      :readonly="false"
     />
   </EditorNodeInputGroup>
 </template>
-
-<i18n lang="yaml">
-en:
-  empty: No default value
-fr:
-  empty: Aucune valeur par défaut
-de:
-  empty: Kein Standardwert
-es:
-  empty: Sin valor predeterminado
-zh:
-  empty: 没有默认值
-</i18n>

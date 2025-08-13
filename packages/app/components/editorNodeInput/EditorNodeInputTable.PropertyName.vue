@@ -2,13 +2,15 @@
 import type { Schema } from '@nwrx/nano/utils'
 
 const props = defineProps<{
-  properties?: Record<string, Schema>
+  properties: Record<string, Schema>
+  usedProperties: string[]
   additionalProperties?: boolean | Schema
-  usedProperties?: string[]
 }>()
 
 const { t } = useI18n()
 const path = defineModel('path', { default: '' })
+
+// --- Get the schema for the property based on the path.
 const options = computed(() => {
   if (!props.properties) return []
   return Object.entries( props.properties)
@@ -18,6 +20,12 @@ const options = computed(() => {
     })
     .map(([value, label]) => ({ value, label: label.title ?? value }))
 })
+
+// --- Check if the path is not in the options.
+const isPathNotInOptions = computed(() => {
+  if (!path.value) return false
+  return !options.value.some(option => option.value === path.value)
+})
 </script>
 
 <template>
@@ -25,7 +33,7 @@ const options = computed(() => {
 
     <!-- If the schema has properties, show a select dropdown. -->
     <select
-      v-if="properties"
+      v-if="properties && !isPathNotInOptions"
       v-model="path"
       :class="{ 'text-subtle': !path }"
       class="cursor-pointer w-0 grow h-full outline-none px-sm bg-transparent">
@@ -44,7 +52,7 @@ const options = computed(() => {
 
     <!-- Show an input field. -->
     <input
-      v-if="additionalProperties"
+      v-else
       v-model="path"
       :placeholder="t('property')"
       class="cursor-text w-0 grow h-full outline-none bg-transparent px-sm placeholder:text-subtle">

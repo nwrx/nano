@@ -19,7 +19,6 @@ const props = defineProps<{
 const isFocused = ref(false)
 const value = defineModel()
 const options = ref<SchemaOption[]>([])
-
 const search = ref('')
 const searchElement = ref<HTMLInputElement>()
 const isSearching = ref(false)
@@ -51,7 +50,7 @@ watchDebounced(
 <template>
   <EditorNodeInputGroup
     class="flex items-center cursor-text relative"
-    :class="{ '!b-editor-active': isFocused }"
+    :class="{ '!b-app-active': isFocused }"
     @mousedown.prevent="() => searchElement!.focus()">
 
     <!-- Label -->

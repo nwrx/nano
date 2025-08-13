@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FlowNodeObject } from '@nwrx/nano-api'
+import type { Editor } from '@nwrx/nano-api'
 import type { Schema } from '@nwrx/nano/utils'
 import { BaseIcon } from '@unshared/vue/BaseIcon'
 import Collapse from '~/components/base/Collapse.vue'
@@ -8,10 +8,11 @@ import EditorNodeInputLabel from './EditorNodeInput.Label.vue'
 import EditorNodeInputTableProperty from './EditorNodeInputTable.Property.vue'
 
 const props = defineProps<{
-  name?: string
-  node?: FlowNodeObject
-  schema?: Schema
-  modelValue?: unknown
+  name: string
+  node: Editor.NodeObject
+  schema: Schema
+  modelValue: unknown
+  searchProperties: (query: string) => Promise<Record<string, Schema>>
 }>()
 
 const emit = defineEmits<{
@@ -21,7 +22,6 @@ const emit = defineEmits<{
   'unassign': []
 }>()
 
-const { t } = useI18n()
 const value = computed({
   get: () => {
     const value = props.modelValue
@@ -70,6 +70,29 @@ const usedProperties = computed(() => {
 // --- Open state, default to true when the initial value is not empty.
 const show = ref<boolean>(false)
 onMounted(() => { if (count.value > 0) show.value = true })
+
+// --- When the field is "expanded", we want to fetch the properties.
+// --- We also want to refresh the properties when the value changes unless it
+// --- is closed.
+const nodeInput = computed(() => props.node.input)
+const nodeInputChanged = ref(false)
+watch(nodeInput, () => nodeInputChanged.value = true, { deep: true })
+
+// --- Get the properties from the API.
+const properties = ref<Record<string, Schema>>({})
+async function refreshProperties() {
+  if (!show.value) return
+  if (!nodeInputChanged.value) return
+  const result = await props.searchProperties('')
+  properties.value = result ?? props.schema.properties ?? {}
+  nodeInputChanged.value = false
+}
+
+watch(
+  nodeInput,
+  () => refreshProperties(),
+  { immediate: true, deep: true },
+)
 </script>
 
 <template>
@@ -85,12 +108,7 @@ onMounted(() => { if (count.value > 0) show.value = true })
         :node="node"
         :name="name"
         :schema="schema"
-      />
-
-      <!-- Entries Count -->
-      <p
-        class="w-full outline-none bg-transparent text-sm font-mono text-subtle"
-        v-text="count === 1 ? t('label.entry', { count }) : t('label.entries', { count })"
+        :hide-dash="true"
       />
 
       <!-- Spacer -->
@@ -107,8 +125,10 @@ onMounted(() => { if (count.value > 0) show.value = true })
     <!-- Table content -->
     <Collapse
       :model-value="show"
-      :class="{ 'b-b b-b-editor': show }"
+      :class="{ 'b-b b-b-app': show }"
       class="-translate-x-6 -mr-10">
+
+      <!-- Properties -->
       <EditorNodeInputTableProperty
         v-for="([propertyName, propertyValue], index) in value"
         :key="index"
@@ -117,6 +137,7 @@ onMounted(() => { if (count.value > 0) show.value = true })
         :name="name"
         :node="node"
         :schema="schema"
+        :properties="properties"
         :is-first="index === 0"
         :is-last="index === count - 1"
         :used-properties="usedProperties"
@@ -131,26 +152,3 @@ onMounted(() => { if (count.value > 0) show.value = true })
     </Collapse>
   </div>
 </template>
-
-<i18n lang="yaml">
-en:
-  label:
-    entry: 'Object with {count} entry'
-    entries: 'Object with {count} entries'
-fr:
-  label:
-    entry: 'Objet avec {count} entrée'
-    entries: 'Objet avec {count} entrées'
-de:
-  label:
-    entry: 'Objekt mit {count} Eintrag'
-    entries: 'Objekt mit {count} Einträgen'
-es:
-  label:
-    entry: 'Objeto con {count} entrada'
-    entries: 'Objeto con {count} entradas'
-zh:
-  label:
-    entry: '具有 {count} 个条目的对象'
-    entries: '具有 {count} 个条目的对象'
-</i18n>

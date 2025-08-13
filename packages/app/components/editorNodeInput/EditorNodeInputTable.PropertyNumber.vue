@@ -77,7 +77,7 @@ const width = computed(() => {
 
         <!-- Background -->
         <div
-          class="absolute px-sm w-full h-full flex items-center justify-between b b-editor rd"
+          class="absolute px-sm w-full h-full flex items-center justify-between b b-app rd"
           :style="{ maskImage: `linear-gradient(to right, transparent ${width}, white ${width})` }">
           <span>{{ name }}</span>
           <span :class="{ 'text-subtle': value === undefined }">{{ value }}</span>

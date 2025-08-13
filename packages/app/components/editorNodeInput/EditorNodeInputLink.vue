@@ -2,8 +2,8 @@
 import type { Schema } from '@nwrx/nano/utils'
 
 defineProps<{
-  name?: string
-  schema?: Schema
+  name: string
+  schema: Schema
 }>()
 </script>
 

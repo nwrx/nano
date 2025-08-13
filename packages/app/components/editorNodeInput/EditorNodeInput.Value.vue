@@ -6,9 +6,9 @@ import { isReference } from '~/composables/useEditor/isReference'
 import EditorNodeInputValueBadge from './EditorNodeInput.ValueBadge.vue'
 
 const props = defineProps<{
-  name?: string
-  schema?: Schema
-  readonly?: boolean
+  name: string
+  schema: Schema
+  readonly: boolean
 }>()
 
 const { t } = useI18n()
@@ -50,38 +50,47 @@ const isValueRefence = computed(() => isReference(value.value))
     v-if="isValueRefence"
     :value="value"
   />
+
+  <!-- If field is not editable and has no value, show a placeholder. -->
   <p
     v-else-if="props.readonly"
-    :class="{ 'text-subtle': !value }"
-    class="outline-none placeholder:text-subtle bg-transparent w-full text-sm font-mono line-clamp-1"
-    v-text="valueReadonly || placeholder"
-  />
+    :class="{
+      'text-subtle italic': !value,
+      'font-mono': value,
+    }"
+    class="outline-none bg-transparent w-full text-sm line-clamp-1">
+    {{ valueReadonly || placeholder }}
+  </p>
+
+  <!-- If field is editable -->
   <BaseInputText
     v-else
     ref="inputComponent"
-    :model-value="value"
+    v-model="value"
     :readonly="readonly"
     :placeholder="placeholder"
-    :class="{ 'text-subtle': !value }"
-    class="outline-none placeholder:text-subtle bg-transparent w-full text-sm font-mono"
-    @update:model-value="(v) => value = v"
+    :class="{
+      'text-subtle italic pb-0.5': !value,
+      'font-mono': value,
+    }"
+    class="outline-none placeholder:text-subtle placeholder:italic bg-transparent w-full text-sm"
   />
 </template>
 
 <i18n lang="yaml">
 en:
-  empty: No default value
+  empty: Empty
   notString: Value is not a string
 fr:
-  empty: Aucune valeur par défaut
+  empty: Vide
   notString: La valeur n'est pas un texte
 de:
-  empty: Kein Standardwert
+  empty: Leer
   notString: Wert ist kein String
 es:
-  empty: Sin valor predeterminado
+  empty: Vacío
   notString: El valor no es una cadena de texto
 zh:
-  empty: 没有默认值
+  empty: 空
   notString: 值不是字符串
 </i18n>
