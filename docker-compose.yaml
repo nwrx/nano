@@ -1,4 +1,13 @@
-name: nano
+name: nano-ce
+
+volumes:
+  ollama:
+    driver: local
+  pgadmin:
+    driver: local
+  postgres:
+    driver: local
+
 services:
   dozzle:
     image: amir20/dozzle:latest
@@ -9,12 +18,29 @@ services:
 
   postgres:
     image: postgres
+    container_name: nano-ce-postgres
     environment:
       POSTGRES_USER: nano
       POSTGRES_PASSWORD: nano
       POSTGRES_DB: nano
     ports:
       - "5432:5432"
+    volumes:
+      - postgres:/var/lib/postgresql/data
+
+  pgadmin:
+    image: elestio/pgadmin
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_LISTEN_PORT: 5050
+    ports:
+      - "5050:5050"
+    depends_on:
+      - postgres
+    volumes:
+      - pgadmin:/pgadmin4
 
   # maildev:
   #   image: maildev/maildev:2.1.0
@@ -28,43 +54,66 @@ services:
   #     timeout: 10s
   #     retries: 5
 
-  chroma:
-    image: chromadb/chroma:latest
-    container_name: chroma
-    ports:
-      - "8081:8081"
+  # ollama:
+  #   image: ollama/ollama:0.3.10
+  #   container_name: ollama
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [gpu]
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama:/root/.ollama
 
-  ollama:
-    image: ollama/ollama:0.3.10
-    container_name: ollama
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama:/root/.ollama
+  # chroma:
+  #   image: chromadb/chroma:latest
+  #   container_name: chroma
+  #   ports:
+  #     - "8081:8081"
 
   app:
-    image: nano
-    build:
-      context: .
-      tags: [nano:latest]
-    depends_on:
-      - postgres
+    image: nano-ce
+    container_name: nano-ce-app
+    command:
+      - app
+    ports:
+      - "3000:3000"
     environment:
       - PORT=3000
       - HOST=0.0.0.0
-      - NANO_DATABASE_SYNCRONIZE=true
-      - NANO_DATABASE_TYPE=postgres
-      - NANO_DATABASE_HOST=postgres
-      - NANO_DATABASE_PORT=5432
-      - NANO_DATABASE_USERNAME=nano
-      - NANO_DATABASE_PASSWORD=nano
-      - NANO_DATABASE_DATABASE=nano
+
+  api:
+    image: nano-ce
+    container_name: nano-ce-api
+    command:
+      - api
+    depends_on:
+      - postgres
     ports:
-      - "3000:3000"
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - HOST=0.0.0.0
+      - NODE_ENV=production
+      - DATABASE_SYNCRONIZE=true
+      - DATABASE_URL=postgres://nano:nano@postgres:5432/nano
+      - USER_TRUST_PROXY=true
+      - USER_SECRET_KEY=your_secret_key_here
+      - USER_CYPHER_ALGORITHM=aes-256-gcm
+      - VAULT_DEFAULT_LOCAL_SECRET_KEY=your_local_secret_key_here
+      - VAULT_CONFIGURATION_SECRET_KEY=your_configuration_secret_key_here
+
+  runner:
+    image: nano-ce
+    container_name: nano-ce-runner
+    command:
+      - runner
+    ports:
+      - "3010:3010"
+    environment:
+      - PORT=3010
+      - HOST=0.0.0.0
