@@ -3,6 +3,7 @@ lockfileVersion: '9.0'
 settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
+  injectWorkspacePackages: true
 
 importers:
 
@@ -132,24 +133,12 @@ importers:
       '@azure/storage-blob':
         specifier: 12.26.0
         version: 12.26.0
-      '@iconify/types':
-        specifier: 2.0.0
-        version: 2.0.0
-      '@modelcontextprotocol/sdk':
-        specifier: 1.17.0
-        version: 1.17.0
       '@nwrx/ai':
         specifier: workspace:*
-        version: link:../ai
+        version: file:packages/ai(@types/node@22.13.10)
       '@nwrx/nano':
         specifier: workspace:*
-        version: link:../core
-      '@nwrx/nano-runner':
-        specifier: workspace:*
-        version: link:../runner
-      '@types/node':
-        specifier: 22.13.10
-        version: 22.13.10
+        version: file:packages/core(@types/node@22.13.10)
       '@unserved/client':
         specifier: 0.5.2
         version: 0.5.2(@types/node@22.13.10)(crossws@0.3.4)(h3@1.15.3)(typeorm@0.3.21(ioredis@5.6.0)(pg@8.14.1)(reflect-metadata@0.2.2)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.8.3)))
@@ -171,9 +160,6 @@ importers:
       '@unshared/string':
         specifier: 0.6.6
         version: 0.6.6(@types/node@22.13.10)
-      '@unshared/types':
-        specifier: 0.6.6
-        version: 0.6.6(@types/node@22.13.10)
       '@unshared/validation':
         specifier: 0.6.6
         version: 0.6.6(@types/node@22.13.10)
@@ -186,9 +172,6 @@ importers:
       h3:
         specifier: 1.15.3
         version: 1.15.3
-      msw:
-        specifier: 2.7.3
-        version: 2.7.3(@types/node@22.13.10)(typescript@5.8.3)
       pg:
         specifier: 8.14.1
         version: 8.14.1
@@ -201,18 +184,37 @@ importers:
       sqlite3:
         specifier: 5.1.7
         version: 5.1.7
-      testcontainers:
-        specifier: 10.20.0
-        version: 10.20.0
-      tsup:
-        specifier: 8.5.0
-        version: 8.5.0(@microsoft/api-extractor@7.52.1(@types/node@22.13.10))(@swc/core@1.11.11(@swc/helpers@0.5.15))(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.3)(typescript@5.8.3)(yaml@2.7.0)
       typeorm:
         specifier: 0.3.21
         version: 0.3.21(ioredis@5.6.0)(pg@8.14.1)(reflect-metadata@0.2.2)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.8.3))
       yaml:
         specifier: 2.7.0
         version: 2.7.0
+    devDependencies:
+      '@iconify/types':
+        specifier: 2.0.0
+        version: 2.0.0
+      '@modelcontextprotocol/sdk':
+        specifier: 1.17.0
+        version: 1.17.0
+      '@nwrx/nano-runner':
+        specifier: workspace:*
+        version: file:packages/runner(@types/node@22.13.10)(ioredis@5.6.0)(pg@8.14.1)(reflect-metadata@0.2.2)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.8.3))
+      '@types/node':
+        specifier: 22.13.10
+        version: 22.13.10
+      '@unshared/types':
+        specifier: 0.6.6
+        version: 0.6.6(@types/node@22.13.10)
+      msw:
+        specifier: 2.7.3
+        version: 2.7.3(@types/node@22.13.10)(typescript@5.8.3)
+      testcontainers:
+        specifier: 10.20.0
+        version: 10.20.0
+      tsup:
+        specifier: 8.5.0
+        version: 8.5.0(@microsoft/api-extractor@7.52.1(@types/node@22.13.10))(@swc/core@1.11.11(@swc/helpers@0.5.15))(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.3)(typescript@5.8.3)(yaml@2.7.0)
 
   packages/app:
     dependencies:
@@ -243,16 +245,16 @@ importers:
         version: 8.3.3(@types/node@22.13.10)(eslint@9.22.0(jiti@2.4.2))(magicast@0.3.5)(nuxt@3.16.0(@azure/storage-blob@12.26.0)(@parcel/watcher@2.5.1)(@types/node@22.13.10)(db0@0.3.1(sqlite3@5.1.7))(encoding@0.1.13)(eslint@9.22.0(jiti@2.4.2))(ioredis@5.6.0)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.36.0)(sqlite3@5.1.7)(terser@5.43.1)(tsx@4.19.3)(typescript@5.8.2)(vite@6.2.2(@types/node@22.13.10)(jiti@2.4.2)(terser@5.43.1)(tsx@4.19.3)(yaml@2.8.0))(yaml@2.8.0))(optionator@0.9.4)(rollup@4.36.0)(terser@5.43.1)(tsx@4.19.3)(typescript@5.8.2)(vite@6.2.2(@types/node@22.13.10)(jiti@2.4.2)(terser@5.43.1)(tsx@4.19.3)(yaml@2.8.0))(vue@3.5.13(typescript@5.8.2))(yaml@2.8.0)
       '@nwrx/ai':
         specifier: workspace:*
-        version: link:../ai
+        version: file:packages/ai(@types/node@22.13.10)
       '@nwrx/nano':
         specifier: workspace:*
-        version: link:../core
+        version: file:packages/core(@types/node@22.13.10)
       '@nwrx/nano-api':
         specifier: workspace:*
-        version: link:../api
+        version: file:packages/api(@types/node@22.13.10)(ioredis@5.6.0)(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.8.2))
       '@nwrx/nano-runner':
         specifier: workspace:*
-        version: link:../runner
+        version: file:packages/runner(@types/node@22.13.10)(ioredis@5.6.0)(pg@8.14.1)(reflect-metadata@0.2.2)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.8.2))
       '@storybook-vue/nuxt':
         specifier: 8.3.3
         version: 8.3.3(@types/node@22.13.10)(eslint@9.22.0(jiti@2.4.2))(magicast@0.3.5)(nuxt@3.16.0(@azure/storage-blob@12.26.0)(@parcel/watcher@2.5.1)(@types/node@22.13.10)(db0@0.3.1(sqlite3@5.1.7))(encoding@0.1.13)(eslint@9.22.0(jiti@2.4.2))(ioredis@5.6.0)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.36.0)(sqlite3@5.1.7)(terser@5.43.1)(tsx@4.19.3)(typescript@5.8.2)(vite@6.2.2(@types/node@22.13.10)(jiti@2.4.2)(terser@5.43.1)(tsx@4.19.3)(yaml@2.8.0))(yaml@2.8.0))(optionator@0.9.4)(rollup@4.36.0)(storybook@8.6.7)(terser@5.43.1)(tsx@4.19.3)(typescript@5.8.2)(vite@6.2.2(@types/node@22.13.10)(jiti@2.4.2)(terser@5.43.1)(tsx@4.19.3)(yaml@2.8.0))(vue@3.5.13(typescript@5.8.2))(yaml@2.8.0)
@@ -1897,6 +1899,20 @@ packages:
   '@nuxtjs/storybook@8.3.3':
     resolution: {integrity: sha512-pyZsSB+rIzPaZlBIuYHQdZvd+6kFuCLfjNVtHzvmtejwv2dNQPwUw4fBqIIzShSlbTM/JLTGJrP7llt6CFYqbg==}
     engines: {node: '>=18.0.0'}
+
+  '@nwrx/ai@file:packages/ai':
+    resolution: {directory: packages/ai, type: directory}
+
+  '@nwrx/nano-api@file:packages/api':
+    resolution: {directory: packages/api, type: directory}
+    hasBin: true
+
+  '@nwrx/nano-runner@file:packages/runner':
+    resolution: {directory: packages/runner, type: directory}
+    hasBin: true
+
+  '@nwrx/nano@file:packages/core':
+    resolution: {directory: packages/core, type: directory}
 
   '@open-draft/deferred-promise@2.2.0':
     resolution: {integrity: sha512-CecwLWx3rhxVQF6V4bAgPS5t+So2sTbPgAzafKkVizyi7tlwpcFpdFqq+wqF2OwNBmqFuu6tOyouTuxgpMfzmA==}
@@ -11757,6 +11773,162 @@ snapshots:
       - vue
       - vue-tsc
       - yaml
+
+  '@nwrx/ai@file:packages/ai(@types/node@22.13.10)':
+    dependencies:
+      '@unshared/functions': 0.6.6(@types/node@22.13.10)
+      '@unshared/string': 0.6.6(@types/node@22.13.10)
+      '@unshared/types': 0.6.6(@types/node@22.13.10)
+      jsonschema: 1.5.0
+    transitivePeerDependencies:
+      - '@types/node'
+
+  '@nwrx/nano-api@file:packages/api(@types/node@22.13.10)(ioredis@5.6.0)(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.8.2))':
+    dependencies:
+      '@aws-sdk/client-s3': 3.758.0
+      '@aws-sdk/s3-request-presigner': 3.758.0
+      '@azure/storage-blob': 12.26.0
+      '@nwrx/ai': file:packages/ai(@types/node@22.13.10)
+      '@nwrx/nano': file:packages/core(@types/node@22.13.10)
+      '@unserved/client': 0.5.2(@types/node@22.13.10)(crossws@0.3.4)(h3@1.15.3)(typeorm@0.3.21(ioredis@5.6.0)(pg@8.14.1)(reflect-metadata@0.2.2)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.8.2)))
+      '@unserved/server': 0.5.2(@types/node@22.13.10)(crossws@0.3.4)(h3@1.15.3)(typeorm@0.3.21(ioredis@5.6.0)(pg@8.14.1)(reflect-metadata@0.2.2)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.8.2)))
+      '@unshared/binary': 0.6.6(@types/node@22.13.10)
+      '@unshared/client': 0.6.6(@types/node@22.13.10)
+      '@unshared/collection': 0.6.6(@types/node@22.13.10)
+      '@unshared/functions': 0.6.6(@types/node@22.13.10)
+      '@unshared/string': 0.6.6(@types/node@22.13.10)
+      '@unshared/validation': 0.6.6(@types/node@22.13.10)
+      consola: 3.4.1
+      crossws: 0.3.4
+      h3: 1.15.3
+      pg: 8.14.1
+      reflect-metadata: 0.2.2
+      source-map-support: 0.5.21
+      sqlite3: 5.1.7
+      typeorm: 0.3.21(ioredis@5.6.0)(pg@8.14.1)(reflect-metadata@0.2.2)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.8.2))
+      yaml: 2.7.0
+    transitivePeerDependencies:
+      - '@google-cloud/spanner'
+      - '@sap/hana-client'
+      - '@types/node'
+      - aws-crt
+      - better-sqlite3
+      - bluebird
+      - bufferutil
+      - hdb-pool
+      - ioredis
+      - mongodb
+      - mssql
+      - mysql2
+      - oracledb
+      - pg-native
+      - pg-query-stream
+      - redis
+      - sql.js
+      - supports-color
+      - ts-node
+      - typeorm-aurora-data-api-driver
+      - utf-8-validate
+
+  '@nwrx/nano-runner@file:packages/runner(@types/node@22.13.10)(ioredis@5.6.0)(pg@8.14.1)(reflect-metadata@0.2.2)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.8.2))':
+    dependencies:
+      '@nwrx/nano': file:packages/core(@types/node@22.13.10)
+      '@unserved/client': 0.5.2(@types/node@22.13.10)(crossws@0.3.4)(h3@1.15.3)(typeorm@0.3.21(ioredis@5.6.0)(pg@8.14.1)(reflect-metadata@0.2.2)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.8.2)))
+      '@unserved/server': 0.5.2(@types/node@22.13.10)(crossws@0.3.4)(h3@1.15.3)(typeorm@0.3.21(ioredis@5.6.0)(pg@8.14.1)(reflect-metadata@0.2.2)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.8.2)))
+      '@unshared/functions': 0.6.6(@types/node@22.13.10)
+      '@unshared/process': 0.6.6(@types/node@22.13.10)
+      '@unshared/string': 0.6.6(@types/node@22.13.10)
+      '@unshared/types': 0.6.6(@types/node@22.13.10)
+      '@unshared/validation': 0.6.6(@types/node@22.13.10)
+      consola: 3.4.1
+      crossws: 0.3.4
+      h3: 1.15.3
+      isolated-vm: 5.0.4
+      source-map-support: 0.5.21
+      typeorm: 0.3.21(ioredis@5.6.0)(pg@8.14.1)(reflect-metadata@0.2.2)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.8.2))
+    transitivePeerDependencies:
+      - '@google-cloud/spanner'
+      - '@sap/hana-client'
+      - '@types/node'
+      - better-sqlite3
+      - bufferutil
+      - hdb-pool
+      - ioredis
+      - mongodb
+      - mssql
+      - mysql2
+      - oracledb
+      - pg
+      - pg-native
+      - pg-query-stream
+      - redis
+      - reflect-metadata
+      - sql.js
+      - sqlite3
+      - supports-color
+      - ts-node
+      - typeorm-aurora-data-api-driver
+      - utf-8-validate
+
+  '@nwrx/nano-runner@file:packages/runner(@types/node@22.13.10)(ioredis@5.6.0)(pg@8.14.1)(reflect-metadata@0.2.2)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.8.3))':
+    dependencies:
+      '@nwrx/nano': file:packages/core(@types/node@22.13.10)
+      '@unserved/client': 0.5.2(@types/node@22.13.10)(crossws@0.3.4)(h3@1.15.3)(typeorm@0.3.21(ioredis@5.6.0)(pg@8.14.1)(reflect-metadata@0.2.2)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.8.3)))
+      '@unserved/server': 0.5.2(@types/node@22.13.10)(crossws@0.3.4)(h3@1.15.3)(typeorm@0.3.21(ioredis@5.6.0)(pg@8.14.1)(reflect-metadata@0.2.2)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.8.3)))
+      '@unshared/functions': 0.6.6(@types/node@22.13.10)
+      '@unshared/process': 0.6.6(@types/node@22.13.10)
+      '@unshared/string': 0.6.6(@types/node@22.13.10)
+      '@unshared/types': 0.6.6(@types/node@22.13.10)
+      '@unshared/validation': 0.6.6(@types/node@22.13.10)
+      consola: 3.4.1
+      crossws: 0.3.4
+      h3: 1.15.3
+      isolated-vm: 5.0.4
+      source-map-support: 0.5.21
+      typeorm: 0.3.21(ioredis@5.6.0)(pg@8.14.1)(reflect-metadata@0.2.2)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.8.3))
+    transitivePeerDependencies:
+      - '@google-cloud/spanner'
+      - '@sap/hana-client'
+      - '@types/node'
+      - better-sqlite3
+      - bufferutil
+      - hdb-pool
+      - ioredis
+      - mongodb
+      - mssql
+      - mysql2
+      - oracledb
+      - pg
+      - pg-native
+      - pg-query-stream
+      - redis
+      - reflect-metadata
+      - sql.js
+      - sqlite3
+      - supports-color
+      - ts-node
+      - typeorm-aurora-data-api-driver
+      - utf-8-validate
+
+  '@nwrx/nano@file:packages/core(@types/node@22.13.10)':
+    dependencies:
+      '@modelcontextprotocol/sdk': 1.17.0
+      '@nwrx/ai': file:packages/ai(@types/node@22.13.10)
+      '@types/json-schema': 7.0.15
+      '@unshared/client': 0.6.6(@types/node@22.13.10)
+      '@unshared/collection': 0.6.6(@types/node@22.13.10)
+      '@unshared/decorators': 0.6.6(@types/node@22.13.10)
+      '@unshared/functions': 0.6.6(@types/node@22.13.10)
+      '@unshared/string': 0.6.6(@types/node@22.13.10)
+      '@unshared/types': 0.6.6(@types/node@22.13.10)
+      '@unshared/validation': 0.6.6(@types/node@22.13.10)
+      esbuild: 0.25.1
+      isolated-vm: 5.0.4
+      openapi-types: 12.1.3
+      yaml: 2.7.0
+    transitivePeerDependencies:
+      - '@types/node'
+      - supports-color
 
   '@open-draft/deferred-promise@2.2.0': {}
 

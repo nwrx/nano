@@ -19,29 +19,33 @@ WORKDIR /build
 RUN apk add --no-cache \
   python3
 
-# Prefetch dependencies so they can be reused in the next steps
-# without having to download them again if the lockfile hasn't changed.
-COPY ./pnpm-lock.yaml ./
-RUN --mount=type=cache,target=/pnpm_cache,rw pnpm fetch
-
 # for each sub-package, we have to add one extra step to copy its manifest
 # to the right place, as docker have no way to filter out only package.json with
 # single instruction
 COPY .npmrc .
 COPY package.json .
+COPY pnpm-lock.yaml .
 COPY pnpm-workspace.yaml .
 COPY packages/ai/package.json packages/ai/
 COPY packages/app/package.json packages/app/
 COPY packages/api/package.json packages/api/
 COPY packages/core/package.json packages/core/
 COPY packages/runner/package.json packages/runner/
-RUN printf "y\n" | pnpm install --recursive --frozen-lockfile --offline
+
+# Install the dependencies for all sub-packages.
+RUN --mount=type=cache,target=/pnpm/store,rw pnpm install --recursive --frozen-lockfile
 
 # Bundle and deploy the app.
 COPY ./turbo.json .
 COPY ./tsconfig.json .
 COPY ./packages ./packages
 RUN pnpm build
+
+# Install the production dependencies for `runner` and `api` packages.
+# We also ensure that there is no symlink as we are going to copy the
+# `node_modules` directory to the final image.
+RUN pnpm deploy --prod --legacy --filter @nwrx/nano-api /build/deploy/api
+RUN pnpm deploy --prod --legacy --filter @nwrx/nano-runner /build/deploy/runner
 
 #######################################
 # Build the application.
@@ -50,7 +54,9 @@ RUN pnpm build
 FROM base AS production
 WORKDIR /app
 
-COPY --from=build /build/packages/app/.output .
+COPY --from=build /build/packages/app/.output ./app
+COPY --from=build /build/deploy/api ./api
+COPY --from=build /build/deploy/runner ./runner
 
 # Write a single entry point that will start the app depending on the
 # arguments passed to the container. This is done to avoid having to
@@ -69,12 +75,13 @@ show_help() {
 
 if [ "\$1" = "--help" ]; then
   show_help
+  exit 0
 elif [ "\$1" = "app" ]; then
-  node /app/server/index.mjs
+  node /app/app/server/index.mjs
 elif [ "\$1" = "api" ]; then
-  node /app/api/server.mjs
+  node /app/api/dist/server.mjs
 elif [ "\$1" = "runner" ]; then
-  node /app/runner/server.mjs
+  node /app/runner/dist/server.mjs
 else
   show_help
   exit 1
@@ -83,4 +90,4 @@ EOF
 
 # Make the entrypoint script executable.
 RUN chmod +x /usr/bin/nano
-ENTRYPOINT ["/usr/bin/nano", "--help"]
+ENTRYPOINT ["/usr/bin/nano"]
