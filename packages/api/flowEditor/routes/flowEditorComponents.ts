@@ -6,11 +6,11 @@ import { CORE_COMPONENT_GROUPS, CORE_COMPONENTS } from '../utils'
 export function flowEditorComponents(this: ModuleFlowEditor) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/projects/:project/flows/:name/components',
+      name: 'GET /api/workspaces/:workspace/projects/:project/flows/:flow/components',
       parseParameters: createParser({
-        workspace: assert.stringNotEmpty.withMessage('Workspace name is required.'),
-        project: assert.stringNotEmpty.withMessage('Project name is required.'),
-        name: assert.stringNotEmpty.withMessage('Flow name is required.'),
+        workspace: assert.stringNotEmpty,
+        project: assert.stringNotEmpty,
+        flow: assert.stringNotEmpty,
       }),
     },
     () => ({

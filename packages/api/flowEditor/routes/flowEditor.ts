@@ -11,11 +11,11 @@ import { getEditorSession, MESSAGE_CLIENT_SCHEMA } from '../utils'
 export function flowEditor(this: ModuleFlowEditor) {
   return createWebSocketRoute(
     {
-      name: 'WS /ws/workspaces/:workspace/projects/:project/flows/:name/editor',
+      name: 'WS /api/workspaces/:workspace/projects/:project/flows/:flow/editor',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty.withMessage('Workspace name is required.'),
         project: assert.stringNotEmpty.withMessage('Project name is required.'),
-        name: assert.stringNotEmpty.withMessage('Flow name is required.'),
+        flow: assert.stringNotEmpty.withMessage('Flow name is required.'),
       }),
       parseClientMessage: MESSAGE_CLIENT_SCHEMA,
       parseServerMessage: createParser(assert.objectStrict as (value: unknown) => asserts value is Editor.MessageServer),
@@ -31,7 +31,7 @@ export function flowEditor(this: ModuleFlowEditor) {
         // --- Resolve the flow and assert the user has access to it.
         const workspace = await moduleWorkspace.getWorkspace({ name: parameters.workspace, user, permission: 'Read' })
         const project = await moduleProject.getProject({ name: parameters.project, workspace, user, permission: 'Read' })
-        const flow = await moduleFlow.getFlow({ name: parameters.name, workspace, project, user, permission: 'Read' })
+        const flow = await moduleFlow.getFlow({ name: parameters.flow, workspace, project, user, permission: 'Read' })
 
         // --- Get the editor session and subscribe the peer.
         const session = getEditorSession.call(this, { flow, user, project, workspace })
@@ -50,7 +50,7 @@ export function flowEditor(this: ModuleFlowEditor) {
 
       onError: ({ peer, error }) => {
         peer.send({
-          event: 'error',
+          event: 'editor.error',
           data: {
             name: error instanceof Error ? error.name : 'E_UNKNOWN',
             message: error instanceof Error ? error.message : 'An unknown error occurred.',
