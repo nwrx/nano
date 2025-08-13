@@ -1,8 +1,10 @@
 /* eslint-disable sonarjs/todo-tag */
-import type { SchemaOption } from '@nwrx/nano/utils'
+import type { Provider } from '@nwrx/ai'
 import type { Peer } from 'crossws'
 import type { EditorSession } from '../createEditorSession'
-import { getNodeInputOptions, getNodeInputSocket } from '@nwrx/nano'
+import { createClient } from '@nwrx/ai'
+import { getNode, getNodeInputOptions, getNodeInputSocket, startNode } from '@nwrx/nano'
+import { isNodeReadyToStart, isReference, parseReference, type SchemaOption } from '@nwrx/nano/utils'
 import { assert, createParser } from '@unshared/validation'
 import { ModuleVault } from '../../../vault'
 
@@ -38,30 +40,61 @@ export interface MessageServerNodesOptionsResult {
  */
 export async function handleNodesOptionsSearch(this: EditorSession, event: MessageClientNodesOptionsSearch, peer: Peer): Promise<void> {
   const [{ id, name, search }] = event.data
+  const node = getNode(this.thread, id)
   const socket = await getNodeInputSocket(this.thread, id, name)
 
-  // --- If the input expects a Variable reference, search for the variables.
-  if (socket['x-control'] === 'reference/variable') {
-    const moduleVault = this.moduleFlowEditor.getModule(ModuleVault)
-    const variables = await moduleVault.searchVariableByProject({ project: this.project, search, withVault: true })
-    const options = variables
-      .filter(x => x.vault)
-      .map(x => ({
-        value: { $ref: `#/Variables/${x.vault!.name}/${x.name}` },
-        label: `${x.vault!.name} / **${x.name}**`,
-      }))
+  // --- Handle the `model-chat/model` options based on provider.
+  const getOptions = async(): Promise<SchemaOption[] | undefined> => {
+    if (socket['x-control'] === 'reference/provider-model') {
+      const provider = node.input.provider
 
-    // --- Send the search results back to the peer.
-    this.sendMessage(peer, {
-      event: 'nodes.options.result',
-      data: [{ id, name, options }],
-    })
+      // --- There are 3 scenarios at this point:
+      // --- 1. the `provider` is not set, which means we cannot search for options.
+      if (!provider) return
+      if (!isReference(provider)) return
+      const [type, ...values] = parseReference(provider)
+
+      // --- 2. the `provider` is a { $ref: `#/Nodes/<nodeId>/provider` } reference, which means the data is located in another node in the thread.
+      if (type ==='Nodes') {
+        const [id, name] = values
+        const node = getNode(this.thread, id)
+        if (!node) return
+        const isNodeReady = isNodeReadyToStart(this.thread, id)
+        if (!isNodeReady) return
+        const nodeResult = await startNode(this.thread, id) as { provider: Provider }
+        const client = createClient(nodeResult.provider.name, nodeResult.provider.options)
+        const searchResult = await client.searchModels()
+        return searchResult.models.map(model => ({
+          value: model.name,
+          label: model.title ?? model.name,
+          description: model.description ?? model.name,
+        }))
+      }
+
+      // --- 3. the `provider` is a { $ref: `#/Providers/${provider}` } reference, which means we will use the database to resolve the provider. (NOT IMPLEMENTED YET)
+    }
+
+    // --- If the input expects a Variable reference, search for the variables.
+    else if (socket['x-control'] === 'reference/variable') {
+      const moduleVault = this.moduleFlowEditor.getModule(ModuleVault)
+      const variables = await moduleVault.searchVariableByProject({ project: this.project, search, withVault: true })
+      return variables
+        .filter(x => x.vault)
+        .map(x => ({
+          value: { $ref: `#/Variables/${x.vault!.name}/${x.name}` },
+          label: `${x.vault!.name} / **${x.name}**`,
+        }))
+    }
+
+    else {
+      return await getNodeInputOptions(this.thread, id, name)
+    }
   }
 
-  // --- Otherwise, search for the options in the component schema.
-  else {
-    const options = await getNodeInputOptions(this.thread, id, name)
-    // @TODO: Implement search filtering.
-    this.sendMessage(peer, { event: 'nodes.options.result', data: [{ id, name, options }] })
-  }
+  // --- Get and send the result
+  const options = await getOptions() ?? []
+  this.sendMessage(peer, {
+    event: 'nodes.options.result',
+    data: [{ id, name, options }],
+  })
 }
