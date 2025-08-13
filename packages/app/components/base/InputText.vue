@@ -30,7 +30,8 @@ const model = useVModel(props as { modelValue: T }, 'modelValue', emit, {
 // --- Focus the input when the group is clicked.
 function handleGroupClick(event: MouseEvent) {
   const element = event.target as HTMLDivElement
-  const input = element.querySelector('input')
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+  const input = element.querySelector('input,textarea') as HTMLInputElement | HTMLTextAreaElement | null
   if (input) input.focus()
 }
 
