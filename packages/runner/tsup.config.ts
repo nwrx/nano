@@ -15,4 +15,7 @@ export default defineConfig({
   splitting: true,
   sourcemap: true,
   outExtension: () => ({ js: '.mjs' }),
+  esbuildOptions(options) {
+    options.chunkNames = 'chunks/[name]-[hash]'
+  },
 })
