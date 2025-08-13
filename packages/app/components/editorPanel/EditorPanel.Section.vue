@@ -18,7 +18,7 @@ const isOpen = useVModel(props, 'modelValue', emit, {
 </script>
 
 <template>
-  <div class="border-t border-editor transition op-80 hover:op-100">
+  <div class="b-t b-app transition op-80 hover:op-100">
 
     <!-- Title & Description -->
     <BaseButton

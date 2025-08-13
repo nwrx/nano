@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FlowObject } from '@nwrx/nano-api'
+import type { Editor, FlowObject } from '@nwrx/nano-api'
 import DataSheetRow from '~/components/base/DataSheet.Row.vue'
 import DataSheet from '~/components/base/DataSheet.vue'
 import EditorPanelHeader from './EditorPanel.Header.vue'
@@ -10,7 +10,7 @@ defineProps<{
 }>()
 
 const emit = defineEmits<{
-  'metadataUpdate': Array<{ name: string; value: unknown }>
+  'metadataUpdate': Editor.MessageClientDataByName<'metadata.update'>
 }>()
 
 const { t } = useI18n()

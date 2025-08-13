@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Editor } from '@nwrx/nano-api'
-import type { SchemaOption } from '@nwrx/nano/utils'
+import type { Schema, SchemaOption } from '@nwrx/nano/utils'
 import type { CSSProperties } from 'vue'
 import EditorNodeHeader from '~/components/editorNode/EditorNodeHeader.vue'
 import EditorNodeInput from '~/components/editorNodeInput/EditorNodeInput.vue'
@@ -11,6 +11,7 @@ defineProps<{
   component: Editor.ComponentObject
   styleHeader: CSSProperties
   searchOptions: (name: string, query: string) => Promise<SchemaOption[]>
+  searchProperties: (name: string, query: string) => Promise<Record<string, Schema>>
 }>()
 
 const emit = defineEmits<{
@@ -40,18 +41,6 @@ const emit = defineEmits<{
 
     <!-- Node Body -->
     <div v-if="component" class="flex flex-col py-sm relative">
-      <EditorNodeInput
-        v-for="(schema, name) in component.inputs"
-        :key="name"
-        :name="name"
-        :node="node"
-        :schema="schema"
-        :search-options="searchOptions"
-        @update="(value) => emit('inputUpdate', name, value)"
-        @grab="(path) => emit('inputGrab', name, path)"
-        @assign="(path) => emit('inputAssign', name, path)"
-        @unassign="() => emit('inputUnassign')"
-      />
       <EditorNodeOutput
         v-for="(schema, name) in component.outputs"
         :key="name"
@@ -61,6 +50,19 @@ const emit = defineEmits<{
         @grab="(path) => emit('outputGrab', name, path)"
         @assign="(path) => emit('outputAssign', name, path)"
         @unassign="() => emit('outputUnassign')"
+      />
+      <EditorNodeInput
+        v-for="(schema, name) in component.inputs"
+        :key="name"
+        :name="name"
+        :node="node"
+        :schema="schema"
+        :search-options="(query) => searchOptions(name, query)"
+        :search-properties="(query) => searchProperties(name, query)"
+        @update="(value) => emit('inputUpdate', name, value)"
+        @grab="(path) => emit('inputGrab', name, path)"
+        @assign="(path) => emit('inputAssign', name, path)"
+        @unassign="() => emit('inputUnassign')"
       />
     </div>
 

@@ -4,8 +4,8 @@ import EditorDownloadDialog from './EditorDownloadDialog.vue'
 import EditorFab from './EditorFab.vue'
 
 defineProps<{
-  flow?: FlowObject
-  getFlowExport?: (format?: 'json' | 'yaml') => Promise<string>
+  flow: FlowObject
+  requestExport: (format: 'json' | 'yaml') => Promise<string>
 }>()
 
 const showDownloadDialog = ref(false)
@@ -15,7 +15,7 @@ const showDownloadDialog = ref(false)
   <div
     class="
       flex items-center space-x-sm px-sm h-12 rd
-      bg-editor-panel b b-editor backdrop-blur-2xl
+      bg-editor-panel b b-app backdrop-blur-2xl
     ">
 
     <!-- Name -->
@@ -32,7 +32,7 @@ const showDownloadDialog = ref(false)
     -->
 
     <!-- Divider -->
-    <div class="h-full b-r b-editor" />
+    <div class="h-full b-r b-app" />
 
     <!-- Settings -->
     <EditorFab icon="i-carbon:settings" />
@@ -54,7 +54,7 @@ const showDownloadDialog = ref(false)
     <EditorDownloadDialog
       v-model:show="showDownloadDialog"
       :flow="flow"
-      :get-flow-export="getFlowExport"
+      :request-export="requestExport"
     />
   </div>
 </template>

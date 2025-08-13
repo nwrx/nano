@@ -14,7 +14,7 @@ const model = useVModel(props, 'modelValue', emit, { passive: true })
 </script>
 
 <template>
-  <div class="flex items-center w-full px-sm h-12 b-b b-editor space-x-sm">
+  <div class="flex items-center w-full px-sm h-12 b-b b-app space-x-sm">
     <BaseInputToggle
       v-for="value in values"
       :key="value"

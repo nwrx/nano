@@ -5,37 +5,37 @@ import EditorDialogButton from './EditorDialog.Button.vue'
 import EditorDialog from './EditorDialog.vue'
 
 const props = defineProps<{
-  flow?: FlowObject
-  getFlowExport?: (format?: 'json' | 'yaml') => Promise<string>
+  flow: FlowObject
+  requestExport: (format: 'json' | 'yaml') => Promise<string>
 }>()
 
 const { t } = useI18n()
 const alerts = useAlerts()
-const show = defineModel('show', { default: false })
-const flowExport = ref<string>('')
+const show = defineModel({ default: false })
+const data = ref<string>('')
 const format = ref<'json' | 'yaml'>('yaml')
 const isLoading = ref(false)
 
 async function refreshFlowExport() {
-  if (!props.getFlowExport) return
+  if (!props.requestExport) return
   isLoading.value = true
-  flowExport.value = await props.getFlowExport(format.value)
+  data.value = await props.requestExport(format.value)
   isLoading.value = false
 }
 
 function copyToClipboard() {
   if (!navigator.clipboard) return
-  if (!flowExport.value) return
-  navigator.clipboard.writeText(flowExport.value)
+  if (!data.value) return
+  navigator.clipboard.writeText(data.value)
     .then(() => alerts.success(t('copySuccess')))
     .catch(() => alerts.error(t('copyError')))
 }
 
 function downloadFlow() {
-  if (!flowExport.value) return
+  if (!data.value) return
   const name = props.flow?.name ?? 'flow'
   const type = format.value === 'json' ? 'application/json' : 'text/yaml'
-  const blob = new Blob([flowExport.value], { type })
+  const blob = new Blob([data.value], { type })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
@@ -58,23 +58,24 @@ watch([show, format], () => {
 
     <!-- Content -->
     <div
-      v-code.yaml="flowExport"
+      v-code.yaml="data"
       class="w-full font-mono overflow-y-auto select-text"
     />
 
     <!-- Menu -->
     <template #menu>
       <EditorDialogButton
-        icon="i-carbon:download"
-        @click="() => downloadFlow()"
+        class="b-r b-app"
+        :label="format.toUpperCase()"
+        @click="() => format = format === 'json' ? 'yaml' : 'json'"
       />
       <EditorDialogButton
         icon="i-carbon:copy"
         @click="() => copyToClipboard()"
       />
       <EditorDialogButton
-        :icon="format === 'json' ? 'i-carbon:object' : 'i-carbon:box'"
-        @click="() => format = format === 'json' ? 'yaml' : 'json'"
+        icon="i-carbon:download"
+        @click="() => downloadFlow()"
       />
     </template>
   </EditorDialog>

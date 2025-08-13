@@ -14,8 +14,6 @@ function onDragStart(event: DragEvent) {
   event.dataTransfer.setData('application/json', JSON.stringify(({
     type: 'createNode',
     kind: props.component.name,
-    inputs: props.component.defaultInputs,
-    metadata: props.component.defaultMetadata,
   } as DropPayload)))
 }
 

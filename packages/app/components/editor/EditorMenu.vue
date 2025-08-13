@@ -26,7 +26,7 @@ const isLoadingDebounced = refDebounced(isLoadingRef, 100)
         absolute left-0 w-full top-full
         bg-editor-panel backdrop-blur-2xl
         p-sm rounded space-y-xs rd
-        b b-editor z-10 mt-sm
+        b b-app z-10 mt-sm
         overflow-y-auto overflow-x-hidden
         max-h-128
       "

@@ -1,55 +1,72 @@
 <!-- eslint-disable vue/no-setup-props-reactivity-loss -->
 <script setup lang="ts">
+import type { Editor } from '@nwrx/nano-api'
+
 const props = defineProps<{
-  editor: Editor
+  node: Editor.NodeObject
+  component: Editor.ComponentObject
+}>()
+
+const emit = defineEmits<{
+  'setNodesLabel': Array<{ id: string; label: string }>
+  'setNodesComment': Array<{ id: string; comment: string }>
+  // 'nodesInputUpdate': Array<{ id: string; name: string; value: unknown }>
 }>()
 
 const { t } = useI18n()
 const settings = useLocalSettings()
-const node = computed(() => {
-  const nodeSelected = props.editor.view.nodeSelected
-  return nodeSelected?.length === 1 ? nodeSelected[0] : undefined
+
+const title = computed(() => {
+  if (props.node.metadata.label) return props.node.metadata.label
+  if (props.component.title) return localize(props.component.title)
+  return props.node.name
+})
+
+const description = computed(() => {
+  if (props.node.metadata.comment) return props.node.metadata.comment
+  return ''
 })
 </script>
 
 <template>
-  <div v-if="node">
+  <div>
 
     <!-- Title & Desscription -->
     <EditorPanelHeader
-      :name="node.label ?? node.name"
-      :description="node.comment"
-      :placeholder-name="t('header.label')"
-      :placeholder-description="t('header.comment')"
-      @update:name="label => editor.model.setNodesLabel({ id: node!.id, label })"
-      @update:description="comment => editor.model.setNodesComment({ id: node!.id, comment })"
+      :name="title"
+      :description="description"
+      :placeholder-name="t('headerLabel')"
+      :placeholder-description="t('headerComment')"
+      @update:name="label => emit('setNodesLabel', { id: node!.id, label })"
+      @update:description="comment => emit('setNodesComment', { id: node!.id, comment })"
     />
 
     <!-- Error Hint -->
     <EditorPanelError
       v-if="node.error"
-      :message="node.error"
-      :name="node.errorName"
-      :context="node.errorContext"
+      :message="node.error.message"
+      :name="node.error.name"
+      :context="node.error.data"
     />
 
     <!-- Input Data Table -->
     <EditorPanelSection
       v-model="settings.editorPanelNodeInputOpen"
-      :title="t('inputs.title')"
-      :text="t('inputs.text')">
+      :title="t('nodeInputsTitle')"
+      :text="t('nodeInputsText')">
       <DataSheet :model-value="node.input" />
     </EditorPanelSection>
 
     <!-- Output Data Table -->
     <EditorPanelSection
       v-model="settings.editorPanelNodeOutputOpen"
-      :title="t('outputs.title')"
-      :text="t('outputs.text')">
-      <DataSheet :model-value="node.output" />
+      :title="t('nodeOutputsTitle')"
+      :text="t('nodeOutputsText')">
+      <DataSheet :model-value="node.result" />
     </EditorPanelSection>
 
     <!-- Metadata -->
+
     <EditorPanelSection
       v-model="settings.editorPanelNodeMetadataOpen"
       :title="t('metadata.title')"
@@ -58,29 +75,12 @@ const node = computed(() => {
         :model-value="{
           ID: node.id,
           Specifier: node.specifier,
-          Position: node.position,
-          Inputs: node.inputs,
-          Outputs: node.outputs,
+          Position: node.metadata.position,
+          Inputs: component.inputs,
+          Outputs: component.outputs,
         }"
       />
     </EditorPanelSection>
+
   </div>
 </template>
-
-<i18n lang="yaml">
-en:
-  header:
-    label: Give this node a label.
-    comment: Provide additional information about this node.
-  inputs:
-    title: Input
-    text: The current input data of this node.
-    empty: This node does not expect any input data.
-  outputs:
-    title: Output
-    text: The output data of the node.
-    empty: This node does not produce any output data.
-  metadata:
-    title: Metadata
-    text: The internal metadata of this node.
-</i18n>

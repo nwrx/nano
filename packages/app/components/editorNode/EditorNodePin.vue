@@ -4,13 +4,12 @@ import type { Schema } from '@nwrx/nano/utils'
 import EditorNodeInputTooltip from '../editorNodeInput/EditorNodeInput.Tooltip.vue'
 
 const props = defineProps<{
-  name?: string
-  path?: string
-  node?: Editor.NodeObject
-  schema?: Schema
-  value?: unknown
-  type?: 'source' | 'target'
-  isLinkable?: boolean
+  name: string
+  path: string | undefined
+  node: Editor.NodeObject
+  schema: Schema | undefined
+  type: 'source' | 'target'
+  isLinkable: boolean
 }>()
 
 const dataId = computed(() => {

@@ -33,7 +33,7 @@ function handleClick(event: MouseEvent) {
         leave-to-class="op-0 scale-98">
         <div
           v-if="isOpenDebounced"
-          class="rd bg-editor-panel b b-editor backdrop-blur-2xl z-1000"
+          class="rd bg-editor-panel b b-app backdrop-blur-2xl z-1000"
           @mousedown="(event: MouseEvent) => handleClick(event)">
           <slot name="tooltip" />
         </div>

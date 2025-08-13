@@ -21,12 +21,12 @@ const show = defineModel('show', { default: false })
     teleport="#editor"
     class-container="
       flex flex-col !w-full h-full max-w-page max-h-4xl cursor-auto
-      pointer-events-auto b b-editor text-app !bg-editor-node/80 overflow-hidden rd
+      pointer-events-auto b b-app text-app !bg-editor-node/80 overflow-hidden rd
     ">
 
     <!-- Header -->
     <template #container>
-      <div class="flex items-center b-b b-editor p-sm space-x-sm">
+      <div class="flex items-center b-b b-app p-sm space-x-sm">
         <EditorDialogButton
           icon="i-carbon:close"
           @click="() => show = false"
@@ -58,7 +58,7 @@ const show = defineModel('show', { default: false })
       </div>
 
       <!-- Confirm -->
-      <div v-if="slots.actions" class="flex items-center justify-end b-t b-editor p-sm space-x-sm">
+      <div v-if="slots.actions" class="flex items-center justify-end b-t b-app p-sm space-x-sm">
         <slot name="actions" />
       </div>
     </template>
