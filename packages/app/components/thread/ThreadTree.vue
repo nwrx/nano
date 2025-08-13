@@ -3,7 +3,7 @@
 <!-- eslint-disable sonarjs/no-nested-assignment -->
 <script setup lang="ts">
 import type { UUID } from 'node:crypto'
-import { getThreadTree, useThreads } from '~/composables/useThread'
+import { useThreads, useThreadTree } from '~/composables/useThread'
 import Event from './ThreadTree.Event.vue'
 
 const props = defineProps<{
@@ -17,7 +17,7 @@ const props = defineProps<{
 const threads = useThreads(props)
 const threadId = computed(() => props.id)
 const thread = threads.threadById(threadId)
-const tree = computed(() => getThreadTree(thread.value))
+const tree = computed(() => useThreadTree(thread.value))
 
 // --- Virtual scrolling for performance optimization
 // --- Initially render 2x visible items, then incrementally load more on scroll

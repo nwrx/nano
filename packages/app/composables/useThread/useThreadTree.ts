@@ -39,7 +39,7 @@ function getThreadEventNode(thread: ThreadObject, event: ThreadEventObject): Flo
   return thread.schema.nodes.find(node => node.id === id)
 }
 
-export function getThreadTree(thread: ThreadObject): ThreadTree {
+export function useThreadTree(thread: ThreadObject): ThreadTree {
   const events = thread.events ?? []
   const items: ThreadTree.Item[] = []
   const treeById = new Map<string, ThreadTree.Tree>()
