@@ -14,6 +14,7 @@ export namespace FlowSchema {
     icon: string
     title: Record<string, string> | string
     specifier: string
+    color: string
     purpose: ComponentPurpose
   }
 

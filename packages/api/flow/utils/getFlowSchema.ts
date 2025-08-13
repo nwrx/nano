@@ -2,6 +2,7 @@ import type { Component } from '@nwrx/nano/utils'
 import type { FlowSchema } from './types'
 import { parseSpecifier, serializeSpecifier } from '@nwrx/nano/utils'
 import { createParser } from '@unshared/validation'
+import { CORE_COMPONENT_GROUPS } from '../../flowEditor'
 import { assertProject } from '../../project'
 import { assertWorkspace } from '../../workspace'
 import { assertFlow } from './assertFlow'
@@ -83,12 +84,14 @@ export async function getFlowSchema(options: GetFlowSchemaOptions): Promise<Flow
     // Process all nodes
     const specifierString = serializeSpecifier(specifierObject)
     const component = nodeComponentsMap.get(specifierString)
+    const purpose = component?.purpose ?? 'other'
     threadSchema.nodes.push({
       id,
       icon: component?.icon ?? 'carbon:help',
       title: component?.title ?? specifierString,
       purpose: component?.purpose ?? 'other',
       specifier: specifierString,
+      color: CORE_COMPONENT_GROUPS.find(group => group.name === purpose)?.color ?? '#000000',
     })
   }
 
