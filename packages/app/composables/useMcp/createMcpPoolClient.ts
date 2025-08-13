@@ -1,7 +1,6 @@
 import type { McpPoolObject, McpPoolStatus } from '@nwrx/nano-api'
 import type { McpPoolFetchOptions, McpPoolUpdateOptions } from './types'
 import { createResolvable } from '@unshared/functions/createResolvable'
-import { sleep } from '@unshared/functions/sleep'
 // import { getMcpPoolStatusIcon } from './getMcpPoolStatusIcon'
 
 export interface UseMcpPoolOptions {
@@ -154,7 +153,6 @@ export function createMcpPoolClient(parameters: UseMcpPoolOptions) {
   const status = ref({}) as Ref<McpPoolStatus>
 
   async function fetchStatus() {
-    await sleep(CONSTANTS.niceDelay)
     await client.requestAttempt(
       'GET /workspaces/:workspace/pools/:pool/status',
       {
@@ -165,7 +163,6 @@ export function createMcpPoolClient(parameters: UseMcpPoolOptions) {
   }
 
   async function synchronizePool() {
-    await sleep(CONSTANTS.niceDelay)
     await client.requestAttempt(
       'POST /workspaces/:workspace/pools/:pool/apply',
       {

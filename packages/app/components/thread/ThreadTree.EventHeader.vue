@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { FlowSchema, ThreadEventObject } from '@nwrx/nano-api'
-import { format } from 'date-fns'
+import { format } from 'date-fns/format'
 import Badge from '~/components/base/Badge.vue'
 import IconDynamic from '~/components/icon/IconDynamic.vue'
 

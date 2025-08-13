@@ -11,7 +11,6 @@ import type {
   McpServerUpdateSpecOptions,
 } from './types'
 import { createResolvable } from '@unshared/functions/createResolvable'
-import { sleep } from '@unshared/functions/sleep'
 import { getMcpServerStatusBadge } from './getMcpServerStatusBadge'
 import { getMcpServerStatusIcon } from './getMcpServerStatusIcon'
 import { useMcpPools } from './useMcpPools'
@@ -58,7 +57,6 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
   }
 
   async function updateServer(options: Partial<McpServerUpdateOptions> = {}) {
-    await sleep(CONSTANTS.niceDelay)
     await client.requestAttempt(
       'PUT /workspaces/:workspace/pools/:pool/servers/:server',
       {
@@ -80,7 +78,6 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
 
   async function updateSpecifications(options: Partial<McpServerUpdateSpecOptions> = {}) {
     isLoading.value = true
-    await sleep(CONSTANTS.niceDelay)
     await client.requestAttempt(
       'PUT /workspaces/:workspace/pools/:pool/servers/:server/spec',
       {
@@ -130,7 +127,6 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
   }
 
   async function enableServer() {
-    await sleep(CONSTANTS.niceDelay)
     await client.requestAttempt(
       'POST /workspaces/:workspace/pools/:pool/servers/:server/enable',
       {
@@ -151,7 +147,6 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
   }
 
   async function disableServer() {
-    await sleep(CONSTANTS.niceDelay)
     await client.requestAttempt(
       'POST /workspaces/:workspace/pools/:pool/servers/:server/disable',
       {
