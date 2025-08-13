@@ -49,6 +49,7 @@ export async function onResponseChatStream(context: Chat.Context): Promise<void>
         usage.inputTokens = event.message.usage.input_tokens
         usage.outputTokens = event.message.usage.output_tokens
         usage.cachedInputTokens = event.message.usage.cache_read_input_tokens ?? 0
+        pushEvent({ type: 'usage', usage })
       }
       else if (event.type === 'message_delta') {
         usage.outputTokens ??= 0
