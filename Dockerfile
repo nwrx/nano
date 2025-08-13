@@ -1,9 +1,10 @@
-ARG ALPINE_VERSION=3.20
-ARG NODE_VERSION=22.11.0
-ARG PNPM_VERSION=9.15.4
+ARG ALPINE_VERSION=3.22
+ARG NODE_VERSION=22.17.0
+ARG PNPM_VERSION=10.14.0
 
 FROM node:${NODE_VERSION}-alpine${ALPINE_VERSION} AS base
 RUN corepack enable
+RUN corepack prepare pnpm@${PNPM_VERSION} --activate
 
 #######################################
 # Build and bundle the app.
@@ -29,10 +30,11 @@ RUN --mount=type=cache,target=/pnpm_cache,rw pnpm fetch
 COPY .npmrc .
 COPY package.json .
 COPY pnpm-workspace.yaml .
+COPY packages/ai/package.json packages/ai/
 COPY packages/app/package.json packages/app/
 COPY packages/api/package.json packages/api/
 COPY packages/core/package.json packages/core/
-COPY packages/module-core/package.json packages/module-core/
+COPY packages/runner/package.json packages/runner/
 RUN printf "y\n" | pnpm install --recursive --frozen-lockfile --offline
 
 # Bundle and deploy the app.
@@ -57,16 +59,22 @@ COPY <<EOF /usr/bin/nano
 #!/usr/bin/env sh
 
 show_help() {
-  echo "Usage: nano serve"
+  echo "Usage: nano app"
   echo "Commands:"
-  echo "  serve        Start the Nano UI server"
+  echo "  app          Start the Nano Application (SPA)"
+  echo "  api          Start the Nano API Server"
+  echo "  runner       Start the Nano Runner Server"
   echo "  --help       Show this help message"
 }
 
 if [ "\$1" = "--help" ]; then
   show_help
-elif [ "\$1" = "serve" ]; then
+elif [ "\$1" = "app" ]; then
   node /app/server/index.mjs
+elif [ "\$1" = "api" ]; then
+  node /app/api/server.mjs
+elif [ "\$1" = "runner" ]; then
+  node /app/runner/server.mjs
 else
   show_help
   exit 1
@@ -75,4 +83,4 @@ EOF
 
 # Make the entrypoint script executable.
 RUN chmod +x /usr/bin/nano
-ENTRYPOINT ["/usr/bin/nano", "serve"]
+ENTRYPOINT ["/usr/bin/nano", "--help"]
