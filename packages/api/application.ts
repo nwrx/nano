@@ -1,6 +1,8 @@
 import { Application, createHttpRoute, ModuleBase } from '@unserved/server'
 import Consola from 'consola'
+import { DataSource } from 'typeorm'
 import { ModuleChat } from './chat'
+import { environment } from './environment'
 import { ModuleFlow } from './flow'
 import { ModuleFlowEditor } from './flowEditor'
 import { ModuleIcon } from './icon'
@@ -34,18 +36,33 @@ class ModuleHealth extends ModuleBase {
 // --- Expose the application for type inference.
 export const application = new Application(
   [
-    ModuleUser,
+    new ModuleUser({
+      userSecretKey: environment.USER_SECRET_KEY,
+      userTrustProxy: environment.USER_TRUST_PROXY,
+      userCypherAlgorithm: environment.USER_CYPHER_ALGORITHM,
+      userSessionDuration: environment.USER_SESSION_DURATION,
+      userRecoveryDuration: environment.USER_RECOVERY_DURATION,
+      userSessionIdCookieName: environment.USER_SESSION_ID_COOKIE_NAME,
+      userSessionTokenCookieName: environment.USER_SESSION_TOKEN_COOKIE_NAME,
+    }),
+    new ModuleVault({
+      vaultDefaultLocalSecretKey: environment.VAULT_DEFAULT_LOCAL_SECRET_KEY,
+      vaultConfigurationAlgorithm: environment.VAULT_CONFIGURATION_ALGORITHM,
+      vaultConfigurationSecretKey: environment.VAULT_CONFIGURATION_SECRET_KEY,
+    }),
+    new ModuleIconCollection({
+      iconCdnUrl: 'https://esm.sh/',
+      iconIconifyUrl: 'https://api.iconify.design',
+    }),
     ModuleFlow,
     ModuleFlowEditor,
     ModuleWorkspace,
-    ModuleVault,
     ModuleProject,
     ModuleStorage,
     ModuleChat,
     ModuleHealth,
     ModuleThread,
     ModuleIcon,
-    ModuleIconCollection,
     ModuleRunner,
     ModuleRegistry,
     ModuleMcpManager,
@@ -57,16 +74,7 @@ export const application = new Application(
     ModuleMcpServerVariable,
   ],
   {
-    prefix: 'NANO',
     logger: Consola,
-
-    // User
-    userSecretKey: 'SECRET',
-
-    // Vault
-    vaultConfigurationAlgorithm: 'aes-256-gcm',
-    vaultConfigurationSecretKey: 'SECRET',
-    vaultDefaultLocalSecretKey: 'SECRET',
 
     // Storage
     storagePools: new Map([
@@ -74,10 +82,16 @@ export const application = new Application(
     ]),
 
     // Database
-    dataSource: {
-      type: 'sqlite',
-      database: '.data/database.sqlite',
-      synchronize: true,
-    },
+    dataSource: process.env.NODE_ENV === 'production'
+      ? new DataSource({
+        type: 'postgres',
+        url: environment.DATABASE_URL,
+        synchronize: environment.DATABASE_SYNCRONIZE,
+      })
+      : new DataSource({
+        type: 'sqlite',
+        database: '.data/database.sqlite',
+        synchronize: true,
+      }),
   },
 )

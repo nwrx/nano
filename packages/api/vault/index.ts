@@ -21,8 +21,6 @@ export interface ModuleVaultOptions {
    * The master secret used to encrypt and decrypt the configuration of aditional
    * vault adapters. This allows secure storage of the vault configuration in the
    * database without exposing the credentials.
-   *
-   * @default process.env.VAULT_CONFIGURATION_SECRET_KEY
    */
   vaultConfigurationSecretKey?: string
 
@@ -40,8 +38,6 @@ export interface ModuleVaultOptions {
    * The default key used to encrypt and decrypt local secrets. It will be used as
    * the default cypher key for all variables that use the `local` vault adapter
    * and don't have a specific key set.
-   *
-   * @default process.env.VAULT_DEFAULT_LOCAL_SECRET_KEY
    */
   vaultDefaultLocalSecretKey?: string
 }
@@ -51,9 +47,9 @@ export class ModuleVault extends ModuleBase implements ModuleVaultOptions {
   entities = ENTITIES
   errors = UTILS.ERRORS
   dependencies = [ModuleUser, ModuleProject]
-  vaultConfigurationSecretKey = process.env.VAULT_CONFIGURATION_SECRET_KEY ?? ''
-  vaultConfigurationAlgorithm = process.env.VAULT_CONFIGURATION_ALGORITHM as CipherGCMTypes ?? 'aes-256-gcm'
-  vaultDefaultLocalSecretKey = process.env.VAULT_DEFAULT_LOCAL_SECRET ?? ''
+  vaultConfigurationAlgorithm = 'aes-256-gcm' as CipherGCMTypes
+  vaultConfigurationSecretKey = 'SECRET'
+  vaultDefaultLocalSecretKey = 'SECRET'
 
   constructor(options: ModuleVaultOptions = {}) {
     super()
