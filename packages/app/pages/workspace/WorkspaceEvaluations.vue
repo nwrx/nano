@@ -25,6 +25,13 @@ definePageMeta({
   },
   isWorkInProgress: true,
 })
+
+throw createError({
+  name: 'E_WORK_IN_PROGRESS',
+  statusCode: 503,
+  statusMessage: 'Service Unavailable',
+  message: 'This page is under construction. Please check back later.',
+})
 </script>
 
 <template>
