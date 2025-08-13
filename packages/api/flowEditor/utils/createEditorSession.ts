@@ -105,32 +105,19 @@ export class EditorSession {
   }
 
   async handleMessage(peer: Peer, message: Editor.MessageClient) {
-    try {
-      if (message.event === 'request.reload') return EventHandlers.handleRequestReload.call(this, message, peer)
-      if (message.event === 'request.export') return EventHandlers.handleRequestExport.call(this, message, peer)
-      if (message.event === 'metadata.update') return EventHandlers.handleMetadataUpdate.call(this, message)
-      if (message.event === 'user.move') return EventHandlers.handleUserMove.call(this, message, peer)
-      if (message.event === 'user.leave') return EventHandlers.handleUserLeave.call(this, message, peer)
-      if (message.event === 'nodes.clone') return EventHandlers.handleNodesClone.call(this, message)
-      if (message.event === 'nodes.create') return EventHandlers.handleNodesCreate.call(this, message)
-      if (message.event === 'nodes.remove') return EventHandlers.handleNodesRemove.call(this, message, peer)
-      if (message.event === 'nodes.input.update') return EventHandlers.handleNodesInputUpdate.call(this, message)
-      if (message.event === 'nodes.links.create') return EventHandlers.handleNodesLinksCreate.call(this, message)
-      if (message.event === 'nodes.links.remove') return EventHandlers.handleNodesLinksRemove.call(this, message)
-      if (message.event === 'nodes.metadata.update') return EventHandlers.handleNodesMetadataUpdate.call(this, message)
-      if (message.event === 'nodes.options.search') return EventHandlers.handleNodesOptionsSearch.call(this, message, peer)
-      if (message.event === 'nodes.properties.search') return EventHandlers.handleNodesPropertiesSearch.call(this, message, peer)
-    }
-    catch (error) {
-      this.sendMessage(peer, {
-        event: 'error',
-        data: {
-          name: error instanceof Error ? error.name : 'E_UNKNOWN',
-          message: error instanceof Error ? error.message : 'An unknown error occurred',
-        },
-      })
-      if (import.meta.dev)
-        console.error(error)
-    }
+    if (message.event === 'request.reload') return EventHandlers.handleRequestReload.call(this, message, peer)
+    if (message.event === 'request.export') return EventHandlers.handleRequestExport.call(this, message, peer)
+    if (message.event === 'metadata.update') return EventHandlers.handleMetadataUpdate.call(this, message)
+    if (message.event === 'user.move') return EventHandlers.handleUserMove.call(this, message, peer)
+    if (message.event === 'user.leave') return EventHandlers.handleUserLeave.call(this, message, peer)
+    if (message.event === 'nodes.clone') return EventHandlers.handleNodesClone.call(this, message)
+    if (message.event === 'nodes.create') return EventHandlers.handleNodesCreate.call(this, message)
+    if (message.event === 'nodes.remove') return EventHandlers.handleNodesRemove.call(this, message, peer)
+    if (message.event === 'nodes.input.update') return EventHandlers.handleNodesInputUpdate.call(this, message)
+    if (message.event === 'nodes.links.create') return EventHandlers.handleNodesLinksCreate.call(this, message)
+    if (message.event === 'nodes.links.remove') return EventHandlers.handleNodesLinksRemove.call(this, message)
+    if (message.event === 'nodes.metadata.update') return EventHandlers.handleNodesMetadataUpdate.call(this, message)
+    if (message.event === 'nodes.options.search') return EventHandlers.handleNodesOptionsSearch.call(this, message, peer)
+    if (message.event === 'nodes.properties.search') return EventHandlers.handleNodesPropertiesSearch.call(this, message, peer)
   }
 }
