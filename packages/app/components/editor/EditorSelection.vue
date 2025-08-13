@@ -1,3 +1,3 @@
 <template>
-  <div class="b-2 b-dashed b-editor-select rd bg-editor-select z-10" />
+  <div class="b-2 b-dashed b-primary-500 rd bg-primary-500/20 z-10" />
 </template>
