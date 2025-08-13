@@ -1,11 +1,4 @@
-import type { EditorNodeObject, FlowObject } from '@nwrx/nano-api'
-import type { ThreadServerMessage } from '@nwrx/nano-runner'
-import type { MaybeLiteral } from '@unshared/types'
 import type { RouteLocationRaw } from 'vue-router'
-
-export type Size = 'large' | 'medium' | 'small' | 'xlarge' | 'xsmall'
-export type Variant = MaybeLiteral<keyof typeof COLORS>
-export type Alignment = 'center' | 'left' | 'right'
 
 export type NavItemGroup =
   | 'admin-analytics'
@@ -52,14 +45,6 @@ export interface DropPayload {
   kind: string
 }
 
-export interface ProjectListItem {
-  name: string
-  icon?: string
-  description?: string
-  collaborators: Array<{ id: string; name: string; imageUrl: string }>
-  flows?: FlowObject[]
-}
-
 export type RouteGroup =
   | 'nav-items-bottom'
   | 'nav-items-top'
@@ -76,23 +61,4 @@ declare module 'vue-router' {
     groups?: RouteGroup[]
     isWorkInProgress?: boolean
   }
-}
-
-export type EditorMessageTreeItemLine =
-  | 'close'
-  | 'end'
-  | 'open'
-  | 'start'
-  | 'straight'
-
-export interface EditorMessageTreeItemTree {
-  color: string
-  showPin: boolean
-  showLine: EditorMessageTreeItemLine
-}
-
-export interface EditorMessageTreeItem {
-  message: ThreadServerMessage
-  node?: EditorNodeObject
-  tree?: EditorMessageTreeItemTree[]
 }
