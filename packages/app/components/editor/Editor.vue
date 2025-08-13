@@ -1,19 +1,15 @@
 <!-- eslint-disable vue/no-setup-props-reactivity-loss -->
 <script setup lang="ts">
-import type { Link, ThreadInputObject } from '@nwrx/nano'
-import type {
-  Editor,
-  EditorSessionClientMessage,
-  EditorSessionServerMessage,
-  FlowObject,
-} from '@nwrx/nano-api'
-import type { ThreadServerMessage } from '@nwrx/nano-runner'
-import type { SchemaOption } from '@nwrx/nano/utils'
+import type { Editor, FlowObject } from '@nwrx/nano-api'
+import type { Schema, SchemaOption } from '@nwrx/nano/utils'
 import { useEditorView } from '~/composables/useEditor'
-import EditorConsole from '../editorConsole/EditorConsole.vue'
+// import EditorConsole from '../editorConsole/EditorConsole.vue'
 import EditorDrawer from '../editorDrawer/EditorDrawer.vue'
 import EditorNode from '../editorNode/EditorNode.vue'
+// import EditorPanelNode from '../editorPanel/ditorPanelNode.vue'
 import EditorPanel from '../editorPanel/EditorPanel.vue'
+import EditorPanelFlow from '../editorPanel/EditorPanelFlow.vue'
+import EditorPanelPlayground from '../editorPanel/EditorPanelPlayground.vue'
 import EditorBackground from './EditorBackground.vue'
 import EditorLink from './EditorLink.vue'
 import EditorPeer from './EditorParticipant.vue'
@@ -22,44 +18,37 @@ import EditorToolbar from './EditorToolbar.vue'
 
 const props = withDefaults(
   defineProps<{
-    flow?: FlowObject
+    workspace: string
+    project: string
+    flow: FlowObject
     nodes?: Editor.NodeObject[]
-    participants?: Editor.ParticipantObject[]
-    components: Editor.ComponentObject[]
+    components?: Editor.ComponentObject[]
     componentGroups?: Editor.ComponentGroup[]
-    messagesClient?: EditorSessionClientMessage[]
-    messagesServer?: EditorSessionServerMessage[]
-    messagesThread?: ThreadServerMessage[]
+    participants?: Editor.ParticipantObject[]
+    requestExport?: (format: 'json' | 'yaml') => Promise<string>
     searchOptions?: (id: string, name: string, query: string) => Promise<SchemaOption[]>
-    getFlowExport?: (format?: 'json' | 'yaml') => Promise<string>
+    searchProperties?: (id: string, name: string, query: string) => Promise<Record<string, Schema>>
   }>(),
   {
-    flow: () => ({ name: '', title: '' }),
     nodes: () => [],
     participants: () => [],
-    messagesClient: () => [],
-    messagesServer: () => [],
-    messagesThread: () => [],
+    components: () => [],
+    componentGroups: () => [],
+    requestExport: () => Promise.resolve(''),
     searchOptions: () => Promise.resolve([]),
-    getFlowExport: () => Promise.resolve(''),
+    searchProperties: () => Promise.resolve({}),
   },
 )
 
 const emit = defineEmits<{
-  'metadataUpdate': [name: string, value: unknown]
-
-  // Nodes
-  'nodesCreate': Array<{ specifier: string; x: number; y: number }>
-  'nodesClone': Array<{ ids: string[]; origin: { x: number; y: number } }>
-  'nodesRemove': string[]
-  'nodesMetadataUpdate': Array<{ id: string; name: string; value: unknown }>
-  'nodesInputUpdate': Array<{ id: string; name: string; value: unknown }>
-  'nodesLinksCreate': Link[]
-  'nodesLinksRemove': Link[]
-
-  // 'clearMessagesServer': []
-  // 'clearMessagesClient': []
-  // 'startThread': [ThreadInputObject]
+  'metadataUpdate': Editor.MessageClientDataByName<'metadata.update'>
+  'nodesClone': Editor.MessageClientDataByName<'nodes.clone'>
+  'nodesCreate': Editor.MessageClientDataByName<'nodes.create'>
+  'nodesRemove': Editor.MessageClientDataByName<'nodes.remove'>
+  'nodesInputUpdate': Editor.MessageClientDataByName<'nodes.input.update'>
+  'nodesLinksCreate': Editor.MessageClientDataByName<'nodes.links.create'>
+  'nodesLinksRemove': Editor.MessageClientDataByName<'nodes.links.remove'>
+  'nodesMetadataUpdate': Editor.MessageClientDataByName<'nodes.metadata.update'>
 }>()
 
 const view = useEditorView({
@@ -73,15 +62,11 @@ const view = useEditorView({
   handleNodesLinksRemove: (...values) => emit('nodesLinksRemove', ...values),
   handleNodesMetadataUpdate: (...values) => emit('nodesMetadataUpdate', ...values),
 })
-
-function getNodeComponent(node: Editor.NodeObject): Editor.ComponentObject | undefined {
-  if (!props.components) return
-  return props.components.find(component => component.name === node.specifier)
-}
 </script>
 
 <template>
   <div
+    id="editor"
     :ref="view.setViewContainer"
     tabindex="0"
     disabled
@@ -140,24 +125,24 @@ function getNodeComponent(node: Editor.NodeObject): Editor.ComponentObject | und
       />
 
       <!-- Nodes -->
-
       <EditorNode
-        v-for="node in nodes"
-        :ref="(el) => view.setViewNode(node.id, el)"
-        :key="node.id"
-        :style=" view.getNodeStyle(node)"
-        :style-header="view.getNodeHeaderStyle(node)"
-        :node="node"
-        :component="getNodeComponent(node)"
-        :search-options="async(name, query) => searchOptions(node.id, name, query)"
+        v-for="x in view.nodesView"
+        :ref="(el) => view.setViewNode(x.id, el)"
+        :key="x.id"
+        :node="x.node"
+        :style=" x.style"
+        :component="x.component"
+        :style-header="x.styleHeader"
+        :search-options="async(name, query) => searchOptions(x.id, name, query)"
+        :search-properties="async(name, query) => searchProperties(x.id, name, query)"
         @release="() => view.onNodeHandleRelease()"
-        @grab="(event) => view.onNodeHandleGrab(event, node.id)"
-        @input-update="(name, value) => emit('nodesInputUpdate', { id: node.id, name, value })"
-        @input-grab="(name, path) => view.onInputGrab(node.id, name, path)"
-        @input-assign="(name, path) => view.onInputAssign(node.id, name, path)"
+        @grab="(event) => view.onNodeHandleGrab(event, x.id)"
+        @input-update="(name, value) => emit('nodesInputUpdate', { id: x.id, name, value })"
+        @input-grab="(name, path) => view.onInputGrab(x.id, name, path)"
+        @input-assign="(name, path) => view.onInputAssign(x.id, name, path)"
         @input-unassign="() => view.onInputUnassign()"
-        @output-grab="(name, path) => view.onOutputGrab(node.id, name, path)"
-        @output-assign="(name, path) => view.onOutputAssign(node.id, name, path)"
+        @output-grab="(name, path) => view.onOutputGrab(x.id, name, path)"
+        @output-assign="(name, path) => view.onOutputAssign(x.id, name, path)"
         @output-unassign="() => view.onOutputUnassign()"
       />
 
@@ -171,26 +156,50 @@ function getNodeComponent(node: Editor.NodeObject): Editor.ComponentObject | und
         <EditorToolbar
           :flow="flow"
           class="pointer-events-auto justify-self-start"
-          :get-flow-export="getFlowExport"
+          :request-export="requestExport"
         />
 
-        <div />
         <!-- Panel -->
-        <!--
-          <EditorPanel
-          v-model:is-panel-resizing="view.isPanelResizing"
+        <EditorPanel
+          v-model:is-open="view.isPanelOpen"
+          v-model:selected-tab="view.panelTab"
+          v-model:is-resizing="view.isPanelResizing"
           :flow="flow"
           :nodes="nodes"
+          :components="components"
+          :component-groups="componentGroups"
           :panel-width="view.panelWidth"
           :selected-nodes="view.nodeSelected"
-          :messages-thread="messagesThread"
-          class="pointer-events-auto row-span-2 justify-self-end h-full"
-          @panel-resize-start="() => view.isPanelResizing = true"
-          @panel-resize-end="() => view.isPanelResizing = false"
-          @set-metadata="({ name, value }) => emit('metadataUpdate', name, value)"
-          @start-thread="(input) => emit('startThread', input)"
+          class="pointer-events-auto row-span-2 justify-self-end h-full">
+
+          <!-- Flow informations -->
+          <EditorPanelFlow
+            v-if="view.panelTab === 'flow'"
+            :flow="flow"
+            @metadata-update="(...data) => emit('metadataUpdate', ...data)"
           />
-        -->
+
+          <!-- Node informations -->
+          <!--
+            <EditorPanelNode
+            v-else-if="view.panelTab === 'node'"
+            :node="view."
+            :component="selectedComponent"
+            />
+          -->
+
+          <!-- Evaluation -->
+          <!-- <EditorPanelEvaluation v-else-if="selectedTab === 'evaluation'" :editor /> -->
+
+          <!-- Playground -->
+          <EditorPanelPlayground
+            v-else-if="view.panelTab === 'playground'"
+            :workspace="workspace"
+            :project="project"
+            :flow="flow.name"
+            :nodes="nodes"
+          />
+        </EditorPanel>
 
         <!-- Drawer -->
         <EditorDrawer
@@ -207,13 +216,9 @@ function getNodeComponent(node: Editor.NodeObject): Editor.ComponentObject | und
           :nodes="nodes"
           :categories="components"
           :participants="participants"
-          :messages-client="messagesClient"
-          :messages-server="messagesServer"
           :messages-thread="messagesThread"
           class="pointer-events-auto col-span-2 self-end justify-self-end select-text"
           @syncronize="() => emit('requestReload')"
-          @clear-messages-client="() => emit('clearMessagesClient')"
-          @clear-messages-server="() => emit('clearMessagesServer')"
           />
         -->
       </div>

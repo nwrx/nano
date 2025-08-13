@@ -24,12 +24,12 @@ export interface EditorViewOptions {
   nodes?: Ref<Editor.NodeObject[]>
   components?: Ref<Editor.ComponentObject[]>
   componentGroups?: Ref<Editor.ComponentGroup[]>
-  handleNodesCreate?: (...values: Array<{ specifier: string; x: number; y: number }>) => void
-  handleNodesClone?: (...values: Array<{ ids: string[]; origin: Position }>) => void
-  handleNodesRemove?: (...values: string[]) => void
-  handleNodesMetadataUpdate?: (...values: Array<{ id: string; name: string; value: unknown }>) => void
-  handleNodesLinksCreate?: (...values: Link[]) => void
-  handleNodesLinksRemove?: (...values: Link[]) => void
+  handleNodesClone?: (...values: Editor.MessageClientDataByName<'nodes.clone'>) => void
+  handleNodesCreate?: (...values: Editor.MessageClientDataByName<'nodes.create'>) => void
+  handleNodesRemove?: (...values: Editor.MessageClientDataByName<'nodes.remove'>) => void
+  handleNodesLinksCreate?: (...values: Editor.MessageClientDataByName<'nodes.links.create'>) => void
+  handleNodesLinksRemove?: (...values: Editor.MessageClientDataByName<'nodes.links.remove'>) => void
+  handleNodesMetadataUpdate?: (...values: Editor.MessageClientDataByName<'nodes.metadata.update'>) => void
 }
 
 export function useEditorView(options: EditorViewOptions = {}) {
@@ -41,12 +41,12 @@ export function useEditorView(options: EditorViewOptions = {}) {
     nodes = ref<Editor.NodeObject[]>([]),
     components = ref<Editor.ComponentObject[]>([]),
     componentGroups = ref<Editor.ComponentGroup[]>([]),
-    handleNodesCreate = () => alerts.error('The "handleNodesCreate" method is not implemented.'),
     handleNodesClone = () => alerts.error('The "onCloneNodes" method is not implemented.'),
+    handleNodesCreate = () => alerts.error('The "handleNodesCreate" method is not implemented.'),
     handleNodesRemove = () => alerts.error('The "handleNodesRemove" method is not implemented.'),
-    handleNodesMetadataUpdate = () => alerts.error('The "handleNodesMetadataUpdate" method is not implemented.'),
     handleNodesLinksCreate = () => alerts.error('The "handleNodesLinksCreate" method is not implemented.'),
     handleNodesLinksRemove = () => alerts.error('The "handleNodesLinksRemove" method is not implemented.'),
+    handleNodesMetadataUpdate = () => alerts.error('The "handleNodesMetadataUpdate" method is not implemented.'),
   } = options
 
   // --- View references.
@@ -82,13 +82,18 @@ export function useEditorView(options: EditorViewOptions = {}) {
   const cursorWorld = ref({ x: 0, y: 0 })
 
   // --- Panel state.
+  const panelTab = ref<string>('flow')
+  const panelResizeOrigin = ref(0)
+  const panelResizeInitial = ref(0)
+  const isPanelResizing = ref(false)
+  const isPanelOpen = computed({
+    get: () => settings.value.editorPanelOpen ?? true,
+    set: value => settings.value.editorPanelOpen = value,
+  })
   const panelWidth = computed({
     get: () => settings.value.editorPanelWidth ?? 512,
     set: value => settings.value.editorPanelWidth = value,
   })
-  const panelResizeOrigin = ref(0)
-  const panelResizeInitial = ref(0)
-  const isPanelResizing = ref(false)
   watch(isPanelResizing, (isPanelResizing) => {
     if (!isPanelResizing) return
     panelResizeOrigin.value = cursorClient.value.x
@@ -137,6 +142,56 @@ export function useEditorView(options: EditorViewOptions = {}) {
     if (zIndexCounter.value === -1) zIndexCounter.value = nodes.value.length
     for (const id of nodeSelectedIds.value) zIndexMap[id] = zIndexCounter.value++
   }, { deep: true })
+
+  // --- Collect all nodes and compute their component, style and header style.
+  const getNodeColor = memoize((node: Editor.NodeObject) => {
+    const component = components.value.find(x => x.name === node.name)
+    if (!component) return 'black'
+    // if (component.color) return component.color
+    const group = componentGroups.value.find(g => g.name === component.purpose)
+    if (group?.color) return group.color
+    return 'black'
+  }, {
+    getKey: (node: Editor.NodeObject) => node.id,
+  })
+
+  const getNodeStyle = (node: Editor.NodeObject): CSSProperties => {
+    const { x, y } = worldToView(node.metadata.position ?? { x: 0, y: 0 })
+    const color = getNodeColor(node)
+    const isSelected = nodeSelectedIds.value.has(node.id)
+    return {
+      'position': 'absolute',
+      'left': `${x}px`,
+      'top': `${y}px`,
+      'zIndex': zIndexMap[node.id] ?? 1,
+      '--un-ring-color': color,
+      '--un-ring-width': `${(isSelected ? 5 : 1) / (viewZoom.value)}px`,
+    }
+  }
+
+  const getNodeComponent = (node: Editor.NodeObject): Editor.ComponentObject => {
+    const component = components.value.find(x => x.name === node.specifier)
+    if (component) return component
+    // Create fallback component if not found.
+    return {
+      name: node.specifier,
+      title: node.specifier,
+      version: '0.0.0',
+    }
+  }
+
+  const getNodeHeaderStyle = memoize((node: Editor.NodeObject): CSSProperties => ({
+    backgroundColor: getNodeColor(node),
+    cursor: nodeDragging.value ? 'grabbing' : 'pointer',
+  }), { getKey: (node: Editor.NodeObject) => node.id })
+
+  const nodesView = computed(() => nodes.value.map(node => ({
+    id: node.id,
+    style: getNodeStyle(node),
+    component: getNodeComponent(node),
+    styleHeader: getNodeHeaderStyle(node),
+    node,
+  })))
 
   // --- Compute the position of the cursor in the world coordinates.
   function screenToWorld(position: Position) {
@@ -191,17 +246,6 @@ export function useEditorView(options: EditorViewOptions = {}) {
     }
   }
 
-  const getNodeColor = memoize((node: Editor.NodeObject) => {
-    const component = components.value.find(x => x.name === node.name)
-    if (!component) return 'black'
-    // if (component.color) return component.color
-    const group = componentGroups.value.find(g => g.name === component.purpose)
-    if (group?.color) return group.color
-    return 'black'
-  }, {
-    getKey: (node: Editor.NodeObject) => node.id,
-  })
-
   return toReactive({
     setView,
     setViewContainer,
@@ -220,13 +264,16 @@ export function useEditorView(options: EditorViewOptions = {}) {
     viewDragOriginWorld,
     viewSelecting,
 
+    panelTab,
     panelWidth,
+    isPanelOpen,
     isPanelResizing,
 
     cursorView,
     cursorWorld,
 
     nodes,
+    nodesView,
     nodeSelectedIds,
     nodeSelected,
     nodeDragging,
@@ -269,26 +316,6 @@ export function useEditorView(options: EditorViewOptions = {}) {
         height: `${Math.abs(from.y - to.y)}px`,
         pointerEvents: 'none',
       }
-    }),
-
-    getNodeStyle: (node: Editor.NodeObject): CSSProperties => {
-      const { x, y } = worldToView(node.metadata.position ?? { x: 0, y: 0 })
-      const color = getNodeColor(node)
-      const isSelected = nodeSelectedIds.value.has(node.id)
-      return {
-        'position': 'absolute',
-        'left': `${x}px`,
-        'top': `${y}px`,
-        'zIndex': zIndexMap[node.id] ?? 1,
-        'transition': isSelected ? 'none' : 'transform 0.1s ease',
-        '--un-ring-color': color,
-        '--un-ring-width': `${(isSelected ? 5 : 1) / (viewZoom.value)}px`,
-      }
-    },
-
-    getNodeHeaderStyle: (node: Editor.NodeObject): CSSProperties => ({
-      backgroundColor: getNodeColor(node),
-      cursor: nodeDragging.value ? 'grabbing' : 'pointer',
     }),
 
     /***************************************************************************/
@@ -375,7 +402,7 @@ export function useEditorView(options: EditorViewOptions = {}) {
           id: node.id,
           name: 'position',
           value: node.metadata.position,
-        })))
+        })) as Editor.MessageClientDataByName<'nodes.metadata.update'>)
       }
 
       // --- If resizing the panel, update the panel width based on the mouse movement.
@@ -395,7 +422,6 @@ export function useEditorView(options: EditorViewOptions = {}) {
 
       // --- If a drag link is active, emit a link remove event.
       if (linkDragFrom.value && !linkDragTo.value) {
-        // @ts-expect-error: edge case handled by the server.
         handleNodesLinksRemove(linkDragFrom.value)
         linkDragFrom.value = undefined
         event.stopPropagation()
@@ -497,7 +523,7 @@ export function useEditorView(options: EditorViewOptions = {}) {
               x: (node.metadata.position?.x ?? 0) + offset.x,
               y: (node.metadata.position?.y ?? 0) + offset.y,
             },
-          })))
+          })) as Editor.MessageClientDataByName<'nodes.metadata.update'>)
         }
       }
     },

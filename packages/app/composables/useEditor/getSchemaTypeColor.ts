@@ -1,4 +1,4 @@
-import type { FlowEditorComponent } from '@nwrx/nano-api'
+import type { Editor } from '@nwrx/nano-api'
 import type { Schema } from '@nwrx/nano/utils'
 
 export function getSchemaType(socket?: Schema) {
@@ -23,7 +23,7 @@ export function getSchemaTypeColor(socket?: Schema) {
   return '#888'
 }
 
-export function getComponentTypeColors(component: FlowEditorComponent) {
+export function getComponentTypeColors(component: Editor.ComponentObject) {
   const colors = new Set<string>()
   if (component.inputs) {
     for (const name in component.inputs) {

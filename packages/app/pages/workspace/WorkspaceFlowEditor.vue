@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppPage from '~/components/app/AppPage.vue'
 import Editor from '~/components/editor/Editor.vue'
-import { useEditorComponents, useEditorModel, useEditorThread } from '~/composables/useEditor'
+import { useEditorModel } from '~/composables/useEditor'
 
 definePageMeta({
   name: 'FlowEditor',
@@ -9,30 +9,24 @@ definePageMeta({
   middleware: ['redirect-when-guest', 'abort-reserved'],
 })
 
-// --- Parse the route parameters.
+// --- Get the route parameters.
 const route = useRoute()
 const options = {
   workspace: route.params.workspace as string,
   project: route.params.project as string,
-  name: route.params.name as string,
+  flow: route.params.name as string,
 }
 
+// --- Initialize the thread and editor model.
 const editor = useEditorModel(options)
-const components = useEditorComponents(options)
-const thread = useEditorThread({
-  flow: route.params.name as string,
-  project: route.params.project as string,
-  workspace: route.params.workspace as string,
-  nodes: toRef(editor.state.value.nodes),
-})
 
-useHead(() => ({
-  title: editor.state.value.flow.title,
-  meta: [{ title: 'description', content: editor.state.value.flow.description }],
-}))
+// --- Set the page title and description.
+const title = computed(() => editor.state.flow.title || editor.state.flow.name)
+const description = computed(() => editor.state.flow.description)
+useHead(() => ({ title, meta: [{ title: 'description', content: description }] }))
 
 onMounted(async() => {
-  await components.fetchComponents()
+  await editor.fetchComponents()
   await editor.connect()
 })
 
@@ -42,40 +36,28 @@ onBeforeRouteLeave(() => {
 </script>
 
 <template>
-  <div class="bg-gradient-to-br from-primary-500 via-secondary-500 to-primary-500 w-full h-full p-2px">
-    <AppPage class="relative w-full h-full flex flex-col rounded-3.5">
-      <Editor
-        v-if="editor"
-        :flow="editor.state.value.flow"
-        :nodes="editor.state.value.nodes"
-        :participants="editor.state.value.participants"
+  <AppPage class="relative w-full h-full flex flex-col rounded-3.5">
+    <Editor
+      :workspace="options.workspace"
+      :project="options.project"
+      :flow="editor.state.flow"
+      :nodes="editor.state.nodes"
+      :components="editor.components"
+      :component-groups="editor.componentGroups"
+      :participants="editor.state.participants"
+      :search-options="editor.searchOptions"
+      :search-properties="editor.searchProperties"
+      :request-export="editor.requestExport"
 
-        :components="components.data.components"
-        :component-groups="components.data.groups"
-
-        :messages-client="editor.messagesClient.value"
-        :messages-server="editor.messagesServer.value"
-        :search-options="editor.searchOptions"
-        :get-flow-export="editor.requestExport"
-
-        :messages-thread="thread.messages"
-
-        @request-reload="() => editor.sendMessage('request.reload')"
-        @metadata-update="(...data) => editor.sendMessage('metadata.update', ...data)"
-
-        @nodes-clone="(...data) => editor.sendMessage('nodes.clone', ...data)"
-        @nodes-create="(...data) => editor.sendMessage('nodes.create', ...data)"
-        @nodes-remove="(...data) => editor.sendMessage('nodes.remove', ...data)"
-        @nodes-input-update="(...data) => editor.sendMessage('nodes.input.update', ...data)"
-        @nodes-links-create="(...data) => editor.sendMessage('nodes.links.create', ...data)"
-        @nodes-links-remove="(...data) => editor.sendMessage('nodes.links.remove', ...data)"
-        @nodes-metadata-update="(...data) => editor.sendMessage('nodes.metadata.update', ...data)"
-
-        @clear-messages-client="() => editor.clearMessagesClient()"
-        @clear-messages-server="() => editor.clearMessagesServer()"
-
-        @start-thread="(input) => thread.start(input)"
-      />
-    </AppPage>
-  </div>
+      @request-reload="() => editor.sendMessage('request.reload')"
+      @metadata-update="(...data) => editor.sendMessage('metadata.update', ...data)"
+      @nodes-clone="(...data) => editor.sendMessage('nodes.clone', ...data)"
+      @nodes-create="(...data) => editor.sendMessage('nodes.create', ...data)"
+      @nodes-remove="(...data) => editor.sendMessage('nodes.remove', ...data)"
+      @nodes-input-update="(...data) => editor.sendMessage('nodes.input.update', ...data)"
+      @nodes-links-create="(...data) => editor.sendMessage('nodes.links.create', ...data)"
+      @nodes-links-remove="(...data) => editor.sendMessage('nodes.links.remove', ...data)"
+      @nodes-metadata-update="(...data) => editor.sendMessage('nodes.metadata.update', ...data)"
+    />
+  </AppPage>
 </template>
