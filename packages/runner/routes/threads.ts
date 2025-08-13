@@ -9,7 +9,10 @@ import { serializeError } from '../worker/serializeError.mjs'
 export function thread(this: ModuleRunner) {
   return createWebSocketRoute(
     {
-      name: 'WS /threads',
+      name: 'WS /threads/:id',
+      parseParameters: createParser({
+        id: assert.stringUuid,
+      }),
       parseQuery: createParser({
         token: assert.stringNotEmpty,
       }),
