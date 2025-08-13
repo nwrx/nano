@@ -19,6 +19,7 @@
     "@nuxt/kit": "3.16.0",
     "@nuxtjs/i18n": "9.3.1",
     "@nuxtjs/storybook": "8.3.3",
+    "@nwrx/ai": "workspace:*",
     "@nwrx/nano": "workspace:*",
     "@nwrx/nano-api": "workspace:*",
     "@nwrx/nano-runner": "workspace:*",
