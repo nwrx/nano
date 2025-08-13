@@ -114,15 +114,17 @@ export function createIconCollectionsClient() {
           subscribers = 0
         },
       },
-    )
+    ).catch((error: Error) => {
+      if (error.name === 'AbortError') return
+      console.error('Error subscribing to icon collections events:', error)
+    })
   }
 
   function unsubscribeFromEvents() {
     subscribers -= 1
-    if (subscribers <= 0) {
-      abortController.abort()
-      abortController = new AbortController()
-    }
+    if (subscribers > 0) return
+    abortController.abort()
+    abortController = new AbortController()
   }
 
   return toReactive({
