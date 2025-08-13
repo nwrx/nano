@@ -19,13 +19,13 @@ const projects = useProjects(props)
 projects.options.withCreatedBy = true
 projects.options.withUpdatedBy = true
 
-onMounted(() => {
-  void projects.searchProjects()
-  void projects.subscribeToEvents()
+onMounted(async() => {
+  await projects.searchProjects()
+  projects.subscribeToEvents()
 })
 
 onBeforeUnmount(() => {
-  void projects.unsubscribeFromEvents()
+  projects.unsubscribeFromEvents()
 })
 
 watchThrottled(
