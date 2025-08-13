@@ -8,7 +8,7 @@ import { getVault } from '../utils'
 export function vaultSetDefault(this: ModuleVault) {
   return createHttpRoute(
     {
-      name: 'PUT /api/workspaces/:workspace/vaults/:vault/default',
+      name: 'PUT /workspaces/:workspace/vaults/:vault/default',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         vault: assert.stringNotEmpty,

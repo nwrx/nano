@@ -44,7 +44,7 @@ export function useChat(workspace: MaybeRef<string>) {
   })
 
   function refresh() {
-    return client.requestAttempt('GET /api/workspaces/:workspace/threads', {
+    return client.requestAttempt('GET /workspaces/:workspace/threads', {
       data: { workspace: unref(workspace) },
       onData: data => threads.value = data,
       onError: alerts.error,
@@ -57,7 +57,7 @@ export function useChat(workspace: MaybeRef<string>) {
     channel,
     refresh,
 
-    deleteThread: (id: UUID) => client.requestAttempt('DELETE /api/workspaces/:workspace/threads/:id', {
+    deleteThread: (id: UUID) => client.requestAttempt('DELETE /workspaces/:workspace/threads/:id', {
       data: { workspace: unref(workspace), id },
       onEnd: refresh,
       onError: alerts.error,

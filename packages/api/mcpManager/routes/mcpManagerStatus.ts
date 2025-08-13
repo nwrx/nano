@@ -9,7 +9,7 @@ import { getManager, getManagerClient } from '../utils'
 export function mcpManagerStatus(this: ModuleMcpManager) {
   return createHttpRoute(
     {
-      name: 'GET /api/mcp/:identity/status',
+      name: 'GET /mcp/:identity/status',
       parseParameters: createParser({
         identity: assert.stringNotEmpty,
       }),

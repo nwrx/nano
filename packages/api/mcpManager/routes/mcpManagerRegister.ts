@@ -8,7 +8,7 @@ import { registerManager } from '../utils'
 export function mcpManagerRegister(this: ModuleMcpManager) {
   return createHttpRoute(
     {
-      name: 'POST /api/mcp',
+      name: 'POST /mcp',
       parseBody: createParser({
         address: assert.stringNotEmpty,
         identity: [[assert.undefined], [assert.stringNotEmpty]],

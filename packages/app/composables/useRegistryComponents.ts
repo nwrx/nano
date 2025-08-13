@@ -1,7 +1,7 @@
 import type { application, RegistryComponentObject } from '@nwrx/nano-api'
 import type { RouteRequestQuery } from '@unserved/client'
 
-export type UseRegistryComponentsOptions = RouteRequestQuery<typeof application, 'GET /api/registry'>
+export type UseRegistryComponentsOptions = RouteRequestQuery<typeof application, 'GET /registry'>
 
 export function useRegistryComponents(
   workspace: MaybeRef<string>,
@@ -12,7 +12,7 @@ export function useRegistryComponents(
   const data = ref<RegistryComponentObject[]>([])
 
   const searchComponents = async() => {
-    await client.requestAttempt('GET /api/registry', {
+    await client.requestAttempt('GET /registry', {
       data: {
         workspace: unref(workspace),
         collection: unref(collection),

@@ -6,7 +6,7 @@ import { refreshCollections } from '../utils'
 export function iconCollectionRefresh(this: ModuleIconCollection) {
   return createHttpRoute(
     {
-      name: 'POST /api/icons/collections/refresh',
+      name: 'POST /icons/collections/refresh',
     },
     async({ event }): Promise<void> => {
       const moduleUser = this.getModule(ModuleUser)

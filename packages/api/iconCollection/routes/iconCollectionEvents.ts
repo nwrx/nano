@@ -7,7 +7,7 @@ import { ModuleUser } from '../../user'
 export function iconCollectionEvents(this: ModuleIconCollection) {
   return createHttpRoute(
     {
-      name: 'GET /api/icons/collections/events',
+      name: 'GET /icons/collections/events',
     },
     async({ event }): Promise<EventStream<IconCollectionEvents>> => {
       const moduleUser = this.getModule(ModuleUser)

@@ -19,7 +19,7 @@ const configuration = ref<VaultLocalOptions>({ algorithm: 'aes-256-gcm', secret:
     :text="t('text')"
     :label="t('label')"
     @submit="() => {
-      client.requestAttempt('POST /api/workspaces/:workspace/vaults', {
+      client.requestAttempt('POST /workspaces/:workspace/vaults', {
         data: { workspace, name, type: 'local', configuration: unref(configuration) },
         onSuccess: async() => {
           alerts.success(t('vaults.create.success'))

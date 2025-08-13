@@ -19,7 +19,7 @@ const alerts = useAlerts()
 
 // --- Submit.
 async function disableGateway() {
-  await client.requestAttempt('POST /api/mcp/:manager/gateways/:identity/disable', {
+  await client.requestAttempt('POST /mcp/:manager/gateways/:identity/disable', {
     data: {
       manager: props.manager,
       identity: props.gateway.identity,

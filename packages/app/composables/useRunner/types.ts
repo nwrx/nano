@@ -6,9 +6,9 @@ export namespace UseRunner {
     name: string
   }
 
-  export type SearchOptions = RouteRequestQuery<typeof application, 'GET /api/runners'>
-  export type FetchOptions = RouteRequestQuery<typeof application, 'GET /api/runners/:name'>
-  export type RegisterOptions = RouteRequestBody<typeof application, 'POST /api/runners'>
-  export type UpdateOptions = RouteRequestBody<typeof application, 'PUT /api/runners/:name'>
-  export type RenameOptions = RouteRequestBody<typeof application, 'PUT /api/runners/:name/rename'>
+  export type SearchOptions = RouteRequestQuery<typeof application, 'GET /runners'>
+  export type FetchOptions = RouteRequestQuery<typeof application, 'GET /runners/:name'>
+  export type RegisterOptions = RouteRequestBody<typeof application, 'POST /runners'>
+  export type UpdateOptions = RouteRequestBody<typeof application, 'PUT /runners/:name'>
+  export type RenameOptions = RouteRequestBody<typeof application, 'PUT /runners/:name/rename'>
 }

@@ -2,10 +2,10 @@ import type { application, UserObject } from '@nwrx/nano-api'
 import type { RouteRequestBody, RouteRequestQuery } from '@unserved/client'
 import { useAlerts, useClient } from '#imports'
 
-export type UseUsersOptions = RouteRequestQuery<typeof application, 'GET /api/users/:username'>
-export type SetProfileOptions = RouteRequestBody<typeof application, 'PUT /api/users/:username/profile'>
-export type SetAvatarOptions = RouteRequestBody<typeof application, 'PUT /api/users/:username/avatar'>
-export type SetPasswordOptions = RouteRequestBody<typeof application, 'PUT /api/users/:username/password'>
+export type UseUsersOptions = RouteRequestQuery<typeof application, 'GET /users/:username'>
+export type SetProfileOptions = RouteRequestBody<typeof application, 'PUT /users/:username/profile'>
+export type SetAvatarOptions = RouteRequestBody<typeof application, 'PUT /users/:username/avatar'>
+export type SetPasswordOptions = RouteRequestBody<typeof application, 'PUT /users/:username/password'>
 
 export function useUser(username: MaybeRef<string | undefined>, options: UseUsersOptions = {}) {
   const client = useClient()
@@ -13,7 +13,7 @@ export function useUser(username: MaybeRef<string | undefined>, options: UseUser
   const data = ref({} as UserObject) as Ref<UserObject>
 
   const getUser = async() => {
-    await client.requestAttempt('GET /api/users/:username', {
+    await client.requestAttempt('GET /users/:username', {
       data: { username: unref(username), ...options },
       onData: user => data.value = user,
       onError: error => showError(error),
@@ -25,7 +25,7 @@ export function useUser(username: MaybeRef<string | undefined>, options: UseUser
     getUser,
 
     setProfile: async(options: SetProfileOptions) => {
-      await client.requestAttempt('PUT /api/users/:username/profile', {
+      await client.requestAttempt('PUT /users/:username/profile', {
         data: {
           username: unref(username),
           ...options,
@@ -44,7 +44,7 @@ export function useUser(username: MaybeRef<string | undefined>, options: UseUser
     },
 
     setUsername: async(newUsername?: string) => {
-      await client.requestAttempt('PUT /api/users/:username/username', {
+      await client.requestAttempt('PUT /users/:username/username', {
         data: {
           username: unref(username),
           newUsername,
@@ -63,7 +63,7 @@ export function useUser(username: MaybeRef<string | undefined>, options: UseUser
     },
 
     setAvatar: async(options: SetAvatarOptions) => {
-      await client.requestAttempt('PUT /api/users/:username/avatar', {
+      await client.requestAttempt('PUT /users/:username/avatar', {
         data: {
           username: unref(username),
           ...options,
@@ -82,7 +82,7 @@ export function useUser(username: MaybeRef<string | undefined>, options: UseUser
     },
 
     setPassword: async(options: SetPasswordOptions) => {
-      await client.requestAttempt('PUT /api/users/:username/password', {
+      await client.requestAttempt('PUT /users/:username/password', {
         data: {
           username: unref(username),
           ...options,

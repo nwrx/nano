@@ -8,7 +8,7 @@ import { getGateway } from '../utils'
 export function mcpGatewayDisable(this: ModuleMcpGateway) {
   return createHttpRoute(
     {
-      name: 'POST /api/mcp/:manager/gateways/:identity/disable',
+      name: 'POST /mcp/:manager/gateways/:identity/disable',
       parseParameters: createParser({
         manager: assert.stringNotEmpty,
         identity: assert.stringNotEmpty,

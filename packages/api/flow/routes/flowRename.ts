@@ -9,7 +9,7 @@ import { getFlow, renameFlow } from '../utils'
 export function flowRename(this: ModuleFlow) {
   return createHttpRoute(
     {
-      name: 'PUT /api/workspaces/:workspace/projects/:project/flows/:flow/name',
+      name: 'PUT /workspaces/:workspace/projects/:project/flows/:flow/name',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         project: assert.stringNotEmpty,

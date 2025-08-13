@@ -23,7 +23,7 @@ const isOpen = defineModel<boolean>({ default: false })
 // --- Methods.
 async function createVariable() {
   await client.requestAttempt(
-    'POST /api/workspaces/:workspace/vaults/:vault/variables',
+    'POST /workspaces/:workspace/vaults/:vault/variables',
     {
       data: {
         workspace: props.workspace,

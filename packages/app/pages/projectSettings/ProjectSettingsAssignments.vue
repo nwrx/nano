@@ -35,7 +35,7 @@ const alerts = useAlerts()
 const client = useClient()
 const assignments = ref<ProjectUserPermissions[]>([])
 async function getAssignments() {
-  await client.requestAttempt('GET /api/workspaces/:workspace/projects/:project/assignments', {
+  await client.requestAttempt('GET /workspaces/:workspace/projects/:project/assignments', {
     data: {
       workspace: unref(workspace),
       project: unref(project),
@@ -106,7 +106,7 @@ onMounted(getAssignments)
                 :label-cancel="t('assignments.dialog.edit.cancel')"
                 :label-confirm="t('assignments.dialog.edit.confirm')"
                 @confirm="() => {
-                  client.requestAttempt('PUT /api/workspaces/:workspace/projects/:project/assignments/:username', {
+                  client.requestAttempt('PUT /workspaces/:workspace/projects/:project/assignments/:username', {
                     data: {
                       workspace: unref(workspace),
                       project: unref(project),
@@ -144,7 +144,7 @@ onMounted(getAssignments)
               :label-cancel="t('assignments.dialog.unassign.cancel')"
               :label-confirm="t('assignments.dialog.unassign.confirm')"
               @confirm="() => {
-                client.requestAttempt('DELETE /api/workspaces/:workspace/projects/:project/assignments/:username', {
+                client.requestAttempt('DELETE /workspaces/:workspace/projects/:project/assignments/:username', {
                   data: {
                     workspace: unref(workspace),
                     project: unref(project),
@@ -185,7 +185,7 @@ onMounted(getAssignments)
             :label-cancel="t('assignments.dialog.assign.cancel')"
             :label-confirm="t('assignments.dialog.assign.confirm')"
             @confirm="() => {
-              client.requestAttempt('POST /api/workspaces/:workspace/projects/:project/assignments', {
+              client.requestAttempt('POST /workspaces/:workspace/projects/:project/assignments', {
                 data: {
                   workspace: unref(workspace),
                   project: unref(project),

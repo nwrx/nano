@@ -11,7 +11,7 @@ import { searchVariableByProject } from '../utils'
 export function variableSearchByProject(this: ModuleVault) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/projects/:project/variables',
+      name: 'GET /workspaces/:workspace/projects/:project/variables',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         project: assert.stringNotEmpty,

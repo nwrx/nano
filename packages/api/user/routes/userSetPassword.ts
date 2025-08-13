@@ -6,7 +6,7 @@ import { checkPassword, createPassword, getUser } from '../utils'
 export function userSetPassword(this: ModuleUser) {
   return createHttpRoute(
     {
-      name: 'PUT /api/users/:username/password',
+      name: 'PUT /users/:username/password',
       parseParameters: createParser({
         username: assertStringNotEmpty,
       }),

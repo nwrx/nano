@@ -24,7 +24,7 @@ export const useFlows = createCachedComposable(
         if (lock.isPending) return lock.promise
         lock.reset()
         await client.request(
-          'GET /api/workspaces/:workspace/projects/:project/flows',
+          'GET /workspaces/:workspace/projects/:project/flows',
           {
             parameters: { workspace, project },
             query: { ...options.value },
@@ -36,7 +36,7 @@ export const useFlows = createCachedComposable(
 
       createFlow: async() => {
         await client.requestAttempt(
-          'POST /api/workspaces/:workspace/projects/:project/flows',
+          'POST /workspaces/:workspace/projects/:project/flows',
           {
             parameters: { workspace, project },
             onData: (flow) => {
@@ -56,7 +56,7 @@ export const useFlows = createCachedComposable(
         const formData = new FormData()
         formData.append('file', file)
         await client.requestAttempt(
-          'POST /api/workspaces/:workspace/projects/:project/import',
+          'POST /workspaces/:workspace/projects/:project/import',
           {
             parameters: { workspace, project },
             body: formData,
@@ -77,7 +77,7 @@ export const useFlows = createCachedComposable(
         subscribers.value++
         if (subscribers.value > 1) return
         void client.requestAttempt(
-          'GET /api/workspaces/:workspace/projects/:project/events',
+          'GET /workspaces/:workspace/projects/:project/events',
           {
             signal: abortController.signal,
             parameters: { workspace, project },

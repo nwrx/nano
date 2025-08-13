@@ -8,7 +8,7 @@ import { getIcon } from '../utils'
 export function iconDownload(this: ModuleIcon) {
   return createHttpRoute(
     {
-      name: 'GET /api/icons/:name',
+      name: 'GET /icons/:name',
       parseParameters: createParser({
         name: [assert.stringNotEmpty],
       }),

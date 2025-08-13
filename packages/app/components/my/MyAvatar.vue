@@ -12,7 +12,7 @@ const alerts = useAlerts()
 // --- Methods.
 async function uploadAvatar(file: File) {
   if (!user.data.username) return
-  await client.requestAttempt('PUT /api/users/:username/avatar', {
+  await client.requestAttempt('PUT /users/:username/avatar', {
     onSuccess: () => alerts.success(t('general.alert.success')),
     parameters: { username: user.data.username },
     body: { file },
@@ -23,7 +23,7 @@ async function uploadAvatar(file: File) {
 const avatarUrl = computed(() => {
   if (!user.data.username) return
   const apiUrl = useRuntimeConfig().public.apiUrl
-  const avatarUrl = `/api/users/${user.data.username}/avatar`
+  const avatarUrl = `/users/${user.data.username}/avatar`
   return apiUrl ? new URL(avatarUrl, apiUrl).href : avatarUrl
 })
 </script>

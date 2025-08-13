@@ -8,7 +8,7 @@ import { getUser } from '../utils'
 export function userResetPassword(this: ModuleUser) {
   return createHttpRoute(
     {
-      name: 'POST /api/users/:username/reset-password',
+      name: 'POST /users/:username/reset-password',
       parseParameters: createParser({
         username: assertStringEmail,
       }),

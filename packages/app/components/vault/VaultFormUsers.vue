@@ -12,7 +12,7 @@ const assignments = ref<Array<{ username: string; permissions: VaultPermission[]
 const showAssignDialog = ref(false)
 
 async function getAssignments() {
-  await client.requestAttempt('GET /api/workspaces/:workspace/vaults/:vault/assignments', {
+  await client.requestAttempt('GET /workspaces/:workspace/vaults/:vault/assignments', {
     data: {
       workspace: props.workspace,
       vault: props.vault,

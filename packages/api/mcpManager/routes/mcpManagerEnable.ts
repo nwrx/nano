@@ -8,7 +8,7 @@ import { getManager } from '../utils'
 export function mcpManagerEnable(this: ModuleMcpManager) {
   return createHttpRoute(
     {
-      name: 'POST /api/mcp/:identity/enable',
+      name: 'POST /mcp/:identity/enable',
       parseParameters: createParser({
         identity: assert.stringNotEmpty,
       }),

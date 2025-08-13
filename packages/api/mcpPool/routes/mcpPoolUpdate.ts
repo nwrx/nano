@@ -8,7 +8,7 @@ import { assertMcpPoolSpec } from '../utils/assertMcpPoolSpec'
 export function mcpPoolUpdate(this: ModuleMcpPool) {
   return createHttpRoute(
     {
-      name: 'PUT /api/workspaces/:workspace/pools/:pool',
+      name: 'PUT /workspaces/:workspace/pools/:pool',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         pool: assert.stringNotEmpty,

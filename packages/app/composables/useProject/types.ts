@@ -11,8 +11,8 @@ export namespace UseProject {
     workspace: string
   }
 
-  export type SearchOptions = RouteRequestQuery<typeof application, 'GET /api/workspaces/:workspace/projects'>
-  export type FetchOptions = RouteRequestQuery<typeof application, 'GET /api/workspaces/:workspace/projects/:project'>
-  export type CreateOptions = RouteRequestBody<typeof application, 'POST /api/workspaces/:workspace/projects'>
-  export type UpdateOptions = RouteRequestBody<typeof application, 'PUT /api/workspaces/:workspace/projects/:project'>
+  export type SearchOptions = RouteRequestQuery<typeof application, 'GET /workspaces/:workspace/projects'>
+  export type FetchOptions = RouteRequestQuery<typeof application, 'GET /workspaces/:workspace/projects/:project'>
+  export type CreateOptions = RouteRequestBody<typeof application, 'POST /workspaces/:workspace/projects'>
+  export type UpdateOptions = RouteRequestBody<typeof application, 'PUT /workspaces/:workspace/projects/:project'>
 }

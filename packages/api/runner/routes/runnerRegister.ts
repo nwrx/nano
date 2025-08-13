@@ -8,7 +8,7 @@ import { registerRunner } from '../utils/registerRunner'
 export function runnerRegister(this: ModuleRunner) {
   return createHttpRoute(
     {
-      name: 'POST /api/runners',
+      name: 'POST /runners',
       parseBody: createParser({
         address: assert.stringNotEmpty,
       }),

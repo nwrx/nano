@@ -299,108 +299,108 @@ The module supports various field types for flexible data modeling:
 The module provides RESTful API endpoints for object management:
 
 ### Schema Management
-- `GET /api/workspaces/:workspace/objects` - List objects with filtering and pagination
-- `POST /api/workspaces/:workspace/objects` - Create a new object schema
-- `GET /api/workspaces/:workspace/objects/:name` - Get object schema details
-- `PUT /api/workspaces/:workspace/objects/:name` - Update object schema
-- `DELETE /api/workspaces/:workspace/objects/:name` - Soft delete object schema
-- `POST /api/workspaces/:workspace/objects/:name/restore` - Restore soft-deleted object
+- `GET /workspaces/:workspace/objects` - List objects with filtering and pagination
+- `POST /workspaces/:workspace/objects` - Create a new object schema
+- `GET /workspaces/:workspace/objects/:name` - Get object schema details
+- `PUT /workspaces/:workspace/objects/:name` - Update object schema
+- `DELETE /workspaces/:workspace/objects/:name` - Soft delete object schema
+- `POST /workspaces/:workspace/objects/:name/restore` - Restore soft-deleted object
 
 ### Field Management
-- `GET /api/workspaces/:workspace/objects/:name/fields` - List object fields
-- `POST /api/workspaces/:workspace/objects/:name/fields` - Create a new field
-- `GET /api/workspaces/:workspace/objects/:name/fields/:fieldId` - Get field details
-- `PUT /api/workspaces/:workspace/objects/:name/fields/:fieldId` - Update field definition
-- `DELETE /api/workspaces/:workspace/objects/:name/fields/:fieldId` - Remove field
-- `POST /api/workspaces/:workspace/objects/:name/fields/:fieldId/validate` - Validate field configuration
+- `GET /workspaces/:workspace/objects/:name/fields` - List object fields
+- `POST /workspaces/:workspace/objects/:name/fields` - Create a new field
+- `GET /workspaces/:workspace/objects/:name/fields/:fieldId` - Get field details
+- `PUT /workspaces/:workspace/objects/:name/fields/:fieldId` - Update field definition
+- `DELETE /workspaces/:workspace/objects/:name/fields/:fieldId` - Remove field
+- `POST /workspaces/:workspace/objects/:name/fields/:fieldId/validate` - Validate field configuration
 
 ### Record Management
-- `GET /api/workspaces/:workspace/objects/:name/records` - List object records with filtering, sorting, and pagination
-- `POST /api/workspaces/:workspace/objects/:name/records` - Create a new object record
-- `GET /api/workspaces/:workspace/objects/:name/records/:id` - Get object record details
-- `PUT /api/workspaces/:workspace/objects/:name/records/:id` - Update object record
-- `PATCH /api/workspaces/:workspace/objects/:name/records/:id` - Partially update object record
-- `DELETE /api/workspaces/:workspace/objects/:name/records/:id` - Soft delete object record
-- `POST /api/workspaces/:workspace/objects/:name/records/:id/restore` - Restore soft-deleted record
+- `GET /workspaces/:workspace/objects/:name/records` - List object records with filtering, sorting, and pagination
+- `POST /workspaces/:workspace/objects/:name/records` - Create a new object record
+- `GET /workspaces/:workspace/objects/:name/records/:id` - Get object record details
+- `PUT /workspaces/:workspace/objects/:name/records/:id` - Update object record
+- `PATCH /workspaces/:workspace/objects/:name/records/:id` - Partially update object record
+- `DELETE /workspaces/:workspace/objects/:name/records/:id` - Soft delete object record
+- `POST /workspaces/:workspace/objects/:name/records/:id/restore` - Restore soft-deleted record
 
 ### Bulk Operations
-- `POST /api/workspaces/:workspace/objects/:name/records/bulk` - Bulk create records
-- `PUT /api/workspaces/:workspace/objects/:name/records/bulk` - Bulk update records
-- `DELETE /api/workspaces/:workspace/objects/:name/records/bulk` - Bulk delete records
-- `POST /api/workspaces/:workspace/objects/:name/records/bulk/restore` - Bulk restore records
+- `POST /workspaces/:workspace/objects/:name/records/bulk` - Bulk create records
+- `PUT /workspaces/:workspace/objects/:name/records/bulk` - Bulk update records
+- `DELETE /workspaces/:workspace/objects/:name/records/bulk` - Bulk delete records
+- `POST /workspaces/:workspace/objects/:name/records/bulk/restore` - Bulk restore records
 
 ### Data Operations
-- `POST /api/workspaces/:workspace/objects/:name/validate` - Validate object data against schema
-- `POST /api/workspaces/:workspace/objects/:name/records/:id/validate` - Validate specific record
-- `POST /api/workspaces/:workspace/objects/:name/import` - Import data from file (CSV, JSON, Excel)
-- `GET /api/workspaces/:workspace/objects/:name/export` - Export object data in various formats
-- `POST /api/workspaces/:workspace/objects/:name/transform` - Transform data according to field definitions
+- `POST /workspaces/:workspace/objects/:name/validate` - Validate object data against schema
+- `POST /workspaces/:workspace/objects/:name/records/:id/validate` - Validate specific record
+- `POST /workspaces/:workspace/objects/:name/import` - Import data from file (CSV, JSON, Excel)
+- `GET /workspaces/:workspace/objects/:name/export` - Export object data in various formats
+- `POST /workspaces/:workspace/objects/:name/transform` - Transform data according to field definitions
 
 ### Connection Management
-- `GET /api/workspaces/:workspace/objects/:name/connections` - List object connections
-- `POST /api/workspaces/:workspace/objects/:name/connections` - Create external data connection
-- `GET /api/workspaces/:workspace/objects/:name/connections/:connectionId` - Get connection details
-- `PUT /api/workspaces/:workspace/objects/:name/connections/:connectionId` - Update connection
-- `DELETE /api/workspaces/:workspace/objects/:name/connections/:connectionId` - Remove connection
-- `POST /api/workspaces/:workspace/objects/:name/connections/:connectionId/test` - Test connection
+- `GET /workspaces/:workspace/objects/:name/connections` - List object connections
+- `POST /workspaces/:workspace/objects/:name/connections` - Create external data connection
+- `GET /workspaces/:workspace/objects/:name/connections/:connectionId` - Get connection details
+- `PUT /workspaces/:workspace/objects/:name/connections/:connectionId` - Update connection
+- `DELETE /workspaces/:workspace/objects/:name/connections/:connectionId` - Remove connection
+- `POST /workspaces/:workspace/objects/:name/connections/:connectionId/test` - Test connection
 
 ### Connection Parameters
-- `GET /api/workspaces/:workspace/objects/:name/connections/:connectionId/parameters` - List connection parameters
-- `POST /api/workspaces/:workspace/objects/:name/connections/:connectionId/parameters` - Create connection parameter
-- `PUT /api/workspaces/:workspace/objects/:name/connections/:connectionId/parameters/:parameterId` - Update parameter
-- `DELETE /api/workspaces/:workspace/objects/:name/connections/:connectionId/parameters/:parameterId` - Remove parameter
+- `GET /workspaces/:workspace/objects/:name/connections/:connectionId/parameters` - List connection parameters
+- `POST /workspaces/:workspace/objects/:name/connections/:connectionId/parameters` - Create connection parameter
+- `PUT /workspaces/:workspace/objects/:name/connections/:connectionId/parameters/:parameterId` - Update parameter
+- `DELETE /workspaces/:workspace/objects/:name/connections/:connectionId/parameters/:parameterId` - Remove parameter
 
 ### Synchronization
-- `POST /api/workspaces/:workspace/objects/:name/sync/from` - Sync data from external source
-- `POST /api/workspaces/:workspace/objects/:name/sync/to` - Sync data to external source
-- `GET /api/workspaces/:workspace/objects/:name/sync/status` - Get synchronization status
-- `POST /api/workspaces/:workspace/objects/:name/sync/schedule` - Schedule automatic sync
-- `GET /api/workspaces/:workspace/objects/:name/sync/schema` - Get external source schema
-- `POST /api/workspaces/:workspace/objects/:name/sync/map` - Map external fields to object fields
+- `POST /workspaces/:workspace/objects/:name/sync/from` - Sync data from external source
+- `POST /workspaces/:workspace/objects/:name/sync/to` - Sync data to external source
+- `GET /workspaces/:workspace/objects/:name/sync/status` - Get synchronization status
+- `POST /workspaces/:workspace/objects/:name/sync/schedule` - Schedule automatic sync
+- `GET /workspaces/:workspace/objects/:name/sync/schema` - Get external source schema
+- `POST /workspaces/:workspace/objects/:name/sync/map` - Map external fields to object fields
 
 ### Permission Management
-- `GET /api/workspaces/:workspace/objects/:name/permissions/users` - List user permissions
-- `POST /api/workspaces/:workspace/objects/:name/permissions/users` - Assign user permissions
-- `PUT /api/workspaces/:workspace/objects/:name/permissions/users/:userId` - Update user permissions
-- `DELETE /api/workspaces/:workspace/objects/:name/permissions/users/:userId` - Remove user permissions
-- `GET /api/workspaces/:workspace/objects/:name/permissions/projects` - List project permissions
-- `POST /api/workspaces/:workspace/objects/:name/permissions/projects` - Assign project permissions
-- `PUT /api/workspaces/:workspace/objects/:name/permissions/projects/:projectId` - Update project permissions
-- `DELETE /api/workspaces/:workspace/objects/:name/permissions/projects/:projectId` - Remove project permissions
+- `GET /workspaces/:workspace/objects/:name/permissions/users` - List user permissions
+- `POST /workspaces/:workspace/objects/:name/permissions/users` - Assign user permissions
+- `PUT /workspaces/:workspace/objects/:name/permissions/users/:userId` - Update user permissions
+- `DELETE /workspaces/:workspace/objects/:name/permissions/users/:userId` - Remove user permissions
+- `GET /workspaces/:workspace/objects/:name/permissions/projects` - List project permissions
+- `POST /workspaces/:workspace/objects/:name/permissions/projects` - Assign project permissions
+- `PUT /workspaces/:workspace/objects/:name/permissions/projects/:projectId` - Update project permissions
+- `DELETE /workspaces/:workspace/objects/:name/permissions/projects/:projectId` - Remove project permissions
 
 ### Live Data Retrieval
-- `GET /api/workspaces/:workspace/objects/sse` - Get live data for all objects using Server-Sent Events
-- `GET /api/workspaces/:workspace/objects/:name/sse` - Get live data for specific object using SSE
-- `GET /api/workspaces/:workspace/objects/:name/records/sse` - Get live data for object records using SSE
-- `GET /api/workspaces/:workspace/objects/:name/records/:id/sse` - Get live data for specific record using SSE
+- `GET /workspaces/:workspace/objects/sse` - Get live data for all objects using Server-Sent Events
+- `GET /workspaces/:workspace/objects/:name/sse` - Get live data for specific object using SSE
+- `GET /workspaces/:workspace/objects/:name/records/sse` - Get live data for object records using SSE
+- `GET /workspaces/:workspace/objects/:name/records/:id/sse` - Get live data for specific record using SSE
 
 ### History and Audit
-- `GET /api/workspaces/:workspace/objects/history` - Get history of all object changes
-- `GET /api/workspaces/:workspace/objects/:name/history` - Get history of object schema changes
-- `GET /api/workspaces/:workspace/objects/:name/records/history` - Get history of all record changes
-- `GET /api/workspaces/:workspace/objects/:name/records/:id/history` - Get history of specific record changes
-- `GET /api/workspaces/:workspace/objects/:name/records/:id/values/:fieldId/history` - Get field value change history
+- `GET /workspaces/:workspace/objects/history` - Get history of all object changes
+- `GET /workspaces/:workspace/objects/:name/history` - Get history of object schema changes
+- `GET /workspaces/:workspace/objects/:name/records/history` - Get history of all record changes
+- `GET /workspaces/:workspace/objects/:name/records/:id/history` - Get history of specific record changes
+- `GET /workspaces/:workspace/objects/:name/records/:id/values/:fieldId/history` - Get field value change history
 
 ### Versioning
-- `GET /api/workspaces/:workspace/objects/:name/versions` - Get object schema version history
-- `POST /api/workspaces/:workspace/objects/:name/versions` - Create new schema version
-- `GET /api/workspaces/:workspace/objects/:name/versions/:version` - Get specific schema version
-- `POST /api/workspaces/:workspace/objects/:name/versions/:version/rollback` - Rollback to specific version
-- `GET /api/workspaces/:workspace/objects/:name/versions/compare` - Compare schema versions
+- `GET /workspaces/:workspace/objects/:name/versions` - Get object schema version history
+- `POST /workspaces/:workspace/objects/:name/versions` - Create new schema version
+- `GET /workspaces/:workspace/objects/:name/versions/:version` - Get specific schema version
+- `POST /workspaces/:workspace/objects/:name/versions/:version/rollback` - Rollback to specific version
+- `GET /workspaces/:workspace/objects/:name/versions/compare` - Compare schema versions
 
 ### Reference Resolution
-- `GET /api/workspaces/:workspace/objects/:name/records/:id/references` - Get all reference fields
-- `POST /api/workspaces/:workspace/objects/:name/records/:id/references/resolve` - Resolve reference fields
-- `POST /api/workspaces/:workspace/objects/:name/references/validate` - Validate reference integrity
+- `GET /workspaces/:workspace/objects/:name/records/:id/references` - Get all reference fields
+- `POST /workspaces/:workspace/objects/:name/records/:id/references/resolve` - Resolve reference fields
+- `POST /workspaces/:workspace/objects/:name/references/validate` - Validate reference integrity
 
 ### Reports and Analytics
-- `GET /api/workspaces/:workspace/objects/:name/reports` - Generate object usage reports
-- `GET /api/workspaces/:workspace/objects/:name/metrics` - Get object usage metrics
-- `GET /api/workspaces/:workspace/objects/:name/analytics` - Get object analytics data
+- `GET /workspaces/:workspace/objects/:name/reports` - Generate object usage reports
+- `GET /workspaces/:workspace/objects/:name/metrics` - Get object usage metrics
+- `GET /workspaces/:workspace/objects/:name/analytics` - Get object analytics data
 
 ### Search and Query
-- `GET /api/workspaces/:workspace/objects/search` - Search across all objects
-- `GET /api/workspaces/:workspace/objects/:name/search` - Search within specific object records
+- `GET /workspaces/:workspace/objects/search` - Search across all objects
+- `GET /workspaces/:workspace/objects/:name/search` - Search within specific object records
 
 ## Modules
 

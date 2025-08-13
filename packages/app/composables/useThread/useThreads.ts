@@ -85,7 +85,7 @@ export const useThreads = createCachedComposable((parameters: UseThread.UseSearc
       if (lock.isPending) return lock.promise
       lock.reset()
       await client.request(
-        'GET /api/workspaces/:workspace/projects/:project/flows/:flow/threads',
+        'GET /workspaces/:workspace/projects/:project/flows/:flow/threads',
         {
           parameters: { workspace, project, flow },
           query: { ...options.value },
@@ -97,7 +97,7 @@ export const useThreads = createCachedComposable((parameters: UseThread.UseSearc
 
     start: (thread: UseThread.CreateOptions) =>
       client.requestAttempt(
-        'POST /api/workspaces/:workspace/projects/:project/flows/:flow/threads',
+        'POST /workspaces/:workspace/projects/:project/flows/:flow/threads',
         {
           parameters: { workspace, project, flow },
           body: thread,
@@ -119,7 +119,7 @@ export const useThreads = createCachedComposable((parameters: UseThread.UseSearc
 
     fetchThread: async(id: UUID) => {
       await client.requestAttempt(
-        'GET /api/workspaces/:workspace/projects/:project/flows/:flow/threads/:thread',
+        'GET /workspaces/:workspace/projects/:project/flows/:flow/threads/:thread',
         {
           parameters: { workspace, project, flow, thread: id },
           query: { withSchema: true },
@@ -148,7 +148,7 @@ export const useThreads = createCachedComposable((parameters: UseThread.UseSearc
       else threads.value.push(DEFAULT_THREAD_OBJECT(id))
 
       await client.request(
-        'GET /api/workspaces/:workspace/projects/:project/flows/:flow/threads/:thread/events',
+        'GET /workspaces/:workspace/projects/:project/flows/:flow/threads/:thread/events',
         {
           parameters: { workspace, project, flow, thread: id },
           signal: controller.signal,

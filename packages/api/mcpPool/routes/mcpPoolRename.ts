@@ -8,7 +8,7 @@ import { renameMcpPool } from '../utils'
 export function mcpPoolRename(this: ModuleMcpPool) {
   return createHttpRoute(
     {
-      name: 'PUT /api/workspaces/:workspace/pools/:pool/name',
+      name: 'PUT /workspaces/:workspace/pools/:pool/name',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         pool: assert.stringNotEmpty,

@@ -1,7 +1,7 @@
 import type { Context } from '../../__fixtures__'
 import { createTestContext } from '../../__fixtures__'
 
-describe.concurrent('POST /api/users/:username/enable', () => {
+describe.concurrent('POST /users/:username/enable', () => {
   beforeEach<Context>(async(context) => {
     await createTestContext(context)
     await context.application.createTestServer()
@@ -15,7 +15,7 @@ describe.concurrent('POST /api/users/:username/enable', () => {
     it('should enable the user in the database', async({ setupUser, moduleUser, application }) => {
       const { headers } = await setupUser({ isSuperAdministrator: true })
       const { user } = await setupUser({ disabledAt: new Date() })
-      const response = await application.fetch(`/api/users/${user.username}/enable`, { method: 'POST', headers })
+      const response = await application.fetch(`/users/${user.username}/enable`, { method: 'POST', headers })
       expect(response).toMatchObject({ status: 204, statusText: 'No Content' })
 
       // Check database
@@ -27,7 +27,7 @@ describe.concurrent('POST /api/users/:username/enable', () => {
     it('should fail with a USER_ALREADY_ENABLED error if the user is already enabled', async({ setupUser, application }) => {
       const { headers } = await setupUser({ isSuperAdministrator: true })
       const { user } = await setupUser()
-      const response = await application.fetch(`/api/users/${user.username}/enable`, { method: 'POST', headers })
+      const response = await application.fetch(`/users/${user.username}/enable`, { method: 'POST', headers })
       const data = await response.json() as Record<string, string>
       expect(response).toMatchObject({ status: 409, statusText: 'Conflict' })
       expect(data).toMatchObject({ data: { name: 'E_USER_ALREADY_ENABLED' } })
@@ -38,7 +38,7 @@ describe.concurrent('POST /api/users/:username/enable', () => {
     it('should respond with a USER_FORBIDDEN error', async({ setupUser, moduleUser, application }) => {
       const { headers } = await setupUser()
       const { user } = await setupUser({ disabledAt: new Date() })
-      const response = await application.fetch(`/api/users/${user.username}/enable`, { method: 'POST', headers })
+      const response = await application.fetch(`/users/${user.username}/enable`, { method: 'POST', headers })
       const data = await response.json() as Record<string, string>
       expect(response).toMatchObject({ status: 403, statusText: 'Forbidden' })
       expect(data).toMatchObject({ data: { name: 'E_USER_FORBIDDEN' } })
@@ -53,7 +53,7 @@ describe.concurrent('POST /api/users/:username/enable', () => {
   describe<Context>('with unauthenticated user', (it) => {
     it('should not enable the user in the database', async({ setupUser, moduleUser, application }) => {
       const { user } = await setupUser({ disabledAt: new Date() })
-      const response = await application.fetch(`/api/users/${user.username}/enable`, { method: 'POST' })
+      const response = await application.fetch(`/users/${user.username}/enable`, { method: 'POST' })
       const data = await response.json() as Record<string, string>
       expect(response).toMatchObject({ status: 401, statusText: 'Unauthorized' })
       expect(data).toMatchObject({ data: { name: 'E_USER_UNAUTHORIZED' } })

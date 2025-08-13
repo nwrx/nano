@@ -20,7 +20,7 @@ const confirmIdentity = ref('')
 
 // --- Submit.
 async function removeGateway() {
-  await client.request('DELETE /api/mcp/:manager/gateways/:gateway', {
+  await client.request('DELETE /mcp/:manager/gateways/:gateway', {
     data: {
       manager: props.manager,
       gateway: props.gateway.identity,

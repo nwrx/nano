@@ -9,7 +9,7 @@ import { getVault, updateVaultProjectPermissions } from '../utils'
 export function vaultProjectUnassign(this: ModuleVault) {
   return createHttpRoute(
     {
-      name: 'DELETE /api/workspaces/:workspace/vaults/:vault/projects/:project',
+      name: 'DELETE /workspaces/:workspace/vaults/:vault/projects/:project',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         vault: assert.stringNotEmpty,

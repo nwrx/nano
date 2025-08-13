@@ -14,7 +14,7 @@ const data = ref<ProjectObject>({} as ProjectObject)
 // --- If `load` is true, load the user profile data from the API
 watch(props, async() => {
   if (!props.load || !props.workspace || !props.project) return
-  await client.requestAttempt('GET /api/workspaces/:workspace/projects/:project', {
+  await client.requestAttempt('GET /workspaces/:workspace/projects/:project', {
     data: {
       workspace: props.workspace,
       project: props.project,

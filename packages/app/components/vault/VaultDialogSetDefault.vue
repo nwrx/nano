@@ -15,7 +15,7 @@ const alerts = useAlerts()
 const isOpen = defineModel({ default: false })
 
 async function setDefaultVault() {
-  await client.requestAttempt('PUT /api/workspaces/:workspace/vaults/:vault/default', {
+  await client.requestAttempt('PUT /workspaces/:workspace/vaults/:vault/default', {
     data: {
       workspace: props.workspace,
       vault: props.vault,

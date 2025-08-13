@@ -10,7 +10,7 @@ import { createFlow, getRandomName } from '../utils'
 export function flowCreate(this: ModuleFlow) {
   return createHttpRoute(
     {
-      name: 'POST /api/workspaces/:workspace/projects/:project/flows',
+      name: 'POST /workspaces/:workspace/projects/:project/flows',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         project: assert.stringNotEmpty,

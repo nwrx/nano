@@ -7,7 +7,7 @@ import { ModuleWorkspace } from '../../workspace'
 export function mcpPoolRemove(this: ModuleMcpPool) {
   return createHttpRoute(
     {
-      name: 'DELETE /api/workspaces/:workspace/pools/:pool',
+      name: 'DELETE /workspaces/:workspace/pools/:pool',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         pool: assert.stringNotEmpty,

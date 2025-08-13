@@ -12,7 +12,7 @@ watch(() => isOpen.value, () => confirm.value = '')
 const client = useClient()
 const alerts = useAlerts()
 async function deleteUser() {
-  await client.requestAttempt('DELETE /api/users/:username', {
+  await client.requestAttempt('DELETE /users/:username', {
     data: {
       username: props.user.username,
     },

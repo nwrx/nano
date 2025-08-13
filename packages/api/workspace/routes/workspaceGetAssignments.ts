@@ -8,7 +8,7 @@ import { getWorkspace, getWorkspaceAssignments } from '../utils'
 export function workspaceGetAssignments(this: ModuleWorkspace) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/assignments',
+      name: 'GET /workspaces/:workspace/assignments',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
       }),

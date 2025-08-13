@@ -9,7 +9,7 @@ import { getRunner, getRunnerClient } from '../utils'
 export function runnerStatus(this: ModuleRunner) {
   return createHttpRoute(
     {
-      name: 'GET /api/runners/:name/status',
+      name: 'GET /runners/:name/status',
       parseParameters: createParser({
         name: assert.stringNotEmpty,
       }),

@@ -6,7 +6,7 @@ import { searchIcons } from '../utils'
 export function iconSearch(this: ModuleIcon) {
   return createHttpRoute(
     {
-      name: 'GET /api/icons',
+      name: 'GET /icons',
       parseQuery: createParser({
         search: [[assert.undefined], [assert.stringNotEmpty]],
         page: [[assert.undefined], [assert.stringNumber, Number.parseInt]],

@@ -7,7 +7,7 @@ import { getManager } from '../utils'
 export function mcpManagerDisable(this: ModuleMcpManager) {
   return createHttpRoute(
     {
-      name: 'POST /api/mcp/:identity/disable',
+      name: 'POST /mcp/:identity/disable',
       parseParameters: createParser({
         identity: assert.stringNotEmpty,
       }),

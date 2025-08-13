@@ -13,7 +13,7 @@ const address = ref('')
 
 // --- Submit.
 async function registerManager() {
-  await client.requestAttempt('POST /api/mcp', {
+  await client.requestAttempt('POST /mcp', {
     data: {
       address: address.value,
     },

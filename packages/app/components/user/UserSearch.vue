@@ -16,7 +16,7 @@ const placeholder = computed(() => (props.multiple ? t('hintMultiple') : t('hint
 
 // --- Methods.
 async function searchUsers() {
-  await client.requestAttempt('GET /api/users', {
+  await client.requestAttempt('GET /users', {
     query: {
       search: search.value,
       withProfile: true,
@@ -29,7 +29,7 @@ async function searchUsers() {
 
 function getUserAvatarUrl(username: string) {
   const apiUrl = useRuntimeConfig().public.apiUrl
-  const avatarUrl = `/api/users/${username}/avatar`
+  const avatarUrl = `/users/${username}/avatar`
   return apiUrl ? new URL(avatarUrl, apiUrl).href : avatarUrl
 }
 

@@ -9,7 +9,7 @@ import { searchManager } from '../utils'
 export function mcpManagerSearch(this: ModuleMcpManager) {
   return createHttpRoute(
     {
-      name: 'GET /api/mcp',
+      name: 'GET /mcp',
       parseQuery: createParser({
         search: [[assert.undefined], [assert.stringNotEmpty]],
         page: [[assert.undefined], [assert.stringNotEmpty, assert.number]],

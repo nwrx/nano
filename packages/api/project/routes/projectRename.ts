@@ -8,7 +8,7 @@ import { getProject, renameProject } from '../utils'
 export function projectRename(this: ModuleProject) {
   return createHttpRoute(
     {
-      name: 'PUT /api/workspaces/:workspace/projects/:project/name',
+      name: 'PUT /workspaces/:workspace/projects/:project/name',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         project: assert.stringNotEmpty,

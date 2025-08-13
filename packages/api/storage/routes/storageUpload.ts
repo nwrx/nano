@@ -7,7 +7,7 @@ import { upload } from '../utils'
 export function storageUpload(this: ModuleStorage) {
   return createHttpRoute(
     {
-      name: 'POST /api/storage',
+      name: 'POST /storage',
       parseFormData: createParser({
         file: assert.instanceOf(File),
       }),

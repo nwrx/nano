@@ -11,7 +11,7 @@ import { getRandomName } from '../utils'
 export function flowImport(this: ModuleFlow) {
   return createHttpRoute(
     {
-      name: 'POST /api/workspaces/:workspace/projects/:project/import',
+      name: 'POST /workspaces/:workspace/projects/:project/import',
       parseParameters: createParser({
         workspace: assertStringNotEmpty,
         project: assertStringNotEmpty,

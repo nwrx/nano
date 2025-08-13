@@ -7,7 +7,7 @@ import { ILike } from 'typeorm'
 export function userSearch(this: ModuleUser) {
   return createHttpRoute(
     {
-      name: 'GET /api/users',
+      name: 'GET /users',
       parseQuery: createParser({
         search: [[assertUndefined], [assertString]],
         page: [[assertUndefined], [assertStringNumber, Number.parseInt, assertNumberPositiveStrict]],

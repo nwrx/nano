@@ -19,7 +19,7 @@ const value = ref('')
 // --- Methods.
 async function updateVariable() {
   await client.requestAttempt(
-    'PUT /api/workspaces/:workspace/vaults/:vault/variables/:variable',
+    'PUT /workspaces/:workspace/vaults/:vault/variables/:variable',
     {
       data: {
         workspace: props.workspace,

@@ -9,7 +9,7 @@ import { createProject } from '../utils'
 export function projectCreate(this: ModuleProject) {
   return createHttpRoute(
     {
-      name: 'POST /api/workspaces/:workspace/projects',
+      name: 'POST /workspaces/:workspace/projects',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
       }),

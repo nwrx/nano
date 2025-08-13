@@ -9,7 +9,7 @@ import { getProject, getProjectAssignments } from '../utils'
 export function projectGetAssignments(this: ModuleProject) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/projects/:project/assignments',
+      name: 'GET /workspaces/:workspace/projects/:project/assignments',
       parseParameters: createParser({
         project: assert.stringNotEmpty,
         workspace: assert.stringNotEmpty,

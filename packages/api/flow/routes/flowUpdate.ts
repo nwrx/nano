@@ -9,7 +9,7 @@ import { getFlow, updateFlow } from '../utils'
 export function flowUpdate(this: ModuleFlow) {
   return createHttpRoute(
     {
-      name: 'PUT /api/workspaces/:workspace/projects/:project/flows/:flow',
+      name: 'PUT /workspaces/:workspace/projects/:project/flows/:flow',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         project: assert.stringNotEmpty,

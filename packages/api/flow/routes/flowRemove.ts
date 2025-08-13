@@ -9,7 +9,7 @@ import { getFlow, removeFlow } from '../utils'
 export function flowRemove(this: ModuleFlow) {
   return createHttpRoute(
     {
-      name: 'DELETE /api/workspaces/:workspace/projects/:project/flows/:flow',
+      name: 'DELETE /workspaces/:workspace/projects/:project/flows/:flow',
       parseParameters: createParser({
         workspace: assertStringNotEmpty,
         project: assertStringNotEmpty,

@@ -9,7 +9,7 @@ import { getWorkspace } from '../utils'
 export function workspaceGet(this: ModuleWorkspace) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace',
+      name: 'GET /workspaces/:workspace',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
       }),

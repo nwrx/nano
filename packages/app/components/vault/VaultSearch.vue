@@ -12,7 +12,7 @@ const model = defineModel<string>()
 const vaults = ref([]) as Ref<VaultObject[]>
 
 async function searchVaults() {
-  await client.requestAttempt('GET /api/workspaces/:workspace/vaults', {
+  await client.requestAttempt('GET /workspaces/:workspace/vaults', {
     data: {
       search: search.value,
       workspace: props.workspace,

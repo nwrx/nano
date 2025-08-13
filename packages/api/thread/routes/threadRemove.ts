@@ -10,7 +10,7 @@ import { getThread, removeThread } from '../utils'
 export function threadRemove(this: ModuleThread) {
   return createHttpRoute(
     {
-      name: 'DELETE /api/workspaces/:workspace/projects/:project/flows/:flow/threads/:thread',
+      name: 'DELETE /workspaces/:workspace/projects/:project/flows/:flow/threads/:thread',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         project: assert.stringNotEmpty,

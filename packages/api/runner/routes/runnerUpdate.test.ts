@@ -2,7 +2,7 @@
 import type { Context } from '../../__fixtures__'
 import { createTestContext } from '../../__fixtures__'
 
-describe<Context>('PUT /api/runners/:identity', () => {
+describe<Context>('PUT /runners/:identity', () => {
   beforeEach<Context>(async(context) => {
     await createTestContext(context)
     await context.application.createTestServer()
@@ -27,13 +27,13 @@ describe<Context>('PUT /api/runners/:identity', () => {
 
       // Claim a runner first.
       const createBody = JSON.stringify({ address: 'http://localhost:3000' })
-      await application.fetch('/api/runners', { method: 'POST', body: createBody, headers })
+      await application.fetch('/runners', { method: 'POST', body: createBody, headers })
       const { Runner } = moduleRunner.getRepositories()
       const { identity } = await Runner.findOneByOrFail({})
 
       // Update the runner address.
       const updateBody = JSON.stringify({ address: 'http://localhost:4000' })
-      const response = await application.fetch(`/api/runners/${identity}`, { method: 'PUT', body: updateBody, headers })
+      const response = await application.fetch(`/runners/${identity}`, { method: 'PUT', body: updateBody, headers })
       const data = await response.json()
       expect(response).toMatchObject({ status: 200, statusText: 'OK' })
       expect(data).toMatchObject({
@@ -53,34 +53,34 @@ describe<Context>('PUT /api/runners/:identity', () => {
     it('should fail with status 404 when runner is not found', async({ application, setupUser }) => {
       const { headers } = await setupUser({ isSuperAdministrator: true })
       const body = JSON.stringify({ address: 'http://localhost:4000' })
-      const response = await application.fetch('/api/runners/non-existent-identity', { method: 'PUT', body, headers })
+      const response = await application.fetch('/runners/non-existent-identity', { method: 'PUT', body, headers })
       expect(response).toMatchObject({ status: 404, statusText: 'Not Found' })
     })
 
     it('should fail with status 403 when user is not a super administrator', async({ application, setupUser }) => {
       const { headers } = await setupUser({ isSuperAdministrator: false })
       const body = JSON.stringify({ address: 'http://localhost:4000' })
-      const response = await application.fetch('/api/runners/some-identity', { method: 'PUT', body, headers })
+      const response = await application.fetch('/runners/some-identity', { method: 'PUT', body, headers })
       expect(response).toMatchObject({ status: 403, statusText: 'Forbidden' })
     })
 
     it('should fail with status 401 when user is not authenticated', async({ application }) => {
       const body = JSON.stringify({ address: 'http://localhost:4000' })
-      const response = await application.fetch('/api/runners/some-identity', { method: 'PUT', body })
+      const response = await application.fetch('/runners/some-identity', { method: 'PUT', body })
       expect(response).toMatchObject({ status: 401, statusText: 'Unauthorized' })
     })
 
     it('should fail with status 400 when address is missing', async({ application, setupUser }) => {
       const { headers } = await setupUser({ isSuperAdministrator: true })
       const body = JSON.stringify({})
-      const response = await application.fetch('/api/runners/some-identity', { method: 'PUT', body, headers })
+      const response = await application.fetch('/runners/some-identity', { method: 'PUT', body, headers })
       expect(response).toMatchObject({ status: 400, statusText: 'Validation Error' })
     })
 
     it('should fail with status 400 when address is empty', async({ application, setupUser }) => {
       const { headers } = await setupUser({ isSuperAdministrator: true })
       const body = JSON.stringify({ address: '' })
-      const response = await application.fetch('/api/runners/some-identity', { method: 'PUT', body, headers })
+      const response = await application.fetch('/runners/some-identity', { method: 'PUT', body, headers })
       expect(response).toMatchObject({ status: 400, statusText: 'Validation Error' })
     })
   })

@@ -12,7 +12,7 @@ import { searchArguments } from '../utils'
 export function mcpServerArgumentSearch(this: ModuleMcpServerArgument) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/pools/:pool/servers/:server/arguments',
+      name: 'GET /workspaces/:workspace/pools/:pool/servers/:server/arguments',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         pool: assert.stringNotEmpty,

@@ -97,32 +97,32 @@ export class McpManagerClient {
   /***************************************************************************/
 
   async getPool(name: string): Promise<NmcpManager.Pool> {
-    return await this.client.request('GET /api/v1/pools/{name}', {
+    return await this.client.request('GET /v1/pools/{name}', {
       parameters: { name },
     }) as Promise<NmcpManager.Pool>
   }
 
   async createPool(options?: NmcpManager.CreatePoolOptions): Promise<NmcpManager.Pool> {
-    return await this.client.request('POST /api/v1/pools', {
+    return await this.client.request('POST /v1/pools', {
       body: options,
     })
   }
 
   async updatePool(name: string, options?: NmcpManager.PatchPoolOptions): Promise<NmcpManager.PatchPoolResult> {
-    return await this.client.request('PUT /api/v1/pools/{name}', {
+    return await this.client.request('PUT /v1/pools/{name}', {
       parameters: { name },
       body: options,
     }) as Promise<NmcpManager.PatchPoolResult>
   }
 
   async deletePool(name: string): Promise<void> {
-    await this.client.request('DELETE /api/v1/pools/{name}', {
+    await this.client.request('DELETE /v1/pools/{name}', {
       parameters: { name },
     })
   }
 
   async poolExists(name: string): Promise<boolean> {
-    const response = await this.client.fetch('GET /api/v1/pools/{name}', { parameters: { name } })
+    const response = await this.client.fetch('GET /v1/pools/{name}', { parameters: { name } })
     return response.status === 200
   }
 
@@ -131,7 +131,7 @@ export class McpManagerClient {
   /***************************************************************************/
 
   async getServer(name: string): Promise<NmcpManager.Server> {
-    return await this.client.request('GET /api/v1/servers/{name}', {
+    return await this.client.request('GET /v1/servers/{name}', {
       parameters: { name },
     }).catch((error: Error) => {
       if (error.message === 'fetch failed') {
@@ -144,26 +144,26 @@ export class McpManagerClient {
   }
 
   async createServer(options?: NmcpManager.CreateServerOptions): Promise<NmcpManager.Server> {
-    return await this.client.request('POST /api/v1/servers', {
+    return await this.client.request('POST /v1/servers', {
       body: options,
     })
   }
 
   async updateServer(name: string, options?: NmcpManager.UpdateServerOptions): Promise<NmcpManager.Server> {
-    return await this.client.request('PUT /api/v1/servers/{name}', {
+    return await this.client.request('PUT /v1/servers/{name}', {
       parameters: { name },
       body: options,
     }) as Promise<NmcpManager.Server>
   }
 
   async deleteServer(name: string): Promise<void> {
-    await this.client.request('DELETE /api/v1/servers/{name}', {
+    await this.client.request('DELETE /v1/servers/{name}', {
       parameters: { name },
     })
   }
 
   async serverExists(name: string): Promise<boolean> {
-    const response = await this.client.fetch('GET /api/v1/servers/{name}', { parameters: { name } })
+    const response = await this.client.fetch('GET /v1/servers/{name}', { parameters: { name } })
     return response.status === 200
   }
 }

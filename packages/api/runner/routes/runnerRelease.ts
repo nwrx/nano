@@ -7,7 +7,7 @@ import { getRunner, releaseRunner } from '../utils'
 export function runnerRelease(this: ModuleRunner) {
   return createHttpRoute(
     {
-      name: 'DELETE /api/runners/:name',
+      name: 'DELETE /runners/:name',
       parseParameters: createParser({
         name: assert.stringNotEmpty,
       }),

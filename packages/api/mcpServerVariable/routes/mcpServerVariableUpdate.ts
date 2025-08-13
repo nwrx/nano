@@ -12,7 +12,7 @@ import { getServerVariable } from '../utils'
 export function mcpServerVariableUpdate(this: ModuleMcpServerVariable) {
   return createHttpRoute(
     {
-      name: 'PUT /api/workspaces/:workspace/pools/:pool/servers/:server/variables/:name',
+      name: 'PUT /workspaces/:workspace/pools/:pool/servers/:server/variables/:name',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         pool: assert.stringNotEmpty,

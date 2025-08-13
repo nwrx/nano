@@ -22,7 +22,7 @@ export const useProject = createCachedComposable(
         if (lock.isPending) return lock.promise
         lock.reset()
         await client.requestAttempt(
-          'GET /api/workspaces/:workspace/projects/:project',
+          'GET /workspaces/:workspace/projects/:project',
           {
             parameters: { workspace, project },
             onData: project => data.value = project,
@@ -33,7 +33,7 @@ export const useProject = createCachedComposable(
 
       updateProject: async(options: UseProject.UpdateOptions) => {
         await client.requestAttempt(
-          'PUT /api/workspaces/:workspace/projects/:project',
+          'PUT /workspaces/:workspace/projects/:project',
           {
             parameters: { workspace, project },
             body: { ...options },
@@ -52,7 +52,7 @@ export const useProject = createCachedComposable(
 
       renameProject: async(name: string) => {
         await client.requestAttempt(
-          'PUT /api/workspaces/:workspace/projects/:project/name',
+          'PUT /workspaces/:workspace/projects/:project/name',
           {
             parameters: { workspace, project },
             body: { name },
@@ -72,7 +72,7 @@ export const useProject = createCachedComposable(
 
       removeProject: async() => {
         await client.requestAttempt(
-          'DELETE /api/workspaces/:workspace/projects/:project',
+          'DELETE /workspaces/:workspace/projects/:project',
           {
             parameters: { workspace, project },
             onSuccess: () => {
@@ -92,7 +92,7 @@ export const useProject = createCachedComposable(
         subscribers.value++
         if (subscribers.value > 1) return
         void client.requestAttempt(
-          'GET /api/workspaces/:workspace/projects/:project/events',
+          'GET /workspaces/:workspace/projects/:project/events',
           {
             signal: abortController.signal,
             parameters: { workspace, project },

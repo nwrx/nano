@@ -11,7 +11,7 @@ import { createArgument } from '../utils'
 export function mcpServerArgumentCreate(this: ModuleMcpServerArgument) {
   return createHttpRoute(
     {
-      name: 'POST /api/workspaces/:workspace/pools/:pool/servers/:server/arguments',
+      name: 'POST /workspaces/:workspace/pools/:pool/servers/:server/arguments',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         pool: assert.stringNotEmpty,

@@ -8,7 +8,7 @@ import { getCollection } from '../utils'
 export function iconCollectionEnable(this: ModuleIconCollection) {
   return createHttpRoute(
     {
-      name: 'POST /api/icons/collections/:name/enable',
+      name: 'POST /icons/collections/:name/enable',
       parseParameters: createParser({
         name: [assert.stringNotEmpty],
       }),

@@ -11,7 +11,7 @@ import { getFlow } from '../utils'
 export function flowGet(this: ModuleFlow) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/projects/:project/flows/:flow',
+      name: 'GET /workspaces/:workspace/projects/:project/flows/:flow',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         project: assert.stringNotEmpty,

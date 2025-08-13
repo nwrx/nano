@@ -19,7 +19,7 @@ watch(isOpen, () => newUsername.value = user.data.username, { immediate: true })
 // --- Methods.
 async function changeUsername() {
   if (!newUsername.value) return
-  await client.requestAttempt('PUT /api/users/:username', {
+  await client.requestAttempt('PUT /users/:username', {
     parameters: { username: user.data.username },
     body: { newUsername: newUsername.value },
     onSuccess: () => {

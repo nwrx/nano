@@ -31,7 +31,7 @@ export function createIconCollectionClient(parameters: UseIconCollectionOptions)
     if (fetchLock.isPending) return fetchLock.promise
     fetchLock.reset()
     await client.requestAttempt(
-      'GET /api/icons/collections/:name',
+      'GET /icons/collections/:name',
       {
         parameters: { name },
         query: { ...options.value },
@@ -45,7 +45,7 @@ export function createIconCollectionClient(parameters: UseIconCollectionOptions)
 
   async function installCollection() {
     await client.requestAttempt(
-      'POST /api/icons/collections/:name',
+      'POST /icons/collections/:name',
       {
         parameters: { name },
         onSuccess: () => {
@@ -64,7 +64,7 @@ export function createIconCollectionClient(parameters: UseIconCollectionOptions)
 
   async function uninstallCollection() {
     await client.requestAttempt(
-      'DELETE /api/icons/collections/:name',
+      'DELETE /icons/collections/:name',
       {
         parameters: { name },
         onSuccess: () => {
@@ -82,7 +82,7 @@ export function createIconCollectionClient(parameters: UseIconCollectionOptions)
 
   async function enableCollection() {
     await client.requestAttempt(
-      'POST /api/icons/collections/:name/enable',
+      'POST /icons/collections/:name/enable',
       {
         parameters: { name },
         onSuccess: () => {
@@ -100,7 +100,7 @@ export function createIconCollectionClient(parameters: UseIconCollectionOptions)
 
   async function disableCollection() {
     await client.requestAttempt(
-      'POST /api/icons/collections/:name/disable',
+      'POST /icons/collections/:name/disable',
       {
         parameters: { name },
         onSuccess: () => {

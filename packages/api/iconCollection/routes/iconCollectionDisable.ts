@@ -7,7 +7,7 @@ import { getCollection } from '../utils'
 export function iconCollectionDisable(this: ModuleIconCollection) {
   return createHttpRoute(
     {
-      name: 'POST /api/icons/collections/:name/disable',
+      name: 'POST /icons/collections/:name/disable',
       parseParameters: createParser({
         name: [assert.stringNotEmpty],
       }),

@@ -42,7 +42,7 @@ export const useFlow = createCachedComposable(
         if (lock.isPending) return lock.promise
         lock.reset()
         await client.requestAttempt(
-          'GET /api/workspaces/:workspace/projects/:project/flows/:flow',
+          'GET /workspaces/:workspace/projects/:project/flows/:flow',
           {
             parameters: { workspace, project, flow: name },
             onData: flow => data.value = flow,
@@ -53,7 +53,7 @@ export const useFlow = createCachedComposable(
 
       fetchSchema: async() => {
         await client.requestAttempt(
-          'GET /api/workspaces/:workspace/projects/:project/flows/:flow/schema',
+          'GET /workspaces/:workspace/projects/:project/flows/:flow/schema',
           {
             parameters: { workspace, project, flow: name },
             onData: flowSchema => schema.value = flowSchema,
@@ -63,7 +63,7 @@ export const useFlow = createCachedComposable(
 
       updateFlow: async(options: Partial<FlowObject>) => {
         await client.requestAttempt(
-          'PUT /api/workspaces/:workspace/projects/:project/flows/:flow',
+          'PUT /workspaces/:workspace/projects/:project/flows/:flow',
           {
             parameters: { workspace, project, flow: name },
             body: options,
@@ -83,7 +83,7 @@ export const useFlow = createCachedComposable(
 
       renameFlow: async(rename: string) => {
         await client.requestAttempt(
-          'PUT /api/workspaces/:workspace/projects/:project/flows/:flow/name',
+          'PUT /workspaces/:workspace/projects/:project/flows/:flow/name',
           {
             parameters: { workspace, project, flow: name },
             body: { name: rename },
@@ -102,7 +102,7 @@ export const useFlow = createCachedComposable(
 
       removeFlow: async() => {
         await client.requestAttempt(
-          'DELETE /api/workspaces/:workspace/projects/:project/flows/:flow',
+          'DELETE /workspaces/:workspace/projects/:project/flows/:flow',
           {
             parameters: { workspace, project, flow: name },
             onSuccess: () => {
@@ -120,7 +120,7 @@ export const useFlow = createCachedComposable(
 
       duplicateFlow: async(newName: string) => {
         await client.requestAttempt(
-          'POST /api/workspaces/:workspace/projects/:project/flows/:flow/duplicate',
+          'POST /workspaces/:workspace/projects/:project/flows/:flow/duplicate',
           {
             parameters: { workspace, project, flow: name },
             body: { name: newName },
@@ -141,7 +141,7 @@ export const useFlow = createCachedComposable(
         subscribers.value++
         if (subscribers.value > 1) return
         void client.requestAttempt(
-          'GET /api/workspaces/:workspace/projects/:project/flows/:flow/events',
+          'GET /workspaces/:workspace/projects/:project/flows/:flow/events',
           {
             signal: abortController.signal,
             parameters: { workspace, project, flow: name },

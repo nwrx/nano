@@ -8,7 +8,7 @@ import { assertVaultPermission, getVault, updateVaultUserPermissions } from '../
 export function vaultUserAssign(this: ModuleVault) {
   return createHttpRoute(
     {
-      name: 'PUT /api/workspaces/:workspace/vaults/:vault/assignments/:username',
+      name: 'PUT /workspaces/:workspace/vaults/:vault/assignments/:username',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         vault: assert.stringNotEmpty,

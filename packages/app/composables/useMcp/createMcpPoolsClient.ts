@@ -13,7 +13,7 @@ export function createMcpPoolsClient(parameters: CreateMcpPoolsClientOptions) {
 
   const fetchPools = async() => {
     await client.requestAttempt(
-      'GET /api/workspaces/:workspace/pools',
+      'GET /workspaces/:workspace/pools',
       {
         parameters: { workspace },
         query: { ...options.value },
@@ -24,7 +24,7 @@ export function createMcpPoolsClient(parameters: CreateMcpPoolsClientOptions) {
 
   const createPool = async(name: string) => {
     await client.requestAttempt(
-      'POST /api/workspaces/:workspace/pools',
+      'POST /workspaces/:workspace/pools',
       {
         parameters: { workspace },
         data: { name },

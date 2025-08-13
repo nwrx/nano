@@ -9,7 +9,7 @@ import { ModuleMcpServerVariable } from '..'
 export function mcpServerVariableRemove(this: ModuleMcpServerVariable) {
   return createHttpRoute(
     {
-      name: 'DELETE /api/workspaces/:workspace/pools/:pool/servers/:server/variables/:variable',
+      name: 'DELETE /workspaces/:workspace/pools/:pool/servers/:server/variables/:variable',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         pool: assert.stringNotEmpty,

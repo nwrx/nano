@@ -17,7 +17,7 @@ const client = useClient()
 const alerts = useAlerts()
 
 async function unassignUser() {
-  await client.requestAttempt('DELETE /api/workspaces/:workspace/assignments/:username', {
+  await client.requestAttempt('DELETE /workspaces/:workspace/assignments/:username', {
     data: {
       workspace: props.workspace,
       username: props.username,

@@ -16,7 +16,7 @@ const data = ref<VaultObject>({} as VaultObject)
 
 // --- Methods.
 async function getVault() {
-  await client.requestAttempt('GET /api/workspaces/:workspace/vaults/:vault', {
+  await client.requestAttempt('GET /workspaces/:workspace/vaults/:vault', {
     data: {
       workspace: props.workspace,
       vault: props.vault,

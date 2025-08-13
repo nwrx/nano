@@ -13,7 +13,7 @@ const address = ref('')
 
 // --- Submit.
 async function addGateway() {
-  await client.requestAttempt('POST /api/mcp/:identity/gateways', {
+  await client.requestAttempt('POST /mcp/:identity/gateways', {
     data: {
       identity: props.manager.identity,
       address: address.value,

@@ -15,7 +15,7 @@ const gateway = ref<McpGatewayObject>()
 
 // --- Fetch.
 async function getGateway() {
-  await client.request('GET /api/mcp/:_manager/gateways/:identity', {
+  await client.request('GET /mcp/:_manager/gateways/:identity', {
     parameters: {
       _manager: props.manager,
       identity: props.identity,

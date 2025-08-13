@@ -11,7 +11,7 @@ import { getMcpServer, getMcpServerClient } from '../utils'
 export function mcpServerGetStatus(this: ModuleMcpServer) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/pools/:pool/servers/:server/status',
+      name: 'GET /workspaces/:workspace/pools/:pool/servers/:server/status',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         pool: assert.stringNotEmpty,

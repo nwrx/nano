@@ -24,7 +24,7 @@ import { ModuleWorkspace } from './workspace'
 
 class ModuleHealth extends ModuleBase {
   routes = {
-    getHealth: createHttpRoute({ name: 'GET /api/health' }, (() => ({
+    getHealth: createHttpRoute({ name: 'GET /health' }, (() => ({
       ok: true,
       modules: this.getApplication().modules.map(module => module.constructor.name),
     }))),

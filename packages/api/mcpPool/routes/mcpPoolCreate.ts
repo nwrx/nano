@@ -9,7 +9,7 @@ import { createMcpPool } from '../utils'
 export function mcpPoolCreate(this: ModuleMcpPool) {
   return createHttpRoute(
     {
-      name: 'POST /api/workspaces/:workspace/pools',
+      name: 'POST /workspaces/:workspace/pools',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
       }),

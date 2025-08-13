@@ -8,7 +8,7 @@ import { createPassword, createSession } from '../utils'
 export function userRecover(this: ModuleUser) {
   return createHttpRoute(
     {
-      name: 'POST /api/users/:username/recover',
+      name: 'POST /users/:username/recover',
       parseParameters: createParser({
         username: assertStringNotEmpty,
       }),

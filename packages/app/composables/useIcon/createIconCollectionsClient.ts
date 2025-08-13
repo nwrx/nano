@@ -15,7 +15,7 @@ export function createIconCollectionsClient() {
     options.value.page = 1
     isSearching.value = true
     await client.requestAttempt(
-      'GET /api/icons/collections',
+      'GET /icons/collections',
       {
         query: { ...options.value },
         onData: (collectionsData) => { data.value = collectionsData },
@@ -28,7 +28,7 @@ export function createIconCollectionsClient() {
     options.value.page ??= 1
     options.value.page += 1
     await client.requestAttempt(
-      'GET /api/icons/collections',
+      'GET /icons/collections',
       {
         query: { ...options.value },
         onData: (collectionsData) => {
@@ -40,7 +40,7 @@ export function createIconCollectionsClient() {
 
   async function refreshCollections() {
     await client.requestAttempt(
-      'POST /api/icons/collections/refresh',
+      'POST /icons/collections/refresh',
       {
         onSuccess: async() => {
           alerts.success(localize({
@@ -62,7 +62,7 @@ export function createIconCollectionsClient() {
   function subscribeToEvents() {
     subscribers += 1
     void client.requestAttempt(
-      'GET /api/icons/collections/events',
+      'GET /icons/collections/events',
       {
         signal: abortController.signal,
         onData: ({ data: event }) => {

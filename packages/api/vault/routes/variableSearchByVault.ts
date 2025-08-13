@@ -10,7 +10,7 @@ import { getVault, searchVariableByVault } from '../utils'
 export function variableSearchByVault(this: ModuleVault) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/vaults/:vault/variables',
+      name: 'GET /workspaces/:workspace/vaults/:vault/variables',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         vault: assert.stringNotEmpty,

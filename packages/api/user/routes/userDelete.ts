@@ -8,7 +8,7 @@ import { getUser } from '../utils'
 export function userDelete(this: ModuleUser) {
   return createHttpRoute(
     {
-      name: 'DELETE /api/users/:username',
+      name: 'DELETE /users/:username',
       parseParameters: createParser({
         username: assertStringNotEmpty,
       }),

@@ -7,7 +7,7 @@ import { getRunner, updateRunner } from '../utils'
 export function runnerUpdate(this: ModuleRunner) {
   return createHttpRoute(
     {
-      name: 'PUT /api/runners/:name',
+      name: 'PUT /runners/:name',
       parseParameters: createParser({
         name: assert.stringNotEmpty,
       }),

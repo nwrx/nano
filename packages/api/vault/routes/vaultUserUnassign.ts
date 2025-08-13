@@ -8,7 +8,7 @@ import { getVault, updateVaultUserPermissions } from '../utils'
 export function vaultUserUnassign(this: ModuleVault) {
   return createHttpRoute(
     {
-      name: 'DELETE /api/workspaces/:workspace/vaults/:vault/assignments/:username',
+      name: 'DELETE /workspaces/:workspace/vaults/:vault/assignments/:username',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         vault: assert.stringNotEmpty,

@@ -8,7 +8,7 @@ import { ModuleUser } from '../../user'
 export function chatSearch(this: ModuleChat) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/threads',
+      name: 'GET /workspaces/:workspace/threads',
       parseParameters: createParser({ workspace: assertStringNotEmpty }),
       parseQuery: createParser({
         search: [[assertUndefined], [assertStringNotEmpty]],

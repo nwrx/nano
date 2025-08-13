@@ -7,7 +7,7 @@ import { getManager } from '../utils'
 export function mcpManagerRemove(this: ModuleMcpManager) {
   return createHttpRoute(
     {
-      name: 'DELETE /api/mcp/:_identity',
+      name: 'DELETE /mcp/:_identity',
       parseParameters: createParser({
         _identity: assert.stringNotEmpty,
       }),

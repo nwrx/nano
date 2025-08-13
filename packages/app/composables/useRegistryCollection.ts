@@ -1,7 +1,7 @@
 import type { application, RegistryCollectionObject } from '@nwrx/nano-api'
 import type { RouteRequestQuery } from '@unserved/client'
 
-export type GetCollectionOptions = RouteRequestQuery<typeof application, 'GET /api/workspaces/:workspace/collections/:collection'>
+export type GetCollectionOptions = RouteRequestQuery<typeof application, 'GET /workspaces/:workspace/collections/:collection'>
 
 export function useRegistryCollection(
   workspace: MaybeRef<string>,
@@ -12,7 +12,7 @@ export function useRegistryCollection(
   const data = ref<RegistryCollectionObject>({} as RegistryCollectionObject)
 
   const getCollection = async() => {
-    await client.requestAttempt('GET /api/workspaces/:workspace/collections/:collection', {
+    await client.requestAttempt('GET /workspaces/:workspace/collections/:collection', {
       data: {
         workspace: unref(workspace),
         collection: unref(collection),

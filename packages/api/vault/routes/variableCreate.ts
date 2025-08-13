@@ -9,7 +9,7 @@ import { createVariable, getVault } from '../utils'
 export function variableCreate(this: ModuleVault) {
   return createHttpRoute(
     {
-      name: 'POST /api/workspaces/:workspace/vaults/:vault/variables',
+      name: 'POST /workspaces/:workspace/vaults/:vault/variables',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         vault: assert.stringNotEmpty,

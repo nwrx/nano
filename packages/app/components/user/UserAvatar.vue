@@ -7,7 +7,7 @@ const props = defineProps<{
 const avatarUrl = computed(() => {
   if (!props.username) return
   const apiUrl = useRuntimeConfig().public.apiUrl
-  const avatarUrl = `/api/users/${props.username}/avatar`
+  const avatarUrl = `/users/${props.username}/avatar`
   return apiUrl ? new URL(avatarUrl, apiUrl).href : avatarUrl
 })
 </script>

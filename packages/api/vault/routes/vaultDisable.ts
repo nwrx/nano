@@ -9,7 +9,7 @@ import { getVault } from '../utils'
 export function vaultDisable(this: ModuleVault) {
   return createHttpRoute(
     {
-      name: 'PUT /api/workspaces/:workspace/vaults/:vault/disable',
+      name: 'PUT /workspaces/:workspace/vaults/:vault/disable',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         vault: assert.stringNotEmpty,

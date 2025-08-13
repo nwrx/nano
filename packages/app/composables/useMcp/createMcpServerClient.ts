@@ -42,7 +42,7 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
     if (fetchLock.isPending) return fetchLock.promise
     fetchLock.reset()
     await client.requestAttempt(
-      'GET /api/workspaces/:workspace/pools/:pool/servers/:server',
+      'GET /workspaces/:workspace/pools/:pool/servers/:server',
       {
         parameters: { workspace, pool, server },
         query: { ...options.value },
@@ -60,7 +60,7 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
   async function updateServer(options: Partial<McpServerUpdateOptions> = {}) {
     await sleep(CONSTANTS.niceDelay)
     await client.requestAttempt(
-      'PUT /api/workspaces/:workspace/pools/:pool/servers/:server',
+      'PUT /workspaces/:workspace/pools/:pool/servers/:server',
       {
         parameters: { workspace, pool, server },
         body: { ...options },
@@ -82,7 +82,7 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
     isLoading.value = true
     await sleep(CONSTANTS.niceDelay)
     await client.requestAttempt(
-      'PUT /api/workspaces/:workspace/pools/:pool/servers/:server/spec',
+      'PUT /workspaces/:workspace/pools/:pool/servers/:server/spec',
       {
         parameters: { workspace, pool, server },
         body: { ...options },
@@ -106,7 +106,7 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
   async function renameServer(newName: string) {
     const oldName = unref(server)
     await client.requestAttempt(
-      'PUT /api/workspaces/:workspace/pools/:pool/servers/:server/name',
+      'PUT /workspaces/:workspace/pools/:pool/servers/:server/name',
       {
         parameters: { workspace, pool, server },
         body: { name: newName },
@@ -132,7 +132,7 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
   async function enableServer() {
     await sleep(CONSTANTS.niceDelay)
     await client.requestAttempt(
-      'POST /api/workspaces/:workspace/pools/:pool/servers/:server/enable',
+      'POST /workspaces/:workspace/pools/:pool/servers/:server/enable',
       {
         parameters: { workspace, pool, server },
         onSuccess: async() => {
@@ -153,7 +153,7 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
   async function disableServer() {
     await sleep(CONSTANTS.niceDelay)
     await client.requestAttempt(
-      'POST /api/workspaces/:workspace/pools/:pool/servers/:server/disable',
+      'POST /workspaces/:workspace/pools/:pool/servers/:server/disable',
       {
         parameters: { workspace, pool, server },
         onSuccess: async() => {
@@ -174,7 +174,7 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
   async function removeServer() {
     await sleep(CONSTANTS.niceDelay)
     await client.requestAttempt(
-      'DELETE /api/workspaces/:workspace/pools/:pool/servers/:server',
+      'DELETE /workspaces/:workspace/pools/:pool/servers/:server',
       {
         parameters: { workspace, pool, server },
         onSuccess: async() => {
@@ -203,7 +203,7 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
 
   async function applySpecifications() {
     await client.requestAttempt(
-      'POST /api/workspaces/:workspace/pools/:pool/servers/:server/apply',
+      'POST /workspaces/:workspace/pools/:pool/servers/:server/apply',
       {
         parameters: { workspace, pool, server },
         onSuccess: () => {
@@ -225,7 +225,7 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
 
   async function fetchTools(options: McpServerFetchToolsOptions = {}) {
     await client.requestAttempt(
-      'GET /api/workspaces/:workspace/pools/:pool/servers/:server/tools',
+      'GET /workspaces/:workspace/pools/:pool/servers/:server/tools',
       {
         parameters: { workspace, pool, server },
         query: { ...options },
@@ -265,7 +265,7 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
 
     shutdown: async() => {
       await client.requestAttempt(
-        'POST /api/workspaces/:workspace/pools/:pool/servers/:server/shutdown',
+        'POST /workspaces/:workspace/pools/:pool/servers/:server/shutdown',
         {
           parameters: { workspace, pool, server },
           onSuccess: () => {
@@ -283,7 +283,7 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
 
     request: async() => {
       await client.requestAttempt(
-        'POST /api/workspaces/:workspace/pools/:pool/servers/:server/request',
+        'POST /workspaces/:workspace/pools/:pool/servers/:server/request',
         {
           parameters: { workspace, pool, server },
           onSuccess: () => {
@@ -308,7 +308,7 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
       const abortController = new AbortController()
       tryOnScopeDispose(() => abortController.abort())
       await client.requestAttempt(
-        'GET /api/workspaces/:workspace/pools/:pool/servers/:server/logs',
+        'GET /workspaces/:workspace/pools/:pool/servers/:server/logs',
         {
           parameters: { workspace, pool, server },
           signal: abortController.signal,
@@ -325,7 +325,7 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
       const abortController = new AbortController()
       tryOnScopeDispose(() => abortController.abort())
       await client.requestAttempt(
-        'GET /api/workspaces/:workspace/pools/:pool/servers/:server/status',
+        'GET /workspaces/:workspace/pools/:pool/servers/:server/status',
         {
           parameters: { workspace, pool, server },
           signal: abortController.signal,
@@ -342,7 +342,7 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
       const abortController = new AbortController()
       tryOnScopeDispose(() => abortController.abort())
       await client.requestAttempt(
-        'GET /api/workspaces/:workspace/pools/:pool/servers/:server/messages',
+        'GET /workspaces/:workspace/pools/:pool/servers/:server/messages',
         {
           parameters: { workspace, pool, server },
           signal: abortController.signal,

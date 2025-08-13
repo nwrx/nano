@@ -27,7 +27,7 @@ export const useRunner = createCachedComposable(
         if (lock.isPending) return lock.promise
         lock.reset()
         await client.requestAttempt(
-          'GET /api/runners/:name',
+          'GET /runners/:name',
           {
             parameters: { name },
             onData: runner => data.value = runner,
@@ -38,7 +38,7 @@ export const useRunner = createCachedComposable(
 
       update: async(options: UseRunner.UpdateOptions) => {
         await client.requestAttempt(
-          'PUT /api/runners/:name',
+          'PUT /runners/:name',
           {
             parameters: { name },
             body: { ...options },
@@ -57,7 +57,7 @@ export const useRunner = createCachedComposable(
 
       rename: async(newName: string) => {
         await client.requestAttempt(
-          'PUT /api/runners/:name/rename',
+          'PUT /runners/:name/rename',
           {
             parameters: { name },
             body: { name: newName },
@@ -76,7 +76,7 @@ export const useRunner = createCachedComposable(
 
       disable: async() => {
         await client.requestAttempt(
-          'PUT /api/runners/:name/disable',
+          'PUT /runners/:name/disable',
           {
             parameters: { name },
             onSuccess: () => {
@@ -94,7 +94,7 @@ export const useRunner = createCachedComposable(
 
       enable: async() => {
         await client.requestAttempt(
-          'PUT /api/runners/:name/enable',
+          'PUT /runners/:name/enable',
           {
             parameters: { name },
             onSuccess: () => {
@@ -112,7 +112,7 @@ export const useRunner = createCachedComposable(
 
       remove: async() => {
         await client.requestAttempt(
-          'DELETE /api/runners/:name',
+          'DELETE /runners/:name',
           {
             parameters: { name },
             onSuccess: () => {
@@ -132,7 +132,7 @@ export const useRunner = createCachedComposable(
         subscribers.value++
         if (subscribers.value > 1) return
         void client.requestAttempt(
-          'GET /api/runners/:name/events',
+          'GET /runners/:name/events',
           {
             signal: abortController.signal,
             parameters: { name },
@@ -162,7 +162,7 @@ export const useRunner = createCachedComposable(
         subscribersToStatus.value++
         if (subscribersToStatus.value > 1) return
         void client.requestAttempt(
-          'GET /api/runners/:name/status',
+          'GET /runners/:name/status',
           {
             signal: abortControllerToStatus.signal,
             parameters: { name },

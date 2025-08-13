@@ -9,7 +9,7 @@ import { getMcpServer } from '../utils'
 export function mcpServerRemove(this: ModuleMcpServer) {
   return createHttpRoute(
     {
-      name: 'DELETE /api/workspaces/:workspace/pools/:pool/servers/:server',
+      name: 'DELETE /workspaces/:workspace/pools/:pool/servers/:server',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         pool: assert.stringNotEmpty,

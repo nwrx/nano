@@ -21,7 +21,7 @@ const isOpen = defineModel<boolean>({ default: false })
 // --- Methods.
 async function removeVariable() {
   await client.requestAttempt(
-    'DELETE /api/workspaces/:workspace/vaults/:vault/variables/:variable',
+    'DELETE /workspaces/:workspace/vaults/:vault/variables/:variable',
     {
       data: {
         workspace: props.workspace,

@@ -6,7 +6,7 @@ import { getUser } from '../utils'
 export function userSetProfile(this: ModuleUser) {
   return createHttpRoute(
     {
-      name: 'PUT /api/users/:username/profile',
+      name: 'PUT /users/:username/profile',
       parseParameters: createParser({
         username: assertStringNotEmpty,
       }),

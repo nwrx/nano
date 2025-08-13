@@ -8,7 +8,7 @@ export const useRegistryExplorer = createSharedComposable(() => {
   const selectedCategory = ref<RegistryCategoryObject>()
 
   const searchCategories = async() => {
-    await client.requestAttempt('GET /api/registry/categories', {
+    await client.requestAttempt('GET /registry/categories', {
       data: {
         search: search.value,
         limit: 100,
@@ -20,7 +20,7 @@ export const useRegistryExplorer = createSharedComposable(() => {
   }
 
   const searchCollections = async() => {
-    await client.requestAttempt('GET /api/registry/collections', {
+    await client.requestAttempt('GET /registry/collections', {
       data: {
         limit: 100,
         withComponents: true,

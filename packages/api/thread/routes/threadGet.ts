@@ -12,7 +12,7 @@ import { getThread } from '../utils'
 export function threadGet(this: ModuleThread) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/projects/:project/flows/:flow/threads/:thread',
+      name: 'GET /workspaces/:workspace/projects/:project/flows/:flow/threads/:thread',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         project: assert.stringNotEmpty,

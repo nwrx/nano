@@ -7,7 +7,7 @@ import { getRunner, renameRunner } from '../utils'
 export function runnerRename(this: ModuleRunner) {
   return createHttpRoute(
     {
-      name: 'PUT /api/runners/:name/rename',
+      name: 'PUT /runners/:name/rename',
       parseParameters: createParser({
         name: assert.stringNotEmpty,
       }),

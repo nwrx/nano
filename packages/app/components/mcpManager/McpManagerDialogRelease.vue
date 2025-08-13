@@ -19,7 +19,7 @@ const confirmIdentity = ref('')
 
 // --- Submit.
 async function releaseManager() {
-  await client.requestAttempt('DELETE /api/mcp/:identity', {
+  await client.requestAttempt('DELETE /mcp/:identity', {
     data: {
       identity: props.manager.identity,
     },

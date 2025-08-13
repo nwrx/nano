@@ -9,7 +9,7 @@ import { searchRunners } from '../utils'
 export function searchRunner(this: ModuleRunner) {
   return createHttpRoute(
     {
-      name: 'GET /api/runners',
+      name: 'GET /runners',
       parseQuery: createParser({
         search: [[assert.undefined], [assert.stringNotEmpty]],
         page: [[assert.undefined], [assert.stringNotEmpty, assert.number]],

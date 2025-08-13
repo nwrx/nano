@@ -2,7 +2,7 @@
 import type { Context } from '../../__fixtures__'
 import { createTestContext } from '../../__fixtures__'
 
-describe.concurrent('GET /api/session', () => {
+describe.concurrent('GET /session', () => {
   beforeEach<Context>(async(context) => {
     await createTestContext(context)
     await context.application.createTestServer()
@@ -15,7 +15,7 @@ describe.concurrent('GET /api/session', () => {
   describe<Context>('with authenticated user', (it) => {
     it('should return the username of the authenticated user', async({ setupUser: createUser, application }) => {
       const { user, headers } = await createUser()
-      const response = await application.fetch('/api/session', { method: 'GET', headers })
+      const response = await application.fetch('/session', { method: 'GET', headers })
       const body = await response.json() as Record<string, string>
       expect(response.status).toBe(200)
       expect(response.headers.get('Content-Type')).toBe('application/json')
@@ -35,7 +35,7 @@ describe.concurrent('GET /api/session', () => {
 
   describe<Context>('with unauthenticated user', (it) => {
     it('should return empty object if the user is not authenticated', async({ application }) => {
-      const response = await application.fetch('/api/session', { method: 'GET' })
+      const response = await application.fetch('/session', { method: 'GET' })
       expect(response).toMatchObject({ status: 204, statusText: 'No Content' })
     })
   })
@@ -46,7 +46,7 @@ describe.concurrent('GET /api/session', () => {
       const { UserSession } = moduleUser.getRepositories()
       session.expiresAt = new Date(0)
       await UserSession.save(session)
-      const response = await application.fetch('/api/session', { method: 'GET', headers })
+      const response = await application.fetch('/session', { method: 'GET', headers })
       const body = await response.json() as Record<string, string>
       expect(response.status).toBe(401)
       expect(response.headers.get('Content-Type')).toBe('application/json')
@@ -58,7 +58,7 @@ describe.concurrent('GET /api/session', () => {
       const { UserSession } = moduleUser.getRepositories()
       session.address = '0.0.0.0'
       await UserSession.save(session)
-      const response = await application.fetch('/api/session', { method: 'GET', headers })
+      const response = await application.fetch('/session', { method: 'GET', headers })
       const body = await response.json() as Record<string, string>
       expect(response.status).toBe(401)
       expect(response.headers.get('Content-Type')).toBe('application/json')
@@ -70,7 +70,7 @@ describe.concurrent('GET /api/session', () => {
       const { UserSession } = moduleUser.getRepositories()
       session.userAgent = 'Not-Mozilla/5.0'
       await UserSession.save(session)
-      const response = await application.fetch('/api/session', { method: 'GET', headers })
+      const response = await application.fetch('/session', { method: 'GET', headers })
       const body = await response.json() as Record<string, string>
       expect(response.status).toBe(401)
       expect(response.headers.get('Content-Type')).toBe('application/json')
@@ -82,7 +82,7 @@ describe.concurrent('GET /api/session', () => {
       const { UserSession } = moduleUser.getRepositories()
       session.expiresAt = new Date(0)
       await UserSession.save(session)
-      const response = await application.fetch('/api/session', { method: 'GET', headers })
+      const response = await application.fetch('/session', { method: 'GET', headers })
       expect(response.status).toBe(401)
       expect(response.headers.get('Content-Type')).toBe('application/json')
       expect(response.headers.get('Set-Cookie')).toBe([

@@ -22,7 +22,7 @@ const showCreateDialog = ref(false)
 // --- Methods.
 async function getVariables() {
   await client.requestAttempt(
-    'GET /api/workspaces/:workspace/variables',
+    'GET /workspaces/:workspace/variables',
     {
       parameters: {
         workspace: props.workspace,

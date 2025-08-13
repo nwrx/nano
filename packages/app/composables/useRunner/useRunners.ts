@@ -22,7 +22,7 @@ export const useRunners = createCachedComposable(
       search: async() => {
         if (lock.isPending) return lock.promise
         await client.request(
-          'GET /api/runners',
+          'GET /runners',
           {
             query: { ...options.value },
             onData: runners => data.value = runners,
@@ -33,7 +33,7 @@ export const useRunners = createCachedComposable(
 
       register: async(options: UseRunner.RegisterOptions) => {
         await client.requestAttempt(
-          'POST /api/runners',
+          'POST /runners',
           {
             body: { ...options },
             onSuccess: () => {
@@ -53,7 +53,7 @@ export const useRunners = createCachedComposable(
         subscribers.value++
         if (subscribers.value > 1) return
         void client.requestAttempt(
-          'GET /api/runners/events',
+          'GET /runners/events',
           {
             signal: abortController.signal,
             onData: ({ data: eventData }) => {

@@ -16,7 +16,7 @@ const alerts = useAlerts()
 const selectedUsers = ref<string[]>([])
 
 async function assignUsers() {
-  await client.requestAttempt('POST /api/workspaces/:workspace/assignments', {
+  await client.requestAttempt('POST /workspaces/:workspace/assignments', {
     data: {
       workspace: props.workspace,
       usernames: selectedUsers.value,

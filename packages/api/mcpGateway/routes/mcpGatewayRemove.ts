@@ -8,7 +8,7 @@ import { getGateway } from '../utils'
 export function mcpGatewayRemove(this: ModuleMcpGateway) {
   return createHttpRoute(
     {
-      name: 'DELETE /api/mcp/:manager/gateways/:identity',
+      name: 'DELETE /mcp/:manager/gateways/:identity',
       parseParameters: createParser({
         manager: assert.stringNotEmpty,
         identity: assert.stringNotEmpty,

@@ -14,7 +14,7 @@ const ACCEPTED_IMAGE_TYPES = new Set([
 export function userSetAvatar(this: ModuleUser) {
   return createHttpRoute(
     {
-      name: 'PUT /api/users/:username/avatar',
+      name: 'PUT /users/:username/avatar',
       parseParameters: createParser({
         username: assert.stringNotEmpty,
       }),

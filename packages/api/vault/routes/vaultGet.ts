@@ -10,7 +10,7 @@ import { getVault } from '../utils'
 export function vaultGet(this: ModuleVault) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/vaults/:vault',
+      name: 'GET /workspaces/:workspace/vaults/:vault',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         vault: assert.stringNotEmpty,

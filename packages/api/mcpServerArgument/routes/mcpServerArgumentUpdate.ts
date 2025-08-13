@@ -12,7 +12,7 @@ import { getArgument } from '../utils'
 export function mcpServerArgumentUpdate(this: ModuleMcpServerArgument) {
   return createHttpRoute(
     {
-      name: 'PUT /api/workspaces/:workspace/pools/:pool/servers/:server/arguments/:position',
+      name: 'PUT /workspaces/:workspace/pools/:pool/servers/:server/arguments/:position',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         pool: assert.stringNotEmpty,

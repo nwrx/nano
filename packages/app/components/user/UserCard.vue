@@ -13,7 +13,7 @@ const data = ref<UserObject>({} as UserObject)
 // --- If `load` is true, load the user profile data from the API
 watch(() => props.username, async() => {
   if (!props.load || !props.username) return
-  await client.requestAttempt('GET /api/users/:username', {
+  await client.requestAttempt('GET /users/:username', {
     data: {
       username: props.username,
       withProfile: true,

@@ -8,7 +8,7 @@ import { getProject, removeProject } from '../utils'
 export function projectRemove(this: ModuleProject) {
   return createHttpRoute(
     {
-      name: 'DELETE /api/workspaces/:workspace/projects/:project',
+      name: 'DELETE /workspaces/:workspace/projects/:project',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         project: assert.stringNotEmpty,

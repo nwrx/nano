@@ -22,7 +22,7 @@ const configuration = ref<VaultHashicorpOptions>({
     :text="t('text')"
     :label="t('label')"
     @submit="() => {
-      client.requestAttempt('POST /api/workspaces/:workspace/vaults', {
+      client.requestAttempt('POST /workspaces/:workspace/vaults', {
         data: { workspace, name, type: 'hashicorp', configuration: unref(configuration) },
         onSuccess: async() => {
           alerts.success(t('vaults.create.success'))

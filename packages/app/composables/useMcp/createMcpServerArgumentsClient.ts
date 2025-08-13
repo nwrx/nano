@@ -34,7 +34,7 @@ export function createMcpServerArgumentsClient(parameters: UseMcpServerOptions) 
     if (lock.isPending) return lock.promise
     lock.reset()
     await client.requestAttempt(
-      'GET /api/workspaces/:workspace/pools/:pool/servers/:server/arguments',
+      'GET /workspaces/:workspace/pools/:pool/servers/:server/arguments',
       {
         parameters: { workspace, pool, server },
         query: { ...options.value },
@@ -46,7 +46,7 @@ export function createMcpServerArgumentsClient(parameters: UseMcpServerOptions) 
 
   async function createArguments(options: McpServerArgumentCreateOptions) {
     await client.requestAttempt(
-      'POST /api/workspaces/:workspace/pools/:pool/servers/:server/arguments',
+      'POST /workspaces/:workspace/pools/:pool/servers/:server/arguments',
       {
         parameters: { workspace, pool, server },
         body: { ...options },
@@ -66,7 +66,7 @@ export function createMcpServerArgumentsClient(parameters: UseMcpServerOptions) 
 
   async function updateArgument(position: number, options: McpServerArgumentUpdateOptions) {
     await client.requestAttempt(
-      'PUT /api/workspaces/:workspace/pools/:pool/servers/:server/arguments/:position',
+      'PUT /workspaces/:workspace/pools/:pool/servers/:server/arguments/:position',
       {
         parameters: { workspace, pool, server, position },
         body: { ...options },
@@ -86,7 +86,7 @@ export function createMcpServerArgumentsClient(parameters: UseMcpServerOptions) 
 
   async function removeArgument(position: number) {
     await client.requestAttempt(
-      'DELETE /api/workspaces/:workspace/pools/:pool/servers/:server/arguments/:position',
+      'DELETE /workspaces/:workspace/pools/:pool/servers/:server/arguments/:position',
       {
         parameters: { workspace, pool, server, position },
         onSuccess: async() => {

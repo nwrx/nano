@@ -19,7 +19,7 @@ const client = useClient()
 const alerts = useAlerts()
 const permissions = ref<WorkspacePermission[]>([])
 async function updateUserAssignments() {
-  await client.requestAttempt('PUT /api/workspaces/:workspace/assignments/:username', {
+  await client.requestAttempt('PUT /workspaces/:workspace/assignments/:username', {
     data: {
       workspace: props.workspace,
       username: props.username,

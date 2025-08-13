@@ -11,7 +11,7 @@ export function mcpManagerGet(this: ModuleMcpManager) {
     {
       // We have to prefix the named parameter with an underscore to avoid
       // conflicts with other routes. This is a bug of the `h3` router.
-      name: 'GET /api/mcp/:_identity',
+      name: 'GET /mcp/:_identity',
       parseParameters: createParser({
         _identity: assert.stringNotEmpty,
       }),

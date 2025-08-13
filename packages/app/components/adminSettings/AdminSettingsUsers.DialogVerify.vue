@@ -10,7 +10,7 @@ const isOpen = useVModel(props, 'modelValue', emit, { passive: true })
 const client = useClient()
 const alerts = useAlerts()
 async function verifyUser() {
-  await client.requestAttempt('POST /api/users/:username/verify', {
+  await client.requestAttempt('POST /users/:username/verify', {
     data: {
       username: props.user.username,
     },

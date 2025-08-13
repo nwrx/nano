@@ -36,7 +36,7 @@ async function setupUserAvatar(application: Context['application'], user: User) 
   return { data: new Uint8Array(data), avatar }
 }
 
-describe.sequential('GET /api/users/:username/avatar', () => {
+describe.sequential('GET /users/:username/avatar', () => {
   beforeEach<Context>(async(context) => {
     await createTestContext(context)
     await context.application.createTestServer()
@@ -50,7 +50,7 @@ describe.sequential('GET /api/users/:username/avatar', () => {
     describe<Context>('of user having no avatar', (it) => {
       it('should return an SVG placeholder', async({ setupUser, application }) => {
         const { user } = await setupUser({ username: 'jdoe' })
-        const response = await application.fetch(`/api/users/${user.username}/avatar`)
+        const response = await application.fetch(`/users/${user.username}/avatar`)
         const content = await response.text()
         expect(response.status).toBe(200)
         expect(response.headers.get('content-type')).toBe('image/svg+xml')
@@ -62,7 +62,7 @@ describe.sequential('GET /api/users/:username/avatar', () => {
 
       it('should set the attachment header when download=true', async({ setupUser, application }) => {
         const { user } = await setupUser({ username: 'jdoe' })
-        const response = await application.fetch(`/api/users/${user.username}/avatar?download=true`)
+        const response = await application.fetch(`/users/${user.username}/avatar?download=true`)
         const content = await response.text()
         expect(response.status).toBe(200)
         expect(response.headers.get('content-type')).toBe('image/svg+xml')
@@ -77,7 +77,7 @@ describe.sequential('GET /api/users/:username/avatar', () => {
       it('should return the avatar file', async({ setupUser, application }) => {
         const { user } = await setupUser()
         const { data } = await setupUserAvatar(application, user)
-        const response = await application.fetch(`/api/users/${user.username}/avatar`)
+        const response = await application.fetch(`/users/${user.username}/avatar`)
         const content = await response.bytes()
         expect(response.status).toBe(200)
         expect(response.headers.get('content-type')).toBe('image/png')
@@ -90,7 +90,7 @@ describe.sequential('GET /api/users/:username/avatar', () => {
       it('should set content-disposition when download=true', async({ setupUser, application }) => {
         const { user } = await setupUser()
         const { data } = await setupUserAvatar(application, user)
-        const response = await application.fetch(`/api/users/${user.username}/avatar?download=true`)
+        const response = await application.fetch(`/users/${user.username}/avatar?download=true`)
         const content = await response.bytes()
         expect(response.status).toBe(200)
         expect(response.headers.get('content-type')).toBe('image/png')
@@ -104,7 +104,7 @@ describe.sequential('GET /api/users/:username/avatar', () => {
     describe<Context>('edge cases', (it) => {
       it('should return 404 when getting avatar of deleted user', async({ setupUser, application }) => {
         const { user } = await setupUser({ deletedAt: new Date() })
-        const response = await application.fetch(`/api/users/${user.username}/avatar`)
+        const response = await application.fetch(`/users/${user.username}/avatar`)
         const data = await response.json() as Record<string, string>
         expect(response.status).toBe(404)
         expect(data).toMatchObject({ data: { name: 'E_USER_NOT_FOUND' } })
@@ -112,14 +112,14 @@ describe.sequential('GET /api/users/:username/avatar', () => {
 
       it('should return 404 when getting avatar of disabled user', async({ setupUser, application }) => {
         const { user } = await setupUser({ disabledAt: new Date() })
-        const response = await application.fetch(`/api/users/${user.username}/avatar`)
+        const response = await application.fetch(`/users/${user.username}/avatar`)
         const data = await response.json() as Record<string, string>
         expect(response.status).toBe(404)
         expect(data).toMatchObject({ data: { name: 'E_USER_NOT_FOUND' } })
       })
 
       it('should return 404 when getting avatar of non-existent user', async({ application }) => {
-        const response = await application.fetch('/api/users/non-existent/avatar')
+        const response = await application.fetch('/users/non-existent/avatar')
         const data = await response.json() as Record<string, string>
         expect(response.status).toBe(404)
         expect(data).toMatchObject({ data: { name: 'E_USER_NOT_FOUND' } })
@@ -132,7 +132,7 @@ describe.sequential('GET /api/users/:username/avatar', () => {
       it('should return an SVG placeholder', async({ setupUser, application }) => {
         const { headers } = await setupUser({ isSuperAdministrator: true })
         const { user } = await setupUser({ username: 'jdoe' })
-        const response = await application.fetch(`/api/users/${user.username}/avatar`, { headers })
+        const response = await application.fetch(`/users/${user.username}/avatar`, { headers })
         const content = await response.text()
         expect(response.status).toBe(200)
         expect(response.headers.get('content-type')).toBe('image/svg+xml')
@@ -145,7 +145,7 @@ describe.sequential('GET /api/users/:username/avatar', () => {
       it('should set the attachment header when download=true', async({ setupUser, application }) => {
         const { headers } = await setupUser({ isSuperAdministrator: true })
         const { user } = await setupUser({ username: 'jdoe' })
-        const response = await application.fetch(`/api/users/${user.username}/avatar?download=true`, { headers })
+        const response = await application.fetch(`/users/${user.username}/avatar?download=true`, { headers })
         const content = await response.text()
         expect(response.status).toBe(200)
         expect(response.headers.get('content-type')).toBe('image/svg+xml')
@@ -161,7 +161,7 @@ describe.sequential('GET /api/users/:username/avatar', () => {
         const { headers } = await setupUser({ isSuperAdministrator: true })
         const { user } = await setupUser({ username: 'jdoe' })
         const { data } = await setupUserAvatar(application, user)
-        const response = await application.fetch(`/api/users/${user.username}/avatar`, { headers })
+        const response = await application.fetch(`/users/${user.username}/avatar`, { headers })
         const content = await response.bytes()
         expect(response.status).toBe(200)
         expect(response.headers.get('content-type')).toBe('image/png')
@@ -175,7 +175,7 @@ describe.sequential('GET /api/users/:username/avatar', () => {
         const { headers } = await setupUser({ isSuperAdministrator: true })
         const { user } = await setupUser({ username: 'jdoe' })
         const { data } = await setupUserAvatar(application, user)
-        const response = await application.fetch(`/api/users/${user.username}/avatar?download=true`, { headers })
+        const response = await application.fetch(`/users/${user.username}/avatar?download=true`, { headers })
         const content = await response.bytes()
         expect(response.status).toBe(200)
         expect(response.headers.get('content-type')).toBe('image/png')
@@ -190,7 +190,7 @@ describe.sequential('GET /api/users/:username/avatar', () => {
       it('should return the avatar of deleted user', async({ setupUser, application }) => {
         const { headers } = await setupUser({ isSuperAdministrator: true })
         const { user } = await setupUser({ username: 'jdoe', deletedAt: new Date() })
-        const response = await application.fetch(`/api/users/${user.username}/avatar`, { headers })
+        const response = await application.fetch(`/users/${user.username}/avatar`, { headers })
         const content = await response.text()
         expect(response.status).toBe(200)
         expect(response.headers.get('content-type')).toBe('image/svg+xml')
@@ -203,7 +203,7 @@ describe.sequential('GET /api/users/:username/avatar', () => {
       it('should return the avatar of disabled user', async({ setupUser, application }) => {
         const { headers } = await setupUser({ isSuperAdministrator: true })
         const { user } = await setupUser({ username: 'jdoe', disabledAt: new Date() })
-        const response = await application.fetch(`/api/users/${user.username}/avatar`, { headers })
+        const response = await application.fetch(`/users/${user.username}/avatar`, { headers })
         const content = await response.text()
         expect(response.status).toBe(200)
         expect(response.headers.get('content-type')).toBe('image/svg+xml')
@@ -215,7 +215,7 @@ describe.sequential('GET /api/users/:username/avatar', () => {
 
       it('should return 404 when getting avatar of non-existent user', async({ setupUser, application }) => {
         const { headers } = await setupUser({ isSuperAdministrator: true })
-        const response = await application.fetch('/api/users/non-existent/avatar', { headers })
+        const response = await application.fetch('/users/non-existent/avatar', { headers })
         const data = await response.json() as Record<string, string>
         expect(response).toMatchObject({ status: 404, statusText: 'Not Found' })
         expect(data).toMatchObject({ data: { name: 'E_USER_NOT_FOUND' } })

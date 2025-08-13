@@ -29,7 +29,7 @@ const readableStatus = computed(() => ({
 
 async function subscribe() {
   await client.requestAttempt(
-    'GET /api/mcp/:identity/status',
+    'GET /mcp/:identity/status',
     {
       signal: abortController.signal,
       parameters: {

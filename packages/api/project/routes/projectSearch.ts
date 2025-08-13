@@ -10,7 +10,7 @@ import { searchProjects } from '../utils'
 export function projectSearch(this: ModuleProject) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/projects',
+      name: 'GET /workspaces/:workspace/projects',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
       }),

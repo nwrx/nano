@@ -7,7 +7,7 @@ import { getWorkspaceEventBus } from '../utils'
 export function workspaceGetEvents(this: ModuleWorkspace) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/events',
+      name: 'GET /workspaces/:workspace/events',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
       }),

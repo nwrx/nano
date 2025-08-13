@@ -15,7 +15,7 @@ const showRegisterDialog = ref(false)
 
 const managers = ref<McpManagerObject[]>([])
 async function getManagers() {
-  await client.request('GET /api/mcp', {
+  await client.request('GET /mcp', {
     onData: data => managers.value = data,
   })
 }

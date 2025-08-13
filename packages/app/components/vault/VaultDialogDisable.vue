@@ -16,7 +16,7 @@ const isOpen = defineModel({ default: false })
 
 // --- Methods.
 async function disableVault() {
-  await client.requestAttempt('PUT /api/workspaces/:workspace/vaults/:vault/disable', {
+  await client.requestAttempt('PUT /workspaces/:workspace/vaults/:vault/disable', {
     data: {
       workspace: props.workspace,
       vault: props.vault,

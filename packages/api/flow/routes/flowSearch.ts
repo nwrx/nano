@@ -10,7 +10,7 @@ import { searchFlow } from '../utils'
 export function flowSearch(this: ModuleFlow) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/projects/:project/flows',
+      name: 'GET /workspaces/:workspace/projects/:project/flows',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         project: assert.stringNotEmpty,

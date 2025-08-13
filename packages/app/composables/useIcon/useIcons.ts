@@ -21,7 +21,7 @@ export const useIcons = createCachedComposable(
         lock.reset()
         options.value.page = 1
         await client.requestAttempt(
-          'GET /api/icons',
+          'GET /icons',
           {
             query: { ...options.value },
             onData: (icons) => { data.value = icons },
@@ -34,7 +34,7 @@ export const useIcons = createCachedComposable(
         options.value.page ??= 1
         options.value.page += 1
         await client.requestAttempt(
-          'GET /api/icons',
+          'GET /icons',
           {
             query: { ...options.value },
             onData: (icons) => {

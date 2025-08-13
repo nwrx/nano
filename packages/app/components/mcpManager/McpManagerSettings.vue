@@ -13,7 +13,7 @@ const client = useClient()
 const manager = ref<McpManagerObject>()
 
 async function getManager() {
-  await client.request('GET /api/mcp/:_identity', {
+  await client.request('GET /mcp/:_identity', {
     data: {
       _identity: props.identity,
       withGateways: true,

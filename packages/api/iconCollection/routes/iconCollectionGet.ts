@@ -9,7 +9,7 @@ import { getCollection } from '../utils'
 export function iconCollectionGet(this: ModuleIconCollection) {
   return createHttpRoute(
     {
-      name: 'GET /api/icons/collections/:name',
+      name: 'GET /icons/collections/:name',
       parseParameters: createParser({
         name: [assert.stringNotEmpty],
       }),

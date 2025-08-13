@@ -27,7 +27,7 @@ export function createMcpPoolClient(parameters: UseMcpPoolOptions) {
     if (!allowCache && data.value.name === pool) return
     if (isFetching.isPending) return isFetching.promise
     isFetching.reset()
-    await client.requestAttempt('GET /api/workspaces/:workspace/pools/:pool', {
+    await client.requestAttempt('GET /workspaces/:workspace/pools/:pool', {
       parameters: { workspace, pool },
       query: { ...options.value },
       onData: (poolData) => { data.value = { ...data.value, ...poolData } },
@@ -38,7 +38,7 @@ export function createMcpPoolClient(parameters: UseMcpPoolOptions) {
   async function updatePool(options: McpPoolUpdateOptions = {}) {
     isLoading.value = true
     await client.requestAttempt(
-      'PUT /api/workspaces/:workspace/pools/:pool',
+      'PUT /workspaces/:workspace/pools/:pool',
       {
         parameters: { workspace, pool },
         body: { ...options },
@@ -62,7 +62,7 @@ export function createMcpPoolClient(parameters: UseMcpPoolOptions) {
   async function renamePool(newName: string) {
     const oldName = unref(pool)
     await client.requestAttempt(
-      'PUT /api/workspaces/:workspace/pools/:pool/name',
+      'PUT /workspaces/:workspace/pools/:pool/name',
       {
         parameters: { workspace, pool },
         body: { name: newName },
@@ -87,7 +87,7 @@ export function createMcpPoolClient(parameters: UseMcpPoolOptions) {
 
   async function enablePool() {
     await client.requestAttempt(
-      'POST /api/workspaces/:workspace/pools/:pool/enable',
+      'POST /workspaces/:workspace/pools/:pool/enable',
       {
         parameters: { workspace, pool },
         onSuccess: async() => {
@@ -106,7 +106,7 @@ export function createMcpPoolClient(parameters: UseMcpPoolOptions) {
 
   async function disablePool() {
     await client.requestAttempt(
-      'POST /api/workspaces/:workspace/pools/:pool/disable',
+      'POST /workspaces/:workspace/pools/:pool/disable',
       {
         parameters: { workspace, pool },
         onSuccess: async() => {
@@ -125,7 +125,7 @@ export function createMcpPoolClient(parameters: UseMcpPoolOptions) {
 
   async function removePool() {
     await client.requestAttempt(
-      'DELETE /api/workspaces/:workspace/pools/:pool',
+      'DELETE /workspaces/:workspace/pools/:pool',
       {
         parameters: { workspace, pool },
         onSuccess: async() => {
@@ -156,7 +156,7 @@ export function createMcpPoolClient(parameters: UseMcpPoolOptions) {
   async function fetchStatus() {
     await sleep(CONSTANTS.niceDelay)
     await client.requestAttempt(
-      'GET /api/workspaces/:workspace/pools/:pool/status',
+      'GET /workspaces/:workspace/pools/:pool/status',
       {
         parameters: { workspace, pool },
         onData: (statusData) => { status.value = statusData },
@@ -167,7 +167,7 @@ export function createMcpPoolClient(parameters: UseMcpPoolOptions) {
   async function synchronizePool() {
     await sleep(CONSTANTS.niceDelay)
     await client.requestAttempt(
-      'POST /api/workspaces/:workspace/pools/:pool/apply',
+      'POST /workspaces/:workspace/pools/:pool/apply',
       {
         parameters: { workspace, pool },
         onSuccess: async() => {

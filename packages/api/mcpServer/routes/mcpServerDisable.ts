@@ -9,7 +9,7 @@ import { getMcpServer } from '../utils'
 export function mcpServerDisable(this: ModuleMcpServer) {
   return createHttpRoute(
     {
-      name: 'POST /api/workspaces/:workspace/pools/:pool/servers/:server/disable',
+      name: 'POST /workspaces/:workspace/pools/:pool/servers/:server/disable',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         pool: assert.stringNotEmpty,

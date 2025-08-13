@@ -5,7 +5,7 @@ import { ModuleUser } from '../../user'
 export function runnerEvents(this: ModuleRunner) {
   return createHttpRoute(
     {
-      name: 'GET /api/runners/events',
+      name: 'GET /runners/events',
     },
     async({ event }) => {
       const moduleUser = this.getModule(ModuleUser)

@@ -10,7 +10,7 @@ import { getMcpServer } from '../utils'
 export function mcpServerEnable(this: ModuleMcpServer) {
   return createHttpRoute(
     {
-      name: 'POST /api/workspaces/:workspace/pools/:pool/servers/:server/enable',
+      name: 'POST /workspaces/:workspace/pools/:pool/servers/:server/enable',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         pool: assert.stringNotEmpty,

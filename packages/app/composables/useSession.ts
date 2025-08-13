@@ -1,8 +1,8 @@
 import type { application, UserObject } from '@nwrx/nano-api'
 import type { RouteRequestData } from '@unserved/client'
 
-type SigninCredentials = RouteRequestData<typeof application, 'POST /api/session'>
-type SignupCredentials = RouteRequestData<typeof application, 'POST /api/signup'>
+type SigninCredentials = RouteRequestData<typeof application, 'POST /session'>
+type SignupCredentials = RouteRequestData<typeof application, 'POST /signup'>
 
 export const useSession = createSharedComposable(() => {
   const client = useClient()
@@ -12,7 +12,7 @@ export const useSession = createSharedComposable(() => {
 
   const getSession = async(force = false) => {
     if (!force && session.value.username) return session.value
-    return await client.request('GET /api/session', {
+    return await client.request('GET /session', {
       onData: data => session.value = data ?? {},
     })
   }
@@ -22,7 +22,7 @@ export const useSession = createSharedComposable(() => {
     getSession,
 
     signupWithPassword: async(credentials: SignupCredentials) => {
-      await useClient().requestAttempt('POST /api/signup', {
+      await useClient().requestAttempt('POST /signup', {
         data: {
           email: credentials.email,
           username: credentials.username,
@@ -45,7 +45,7 @@ export const useSession = createSharedComposable(() => {
     },
 
     signinWithPassword: async(credentials: SigninCredentials) => {
-      await useClient().requestAttempt('POST /api/session', {
+      await useClient().requestAttempt('POST /session', {
         data: {
           username: credentials.username,
           password: credentials.password,
@@ -66,7 +66,7 @@ export const useSession = createSharedComposable(() => {
     },
 
     signout: async() => {
-      await client.requestAttempt('DELETE /api/session', {
+      await client.requestAttempt('DELETE /session', {
         onEnd: async() => {
           session.value = {}
           await router.push({ name: 'Authentication' })

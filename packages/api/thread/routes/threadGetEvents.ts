@@ -13,7 +13,7 @@ import { getThread, getThreadEvents } from '../utils'
 export function threadGetEvents(this: ModuleThread) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/projects/:project/flows/:flow/threads/:thread/events',
+      name: 'GET /workspaces/:workspace/projects/:project/flows/:flow/threads/:thread/events',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         project: assert.stringNotEmpty,

@@ -8,7 +8,7 @@ import { erase, getFile } from '../utils'
 export function storageDelete(this: ModuleStorage) {
   return createHttpRoute(
     {
-      name: 'DELETE /api/storage/:pool/:id',
+      name: 'DELETE /storage/:pool/:id',
       parseParameters: createParser({
         id: assertStringUuid,
         pool: [[assertUndefined], [assertString]],

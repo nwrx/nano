@@ -9,7 +9,7 @@ import { assertRegistryCategoryType, searchRegistryCategory } from '../utils'
 export function registryCategorySearch(this: ModuleRegistry) {
   return createHttpRoute(
     {
-      name: 'GET /api/registry/categories',
+      name: 'GET /registry/categories',
       parseQuery: createParser({
         search: [[assert.undefined], [assert.string]],
         type: [[assert.undefined], [assertRegistryCategoryType]],

@@ -9,7 +9,7 @@ import { getMcpServer, getMcpServerClient } from '../utils'
 export function mcpServerShutdown(this: ModuleMcpServer) {
   return createHttpRoute(
     {
-      name: 'POST /api/workspaces/:workspace/pools/:pool/servers/:server/shutdown',
+      name: 'POST /workspaces/:workspace/pools/:pool/servers/:server/shutdown',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         pool: assert.stringNotEmpty,

@@ -8,7 +8,7 @@ import { getVault } from '../utils'
 export function vaultRemove(this: ModuleVault) {
   return createHttpRoute(
     {
-      name: 'DELETE /api/workspaces/:workspace/vaults/:vault',
+      name: 'DELETE /workspaces/:workspace/vaults/:vault',
       parseParameters: createParser({
         workspace: assertStringNotEmpty,
         vault: assertStringNotEmpty,

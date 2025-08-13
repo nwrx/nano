@@ -6,7 +6,7 @@ import { getUser } from '../utils'
 export function userVerify(this: ModuleUser) {
   return createHttpRoute(
     {
-      name: 'POST /api/users/:username/verify',
+      name: 'POST /users/:username/verify',
       parseParameters: createParser({
         username: assertStringNotEmpty,
       }),

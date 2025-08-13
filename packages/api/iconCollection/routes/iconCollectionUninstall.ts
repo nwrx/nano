@@ -7,7 +7,7 @@ import { uninstallCollection } from '../utils'
 export function iconCollectionUninstall(this: ModuleIconCollection) {
   return createHttpRoute(
     {
-      name: 'DELETE /api/icons/collections/:name',
+      name: 'DELETE /icons/collections/:name',
       parseParameters: createParser({
         name: [assert.stringNotEmpty],
       }),

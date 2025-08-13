@@ -17,7 +17,7 @@ const alerts = useAlerts()
 const users = ref<string[]>([])
 
 async function assignUsers() {
-  await client.requestAttempt('PUT /api/workspaces/:workspace/vaults/:vault/assignments/:username', {
+  await client.requestAttempt('PUT /workspaces/:workspace/vaults/:vault/assignments/:username', {
     data: {
       vault: props.vault,
       workspace: props.workspace,

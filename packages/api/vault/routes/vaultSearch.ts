@@ -8,7 +8,7 @@ import { searchVaults } from '../utils'
 export function vaultSearch(this: ModuleVault) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/vaults',
+      name: 'GET /workspaces/:workspace/vaults',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
       }),

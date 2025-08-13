@@ -6,7 +6,7 @@ import { createSession, registerUser } from '../utils'
 export function userSignupWithPassword(this: ModuleUser) {
   return createHttpRoute(
     {
-      name: 'POST /api/signup',
+      name: 'POST /signup',
       parseBody: createParser({
         email: assertStringEmail,
         username: assertStringNotEmpty,

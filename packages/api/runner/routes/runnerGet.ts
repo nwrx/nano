@@ -11,7 +11,7 @@ import { getRunner, getRunnerEvents } from '../utils'
 export function runnerGet(this: ModuleRunner) {
   return createHttpRoute(
     {
-      name: 'GET /api/runners/:name',
+      name: 'GET /runners/:name',
       parseParameters: createParser({
         name: assert.stringNotEmpty,
       }),
@@ -34,7 +34,7 @@ export function runnerGet(this: ModuleRunner) {
 export function runnerGetEvents(this: ModuleRunner) {
   return createHttpRoute(
     {
-      name: 'GET /api/runners/:name/events',
+      name: 'GET /runners/:name/events',
       parseParameters: createParser({
         name: assert.stringNotEmpty,
       }),

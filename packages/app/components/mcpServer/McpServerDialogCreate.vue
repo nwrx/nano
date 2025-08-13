@@ -18,7 +18,7 @@ const alerts = useAlerts()
 const name = ref('')
 
 async function createServer() {
-  await client.requestAttempt('POST /api/workspaces/:workspace/pools/:pool/servers', {
+  await client.requestAttempt('POST /workspaces/:workspace/pools/:pool/servers', {
     data: {
       workspace: props.workspace,
       pool: props.pool,

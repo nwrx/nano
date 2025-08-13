@@ -10,7 +10,7 @@ import { getFlow, getFlowSchema } from '../utils'
 export function flowGetSchema(this: ModuleFlow) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/projects/:project/flows/:flow/schema',
+      name: 'GET /workspaces/:workspace/projects/:project/flows/:flow/schema',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         project: assert.stringNotEmpty,

@@ -10,7 +10,7 @@ import { searchMcpPools } from '../utils'
 export function mcpPoolSearch(this: ModuleMcpPool) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/pools',
+      name: 'GET /workspaces/:workspace/pools',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
       }),

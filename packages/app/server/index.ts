@@ -10,7 +10,7 @@ import { application } from '../../api'
  */
 async function createHandler() {
 
-  // --- If `NUXT_PUBLIC_API_URL` is set, make sure `/api` throws a 404 error.
+  // --- If `NUXT_PUBLIC_API_URL` is set, make sure `` throws a 404 error.
   const apiUrl = useRuntimeConfig().public.apiUrl
   if (apiUrl) return defineEventHandler(() => { throw createError({ status: 404 }) })
 

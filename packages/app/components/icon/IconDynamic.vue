@@ -28,7 +28,7 @@ const color = computed(() => {
 const iconUrl = computed(() => {
   if (!apiUrl) return
   if (!props.name) return
-  const url = new URL(`/api/icons/${props.name}`, apiUrl)
+  const url = new URL(`/icons/${props.name}`, apiUrl)
   if (color.value) url.searchParams.set('color', color.value)
   if (props.size) url.searchParams.set('size', props.size.toString())
   if (props.width) url.searchParams.set('width', props.width.toString())

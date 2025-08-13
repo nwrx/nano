@@ -15,7 +15,7 @@ watch(() => isOpen.value, () => {
 const client = useClient()
 const alerts = useAlerts()
 async function createUser() {
-  await client.requestAttempt('POST /api/users', {
+  await client.requestAttempt('POST /users', {
     data: {
       username: username.value,
       email: email.value,

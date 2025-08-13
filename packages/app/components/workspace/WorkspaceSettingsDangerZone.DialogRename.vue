@@ -16,7 +16,7 @@ const alerts = useAlerts()
 const name = ref('')
 
 async function renameWorkspace() {
-  await client.request('PUT /api/workspaces/:workspace', {
+  await client.request('PUT /workspaces/:workspace', {
     data: {
       workspace: props.workspace,
       name: name.value,

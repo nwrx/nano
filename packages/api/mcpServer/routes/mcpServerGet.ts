@@ -11,7 +11,7 @@ import { getMcpServer } from '../utils'
 export function mcpServerGet(this: ModuleMcpServer) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/pools/:pool/servers/:server',
+      name: 'GET /workspaces/:workspace/pools/:pool/servers/:server',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         pool: assert.stringNotEmpty,

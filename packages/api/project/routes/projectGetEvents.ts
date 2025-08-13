@@ -8,7 +8,7 @@ import { getProject, getProjectEventBus } from '../utils'
 export function projectGetEvents(this: ModuleProject) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/projects/:project/events',
+      name: 'GET /workspaces/:workspace/projects/:project/events',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         project: assert.stringNotEmpty,

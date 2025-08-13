@@ -30,7 +30,7 @@ export function createMcpServerVariablesClient(parameters: UseMcpServerOptions) 
     if (lock.isPending) return lock.promise
     lock.reset()
     await client.requestAttempt(
-      'GET /api/workspaces/:workspace/pools/:pool/servers/:server/variables',
+      'GET /workspaces/:workspace/pools/:pool/servers/:server/variables',
       {
         parameters: { workspace, pool, server },
         query: { ...options.value },
@@ -42,7 +42,7 @@ export function createMcpServerVariablesClient(parameters: UseMcpServerOptions) 
 
   async function createVariable(options: Omit<McpServerVariableCreateOptions, 'name'>) {
     await client.requestAttempt(
-      'POST /api/workspaces/:workspace/pools/:pool/servers/:server/variables',
+      'POST /workspaces/:workspace/pools/:pool/servers/:server/variables',
       {
         parameters: { workspace, pool, server },
         body: { ...options },
@@ -63,7 +63,7 @@ export function createMcpServerVariablesClient(parameters: UseMcpServerOptions) 
 
   async function updateVariable(name: string, options: McpServerVariableUpdateOptions) {
     await client.requestAttempt(
-      'PUT /api/workspaces/:workspace/pools/:pool/servers/:server/variables/:name',
+      'PUT /workspaces/:workspace/pools/:pool/servers/:server/variables/:name',
       {
         parameters: { workspace, pool, server, name },
         body: { ...options },
@@ -83,7 +83,7 @@ export function createMcpServerVariablesClient(parameters: UseMcpServerOptions) 
 
   async function removeVariable(name: string) {
     await client.requestAttempt(
-      'DELETE /api/workspaces/:workspace/pools/:pool/servers/:server/variables/:variable',
+      'DELETE /workspaces/:workspace/pools/:pool/servers/:server/variables/:variable',
       {
         parameters: { workspace, pool, server, variable: name },
         onSuccess: async() => {

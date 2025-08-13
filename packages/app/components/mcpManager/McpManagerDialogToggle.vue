@@ -19,7 +19,7 @@ const client = useClient()
 const alerts = useAlerts()
 
 async function enableManager() {
-  await client.requestAttempt('POST /api/mcp/:identity/enable', {
+  await client.requestAttempt('POST /mcp/:identity/enable', {
     data: { identity: props.manager.identity },
     onSuccess: () => {
       alerts.success(t('enableSuccess', { identity: props.manager.identity }))
@@ -29,7 +29,7 @@ async function enableManager() {
 }
 
 async function disableManager() {
-  await client.requestAttempt('POST /api/mcp/:identity/disable', {
+  await client.requestAttempt('POST /mcp/:identity/disable', {
     data: { identity: props.manager.identity },
     onSuccess: () => {
       alerts.success(t('disableSuccess', { identity: props.manager.identity }))

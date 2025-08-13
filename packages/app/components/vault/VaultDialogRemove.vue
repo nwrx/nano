@@ -17,7 +17,7 @@ const isOpen = defineModel({ default: false })
 watch(isOpen, () => { confirm.value = '' }, { immediate: true })
 
 async function removeVault() {
-  await client.requestAttempt('DELETE /api/workspaces/:workspace/vaults/:vault', {
+  await client.requestAttempt('DELETE /workspaces/:workspace/vaults/:vault', {
     data: {
       workspace: props.workspace,
       vault: props.vault,

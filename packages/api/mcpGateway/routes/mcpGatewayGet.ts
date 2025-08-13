@@ -10,7 +10,7 @@ import { getGateway } from '../utils'
 export function mcpGatewayGet(this: ModuleMcpGateway) {
   return createHttpRoute(
     {
-      name: 'GET /api/mcp/:_manager/gateways/:identity',
+      name: 'GET /mcp/:_manager/gateways/:identity',
       parseParameters: createParser({
         _manager: assert.stringNotEmpty,
         identity: assert.stringNotEmpty,

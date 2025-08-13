@@ -10,7 +10,7 @@ import { searchVariableByWorkspace } from '../utils'
 export function variableSearchByWorkspace(this: ModuleVault) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/variables',
+      name: 'GET /workspaces/:workspace/variables',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
       }),

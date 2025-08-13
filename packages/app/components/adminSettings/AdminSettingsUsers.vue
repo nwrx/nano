@@ -8,7 +8,7 @@ const users = ref<UserObject[]>([])
 const showCreate = ref(false)
 
 async function getUsers() {
-  await client.requestAttempt('GET /api/users', {
+  await client.requestAttempt('GET /users', {
     query: {
       withProfile: true,
       withProtected: true,

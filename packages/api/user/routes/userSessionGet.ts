@@ -6,7 +6,7 @@ import { authenticate, getUser } from '../utils'
 export function userSessionGet(this: ModuleUser) {
   return createHttpRoute(
     {
-      name: 'GET /api/session',
+      name: 'GET /session',
     },
     async({ event }): Promise<undefined | UserObject> => {
       try {

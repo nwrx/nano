@@ -10,7 +10,7 @@ import { assertVaultType, createVault } from '../utils'
 export function vaultCreate(this: ModuleVault) {
   return createHttpRoute(
     {
-      name: 'POST /api/workspaces/:workspace/vaults',
+      name: 'POST /workspaces/:workspace/vaults',
       parseParameters: createParser({
         workspace: assertStringNotEmpty,
       }),

@@ -12,7 +12,7 @@ const projects = ref<Array<{ project: string; permissions: VaultPermission[] }>>
 const showAssignDialog = ref(false)
 
 async function getProjectAssignments() {
-  await client.requestAttempt('GET /api/workspaces/:workspace/vaults/:vault/projects', {
+  await client.requestAttempt('GET /workspaces/:workspace/vaults/:vault/projects', {
     data: {
       workspace: props.workspace,
       vault: props.vault,

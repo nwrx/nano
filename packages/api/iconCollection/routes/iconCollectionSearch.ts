@@ -8,7 +8,7 @@ import { searchCollections } from '../utils'
 export function iconCollectionSearch(this: ModuleIconCollection) {
   return createHttpRoute(
     {
-      name: 'GET /api/icons/collections',
+      name: 'GET /icons/collections',
       parseQuery: createParser({
         search: [[assert.undefined], [assert.string]],
         page: [[assert.undefined], [assert.stringNumber, Number.parseInt]],

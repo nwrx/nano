@@ -10,7 +10,7 @@ import { getRegistryCollection } from '../utils'
 export function registryCollectionGet(this: ModuleRegistry) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/collections/:collection',
+      name: 'GET /workspaces/:workspace/collections/:collection',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         collection: assert.stringNotEmpty,

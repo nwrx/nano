@@ -12,7 +12,7 @@ watch(() => isOpen.value, () => confirm.value = '')
 const client = useClient()
 const alerts = useAlerts()
 async function disableUser() {
-  await client.requestAttempt('POST /api/users/:username/disable', {
+  await client.requestAttempt('POST /users/:username/disable', {
     data: {
       username: props.user.username,
     },

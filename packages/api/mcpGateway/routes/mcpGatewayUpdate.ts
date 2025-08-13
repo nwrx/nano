@@ -8,7 +8,7 @@ import { getGateway } from '../utils'
 export function mcpGatewayUpdate(this: ModuleMcpGateway) {
   return createHttpRoute(
     {
-      name: 'PUT /api/mcp/:manager/gateways/:identity',
+      name: 'PUT /mcp/:manager/gateways/:identity',
       parseParameters: createParser({
         manager: assert.stringNotEmpty,
         identity: assert.stringNotEmpty,

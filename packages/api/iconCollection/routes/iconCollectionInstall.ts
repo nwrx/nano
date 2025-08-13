@@ -7,7 +7,7 @@ import { installCollection } from '../utils'
 export function iconCollectionInstall(this: ModuleIconCollection) {
   return createHttpRoute(
     {
-      name: 'POST /api/icons/collections/:name',
+      name: 'POST /icons/collections/:name',
       parseParameters: createParser({
         name: [assert.stringNotEmpty],
       }),

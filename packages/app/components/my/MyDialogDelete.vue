@@ -17,7 +17,7 @@ const isOpen = defineModel({ default: false })
 watch(isOpen, () => confirmUsername.value = '', { immediate: true })
 
 async function deleteUser() {
-  await client.requestAttempt('DELETE /api/users/:username', {
+  await client.requestAttempt('DELETE /users/:username', {
     parameters: { username: user.data.username },
     onSuccess: () => {
       emit('submit')

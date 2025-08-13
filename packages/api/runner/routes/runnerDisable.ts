@@ -7,7 +7,7 @@ import { disableRunner, getRunner } from '../utils'
 export function runnerDisable(this: ModuleRunner) {
   return createHttpRoute(
     {
-      name: 'PUT /api/runners/:name/disable',
+      name: 'PUT /runners/:name/disable',
       parseParameters: createParser({
         name: assert.stringNotEmpty,
       }),

@@ -16,7 +16,7 @@ const alerts = useAlerts()
 const confirmName = ref('')
 
 async function archiveWorkspace() {
-  await client.request('DELETE /api/workspaces/:workspace', {
+  await client.request('DELETE /workspaces/:workspace', {
     data: {
       workspace: props.workspace,
     },

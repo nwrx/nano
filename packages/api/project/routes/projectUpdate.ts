@@ -8,7 +8,7 @@ import { getProject, updateProject } from '../utils'
 export function projectUpdate(this: ModuleProject) {
   return createHttpRoute(
     {
-      name: 'PUT /api/workspaces/:workspace/projects/:project',
+      name: 'PUT /workspaces/:workspace/projects/:project',
       parseParameters: createParser({
         project: assert.stringNotEmpty,
         workspace: assert.stringNotEmpty,

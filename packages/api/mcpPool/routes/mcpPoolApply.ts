@@ -8,7 +8,7 @@ import { applyMcpPool } from '../utils'
 export function mcpPoolApply(this: ModuleMcpPool) {
   return createHttpRoute(
     {
-      name: 'POST /api/workspaces/:workspace/pools/:pool/apply',
+      name: 'POST /workspaces/:workspace/pools/:pool/apply',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         pool: assert.stringNotEmpty,

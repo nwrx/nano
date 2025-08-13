@@ -9,7 +9,7 @@ import { getFile } from '../utils'
 export function fileDownload(this: ModuleStorage) {
   return createHttpRoute(
     {
-      name: 'GET /api/storage/:id',
+      name: 'GET /storage/:id',
       parseParameters: createParser({
         id: assertStringUuid,
       }),

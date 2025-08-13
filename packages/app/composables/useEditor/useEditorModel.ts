@@ -120,7 +120,7 @@ export function useEditorModel(options: UseEditorModelOptions) {
 
     fetchComponents: async() => {
       await client.requestAttempt(
-        'GET /api/workspaces/:workspace/projects/:project/flows/:flow/components',
+        'GET /workspaces/:workspace/projects/:project/flows/:flow/components',
         {
           parameters: { workspace, project, flow },
           onData: (result) => {

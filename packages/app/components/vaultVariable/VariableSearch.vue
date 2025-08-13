@@ -15,7 +15,7 @@ const model = defineModel<string>({ required: false })
 const variables = ref([]) as Ref<VaultVariableObject[]>
 
 async function searchVariables() {
-  await client.requestAttempt('GET /api/workspaces/:workspace/variables', {
+  await client.requestAttempt('GET /workspaces/:workspace/variables', {
     parameters: {
       workspace: props.workspace,
     },

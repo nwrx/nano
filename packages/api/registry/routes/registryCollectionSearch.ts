@@ -11,7 +11,7 @@ import { getRegistryCategory, searchRegistryCollection } from '../utils'
 export function registryCollectionSearch(this: ModuleRegistry) {
   return createHttpRoute(
     {
-      name: 'GET /api/registry/collections',
+      name: 'GET /registry/collections',
       parseQuery: createParser({
         workspace: [[assert.undefined], [assert.stringNotEmpty]],
         categories: [[assert.undefined], [assert.stringNotEmpty, (value: string) => value.toString().split(',')]],

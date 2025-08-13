@@ -9,7 +9,7 @@ import { assertVaultPermission, getVault, updateVaultProjectPermissions } from '
 export function vaultProjectAssign(this: ModuleVault) {
   return createHttpRoute(
     {
-      name: 'PUT /api/workspaces/:workspace/vaults/:vault/projects/:project',
+      name: 'PUT /workspaces/:workspace/vaults/:vault/projects/:project',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         vault: assert.stringNotEmpty,

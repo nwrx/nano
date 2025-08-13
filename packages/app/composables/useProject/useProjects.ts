@@ -22,7 +22,7 @@ export function createProjectsClient(parameters: UseProject.UseSearchOptions) {
     searchProjects: async() => {
       if (lock.isPending) return lock.promise
       await client.request(
-        'GET /api/workspaces/:workspace/projects',
+        'GET /workspaces/:workspace/projects',
         {
           parameters: { workspace },
           query: { ...options.value },
@@ -34,7 +34,7 @@ export function createProjectsClient(parameters: UseProject.UseSearchOptions) {
 
     createProject: async(options: UseProject.CreateOptions) => {
       await client.requestAttempt(
-        'POST /api/workspaces/:workspace/projects',
+        'POST /workspaces/:workspace/projects',
         {
           parameters: { workspace },
           body: { ...options },
@@ -55,7 +55,7 @@ export function createProjectsClient(parameters: UseProject.UseSearchOptions) {
       subscribers.value++
       if (subscribers.value > 1) return
       void client.requestAttempt(
-        'GET /api/workspaces/:workspace/events',
+        'GET /workspaces/:workspace/events',
         {
           signal: abortController.signal,
           parameters: { workspace },

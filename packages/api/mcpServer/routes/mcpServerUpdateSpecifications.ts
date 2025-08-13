@@ -9,7 +9,7 @@ import { applyMcpServer, assertMcpServerTransport, DEFAULT_MCP_SERVER_SPEC, getM
 export function mcpServerUpdateSpecifications(this: ModuleMcpServer) {
   return createHttpRoute(
     {
-      name: 'PUT /api/workspaces/:workspace/pools/:pool/servers/:server/spec',
+      name: 'PUT /workspaces/:workspace/pools/:pool/servers/:server/spec',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         pool: assert.stringNotEmpty,

@@ -9,7 +9,7 @@ const client = useClient()
 const assignments = ref<WorkspaceUserPermissions[]>([])
 
 async function getAssignments() {
-  await client.requestAttempt('GET /api/workspaces/:workspace/assignments', {
+  await client.requestAttempt('GET /workspaces/:workspace/assignments', {
     data: {
       workspace: props.name,
     },

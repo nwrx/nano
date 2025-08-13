@@ -3,7 +3,7 @@
 import type { Context } from '../../__fixtures__'
 import { createTestContext } from '../../__fixtures__'
 
-describe<Context>('GET /api/runners', () => {
+describe<Context>('GET /runners', () => {
   beforeEach<Context>(async(context) => {
     await createTestContext(context)
     await context.application.createTestServer()
@@ -26,8 +26,8 @@ describe<Context>('GET /api/runners', () => {
     it('should return status of all registered runners', async({ application, setupUser }) => {
       const { headers } = await setupUser({ isSuperAdministrator: true })
       const body = JSON.stringify({ address: 'http://localhost' })
-      await application.fetch('/api/runners', { method: 'POST', body, headers })
-      const response = await application.fetch('/api/runners', { method: 'GET', headers })
+      await application.fetch('/runners', { method: 'POST', body, headers })
+      const response = await application.fetch('/runners', { method: 'GET', headers })
       const data = await response.json() as Array<{ address: string }>
       expect(response).toMatchObject({ status: 200, statusText: 'OK' })
       expect(data).toHaveLength(1)
@@ -42,11 +42,11 @@ describe<Context>('GET /api/runners', () => {
     it('should handle unreachable runners in the list', async({ application, setupUser, moduleRunner }) => {
       const { headers } = await setupUser({ isSuperAdministrator: true })
       const body = JSON.stringify({ address: 'http://localhost' })
-      await application.fetch('/api/runners', { method: 'POST', body, headers })
+      await application.fetch('/runners', { method: 'POST', body, headers })
       const { Runner } = moduleRunner.getRepositories()
       const { id } = await Runner.findOneByOrFail({})
       moduleRunner.clients.get(id)!.getStatus = async() => { throw new Error('Unreachable') }
-      const response = await application.fetch('/api/runners', { method: 'GET', headers })
+      const response = await application.fetch('/runners', { method: 'GET', headers })
       const data = await response.json() as Array<{ address: string }>
       expect(response).toMatchObject({ status: 200, statusText: 'OK' })
       expect(data).toHaveLength(1)
@@ -62,12 +62,12 @@ describe<Context>('GET /api/runners', () => {
   describe<Context>('errors', (it) => {
     it('should fail with status 403 when user is not a super administrator', async({ application, setupUser }) => {
       const { headers } = await setupUser({ isSuperAdministrator: false })
-      const response = await application.fetch('/api/runners', { method: 'GET', headers })
+      const response = await application.fetch('/runners', { method: 'GET', headers })
       expect(response).toMatchObject({ status: 403, statusText: 'Forbidden' })
     })
 
     it('should fail with status 401 when user is not authenticated', async({ application }) => {
-      const response = await application.fetch('/api/runners', { method: 'GET' })
+      const response = await application.fetch('/runners', { method: 'GET' })
       expect(response).toMatchObject({ status: 401, statusText: 'Unauthorized' })
     })
   })

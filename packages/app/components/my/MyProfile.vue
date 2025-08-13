@@ -11,7 +11,7 @@ const profile = ref<UserObject>({} as UserObject)
 
 async function getProfile() {
   if (!user.data.username) return
-  await client.requestAttempt('GET /api/users/:username', {
+  await client.requestAttempt('GET /users/:username', {
     parameters: { username: user.data.username },
     query: { withProfile: true },
     onData: (user) => { profile.value = user },
@@ -20,7 +20,7 @@ async function getProfile() {
 
 async function saveProfile() {
   if (!user.data.username) return
-  await client.requestAttempt('PUT /api/users/:username/profile', {
+  await client.requestAttempt('PUT /users/:username/profile', {
     parameters: { username: user.data.username },
     body: { ...profile.value },
     onSuccess: () => {

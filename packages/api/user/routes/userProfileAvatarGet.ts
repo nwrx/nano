@@ -9,7 +9,7 @@ import { getUser } from '../utils'
 export function userGetAvatar(this: ModuleUser) {
   return createHttpRoute(
     {
-      name: 'GET /api/users/:username/avatar',
+      name: 'GET /users/:username/avatar',
       parseParameters: createParser({
         username: assertStringNotEmpty,
       }),

@@ -11,7 +11,7 @@ import { getFlow, getFlowEventBus } from '../utils'
 export function flowGetEvents(this: ModuleFlow) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/projects/:project/flows/:flow/events',
+      name: 'GET /workspaces/:workspace/projects/:project/flows/:flow/events',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         project: assert.stringNotEmpty,

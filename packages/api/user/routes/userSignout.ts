@@ -5,7 +5,7 @@ import { deleteCookie } from 'h3'
 export function userSignout(this: ModuleUser) {
   return createHttpRoute(
     {
-      name: 'DELETE /api/session',
+      name: 'DELETE /session',
     },
     async({ event }) => {
       const session = await this.authenticate(event)

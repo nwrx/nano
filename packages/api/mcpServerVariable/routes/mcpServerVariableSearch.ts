@@ -12,7 +12,7 @@ import { searchServerVariables } from '../utils/searchServerVariables'
 export function mcpServerVariableSearch(this: ModuleMcpServerVariable) {
   return createHttpRoute(
     {
-      name: 'GET /api/workspaces/:workspace/pools/:pool/servers/:server/variables',
+      name: 'GET /workspaces/:workspace/pools/:pool/servers/:server/variables',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         pool: assert.stringNotEmpty,

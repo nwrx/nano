@@ -7,7 +7,7 @@ import { ModuleUser } from '../../user'
 export function chatDelete(this: ModuleChat) {
   return createHttpRoute(
     {
-      name: 'DELETE /api/workspaces/:workspace/threads/:id',
+      name: 'DELETE /workspaces/:workspace/threads/:id',
       parseParameters: createParser({
         workspace: assertStringNotEmpty,
         id: assertStringUuid,

@@ -22,7 +22,7 @@ const alerts = useAlerts()
 const selectedPermissions = ref<VaultPermission[]>([])
 
 async function updatePermissions() {
-  await client.requestAttempt('PUT /api/workspaces/:workspace/vaults/:vault/projects/:project', {
+  await client.requestAttempt('PUT /workspaces/:workspace/vaults/:vault/projects/:project', {
     data: {
       workspace: props.workspace,
       vault: props.vault,

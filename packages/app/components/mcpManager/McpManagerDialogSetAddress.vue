@@ -19,7 +19,7 @@ const address = ref<string>()
 
 // --- Submit.
 async function setManagerAddress() {
-  await client.request('PUT /api/mcp/:identity', {
+  await client.request('PUT /mcp/:identity', {
     data: {
       identity: props.manager.identity,
       address: address.value,

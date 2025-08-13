@@ -8,7 +8,7 @@ import { getVault, updateVariable } from '../utils'
 export function variableUpdate(this: ModuleVault) {
   return createHttpRoute(
     {
-      name: 'PUT /api/workspaces/:workspace/vaults/:vault/variables/:variable',
+      name: 'PUT /workspaces/:workspace/vaults/:vault/variables/:variable',
       parseParameters: createParser({
         workspace: assert.stringNotEmpty,
         vault: assert.stringNotEmpty,
