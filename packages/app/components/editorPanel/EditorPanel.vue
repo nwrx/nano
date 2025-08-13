@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { Editor, FlowObject } from '@nwrx/nano-api'
 import type { VNode } from 'vue'
-import PatternGrain from '../base/PatternGrain.vue'
 import EditorFab from '../editor/EditorFab.vue'
 import EditorPanelTabs from './EditorPanel.Tabs.vue'
 
@@ -40,13 +39,13 @@ watch(() => props.selectedNodes, () => {
 <template>
   <div
     :style="{
-      width: `${isOpen ? panelWidth : 48}px`,
+      maxWidth: `${isOpen ? panelWidth : 48}px`,
       height: isOpen ? undefined : '48px',
     }"
     :class="{
       'transition-all duration-slow': !isResizing,
     }"
-    class="flex flex-col rd backdrop-blur-2xl overflow-hidden relative bg-editor-panel b b-app"
+    class="flex flex-col rd backdrop-blur-2xl overflow-hidden relative bg-editor-panel b b-app grow w-full"
     @mousedown.stop>
 
     <!-- PatternGrain -->
