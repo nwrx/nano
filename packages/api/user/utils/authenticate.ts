@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/require-param */
 import type { Peer } from 'crossws'
 import type { H3Event } from 'h3'
 import type { UUID } from 'node:crypto'
