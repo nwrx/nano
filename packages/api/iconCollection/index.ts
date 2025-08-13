@@ -14,7 +14,7 @@ export interface ModuleIconCollectionOptions {
    *
    * @default 'https://esm.sh/'
    */
-  iconCdn: string
+  iconCdnUrl: string
 
   /**
    * The URL of the Iconify API used to gather information about the icons and
@@ -34,14 +34,14 @@ export class ModuleIconCollection extends ModuleBase {
   routes = ROUTES
   entities = ENTITIES
 
-  iconCdn = 'https://esm.sh/'
+  iconCdnUrl = 'https://esm.sh/'
   iconIconifyUrl = 'https://api.iconify.design/'
   iconEventBus = createEventBus<IconCollectionEvents>()
   iconInstallLock = new Map<string, Promise<void>>()
 
   constructor(options: Partial<ModuleIconCollectionOptions> = {}) {
     super()
-    if (options.iconCdn) this.iconCdn = options.iconCdn
+    if (options.iconCdnUrl) this.iconCdnUrl = options.iconCdnUrl
     if (options.iconIconifyUrl) this.iconIconifyUrl = options.iconIconifyUrl
   }
 }
