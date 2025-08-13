@@ -68,7 +68,17 @@ export const useThreads = createCachedComposable((parameters: UseThread.UseSearc
         const group = groups.find(g => g.type === groupType)
         if (group) group.threads.push(thread)
       }
-      return groups.filter(group => group.threads.length > 0)
+
+      // --- Sort the threads in each group by createdAt date.
+      for (const group of groups) {
+        group.threads.sort((a, b) => {
+          if (!a.createdAt || !b.createdAt) return 0
+          return b.createdAt.localeCompare(a.createdAt)
+        })
+      }
+
+      return groups
+        .filter(group => group.threads.length > 0)
     }),
 
     search: async() => {
@@ -148,8 +158,8 @@ export const useThreads = createCachedComposable((parameters: UseThread.UseSearc
               if (!thread) continue
               thread.events ??= []
               thread.events.push(event)
+              thread.events = [...thread.events]
             }
-            threads.value = [...threads.value]
           },
           onEnd: () => {
             threadSessionsControllers.delete(id)
