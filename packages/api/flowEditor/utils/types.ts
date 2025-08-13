@@ -1,5 +1,6 @@
 import type { Node } from '@nwrx/nano'
-import type { Component, Schema } from '@nwrx/nano/utils'
+import type { Component, ComponentPurpose, Schema } from '@nwrx/nano/utils'
+import type { LooseDeep } from '@unshared/types'
 import type { FlowObject } from '../../flow'
 import type {
   MessageServerMetadataChanged,
@@ -17,14 +18,6 @@ import type {
 import type { MESSAGE_CLIENT_SCHEMA } from './messages'
 
 export namespace Editor {
-  export type ComponentPurpose =
-    | 'control'
-    | 'integration'
-    | 'model'
-    | 'network'
-    | 'other'
-    | 'processing'
-
   export interface ComponentObject {
     name: string
     version: string
@@ -79,7 +72,7 @@ export namespace Editor {
   export type MessageClientEvent = MessageClient['event']
 
   export interface MessageServerError {
-    event: 'error'
+    event: 'editor.error'
     data: { name: string; message: string }
   }
 
@@ -106,4 +99,9 @@ export namespace Editor {
     | MessageServerUserJoined
     | MessageServerUserLeft
     | MessageServerUserMoved
+
+  export type MessageClientDataByName<K extends MessageClient['event']> = MessageClient extends infer T
+    ? T extends { event: K; data: infer D } ? LooseDeep<D> : never
+    : never
+
 }
