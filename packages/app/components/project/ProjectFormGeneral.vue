@@ -36,16 +36,16 @@ onBeforeUnmount(() => {
       :hint="t('nameHint')"
     />
 
-    <!-- Icon -->
+    <!-- Title -->
     <div class="flex items-end space-x-md w-full">
-      <IconInput v-model="project.data.icon" />
-
-      <!-- Title -->
       <InputText
         v-model="project.data.title"
         :label="t('titleLabel')"
         :placeholder="t('titlePlaceholder')"
       />
+
+      <!-- Icon -->
+      <IconInput v-model="project.data.icon" />
     </div>
 
     <!-- Description -->
