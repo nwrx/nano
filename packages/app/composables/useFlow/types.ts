@@ -14,7 +14,7 @@ export namespace UseFlow {
   }
 
   export type SearchOptions = RouteRequestQuery<typeof application, 'GET /api/workspaces/:workspace/projects/:project/flows'>
-  export type FetchOptions = RouteRequestQuery<typeof application, 'GET /api/workspaces/:workspace/projects/:project/flows/:name'>
+  export type FetchOptions = RouteRequestQuery<typeof application, 'GET /api/workspaces/:workspace/projects/:project/flows/:flow'>
   export type CreateOptions = RouteRequestBody<typeof application, 'POST /api/workspaces/:workspace/projects/:project/flows'>
   export type ImportOptions = FormData
 }
