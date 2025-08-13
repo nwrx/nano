@@ -35,14 +35,7 @@ The `ModuleModel` is a module that holds the registered LLM models within a `Mod
 - Can have multiple `ModelRequest`s associated with it to track requests made to the model.
 - May have a `status` to indicate whether the model is available for use (e.g., `Available`, `Unavailable`, `Deprecated`).
 - Can have additionnal metadata in a `metadata` field, such as supported features, quantization, and other relevant information.
-- Must have a `vendor` to indicate the vendor of the model (e.g., OpenAI, Anthropic, huggingface's user).
 
-<!-- Vendor -->
-
-### `ModelVendor`: Represents a vendor of LLM models, such as OpenAI, Anthropic, or VLLM.
-- Contrary to `ModelProviderTemplate`, it represents the true authority behind the models, such as OpenAI, Anthropic. The one that actually trained the models.
-- Contains the vendor details, such as name, title, description, and type.
-- It has a reverse relationship with `Model` to indicate which models are provided by the vendor.
 
 <!-- Monitoring -->
 
@@ -51,6 +44,12 @@ The `ModuleModel` is a module that holds the registered LLM models within a `Mod
 - Has a reference to the `Model` being requested.
 - Has a reference to a `Thread` to track the conversation context.
 - Can have a status to indicate the state of the request (e.g., `Pending`, `Processing`, `Completed`, `Failed`).
+
+### `ModelEvent`: Represents an event related to a model request.
+- Contains the event details, such as the type of event (e.g., `RequestCreated`, `RequestCompleted`, `RequestFailed`).
+- Has a reference to the `ModelRequest` associated with the event.
+- Can have additional metadata to provide context about the event, such as error messages or processing times.
+- Can be used to trigger notifications or actions based on the event type.
 
 ### `ModelMessage`: Represents a message in a conversation with a model.
 - Contains the message content, sender information, and timestamp.
@@ -73,21 +72,11 @@ The `ModuleModel` is a module that holds the registered LLM models within a `Mod
 
 <!-- Provider -->
 
-- `assertModel`: Parse and validate a `Model` from an or object.
-- `assertModelVendor`: Parse and validate a `ModelVendor` from an or object.
-- `assertModelProvider`: Parse and validate a `ModelProvider` from an or object.
-- `assertModelProviderExtends`: Parse and validate the `extends` enum for `ModelProvider`.
-- `assertModelProviderTemplate`: Parse and validate a `ModelProviderTemplate` from an or object.
-- `assertModelProviderPermission`: Parse and validate the `permission` enum for `ModelProviderAssignment`.
-
 - `getModel`: Fetches a specific `Model` by its name and `ModelProvider`.
-- `getModelComponent`: Fetches a Nano component for a specific `Model` and `ModelProvider` using the model adapter.
-
 - `getModelProvider`: Fetches a specific `ModelProvider` by its ID. (Based on `User`+`ModelProviderAssignment` or `Project`+`ModelProviderProjectAssignment`)
-- `getModelProviderTemplate`: Fetches a specific `ModelProviderTemplate` by its name.
 
+- `searchModels`: Searches for `Model`s based on a query string and a `ModelProvider`.
 - `searchModelProviders`: Searches for `ModelProvider`s based on a query string. (Based on `User`+`ModelProviderAssignment` or `Project`+`ModelProviderProjectAssignment`)
-- `searchModelProviderTemplates`: Searches for `ModelProviderTemplate`s based on a query string.
 
 - `createModel`: Creates a new `Model` under a specific `ModelProvider`.
 - `createModelVendor`: Creates a new `ModelVendor` to represent the authority behind the models.
