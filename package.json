@@ -16,7 +16,18 @@
         "meow",
         "@typescript-eslint/parser"
       ]
-    }
+    },
+    "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "@swc/core",
+      "cpu-features",
+      "esbuild",
+      "isolated-vm",
+      "msw",
+      "sharp",
+      "sqlite3",
+      "ssh2"
+    ]
   },
   "scripts": {
     "dev": "NODE_OPTIONS='--max-old-space-size=4096' turbo watch dev",
