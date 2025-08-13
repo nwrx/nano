@@ -6,6 +6,13 @@ import { BaseButton } from '@unshared/vue/BaseButton'
 const props = defineProps<BaseButtonProps & {
   icon?: string
   description?: string
+  classLabel?: string
+  classDescription?: string
+}>()
+
+const slots = defineSlots<{
+  default?: []
+  menu?: []
 }>()
 </script>
 
@@ -32,20 +39,31 @@ const props = defineProps<BaseButtonProps & {
 
     <!-- Title -->
     <div class="flex min-w-0 grow flex-row space-x-sm text-start">
-      <span v-if="label" class="text-sm font-medium whitespace-nowrap">
+      <span
+        v-if="label"
+        :class="classLabel"
+        class="text-sm font-medium whitespace-nowrap">
         {{ label }}
       </span>
 
       <!-- Description -->
-      <span v-if="description" class="text-sm text-subtle line-clamp-1">
+      <span
+        v-if="description"
+        :class="classDescription"
+        class="text-sm text-subtle line-clamp-1">
         {{ description }}
       </span>
     </div>
 
     <!-- Spacer -->
-    <div class="grow" />
+    <div
+      v-if="slots.default || slots.menu"
+      class="grow"
+    />
 
     <!-- Actions -->
+    <slot name="default" />
+
     <slot name="menu" />
   </BaseButton>
 </template>
