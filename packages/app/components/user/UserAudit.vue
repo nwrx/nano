@@ -9,11 +9,14 @@ const props = defineProps<{
   updatedBy?: { username: string }
   disabledAt?: null | string
   disabledBy?: { username: string }
+  classText?: string
+  classDate?: string
+  classAvatar?: string
 }>()
 
 const { t } = useI18n()
 const classAvatar = computed(() => ({
-  'size-6 rd-full': props.inline,
+  'size-5 rd-full': props.inline,
   'size-8 rd-full': !props.inline,
 }))
 
@@ -22,56 +25,61 @@ const classText = computed(() => ({
   'hidden': props.inline,
 }))
 
-const classDate = computed(() => ({
-  'text-xs font-normal text-app line-clamp-1': !props.inline,
-  'text-sm font-normal text-app': props.inline,
-}))
-
 const classTextContainer = computed(() => ({
   'flex flex-col items-end': !props.inline,
   'flex items-center space-x-1': props.inline,
 }))
+
+const auditInfo = computed(() => {
+  if (props.disabledAt && props.disabledBy) {
+    return {
+      label: t('disabledAt'),
+      user: props.disabledBy,
+      date: props.disabledAt,
+    }
+  }
+
+  if (props.updatedAt && props.updatedBy) {
+    return {
+      label: t('updatedAt'),
+      user: props.updatedBy,
+      date: props.updatedAt,
+    }
+  }
+
+  if (props.createdAt && props.createdBy) {
+    return {
+      label: t('createdAt'),
+      user: props.createdBy,
+      date: props.createdAt,
+    }
+  }
+})
 </script>
 
 <template>
   <div class="flex justify-end items-center space-x-sm">
-
-    <!-- Disabled By -->
-    <template v-if="disabledAt && disabledBy">
+    <template v-if="auditInfo">
       <div :class="classTextContainer">
-        <span :class="classText">{{ t('disabledAt') }}</span>
-        <span :class="classDate"> {{ formatDateFromNow(disabledAt) }}</span>
-      </div>
-      <UserAvatar
-        v-if="disabledBy"
-        :class="classAvatar"
-        :username="disabledBy.username"
-      />
-    </template>
 
-    <!-- Updated By -->
-    <template v-else-if="updatedAt && updatedBy">
-      <div :class="classTextContainer">
-        <span :class="classText">{{ t('updatedAt') }}</span>
-        <span :class="classDate"> {{ formatDateFromNow(updatedAt) }}</span>
-      </div>
-      <UserAvatar
-        v-if="updatedBy"
-        :class="classAvatar"
-        :username="updatedBy.username"
-      />
-    </template>
+        <!-- Audit Label -->
+        <span :class="[classText, props.classText]">
+          {{ auditInfo.label }}
+        </span>
 
-    <!-- Created By -->
-    <template v-else-if="createdAt && createdBy">
-      <div :class="classTextContainer">
-        <span :class="classText">{{ t('createdAt') }}</span>
-        <span :class="classDate"> {{ formatDateFromNow(createdAt) }}</span>
+        <!-- Duration from now -->
+        <span
+          class="text-xs font-normal text-app line-clamp-1"
+          :class="props.classDate">
+          {{ formatDateFromNow(auditInfo.date) }}
+        </span>
       </div>
+
+      <!-- User Avatar -->
       <UserAvatar
-        v-if="createdBy"
-        :class="classAvatar"
-        :username="createdBy.username"
+        v-if="auditInfo.user"
+        :class="[classAvatar, props.classAvatar]"
+        :username="auditInfo.user.username"
       />
     </template>
   </div>
