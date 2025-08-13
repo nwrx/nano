@@ -103,7 +103,7 @@ export default defineConfig<Theme>({
 
     textColor: {
       'danger': COLORS.danger[500],
-      'warning': COLORS.warning[500],
+      'warning': COLORS.warning[900],
       'success': COLORS.success[500],
       'primary': COLORS.primary[900],
 
