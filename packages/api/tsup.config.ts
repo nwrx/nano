@@ -15,7 +15,7 @@ export default defineConfig({
   splitting: true,
   sourcemap: true,
   external: [/^@nwrx\/.*/],
-  outExtension: () => ({ js: '.js' }),
+  outExtension: () => ({ js: '.mjs' }),
   esbuildOptions(options) {
     options.chunkNames = 'chunks/[name]-[hash]'
   },

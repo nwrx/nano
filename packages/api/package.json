@@ -13,9 +13,9 @@
     "dist"
   ],
   "scripts": {
-    "dev": "tsup --watch --onSuccess \"node dist/server.js\"",
+    "dev": "tsup --watch --onSuccess \"node dist/server.mjs\"",
     "build": "tsup",
-    "start": "node dist/server.js"
+    "start": "node dist/server.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.758.0",
