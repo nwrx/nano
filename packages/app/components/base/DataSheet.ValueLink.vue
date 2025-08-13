@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import type { EditorNodeObject } from '@nwrx/nano-api'
+import type { Editor } from '@nwrx/nano-api'
 
 const props = defineProps<{
   id?: unknown
   name?: string
   path?: string
-  nodes?: EditorNodeObject[]
+  nodes?: Editor.NodeObject[]
 }>()
 
 const { t } = useI18n()

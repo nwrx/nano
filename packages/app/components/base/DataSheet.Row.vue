@@ -7,30 +7,27 @@ import DataSheetRowName from './DataSheet.RowName.vue'
 import DataSheetValue from './DataSheet.Value.vue'
 
 const props = defineProps<{
-  name?: string
-  modelValue?: T
-  isOpen?: boolean
+  placeholder?: string
   isEditable?: boolean
   isClearable?: boolean
   isNameEditable?: boolean
+  isTextArea?: boolean
   depth?: number
 }>()
 
 const emit = defineEmits<{
   clear: []
-  'update:isOpen': [value: boolean]
-  'update:modelValue': [value: unknown]
 }>()
 
 // --- Model & state
-const name = useVModel(props, 'name', emit, { passive: true }) as Ref<string>
-const model = useVModel(props, 'modelValue', emit, { passive: true }) as Ref<T>
-const isOpen = useVModel(props, 'isOpen', emit, { passive: true }) as Ref<boolean>
+const model = defineModel<T>()
+const name = defineModel<string>('name')
+const isOpen = defineModel<boolean>('isOpen', { default: false })
 
 // --- Conditionally show the detail view for complex values.
 const hasDetail = computed(() => {
   if (typeof model.value === 'object' && model.value !== null) return true
-  if (typeof model.value === 'string' && model.value.length > 24) return true
+  if (typeof model.value === 'string' && model.value.length > 24) return !props.isEditable
   return false
 })
 
@@ -47,13 +44,13 @@ function toggle() {
     }"
     class="
       flex flex-wrap items-stretch
-      not-first:b-t b-editor
+      not-first:b-t b-app
       ring-1 ring-transparent
     ">
 
     <!-- Header -->
     <div
-      class="flex items-center w-full h-8 relative"
+      class="flex items-center w-full relative"
       :class="{ 'cursor-pointer': hasDetail }"
       @mousedown="() => toggle()">
 
@@ -62,20 +59,22 @@ function toggle() {
         v-model="name"
         :depth="depth"
         :is-editable="isNameEditable"
-        class="grow min-w-40"
+        class="grow min-w-40 max-w-40"
       />
 
       <!-- Divider -->
-      <div class="w-px h-full b-r b-editor transition" />
+      <div class="w-px h-full b-r b-app" />
 
       <!-- Value -->
-      <div class="flex items-center">
+      <div class="flex items-center grow h-full">
         <DataSheetValue
           v-model="model"
           :name="name"
           :is-open="isOpen"
           :is-editable="isEditable"
           :is-clearable="isClearable"
+          :is-text-area="isTextArea"
+          :placeholder="placeholder"
           :class="{ 'pointer-events-none': hasDetail }"
         />
 
@@ -83,7 +82,7 @@ function toggle() {
         <div class="grow" />
 
         <!-- Collapse -->
-        <div class="flex items-center space-x-sm op-0 group-hover:op-100">
+        <div class="flex items-center space-x-sm op-0 group-hover:op-100 px-sm">
           <BaseIcon
             v-if="hasDetail"
             icon="i-carbon:chevron-down"
@@ -108,7 +107,7 @@ function toggle() {
     <Collapse
       v-if="hasDetail"
       :model-value="isOpen"
-      class="w-full b-t b-editor">
+      class="w-full b-t b-app">
 
       <!-- Content -->
       <DataSheetDetail

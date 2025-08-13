@@ -25,7 +25,7 @@ const model = defineModel<T>()
     />
 
     <!-- Data -->
-    <div class="b b-editor rd select-text text-sm bg-editor-panel-data first:children:rd-t last:children:rd-b">
+    <div class="b b-app rd select-text text-sm bg-editor-panel-data first:children:rd-t last:children:rd-b">
       <slot>
         <!-- @vue-expect-error: ignore `value` inference issue -->
         <DataSheetRow
