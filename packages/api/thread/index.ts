@@ -13,5 +13,5 @@ export class ModuleThread extends ModuleBase {
   entities = ENTITIES
   errors = UTILS.ERRORS
   dependencies = [ModuleUser, ModuleFlow]
-  sessions = new Map<string, EventBus<ENTITIES.ThreadEventObject>>()
+  sessions = new Map<string, EventBus<ENTITIES.ThreadEventObject[]>>()
 }

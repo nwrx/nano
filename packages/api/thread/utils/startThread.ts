@@ -29,7 +29,7 @@ export type StartThreadOptions = ReturnType<typeof START_THREAD_OPTIONS_SCHEMA>
  * @returns An {@linkcode EventBus} instance for the thread session
  * @example await startThread({ workspace, project, thread, flow, inputs })
  */
-export async function startThread(this: ModuleThread, options: StartThreadOptions): Promise<EventBus<ThreadEventObject>> {
+export async function startThread(this: ModuleThread, options: StartThreadOptions): Promise<EventBus<ThreadEventObject[]>> {
   const moduleVault = this.getModule(ModuleVault)
   const moduleRunner = this.getModule(ModuleRunnerLocal)
   const { workspace, project, flow, thread, inputs } = START_THREAD_OPTIONS_SCHEMA(options)
@@ -42,17 +42,20 @@ export async function startThread(this: ModuleThread, options: StartThreadOption
 
   // --- Create an event bus for handling messages.
   const { ThreadEvent } = this.getRepositories()
-  const session = createEventBus<ThreadEventObject>({
+  const session = createEventBus<ThreadEventObject[]>({
     onMount: () => {
       void channel.open()
       channel.on('message', async(message) => {
 
+        // --- Skip `nodeChatEvent` of type `raw`.
+        if (message.event === 'nodeChatEvent' && message.data[2].type === 'raw') return
+
         // --- Store the event in the database.
         const event = ThreadEvent.create({ thread, runner: client.runner, message, index: index++ })
-        await ThreadEvent.save(event)
         const serializedEvent = event.serialize()
-        await session.sendMessage(serializedEvent)
         events.push(serializedEvent)
+        await session.sendMessage([serializedEvent])
+        await ThreadEvent.save(event)
 
         // --- Resolve references.
         if (message.event === 'worker.references.resolve') {
@@ -84,7 +87,7 @@ export async function startThread(this: ModuleThread, options: StartThreadOption
       })
     },
     onSubscribe: (_, stream) => {
-      for (const event of events) void stream.sendMessage(event)
+      for (const event of events) void stream.sendMessage([event])
     },
   })
 

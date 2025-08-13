@@ -2,6 +2,7 @@ import type { EventStream } from '@unserved/server'
 import type { ThreadEventObject } from '../index'
 import type { ModuleThread } from '../index'
 import { createEventStream, createHttpRoute } from '@unserved/server'
+import { chunk } from '@unshared/collection'
 import { assert, createParser } from '@unshared/validation'
 import { ModuleFlow } from '../../flow'
 import { ModuleProject } from '../../project'
@@ -20,7 +21,7 @@ export function threadGetEvents(this: ModuleThread) {
         thread: assert.stringUuid,
       }),
     },
-    async({ event, parameters }): Promise<EventStream<ThreadEventObject>> => {
+    async({ event, parameters }): Promise<EventStream<ThreadEventObject[]>> => {
       const moduleUser = this.getModule(ModuleUser)
       const moduleFlow = this.getModule(ModuleFlow)
       const moduleProject = this.getModule(ModuleProject)
@@ -39,13 +40,17 @@ export function threadGetEvents(this: ModuleThread) {
 
       // --- If not, we must return the thread events from the database as a stream.
       const events = await getThreadEvents.call(this, { thread, flow, project, workspace, user })
-      const stream = createEventStream<ThreadEventObject>(event)
+      const stream = createEventStream<ThreadEventObject[]>(event)
 
       // eslint-disable-next-line @typescript-eslint/no-misused-promises, no-async-promise-executor
       void new Promise<void>(async() => {
-        for (const event of events) {
-          const serialized = event.serialize()
-          await stream.sendMessage(serialized)
+        const chunks = chunk(events, 100)
+        // await stream.sendMessage(events.map(event => event.serialize()))
+        // await stream.close()
+        for (const chunkedEvents of chunks) {
+          const serializedEvents = chunkedEvents.map(event => event.serialize())
+          await stream.sendMessage(serializedEvents)
+          await new Promise(resolve => setTimeout(resolve, 10)) // Throttle to avoid overwhelming the client
         }
         await stream.close()
       })
