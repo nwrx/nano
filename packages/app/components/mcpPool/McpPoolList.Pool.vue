@@ -22,7 +22,7 @@ const { t } = useI18n()
 <template>
   <PanelGroup
     icon="i-carbon:folder"
-    class-button="h-12"
+    class-header="h-12"
     :label="pool.title || pool.name"
     :description="pool.title ? pool.description : undefined">
 
