@@ -1,11 +1,7 @@
 import { createColorPalette } from '@unshared/color/createColorPalette'
 
 export const CONSTANTS = {
-  appTitle: 'Nanoworks',
-  appDescription: 'A flow-based programming environment.',
   appHost: 'app.nwrx.io',
-  appCanonicalUrl: 'https://app.nwrx.io',
-  niceDelay: 500,
 }
 
 const stops = [50, 60, 70, 80, 90, 100, 200, 300, 400, 500, 600, 700, 750, 800, 850, 900, 910, 920, 930, 940, 950] as const

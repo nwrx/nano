@@ -167,7 +167,6 @@ export function createMcpServerClient(parameters: UseMcpServerOptions) {
   }
 
   async function removeServer() {
-    await sleep(CONSTANTS.niceDelay)
     await client.requestAttempt(
       'DELETE /workspaces/:workspace/pools/:pool/servers/:server',
       {

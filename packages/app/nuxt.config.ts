@@ -31,10 +31,6 @@ export default defineNuxtConfig({
     public: {
       apiUrl: 'http://localhost:3001',
       appUrl: 'app.nwrx.io',
-      appTitle: 'Nanoworks',
-      appDescription: 'A flow-based programming environment.',
-      appHostname: 'app.nwrx.io',
-      appCanonicalUrl: 'https://app.nwrx.io',
     },
   },
 
