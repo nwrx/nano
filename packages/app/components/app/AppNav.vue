@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { LocaleObject } from '@nuxtjs/i18n'
+import type { Locales } from '~/utils/types'
 
 const props = defineProps<{
   theme?: string
@@ -11,13 +12,13 @@ const props = defineProps<{
   userDisplayName?: string
   search?: string
   searchOpen?: boolean
-  locale?: typeof LOCALES[number]['language']
+  locale?: Locales
   locales?: Array<LocaleObject & { icon: string }>
 }>()
 
 const emit = defineEmits<{
   signout: []
-  setLocale: [language: string]
+  setLocale: [language: Locales]
   setTheme: ['dark' | 'light']
 }>()
 
@@ -35,7 +36,7 @@ const theme = useVModel(props, 'theme', emit, {
 // --- Language.
 const locale = useVModel(props, 'locale', emit, {
   passive: false,
-  defaultValue: 'en',
+  defaultValue: 'en-US',
   eventName: 'setLocale',
 }) as Ref<string>
 </script>

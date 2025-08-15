@@ -28,13 +28,19 @@ watch(() => localSettings.value.themeColor, () => {
 // --- Locale
 const { setLocale, locale } = useI18n()
 
+type NuxtError = Error & {
+  statusCode?: number
+  statusMessage?: string
+  cause?: Error
+}
+
 // --- Error handling.
-const errorBoundary = ref<Error>()
+const nuxtError = ref<NuxtError | undefined>(undefined)
 function handleError(error: unknown) {
   if (error instanceof Error)
-    errorBoundary.value = error
+    nuxtError.value = error as NuxtError
   else if (typeof error === 'string')
-    errorBoundary.value = new Error(error)
+    nuxtError.value = new Error(error) as NuxtError
 }
 </script>
 
@@ -48,7 +54,7 @@ function handleError(error: unknown) {
     <AppNav
       class="h-16 px"
       :theme="localSettings.themeColor"
-      :title="CONSTANTS.appTitle"
+      title="Nanoworks"
       :image-url="ASSET_NWRX_LOGO"
       :items="NAV_BAR_END"
       :user-username="session.data.username"
@@ -68,7 +74,7 @@ function handleError(error: unknown) {
         class="h-full shrink-0 overflow-y-auto text-unset"
         :items-top="NAV_DRAWER_START"
         :items-bottom="NAV_DRAWER_END"
-        :is-hidden="isAuthenticationRoute || errorBoundary !== undefined"
+        :is-hidden="isAuthenticationRoute || nuxtError !== undefined"
       />
 
       <!-- Main Content -->
@@ -81,13 +87,13 @@ function handleError(error: unknown) {
         <NuxtErrorBoundary @error="(err) => handleError(err)">
           <template #error="{ clearError }">
             <AppPageErrorBoundary
-              v-if="errorBoundary"
-              :constructor-name="errorBoundary.constructor.name"
-              :name="errorBoundary.cause?.name || errorBoundary.name"
-              :stack="errorBoundary.stack"
-              :message="errorBoundary.message"
-              :status-code="errorBoundary.statusCode"
-              :status-message="errorBoundary.statusMessage"
+              v-if="nuxtError"
+              :constructor-name="nuxtError.constructor.name"
+              :name="nuxtError.cause?.name || nuxtError.name"
+              :stack="nuxtError.stack"
+              :message="nuxtError.message"
+              :status-code="nuxtError.statusCode"
+              :status-message="nuxtError.statusMessage"
               is-error-boundary
               @clear-error="() => clearError()"
             />

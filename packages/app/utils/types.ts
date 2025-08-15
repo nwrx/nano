@@ -62,3 +62,5 @@ declare module 'vue-router' {
     isWorkInProgress?: boolean
   }
 }
+
+export type Locales = ReturnType<typeof useI18n>['locales']['value'][number]['code']
