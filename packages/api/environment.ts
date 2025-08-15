@@ -6,13 +6,44 @@ import { type CipherGCMTypes, randomBytes } from 'node:crypto'
 export const ENV_SCHEMA = createParser({
 
   /**
+   * The port on which the API server will listen. This is required for the application
+   * to start the server. It should be a valid port number between 1 and 65535.
+   */
+  PORT: [
+    [assert.undefined, () => 3001],
+    [
+      assert.stringNumber.withMessage('PORT must be a valid port number between 1 and 65535'),
+      Number.parseInt,
+      assert.numberInRangeStrict.withMessage('PORT must be a valid port number between 1 and 65535')(1, 65535),
+    ],
+  ],
+
+  /**
+   * The host on which the API server will listen. This is required for the application
+   * to start the server. It should be a valid IP address or hostname.
+   */
+  HOST: [
+    [assert.undefined, () => '0.0.0.0'],
+    [assert.stringNotEmpty],
+  ],
+
+  /**
+   * The URL for the front-end application. This is used to set the `Access-Control-Allow-Origin`
+   * header for CORS requests. It should be a valid URL that the front-end application is served from.
+   */
+  APP_URL: [
+    [assert.undefined, () => 'http://localhost:3000'],
+    [assert.stringNotEmpty],
+  ],
+
+  /**
    * The database connection URL for the PostgreSQL database.
    * This is required for the application to connect to the database.
    * It should be in the format: `postgres://username:password@host:port/database`
    */
-  DATABASE_URL: [
-    assert.stringNotEmpty.withMessage('DATABASE_URL is required'),
-  ],
+  DATABASE_URL: process.env.NODE_ENV === 'production'
+    ? [assert.stringNotEmpty.withMessage('DATABASE_URL is required')]
+    : [() => ''],
 
   /**
    * Whether to synchronize the database schema on application startup.
@@ -98,9 +129,9 @@ export const ENV_SCHEMA = createParser({
    * vault adapters. This allows secure storage of the vault configuration in the
    * database without exposing the credentials.
    */
-  VAULT_CONFIGURATION_SECRET_KEY: [
-    [assert.stringNotEmpty.withMessage('VAULT_CONFIGURATION_SECRET_KEY is required')],
-  ],
+  VAULT_CONFIGURATION_SECRET_KEY: process.env.NODE_ENV === 'production'
+    ? [assert.stringNotEmpty.withMessage('VAULT_CONFIGURATION_SECRET_KEY is required')]
+    : [() => 'SECRET'],
 
   /**
    * The algorithm used to encrypt and decrypt the configuration of additional vault
@@ -118,9 +149,9 @@ export const ENV_SCHEMA = createParser({
    * the default cypher key for all variables that use the `local` vault adapter
    * and don't have a specific key set.
    */
-  VAULT_DEFAULT_LOCAL_SECRET_KEY: [
-    [assert.stringNotEmpty],
-  ],
+  VAULT_DEFAULT_LOCAL_SECRET_KEY: process.env.NODE_ENV === 'production'
+    ? [assert.stringNotEmpty.withMessage('VAULT_DEFAULT_LOCAL_SECRET_KEY is required')]
+    : [() => 'SECRET'],
 
   /**
    * The URL to an NPM CDN that hosts the `@iconify/json` package. This package
