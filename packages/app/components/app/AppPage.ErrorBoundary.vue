@@ -38,46 +38,64 @@ const constructorName = computed(() => {
 interface StackLine {
   name: string
   path: string
-  file: string
   line: number
   column: number
   internal?: boolean
 }
 
+const EXP_SERVER_ERROR = /^\s*at\s+(.+?)\s+\(file:\/\/(.+?):(\d+):(\d+)\)$/
+const EXP_CLIENT_ERROR = /^(.+?)@(.+?):(\d+):(\d+)$/
+
+function parseServerError(match: RegExpExecArray): StackLine {
+  const [, name, url, line, column] = match
+  const path = url
+    .replace(/^.*\/nano-ce\/packages/, '.') // Remove absolute path prefix
+    .replace(/\?.*$/, '')
+  return {
+    name: name || '<anonymous>',
+    path,
+    line: Number.parseInt(line),
+    column: Number.parseInt(column),
+    internal: path.includes('node_modules') || path.includes('@vue') || path.includes('@nuxt'),
+  }
+}
+
+function parseClientError(match: RegExpExecArray): StackLine {
+  const [, name, url, line, column] = match
+  const path = url
+    .replace(globalThis.location.origin, '')
+    .replace(/^\/static\//, '')
+    .replace(/\?.*$/, '')
+  return {
+    name: name.includes('_sfc_render') ? '<script setup>' : name || '<anonymous>',
+    path,
+    line: Number.parseInt(line),
+    column: Number.parseInt(column),
+    internal: path.includes('node_modules') || path.includes('@vue') || path.includes('@nuxt'),
+  }
+}
+
 const stack = computed(() => {
   if (!props.stack) return []
-  const baseUrl = globalThis.location.origin
 
   return props.stack.split('\n').map((line) => {
     const trimmedLine = line.trim()
     if (!trimmedLine) return
-
-    // ignore anything that contains node_modules or @vue or @nuxt
     if (trimmedLine.includes('node_modules')) return
+    if (trimmedLine.startsWith('Error: ')) return
+
+    // Match H3/server stack trace format: at function (file://path:line:column)
+    const matchH3 = EXP_SERVER_ERROR.exec(trimmedLine)
+    if (matchH3) return parseServerError(matchH3)
 
     // Match browser stack trace format: function@url:line:column
-    const match = /^(.+?)@(.+?):(\d+):(\d+)$/.exec(trimmedLine)
-    if (match) {
-      const [, name, url, line, column] = match
-      const path = url
-        .replace(baseUrl, '')
-        .replace(/^\/static\//, '')
-        .replace(/\?.*$/, '')
-      return {
-        name: name.includes('_sfc_render') ? '<script setup>' : name || '<anonymous>',
-        path,
-        file: path.replace(/^.*\//, ''), // Extract filename from full path
-        line: Number.parseInt(line),
-        column: Number.parseInt(column),
-        raw: trimmedLine,
-        internal: path.includes('node_modules') || path.includes('@vue') || path.includes('@nuxt'),
-      }
-    }
+    const matchNuxt = EXP_CLIENT_ERROR.exec(trimmedLine)
+    if (matchNuxt) return parseClientError(matchNuxt)
 
     // Fallback for unparseable lines
     return {
       name: '<unknown>',
-      file: '',
+      path: trimmedLine,
       line: 0,
       column: 0,
       raw: trimmedLine,
@@ -129,9 +147,9 @@ const stack = computed(() => {
 
               <!-- Name & Path -->
               <span class="space-x-xs">
-                <span class="text-danger">{{ line.name }}</span>
-                <span class="text-app">→</span>
                 <span class="text-warning">{{ line.path }}</span>
+                <span class="text-app">→</span>
+                <span class="text-danger">{{ line.name }}</span>
               </span>
 
               <!-- Location -->
@@ -155,15 +173,6 @@ const stack = computed(() => {
           icon-append="i-carbon:arrow-right"
           icon-expand
           @click="() => emit('clearError')"
-        />
-
-        <!-- Go home -->
-        <Button
-          :label="t('goBack')"
-          to="/"
-          class="button-lg button-secondary"
-          icon-prepend="i-carbon:home"
-          icon-expand
         />
       </div>
     </div>
