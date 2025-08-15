@@ -8,22 +8,28 @@ export const useClient = createSharedComposable(() => createClient({
   credentials: useRuntimeConfig().public.apiUrl ? 'include' : 'same-origin',
 
   onFailure: async(response) => {
-    const alerts = useAlerts()
-    try {
-      const { data } = await response.json() as { data: Error }
-      alerts.error({
-        title: data.name && data.name !== 'Error' ? data.name : response.statusText,
-        text: data.message,
-        type: 'error',
-      })
-    }
-    catch {
-      alerts.error({
-        title: response.statusText,
-        text: response.url,
-        type: 'error',
-      })
-    }
+    const { stack, data } = await response.json() as { stack?: string; data: Error }
+    useAlerts().error({
+      title: data.name,
+      text: data.message,
+      type: 'error',
+    })
+    throw createError({
+      name: data.name,
+      stack,
+      message: data.message,
+      statusCode: response.status,
+      statusMessage: response.statusText,
+    })
+
   },
+  // onError: (error) => {
+  //   const alerts = useAlerts()
+  //   alerts.error({
+  //     title: error.name,
+  //     text: error.message,
+  //     type: 'error',
+  //   })
+  // },
 
 })) as <T = typeof application>() => Client<Routes<T>, Channels<T>>
