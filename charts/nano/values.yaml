@@ -1,0 +1,326 @@
+# Global configuration
+global:
+  image:
+    repository: ghcr.io/nwrx/nano
+    tag: main
+    pullPolicy: IfNotPresent
+  
+  # Security context for all pods
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1001
+    runAsGroup: 1001
+    fsGroup: 1001
+    readOnlyRootFilesystem: true
+
+# Frontend Application Service
+app:
+  enabled: true
+  replicas: 1
+  port: 8080
+  targetPort: 8080
+
+  # App-specific configuration
+  config:
+    host: 0.0.0.0
+    # Nuxt-specific configuration for the frontend app
+    # These follow Nuxt's environment variable naming convention
+    # 
+    # apiUrl: Controls API connection behavior
+    #   - Empty/unset: App will use embedded API server (single container deployment)
+    #   - Set to URL: App will connect to external API server (microservices deployment)
+    apiUrl: ''  # Leave empty to use embedded API, or set to external API URL
+    appUrl: app.nwrx.io  # Public app URL for client-side usage
+  
+  # Service configuration 
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 8080
+  
+  # Resource limits
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  
+  # Health checks
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 3
+  
+  # Readiness probe
+  readinessProbe:
+    httpGet:
+      path: /ready
+      port: http
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
+  
+  # Autoscaling
+  autoscaling:
+    enabled: false
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+  
+  # Pod Disruption Budget
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+
+# API Service
+api:
+  enabled: true
+  replicas: 1
+  port: 3001
+  targetPort: 3001
+  
+  # API-specific configuration
+  config:
+    host: 0.0.0.0
+    appUrl: https://app.nwrx.io
+    databaseSyncronize: 'true'
+    userTrustProxy: 'true'  # Set to true when behind a proxy/load balancer
+    userSessionIdCookieName: __Host-Session-Id
+    userSessionTokenCookieName: __Host-Session-Token
+    userSessionDuration: '3600000'  # 1 hour in milliseconds (simpler test value)
+    userRecoveryDuration: '808000'  # 5 minutes in milliseconds (simpler test value)
+    userSecretKey: your_secret_key_here_change_in_production
+    userCypherAlgorithm: aes-256-gcm
+    vaultDefaultLocalSecretKey: your_local_secret_key_here_change_in_production
+    vaultConfigurationSecretKey: your_configuration_secret_key_here_change_in_production
+    vaultConfigurationAlgorithm: aes-256-gcm
+    iconCdnUrl: https://esm.sh/
+    iconIconifyUrl: https://api.iconify.design/
+    # Storage path for persistent data
+    storagePath: /app/storage
+    # Auto-register runners defined in the runners section
+    # Set to false to disable auto-registration of internal runners
+    initialRunnersEnabled: true
+  
+  # Persistence configuration
+  # Enables persistent storage for the API service using a PVC
+  # When enabled, creates a PersistentVolumeClaim for storing data
+  # When disabled, uses emptyDir (data is lost on pod restart)
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: ''  # Use default storage class
+    accessModes:
+      - ReadWriteOnce
+  
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 3001
+  
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 45
+    periodSeconds: 10
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 3
+  
+  readinessProbe:
+    httpGet:
+      path: /ready
+      port: http
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
+  
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 1
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+  
+  podDisruptionBudget:
+    enabled: false
+    minAvailable: 0
+
+# Runner pools. Each pool is a separate stateful set and can have multiple instances each. Each instance can be accessed individually.
+# Each instance will hold a separate auto-generated name like `nano-runner-<name>-<id>`. (Will also set env RUNNER_NAME to the same value)
+# Each instance will hold a separate auto-generated token that is unique to each instance and used to authenticate requests.
+# Only the `api` deployment can access the runners, no other deployment can access them.
+runners:
+  - name: main # Will generate `name: nano-runner-main-abcd1234`
+    enabled: true
+    port: 8080
+    instances: 3
+    service:
+      type: ClusterIP
+      port: 80
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 250m
+        memory: 1Gi
+    livenessProbe:
+      httpGet:
+        path: /ping
+        port: http
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      successThreshold: 1
+      failureThreshold: 3
+    readinessProbe:
+      httpGet:
+        path: /ping
+        port: http
+      initialDelaySeconds: 5
+      periodSeconds: 5
+      timeoutSeconds: 3
+      successThreshold: 1
+      failureThreshold: 3
+
+# Ingress Configuration
+ingress:
+  enabled: true
+  className: nginx  # Options: nginx, traefik, contour, istio, etc.
+  
+  # Common annotations that work across different ingress controllers
+  annotations:
+    # SSL/TLS redirect - controller-specific implementations
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  
+  # Controller-specific annotations (will be merged with common annotations)
+  # These are applied based on the className value
+  controllerAnnotations:
+    nginx:
+      nginx.ingress.kubernetes.io/ssl-redirect: 'true'
+      nginx.ingress.kubernetes.io/force-ssl-redirect: 'true'
+      nginx.ingress.kubernetes.io/use-regex: 'true'
+    traefik:
+      traefik.ingress.kubernetes.io/redirect-entry-point: https
+      traefik.ingress.kubernetes.io/redirect-permanent: 'true'
+    contour:
+      projectcontour.io/tls-minimum-protocol-version: '1.2'
+    istio:
+      kubernetes.io/ingress.class: istio
+  
+  hosts:
+    - host: nano.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+          service:
+            name: app
+            port: 80
+        - path: /api
+          pathType: Prefix
+          service:
+            name: api
+            port: 80
+  tls:
+    - secretName: nano-tls
+      hosts:
+        - nano.example.com
+
+# PostgreSQL Configuration (Bitnami subchart)
+postgresql:
+  enabled: true
+  auth:
+    database: nano
+    username: nano
+    password: nano-change-in-production
+    postgresPassword: postgres-change-in-production
+  
+  primary:
+    persistence:
+      enabled: true
+      size: 20Gi
+      storageClass: ''  # Use default storage class
+    
+    resources:
+      limits:
+        cpu: 2000m
+        memory: 4Gi
+      requests:
+        cpu: 1000m
+        memory: 2Gi
+    
+    # Security
+    podSecurityContext:
+      enabled: true
+      fsGroup: 1001
+    
+    containerSecurityContext:
+      enabled: true
+      runAsUser: 1001
+      runAsNonRoot: true
+    
+    # Network policy
+    networkPolicy:
+      enabled: true
+      allowExternal: false
+      ingressRules:
+        accessOnlyFrom:
+          enabled: true
+          namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              nano-postgresql-client: 'true'
+
+# Node selector, tolerations, and affinity
+nodeSelector: {}
+tolerations: []
+affinity: {}
+podAnnotations: {}
+
+# Image pull secrets (if using private registry)
+imagePullSecrets: []
+
+# Service Account
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ''
+  automountServiceAccountToken: false
+
+# Common labels applied to all resources
+commonLabels: {}
+
+# Pod Security Context
+podSecurityContext: {}
+
+# Security Context
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1001

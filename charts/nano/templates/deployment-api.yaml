@@ -1,0 +1,166 @@
+{{- if .Values.api.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "nano.fullname" . }}-api
+  labels:
+    {{- include "nano.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+spec:
+  {{- with .Values.api.autoscaling }}
+  {{- if not .enabled }}
+  replicas: {{ $.Values.api.replicas }}
+  {{- end }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "nano.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: api
+  template:
+    metadata:
+      annotations:
+        checksum/secret: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "nano.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: api
+        nano-postgresql-client: "true"
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "nano.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      initContainers:
+        - name: wait-for-postgresql
+          image: postgres:15-alpine
+          command: ['sh', '-c']
+          args:
+            - |
+              echo "Waiting for PostgreSQL to be ready..."
+              until pg_isready -h {{ include "nano.postgresql.servicename" . }} -p {{ include "nano.postgresql.port" . }} -U {{ .Values.postgresql.auth.username }}; do
+                echo "PostgreSQL is not ready yet. Waiting..."
+                sleep 2
+              done
+              echo "PostgreSQL is ready!"
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      containers:
+        - name: api
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: {{ include "nano.image" . }}
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          command: ['sh', '-c']
+          args:
+            - |
+              {{- if and .Values.api.config.initialRunnersEnabled .Values.runners }}
+              # Expand shell variables in INITIAL_RUNNERS using eval
+              export INITIAL_RUNNERS=$(eval echo \"$INITIAL_RUNNERS\")
+              {{- end }}
+              exec nano api
+          ports:
+            - name: http
+              containerPort: {{ .Values.api.port }}
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: {{ include "nano.fullname" . }}-api-secret
+            {{- if .Values.runners }}
+            - secretRef:
+                name: {{ include "nano.fullname" . }}-runner-tokens
+            {{- end }}
+          env:
+            - name: NODE_ENV
+              value: 'production'
+            - name: PORT
+              value: {{ .Values.api.port | quote }}
+            - name: HOST
+              value: {{ .Values.api.config.host | quote }}
+            - name: APP_URL
+              value: {{ .Values.api.config.appUrl | quote }}
+            - name: USER_TRUST_PROXY
+              value: {{ .Values.api.config.userTrustProxy | quote }}
+            - name: USER_SESSION_ID_COOKIE_NAME
+              value: {{ .Values.api.config.userSessionIdCookieName | quote }}
+            - name: USER_SESSION_TOKEN_COOKIE_NAME
+              value: {{ .Values.api.config.userSessionTokenCookieName | quote }}
+            - name: USER_SESSION_DURATION
+              value: {{ .Values.api.config.userSessionDuration | quote }}
+            - name: USER_RECOVERY_DURATION
+              value: {{ .Values.api.config.userRecoveryDuration | quote }}
+            - name: VAULT_CONFIGURATION_ALGORITHM
+              value: {{ .Values.api.config.vaultConfigurationAlgorithm | quote }}
+            - name: ICON_CDN_URL
+              value: {{ .Values.api.config.iconCdnUrl | quote }}
+            - name: ICON_ICONIFY_URL
+              value: {{ .Values.api.config.iconIconifyUrl | quote }}
+            - name: DATABASE_HOST
+              value: {{ include "nano.postgresql.servicename" . | quote }}
+            - name: DATABASE_PORT
+              value: {{ include "nano.postgresql.port" . | toString | quote }}
+            - name: DATABASE_NAME
+              value: {{ .Values.postgresql.auth.database | quote }}
+            - name: DATABASE_SYNCRONIZE
+              value: {{ .Values.api.config.databaseSyncronize | quote }}
+            - name: STORAGE_PATH
+              value: {{ .Values.api.config.storagePath | quote }}
+            {{- if and .Values.api.config.initialRunnersEnabled .Values.runners }}
+            - name: INITIAL_RUNNERS
+              value: {{ include "nano.initialRunners" . | quote }}
+            {{- end }}
+          {{- with .Values.api.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.api.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.api.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: var-cache
+              mountPath: /var/cache
+            - name: storage
+              mountPath: {{ .Values.api.config.storagePath | quote }}
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: var-cache
+          emptyDir: {}
+        {{- if .Values.api.persistence.enabled }}
+        - name: storage
+          persistentVolumeClaim:
+            claimName: {{ include "nano.fullname" . }}-api-storage
+        {{- else }}
+        - name: storage
+          emptyDir: {}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

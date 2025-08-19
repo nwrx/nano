@@ -1,13 +1,14 @@
-name: CI
+name: Publish Docker Image
 permissions:
-  contents: write
   packages: write
 
 on:
+  workflow_dispatch: {}
   push:
     branches:
       - main
-  workflow_dispatch: {}
+    paths:
+      - 'packages/**'
 
 jobs:
   ci:

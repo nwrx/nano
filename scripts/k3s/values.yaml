@@ -1,0 +1,100 @@
+global:
+  image:
+    repository: localhost:5000/nwrx/nano
+    tag: latest
+    pullPolicy: Always
+
+# Ingress Configuration for Traefik (default in k3s)
+ingress:
+  enabled: true
+  className: traefik
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    traefik.ingress.kubernetes.io/redirect-entry-point: https
+    traefik.ingress.kubernetes.io/redirect-permanent: 'true'
+    traefik.ingress.kubernetes.io/router.tls: 'true'
+    cert-manager.io/cluster-issuer: nano-local-ca-issuer
+  
+  hosts:
+    - host: app.nano.local
+      paths:
+        - path: /
+          pathType: Prefix
+          service:
+            name: app
+            port: 80
+    - host: api.nano.local
+      paths:
+        - path: /
+          pathType: Prefix
+          service:
+            name: api
+            port: 80
+  
+  # TLS configuration - Traefik will auto-generate certificates
+  # The secret will be created automatically by Traefik when the ingress is accessed
+  tls:
+    - secretName: nano-local-tls
+      hosts:
+        - app.nano.local
+        - api.nano.local
+        - nano.local
+
+# Simplified configuration for local development
+postgresql:
+  enabled: true
+  auth:
+    database: nano
+    username: nano
+    password: nano-dev
+
+# Development-friendly configuration (not for production)
+# Reduce resource requirements for local development
+app:
+  enabled: true
+  replicas: 3
+  config:
+    apiUrl: 'https://api.nano.local'  # External API URL for local development (HTTPS)
+    appUrl: https://app.nano.local
+
+api:
+  enabled: true
+  replicas: 1
+  config:
+    appUrl: https://app.nano.local  # Use HTTPS for CORS
+    databaseSyncronize: 'true'
+
+# Multiple runners example
+runners:
+  - name: dev
+    enabled: true
+    port: 8080
+    instances: 3
+    service:
+      type: ClusterIP
+      port: 80
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 250m
+        memory: 256Mi
+    livenessProbe:
+      httpGet:
+        path: /ping
+        port: http
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      successThreshold: 1
+      failureThreshold: 3
+    readinessProbe:
+      httpGet:
+        path: /ping
+        port: http
+      initialDelaySeconds: 5
+      periodSeconds: 5
+      timeoutSeconds: 3
+      successThreshold: 1
+      failureThreshold: 3
