@@ -94,6 +94,7 @@ export class ModuleUser extends ModuleBase implements ModuleUserOptions {
     if (options.userTrustProxy) this.userTrustProxy = options.userTrustProxy
     if (options.userSecretKey) this.userSecretKey = options.userSecretKey
     if (options.userCypherAlgorithm) this.userCypherAlgorithm = options.userCypherAlgorithm
+    if (options.userSessionIdCookieName) this.userSessionIdCookieName = options.userSessionIdCookieName
     if (options.userSessionTokenCookieName) this.userSessionTokenCookieName = options.userSessionTokenCookieName
     if (options.userSessionDuration) this.userSessionDuration = options.userSessionDuration
     if (options.userRecoveryDuration) this.userRecoveryDuration = options.userRecoveryDuration
