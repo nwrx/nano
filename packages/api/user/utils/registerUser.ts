@@ -13,7 +13,6 @@ export interface RegisterUserOptions extends CreateUserOptions {
 
 export async function registerUser(this: ModuleUser, options: RegisterUserOptions) {
   const moduleWorkspace = this.getModule(ModuleWorkspace)
-  // const moduleVault = this.getModule(ModuleVault)
   const { User, UserPassword } = this.getRepositories()
   const { Workspace } = moduleWorkspace.getRepositories()
   // const { Vault } = moduleVault.getRepositories()
@@ -27,6 +26,10 @@ export async function registerUser(this: ModuleUser, options: RegisterUserOption
   // --- Create a local vault for the user.
   // const configuration: VaultConfiguration<'local'> = { secret: randomUUID(), algorithm: 'aes-256-gcm' }
   // const vault = await moduleVault.createVault({ user, workspace, configuration })
+
+  // --- If it's the first ever user, set them as the super administrator.
+  const userCount = await User.countBy({ isSuperAdministrator: true })
+  if (userCount === 0) user.isSuperAdministrator = true
 
   // --- Save and return the user, workspace, and vault.
   return this.withTransaction(async() => {
