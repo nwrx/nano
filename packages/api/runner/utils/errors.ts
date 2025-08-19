@@ -53,4 +53,13 @@ export const ERRORS = {
     message: `Runner with name "${name}" is already disabled`,
     data: { name },
   }),
+
+  // Initialization
+  RUNNER_INITIAL_RUNNER_BAD_FORMAT: (runner: string) => createError({
+    name: 'E_RUNNER_INITIAL_RUNNER_BAD_FORMAT',
+    statusCode: 400,
+    statusMessage: 'Bad Request',
+    message: `Could not parse initial runner configuration "${runner}". Expected format: "address:token"`,
+    data: { runner },
+  }),
 }

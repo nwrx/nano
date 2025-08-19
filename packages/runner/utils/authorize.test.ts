@@ -29,7 +29,7 @@ describe.concurrent<Context>('getEventInformation', () => {
     it('should throw an error when the token is invalid', ({ moduleRunner }) => {
       const event = createTestEvent({ headers: { authorization: 'Bearer invalid' } })
       const shouldThrow = () => authorize.call(moduleRunner, event)
-      const error = moduleRunner.errors.UNAUTHORIZED()
+      const error = moduleRunner.errors.NOT_AUTHORIZED()
       expect(shouldThrow).toThrowError(error)
     })
   })
@@ -44,7 +44,7 @@ describe.concurrent<Context>('getEventInformation', () => {
     it('should throw an error when the token is invalid', ({ moduleRunner }) => {
       const peer = createTestPeer({ headers: { authorization: 'Bearer invalid' } })
       const shouldThrow = () => authorize.call(moduleRunner, peer)
-      const error = moduleRunner.errors.UNAUTHORIZED()
+      const error = moduleRunner.errors.NOT_AUTHORIZED()
       expect(shouldThrow).toThrowError(error)
     })
   })

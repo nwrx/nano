@@ -1,6 +1,7 @@
 import type { ModuleRunner } from '../index'
 import { createHttpRoute } from '@unserved/server'
-import { getRequestHeader, getRequestIP } from 'h3'
+import { getRequestIP } from 'h3'
+import { authorize } from '../utils'
 
 export function claim(this: ModuleRunner) {
   return createHttpRoute(
@@ -8,18 +9,11 @@ export function claim(this: ModuleRunner) {
       name: 'POST /claim',
     },
     ({ event }) => {
-      if (this.isClaimed) throw this.errors.RUNNER_ALREADY_CLAIMED()
-
-      // --- Claim the runner and assign the request's remote address as the master address.
-      const address = this.trustProxy ? getRequestHeader(event, 'X-Forwarded-For') : getRequestIP(event)
-      if (!address) throw this.errors.UNAUTHORIZED()
+      authorize.call(this, event)
+      const address = getRequestIP(event)
+      if (!address) throw this.errors.NOT_AUTHORIZED(this.name)
       this.isClaimed = true
-
-      // --- Respond with the token and name.
-      return {
-        name: this.name,
-        token: this.token,
-      }
+      return { name: this.name }
     },
   )
 }

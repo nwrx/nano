@@ -11,6 +11,7 @@ export function runnerRegister(this: ModuleRunner) {
       name: 'POST /runners',
       parseBody: createParser({
         address: assert.stringNotEmpty,
+        token: assert.stringNotEmpty,
       }),
     },
     async({ event, body }): Promise<RunnerObject> => {

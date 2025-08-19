@@ -44,10 +44,6 @@ export class RunnerClient {
     return result
   }
 
-  async release() {
-    await this.client.request('POST /release')
-  }
-
   /***************************************************************************/
   /* Client                                                                  */
   /***************************************************************************/
@@ -90,9 +86,8 @@ export class RunnerClient {
   /* Cleanup                                                                */
   /***************************************************************************/
 
-  public async dispose() {
+  public dispose() {
     clearInterval(this.statusInterval)
-    await this.release()
   }
 }
 

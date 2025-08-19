@@ -8,6 +8,14 @@ import { User, UserObject } from '../../user'
 export class Runner extends BaseEntity {
 
   /**
+   * Flag to indicate if the runner was registered via the initialization of the
+   * application using the `INITIAL_RUNNERS` environment variable. This will determine
+   * if the runner can be removed from the database when not in `INITIAL_RUNNERS` anymore.
+   */
+  @Column('boolean', { default: false })
+  isInitial = false
+
+  /**
    * The base URL of the thread runner. This URL is used to make requests to
    * the thread runner and must be unique across all runners. It is used to
    * identify which runner is responsible for running specific threads.
@@ -32,7 +40,7 @@ export class Runner extends BaseEntity {
    * provided by the thread runner when it is claimed by the API. This token
    * is used to make authenticated requests to the thread runner.
    *
-   * @example "00000000-0000-0000-0000-000000000000"
+   * @example "abcd1234efgh5678ijkl9012mnop3456"
    */
   @Column('varchar')
   token: string
@@ -64,8 +72,8 @@ export class Runner extends BaseEntity {
    * The user that created the runner.
    */
   @JoinColumn()
-  @ManyToOne(() => User, { nullable: false })
-  createdBy?: User
+  @ManyToOne(() => User, { nullable: true })
+  createdBy?: null | User
 
   /**
    * The user that last updated the runner.

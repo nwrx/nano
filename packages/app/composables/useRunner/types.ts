@@ -1,5 +1,5 @@
 import type { application } from '@nwrx/nano-api'
-import type { RouteRequestBody, RouteRequestQuery, RouteResponseData } from '@unserved/client'
+import type { RouteRequestBody, RouteRequestQuery } from '@unserved/client'
 
 export namespace UseRunner {
   export interface UseOptions {

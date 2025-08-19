@@ -9,6 +9,7 @@ import { createRunnerClient } from './createRunnerClient'
 export const REGISTER_RUNNER_OPTIONS_SCHEMA = createParser({
   user: assertUser,
   address: assert.stringNotEmpty,
+  token: assert.stringNotEmpty,
 })
 
 /** The options for the register thread runner. */
@@ -24,7 +25,7 @@ export type RegisterRunnerOptions = Loose<ReturnType<typeof REGISTER_RUNNER_OPTI
  * @example await registerRunner({ user, address: 'http://localhost:3000' })
  */
 export async function registerRunner(this: ModuleRunner, options: RegisterRunnerOptions): Promise<Runner> {
-  const { address, user } = options
+  const { address, token, user } = options
 
   // --- Assert the user is a super administrator.
   const moduleUser = this.getModule(ModuleUser)
@@ -38,23 +39,23 @@ export async function registerRunner(this: ModuleRunner, options: RegisterRunner
   // --- Create the database record.
   const runner = Runner.create({
     name: '',
-    token: undefined,
+    token,
     address,
     createdBy: user,
     lastSeenAt: new Date(),
+    isInitial: false,
   })
 
   // --- Claim the runner and create a client.
   const client = createRunnerClient({ runner })
-  const { token, name } = await client.claim()
+  const { name } = await client.claim()
 
   // --- Check if a runner with the same name already exists.
   const existingRunner = await Runner.findOneBy({ name })
   if (existingRunner) throw this.errors.RUNNER_NAME_TAKEN(name)
 
-  // --- Save the runner with the name and token.
+  // --- Save the runner with the name.
   runner.name = name
-  runner.token = token
   await Runner.save(runner)
   this.clients.set(runner.id, client)
 

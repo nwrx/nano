@@ -1,7 +1,8 @@
+/* eslint-disable jsdoc/require-param */
 /* eslint-disable jsdoc/require-returns */
+import type { CipherGCMTypes } from 'node:crypto'
 import { parseBoolean } from '@unshared/string/parseBoolean'
 import { assert, createParser } from '@unshared/validation'
-import { type CipherGCMTypes, randomBytes } from 'node:crypto'
 
 export const ENV_DATABASE_SCHEMA = createParser({
 
@@ -104,10 +105,9 @@ export const ENV_CONFIG_SCHEMA = createParser({
    * not be shared with anyone. By default, the key is read from the `process.env.USER_SESSION_SECRET`
    * environment variable. If the variable is not set, a random key is generated.
    */
-  USER_SECRET_KEY: [
-    [assert.undefined, () => randomBytes(64).toString('hex')],
-    [assert.string, assert.stringNotEmpty],
-  ],
+  USER_SECRET_KEY: process.env.NODE_ENV === 'production'
+    ? [assert.stringNotEmpty.withMessage('USER_SECRET_KEY is required')]
+    : [assert.undefined, () => 'user-secret-key'],
 
   /**
    * The algorithm used to encrypt the user session token
@@ -163,9 +163,9 @@ export const ENV_CONFIG_SCHEMA = createParser({
    * vault adapters. This allows secure storage of the vault configuration in the
    * database without exposing the credentials.
    */
-  VAULT_CONFIGURATION_SECRET_KEY: process.env.NODE_ENV === 'development'
-    ? [() => 'SECRET']
-    : [assert.stringNotEmpty.withMessage('VAULT_CONFIGURATION_SECRET_KEY is required')],
+  VAULT_CONFIGURATION_SECRET_KEY: process.env.NODE_ENV === 'production'
+    ? [assert.stringNotEmpty.withMessage('VAULT_CONFIGURATION_SECRET_KEY is required')]
+    : [assert.undefined, () => 'vault-configuration-secret-key'],
 
   /**
    * The algorithm used to encrypt and decrypt the configuration of additional vault
@@ -183,9 +183,9 @@ export const ENV_CONFIG_SCHEMA = createParser({
    * the default cypher key for all variables that use the `local` vault adapter
    * and don't have a specific key set.
    */
-  VAULT_DEFAULT_LOCAL_SECRET_KEY: process.env.NODE_ENV === 'development'
-    ? [() => 'SECRET']
-    : [assert.stringNotEmpty.withMessage('VAULT_DEFAULT_LOCAL_SECRET_KEY is required')],
+  VAULT_DEFAULT_LOCAL_SECRET_KEY: process.env.NODE_ENV === 'production'
+    ? [assert.stringNotEmpty.withMessage('VAULT_DEFAULT_LOCAL_SECRET_KEY is required')]
+    : [assert.undefined, () => 'vault-local-secret-key'],
 
   /**
    * The URL to an NPM CDN that hosts the `@iconify/json` package. This package
@@ -204,4 +204,17 @@ export const ENV_CONFIG_SCHEMA = createParser({
     [assert.undefined, () => 'https://api.iconify.design/'],
     [assert.string, assert.stringNotEmpty],
   ],
+
+  /**
+   * The initial runners to register in the database. This is used to
+   * automatically register runners that are part of the system. It should be
+   * a list of URLs in the format `http://<token>@<address>:<port>`.
+   * The token is used to authenticate the runner with the API server.
+   */
+  INITIAL_RUNNERS: process.env.NODE_ENV === 'production'
+    ? [
+      [assert.undefined, () => []],
+      [assert.string, (value: string) => value.split(',').map(url => url.trim())],
+    ]
+    : [assert.undefined, () => ['http://runner-token@localhost:3002']],
 })

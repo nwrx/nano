@@ -20,12 +20,6 @@ export interface ModuleRunnerOptions {
    * It should be a UUID string.
    */
   token?: string
-
-  /*
-   * Whether the runner should trust the proxy headers. This is useful when the runner is behind a reverse proxy.
-   * Defaults to false.
-   */
-  trustProxy?: boolean
 }
 
 export class ModuleRunner extends ModuleBase {
@@ -37,12 +31,10 @@ export class ModuleRunner extends ModuleBase {
     super()
     if (options.name) this.name = options.name
     if (options.token) this.token = options.token
-    if (options.trustProxy) this.trustProxy = options.trustProxy
   }
 
   name = randomBytes(8).toString('hex')
   token = randomBytes(16).toString('hex')
-  trustProxy = false
   isClaimed = false
 
   threads = new Map<string, Promise<MessagePort>>()
@@ -61,7 +53,6 @@ export const application = new Application(
     new ModuleRunner({
       name: config.RUNNER_NAME,
       token: config.RUNNER_TOKEN,
-      trustProxy: config.RUNNER_TRUST_PROXY,
     }),
   ],
   {

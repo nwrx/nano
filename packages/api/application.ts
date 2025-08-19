@@ -25,14 +25,7 @@ import { ModuleVault } from './vault'
 import { ModuleWorkspace } from './workspace'
 
 function getDataSource() {
-  if (process.env.NODE_ENV === 'development') {
-    return new DataSource({
-      type: 'sqlite',
-      database: '.data/database.sqlite',
-      synchronize: true,
-    })
-  }
-  else {
+  if (process.env.NODE_ENV === 'production') {
     const database = ENV_DATABASE_SCHEMA(process.env)
     return new DataSource({
       type: 'postgres',
@@ -42,6 +35,13 @@ function getDataSource() {
       password: database.DATABASE_PASSWORD,
       database: database.DATABASE_NAME,
       synchronize: database.DATABASE_SYNCRONIZE,
+    })
+  }
+  else {
+    return new DataSource({
+      type: 'sqlite',
+      database: '.data/database.sqlite',
+      synchronize: true,
     })
   }
 }
@@ -72,6 +72,9 @@ export const application = new Application(
       userSessionIdCookieName: config.USER_SESSION_ID_COOKIE_NAME,
       userSessionTokenCookieName: config.USER_SESSION_TOKEN_COOKIE_NAME,
     }),
+    new ModuleRunner({
+      initialRunners: config.INITIAL_RUNNERS,
+    }),
     new ModuleVault({
       vaultDefaultLocalSecretKey: config.VAULT_DEFAULT_LOCAL_SECRET_KEY,
       vaultConfigurationAlgorithm: config.VAULT_CONFIGURATION_ALGORITHM,
@@ -90,7 +93,6 @@ export const application = new Application(
     ModuleHealth,
     ModuleThread,
     ModuleIcon,
-    ModuleRunner,
     ModuleRegistry,
     ModuleMcpManager,
     ModuleMcpGateway,
