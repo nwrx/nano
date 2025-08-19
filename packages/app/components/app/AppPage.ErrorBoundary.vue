@@ -49,7 +49,7 @@ const EXP_CLIENT_ERROR = /^(.+?)@(.+?):(\d+):(\d+)$/
 function parseServerError(match: RegExpExecArray): StackLine {
   const [, name, url, line, column] = match
   const path = url
-    .replace(/^.*\/nano-ce\/packages/, '.') // Remove absolute path prefix
+    .replace(/^.*\/nano\/packages/, '.') // Remove absolute path prefix
     .replace(/\?.*$/, '')
   return {
     name: name || '<anonymous>',
