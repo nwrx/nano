@@ -2,19 +2,47 @@ import type { MessagePort } from 'node:worker_threads'
 import { Application, ModuleBase } from '@unserved/server'
 import { createWorkerPool } from '@unshared/process'
 import Consola from 'consola'
-import { randomUUID } from 'node:crypto'
+import { randomBytes } from 'node:crypto'
 import { availableParallelism } from 'node:os'
+import { ENV_CONFIG_SCHEMA } from './environment'
 import * as ROUTES from './routes'
 import { ERRORS } from './utils'
+
+export interface ModuleRunnerOptions {
+  /*
+   * The name of the runner. This is used to identify the runner in logs and metrics.
+   * It should be a unique identifier for the runner.
+   */
+  name?: string
+
+  /*
+   * The token of the runner. This is used to authenticate the runner with the API server.
+   * It should be a UUID string.
+   */
+  token?: string
+
+  /*
+   * Whether the runner should trust the proxy headers. This is useful when the runner is behind a reverse proxy.
+   * Defaults to false.
+   */
+  trustProxy?: boolean
+}
 
 export class ModuleRunner extends ModuleBase {
   routes = ROUTES
   errors = ERRORS
   entities = {}
 
-  name = process.env.NODE_ENV === 'production' ? randomUUID() : 'runner-1'
-  token = process.env.NODE_ENV === 'production' ? randomUUID() : '00000000-0000-0000-0000-000000000000'
-  trustProxy = process.env.RUNNER_TRUST_PROXY === 'true'
+  constructor(options: ModuleRunnerOptions = {}) {
+    super()
+    if (options.name) this.name = options.name
+    if (options.token) this.token = options.token
+    if (options.trustProxy) this.trustProxy = options.trustProxy
+  }
+
+  name = randomBytes(8).toString('hex')
+  token = randomBytes(16).toString('hex')
+  trustProxy = false
   isClaimed = false
 
   threads = new Map<string, Promise<MessagePort>>()
@@ -27,4 +55,16 @@ export class ModuleRunner extends ModuleBase {
 }
 
 // --- Expose the application for type inference.
-export const application = new Application([ModuleRunner], { logger: Consola })
+const config = ENV_CONFIG_SCHEMA(process.env)
+export const application = new Application(
+  [
+    new ModuleRunner({
+      name: config.RUNNER_NAME,
+      token: config.RUNNER_TOKEN,
+      trustProxy: config.RUNNER_TRUST_PROXY,
+    }),
+  ],
+  {
+    logger: Consola,
+  },
+)
