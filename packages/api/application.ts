@@ -84,11 +84,15 @@ export const application = new Application(
       iconCdnUrl: 'https://esm.sh/',
       iconIconifyUrl: 'https://api.iconify.design',
     }),
+    new ModuleStorage({
+      storagePools: new Map([
+        ['Default', createStoragePoolFs({ path: config.STORAGE_PATH })],
+      ]),
+    }),
     ModuleFlow,
     ModuleFlowEditor,
     ModuleWorkspace,
     ModuleProject,
-    ModuleStorage,
     ModuleChat,
     ModuleHealth,
     ModuleThread,
@@ -104,13 +108,6 @@ export const application = new Application(
   ],
   {
     logger: Consola,
-
-    // Storage
-    storagePools: new Map([
-      ['Default', createStoragePoolFs({ path: '.data/storage' })],
-    ]),
-
-    // Database
     dataSource: getDataSource(),
   },
 )

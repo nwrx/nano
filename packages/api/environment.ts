@@ -217,4 +217,13 @@ export const ENV_CONFIG_SCHEMA = createParser({
       [assert.string, (value: string) => value.split(',').map(url => url.trim())],
     ]
     : [assert.undefined, () => ['http://runner-token@localhost:3002']],
+
+  /**
+   * The storage path to use for the storage module. This is used to
+   * automatically create storage pools for the storage module.
+   */
+  STORAGE_PATH: [
+    [assert.undefined, () => '.data/storage'],
+    [assert.stringNotEmpty],
+  ],
 })
