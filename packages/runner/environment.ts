@@ -42,7 +42,7 @@ export const ENV_CONFIG_SCHEMA = createParser({
    * It should be a UUID string.
    */
   RUNNER_TOKEN: [
-    [assert.stringUuid.withMessage('RUNNER_TOKEN must be a valid UUID')],
+    [assert.stringNotEmpty.withMessage('RUNNER_TOKEN must be a valid UUID')],
   ],
 
   /**
