@@ -1,24 +1,13 @@
-name: nano-ce
+name: nano
 
 volumes:
-  ollama:
-    driver: local
-  pgadmin:
-    driver: local
   postgres:
     driver: local
 
 services:
-  dozzle:
-    image: amir20/dozzle:latest
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    ports:
-      - 8080:8080
 
   postgres:
     image: postgres
-    container_name: nano-ce-postgres
     environment:
       POSTGRES_USER: nano
       POSTGRES_PASSWORD: nano
@@ -28,31 +17,12 @@ services:
     volumes:
       - postgres:/var/lib/postgresql/data
 
-  pgadmin:
-    image: elestio/pgadmin
-    container_name: pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@example.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-      PGADMIN_LISTEN_PORT: 5050
-    ports:
-      - "5050:5050"
-    depends_on:
-      - postgres
-    volumes:
-      - pgadmin:/pgadmin4
-
   # maildev:
   #   image: maildev/maildev:2.1.0
   #   container_name: maildev
   #   ports:
   #     - "1080:1080"
   #     - "1025:1025"
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-f", "http://localhost:1080"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 5
 
   # ollama:
   #   image: ollama/ollama:0.3.10
@@ -69,15 +39,11 @@ services:
   #   volumes:
   #     - ollama:/root/.ollama
 
-  # chroma:
-  #   image: chromadb/chroma:latest
-  #   container_name: chroma
-  #   ports:
-  #     - "8081:8081"
-
   app:
-    image: nano-ce
-    container_name: nano-ce-app
+    image: nwrx/nano
+    build:
+      context: .
+      dockerfile: Dockerfile
     command:
       - app
     ports:
@@ -85,10 +51,14 @@ services:
     environment:
       - PORT=3000
       - HOST=0.0.0.0
+      - NUXT_PUBLIC_API_URL=http://localhost:3001
+      - NUXT_PUBLIC_APP_URL=http://localhost:3000
 
   api:
-    image: nano-ce
-    container_name: nano-ce-api
+    image: nwrx/nano
+    build:
+      context: .
+      dockerfile: Dockerfile
     command:
       - api
     depends_on:
@@ -98,18 +68,24 @@ services:
     environment:
       - PORT=3001
       - HOST=0.0.0.0
-      - NODE_ENV=production
+      - APP_URL=http://localhost:3000
       - DATABASE_SYNCRONIZE=true
-      - DATABASE_URL=postgres://nano:nano@postgres:5432/nano
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=nano
+      - DATABASE_USERNAME=nano
+      - DATABASE_PASSWORD=nano
       - USER_TRUST_PROXY=true
       - USER_SECRET_KEY=your_secret_key_here
       - USER_CYPHER_ALGORITHM=aes-256-gcm
       - VAULT_DEFAULT_LOCAL_SECRET_KEY=your_local_secret_key_here
       - VAULT_CONFIGURATION_SECRET_KEY=your_configuration_secret_key_here
 
-  runner:
-    image: nano-ce
-    container_name: nano-ce-runner
+  runner-1:
+    image: nwrx/nano
+    build:
+      context: .
+      dockerfile: Dockerfile
     command:
       - runner
     ports:
@@ -117,3 +93,32 @@ services:
     environment:
       - PORT=3010
       - HOST=0.0.0.0
+      - RUNNER_NAME=nano-runner-1
+
+  runner-2:
+    image: nwrx/nano
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command:
+      - runner
+    ports:
+      - "3011:3011"
+    environment:
+      - PORT=3011
+      - HOST=0.0.0.0
+      - RUNNER_NAME=nano-runner-2
+
+  runner-3:
+    image: nwrx/nano
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command:
+      - runner
+    ports:
+      - "3012:3012"
+    environment:
+      - PORT=3012
+      - HOST=0.0.0.0
+      - RUNNER_NAME=nano-runner-3
