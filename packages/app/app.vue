@@ -36,8 +36,9 @@ useHead(() => {
     ],
 
     meta: [
-    // Route
+      // Route
       { hid: 'description', name: 'description', content: localize(route.meta.description) },
+      { hid: 'canonical', rel: 'canonical', href: config.appUrl + route.fullPath },
 
       // Generic
       { name: 'msapplication-TileColor', content: COLORS.primary['500'] },
@@ -58,7 +59,7 @@ useHead(() => {
       // Open Graph
       { property: 'og:type', content: 'website' },
       // { property: 'og:image', content: '/og-image.png' },
-      { property: 'og:url', content: `https://${config.appUrl}` },
+      { property: 'og:url', content: config.appUrl },
       { property: 'og:title', content: i18n.t('title') },
       { property: 'og:site_name', content: i18n.t('title') },
       { property: 'og:description', content: i18n.t('description') },
