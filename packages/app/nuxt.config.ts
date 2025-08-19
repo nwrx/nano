@@ -178,26 +178,6 @@ export default defineNuxtConfig({
   },
 
   /**
-   * Enable `experimentalDecorator` when bundling the server code with Vite. It
-   * allows use to use decorators when declaring the TypeORM entities.
-   */
-  nitro: {
-    experimental: {
-      websocket: true,
-    },
-    esbuild: {
-      options: {
-        target: 'esnext',
-        tsconfigRaw: {
-          compilerOptions: {
-            experimentalDecorators: true,
-          },
-        },
-      },
-    },
-  },
-
-  /**
    * Configuration for Nuxt's TypeScript integration. We extend the `include` option
    * to include the Storybook configuration file. This is necessary to ensure that
    * ESLint and TypeScript checks are run on the Storybook configuration file.
@@ -240,21 +220,7 @@ export default defineNuxtConfig({
         'date-fns/locale/es',
         'dompurify',
         'marked',
-
-        /**
-         * Fixes the `index.js does not provide an export named 'parse'` error introduced
-         * in `storybook@8.3.?` when using the `jsdoc-type-pratt-parser` package.
-         *
-         * @see https://github.com/nuxt-modules/storybook/issues/776
-         */
-        // '@storybook/addon-docs',
-        // 'jsdoc-type-pratt-parser',
       ],
-    },
-    server: {
-      hmr: {
-        port: Number.parseInt(process.env.PORT ?? '3000') + 2,
-      },
     },
   },
 })
