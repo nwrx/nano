@@ -3,7 +3,56 @@ import { parseBoolean } from '@unshared/string/parseBoolean'
 import { assert, createParser } from '@unshared/validation'
 import { type CipherGCMTypes, randomBytes } from 'node:crypto'
 
-export const ENV_SCHEMA = createParser({
+export const ENV_DATABASE_SCHEMA = createParser({
+
+  /**
+   * The database host for the PostgreSQL database.
+   * This is required for the application to connect to the database.
+   */
+  DATABASE_HOST: [assert.stringNotEmpty.withMessage('DATABASE_HOST is required')],
+
+  /**
+   * The database port for the PostgreSQL database.
+   * This is required for the application to connect to the database.
+   */
+  DATABASE_PORT: [
+    [assert.undefined, () => 5432],
+    [
+      assert.stringNumber.withMessage('DATABASE_PORT must be a valid port number between 1 and 65535'),
+      Number.parseInt,
+      assert.numberInRangeStrict.withMessage('DATABASE_PORT must be a valid port number between 1 and 65535')(1, 65535),
+    ],
+  ],
+
+  /**
+   * The database username for the PostgreSQL database.
+   * This is required for the application to connect to the database.
+   */
+  DATABASE_USERNAME: [assert.stringNotEmpty.withMessage('DATABASE_USERNAME is required')],
+
+  /**
+   * The database password for the PostgreSQL database.
+   * This is required for the application to connect to the database.
+   */
+  DATABASE_PASSWORD: [assert.stringNotEmpty.withMessage('DATABASE_PASSWORD is required')],
+
+  /**
+   * The database name for the PostgreSQL database.
+   * This is required for the application to connect to the database.
+   */
+  DATABASE_NAME: [assert.stringNotEmpty.withMessage('DATABASE_NAME is required')],
+
+  /**
+   * Whether to synchronize the database schema with the application entities.
+   * This is useful for development but should be disabled in production.
+   */
+  DATABASE_SYNCRONIZE: [
+    [assert.undefined, () => false],
+    [assert.string, parseBoolean],
+  ],
+})
+
+export const ENV_APP_SCHEMA = createParser({
 
   /**
    * The port on which the API server will listen. This is required for the application
@@ -35,24 +84,9 @@ export const ENV_SCHEMA = createParser({
     [assert.undefined, () => 'http://localhost:3000'],
     [assert.stringNotEmpty],
   ],
+})
 
-  /**
-   * The database connection URL for the PostgreSQL database.
-   * This is required for the application to connect to the database.
-   * It should be in the format: `postgres://username:password@host:port/database`
-   */
-  DATABASE_URL: process.env.NODE_ENV === 'production'
-    ? [assert.stringNotEmpty.withMessage('DATABASE_URL is required')]
-    : [() => ''],
-
-  /**
-   * Whether to synchronize the database schema on application startup.
-   * This is useful for development environments but should be set to false in production.
-   */
-  DATABASE_SYNCRONIZE: [
-    [assert.undefined, () => true],
-    [assert.string, parseBoolean],
-  ],
+export const ENV_CONFIG_SCHEMA = createParser({
 
   /**
    * Use the `X-Forwarded-For` HTTP header set by proxies. If `true`, it assumes the
@@ -111,7 +145,7 @@ export const ENV_SCHEMA = createParser({
    */
   USER_SESSION_DURATION: [
     [assert.undefined, () => 1000 * 60 * 60 * 24], // 24 hours
-    [assert.number, assert.numberPositive],
+    [assert.stringNumber, Number.parseInt, assert.numberPositive],
   ],
 
   /**
@@ -121,7 +155,7 @@ export const ENV_SCHEMA = createParser({
    */
   USER_RECOVERY_DURATION: [
     [assert.undefined, () => 1000 * 60 * 30], // 30 minutes
-    [assert.number, assert.numberPositive],
+    [assert.stringNumber, Number.parseInt, assert.numberPositive],
   ],
 
   /**
@@ -129,9 +163,9 @@ export const ENV_SCHEMA = createParser({
    * vault adapters. This allows secure storage of the vault configuration in the
    * database without exposing the credentials.
    */
-  VAULT_CONFIGURATION_SECRET_KEY: process.env.NODE_ENV === 'production'
-    ? [assert.stringNotEmpty.withMessage('VAULT_CONFIGURATION_SECRET_KEY is required')]
-    : [() => 'SECRET'],
+  VAULT_CONFIGURATION_SECRET_KEY: process.env.NODE_ENV === 'development'
+    ? [() => 'SECRET']
+    : [assert.stringNotEmpty.withMessage('VAULT_CONFIGURATION_SECRET_KEY is required')],
 
   /**
    * The algorithm used to encrypt and decrypt the configuration of additional vault
@@ -149,9 +183,9 @@ export const ENV_SCHEMA = createParser({
    * the default cypher key for all variables that use the `local` vault adapter
    * and don't have a specific key set.
    */
-  VAULT_DEFAULT_LOCAL_SECRET_KEY: process.env.NODE_ENV === 'production'
-    ? [assert.stringNotEmpty.withMessage('VAULT_DEFAULT_LOCAL_SECRET_KEY is required')]
-    : [() => 'SECRET'],
+  VAULT_DEFAULT_LOCAL_SECRET_KEY: process.env.NODE_ENV === 'development'
+    ? [() => 'SECRET']
+    : [assert.stringNotEmpty.withMessage('VAULT_DEFAULT_LOCAL_SECRET_KEY is required')],
 
   /**
    * The URL to an NPM CDN that hosts the `@iconify/json` package. This package
@@ -171,5 +205,3 @@ export const ENV_SCHEMA = createParser({
     [assert.string, assert.stringNotEmpty],
   ],
 })
-
-export const environment = ENV_SCHEMA(process.env)
