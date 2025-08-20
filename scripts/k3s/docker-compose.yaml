@@ -1,0 +1,141 @@
+name: k3s
+
+volumes:
+  registry-data: {}
+  server-rancher: {}
+  server-kubelet: {}
+  server-cni: {}
+  server-logs: {}
+  agent-1-rancher: {}
+  agent-1-kubelet: {}
+  agent-1-cni: {}
+  agent-1-logs: {}
+  agent-2-rancher: {}
+  agent-2-kubelet: {}
+  agent-2-cni: {}
+  agent-2-logs: {}
+
+networks:
+  net:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: br-nwrx
+
+services:
+  # Local Docker Registry for development
+  registry:
+    image: registry:2.8.3
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /var/lib/registry
+      REGISTRY_HTTP_ADDR: 0.0.0.0:5000
+      REGISTRY_LOG_LEVEL: info
+    volumes:
+      - registry-data:/var/lib/registry
+    networks:
+      - net
+    labels:
+      - "traefik.enable=false"
+
+  server:
+    image: rancher/k3s:v1.28.8-k3s1
+    command: server
+    tmpfs:
+    - /run
+    - /var/run
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
+    privileged: true
+    restart: always
+    environment:
+    - K3S_TOKEN=mynodetoken
+    - K3S_KUBECONFIG_OUTPUT=/output/kubeconfig.yaml
+    - K3S_KUBECONFIG_MODE=666
+    volumes:
+    - server-rancher:/var/lib/rancher/k3s
+    - server-kubelet:/var/lib/kubelet
+    - server-cni:/var/lib/cni
+    - server-logs:/var/log
+    - /var/run/docker.sock:/var/run/docker.sock
+    - ./images:/var/lib/rancher/k3s/agent/images
+    - ./registries.yaml:/etc/rancher/k3s/registries.yaml:ro
+    - ./output:/output
+    ports:
+    - 6443:6443  # Kubernetes API server
+    - 80:80      # Ingress controller
+    - 443:443    # Ingress controller
+    networks:
+    - net
+    labels:
+    - "traefik.enable=false"
+
+  agent-1:
+    image: rancher/k3s:v1.28.8-k3s1
+    tmpfs:
+    - /run
+    - /var/run
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
+    privileged: true
+    restart: always
+    environment:
+    - K3S_URL=https://server:6443
+    - K3S_TOKEN=mynodetoken
+    volumes:
+    - agent-1-rancher:/var/lib/rancher/k3s
+    - agent-1-kubelet:/var/lib/kubelet
+    - agent-1-cni:/var/lib/cni
+    - agent-1-logs:/var/log
+    # Mount Docker socket to allow image imports
+    - /var/run/docker.sock:/var/run/docker.sock
+    # Mount the same images directory
+    - ./images:/var/lib/rancher/k3s/agent/images
+    # Mount registries configuration
+    - ./registries.yaml:/etc/rancher/k3s/registries.yaml:ro
+    networks:
+    - net
+    depends_on:
+    - server
+    labels:
+    - "traefik.enable=false"
+
+  agent-2:
+    image: rancher/k3s:v1.28.8-k3s1
+    tmpfs:
+    - /run
+    - /var/run
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
+    privileged: true
+    restart: always
+    environment:
+    - K3S_URL=https://server:6443
+    - K3S_TOKEN=mynodetoken
+    volumes:
+    - agent-2-rancher:/var/lib/rancher/k3s
+    - agent-2-kubelet:/var/lib/kubelet
+    - agent-2-cni:/var/lib/cni
+    - agent-2-logs:/var/log
+    # Mount Docker socket to allow image imports
+    - /var/run/docker.sock:/var/run/docker.sock
+    # Mount the same images directory
+    - ./images:/var/lib/rancher/k3s/agent/images
+    # Mount registries configuration
+    - ./registries.yaml:/etc/rancher/k3s/registries.yaml:ro
+    networks:
+    - net
+    depends_on:
+    - server
+    labels:
+    - "traefik.enable=false"

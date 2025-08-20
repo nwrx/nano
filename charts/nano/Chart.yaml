@@ -1,0 +1,17 @@
+apiVersion: v2
+name: nano
+description: A production-grade Helm chart for Nano CE - A comprehensive platform for AI workflow management
+type: application
+version: v0.0.1
+appVersion: v0.0.1
+home: https://nanoworks.io
+sources:
+  - https://github.com/nwrx/nano
+maintainers:
+  - name: Nanoworks
+    email: contact@nanoworks.io
+keywords:
+  - ai
+  - workflow
+  - automation
+  - microservices

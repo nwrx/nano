@@ -1,0 +1,24 @@
+{{- if and .Values.api.enabled (eq (include "nano.database.type" .) "sqlite") .Values.database.sqlite.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "nano.fullname" . }}-database
+  labels:
+    {{- include "nano.labels" . | nindent 4 }}
+    app.kubernetes.io/component: database
+spec:
+  accessModes:
+    {{- range .Values.database.sqlite.persistence.accessModes }}
+    - {{ . | quote }}
+    {{- end }}
+  {{- if .Values.database.sqlite.persistence.storageClass }}
+  {{- if (eq "-" .Values.database.sqlite.persistence.storageClass) }}
+  storageClassName: ""
+  {{- else }}
+  storageClassName: {{ .Values.database.sqlite.persistence.storageClass | quote }}
+  {{- end }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.database.sqlite.persistence.size | quote }}
+{{- end }}

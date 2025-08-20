@@ -25,10 +25,13 @@ logs
 .idea
 .bin
 
-# Terraform / Docker
+# Infrastructure
 .terraform*
 terraform.tfstate*
 *.tfvars
+certs
+charts/*/charts
+kubeconfig.yaml
 
 # Local env files
 .env
