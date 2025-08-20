@@ -39,7 +39,7 @@ export async function releaseRunner(this: ModuleRunner, options: ReleaseRunnerOp
 
   // --- Remove the client from the clients map if it exists.
   const client = this.clients.get(runner.id)
-  if (client) await client.dispose()
+  if (client) client.dispose()
   this.clients.delete(runner.id)
 
   // --- Notify the changes in the event bus.

@@ -1,5 +1,5 @@
 import type { ModuleRunner } from '../index'
-import { createRunnerClient } from './createRunnerClient'
+import { toCamelCase } from '@unshared/string/toCamelCase'
 
 /**
  * Initialize the runner module by registering initial runners from the
@@ -37,21 +37,18 @@ export async function initialize(this: ModuleRunner): Promise<void> {
       }
 
       // --- Create the database record.
+      const name = toCamelCase(url.hostname)
       const runner = Runner.create({
         address,
         token,
-        name: '',
+        name,
         isInitial: true,
         lastSeenAt: new Date(),
       })
 
       // --- Claim the runner and create a client.
-      const client = createRunnerClient({ runner })
-      const { name } = await client.claim()
-      runner.name = name
       await Runner.save(runner)
       newInitialRunners.push(address)
-      this.clients.set(runner.id, client)
     }
     catch (error) {
       this.logger.error(error)

@@ -39,7 +39,6 @@ export class RunnerClient {
 
   async claim(): Promise<RunnerRegisterResult> {
     const result = await this.client.request('POST /claim')
-    this.client.options.headers = { Authorization: `Bearer ${result.token}` }
     await this.client.request('GET /ping')
     return result
   }

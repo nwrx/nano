@@ -38,7 +38,7 @@ export class ModuleRunner extends ModuleBase {
   isClaimed = false
 
   threads = new Map<string, Promise<MessagePort>>()
-  workerPoolSize = Math.max(availableParallelism() - 1, 1)
+  workerPoolSize = availableParallelism()
   workerPools = createWorkerPool({
     resourceLimits: { stackSizeMb: 8 },
     argv: ['--untrusted-code-mitigations'],

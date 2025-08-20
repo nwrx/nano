@@ -31,17 +31,23 @@ export async function requestRunnerClient(this: ModuleRunner): Promise<RunnerCli
 
   // --- Find the thread runner with the lowest load.
   let minLoad = Infinity
-  let result = clients[0]
+  let result: RunnerClient | undefined
   for (const client of clients) {
-    const status = await client.getStatus()
-    for (const pool of status.workerPool) {
-      const load = pool.cpuUsage.user + pool.cpuUsage.system
-      if (load > minLoad) continue
-      minLoad = load
-      result = client
+    try {
+      const status = await client.getStatus()
+      for (const pool of status.workerPool) {
+        const load = pool.cpuUsage.user + pool.cpuUsage.system
+        if (load > minLoad) continue
+        minLoad = load
+        result = client
+      }
+    }
+    catch {
+      // Ignore errors when fetching status
     }
   }
 
   // --- Return the thread runner with the lowest load.
+  if (!result) throw this.errors.RUNNER_NO_RUNNERS_AVAILABLE()
   return result
 }
