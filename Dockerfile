@@ -88,6 +88,19 @@ else
 fi
 EOF
 
+# Ensure environment variables are set for the application.
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOST=0.0.0.0
+
+# Set the storage and database paths.
+ENV STORAGE_PATH=/data/storage
+ENV DATABASE_PATH=/data/database/nano.db
+
+# Expose the port the app runs on.
+EXPOSE 3000
+VOLUME [ "/data" ]
+
 # Make the entrypoint script executable.
 RUN chmod +x /usr/bin/nano
 ENTRYPOINT ["/usr/bin/nano"]
