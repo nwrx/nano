@@ -1,8 +1,6 @@
 import { Application, createHttpRoute, ModuleBase } from '@unserved/server'
 import Consola from 'consola'
-import { DataSource } from 'typeorm'
 import { ModuleChat } from './chat'
-import { ENV_CONFIG_SCHEMA, ENV_DATABASE_SCHEMA } from './environment'
 import { ModuleFlow } from './flow'
 import { ModuleFlowEditor } from './flowEditor'
 import { ModuleIcon } from './icon'
@@ -21,30 +19,9 @@ import { ModuleStorage } from './storage'
 import { createStoragePoolFs } from './storage/utils'
 import { ModuleThread } from './thread'
 import { ModuleUser } from './user'
+import { ENV_CONFIG_SCHEMA, getDataSource } from './utils'
 import { ModuleVault } from './vault'
 import { ModuleWorkspace } from './workspace'
-
-function getDataSource() {
-  if (process.env.NODE_ENV === 'production') {
-    const database = ENV_DATABASE_SCHEMA(process.env)
-    return new DataSource({
-      type: 'postgres',
-      host: database.DATABASE_HOST,
-      port: database.DATABASE_PORT,
-      username: database.DATABASE_USERNAME,
-      password: database.DATABASE_PASSWORD,
-      database: database.DATABASE_NAME,
-      synchronize: database.DATABASE_SYNCRONIZE,
-    })
-  }
-  else {
-    return new DataSource({
-      type: 'sqlite',
-      database: '.data/database.sqlite',
-      synchronize: true,
-    })
-  }
-}
 
 class ModuleHealth extends ModuleBase {
   routes = {

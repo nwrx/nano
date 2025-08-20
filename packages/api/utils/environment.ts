@@ -4,55 +4,6 @@ import type { CipherGCMTypes } from 'node:crypto'
 import { parseBoolean } from '@unshared/string/parseBoolean'
 import { assert, createParser } from '@unshared/validation'
 
-export const ENV_DATABASE_SCHEMA = createParser({
-
-  /**
-   * The database host for the PostgreSQL database.
-   * This is required for the application to connect to the database.
-   */
-  DATABASE_HOST: [assert.stringNotEmpty.withMessage('DATABASE_HOST is required')],
-
-  /**
-   * The database port for the PostgreSQL database.
-   * This is required for the application to connect to the database.
-   */
-  DATABASE_PORT: [
-    [assert.undefined, () => 5432],
-    [
-      assert.stringNumber.withMessage('DATABASE_PORT must be a valid port number between 1 and 65535'),
-      Number.parseInt,
-      assert.numberInRangeStrict.withMessage('DATABASE_PORT must be a valid port number between 1 and 65535')(1, 65535),
-    ],
-  ],
-
-  /**
-   * The database username for the PostgreSQL database.
-   * This is required for the application to connect to the database.
-   */
-  DATABASE_USERNAME: [assert.stringNotEmpty.withMessage('DATABASE_USERNAME is required')],
-
-  /**
-   * The database password for the PostgreSQL database.
-   * This is required for the application to connect to the database.
-   */
-  DATABASE_PASSWORD: [assert.stringNotEmpty.withMessage('DATABASE_PASSWORD is required')],
-
-  /**
-   * The database name for the PostgreSQL database.
-   * This is required for the application to connect to the database.
-   */
-  DATABASE_NAME: [assert.stringNotEmpty.withMessage('DATABASE_NAME is required')],
-
-  /**
-   * Whether to synchronize the database schema with the application entities.
-   * This is useful for development but should be disabled in production.
-   */
-  DATABASE_SYNCRONIZE: [
-    [assert.undefined, () => false],
-    [assert.string, parseBoolean],
-  ],
-})
-
 export const ENV_APP_SCHEMA = createParser({
 
   /**

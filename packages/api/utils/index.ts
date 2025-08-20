@@ -1,3 +1,5 @@
 export * from './decrypt'
 export * from './encrypt'
+export * from './environment'
+export * from './getDataSource'
 export * from './types'

@@ -3,7 +3,7 @@ import Consola from 'consola'
 import { setResponseHeader, setResponseStatus } from 'h3'
 import 'source-map-support/register.js'
 import { application } from './application'
-import { ENV_APP_SCHEMA } from './environment'
+import { ENV_APP_SCHEMA } from './utils/environment'
 
 // --- Parse environment variables.
 const { PORT, HOST, APP_URL } = ENV_APP_SCHEMA(process.env)
