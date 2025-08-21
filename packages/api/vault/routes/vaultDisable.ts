@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/no-null */
 import type { ModuleVault } from '..'
 import { createHttpRoute } from '@unserved/server'
 import { assert, createParser } from '@unshared/validation'
@@ -27,7 +26,6 @@ export function vaultDisable(this: ModuleVault) {
       if (vault.disabledAt) throw this.errors.VAULT_ALREADY_DISABLED(workspace.name, vault.name)
 
       // --- Unset the vault as the default.
-      vault.isDefault = null
       vault.disabledAt = new Date()
       vault.disabledBy = user
       await Vault.save(vault)

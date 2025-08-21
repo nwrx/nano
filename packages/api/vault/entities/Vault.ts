@@ -11,7 +11,6 @@ import { VaultVariable } from './VaultVariable'
 
 @Entity({ name: 'Vault' })
 @Index(['workspace', 'name', 'deletedAt'])
-@Index(['workspace', 'isDefault'], { unique: true })
 export class Vault<T extends VaultType = VaultType> extends BaseEntity {
 
   /**
@@ -57,12 +56,27 @@ export class Vault<T extends VaultType = VaultType> extends BaseEntity {
   workspace?: Workspace
 
   /**
-   * Weather this vault is the default vault for the workspace. Default vaults
-   * will be used when no vault is specified in the variable. This will also
-   * make the vault accessible to all projects and flows within the workspace.
+   * The variables stored in the vault. Variables can be assigned to the vault
+   * and stored securely.
+   *
+   * @example [ Variable { ... }, Variable { ... } ]
    */
-  @Column('boolean', { nullable: true })
-  isDefault: boolean | null = null
+  @OneToMany(() => VaultVariable, variable => variable.vault, { cascade: true })
+  variables?: VaultVariable[]
+
+  /**
+   * The user assignments for this vault. Users can be assigned different
+   * permission levels to access the vault.
+   */
+  @OneToMany(() => VaultAssignment, assignment => assignment.vault, { cascade: true })
+  assignments?: VaultAssignment[]
+
+  /**
+   * The projects that have access to the vault. Projects can be assigned
+   * different permission levels to access the vault.
+   */
+  @OneToMany(() => VaultProjectAssignment, assignment => assignment.vault, { cascade: true })
+  projects?: VaultProjectAssignment[]
 
   /**
    * The date at witch the vault was disabled. If the vault is disabled, it will
@@ -108,36 +122,12 @@ export class Vault<T extends VaultType = VaultType> extends BaseEntity {
   disabledBy?: User
 
   /**
-   * The variables stored in the vault. Variables can be assigned to the vault
-   * and stored securely.
-   *
-   * @example [ Variable { ... }, Variable { ... } ]
-   */
-  @OneToMany(() => VaultVariable, variable => variable.vault, { cascade: true })
-  variables?: VaultVariable[]
-
-  /**
-   * The user assignments for this vault. Users can be assigned different
-   * permission levels to access the vault.
-   */
-  @OneToMany(() => VaultAssignment, assignment => assignment.vault, { cascade: true })
-  assignments?: VaultAssignment[]
-
-  /**
-   * The projects that have access to the vault. Projects can be assigned
-   * different permission levels to access the vault.
-   */
-  @OneToMany(() => VaultProjectAssignment, assignment => assignment.vault, { cascade: true })
-  projects?: VaultProjectAssignment[]
-
-  /**
    * @returns The serialized representation of the vault.
    */
   serialize(): VaultObject {
     return {
       name: this.name,
       type: this.type,
-      isDefault: this.isDefault === true,
       description: this.description,
       createdAt: this.createdAt.toISOString(),
       updatedAt: this.updatedAt.toISOString(),
@@ -150,7 +140,6 @@ export class Vault<T extends VaultType = VaultType> extends BaseEntity {
 export interface VaultObject {
   name: string
   type: VaultType
-  isDefault: boolean
   description: string
   createdAt: string
   updatedAt: string

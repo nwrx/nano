@@ -11,7 +11,6 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const showSetDefaultDialog = ref(false)
 const showDisableDialog = ref(false)
 const showEnableDialog = ref(false)
 const showRemoveDialog = ref(false)
@@ -26,12 +25,7 @@ const showRemoveDialog = ref(false)
           :label="t('actions.edit')"
           :to="{ name: 'WorkspaceSettingsVault', params: { workspace, vault: vault.name } }"
         />
-        <ContextMenuItem
-          v-if="!vault.isDefault"
-          icon="i-carbon:star"
-          :label="t('actions.setDefault')"
-          @click="() => showSetDefaultDialog = true"
-        />
+        <ContextMenuDivider />
         <!--
           <ContextMenuItem
           icon="i-carbon:connect"
@@ -39,7 +33,6 @@ const showRemoveDialog = ref(false)
           @click="() => showHealthDialog = true"
           />
         -->
-        <ContextMenuDivider />
         <ContextMenuItem
           v-if="!vault.disabledAt"
           icon="i-carbon:close"
@@ -60,14 +53,6 @@ const showRemoveDialog = ref(false)
         />
       </template>
     </ContextMenu>
-
-    <!-- Set Default Dialog -->
-    <WorkspaceSettingsVaultsDialogSetDefault
-      v-model="showSetDefaultDialog"
-      :workspace="workspace"
-      :vault="vault.name"
-      @submit="() => emit('submit')"
-    />
 
     <!-- Remove Dialog -->
     <WorkspaceSettingsVaultsDialogRemove
@@ -99,7 +84,6 @@ const showRemoveDialog = ref(false)
 en:
   actions:
     edit: Edit
-    setDefault: Set as Default
     health: Health
     disable: Disable
     enable: Enable

@@ -54,13 +54,6 @@ const linkTo = computed(() => ({
       />
     </div>
 
-    <BaseIcon
-      v-if="vault.isDefault"
-      class="size-4"
-      icon="i-carbon:star"
-      title="Default vault"
-    />
-
     <!-- Disabled Status -->
     <BaseIcon
       v-if="vault.disabledAt"
