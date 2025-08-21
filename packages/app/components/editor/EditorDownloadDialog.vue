@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { FlowObject } from '@nwrx/nano-api'
-import { vCode } from '~/utils/vCode'
+import { vCode } from '@unshared/vue/vCode'
 import EditorDialogButton from './EditorDialog.Button.vue'
 import EditorDialog from './EditorDialog.vue'
 

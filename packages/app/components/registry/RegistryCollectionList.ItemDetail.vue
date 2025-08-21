@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { RegistryCollectionObject, RegistryComponentObject } from '@nwrx/nano-api'
-import { vMarkdown } from '#imports'
+import { vMarkdown } from '@unshared/vue/vMarkdown'
 
 const props = defineProps<{
   collection: RegistryCollectionObject

@@ -1,7 +1,8 @@
 <!-- eslint-disable vue/prop-name-casing -->
 <script setup lang="ts">
 import type { BaseDialogProps, BaseDialogSlotProps } from '@unshared/vue'
-import { vMarkdown, type VNode } from '#imports'
+import type { VNode } from 'vue'
+import { vMarkdown } from '@unshared/vue/vMarkdown'
 
 const props = defineProps<BaseDialogProps & {
   title?: string

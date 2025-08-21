@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { vMarkdown } from '~/utils/vMarkdown'
+import { vMarkdown } from '@unshared/vue/vMarkdown'
 import EditorDialogButton from '../editor/EditorDialog.Button.vue'
 import EditorDialog from '../editor/EditorDialog.vue'
 

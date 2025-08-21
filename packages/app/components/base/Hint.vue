@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { BaseIcon } from '@unshared/vue/BaseIcon'
-import { vMarkdown } from '~/utils/vMarkdown'
+import { vMarkdown } from '@unshared/vue/vMarkdown'
 
 defineProps<{
   text?: string

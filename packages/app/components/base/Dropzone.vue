@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { vMarkdown } from '#imports'
+import { vMarkdown } from '@unshared/vue/vMarkdown'
 defineProps<{
   text: string
   vertical?: boolean

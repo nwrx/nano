@@ -5,7 +5,7 @@ import type { BaseDialogProps, BaseDialogSlotProps } from '@unshared/vue/BaseDia
 import type { VNode } from '#imports'
 import { BaseButton } from '@unshared/vue/BaseButton'
 import { BaseDialog } from '@unshared/vue/BaseDialog'
-import { vMarkdown } from '#imports'
+import { vMarkdown } from '@unshared/vue/vMarkdown'
 import Hyperlink from '~/components/base/Hyperlink.vue'
 
 defineProps<BaseDialogProps<T> & {

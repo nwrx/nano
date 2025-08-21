@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/prop-name-casing -->
 <script setup lang="ts">
 import type { BaseButtonProps } from '@unshared/vue'
-import { vMarkdown } from '#imports'
+import { vMarkdown } from '@unshared/vue/vMarkdown'
 
 defineProps<BaseButtonProps & {
   title: string

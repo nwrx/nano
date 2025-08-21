@@ -1,7 +1,7 @@
 <!-- eslint-disable @typescript-eslint/prefer-nullish-coalescing -->
 <script setup lang="ts">
 import type { Schema } from '@nwrx/nano/utils'
-import { vMarkdown } from '~/utils/vMarkdown'
+import { vMarkdown } from '@unshared/vue/vMarkdown'
 
 const props = defineProps<{
   name?: string
