@@ -33,7 +33,7 @@ application.initialize()
         }
       },
       onError: (error, event) => {
-        Consola.error(error.message)
+        Consola.error(error)
         setResponseStatus(event, error.statusCode || 500)
         setResponseHeader(event, 'Content-Type', 'application/json')
         event.node.res.end(JSON.stringify({
