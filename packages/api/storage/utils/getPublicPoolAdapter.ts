@@ -18,8 +18,14 @@ import { getPublicPool } from './getPublicPool'
  * const result = await publicPoolAdapter.download(file)
  */
 export async function getPublicPoolAdapter(this: ModuleStorage): Promise<StoragePoolAdapter> {
-  const pool = await getPublicPool.call(this)
-  const adapter = await getPoolAdapter.call(this, pool)
-  await adapter.initialize() // Ensure the adapter is initialized
-  return adapter
+  try {
+    const pool = await getPublicPool.call(this)
+    const adapter = await getPoolAdapter.call(this, pool)
+    await adapter.initialize() // Ensure the adapter is initialized
+    return adapter
+  }
+  catch (error) {
+    const message = (error as Error).message
+    throw this.errors.STORAGE_POOL_INITIALIZATION_FAILED(message)
+  }
 }

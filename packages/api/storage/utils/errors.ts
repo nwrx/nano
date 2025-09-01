@@ -17,6 +17,12 @@ export const ERRORS = {
   }),
 
   // General
+  STORAGE_POOL_INITIALIZATION_FAILED: (message: string) => createError({
+    name: 'E_STORAGE_POOL_INITIALIZATION_FAILED',
+    statusCode: 500,
+    statusText: 'Internal Server Error',
+    message: `Failed to initialize the storage pool: ${message}`,
+  }),
   STORAGE_POOL_NOT_FOUND: (workspace: string, pool: string) => createError({
     name: 'E_STORAGE_POOL_NOT_FOUND',
     statusCode: 404,
