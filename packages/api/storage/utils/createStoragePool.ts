@@ -1,71 +1,57 @@
-import type { Readable } from 'node:stream'
-import type { RemoveOptions } from 'typeorm'
-import type { StorageFile } from '../entities'
-import type { FileLike } from './fileToStream'
+import type { Loose } from '@unshared/types'
+import type { StoragePool } from '../entities'
+import type { ModuleStorage } from '../index'
+import type { StoragePoolConfiguration } from './types'
+import { assert, createParser } from '@unshared/validation'
+import { assertUser } from '../../user'
+import { encrypt } from '../../utils'
+import { assertWorkspace } from '../../workspace'
+import { assertStoragePoolType } from './assertStoragePoolType'
 
-export interface StorageDownloadOptions {
-  offset?: number
-  size?: number
-  abortSignal?: AbortSignal
-}
+const CREATE_STORAGE_POOL_OPTIONS_SCHEMA = createParser({
+  user: assertUser,
+  workspace: assertWorkspace,
+  type: assertStoragePoolType,
+  name: assert.stringNotEmpty,
+  configuration: assert.objectStrict as (value: unknown) => asserts value is StoragePoolConfiguration,
+})
 
-export interface StorageDownloadResult {
-  getUrl?: () => Promise<string>
-  getText: () => Promise<string>
-  getData: () => Promise<Buffer>
-  getBase64Url: () => Promise<string>
-  getStream: () => Promise<Readable>
-  getContentLength: () => Promise<number>
-  getContentType: () => Promise<string>
-}
-
-export interface StorageEraseOptions extends RemoveOptions {
-  abortSignal?: AbortSignal
-}
-
-export interface StoragePurgeResult {
-  size: number
-  count: number
-}
-
-export interface StoragePool {
-
-  /**
-   * Purges all the files from the storage that are not referenced by
-   * any entity in the database.
-   */
-  initialize(): Promise<void>
-
-  /**
-   * Uploads a file to the storage.
-   *
-   * @param file The file to upload.
-   */
-  upload(file: FileLike): Promise<StorageFile>
-
-  /**
-   * Downloads a file from the storage.
-   *
-   * @param file The file to download.
-   * @param options The options to use to download the file.
-   */
-  download(file: StorageFile, options?: StorageDownloadOptions): StorageDownloadResult
-
-  /**
-   * Deletes a file from the storage.
-   *
-   * @param file The file to delete.
-   * @param options The options to use to delete the file.
-   */
-  erase(file: StorageFile, options?: StorageEraseOptions): Promise<void>
-}
+/** The options for creating the storage pool. */
+export type CreateStoragePoolOptions = Loose<ReturnType<typeof CREATE_STORAGE_POOL_OPTIONS_SCHEMA>>
 
 /**
- * Creates a new storage pool with the specified options.
+ * Creates a new storage pool for storing files. The function will create a new `StoragePool` entity
+ * with the given options and assign the user to the pool with full access. The function will
+ * throw an error if the pool already exists in the workspace.
  *
- * @param options The options to use to create the storage pool.
- * @returns The created storage pool.
+ * @param options The options for creating the storage pool
+ * @returns The newly created `StoragePool` entity.
  */
-export function createStoragePool(options: StoragePool): StoragePool {
-  return options
+export async function createStoragePool(this: ModuleStorage, options: CreateStoragePoolOptions): Promise<StoragePool> {
+  const { user, workspace, type, name, configuration } = CREATE_STORAGE_POOL_OPTIONS_SCHEMA(options)
+
+  // --- Assert that no pool with the same name exists in the workspace.
+  const { StoragePool } = this.getRepositories()
+  const exists = await StoragePool.countBy({ name, workspace })
+  if (exists > 0) throw this.errors.STORAGE_POOL_ALREADY_EXISTS(workspace.name, name)
+
+  // --- Encrypt the configuration using the module's encryption key.
+  const configurationJson = JSON.stringify(configuration)
+  const configurationEncrypted = await encrypt(
+    configurationJson,
+    this.configurationEncryptionKey,
+    this.configurationEncryptionAlgorithm,
+  )
+
+  // --- Create the pool and assign the user to it.
+  const { StoragePoolAssignment } = this.getRepositories()
+  const assignment = StoragePoolAssignment.create({ user, permission: 'Owner', createdBy: user })
+  return StoragePool.create({
+    createdBy: user,
+    type,
+    name,
+    workspace,
+    configuration: configurationEncrypted,
+    assignments: [assignment],
+  })
 }

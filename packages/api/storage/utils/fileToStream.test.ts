@@ -7,37 +7,71 @@ import { ERRORS } from './errors'
 import { fileToStream } from './fileToStream'
 
 describe('fileToStream', () => {
-  const cases: Array<[string, () => FileLike['data']]> = [
+  const cases: Array<[string, () => File | FileLike]> = [
     [
       'File',
       () => new File(['Hello, world!'], 'hello.txt', { type: 'text/plain' }),
     ],
     [
       'string',
-      () => 'Hello, world!',
+      (): FileLike => ({
+        data: 'Hello, world!',
+        name: 'hello.txt',
+        type: 'text/plain',
+        size: 13,
+      }),
     ],
     [
       'Buffer',
-      () => Buffer.from('Hello, world!'),
+      () => ({
+        data: Buffer.from('Hello, world!'),
+        name: 'hello.txt',
+        type: 'text/plain',
+        size: 13,
+      }),
     ],
     [
       'Readable',
-      () => Readable.from('Hello, world!'),
+      () => ({
+        data: Readable.from('Hello, world!'),
+        name: 'hello.txt',
+        type: 'text/plain',
+        size: 13,
+      }),
     ],
     [
       'ReadableStream',
-      () => new ReadableStream({ start(controller) { controller.enqueue('Hello, world!'); controller.close() } }),
+      () => ({
+        data: new ReadableStream({
+          start(controller) {
+            controller.enqueue('Hello, world!')
+            controller.close()
+          },
+        }),
+        name: 'hello.txt',
+        type: 'text/plain',
+        size: 13,
+      }),
     ],
     [
       'NodeReadableStream',
-      () => new NodeReadableStream({ start(controller) { controller.enqueue('Hello, world!'); controller.close() } }),
+      () => ({
+        data: new NodeReadableStream({
+          start(controller) {
+            controller.enqueue('Hello, world!')
+            controller.close()
+          },
+        }),
+        name: 'hello.txt',
+        type: 'text/plain',
+        size: 13,
+      }),
     ],
   ]
 
-  describe.each(cases)('with %s', (_, data) => {
+  describe.each(cases)('with FileLike with %s data', (_, data) => {
     it('should extract the stream', async() => {
-      // @ts-expect-error: ignore for testing purposes.
-      const result = fileToStream({ data: data() })
+      const result = fileToStream(data())
       const streamData = await new Promise<string>((resolve, reject) => {
         const chunks: Uint8Array[] = []
         result.stream.on('data', (chunk: Uint8Array) => chunks.push(chunk))
@@ -48,15 +82,13 @@ describe('fileToStream', () => {
     })
 
     it('should return a promise that resolves to the stream size', async() => {
-      // @ts-expect-error: ignore for testing purposes.
-      const result = fileToStream({ data: data() })
+      const result = fileToStream(data())
       for await (const _ of result.stream);
       await expect(result.size).resolves.toBe(13)
     })
 
     it('should return a promise that resolves to the hash', async() => {
-      // @ts-expect-error: ignore for testing purposes.
-      const result = fileToStream({ data: data() })
+      const result = fileToStream(data())
       for await (const _ of result.stream);
       const digest = result.hash.then(hash => hash.digest('hex'))
       await expect(digest).resolves.toBe('315f5bdb76d078c43b8ac0064e4a0164612b1fce77c869345bfc94c75894edd3')

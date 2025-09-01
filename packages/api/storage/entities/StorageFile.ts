@@ -1,7 +1,9 @@
 import { BaseEntity } from '@unserved/server'
 import { UUID } from 'node:crypto'
-import { Column, Entity, OneToMany } from 'typeorm'
-import { StorageFileAssignment, StorageFileAssignmentObject } from './StorageFileAssignment'
+import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany } from 'typeorm'
+import { User, UserObject } from '../../user'
+import { StorageFileAssignment } from './StorageFileAssignment'
+import { StoragePool } from './StoragePool'
 
 /**
  * An asset is a digital file that can be used in the application. For example, an image,
@@ -21,7 +23,7 @@ export class StorageFile extends BaseEntity {
   name: string
 
   /**
-   * The MD5 hash of the asset. It is used to determine the integrity of the asset. It is
+   * The SHA256 hash of the asset. It is used to determine the integrity of the asset. It is
    * used to set the `ETag` header in the HTTP response and compare it with the client's
    * `If-None-Match` header. It also helps avoid duplicate assets in the database.
    */
@@ -57,13 +59,12 @@ export class StorageFile extends BaseEntity {
   origin?: string
 
   /**
-   * The name of the pool in which the asset is stored. It allows us to determine the
-   * storage pool of the file if we have multiple storage pools.
-   *
-   * @default 'Default'
+   * The pool that the file belongs to. It is used to determine the storage pool where the
+   * file is stored and the ability to upload, download, and erase the file.
    */
-  @Column('varchar', { length: 255, default: 'default' })
-  pool: string
+  @JoinColumn()
+  @ManyToMany(() => StoragePool, { nullable: false, onDelete: 'RESTRICT' })
+  pool: StoragePool
 
   /**
    * A reference to the owner of the entity. It is used to determine who has the permission to
@@ -73,28 +74,51 @@ export class StorageFile extends BaseEntity {
   assignments?: StorageFileAssignment[]
 
   /**
+   * The user that created the file.
+   */
+  @ManyToOne(() => User, { nullable: false })
+  createdBy?: User
+
+  /**
+   * The user that deleted the file.
+   */
+  @ManyToOne(() => User, { nullable: true })
+  deletedBy?: User
+
+  /**
+   * @param options The options to use when serializing the entity.
    * @returns The plain object representation of the entity.
    */
-  serialize(): StorageFileObject {
+  serialize(options: SerializeOptions = {}): StorageFileObject {
+    const {
+      withCreatedBy = false,
+      withDeleted = false,
+    } = options
     return {
       id: this.id,
       name: this.name,
       type: this.type,
       size: this.size,
-      createdAt: this.createdAt.toISOString(),
-      updatedAt: this.updatedAt.toISOString(),
-      assignments: this.assignments?.map(x => x.serialize()),
+      createdAt: withCreatedBy ? this.createdAt.toISOString() : undefined,
+      createdBy: withCreatedBy ? this.createdBy?.serialize() : undefined,
+      deletedAt: withDeleted ? this.deletedAt?.toISOString() : undefined,
+      deletedBy: withDeleted ? this.deletedBy?.serialize() : undefined,
     }
   }
 }
 
-/** Serialzed representation of the `StorageFile` entity. */
+interface SerializeOptions {
+  withCreatedBy?: boolean
+  withDeleted?: boolean
+}
+
 export interface StorageFileObject {
   id: UUID
   name: string
   type: string
   size: number
-  createdAt: string
-  updatedAt: string
-  assignments?: StorageFileAssignmentObject[]
+  createdAt?: string
+  createdBy?: UserObject
+  deletedAt?: string
+  deletedBy?: UserObject
 }

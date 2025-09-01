@@ -1,40 +1,38 @@
-import type { StoragePool } from './createStoragePool'
-import { CreateBucketCommand, DeleteObjectCommand, GetObjectCommand, ListBucketsCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import type { StoragePoolAdapter } from './createStoragePoolAdapter'
+import { DeleteObjectCommand, GetObjectCommand, ListBucketsCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { assert, createParser } from '@unshared/validation'
 import { Readable } from 'node:stream'
 import { StorageFile } from '../entities'
-import { fileToStream } from './fileToStream'
+import { fileToStream } from '../utils'
 
-export interface StoragePoolS3Options {
-
-  /**
-   * The S3 client used to interact with the S3-Compatible bucket. If provided,
-   * the module will not create a new client and will use the provided one.
-   *
-   * @example new S3Client({ region: 'us-east-1' })
-   */
-  client?: S3Client
+/** The parser for options to create an S3-Compatible storage pool. */
+export const STORAGE_POOL_S3_OPTIONS_SCHEMA = createParser({
 
   /**
    * The name of the S3-Compatible bucket where the assets are stored.
    *
    * @example 'my-bucket-name'
    */
-  bucketName: string
+  bucketName: assert.stringNotEmpty
+    .withName('E_STORAGE_POOL_S3_MISSING_BUCKET_NAME')
+    .withMessage('The S3 bucket name is required.'),
 
   /**
    * The region of the S3-Compatible bucket where the assets are stored.
    *
    * @example 'us-east-1'
    */
-  bucketRegion: string
+  bucketRegion: assert.stringNotEmpty
+    .withName('E_STORAGE_POOL_S3_MISSING_BUCKET_REGION')
+    .withMessage('The S3 bucket region is required.'),
 
   /**
    * The endpoint of the S3-Compatible bucket where the assets are stored.
    *
    * @example 'https://my-bucket-name.s3.amazonaws.com'
    */
-  bucketEndpoint: string
+  bucketEndpoint: assert.stringNotEmpty,
 
   /**
    * The access key of the S3-Compatible bucket where the assets are stored.
@@ -42,7 +40,9 @@ export interface StoragePoolS3Options {
    *
    * @example 'AKIAIOSFODNN7EXAMPLE'
    */
-  bucketAccessKey: string
+  bucketAccessKey: assert.stringNotEmpty
+    .withName('E_STORAGE_POOL_S3_MISSING_ACCESS_KEY')
+    .withMessage('The S3 bucket access key is required.'),
 
   /**
    * The secret key of the S3-Compatible bucket where the assets are stored.
@@ -50,63 +50,62 @@ export interface StoragePoolS3Options {
    *
    * @example 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'
    */
-  bucketSecretKey: string
+  bucketSecretKey: assert.stringNotEmpty
+    .withName('E_STORAGE_POOL_S3_MISSING_SECRET_KEY')
+    .withMessage('The S3 bucket secret key is required.'),
+})
 
-  /**
-   * If `true`, the bucket is created if it does not exist when the module is initialized.
-   * If `false`, an error is thrown if the bucket does not exist.
-   *
-   * @default false
-   */
-  createBucket: boolean
-}
+/** The options for creating an S3-Compatible storage pool. */
+export type StoragePoolS3Options = ReturnType<typeof STORAGE_POOL_S3_OPTIONS_SCHEMA>
 
-export function createStoragePoolS3(options: StoragePoolS3Options): StoragePool {
-  const { bucketName, bucketRegion, bucketEndpoint, bucketAccessKey, bucketSecretKey, createBucket } = options
-  let client: S3Client | undefined = options.client
-
+/**
+ * Creates an S3-Compatible storage pool with the given options.
+ *
+ * @param options The options to create the S3 storage pool.
+ * @returns A storage pool that can be used to upload, download, and erase files in the S3 bucket.
+ * @example
+ *
+ * // Create an S3 storage pool with the given options.
+ * const pool = createStoragePoolS3({
+ *   bucketName: 'my-bucket-name',
+ *   bucketRegion: 'us-east-1',
+ *   bucketEndpoint: 'https://my-bucket-name.s3.amazonaws.com',
+ *   bucketAccessKey: 'AKIAIOSFODNN7EXAMPLE',
+ *   bucketSecretKey: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
+ * })
+ *
+ * // Initialize the storage pool.
+ * await pool.initialize()
+ */
+export function createStoragePoolS3(options: StoragePoolS3Options): StoragePoolAdapter {
+  const { bucketName, bucketRegion, bucketEndpoint, bucketAccessKey, bucketSecretKey } = STORAGE_POOL_S3_OPTIONS_SCHEMA(options)
+  let client: S3Client | undefined
   return {
     async initialize() {
-      if (!bucketName) throw new Error('The S3 bucket name is required.')
-      if (!bucketRegion) throw new Error('The S3 bucket region is required.')
-      if (!bucketEndpoint) throw new Error('The S3 bucket endpoint is required.')
-      if (!bucketAccessKey) throw new Error('The S3 bucket access key is required.')
-      if (!bucketSecretKey) throw new Error('The S3 bucket secret key is required.')
 
-      if (!client) {
-        client = new S3Client({
-          credentials: {
-            accessKeyId: bucketAccessKey,
-            secretAccessKey: bucketSecretKey,
-          },
-          region: bucketRegion,
-          endpoint: bucketEndpoint,
-          forcePathStyle: true,
-        })
-      }
+      // --- Create the S3 client with the provided options.
+      client = new S3Client({
+        region: bucketRegion,
+        endpoint: bucketEndpoint,
+        forcePathStyle: true,
+        credentials: {
+          accessKeyId: bucketAccessKey,
+          secretAccessKey: bucketSecretKey,
+        },
+      })
 
-      // --- Check if the bucket exists or create it if required.
+      // --- Check if the bucket exists it if required.
       const command = new ListBucketsCommand({})
       const response = await client.send(command)
       const exists = response.Buckets?.find(x => x.Name === bucketName)
-
-      // --- If the bucket exists, return early. If not, throw an error if the bucket should exist.
-      if (exists) return
-      if (!createBucket) throw new Error(`The bucket "${bucketName}" does not exist`)
-
-      // --- Create the bucket if it does not exist.
-      const create = new CreateBucketCommand({ Bucket: bucketName })
-      await client.send(create)
+      if (!exists) throw new Error(`The bucket "${bucketName}" does not exist`)
     },
 
-    async upload(file) {
+    async upload(file, options = {}) {
       if (!bucketName) throw new Error('The S3 bucket name is required.')
       if (!client) throw new Error('The S3 client is not initialized.')
-      const { abortSignal } = file
-
-      // --- Extract the stream from the `FileLike` object, derive the hash
-      // --- and conditionally convert the stream from a web stream to a node stream.
-      const { stream, hash } = fileToStream(file)
+      const { abortSignal } = options
+      const { stream, hash, size } = fileToStream(file)
 
       // --- Create the S3 command to upload the file.
       const entity = new StorageFile()
@@ -116,6 +115,7 @@ export function createStoragePoolS3(options: StoragePoolS3Options): StoragePool 
         Key: entity.id,
         Bucket: bucketName,
         ContentType: file.type,
+        ContentLength: file.size,
         ContentDisposition: `inline; filename="${file.name}"`,
         Metadata: { Name: file.name },
       })
@@ -125,6 +125,9 @@ export function createStoragePoolS3(options: StoragePoolS3Options): StoragePool 
       if (!output.ETag) throw new Error('Could not upload the file to the S3 bucket')
 
       // --- Once done, update the entity and return it.
+      entity.name = file.name
+      entity.type = file.type
+      entity.size = await size
       entity.hash = await hash.then(hash => hash.digest('hex'))
       return entity
     },
@@ -133,14 +136,15 @@ export function createStoragePoolS3(options: StoragePoolS3Options): StoragePool 
       if (!client) throw new Error('The S3 client is not initialized.')
       const { offset = 0, size, abortSignal } = options
       const range = size ? `bytes=${offset}-${offset + size}` : `bytes=${offset}-`
-      const getObjectCommand = new GetObjectCommand({ Bucket: bucketName, Key: file.id, Range: range })
 
       return {
         async getUrl() {
+          const getObjectCommand = new GetObjectCommand({ Bucket: bucketName, Key: file.id })
           return await getSignedUrl(client!, getObjectCommand, { expiresIn: 60 })
         },
 
         async getStream() {
+          const getObjectCommand = new GetObjectCommand({ Bucket: bucketName, Key: file.id, Range: range })
           const { Body } = await client!.send(getObjectCommand, { abortSignal })
           if (!Body) throw new Error('The file body is missing.')
           const stream = Body.transformToWebStream()

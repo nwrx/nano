@@ -1,16 +1,16 @@
-import type { StorageFilePermission } from '../utils'
+import type { StoragePoolPermission } from '../utils'
 import { BaseEntity } from '@unserved/server'
 import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm'
 import { User, UserObject } from '../../user'
-import { StorageFile } from './StorageFile'
+import { StoragePool } from './StoragePool'
 
 /**
- * A mapping of an `StorageFile` entity to a `User` entity. It
- * allows us to determine the ownership and permissions of the file.
+ * A mapping of an `StoragePool` entity to a `User` entity. It
+ * allows us to determine the ownership and permissions of the pool.
  */
-@Entity({ name: 'StorageFileAssignment' })
-@Unique(['file', 'user', 'permission'])
-export class StorageFileAssignment extends BaseEntity {
+@Entity({ name: 'StoragePoolAssignment' })
+@Unique(['pool', 'user', 'permission'])
+export class StoragePoolAssignment extends BaseEntity {
 
   /**
    * The `User` entity that owns the entity.
@@ -20,18 +20,18 @@ export class StorageFileAssignment extends BaseEntity {
   user: User
 
   /**
-   * The `StorageFile` entity that is owned by the user.
+   * The `StoragePool` entity that is owned by the user.
    */
   @JoinColumn()
-  @ManyToOne(() => StorageFile, file => file.assignments, { onDelete: 'CASCADE' })
-  file: StorageFile
+  @ManyToOne(() => StoragePool, pool => pool.assignments, { onDelete: 'CASCADE' })
+  pool: StoragePool
 
   /**
-   * The permission level of the user on the file. If the user has the `OWNER` permission, they
-   * can read, update, and delete the file.
+   * The permission level of the user on the pool. If the user has the `OWNER` permission, they
+   * can read, update, and delete the pool.
    */
   @Column('varchar', { length: 255 })
-  permission: StorageFilePermission
+  permission: StoragePoolPermission
 
   /**
    * The user that created the assignment.
@@ -49,7 +49,7 @@ export class StorageFileAssignment extends BaseEntity {
    * @param options The options to use to serialize the entity.
    * @returns The plain object representation of the entity.
    */
-  serialize(options: SerializeOptions = {}): StorageFileAssignmentObject {
+  serialize(options: SerializeOptions = {}): StoragePoolAssignmentObject {
     const {
       withCreatedBy = false,
       withDeleted = false,
@@ -70,9 +70,9 @@ interface SerializeOptions {
   withDeleted?: boolean
 }
 
-export interface StorageFileAssignmentObject {
+export interface StoragePoolAssignmentObject {
   user: UserObject
-  permission: StorageFilePermission
+  permission: StoragePoolPermission
   createdAt?: string
   createdBy?: UserObject
   deletedAt?: string

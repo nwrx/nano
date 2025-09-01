@@ -1,27 +1,12 @@
 import type { ContainerClient } from '@azure/storage-blob'
-import type { StoragePool } from './createStoragePool'
+import type { StoragePoolAdapter } from './createStoragePoolAdapter'
 import { BlobSASPermissions, BlobServiceClient } from '@azure/storage-blob'
 import { Readable } from 'node:stream'
 import { StorageFile } from '../entities'
-import { fileToStream } from './fileToStream'
+import { fileToStream } from '../utils'
 
+/** The parser for options to create an Azure Blob storage pool. */
 export interface StoragePoolAzureOptions {
-
-  /**
-   * The `BlobServiceClient` used to interact with the Azure Blob storage. If
-   * the client is not provided, it is created using the connection string.
-   *
-   * @example new BlobServiceClient(...)
-   */
-  blobServiceClient?: BlobServiceClient
-
-  /**
-   * The `ContainerClient` used to interact with the Azure Blob storage container.
-   * if the client is not provided, it is created using the container name.
-   *
-   * @example new ContainerClient(...)
-   */
-  containerClient: ContainerClient
 
   /**
    * The container name in the Azure Blob storage where the data is stored.
@@ -38,20 +23,31 @@ export interface StoragePoolAzureOptions {
   connectionString: string
 }
 
-export function createStoragePoolAzure(options: StoragePoolAzureOptions): StoragePool {
+/**
+ * Creates an Azure Blob storage pool with the given options.
+ *
+ * @param options The options to create the Azure Blob storage pool.
+ * @returns A storage pool that can be used to upload, download, and erase files in the Azure Blob storage.
+ * @example
+ *
+ * // Create an Azure Blob storage pool with the given options.
+ * const pool = createStoragePoolAzure({
+ *   containerName: 'my-container-name',
+ *   connectionString: 'DefaultEndpointsProtocol=https;AccountName=myaccount;AccountKey=mykey;EndpointSuffix=core.windows.net',
+ * })
+ *
+ * // Initialize the storage pool.
+ * await pool.initialize()
+ */
+export function createStoragePoolAzure(options: StoragePoolAzureOptions): StoragePoolAdapter {
   const { connectionString, containerName } = options
   let blobServiceClient: BlobServiceClient | undefined
   let containerClient: ContainerClient | undefined
 
   return {
     async initialize() {
-      if (blobServiceClient instanceof BlobServiceClient) return
-
-      // --- Assert that the required options are provided.
-      if (!connectionString) throw new Error('The connection string is required to connect to the Azure Storage container.')
-      if (!containerName) throw new Error('The container name is required to connect to the Azure Storage container.')
-
-      // --- Instantiate the Azure Blob client and the container client.
+      if (blobServiceClient !== undefined || containerClient !== undefined)
+        throw new Error('The Azure Blob storage pool is already initialized.')
       blobServiceClient = BlobServiceClient.fromConnectionString(connectionString)
       containerClient = blobServiceClient.getContainerClient(containerName)
 
@@ -61,17 +57,18 @@ export function createStoragePoolAzure(options: StoragePoolAzureOptions): Storag
       throw new Error(`The container "${containerName}" does not exist in the Azure Storage account.`)
     },
 
-    async upload(file) {
+    async upload(file, options = {}) {
       if (!containerName) throw new Error('The Azure Blob container name is required.')
       if (!blobServiceClient) throw new Error('The Azure Blob storage client is not initialized.')
-      const { stream, hash } = fileToStream(file)
+      const { abortSignal } = options
+      const { stream, hash, size } = fileToStream(file, abortSignal)
 
       // --- Upload the data to the Azure Blob storage.
       const entity = new StorageFile()
       const containerClient = blobServiceClient.getContainerClient(containerName)
       const blockBlobClient = containerClient.getBlockBlobClient(entity.id)
-      await blockBlobClient.uploadStream(stream, file.size, 5, {
-        abortSignal: file.abortSignal,
+      await blockBlobClient.uploadStream(stream, undefined, 5, {
+        abortSignal,
         blobHTTPHeaders: {
           blobContentType: file.type,
           blobContentDisposition: `inline; filename="${file.name}"`,
@@ -79,6 +76,9 @@ export function createStoragePoolAzure(options: StoragePoolAzureOptions): Storag
       })
 
       // --- Once the data is uploaded, resolve the hash value.
+      entity.name = file.name
+      entity.type = file.type
+      entity.size = await size
       entity.hash = await hash.then(hash => hash.digest('hex'))
       return entity
     },

@@ -2,17 +2,46 @@ import { createError } from 'h3'
 
 export const ERRORS = {
 
-  STORAGE_FILE_NOT_FOUND: (id: string, pool: string) => createError({
+  // File
+  STORAGE_FILE_NOT_FOUND: (workspace: string, pool: string, id: string) => createError({
     name: 'E_STORAGE_FILE_NOT_FOUND',
     statusCode: 404,
     statusText: 'Not Found',
-    message: `Could not find the file "${id}" in the storage pool "${pool}"`,
+    message: `Could not find the file **${workspace}/${pool}/${id}**`,
   }),
-  STORAGE_POOL_NOT_FOUND: (id: string) => createError({
+  STORAGE_FILE_FORBIDDEN: (workspace: string, pool: string, id: string) => createError({
+    name: 'E_STORAGE_FILE_FORBIDDEN',
+    statusCode: 403,
+    statusText: 'Forbidden',
+    message: `You do not have permission to perform this action on the file **${workspace}/${pool}/${id}**`,
+  }),
+
+  // General
+  STORAGE_POOL_NOT_FOUND: (workspace: string, pool: string) => createError({
     name: 'E_STORAGE_POOL_NOT_FOUND',
     statusCode: 404,
     statusText: 'Not Found',
-    message: `Could not find the storage pool "${id}"`,
+    message: `Could not find the storage pool **${workspace}/${pool}**`,
+  }),
+  STORAGE_POOL_FORBIDDEN: (workspace: string, pool: string) => createError({
+    name: 'E_STORAGE_POOL_FORBIDDEN',
+    statusCode: 403,
+    statusText: 'Forbidden',
+    message: `You do not have permission to perform this action on the storage pool **${workspace}/${pool}**`,
+  }),
+  STORAGE_POOL_ALREADY_EXISTS: (workspace: string, pool: string) => createError({
+    name: 'E_STORAGE_POOL_ALREADY_EXISTS',
+    statusCode: 409,
+    statusText: 'Conflict',
+    message: `The storage pool **${workspace}/${pool}** already exists`,
+  }),
+
+  // Adapters
+  STORAGE_POOL_ADAPTER_NOT_IMPLEMENTED: (type: string) => createError({
+    name: 'E_STORAGE_POOL_ADAPTER_NOT_IMPLEMENTED',
+    statusCode: 500,
+    statusText: 'Internal Server Error',
+    message: `The storage pool adapter "${type}" is not implemented`,
   }),
 
   // Upload

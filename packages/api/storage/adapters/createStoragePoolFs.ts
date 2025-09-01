@@ -1,32 +1,46 @@
-/* eslint-disable sonarjs/publicly-writable-directories */
-import type { StoragePool } from './createStoragePool'
+import type { StoragePoolAdapter } from './createStoragePoolAdapter'
+import { assertStringPathAbsolute } from '@unshared/validation'
 import { createReadStream, createWriteStream } from 'node:fs'
 import { mkdir, rm, stat } from 'node:fs/promises'
 import { join } from 'node:path'
 import { StorageFile } from '../entities'
-import { ERRORS } from './errors'
-import { fileToStream } from './fileToStream'
+import { ERRORS, fileToStream } from '../utils'
 
+/** The options to create a filesystem storage pool. */
 export interface StoragePoolFSOptions {
 
   /**
    * The path to the local storage directory.
-   *
-   * @default '/tmp/storage'
    */
-  path?: string
+  path: string
 }
 
-export function createStoragePoolFs(options: StoragePoolFSOptions = {}): StoragePool {
-  const { path = '/tmp/storage' } = options
+/**
+ * Creates a filesystem storage pool with the given options.
+ *
+ * @param options The options to create the filesystem storage pool.
+ * @returns A storage pool that can be used to upload, download, and erase files in the local filesystem.
+ * @example
+ *
+ * // Create a filesystem storage pool with the given options.
+ * const pool = createStoragePoolFs({
+ *   path: '/path/to/local/storage',
+ * })
+ *
+ * // Initialize the storage pool.
+ * await pool.initialize()
+ */
+export function createStoragePoolFs(options: StoragePoolFSOptions): StoragePoolAdapter {
+  const { path } = options
   return {
     async initialize() {
+      assertStringPathAbsolute(path)
       await mkdir(path, { recursive: true })
     },
 
-    async upload(file) {
-      const { stream, hash, size } = fileToStream(file)
-      const { abortSignal, origin: origin, name, type, pool } = file
+    async upload(file, options = {}) {
+      const { abortSignal } = options
+      const { stream, hash, size } = fileToStream(file, abortSignal)
 
       // --- Upload the data to the Azure Blob storage.
       const entity = new StorageFile()
@@ -40,15 +54,9 @@ export function createStoragePoolFs(options: StoragePoolFSOptions = {}): Storage
         writeStream.on('error', reject)
       })
 
-      // --- Assert we have a name and type.
-      if (!name) throw ERRORS.STORAGE_UPLOAD_MISSING_FILE_NAME()
-      if (!type) throw ERRORS.STORAGE_UPLOAD_MISSING_FILE_TYPE()
-
       // --- Otherwise, save the asset to the database and return it.
-      entity.name = name
-      entity.type = type
-      entity.pool = pool
-      entity.origin = origin
+      entity.name = file.name
+      entity.type = file.type
       entity.size = await size
       entity.hash = await hash.then(hash => hash.digest('hex'))
       return entity
@@ -59,11 +67,9 @@ export function createStoragePoolFs(options: StoragePoolFSOptions = {}): Storage
       const filePath = join(path, file.id)
       return {
         async getStream() {
-          const stream = createReadStream(filePath, {
-            start: offset,
-            end: size ? offset + size : undefined,
-            signal: abortSignal,
-          })
+          const start = offset
+          const end = size ? offset + size - 1 : undefined
+          const stream = createReadStream(filePath, { start, end, signal: abortSignal })
           return await Promise.resolve(stream)
         },
 
@@ -101,14 +107,10 @@ export function createStoragePoolFs(options: StoragePoolFSOptions = {}): Storage
     },
 
     async erase(file) {
-
-      // --- Assert that the file exists and is not a directory.
       const filePath = join(path, file.id)
       const fileStat = await stat(filePath)
       const isFile = fileStat.isFile()
       if (!isFile) throw ERRORS.STORAGE_ERASE_FS_NOT_FILE(file.id)
-
-      // --- Delete the data from the disk.
       await rm(filePath, { force: true })
     },
   }

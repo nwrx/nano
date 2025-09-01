@@ -1,0 +1,5 @@
+export * from './createStoragePoolAdapter'
+export * from './createStoragePoolAzure'
+export * from './createStoragePoolFs'
+export * from './createStoragePoolGcs'
+export * from './createStoragePoolS3'

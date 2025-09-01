@@ -22,7 +22,7 @@ function createFileLike(): FileLike {
 describe('createStoragePoolFs', () => {
   describe('initialize', () => {
     it('should create the storage directory if it does not exist', async() => {
-      const pool = createStoragePoolFs({ path: '/tmp/pool' })
+      const pool = createStoragePoolFs({ type: 'fs', path: '/tmp/pool' })
       await pool.initialize()
       const poolExists = existsSync('/tmp/pool')
       expect(poolExists).toBe(true)
@@ -30,7 +30,7 @@ describe('createStoragePoolFs', () => {
 
     it('should not throw if the storage directory already exists', async() => {
       mkdirSync('/tmp/pool', { recursive: true })
-      const pool = createStoragePoolFs({ path: '/tmp/pool' })
+      const pool = createStoragePoolFs({ type: 'fs', path: '/tmp/pool' })
       const shouldNotThrow = pool.initialize()
       await expect(shouldNotThrow).resolves.not.toThrow()
     })
@@ -38,7 +38,7 @@ describe('createStoragePoolFs', () => {
 
   describe('upload', () => {
     it('should upload the File to the local file system', async() => {
-      const pool = createStoragePoolFs({ path: '/tmp/pool' })
+      const pool = createStoragePoolFs({ type: 'fs', path: '/tmp/pool' })
       await pool.initialize()
       const file = createFileLike()
       const result = await pool.upload(file)
@@ -61,7 +61,7 @@ describe('createStoragePoolFs', () => {
     })
 
     it('should throw when the provided file is not supported', async() => {
-      const pool = createStoragePoolFs({ path: '/tmp/pool' })
+      const pool = createStoragePoolFs({ type: 'fs', path: '/tmp/pool' })
       await pool.initialize()
       const shouldReject = pool.upload({ data: 123 } as unknown as FileLike)
       const error = ERRORS.STORAGE_UPLOAD_INVALID_FILE_LIKE_OBJECT()
@@ -69,7 +69,7 @@ describe('createStoragePoolFs', () => {
     })
 
     it('should throw when the file name is missing', async() => {
-      const pool = createStoragePoolFs({ path: '/tmp/pool' })
+      const pool = createStoragePoolFs({ type: 'fs', path: '/tmp/pool' })
       await pool.initialize()
       const file = createFileLike()
       // @ts-expect-error: ignore for testing purposes.
@@ -80,7 +80,7 @@ describe('createStoragePoolFs', () => {
     })
 
     it('should throw when the file type is missing', async() => {
-      const pool = createStoragePoolFs({ path: '/tmp/pool' })
+      const pool = createStoragePoolFs({ type: 'fs', path: '/tmp/pool' })
       await pool.initialize()
       const file = createFileLike()
       // @ts-expect-error: ignore for testing purposes.
@@ -91,7 +91,7 @@ describe('createStoragePoolFs', () => {
     })
 
     it('should throw on write error', async() => {
-      const pool = createStoragePoolFs({ path: '/tmp/pool' })
+      const pool = createStoragePoolFs({ type: 'fs', path: '/tmp/pool' })
       await pool.initialize()
       const file = createFileLike()
       const shouldReject = pool.upload(file)
@@ -102,7 +102,7 @@ describe('createStoragePoolFs', () => {
 
   describe('download', () => {
     it('should return a StorageDownloadResult object', async() => {
-      const pool = createStoragePoolFs({ path: '/tmp/pool' })
+      const pool = createStoragePoolFs({ type: 'fs', path: '/tmp/pool' })
       await pool.initialize()
       const file = createFileLike()
       const entity = await pool.upload(file)
@@ -118,7 +118,7 @@ describe('createStoragePoolFs', () => {
     })
 
     it('should return the file data as a stream', async() => {
-      const pool = createStoragePoolFs({ path: '/tmp/pool' })
+      const pool = createStoragePoolFs({ type: 'fs', path: '/tmp/pool' })
       await pool.initialize()
       const file = createFileLike()
       const entity = await pool.upload(file)
@@ -134,7 +134,7 @@ describe('createStoragePoolFs', () => {
     })
 
     it('should return the file data as text', async() => {
-      const pool = createStoragePoolFs({ path: '/tmp/pool' })
+      const pool = createStoragePoolFs({ type: 'fs', path: '/tmp/pool' })
       await pool.initialize()
       const file = createFileLike()
       const entity = await pool.upload(file)
@@ -144,7 +144,7 @@ describe('createStoragePoolFs', () => {
     })
 
     it('should return the file data as a base64 URL', async() => {
-      const pool = createStoragePoolFs({ path: '/tmp/pool' })
+      const pool = createStoragePoolFs({ type: 'fs', path: '/tmp/pool' })
       await pool.initialize()
       const file = createFileLike()
       const entity = await pool.upload(file)
@@ -154,7 +154,7 @@ describe('createStoragePoolFs', () => {
     })
 
     it('should return the file content length', async() => {
-      const pool = createStoragePoolFs({ path: '/tmp/pool' })
+      const pool = createStoragePoolFs({ type: 'fs', path: '/tmp/pool' })
       await pool.initialize()
       const file = createFileLike()
       const entity = await pool.upload(file)
@@ -164,7 +164,7 @@ describe('createStoragePoolFs', () => {
     })
 
     it('should return the file content type', async() => {
-      const pool = createStoragePoolFs({ path: '/tmp/pool' })
+      const pool = createStoragePoolFs({ type: 'fs', path: '/tmp/pool' })
       await pool.initialize()
       const file = createFileLike()
       const entity = await pool.upload(file)
@@ -174,7 +174,7 @@ describe('createStoragePoolFs', () => {
     })
 
     it('should throw on read error', async() => {
-      const pool = createStoragePoolFs({ path: '/tmp/pool' })
+      const pool = createStoragePoolFs({ type: 'fs', path: '/tmp/pool' })
       await pool.initialize()
       const file = createFileLike()
       const entity = await pool.upload(file)
@@ -193,7 +193,7 @@ describe('createStoragePoolFs', () => {
 
   describe('erase', () => {
     it('should erase the file from the local file system', async() => {
-      const pool = createStoragePoolFs({ path: '/tmp/pool' })
+      const pool = createStoragePoolFs({ type: 'fs', path: '/tmp/pool' })
       await pool.initialize()
       const file = createFileLike()
       const entity = await pool.upload(file)
@@ -203,7 +203,7 @@ describe('createStoragePoolFs', () => {
     })
 
     it('should throw when trying to erase a non-existing file', async() => {
-      const pool = createStoragePoolFs({ path: '/tmp/pool' })
+      const pool = createStoragePoolFs({ type: 'fs', path: '/tmp/pool' })
       await pool.initialize()
       const entity = new StorageFile()
       const shouldReject = pool.erase(entity)
