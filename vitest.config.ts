@@ -1,4 +1,4 @@
-import { cpus } from 'node:os'
+import { availableParallelism, cpus } from 'node:os'
 import { defineConfig } from 'vitest/config'
 
 const exclude = [
@@ -24,11 +24,11 @@ export default defineConfig({
 
     // --- Worker pool configuration.
     pool: 'forks',
-    maxConcurrency: cpus().length,
+    maxConcurrency: availableParallelism(),
     poolOptions: {
       forks: {
-        maxForks: cpus().length,
-        minForks: cpus().length,
+        maxForks: availableParallelism(),
+        minForks: availableParallelism(),
       },
     },
 
