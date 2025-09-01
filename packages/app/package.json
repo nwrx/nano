@@ -13,6 +13,7 @@
   },
   "devDependencies": {
     "@iconify-json/carbon": "1.2.10",
+    "@modelcontextprotocol/sdk": "1.17.4",
     "@nuxt/eslint": "1.2.0",
     "@nuxt/fonts": "0.11.0",
     "@nuxt/image": "1.9.0",
@@ -39,15 +40,15 @@
     "@unocss/rule-utils": "66.1.0-beta.5",
     "@unserved/client": "0.5.2",
     "@unserved/server": "0.5.2",
-    "@unshared/client": "0.7.0",
-    "@unshared/color": "0.7.0",
-    "@unshared/eslint-config": "0.7.0",
-    "@unshared/fs": "0.7.0",
-    "@unshared/functions": "0.7.0",
-    "@unshared/string": "0.7.0",
-    "@unshared/types": "0.7.0",
-    "@unshared/unocss-preset": "0.7.0",
-    "@unshared/vue": "0.7.0",
+    "@unshared/client": "0.7.4",
+    "@unshared/color": "0.7.4",
+    "@unshared/eslint-config": "0.7.4",
+    "@unshared/fs": "0.7.4",
+    "@unshared/functions": "0.7.4",
+    "@unshared/string": "0.7.4",
+    "@unshared/types": "0.7.4",
+    "@unshared/unocss-preset": "0.7.4",
+    "@unshared/vue": "0.7.4",
     "@vueuse/core": "13.0.0",
     "@vueuse/motion": "3.0.3",
     "@vueuse/nuxt": "13.0.0",
@@ -67,8 +68,5 @@
     "vite": "6.2.2",
     "vue": "3.5.13",
     "vue-router": "4.5.0"
-  },
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "1.17.0"
   }
 }

@@ -68,9 +68,9 @@
     "dev": "tsup --watch"
   },
   "dependencies": {
-    "@unshared/functions": "0.7.0",
-    "@unshared/string": "0.7.0",
-    "@unshared/types": "0.7.0",
+    "@unshared/functions": "0.7.4",
+    "@unshared/string": "0.7.4",
+    "@unshared/types": "0.7.4",
     "jsonschema": "1.5.0"
   },
   "devDependencies": {
