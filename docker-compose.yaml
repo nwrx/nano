@@ -3,6 +3,8 @@ name: nano
 volumes:
   postgres:
     driver: local
+  minio:
+    driver: local
 
 services:
 
@@ -39,6 +41,36 @@ services:
   #   volumes:
   #     - ollama:/root/.ollama
 
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
+    volumes:
+      - minio:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 20s
+      retries: 3
+
+  minio-init:
+    image: minio/mc
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set myminio http://minio:9000 minio minio123;
+      /usr/bin/mc mb myminio/nano-public --ignore-existing;
+      /usr/bin/mc policy set public myminio/nano-public;
+      exit 0;
+      "
+
   app:
     image: nwrx/nano
     build:
@@ -63,23 +95,11 @@ services:
       - api
     depends_on:
       - postgres
+      - minio-init
     ports:
       - "3001:3001"
-    environment:
-      - PORT=3001
-      - HOST=0.0.0.0
-      - APP_URL=http://localhost:3000
-      - DATABASE_SYNCRONIZE=true
-      - DATABASE_HOST=postgres
-      - DATABASE_PORT=5432
-      - DATABASE_NAME=nano
-      - DATABASE_USERNAME=nano
-      - DATABASE_PASSWORD=nano
-      - USER_TRUST_PROXY=true
-      - USER_SECRET_KEY=your_secret_key_here
-      - USER_CYPHER_ALGORITHM=aes-256-gcm
-      - VAULT_DEFAULT_LOCAL_SECRET_KEY=your_local_secret_key_here
-      - VAULT_CONFIGURATION_SECRET_KEY=your_configuration_secret_key_here
+    env_file:
+      - ./packages/api/.env
 
   runner-1:
     image: nwrx/nano
@@ -94,6 +114,7 @@ services:
       - PORT=3010
       - HOST=0.0.0.0
       - RUNNER_NAME=nano-runner-1
+      - RUNNER_TOKEN=your_runner_token_here
 
   runner-2:
     image: nwrx/nano
@@ -108,6 +129,7 @@ services:
       - PORT=3011
       - HOST=0.0.0.0
       - RUNNER_NAME=nano-runner-2
+      - RUNNER_TOKEN=your_runner_token_here
 
   runner-3:
     image: nwrx/nano
@@ -122,3 +144,4 @@ services:
       - PORT=3012
       - HOST=0.0.0.0
       - RUNNER_NAME=nano-runner-3
+      - RUNNER_TOKEN=your_runner_token_here
