@@ -12,7 +12,7 @@ export interface StoragePoolGcsOptions {
    *
    * @example 'my-bucket-name'
    */
-  bucketName: string
+  bucket: string
 
   /**
    * The Google Cloud project ID.
@@ -53,7 +53,7 @@ export interface StoragePoolGcsOptions {
  *
  * // Create a Google Cloud Storage pool with the given options.
  * const pool = createStoragePoolGcs({
- *   bucketName: 'my-bucket-name',
+ *   bucket: 'my-bucket-name',
  *   projectId: 'my-project-id',
  * })
  *
@@ -61,7 +61,7 @@ export interface StoragePoolGcsOptions {
  * await pool.initialize()
  */
 export function createStoragePoolGcs(options: StoragePoolGcsOptions): StoragePoolAdapter {
-  const { bucketName, projectId, keyFilename, clientEmail, privateKey } = options
+  const { bucket: bucketName, projectId, keyFilename, clientEmail, privateKey } = options
   let storage: Storage | undefined
   let bucket: Bucket | undefined
   return {
@@ -69,7 +69,7 @@ export function createStoragePoolGcs(options: StoragePoolGcsOptions): StoragePoo
       if (storage) return
 
       // --- Assert that the required options are provided.
-      if (!bucketName) throw new Error('The bucket name is required to connect to the Google Cloud Storage bucket.')
+      if (!bucket) throw new Error('The bucket name is required to connect to the Google Cloud Storage bucket.')
       if (!projectId) throw new Error('The project ID is required to connect to the Google Cloud Storage bucket.')
 
       // --- Instantiate the Google Cloud Storage client.
