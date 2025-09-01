@@ -24,6 +24,7 @@ logs
 .fleet
 .idea
 .bin
+/scripts/.*
 
 # Infrastructure
 .terraform*
