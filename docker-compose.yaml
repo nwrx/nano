@@ -100,6 +100,19 @@ services:
       - "3001:3001"
     env_file:
       - ./packages/api/.env
+    environment:
+      DATABASE_TYPE: postgres
+      DATABASE_URL: postgres://nano:nano@postgres:5432/nano
+      DATABASE_SYNCRONIZE: true
+      STORAGE_PUBLIC_POOL_TYPE: s3
+      STORAGE_PUBLIC_POOL_CONFIGURATION: |
+        {
+          "bucket": "nano-public",
+          "region": "us-east-1",
+          "endpoint": "http://localhost:9000",
+          "accessKeyId": "minio",
+          "secretAccessKey": "minio123"
+        }
 
   runner-1:
     image: nwrx/nano

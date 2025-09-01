@@ -3,3 +3,6 @@
 **/dist/
 **/.output/
 **/.nuxt/
+**/.env
+**/.data
+**/.turbo
