@@ -186,6 +186,7 @@ export const APPLICATION_CONFIG_SCHEMA = createParser({
    */
   STORAGE_PUBLIC_POOL_CONFIGURATION: [
     assert.stringNotEmpty,
+    (value: string) => value.replaceAll(String.raw`\"`, '"'), // Unescape quotes to handle some edge cases
     assert.stringJson.withMessage('The storage public pool configuration must be a valid JSON string.'),
     JSON.parse as (value: string) => StoragePoolConfiguration,
   ],
