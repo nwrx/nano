@@ -99,20 +99,20 @@ export class McpManagerClient {
   async getPool(name: string): Promise<NmcpManager.Pool> {
     return await this.client.request('GET /v1/pools/{name}', {
       parameters: { name },
-    }) as Promise<NmcpManager.Pool>
+    }) as NmcpManager.Pool
   }
 
   async createPool(options?: NmcpManager.CreatePoolOptions): Promise<NmcpManager.Pool> {
     return await this.client.request('POST /v1/pools', {
       body: options,
-    })
+    }) as NmcpManager.Pool
   }
 
   async updatePool(name: string, options?: NmcpManager.PatchPoolOptions): Promise<NmcpManager.PatchPoolResult> {
     return await this.client.request('PUT /v1/pools/{name}', {
       parameters: { name },
       body: options,
-    }) as Promise<NmcpManager.PatchPoolResult>
+    }) as NmcpManager.PatchPoolResult
   }
 
   async deletePool(name: string): Promise<void> {
@@ -140,20 +140,20 @@ export class McpManagerClient {
         throw ERRORS.MCP_MANAGER_NOT_REACHABLE(address, message)
       }
       throw error
-    }) as Promise<NmcpManager.Server>
+    }) as NmcpManager.Server
   }
 
   async createServer(options?: NmcpManager.CreateServerOptions): Promise<NmcpManager.Server> {
     return await this.client.request('POST /v1/servers', {
       body: options,
-    })
+    }) as NmcpManager.Server
   }
 
   async updateServer(name: string, options?: NmcpManager.UpdateServerOptions): Promise<NmcpManager.Server> {
     return await this.client.request('PUT /v1/servers/{name}', {
       parameters: { name },
       body: options,
-    }) as Promise<NmcpManager.Server>
+    }) as NmcpManager.Server
   }
 
   async deleteServer(name: string): Promise<void> {

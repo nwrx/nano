@@ -12,13 +12,13 @@ export namespace NmcpManager {
   /** The result of the `getPoolByName` operation. */
   export type Pool = OperationResult<Schema, OperationById<Schema, 'getPoolByName'>>
   export type CreatePoolOptions = OperationOptions<Schema, OperationById<Schema, 'createPool'>>['body']
-  export type PatchPoolOptions = OperationOptions<Schema, OperationById<Schema, 'patchPoolByName'>>['body']
-  export type PatchPoolResult = OperationResult<Schema, OperationById<Schema, 'patchPoolByName'>>
+  export type PatchPoolOptions = OperationOptions<Schema, OperationById<Schema, 'updatePoolByName'>>['body']
+  export type PatchPoolResult = OperationResult<Schema, OperationById<Schema, 'updatePoolByName'>>
 
   /** The result of the `getServerByName` operation. */
   export type Server = OperationResult<Schema, OperationById<Schema, 'getServerByName'>>
   export type CreateServerOptions = OpenAPIV3.RequestBody<OperationById<Schema, 'createServer'>>
-  export type UpdateServerOptions = OpenAPIV3.RequestBody<OperationById<Schema, 'patchServerByName'>>
+  export type UpdateServerOptions = OpenAPIV3.RequestBody<OperationById<Schema, 'updateServerByName'>>
 
   /** The status of a server. */
   export type ServerStatus = Server['status']
