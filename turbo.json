@@ -2,15 +2,14 @@
   "$schema": "https://turbo.build/schema.json",
   "ui": "stream",
   "daemon": false,
-  "envMode": "strict",
+  "envMode": "loose",
   "cacheDir": ".turbo/cache",
   "remoteCache": {
     "enabled": true,
     "preflight": true
   },
   "globalDependencies": [
-    ".env",
-    "tsconfig.json"
+    ".env"
   ],
   "tasks": {
     "@nwrx/ai#build": {
