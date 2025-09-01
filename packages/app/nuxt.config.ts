@@ -98,7 +98,6 @@ export default defineNuxtConfig({
       weights: ['200', '300', '400', '500', '600', '700', '800'],
       styles: ['normal', 'italic'],
       subsets: ['latin', 'latin-ext'],
-      preload: true,
     },
     families: [
       { name: 'IBM Plex Sans', provider: 'google' },
@@ -208,6 +207,8 @@ export default defineNuxtConfig({
         '@unshared/string/escapeHtml',
         '@unshared/string/toCamelCase',
         '@unshared/client',
+        '@unshared/vue/vCode',
+        '@unshared/vue/vMarkdown',
         '@unshared/functions/memoize',
         '@unshared/functions/createResolvable',
         'highlight.js/lib/languages/yaml',
