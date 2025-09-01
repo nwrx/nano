@@ -15,8 +15,8 @@ export const GET_IMPORT_TASK_OPTIONS_SCHEMA = createParser({
 export type GetImportTaskOptions = Loose<ReturnType<typeof GET_IMPORT_TASK_OPTIONS_SCHEMA>>
 
 export async function installCollection(this: ModuleIconCollection, options: GetImportTaskOptions): Promise<void> {
-  const moduleUser = this.getModule(ModuleUser)
   const { name, user } = GET_IMPORT_TASK_OPTIONS_SCHEMA(options)
+  const moduleUser = this.getModule(ModuleUser)
 
   // --- Check if the user is a super administrator.
   if (!user.isSuperAdministrator) throw moduleUser.errors.USER_UNAUTHORIZED()
@@ -33,7 +33,7 @@ export async function installCollection(this: ModuleIconCollection, options: Get
   let index = 0
   const total = Object.keys(data.icons).length
   for (const name in data.icons) {
-    await installCollectionIcon.call(this, { name, data, collection })
+    await installCollectionIcon.call(this, { user, name, data, collection })
 
     // --- Every 10 icons, broadcast the progress.
     const isIndex10 = index % 10 === 0

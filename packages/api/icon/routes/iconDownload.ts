@@ -25,11 +25,12 @@ export function iconDownload(this: ModuleIcon) {
       const { color, size, height = size, width = size } = query
 
       // --- Get the icon and respond if no color is specified.
+      const pool = await moduleStorage.getPublicPool()
       const icon = await getIcon.call(this, { name, withFile: true, withCollection: true })
-      if (!color && !height && !width) return moduleStorage.respondWith(event, icon.file!)
+      if (!color && !height && !width) return moduleStorage.respondWith(event, { file: icon.file!, pool })
 
       // --- If a color is specified, we need to modify the SVG.
-      const file = await moduleStorage.download(icon.file!)
+      const file = await moduleStorage.download({ file: icon.file!, pool })
       let svg = await file.getText()
       if (color) svg = svg.replaceAll('currentColor', color)
       if (width) svg.replaceAll(/width="[^"]+"/g, `width="${width}px"`)

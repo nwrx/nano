@@ -7,14 +7,14 @@ import { createTestContext } from '../../__fixtures__'
 import { ModuleStorage } from '../../storage'
 
 function createAvatarSvg(initials: string) {
-  return dedent(`
+  return dedent`
     <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
       <circle cx="50" cy="50" r="50" fill="#f0f0f0"/>
       <text x="50" y="50" text-anchor="middle" dominant-baseline="central" font-size="40" fill="#000000">
         ${initials}
       </text>
     </svg>
-  `)
+  `
 }
 
 async function setupUserAvatar(application: Context['application'], user: User) {

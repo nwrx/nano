@@ -14,14 +14,14 @@ export function userGetAvatar(this: ModuleUser) {
         username: assertStringNotEmpty,
       }),
       parseQuery: createParser({
-        download: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
+        isAttachment: [[assertUndefined], [assertStringNotEmpty, parseBoolean]],
       }),
     },
     async({ event, parameters, query }) => {
       const storageModule = this.getModule(ModuleStorage)
       const { user } = await this.authenticate(event, { optional: true })
       const { username } = parameters
-      const { download } = query
+      const { isAttachment } = query
 
       // --- Resolve the user to get the avatar of.
       const found = await getUser.call(this, {
@@ -32,14 +32,25 @@ export function userGetAvatar(this: ModuleUser) {
         withDisabled: Boolean(user?.isSuperAdministrator),
       })
 
+      // --- Get the abort signal to cancel the request if needed.
+      const abortController = new AbortController()
+      const abortSignal = abortController.signal
+      event.node.req.on('aborted', () => abortController.abort())
+
       // --- Redirect to the avatar file.
-      if (found.profile?.avatar)
-        return storageModule.respondWith(event, found.profile.avatar, { isAttachment: download })
+      if (found.profile?.avatar) {
+        return storageModule.respondWith(event, {
+          file: found.profile.avatar,
+          pool: await storageModule.getPublicPool(),
+          isAttachment,
+          abortSignal,
+        })
+      }
 
       // --- If the user does not have an avatar, return a simple SVG.
       setResponseHeader(event, 'Cache-Control', 'no-cache')
       setResponseHeader(event, 'Content-Type', 'image/svg+xml')
-      if (download) setResponseHeader(event, 'Content-Disposition', 'attachment; filename="avatar.svg"')
+      if (isAttachment) setResponseHeader(event, 'Content-Disposition', 'attachment; filename="avatar.svg"')
 
       // --- Create the initials of the user.
       const initials = found.profile

@@ -52,17 +52,12 @@ export function userSetAvatar(this: ModuleUser) {
       // --- Find the user and upload the avatar.
       const { User } = this.getRepositories()
       const userToUpdate = await getUser.call(this, { user, username, withProfile: true })
-      userToUpdate.profile!.avatar = await moduleStorage.upload({
-        data: file,
-        pool: 'Default',
-        name: `avatar-${userToUpdate.username}`,
-        type: file.type,
-        size: file.size,
-        origin: `user:${userToUpdate.id}`,
-        abortSignal,
-      })
+      const publicPool = await moduleStorage.getPublicPoolAdapter()
 
-      // --- Save the user with the new avatar.
+      // --- Create the avatar in the public storage pool.
+      const avatar = await publicPool.upload(file, { abortSignal })
+      avatar.createdBy = user
+      userToUpdate.profile!.avatar = avatar
       await User.save(userToUpdate)
       setResponseStatus(event, 201)
     },
