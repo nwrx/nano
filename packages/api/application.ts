@@ -16,10 +16,9 @@ import { ModuleProject } from './project'
 import { ModuleRegistry } from './registry'
 import { ModuleRunner } from './runner'
 import { ModuleStorage } from './storage'
-import { createStoragePoolFs } from './storage/utils'
 import { ModuleThread } from './thread'
 import { ModuleUser } from './user'
-import { ENV_CONFIG_SCHEMA, getDataSource } from './utils'
+import { getConfigFromEnvironment, getDataSource } from './utils'
 import { ModuleVault } from './vault'
 import { ModuleWorkspace } from './workspace'
 
@@ -37,7 +36,7 @@ class ModuleHealth extends ModuleBase {
 }
 
 // --- Expose the application for type inference.
-const config = ENV_CONFIG_SCHEMA(process.env)
+const config = getConfigFromEnvironment()
 export const application = new Application(
   [
     new ModuleUser({
@@ -45,7 +44,7 @@ export const application = new Application(
       userTrustProxy: config.USER_TRUST_PROXY,
       userCypherAlgorithm: config.USER_CYPHER_ALGORITHM,
       userSessionDuration: config.USER_SESSION_DURATION,
-      userRecoveryDuration: config.USER_RECOVERY_DURATION,
+      // userRecoveryDuration: config.USER_RECOVERY_DURATION,
       userSessionIdCookieName: config.USER_SESSION_ID_COOKIE_NAME,
       userSessionTokenCookieName: config.USER_SESSION_TOKEN_COOKIE_NAME,
     }),
@@ -53,18 +52,18 @@ export const application = new Application(
       initialRunners: config.INITIAL_RUNNERS,
     }),
     new ModuleVault({
-      vaultDefaultLocalSecretKey: config.VAULT_DEFAULT_LOCAL_SECRET_KEY,
       vaultConfigurationAlgorithm: config.VAULT_CONFIGURATION_ALGORITHM,
       vaultConfigurationSecretKey: config.VAULT_CONFIGURATION_SECRET_KEY,
     }),
     new ModuleIconCollection({
-      iconCdnUrl: 'https://esm.sh/',
-      iconIconifyUrl: 'https://api.iconify.design',
+      iconCdnUrl: config.ICON_CDN_URL,
+      iconIconifyUrl: config.ICON_ICONIFY_URL,
     }),
     new ModuleStorage({
-      storagePools: new Map([
-        ['Default', createStoragePoolFs({ path: config.STORAGE_PATH })],
-      ]),
+      publicPoolType: config.STORAGE_PUBLIC_POOL_TYPE,
+      publicPoolConfiguration: config.STORAGE_PUBLIC_POOL_CONFIGURATION,
+      configurationEncryptionKey: config.STORAGE_POOL_ENCRYPTION_SECRET,
+      configurationEncryptionAlgorithm: config.STORAGE_POOL_ENCRYPTION_ALGORITHM,
     }),
     ModuleFlow,
     ModuleFlowEditor,

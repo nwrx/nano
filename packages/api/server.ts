@@ -1,17 +1,23 @@
+/* eslint-disable unicorn/no-process-exit */
+/* eslint-disable n/no-process-exit */
 /* eslint-disable unicorn/prefer-top-level-await */
 import Consola from 'consola'
 import { setResponseHeader, setResponseStatus } from 'h3'
-import 'source-map-support/register.js'
 import { application } from './application'
-import { ENV_APP_SCHEMA } from './utils/environment'
+import { getConfigFromEnvironment } from './utils'
+// import { environment } from './utils'
 
-// --- Parse environment variables.
-const { PORT, HOST, APP_URL } = ENV_APP_SCHEMA(process.env)
+// --- Side-effects
+import 'source-map-support/register.js'
+import 'dotenv/config'
 
 // --- Initialize the application and start the server.
+let server: ReturnType<typeof application.createServer> | undefined
+const { PORT, HOST, APP_URL } = getConfigFromEnvironment()
+
 application.initialize()
   .then(() => {
-    application.createServer({
+    server = application.createServer({
       onRequest: (event) => {
         if (!APP_URL) return
         setResponseHeader(event, 'Access-Control-Allow-Origin', APP_URL)
@@ -42,15 +48,43 @@ application.initialize()
     })
   })
   .catch((error) => {
-    Consola.error(error)
+    console.error(error)
   })
 
 // handle unhandled rejections
 process.on('unhandledRejection', (error) => {
-  Consola.error(error)
+  console.error(error)
 })
 
 // handle uncaught exceptions
 process.on('uncaughtException', (error) => {
-  Consola.error(error)
+  console.error(error)
 })
+
+// --- Graceful shutdown handling
+function gracefulShutdown(signal: string) {
+  Consola.info(`Received ${signal}, starting graceful shutdown...`)
+
+  if (server) {
+    server.close(() => {
+      Consola.info('HTTP server closed')
+      Consola.info('Graceful shutdown complete')
+      process.exit(0)
+    })
+
+    // --- Force shutdown after 10 seconds if graceful shutdown takes too long
+    setTimeout(() => {
+      Consola.warn('Force shutdown after timeout')
+      process.exit(1)
+    }, 10_000)
+  }
+  else {
+    Consola.info('No server to close, exiting immediately')
+    process.exit(0)
+  }
+}
+
+// Listen for shutdown signals
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
+process.on('SIGINT', () => gracefulShutdown('SIGINT'))
+process.on('SIGHUP', () => gracefulShutdown('SIGHUP'))
