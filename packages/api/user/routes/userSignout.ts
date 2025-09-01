@@ -15,8 +15,8 @@ export function userSignout(this: ModuleUser) {
       await UserSession.softRemove(session)
 
       // --- Delete the session cookies.
-      deleteCookie(event, this.userSessionIdCookieName, { httpOnly: true, sameSite: 'strict', secure: true })
-      deleteCookie(event, this.userSessionTokenCookieName, { httpOnly: true, sameSite: 'strict', secure: true })
+      deleteCookie(event, this.sessionIdCookieName, { httpOnly: true, sameSite: 'strict', secure: true })
+      deleteCookie(event, this.sessionTokenCookieName, { httpOnly: true, sameSite: 'strict', secure: true })
     },
   )
 }

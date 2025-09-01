@@ -27,8 +27,8 @@ export function userRecover(this: ModuleUser) {
 
       // --- Decrypt the token and find the recovery request.
       const iv = Buffer.alloc(16, 0)
-      const key = createHash('sha256').update(this.userSecretKey).digest()
-      const id = createDecipheriv(this.userCypherAlgorithm, key, iv).update(token, 'hex', 'utf8').toString()
+      const key = createHash('sha256').update(this.sessionEncryptionSecret).digest()
+      const id = createDecipheriv(this.sessionEncryptionAlgorithm, key, iv).update(token, 'hex', 'utf8').toString()
       const isUuid = EXP_UUID.test(id)
       if (!isUuid) throw this.errors.USER_RECOVERY_INVALID()
 

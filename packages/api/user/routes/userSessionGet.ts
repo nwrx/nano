@@ -22,8 +22,8 @@ export function userSessionGet(this: ModuleUser) {
       // --- If a token was provided but failed to authenticate, return a 401 status
       // --- and reset the session cookie so the client can clear the session.
       catch (error) {
-        deleteCookie(event, this.userSessionIdCookieName, { httpOnly: true, sameSite: 'strict', secure: true })
-        deleteCookie(event, this.userSessionTokenCookieName, { httpOnly: true, sameSite: 'strict', secure: true })
+        deleteCookie(event, this.sessionIdCookieName, { httpOnly: true, sameSite: 'strict', secure: true })
+        deleteCookie(event, this.sessionTokenCookieName, { httpOnly: true, sameSite: 'strict', secure: true })
         throw error
       }
     },

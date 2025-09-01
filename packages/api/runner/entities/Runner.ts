@@ -9,8 +9,8 @@ export class Runner extends BaseEntity {
 
   /**
    * Flag to indicate if the runner was registered via the initialization of the
-   * application using the `INITIAL_RUNNERS` environment variable. This will determine
-   * if the runner can be removed from the database when not in `INITIAL_RUNNERS` anymore.
+   * application using the `NANO_RUNNER_INITIAL_SERVERS` environment variable. This will determine
+   * if the runner can be removed from the database when not in `NANO_RUNNER_INITIAL_SERVERS` anymore.
    */
   @Column('boolean', { default: false })
   isInitial = false

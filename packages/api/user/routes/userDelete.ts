@@ -45,8 +45,8 @@ export function userDelete(this: ModuleUser) {
 
       // --- In case the user is deleting itself, delete the session cookies.
       if (user.username === username) {
-        deleteCookie(event, this.userSessionIdCookieName, { httpOnly: true, sameSite: 'strict', secure: true })
-        deleteCookie(event, this.userSessionTokenCookieName, { httpOnly: true, sameSite: 'strict', secure: true })
+        deleteCookie(event, this.sessionIdCookieName, { httpOnly: true, sameSite: 'strict', secure: true })
+        deleteCookie(event, this.sessionTokenCookieName, { httpOnly: true, sameSite: 'strict', secure: true })
       }
     }),
   )

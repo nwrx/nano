@@ -41,13 +41,13 @@ export async function getVaultAdapter(this: ModuleVault, vault: Pick<Vault, 'con
   // }
 
   if (vault.type === 'hashicorp') {
-    const configurationJson = await decrypt(vault.configuration, this.vaultConfigurationSecretKey)
+    const configurationJson = await decrypt(vault.configuration, this.encryptionSecret)
     const configuration = JSON.parse(configurationJson) as VaultHashicorpOptions
     return createVaultHashicorp(configuration)
   }
 
   if (vault.type === 'local') {
-    const configurationJson = await decrypt(vault.configuration, this.vaultConfigurationSecretKey)
+    const configurationJson = await decrypt(vault.configuration, this.encryptionSecret)
     const configuration = JSON.parse(configurationJson) as VaultLocalOptions
     return createVaultLocal.call(this, configuration) as unknown as VaultAdapter<Encrypted>
   }

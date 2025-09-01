@@ -30,8 +30,8 @@ export async function updateVault(this: ModuleVault, options: UpdateVaultOptions
   // --- Decrypt the configuration using the module's encryption key.
   const configurationEncrypted = await encrypt(
     JSON.stringify(configuration),
-    this.vaultConfigurationSecretKey,
-    this.vaultConfigurationAlgorithm,
+    this.encryptionSecret,
+    this.encryptionAlgorithm,
   )
 
   // --- Update the configuration and save the vault.

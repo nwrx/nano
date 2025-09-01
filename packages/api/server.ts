@@ -13,14 +13,14 @@ import 'dotenv/config'
 
 // --- Initialize the application and start the server.
 let server: ReturnType<typeof application.createServer> | undefined
-const { PORT, HOST, APP_URL } = getConfigFromEnvironment()
+const { PORT, HOST, NANO_APP_URL } = getConfigFromEnvironment()
 
 application.initialize()
   .then(() => {
     server = application.createServer({
       onRequest: (event) => {
-        if (!APP_URL) return
-        setResponseHeader(event, 'Access-Control-Allow-Origin', APP_URL)
+        if (!NANO_APP_URL) return
+        setResponseHeader(event, 'Access-Control-Allow-Origin', NANO_APP_URL)
         setResponseHeader(event, 'Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, HEAD')
         setResponseHeader(event, 'Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept')
         setResponseHeader(event, 'Access-Control-Allow-Credentials', 'true')

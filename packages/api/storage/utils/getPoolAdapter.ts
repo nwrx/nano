@@ -18,7 +18,7 @@ import { createStoragePoolS3 } from '../adapters/createStoragePoolS3'
  * @returns The storage pool adapter instance.
  */
 export async function getPoolAdapter(this: ModuleStorage, pool: StoragePool): Promise<StoragePoolAdapter> {
-  const configurationJson = await decrypt(pool.configuration, this.configurationEncryptionKey)
+  const configurationJson = await decrypt(pool.configuration, this.encryptionKey)
   const configuration = JSON.parse(configurationJson) as object
   if (pool.type === 'azure') return createStoragePoolAzure(configuration as StoragePoolAzureOptions)
   if (pool.type === 'gcs') return createStoragePoolGcs(configuration as StoragePoolGcsOptions)

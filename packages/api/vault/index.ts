@@ -22,7 +22,7 @@ export interface ModuleVaultOptions {
    * vault adapters. This allows secure storage of the vault configuration in the
    * database without exposing the credentials.
    */
-  vaultConfigurationSecretKey: string
+  encryptionSecret: string
 
   /**
    * The algorithm used to encrypt and decrypt the configuration of additional vault
@@ -32,7 +32,7 @@ export interface ModuleVaultOptions {
    *
    * @default 'aes-256-gcm'
    */
-  vaultConfigurationAlgorithm: CipherGCMTypes
+  encryptionAlgorithm: CipherGCMTypes
 }
 
 export class ModuleVault extends ModuleBase implements ModuleVaultOptions {
@@ -40,13 +40,13 @@ export class ModuleVault extends ModuleBase implements ModuleVaultOptions {
   entities = ENTITIES
   errors = UTILS.ERRORS
   dependencies = [ModuleUser, ModuleProject]
-  vaultConfigurationAlgorithm: CipherGCMTypes
-  vaultConfigurationSecretKey: string
+  encryptionSecret: string
+  encryptionAlgorithm: CipherGCMTypes
 
   constructor(options: ModuleVaultOptions) {
     super()
-    this.vaultConfigurationSecretKey = options.vaultConfigurationSecretKey
-    this.vaultConfigurationAlgorithm = options.vaultConfigurationAlgorithm
+    this.encryptionSecret = options.encryptionSecret
+    this.encryptionAlgorithm = options.encryptionAlgorithm
   }
 
   createVault = UTILS.createVault.bind(this)

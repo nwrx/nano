@@ -26,7 +26,7 @@ export interface CreateSessionOptions {
  * @returns The user session.
  */
 export async function createSession(this: ModuleUser, event: H3Event, options: CreateSessionOptions): Promise<UserSession> {
-  const { user, duration = this.userSessionDuration } = options
+  const { user, duration = this.sessionDuration } = options
 
   // --- Throw an error if address or user agent is missing.
   const { address, userAgent } = getEventInformation.call(this, event)
@@ -42,12 +42,12 @@ export async function createSession(this: ModuleUser, event: H3Event, options: C
   const sessionId = randomUUID()
   const { cipher, ...secret } = await encrypt(
     sessionId,
-    this.userSecretKey,
-    this.userCypherAlgorithm,
+    this.sessionEncryptionSecret,
+    this.sessionEncryptionAlgorithm,
   )
 
   // --- Set the session ID in the response headers.
-  setCookie(event, this.userSessionIdCookieName, sessionId, {
+  setCookie(event, this.sessionIdCookieName, sessionId, {
     path: '/',
     secure: true,
     httpOnly: true,
@@ -57,7 +57,7 @@ export async function createSession(this: ModuleUser, event: H3Event, options: C
   })
 
   // --- Set the session cookie in the response headers.
-  setCookie(event, this.userSessionTokenCookieName, cipher, {
+  setCookie(event, this.sessionTokenCookieName, cipher, {
     path: '/',
     secure: true,
     httpOnly: true,

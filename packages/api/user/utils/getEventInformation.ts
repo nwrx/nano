@@ -23,10 +23,10 @@ export function getEventInformation(this: ModuleUser, event: H3Event | Peer): Ev
 
   // --- If the event is an H3 event, extract the address and user agent from the request.
   if (isEvent(event)) {
-    result.address = getRequestIP(event, { xForwardedFor: this.userTrustProxy })
+    result.address = getRequestIP(event, { xForwardedFor: this.trustProxy })
     result.userAgent = getHeader(event, 'User-Agent')
-    result.sessionId = getCookie(event, this.userSessionIdCookieName)
-    result.sessionToken = getCookie(event, this.userSessionTokenCookieName)
+    result.sessionId = getCookie(event, this.sessionIdCookieName)
+    result.sessionToken = getCookie(event, this.sessionTokenCookieName)
   }
 
   // --- If the event is a peer, extract the address and user agent from the peer.
@@ -41,10 +41,10 @@ export function getEventInformation(this: ModuleUser, event: H3Event | Peer): Ev
     const cookiesValue = headers.get('cookie') ?? ''
     const cookiesEntries = cookiesValue.split(';').map(x => x.trim().split('=').map(x => x.trim()))
     const cookies = Object.fromEntries(cookiesEntries) as Record<string, string>
-    result.address = (this.userTrustProxy ? headers.get('X-Forwarded-For') : undefined) ?? event.remoteAddress
+    result.address = (this.trustProxy ? headers.get('X-Forwarded-For') : undefined) ?? event.remoteAddress
     result.userAgent = headers.get('User-Agent') ?? undefined
-    result.sessionId = cookies[this.userSessionIdCookieName]
-    result.sessionToken = cookies[this.userSessionTokenCookieName]
+    result.sessionId = cookies[this.sessionIdCookieName]
+    result.sessionToken = cookies[this.sessionTokenCookieName]
   }
 
   // --- Return the event information.

@@ -26,14 +26,14 @@ export interface ModuleStorageOptions {
    * the database. This is used to protect sensitive information
    * such as access keys and secret keys.
    */
-  configurationEncryptionKey: string
+  encryptionKey: string
 
   /**
    * The algorithm used to encrypt the storage pool configuration.
    * This should match the algorithm used to encrypt the storage pool
    * configuration in the database.
    */
-  configurationEncryptionAlgorithm: CipherGCMTypes
+  encryptionAlgorithm: CipherGCMTypes
 }
 
 /**
@@ -50,15 +50,15 @@ export class ModuleStorage extends ModuleBase implements ModuleStorageOptions {
   publicPool: StoragePool | undefined
   publicPoolType: StoragePoolType
   publicPoolConfiguration: StoragePoolConfiguration
-  configurationEncryptionKey: string
-  configurationEncryptionAlgorithm: CipherGCMTypes
+  encryptionKey: string
+  encryptionAlgorithm: CipherGCMTypes
 
   constructor(options: ModuleStorageOptions) {
     super()
     this.publicPoolType = options.publicPoolType
     this.publicPoolConfiguration = options.publicPoolConfiguration
-    this.configurationEncryptionKey = options.configurationEncryptionKey
-    this.configurationEncryptionAlgorithm = options.configurationEncryptionAlgorithm
+    this.encryptionKey = options.encryptionKey
+    this.encryptionAlgorithm = options.encryptionAlgorithm
   }
 
   upload = UTILS.upload.bind(this)

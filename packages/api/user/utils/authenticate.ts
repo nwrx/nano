@@ -57,7 +57,7 @@ export async function authenticate(this: ModuleUser, event: H3Event | Peer, opti
   // --- Decrypt the token to get the user session id.
   if (!userSession) throw this.errors.USER_SESSION_NOT_FOUND()
   try {
-    const deciphered = await decrypt({ cipher: sessionToken, ...userSession.secret }, this.userSecretKey)
+    const deciphered = await decrypt({ cipher: sessionToken, ...userSession.secret }, this.sessionEncryptionSecret)
     if (deciphered !== userSession.id) throw this.errors.USER_SESSION_NOT_FOUND()
   }
   catch {

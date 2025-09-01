@@ -28,8 +28,8 @@ export async function getPublicPool(this: ModuleStorage): Promise<StoragePool> {
   const configurationJson = JSON.stringify(this.publicPoolConfiguration)
   const configuration = await encrypt(
     configurationJson,
-    this.configurationEncryptionKey,
-    this.configurationEncryptionAlgorithm,
+    this.encryptionKey,
+    this.encryptionAlgorithm,
   )
 
   // --- Check if the public pool exists in the database.

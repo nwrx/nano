@@ -39,8 +39,8 @@ export async function createStoragePool(this: ModuleStorage, options: CreateStor
   const configurationJson = JSON.stringify(configuration)
   const configurationEncrypted = await encrypt(
     configurationJson,
-    this.configurationEncryptionKey,
-    this.configurationEncryptionAlgorithm,
+    this.encryptionKey,
+    this.encryptionAlgorithm,
   )
 
   // --- Create the pool and assign the user to it.

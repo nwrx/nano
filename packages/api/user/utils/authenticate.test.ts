@@ -57,14 +57,14 @@ describe.concurrent('authenticate', () => {
             if (optional) {
               it('should return empty object when sessionToken is not provided', async({ moduleUser, setupUser }) => {
                 const { headers } = await setupUser()
-                const event = createEvent({ headers: { ...headers, cookie: headers.cookie.replace(moduleUser.userSessionTokenCookieName, 'DELETE') } })
+                const event = createEvent({ headers: { ...headers, cookie: headers.cookie.replace(moduleUser.sessionTokenCookieName, 'DELETE') } })
                 const result = await authenticate.call(moduleUser, event, { optional })
                 expect(result).toStrictEqual({})
               })
 
               it('should return empty object when sessionId is not provided', async({ moduleUser, setupUser }) => {
                 const { headers } = await setupUser()
-                const event = createEvent({ headers: { ...headers, cookie: headers.cookie.replace(moduleUser.userSessionIdCookieName, 'DELETE') } })
+                const event = createEvent({ headers: { ...headers, cookie: headers.cookie.replace(moduleUser.sessionIdCookieName, 'DELETE') } })
                 const result = await authenticate.call(moduleUser, event, { optional })
                 expect(result).toStrictEqual({})
               })
@@ -88,7 +88,7 @@ describe.concurrent('authenticate', () => {
             else {
               it('should throw when sessionToken is not provided', async({ moduleUser, setupUser }) => {
                 const { headers } = await setupUser()
-                const event = createEvent({ headers: { ...headers, cookie: headers.cookie.replace(moduleUser.userSessionTokenCookieName, 'DELETE') } })
+                const event = createEvent({ headers: { ...headers, cookie: headers.cookie.replace(moduleUser.sessionTokenCookieName, 'DELETE') } })
                 const shouldReject = authenticate.call(moduleUser, event, { optional })
                 const error = moduleUser.errors.USER_UNAUTHORIZED()
                 await expect(shouldReject).rejects.toThrow(error)
@@ -96,7 +96,7 @@ describe.concurrent('authenticate', () => {
 
               it('should throw when sessionId is not provided', async({ moduleUser, setupUser }) => {
                 const { headers } = await setupUser()
-                const event = createEvent({ headers: { ...headers, cookie: headers.cookie.replace(moduleUser.userSessionIdCookieName, 'DELETE') } })
+                const event = createEvent({ headers: { ...headers, cookie: headers.cookie.replace(moduleUser.sessionIdCookieName, 'DELETE') } })
                 const shouldReject = authenticate.call(moduleUser, event, { optional })
                 const error = moduleUser.errors.USER_UNAUTHORIZED()
                 await expect(shouldReject).rejects.toThrow(error)
@@ -122,7 +122,7 @@ describe.concurrent('authenticate', () => {
 
             it('should throw when the sessionToken is invalid', async({ moduleUser, setupUser }) => {
               const { headers } = await setupUser()
-              headers.cookie = headers.cookie.replace(`${moduleUser.userSessionTokenCookieName}=`, `${moduleUser.userSessionTokenCookieName}=00`)
+              headers.cookie = headers.cookie.replace(`${moduleUser.sessionTokenCookieName}=`, `${moduleUser.sessionTokenCookieName}=00`)
               const event = createEvent({ headers })
               const shouldReject = authenticate.call(moduleUser, event, { optional })
               const error = moduleUser.errors.USER_SESSION_NOT_FOUND()

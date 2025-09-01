@@ -18,14 +18,14 @@ export function userResetPassword(this: ModuleUser) {
 
       // --- Create a recovery request for the user.
       const user = await getUser.call(this, parameters)
-      const expiredAt = new Date(Date.now() + this.userRecoveryDuration)
+      const expiredAt = new Date(Date.now() + this.recoveryTokenDuration)
       const { UserRecovery } = this.getRepositories()
       const request = UserRecovery.create({ user, expiredAt })
 
       // --- Create a token for the recovery request.
       const iv = Buffer.alloc(16, 0)
-      const key = createHash('sha256').update(this.userSecretKey).digest()
-      const token = createCipheriv(this.userCypherAlgorithm, key, iv).update(request.id).toString('hex')
+      const key = createHash('sha256').update(this.sessionEncryptionSecret).digest()
+      const token = createCipheriv(this.sessionEncryptionAlgorithm, key, iv).update(request.id).toString('hex')
 
       // TODO: Send the recovery token to the user's email.
 

@@ -39,8 +39,8 @@ export async function createVault(this: ModuleVault, options: CreateVaultOptions
   const configurationJson = JSON.stringify(configuration)
   const configurationEncrypted = await encrypt(
     configurationJson,
-    this.vaultConfigurationSecretKey,
-    this.vaultConfigurationAlgorithm,
+    this.encryptionSecret,
+    this.encryptionAlgorithm,
   )
 
   // --- Create the vault and assign the user to it.

@@ -22,26 +22,26 @@ export interface ModuleIconCollectionOptions {
    *
    * @default 'https://api.iconify.design/'
    */
-  iconIconifyUrl: string
+  iconifyUrl: string
 }
 
 /**
  * The "Icon" module provides a way to manage icons for the website content
  * using the Iconify CDN. The icons are stored as assets in the asset module.
  */
-export class ModuleIconCollection extends ModuleBase {
+export class ModuleIconCollection extends ModuleBase implements ModuleIconCollectionOptions {
   errors = ERRORS
   routes = ROUTES
   entities = ENTITIES
 
-  iconCdnUrl = 'https://esm.sh/'
-  iconIconifyUrl = 'https://api.iconify.design/'
+  iconCdnUrl: string
+  iconifyUrl: string
   iconEventBus = createEventBus<IconCollectionEvents>()
   iconInstallLock = new Map<string, Promise<void>>()
 
-  constructor(options: Partial<ModuleIconCollectionOptions> = {}) {
+  constructor(options: ModuleIconCollectionOptions) {
     super()
-    if (options.iconCdnUrl) this.iconCdnUrl = options.iconCdnUrl
-    if (options.iconIconifyUrl) this.iconIconifyUrl = options.iconIconifyUrl
+    this.iconCdnUrl = options.iconCdnUrl
+    this.iconifyUrl = options.iconifyUrl
   }
 }

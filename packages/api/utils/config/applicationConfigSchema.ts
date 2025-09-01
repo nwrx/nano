@@ -44,7 +44,7 @@ export const APPLICATION_CONFIG_SCHEMA = createParser({
    *
    * @default http://localhost:3000
    */
-  APP_URL: [
+  NANO_APP_URL: [
     [assert.undefined, () => 'http://localhost:3000'],
     [assert.stringUrlProtocol.withMessage('Must be a valid URL starting with http:// or https://')('http', 'https')],
   ],
@@ -57,41 +57,9 @@ export const APPLICATION_CONFIG_SCHEMA = createParser({
    *
    * @default false
    */
-  USER_TRUST_PROXY: [
+  NANO_TRUST_PROXY: [
     [assert.undefined, () => false],
     [assert.string, parseBoolean],
-  ],
-
-  /**
-   * The secret key used to encrypt the tokens. This key should be kept secret and should
-   * not be shared with anyone. By default, the key is read from the `process.env.USER_SESSION_SECRET`
-   * environment variable. If the variable is not set, a random key is generated.
-   */
-  USER_SECRET_KEY: assertEncryptionSecret,
-
-  // /**
-  //  * The algorithm used to encrypt the user session token
-  //  * and authenticate the user. The algorithm should be
-  //  * secure and should not be easily decrypted.
-  //  */
-  USER_CYPHER_ALGORITHM: assertEncryptionAlgorithm,
-
-  /**
-   * The cookie name used to store the id of the user session
-   * and authenticate the user.
-   */
-  USER_SESSION_ID_COOKIE_NAME: [
-    [assert.undefined, () => '__Host-Session-Id'],
-    [assert.notUndefined, assert.stringNotEmpty],
-  ],
-
-  /**
-   * The cookie name used to store the user session token
-   * and authenticate the user.
-   */
-  USER_SESSION_TOKEN_COOKIE_NAME: [
-    [assert.undefined, () => '__Host-Session-Token'],
-    [assert.notUndefined, assert.stringNotEmpty],
   ],
 
   /**
@@ -100,21 +68,53 @@ export const APPLICATION_CONFIG_SCHEMA = createParser({
    * user to stay logged in but not too long to be a
    * security risk.
    */
-  USER_SESSION_DURATION: assertStringDuration(1000 * 60 * 60 * 24 /* 24 hours */),
+  NANO_SESSION_DURATION: assertStringDuration(1000 * 60 * 60 * 24 /* 24 hours */),
+
+  /**
+   * The cookie name used to store the id of the user session
+   * and authenticate the user.
+   */
+  NANO_SESSION_ID_COOKIE_NAME: [
+    [assert.undefined, () => '__Host-Session-Id'],
+    [assert.notUndefined, assert.stringNotEmpty],
+  ],
+
+  /**
+   * The cookie name used to store the user session token
+   * and authenticate the user.
+   */
+  NANO_SESSION_TOKEN_COOKIE_NAME: [
+    [assert.undefined, () => '__Host-Session-Token'],
+    [assert.notUndefined, assert.stringNotEmpty],
+  ],
+
+  /**
+   * The secret key used to encrypt the tokens. This key should be kept secret and should
+   * not be shared with anyone. By default, the key is read from the `process.env.USER_SESSION_SECRET`
+   * environment variable. If the variable is not set, a random key is generated.
+   */
+  NANO_SESSION_ENCRYPTION_SECRET: assertEncryptionSecret,
+
+  /**
+   * The algorithm used to encrypt the user session token
+   * and authenticate the user. The algorithm should be
+   * secure and should not be easily decrypted.
+   */
+  NANO_SESSION_ENCRYPTION_ALGORITHM: assertEncryptionAlgorithm,
 
   /**
    * Time in milliseconds that the user recovery token will expire. It should be a
    * reasonable time for the user to reset their password but not too long to be a
    * security risk.
    */
-  USER_RECOVERY_TOKEN_DURATION: assertStringDuration(1000 * 60 * 30 /* 30 minutes */),
+  NANO_USER_RECOVERY_TOKEN_DURATION: assertStringDuration(1000 * 60 * 30 /* 30 minutes */),
 
   /**
    * The master secret used to encrypt and decrypt the configuration of additional
    * vault adapters. This allows secure storage of the vault configuration in the
    * database without exposing the credentials.
    */
-  VAULT_CONFIGURATION_SECRET_KEY: assertEncryptionSecret,
+  NANO_VAULT_ENCRYPTION_SECRET: assertEncryptionSecret,
 
   /**
    * The algorithm used to encrypt and decrypt the configuration of additional vault
@@ -122,13 +122,45 @@ export const APPLICATION_CONFIG_SCHEMA = createParser({
    * or `aes-192-gcm` to ensure we use authenticated encryption and verify the integrity
    * of the encrypted data.
    */
-  VAULT_CONFIGURATION_ALGORITHM: assertEncryptionAlgorithm,
+  NANO_VAULT_ENCRYPTION_ALGORITHM: assertEncryptionAlgorithm,
+
+  /**
+   * The secret used to encrypt the storage pool configuration in
+   * the database. This is used to protect sensitive information
+   * such as access keys and secret keys.
+   */
+  NANO_STORAGE_ENCRYPTION_SECRET: assertEncryptionSecret,
+
+  /**
+   * The algorithm used to encrypt the storage pool configuration.
+   * This should match the algorithm used to encrypt the storage pool
+   * configuration in the database.
+   */
+  NANO_STORAGE_ENCRYPTION_ALGORITHM: assertEncryptionAlgorithm,
+
+  /**
+   * The type of the default storage pool. This is used to determine what adapter to use
+   * when uploading, downloading, or erasing files.
+   */
+  NANO_STORAGE_PUBLIC_POOL_TYPE: assertStoragePoolType,
+
+  /**
+   * The configuration of the default storage pool. This is used to determine the
+   * default storage pool to use when uploading, downloading, or erasing files.
+   * It should be a valid storage pool configuration object.
+   */
+  NANO_STORAGE_PUBLIC_POOL_CONFIGURATION: [
+    assert.stringNotEmpty,
+    (value: string) => value.replaceAll(String.raw`\"`, '"'), // Unescape quotes to handle some edge cases
+    assert.stringJson.withMessage('The storage public pool configuration must be a valid JSON string.'),
+    JSON.parse as (value: string) => StoragePoolConfiguration,
+  ],
 
   /**
    * The URL to an NPM CDN that hosts the `@iconify/json` package. This package
    * is used to import the icon collections from the Iconify API.
    */
-  ICON_CDN_URL: [
+  NANO_ICON_CDN_URL: [
     [assert.undefined, () => 'https://esm.sh/'],
     [
       assert.stringUrl.withMessage('The icon CDN URL must be a valid URL.'),
@@ -140,7 +172,7 @@ export const APPLICATION_CONFIG_SCHEMA = createParser({
    * The URL of the Iconify API used to gather information about the icons and
    * their collections. It is used to fetch the icons from the remote source.
    */
-  ICON_ICONIFY_URL: [
+  NANO_ICONIFY_URL: [
     [assert.undefined, () => 'https://api.iconify.design/'],
     [
       assert.stringUrl.withMessage('The icon CDN URL must be a valid URL.'),
@@ -154,40 +186,8 @@ export const APPLICATION_CONFIG_SCHEMA = createParser({
    * a list of URLs in the format `http://<token>@<address>:<port>`.
    * The token is used to authenticate the runner with the API server.
    */
-  INITIAL_RUNNERS: [
+  NANO_RUNNER_INITIAL_SERVERS: [
     [assert.undefined, () => []],
     [assert.string, (value: string) => value.split(',').map(url => url.trim())],
-  ],
-
-  /**
-   * The secret used to encrypt the storage pool configuration in
-   * the database. This is used to protect sensitive information
-   * such as access keys and secret keys.
-   */
-  STORAGE_POOL_ENCRYPTION_SECRET: assertEncryptionSecret,
-
-  /**
-   * The algorithm used to encrypt the storage pool configuration.
-   * This should match the algorithm used to encrypt the storage pool
-   * configuration in the database.
-   */
-  STORAGE_POOL_ENCRYPTION_ALGORITHM: assertEncryptionAlgorithm,
-
-  /**
-   * The type of the default storage pool. This is used to determine what adapter to use
-   * when uploading, downloading, or erasing files.
-   */
-  STORAGE_PUBLIC_POOL_TYPE: assertStoragePoolType,
-
-  /**
-   * The configuration of the default storage pool. This is used to determine the
-   * default storage pool to use when uploading, downloading, or erasing files.
-   * It should be a valid storage pool configuration object.
-   */
-  STORAGE_PUBLIC_POOL_CONFIGURATION: [
-    assert.stringNotEmpty,
-    (value: string) => value.replaceAll(String.raw`\"`, '"'), // Unescape quotes to handle some edge cases
-    assert.stringJson.withMessage('The storage public pool configuration must be a valid JSON string.'),
-    JSON.parse as (value: string) => StoragePoolConfiguration,
   ],
 })
