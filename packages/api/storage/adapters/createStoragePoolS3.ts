@@ -32,7 +32,9 @@ export const STORAGE_POOL_S3_OPTIONS_SCHEMA = createParser({
    *
    * @example 'https://my-bucket-name.s3.amazonaws.com'
    */
-  endpoint: assert.stringNotEmpty,
+  endpoint: assert.stringUrl
+    .withName('E_STORAGE_POOL_S3_INVALID_BUCKET_ENDPOINT')
+    .withMessage('The S3 bucket endpoint must be a valid URL.'),
 
   /**
    * The access key of the S3-Compatible bucket where the assets are stored.
