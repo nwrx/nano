@@ -40,3 +40,4 @@ kubeconfig.yaml
 !.env.example
 .remote-assets
 .vscode
+.direnv
