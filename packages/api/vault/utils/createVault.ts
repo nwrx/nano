@@ -11,7 +11,7 @@ import { assertVaultType } from './assertVaultType'
 const CREATE_VAULT_OPTIONS_SCHEMA = createParser({
   user: assertUser,
   workspace: assertWorkspace,
-  type: [[assert.undefined], [assertVaultType]],
+  type: assertVaultType,
   name: [[assert.undefined], [assert.stringNotEmpty]],
   configuration: assert.objectStrict as (value: unknown) => asserts value is VaultConfiguration,
 })
@@ -28,7 +28,7 @@ export type CreateVaultOptions = Loose<ReturnType<typeof CREATE_VAULT_OPTIONS_SC
  * @returns The newly created `Vault` entity.
  */
 export async function createVault(this: ModuleVault, options: CreateVaultOptions): Promise<Vault> {
-  const { user, workspace, configuration, name = 'default', type = 'local' } = CREATE_VAULT_OPTIONS_SCHEMA(options)
+  const { user, workspace, configuration, type = 'local', name = 'default' } = CREATE_VAULT_OPTIONS_SCHEMA(options)
 
   // --- Assert that no vault with the same name exists in the workspace.
   const { Vault } = this.getRepositories()

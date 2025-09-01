@@ -52,18 +52,32 @@ export class VaultVariable<T = any> extends BaseEntity {
   updatedBy?: User
 
   /**
+   * The user that deleted the variable.
+   */
+  @JoinColumn()
+  @ManyToOne(() => User, { nullable: true, onDelete: 'RESTRICT' })
+  deletedBy?: User
+
+  /**
    * @param options The options to use when serializing the variable.
    * @returns The serialized representation of the variable.
    */
   serialize(options: SerializeOptions = {}): VaultVariableObject {
+    const {
+      withVault = false,
+      withCreatedBy = false,
+      withUpdatedBy = false,
+      withDeletedBy = false,
+    } = options
     return {
       name: this.name,
-      deletedAt: this.deletedAt?.toISOString(),
-      createdAt: this.createdAt.toISOString(),
-      updatedAt: this.updatedAt.toISOString(),
-      createdBy: options.withCreatedBy ? this.createdBy?.serialize() : undefined,
-      updatedBy: options.withUpdatedBy ? this.updatedBy?.serialize() : undefined,
-      vault: options.withVault ? this.vault?.serialize() : undefined,
+      vault: withVault ? this.vault?.serialize() : undefined,
+      createdAt: withCreatedBy ? this.createdAt.toISOString() : undefined,
+      createdBy: withCreatedBy ? this.createdBy?.serialize() : undefined,
+      updatedAt: withUpdatedBy ? this.updatedAt.toISOString() : undefined,
+      updatedBy: withUpdatedBy ? this.updatedBy?.serialize() : undefined,
+      deletedAt: withDeletedBy ? this.deletedAt?.toISOString() : undefined,
+      deletedBy: withDeletedBy ? this.deletedBy?.serialize() : undefined,
     }
   }
 }
@@ -72,14 +86,16 @@ interface SerializeOptions {
   withVault?: boolean
   withCreatedBy?: boolean
   withUpdatedBy?: boolean
+  withDeletedBy?: boolean
 }
 
 export interface VaultVariableObject {
   name: string
-  createdAt: string
-  updatedAt: string
+  vault?: VaultObject
+  createdAt?: string
   createdBy?: UserObject
+  updatedAt?: string
   updatedBy?: UserObject
   deletedAt?: string
-  vault?: VaultObject
+  deletedBy?: UserObject
 }

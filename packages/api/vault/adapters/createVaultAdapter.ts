@@ -1,5 +1,14 @@
 import type { VaultVariable } from '../entities'
 
+/**
+ * Interface for a vault adapter that provides methods to interact with a key vault.
+ * This interface defines the methods for initializing the vault connection,
+ * setting, getting, deleting, and listing secrets.
+ *
+ * @template T
+ * The type of the configuration object for the vault adapter. This will be stored
+ * in the vault and will be encrypted in the database.
+ */
 export interface VaultAdapter<T extends object = object> {
 
   /**

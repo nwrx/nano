@@ -86,7 +86,16 @@ export class Vault<T extends VaultType = VaultType> extends BaseEntity {
   disabledAt: Date | null = null
 
   /**
-   * The user that created the vault. Mainly for auditing purposes.
+   * The user that disabled the vault.
+   *
+   * @example User { ... }
+   */
+  @JoinColumn()
+  @ManyToOne(() => User, { nullable: true })
+  disabledBy?: User
+
+  /**
+   * The user that created the vault.
    *
    * @example User { ... }
    */
@@ -95,7 +104,7 @@ export class Vault<T extends VaultType = VaultType> extends BaseEntity {
   createdBy?: User
 
   /**
-   * The user that updated the vault. Mainly for auditing purposes.
+   * The user that updated the vault.
    *
    * @example User { ... }
    */
@@ -104,22 +113,13 @@ export class Vault<T extends VaultType = VaultType> extends BaseEntity {
   updatedBy?: User
 
   /**
-   * The user that deleted the vault. Mainly for auditing purposes.
+   * The user that deleted the vault.
    *
    * @example User { ... }
    */
   @JoinColumn()
   @ManyToOne(() => User, { nullable: true })
   deletedBy?: User
-
-  /**
-   * The user that disabled the vault. Mainly for auditing purposes.
-   *
-   * @example User { ... }
-   */
-  @JoinColumn()
-  @ManyToOne(() => User, { nullable: true })
-  disabledBy?: User
 
   /**
    * @returns The serialized representation of the vault.

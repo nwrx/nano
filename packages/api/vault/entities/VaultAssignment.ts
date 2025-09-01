@@ -29,18 +29,18 @@ export class VaultAssignment extends BaseEntity {
   user?: User
 
   /**
-   * The user that is responsible for the assignment. This user can be
-   * used to track who made the assignment.
-   */
-  @JoinColumn()
-  @ManyToOne(() => User, { nullable: false })
-  createdBy?: User
-
-  /**
    * The permission level for this assignment.
    *
    * @example 'Owner'
    */
   @Column('varchar', { length: 255 })
   permission: VaultPermission
+
+  /**
+   * The user that is responsible for the assignment. This user can be
+   * used to track who made the assignment.
+   */
+  @JoinColumn()
+  @ManyToOne(() => User, { nullable: false })
+  createdBy?: User
 }

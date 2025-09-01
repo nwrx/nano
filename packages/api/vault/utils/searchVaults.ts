@@ -15,6 +15,9 @@ export const SEARCH_VAULTS_OPTIONS_SCHEMA = createParser({
   page: [[assert.undefined], [assert.number]],
   limit: [[assert.undefined], [assert.number]],
   order: [[assert.undefined], [assert.objectStrict as (value: unknown) => asserts value is FindOptionsOrder<Vault>]],
+  withCreatedBy: [[assert.undefined], [assert.boolean]],
+  withUpdatedBy: [[assert.undefined], [assert.boolean]],
+  withDeleted: [[assert.undefined], [assert.boolean]],
 })
 
 /** The options to search for vaults. */
@@ -28,7 +31,17 @@ export type SearchVaultsOptions = Loose<ReturnType<typeof SEARCH_VAULTS_OPTIONS_
  * @returns An array of vaults matching the search criteria.
  */
 export async function searchVaults(this: ModuleVault, options: SearchVaultsOptions): Promise<Vault[]> {
-  const { search = '', user, workspace, page = 1, limit = 10, order = { name: 'ASC' } } = SEARCH_VAULTS_OPTIONS_SCHEMA(options)
+  const {
+    search = '',
+    user,
+    workspace,
+    page = 1,
+    limit = 10,
+    order = { name: 'ASC' },
+    withCreatedBy = false,
+    withUpdatedBy = false,
+    withDeleted = false,
+  } = SEARCH_VAULTS_OPTIONS_SCHEMA(options)
 
   // --- Get the repositories to query the database.
   const { Vault } = this.getRepositories()
@@ -45,5 +58,11 @@ export async function searchVaults(this: ModuleVault, options: SearchVaultsOptio
     order,
     take: limit,
     skip: (page - 1) * limit,
+    withDeleted,
+    relations: {
+      createdBy: withCreatedBy,
+      updatedBy: withUpdatedBy,
+      deletedBy: withDeleted,
+    },
   })
 }

@@ -13,6 +13,8 @@ const GET_VAULT_OPTIONS_SCHEMA = createParser({
   workspace: assertWorkspace,
   name: assert.stringNotEmpty,
   permission: assertVaultPermission,
+  withCreatedBy: [[assert.undefined], [assert.boolean]],
+  withUpdatedBy: [[assert.undefined], [assert.boolean]],
   withDeleted: [[assert.undefined], [assert.boolean]],
   withProjects: [[assert.undefined], [assert.boolean]],
   withAssignments: [[assert.undefined], [assert.boolean]],
@@ -34,9 +36,11 @@ export async function getVault(this: ModuleVault, options: GetVaultOptions): Pro
     workspace,
     name,
     permission,
-    withDeleted,
-    withProjects,
-    withAssignments,
+    withCreatedBy = false,
+    withUpdatedBy = false,
+    withDeleted = false,
+    withProjects = false,
+    withAssignments = false,
   } = GET_VAULT_OPTIONS_SCHEMA(options)
 
   // --- Get the vault entity.
@@ -47,11 +51,14 @@ export async function getVault(this: ModuleVault, options: GetVaultOptions): Pro
       workspace,
       assignments: { user, permission: In(['Owner', 'Read']) },
     },
+    withDeleted,
     relations: {
+      createdBy: withCreatedBy,
+      updatedBy: withUpdatedBy,
+      deletedBy: withDeleted,
       projects: withProjects ? { project: true } : false,
       assignments: withAssignments ? { user: true } : false,
     },
-    withDeleted,
   })
 
   // --- Return early if the user has read access.
