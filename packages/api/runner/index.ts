@@ -14,24 +14,23 @@ export interface ModuleRunnerOptions {
    * The name of the runner. This is used to identify the runner in logs and metrics.
    * It should be a unique identifier for the runner.
    */
-  initialRunners?: string[]
+  initialRunners: string[]
 }
 
-export class ModuleRunner extends ModuleBase {
+export class ModuleRunner extends ModuleBase implements ModuleRunnerOptions {
   routes = ROUTES
   entities = ENTITIES
   errors = UTILS.ERRORS
 
-  constructor(options: ModuleRunnerOptions = {}) {
+  constructor(options: ModuleRunnerOptions) {
     super()
-    if (options.initialRunners) this.initialRunners = options.initialRunners
+    this.initialRunners = options.initialRunners
   }
 
   initialRunners: string[] = []
-  initialize = UTILS.initialize.bind(this)
-
   clients = new Map<string, UTILS.RunnerClient>()
   events = createEventBus<UTILS.RunnersEvent>()
   eventsByRunner = new Map<string, EventBus<UTILS.RunnerEvent>>()
+  initialize = UTILS.initialize.bind(this)
   requestRunnerClient = UTILS.requestRunnerClient.bind(this)
 }
