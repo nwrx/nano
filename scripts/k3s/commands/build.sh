@@ -51,6 +51,12 @@ verify_image_exists() {
     fi
 }
 
+# Restart a deployment specified by the given label selector
+restart_deployment() {
+    local label_selector="$1"
+    kubectl_exec rollout restart deployment -n nano -l "$label_selector"
+}
+
 # Function to syncronize the image in the cluster with the recently built image,
 # but only if the cluster is running, the chart is deployed and the image sha256 does
 # not match the current image sha256 in the deployment.
@@ -72,28 +78,12 @@ sync_image_in_cluster() {
     local rollout_success=true
     local workloads_restarted=()
     
-    # Restart API deployment if it exists
-    if kubectl_exec get deployment nano-api -n nano &>/dev/null; then
-        print_status "Restarting API deployment..."
-        if kubectl_exec rollout restart deployment/nano-api -n nano; then
-            workloads_restarted+=("deployment/nano-api")
-        else
-            print_error "Failed to restart API deployment"
-            rollout_success=false
-        fi
-    fi
-    
+    # Restart API deployment(s) using selector
+    restart_deployment "app.kubernetes.io/component=api"
+
     # Restart APP deployment if it exists
-    if kubectl_exec get deployment nano-app -n nano &>/dev/null; then
-        print_status "Restarting APP deployment..."
-        if kubectl_exec rollout restart deployment/nano-app -n nano; then
-            workloads_restarted+=("deployment/nano-app")
-        else
-            print_error "Failed to restart APP deployment"
-            rollout_success=false
-        fi
-    fi
-    
+    restart_deployment "app.kubernetes.io/component=app"
+
     # Restart Runner StatefulSets
     local runner_statefulsets
     runner_statefulsets=$(kubectl_exec get statefulsets -n nano -l app.kubernetes.io/component=runner -o name 2>/dev/null || echo "")

@@ -4,5 +4,10 @@ pkgs.mkShell {
     nodejs_22
     kubectl
     kubernetes-helm
+    mkcert
+    openssl_3
   ];
+  shellHook = ''
+    export KUBECONFIG=.vscode/kubeconfig.yaml
+  '';
 }

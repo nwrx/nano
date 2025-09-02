@@ -104,8 +104,8 @@ services:
       DATABASE_TYPE: postgres
       DATABASE_URL: postgres://nano:nano@postgres:5432/nano
       DATABASE_SYNCRONIZE: true
-      STORAGE_PUBLIC_POOL_TYPE: s3
-      STORAGE_PUBLIC_POOL_CONFIGURATION: |
+      NANO_STORAGE_PUBLIC_POOL_TYPE: s3
+      NANO_STORAGE_PUBLIC_POOL_CONFIGURATION: |
         {
           "bucket": "nano-public",
           "region": "us-east-1",
