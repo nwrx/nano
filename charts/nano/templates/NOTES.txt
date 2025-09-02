@@ -1,0 +1,5 @@
+---
+Thank you for installing {{ .Chart.Name }}!
+{{ if .Values.ingress.enabled }}
+Visit the application at http://{{ (index .Values.ingress.hosts 0).host }}
+{{- end }}

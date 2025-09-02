@@ -1,0 +1,29 @@
+{{- if .Values.storage.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "nano.storage.fullname" . }}
+  labels:
+    {{- include "nano.labels" . | nindent 4 }}
+    app.kubernetes.io/component: storage
+    {{- with .Values.storage.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.storage.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.storage.service.type }}
+  ports:
+    - port: {{ .Values.storage.service.port }}
+      targetPort: api
+      protocol: TCP
+      name: api
+    - port: {{ .Values.storage.service.consolePort }}
+      targetPort: console
+      protocol: TCP
+      name: console
+  selector:
+    {{- include "nano.storage.selectorLabels" . | nindent 4 }}
+{{- end }}

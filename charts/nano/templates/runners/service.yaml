@@ -1,0 +1,49 @@
+{{- if .Values.runners.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "nano.runners.fullname" . }}
+  labels:
+    {{- include "nano.labels" . | nindent 4 }}
+    {{- with .Values.runners.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.runners.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.runners.service.type }}
+  ports:
+    - port: {{ .Values.runners.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "nano.runners.selectorLabels" . | nindent 4 }}
+---
+# Headless service for individual runner pod DNS entries
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "nano.runners.fullname" . }}-headless
+  labels:
+    {{- include "nano.labels" . | nindent 4 }}
+    {{- with .Values.runners.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.runners.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: ClusterIP
+  clusterIP: None  # Makes this a headless service
+  ports:
+    - port: {{ .Values.runners.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "nano.runners.selectorLabels" . | nindent 4 }}
+{{- end }}

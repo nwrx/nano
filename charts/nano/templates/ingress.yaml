@@ -5,16 +5,10 @@ metadata:
   name: {{ include "nano.fullname" . }}
   labels:
     {{- include "nano.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
   annotations:
-    {{- /* Merge common annotations with controller-specific annotations */ -}}
-    {{- $annotations := .Values.ingress.annotations | default dict -}}
-    {{- if and .Values.ingress.controllerAnnotations .Values.ingress.className -}}
-      {{- $controllerAnnotations := index .Values.ingress.controllerAnnotations .Values.ingress.className | default dict -}}
-      {{- $annotations = merge $annotations $controllerAnnotations -}}
-    {{- end -}}
-    {{- range $key, $value := $annotations }}
-    {{ $key }}: {{ $value | quote }}
-    {{- end }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   {{- if .Values.ingress.className }}
   ingressClassName: {{ .Values.ingress.className }}
@@ -39,9 +33,25 @@ spec:
             pathType: {{ .pathType }}
             backend:
               service:
-                name: {{ include "nano.fullname" $ }}-{{ .service.name }}
+                {{- if eq .service "app" }}
+                name: {{ include "nano.app.fullname" $ }}
                 port:
-                  number: {{ .service.port }}
+                  number: 80
+                {{- else if eq .service "api" }}
+                name: {{ include "nano.api.fullname" $ }}
+                port:
+                  number: 80
+                {{- else if eq .service "runners" }}
+                name: {{ include "nano.runners.fullname" $ }}
+                port:
+                  number: 80
+                {{- else if eq .service "storage" }}
+                name: {{ include "nano.storage.fullname" $ }}
+                port:
+                  number: {{ $.Values.storage.service.port }}
+                {{- else }}
+                name: {{ .service }}
+                {{- end }}
           {{- end }}
     {{- end }}
 {{- end }}

@@ -1,0 +1,20 @@
+{{/*
+Extra objects template for deploying additional Kubernetes resources
+*/}}
+{{- range .Values.extraObjects }}
+---
+{{- if typeIs "string" . }}
+{{- tpl . $ }}
+{{- else }}
+{{- $obj := . }}
+{{- if not $obj.metadata }}
+{{- $_ := set $obj "metadata" dict }}
+{{- end }}
+{{- if not $obj.metadata.annotations }}
+{{- $_ := set $obj.metadata "annotations" dict }}
+{{- end }}
+{{- $_ := set $obj.metadata.annotations "meta.helm.sh/release-name" $.Release.Name }}
+{{- $_ := set $obj.metadata.annotations "meta.helm.sh/release-namespace" $.Release.Namespace }}
+{{- tpl (toYaml $obj) $ }}
+{{- end }}
+{{- end }}

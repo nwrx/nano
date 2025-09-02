@@ -31,6 +31,14 @@ Create chart name and version as used by the chart label.
 {{- end }}
 
 {{/*
+Selector labels
+*/}}
+{{- define "nano.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "nano.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
+{{/*
 Common labels
 */}}
 {{- define "nano.labels" -}}
@@ -40,99 +48,43 @@ helm.sh/chart: {{ include "nano.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- with .Values.commonLabels }}
-{{ toYaml . }}
-{{- end }}
 {{- end }}
 
 {{/*
-Selector labels
+Get image repository for a service
 */}}
-{{- define "nano.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "nano.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
-{{- end }}
-
-{{/*
-Create the name of the service account to use
-*/}}
-{{- define "nano.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "nano.fullname" .) .Values.serviceAccount.name }}
+{{- define "nano.image.repository" -}}
+{{- if .image.repository }}
+{{- .image.repository }}
+{{- else if .Values.global.image.repository }}
+{{- .Values.global.image.repository }}
 {{- else }}
-{{- default "default" .Values.serviceAccount.name }}
+{{- "ghcr.io/nwrx/nano" }}
 {{- end }}
 {{- end }}
 
 {{/*
-Database type helper
+Get image tag for a service
 */}}
-{{- define "nano.database.type" -}}
-{{- .Values.database.type | default "sqlite" }}
-{{- end }}
-
-{{/*
-SQLite persistence check
-*/}}
-{{- define "nano.database.sqlite.persistence.enabled" -}}
-{{- if eq (include "nano.database.type" .) "sqlite" }}
-{{- .Values.database.sqlite.persistence.enabled | default false }}
+{{- define "nano.image.tag" -}}
+{{- if .image.tag }}
+{{- .image.tag }}
+{{- else if .Values.global.image.tag }}
+{{- .Values.global.image.tag }}
 {{- else }}
-{{- false }}
+{{- "main" }}
 {{- end }}
 {{- end }}
 
 {{/*
-Image name
+Get image pull policy for a service
 */}}
-{{- define "nano.image" -}}
-{{- printf "%s:%s" .Values.global.image.repository (.Values.global.image.tag | default .Chart.AppVersion) }}
+{{- define "nano.image.pullPolicy" -}}
+{{- if .image.pullPolicy }}
+{{- .image.pullPolicy }}
+{{- else if .Values.global.image.pullPolicy }}
+{{- .Values.global.image.pullPolicy }}
+{{- else }}
+{{- "IfNotPresent" }}
 {{- end }}
-
-{{/*
-Runner pool name - expects runner context with .runner and .root
-*/}}
-{{- define "nano.runner.name" -}}
-{{- printf "%s-runner-%s" (include "nano.fullname" .root) .runner.name }}
-{{- end }}
-
-{{/*
-Runner labels - expects runner context with .runner and .root
-*/}}
-{{- define "nano.runner.labels" -}}
-{{- include "nano.labels" .root }}
-app.kubernetes.io/component: runner
-app.kubernetes.io/runner-pool: {{ .runner.name }}
-{{- end }}
-
-{{/*
-Runner selector labels - expects runner context with .runner and .root
-*/}}
-{{- define "nano.runner.selectorLabels" -}}
-{{- include "nano.selectorLabels" .root }}
-app.kubernetes.io/component: runner
-app.kubernetes.io/runner-pool: {{ .runner.name }}
-{{- end }}
-
-{{/*
-Generate initial runners list for API autoregistration
-*/}}
-{{- define "nano.initialRunners" -}}
-{{- $runners := list -}}
-{{- range .Values.runners -}}
-{{- if .enabled -}}
-{{- $runner := . -}}
-{{- $root := $ -}}
-{{- $runnerName := include "nano.runner.name" (dict "runner" $runner "root" $root) -}}
-{{- $headlessServiceName := printf "%s-headless" $runnerName -}}
-{{- $port := .port | default 8080 | toString -}}
-{{- range $i := until (.instances | int) -}}
-{{- $tokenVar := printf "%s_%d" ($runnerName | upper | replace "-" "_") $i -}}
-{{- $podHostname := printf "%s-%d.%s" $runnerName $i $headlessServiceName -}}
-{{- $runnerUrl := printf "http://$${%s}@%s:%s" $tokenVar $podHostname $port -}}
-{{- $runners = append $runners $runnerUrl -}}
-{{- end -}}
-{{- end -}}
-{{- end -}}
-{{- join "," $runners -}}
 {{- end }}

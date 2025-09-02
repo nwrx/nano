@@ -1,0 +1,143 @@
+{{- if .Values.storage.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "nano.storage.fullname" . }}
+  labels:
+    {{- include "nano.labels" . | nindent 4 }}
+    app.kubernetes.io/component: storage
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate  # Required for ReadWriteOnce volumes
+  selector:
+    matchLabels:
+      {{- include "nano.storage.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/secret-storage: {{ include (print $.Template.BasePath "/storage/secrets.yaml") . | sha256sum }}
+        {{- with .Values.storage.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "nano.storage.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: storage
+    spec:
+      {{- with .Values.storage.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "nano.storage.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.storage.podSecurityContext | nindent 8 }}
+      containers:
+        - name: minio
+          securityContext:
+            {{- toYaml .Values.storage.securityContext | nindent 12 }}
+          image: "{{ .Values.storage.image.repository }}:{{ .Values.storage.image.tag }}"
+          imagePullPolicy: {{ .Values.storage.image.pullPolicy }}
+          command:
+            - /bin/bash
+            - -c
+          args:
+            - minio server /data --console-address ":9001"
+          ports:
+            - name: api
+              containerPort: 9000
+              protocol: TCP
+            - name: console
+              containerPort: 9001
+              protocol: TCP
+          env:
+            - name: MINIO_ROOT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "nano.storage.secrets" . }}
+                  key: rootUser
+            - name: MINIO_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "nano.storage.secrets" . }}
+                  key: rootPassword
+            {{- if .Values.config.storage.publicDownloadUrl }}
+            - name: MINIO_SERVER_URL
+              value: {{ .Values.config.storage.publicDownloadUrl | quote }}
+            {{- end }}
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/bash
+                  - -c
+                  - |
+                    # Install MinIO client if not present
+                    if ! command -v mc > /dev/null 2>&1; then
+                      echo "Installing MinIO client..."
+                      curl -fsSL https://dl.min.io/client/mc/release/linux-amd64/mc -o /tmp/mc
+                      chmod +x /tmp/mc
+                      MC_CMD="/tmp/mc"
+                    else
+                      MC_CMD="mc"
+                    fi
+                    
+                    # Wait for MinIO to be ready
+                    echo "Waiting for MinIO to be ready..."
+                    until curl -f http://localhost:9000/minio/health/live > /dev/null 2>&1; do
+                      sleep 2
+                    done
+                    
+                    # Configure MinIO client alias
+                    $MC_CMD alias set local http://localhost:9000 $MINIO_ROOT_USER $MINIO_ROOT_PASSWORD
+                    
+                    # Create bucket if it doesn't exist
+                    BUCKET_NAME="{{ .Values.config.storage.publicPoolConfiguration.bucket }}"
+                    if ! $MC_CMD ls local/$BUCKET_NAME > /dev/null 2>&1; then
+                      echo "Creating bucket: $BUCKET_NAME"
+                      $MC_CMD mb local/$BUCKET_NAME
+                      echo "Bucket $BUCKET_NAME created successfully"
+                    else
+                      echo "Bucket $BUCKET_NAME already exists"
+                    fi
+          {{- with .Values.storage.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.storage.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.storage.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.storage.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: data
+          {{- if .Values.storage.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "nano.storage.fullname" . }}-data
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        - name: tmp
+          emptyDir: {}
+      {{- with .Values.storage.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.storage.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.storage.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
