@@ -94,8 +94,7 @@ ENV PORT=3000
 ENV HOST=0.0.0.0
 
 # Set the storage and database paths.
-ENV STORAGE_PATH=/data/storage
-ENV DATABASE_PATH=/data/database/nano.db
+ENV DATABASE_PATH=/data/database/nano.database
 
 # Expose the port the app runs on.
 EXPOSE 3000
