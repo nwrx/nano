@@ -61,6 +61,7 @@ export const application = new Application(
     }),
     new ModuleStorage({
       publicPoolType: config.NANO_STORAGE_PUBLIC_POOL_TYPE,
+      publicDownloadUrl: config.NANO_STORAGE_PUBLIC_DOWNLOAD_URL as URL,
       publicPoolConfiguration: config.NANO_STORAGE_PUBLIC_POOL_CONFIGURATION,
       encryptionKey: config.NANO_STORAGE_ENCRYPTION_SECRET,
       encryptionAlgorithm: config.NANO_STORAGE_ENCRYPTION_ALGORITHM,

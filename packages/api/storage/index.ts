@@ -17,6 +17,16 @@ export interface ModuleStorageOptions {
   publicPoolType: StoragePoolType
 
   /**
+   * The base URL to use for file downloads. When set, instead of redirecting to
+   * signed URLs from the storage provider (which may be internal/inaccessible),
+   * the system will either redirect to this custom URL or proxy the data through
+   * the API. If not set, the system will proxy data through the API.
+   *
+   * @example 'https://cdn.example.com'
+   */
+  publicDownloadUrl?: URL
+
+  /**
    * The initial storage pools to register with the storage module.
    */
   publicPoolConfiguration: StoragePoolConfiguration
@@ -48,6 +58,7 @@ export class ModuleStorage extends ModuleBase implements ModuleStorageOptions {
   entities = ENTITIES
 
   publicPool: StoragePool | undefined
+  publicDownloadUrl: undefined | URL
   publicPoolType: StoragePoolType
   publicPoolConfiguration: StoragePoolConfiguration
   encryptionKey: string
@@ -56,6 +67,7 @@ export class ModuleStorage extends ModuleBase implements ModuleStorageOptions {
   constructor(options: ModuleStorageOptions) {
     super()
     this.publicPoolType = options.publicPoolType
+    this.publicDownloadUrl = options.publicDownloadUrl
     this.publicPoolConfiguration = options.publicPoolConfiguration
     this.encryptionKey = options.encryptionKey
     this.encryptionAlgorithm = options.encryptionAlgorithm

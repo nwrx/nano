@@ -34,10 +34,13 @@ export async function respondWith(this: ModuleStorage, event: H3Event, options: 
   const { pool, file, offset, size, isAttachment, abortSignal } = STORAGE_RESPOND_WITH_OPTIONS_SCHEMA(options)
   const result = await download.call(this, { file, pool, offset, size, abortSignal })
 
-  // --- If the file has a redirect URL, send a redirect.
-  if (result.getUrl) {
-    const url = await result.getUrl()
-    return sendRedirect(event, url)
+  // --- Check if we should redirect to a custom download URL or proxy through the API.
+  if (result.getUrl && this.publicDownloadUrl) {
+    const url = new URL(await result.getUrl())
+    url.hostname = this.publicDownloadUrl.hostname
+    url.protocol = this.publicDownloadUrl.protocol
+    url.port = '' // Assume default port
+    return sendRedirect(event, url.toString())
   }
 
   // --- Setup the response headers.

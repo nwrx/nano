@@ -145,6 +145,24 @@ export const APPLICATION_CONFIG_SCHEMA = createParser({
   NANO_STORAGE_PUBLIC_POOL_TYPE: assertStoragePoolType,
 
   /**
+   * The base URL to use for file downloads. When set, instead of redirecting to
+   * signed URLs from the storage provider (which may be internal/inaccessible),
+   * the system will either redirect to this custom URL or proxy the data through
+   * the API. If not set, the system will proxy data through the API.
+   *
+   * @example 'https://cdn.example.com'
+   */
+  NANO_STORAGE_PUBLIC_DOWNLOAD_URL: [
+    [assert.undefined],
+    [assert.stringEmpty, () => {}],
+    [
+      assert.stringUrl.withMessage('The storage download URL must be a valid URL.'),
+      assert.stringUrlProtocol.withMessage('The storage download URL must use the HTTPS or HTTP protocol.')('https', 'http'),
+      (value: string) => new URL(value),
+    ],
+  ],
+
+  /**
    * The configuration of the default storage pool. This is used to determine the
    * default storage pool to use when uploading, downloading, or erasing files.
    * It should be a valid storage pool configuration object.
