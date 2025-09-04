@@ -42,28 +42,28 @@ export interface ModuleUserOptions {
   sessionEncryptionAlgorithm: CipherGCMTypes
 
   /**
+   * The domain assigned to the application. Used by the cookie session tokens
+   * to determine the appropriate domain for the cookie.
+   */
+  sessionDomain: string
+
+  /**
    * The time in milliseconds that the user session token
    * will expire. It should be a reasonable time for the
    * user to stay logged in but not too long to be a
    * security risk.
-   *
-   * @default 1000 * 60 * 60 * 24
    */
   sessionDuration: number
 
   /**
    * The cookie name used to store the id of the user session
    * and authenticate the user.
-   *
-   * @default '__Host-Session-Id'
    */
   sessionIdCookieName: string
 
   /**
    * The cookie name used to store the user session token
    * and authenticate the user.
-   *
-   * @default '__Host-Session-Token'
    */
   sessionTokenCookieName: string
 
@@ -71,8 +71,6 @@ export interface ModuleUserOptions {
    * Time in milliseconds that the user recovery token will expire. It should be a
    * reasonable time for the user to reset their password but not too long to be a
    * security risk.
-   *
-   * @default 1000 * 60 * 30 // 30 minutes
    */
   recoveryTokenDuration: number
 }
@@ -88,6 +86,7 @@ export class ModuleUser extends ModuleBase implements ModuleUserOptions {
     this.trustProxy = options.trustProxy
     this.sessionEncryptionSecret = options.sessionEncryptionSecret
     this.sessionEncryptionAlgorithm = options.sessionEncryptionAlgorithm
+    this.sessionDomain = options.sessionDomain
     this.sessionDuration = options.sessionDuration
     this.sessionIdCookieName = options.sessionIdCookieName
     this.sessionTokenCookieName = options.sessionTokenCookieName
@@ -98,6 +97,7 @@ export class ModuleUser extends ModuleBase implements ModuleUserOptions {
   trustProxy: boolean
   sessionEncryptionSecret: string
   sessionEncryptionAlgorithm: CipherGCMTypes
+  sessionDomain: string
   sessionDuration: number
   sessionIdCookieName: string
   sessionTokenCookieName: string

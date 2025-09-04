@@ -41,6 +41,7 @@ export const application = new Application(
   [
     new ModuleUser({
       trustProxy: config.NANO_TRUST_PROXY,
+      sessionDomain: config.NANO_SESSION_DOMAIN,
       sessionDuration: config.NANO_SESSION_DURATION,
       sessionIdCookieName: config.NANO_SESSION_ID_COOKIE_NAME,
       sessionTokenCookieName: config.NANO_SESSION_TOKEN_COOKIE_NAME,

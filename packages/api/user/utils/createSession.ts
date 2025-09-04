@@ -53,6 +53,7 @@ export async function createSession(this: ModuleUser, event: H3Event, options: C
     httpOnly: true,
     sameSite: 'strict',
     expires: expiresAt,
+    domain: this.sessionDomain,
     maxAge,
   })
 
@@ -63,6 +64,7 @@ export async function createSession(this: ModuleUser, event: H3Event, options: C
     httpOnly: true,
     sameSite: 'strict',
     expires: expiresAt,
+    domain: this.sessionDomain,
     maxAge,
   })
 
