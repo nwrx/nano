@@ -2,7 +2,7 @@ apiVersion: v2
 name: nano
 description: A production-grade Helm chart for Nano CE - A comprehensive platform for AI workflow management
 type: application
-version: 0.1.0
+version: 0.0.1
 appVersion: v0.0.1
 home: https://nanoworks.io
 icon: https://avatars.githubusercontent.com/u/175159594?s=200&v=4
