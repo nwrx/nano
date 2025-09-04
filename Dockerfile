@@ -54,7 +54,8 @@ RUN pnpm deploy --prod --legacy --filter @nwrx/nano-runner /build/deploy/runner
 FROM base AS production
 WORKDIR /app
 
-# Re-declare build args to use in this stage
+ARG ALPINE_VERSION
+ARG NODE_VERSION
 ARG NANO_VERSION
 ARG NANO_VERSION_SHA
 
