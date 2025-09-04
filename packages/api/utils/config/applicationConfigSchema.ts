@@ -63,6 +63,15 @@ export const APPLICATION_CONFIG_SCHEMA = createParser({
   ],
 
   /**
+   * The domain for the user session cookie. This is used to
+   * restrict the cookie to a specific domain and prevent
+   * it from being sent to other domains.
+   *
+   * @default localhost
+   */
+  NANO_SESSION_DOMAIN: assert.stringNotEmpty,
+
+  /**
    * The time in milliseconds that the user session token
    * will expire. It should be a reasonable time for the
    * user to stay logged in but not too long to be a
