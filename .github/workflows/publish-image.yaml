@@ -46,6 +46,12 @@ jobs:
             type=semver,pattern={{major}}
             type=sha
 
+      - name: Extract version information
+        id: version
+        run: |
+          echo "version=$(jq -r '.version' package.json)" >> $GITHUB_OUTPUT
+          echo "sha=${{ github.sha }}" >> $GITHUB_OUTPUT
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
@@ -54,3 +60,6 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            NANO_VERSION=${{ steps.version.outputs.version }}
+            NANO_VERSION_SHA=${{ steps.version.outputs.sha }}

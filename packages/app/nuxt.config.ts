@@ -1,5 +1,7 @@
 /* eslint-disable sonarjs/no-clear-text-protocols */
 import { defineNuxtConfig } from 'nuxt/config'
+import packageJson from '../../package.json'
+import { getGitVersionSha } from './utils/getGitVersionSha'
 import { LOCALES } from './utils/locales'
 
 export default defineNuxtConfig({
@@ -31,6 +33,8 @@ export default defineNuxtConfig({
     public: {
       apiUrl: 'http://localhost:3001',
       appUrl: 'app.nwrx.io',
+      nanoVersion: packageJson.version,
+      nanoVersionSha: await getGitVersionSha(),
     },
   },
 

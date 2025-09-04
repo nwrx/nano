@@ -30,9 +30,9 @@
     ]
   },
   "scripts": {
-    "dev": "NODE_OPTIONS='--max-old-space-size=4096' turbo watch dev",
-    "build": "NODE_OPTIONS='--max-old-space-size=4096' turbo run build",
-    "start": "NODE_OPTIONS='--max-old-space-size=4096' turbo run start",
+    "dev": "turbo watch dev",
+    "build": "turbo run build",
+    "start": "turbo run start",
     "lint": "DEBUG=eslint:eslint eslint --cache",
     "lint:ci": "eslint --cache --ignore-pattern examples",
     "lint:fix": "DEBUG=eslint:eslint eslint --fix --cache",
@@ -43,8 +43,10 @@
     "test:coverage": "vitest --coverage",
     "commit": "uncli commit",
     "commit:lint": "commitlint --edit",
-    "docker:build": "docker compose -f docker-compose.yaml build",
-    "docker:start": "docker compose -f docker-compose.yaml up -d"
+    "docker:build": "./scripts/docker-compose.sh build",
+    "docker:start": "./scripts/docker-compose.sh up -d",
+    "docker:up": "./scripts/docker-compose.sh up --build -d",
+    "docker:down": "./scripts/docker-compose.sh down"
   },
   "devDependencies": {
     "@commitlint/config-pnpm-scopes": "19.8.0",

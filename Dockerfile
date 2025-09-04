@@ -54,6 +54,30 @@ RUN pnpm deploy --prod --legacy --filter @nwrx/nano-runner /build/deploy/runner
 FROM base AS production
 WORKDIR /app
 
+# Re-declare build args to use in this stage
+ARG NANO_VERSION
+ARG NANO_VERSION_SHA
+
+# Add metadata labels
+LABEL maintainer="Nanoworks"
+LABEL org.opencontainers.image.title="Nano"
+LABEL org.opencontainers.image.description="LLM workflow orchestration"
+LABEL org.opencontainers.image.version="${NANO_VERSION}"
+LABEL org.opencontainers.image.revision="${NANO_VERSION_SHA}"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.vendor="Nanoworks"
+LABEL org.opencontainers.image.source="https://github.com/nwrx/nano"
+LABEL org.opencontainers.image.documentation="https://github.com/nwrx/nano#readme"
+LABEL org.opencontainers.image.base.name="node:${NODE_VERSION}-alpine${ALPINE_VERSION}"
+LABEL org.opencontainers.image.created="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+
+# Runtime labels
+LABEL nano.services="app,api,runner"
+LABEL nano.default-port="3000"
+LABEL nano.volume="/data"
+LABEL nano.version="${NANO_VERSION}"
+LABEL nano.version.sha="${NANO_VERSION_SHA}"
+
 COPY --from=build /build/packages/app/.output ./app
 COPY --from=build /build/deploy/api ./api
 COPY --from=build /build/deploy/runner ./runner
@@ -94,7 +118,12 @@ ENV PORT=3000
 ENV HOST=0.0.0.0
 
 # Set the storage and database paths.
+ENV DATABASE_TYPE=sqlite
 ENV DATABASE_PATH=/data/database/nano.database
+
+# Set version environment variables
+ENV NUXT_PUBLIC_NANO_VERSION=${NANO_VERSION}
+ENV NUXT_PUBLIC_NANO_VERSION_SHA=${NANO_VERSION_SHA}
 
 # Expose the port the app runs on.
 EXPOSE 3000

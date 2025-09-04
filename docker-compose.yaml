@@ -6,6 +6,14 @@ volumes:
   minio:
     driver: local
 
+# Define reusable configurations
+x-nano-build: &nano-build
+  context: .
+  dockerfile: Dockerfile
+  args:
+    NANO_VERSION: ${NANO_VERSION:-0.0.1}
+    NANO_VERSION_SHA: ${NANO_VERSION_SHA:-unknown}
+
 services:
 
   postgres:
@@ -73,9 +81,7 @@ services:
 
   app:
     image: nwrx/nano
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: *nano-build
     command:
       - app
     ports:
@@ -88,9 +94,7 @@ services:
 
   api:
     image: nwrx/nano
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: *nano-build
     command:
       - api
     depends_on:
@@ -116,9 +120,7 @@ services:
 
   runner-1:
     image: nwrx/nano
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: *nano-build
     command:
       - runner
     ports:
@@ -131,9 +133,7 @@ services:
 
   runner-2:
     image: nwrx/nano
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: *nano-build
     command:
       - runner
     ports:
@@ -146,9 +146,7 @@ services:
 
   runner-3:
     image: nwrx/nano
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: *nano-build
     command:
       - runner
     ports:

@@ -13,6 +13,12 @@ const route = useRoute()
 const session = useSession()
 const localSettings = useLocalSettings()
 
+// --- Version information from environment variables
+const config = useRuntimeConfig()
+const version = config.public.nanoVersion
+const versionSha = config.public.nanoVersionSha
+const shortSha = computed(() => versionSha.slice(0, 7))
+
 // --- Conditional UI.
 const isAuthenticationRoute = computed(() => {
   if (typeof route.name !== 'string') return false
@@ -48,7 +54,7 @@ function handleError(error: unknown) {
   <div
     id="layout"
     :class="{ dark: localSettings.themeColor === 'dark' }"
-    class="font-sans flex flex-col w-full h-screen overflow-hidden pb pr bg-layout text-layout relative">
+    class="font-sans flex flex-col w-full h-screen overflow-hidden pr bg-layout text-layout relative">
 
     <!-- Header -->
     <AppNav
@@ -105,7 +111,27 @@ function handleError(error: unknown) {
           </slot>
         </NuxtErrorBoundary>
 
+        <!-- Version Information -->
+        <!--
+          <div class="fixed bottom-2 right-2 text-xs opacity-50 hover:opacity-100 transition-opacity duration-200 pointer-events-none select-none">
+          <div class="bg-black/20 dark:bg-white/20 backdrop-blur-sm rounded px-2 py-1 text-white dark:text-black">
+          <div>v{{ version }}</div>
+          <div class="font-mono">{{ shortSha }}</div>
+          </div>
+          </div>
+        -->
+
       </main>
+    </div>
+
+    <!-- Footer / Mainly debug infos -->
+    <div class="flex justify-end w-full px-sm py-xs space-x-md">
+      <div class="font-mono text-subtle text-xs">
+        {{ shortSha }}
+      </div>
+      <div class="font-mono text-subtle text-xs">
+        v{{ version }}
+      </div>
     </div>
   </div>
 </template>
