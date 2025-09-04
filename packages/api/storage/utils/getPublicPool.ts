@@ -20,8 +20,6 @@ import { encrypt } from '../../utils'
  */
 export async function getPublicPool(this: ModuleStorage): Promise<StoragePool> {
   if (this.publicPool) return this.publicPool
-  if (!this.publicPoolType) throw new Error('No public storage pool configured')
-  if (!this.publicPoolConfiguration) throw new Error('No public storage pool configuration provided')
 
   // --- If the pool does not exist, create and return it.
   // --- First, serialize the configuration and encrypt it.
@@ -45,6 +43,7 @@ export async function getPublicPool(this: ModuleStorage): Promise<StoragePool> {
   }
 
   // --- If the pool exists, update its configuration if it has changed.
+  pool.type = this.publicPoolType
   pool.configuration = configuration
   const updatedPool = await StoragePool.save(pool)
   this.publicPool = updatedPool
