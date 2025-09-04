@@ -9,10 +9,7 @@ export default defineNuxtConfig({
   ssr: false,
   compatibilityDate: '2024-07-09',
   devtools: {
-    enabled: true,
-    timeline: {
-      enabled: true,
-    },
+    enabled: false,
   },
 
   app: {
