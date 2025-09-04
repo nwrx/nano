@@ -46,5 +46,5 @@ Create the name of the service account to use for api service
 Create the name of the API secret
 */}}
 {{- define "nano.api.secrets" -}}
-{{- printf "%s-secret-api" (include "nano.fullname" .) }}
+{{- printf "%s-secret" (include "nano.fullname" .) }}
 {{- end }}

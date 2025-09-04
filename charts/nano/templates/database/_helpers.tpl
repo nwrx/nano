@@ -48,3 +48,25 @@ Create the name of the database secret
 {{- define "nano.database.secrets" -}}
 {{- printf "%s-database" (include "nano.fullname" .) }}
 {{- end }}
+
+{{/*
+Get the database host - internal service if database is enabled, external host if disabled
+*/}}
+{{- define "nano.database.host" -}}
+{{- if .Values.database.enabled }}
+{{- include "nano.database.fullname" . }}
+{{- else }}
+{{- .Values.config.database.host }}
+{{- end }}
+{{- end }}
+
+{{/*
+Get the database port - internal service port if database is enabled, external port if disabled
+*/}}
+{{- define "nano.database.port" -}}
+{{- if .Values.database.enabled }}
+{{- .Values.database.service.port }}
+{{- else }}
+{{- .Values.config.database.port }}
+{{- end }}
+{{- end }}

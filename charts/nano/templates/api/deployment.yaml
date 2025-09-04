@@ -18,8 +18,8 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/secret-database: {{ include (print $.Template.BasePath "/database/secrets.yaml") . | sha256sum }}
-        checksum/secret-api: {{ include (print $.Template.BasePath "/api/secrets.yaml") . | sha256sum }}
+        checksum/secrets: {{ include (print $.Template.BasePath "/api/secrets.yaml") . | sha256sum }}
+        checksum/secrets-database: {{ include (print $.Template.BasePath "/database/secrets.yaml") . | sha256sum }}
         {{- with .Values.api.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -60,9 +60,9 @@ spec:
             - name: DATABASE_TYPE
               value: "postgres"
             - name: DATABASE_HOST
-              value: {{ include "nano.database.fullname" . | quote }}
+              value: {{ include "nano.database.host" . | quote }}
             - name: DATABASE_PORT
-              value: {{ .Values.database.service.port | quote }}
+              value: {{ include "nano.database.port" . | quote }}
             - name: DATABASE_USERNAME
               valueFrom:
                 secretKeyRef:
