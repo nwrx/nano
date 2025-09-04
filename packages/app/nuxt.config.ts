@@ -1,8 +1,9 @@
-/* eslint-disable sonarjs/no-clear-text-protocols */
 import { defineNuxtConfig } from 'nuxt/config'
 import packageJson from '../../package.json'
 import { getGitVersionSha } from './utils/getGitVersionSha'
 import { LOCALES } from './utils/locales'
+
+const isProduction = process.env.NODE_ENV === 'production'
 
 export default defineNuxtConfig({
 
@@ -55,13 +56,17 @@ export default defineNuxtConfig({
    */
   security: {
     enabled: false,
-    hidePoweredBy: true,
+    hidePoweredBy: isProduction,
+    removeLoggers: isProduction,
     rateLimiter: {
       headers: true,
       interval: 60 * 1000,
       tokensPerInterval: 1000,
     },
     headers: {
+      crossOriginEmbedderPolicy: isProduction ? 'require-corp' : false,
+      referrerPolicy: 'strict-origin-when-cross-origin',
+      xFrameOptions: 'DENY',
       contentSecurityPolicy: {
         'img-src': [
           '\'self\'',
@@ -73,17 +78,12 @@ export default defineNuxtConfig({
           '\'nonce-{{nonce}}\'',
           '\'strict-dynamic\'',
           '\'self\'',
-          'localhost:*',
         ],
         'frame-src': [
           '\'self\'',
-          'http://localhost:*',
-          'https://*',
         ],
         'connect-src': [
           '\'self\'',
-          'ws://localhost:*',
-          'http://localhost:*',
         ],
       },
     },
@@ -227,5 +227,10 @@ export default defineNuxtConfig({
         'marked',
       ],
     },
+  },
+
+  nitro: {
+    minify: isProduction,
+    compressPublicAssets: isProduction,
   },
 })
