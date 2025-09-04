@@ -21,7 +21,7 @@ export class UserSession extends BaseEntity {
    */
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn()
-  user: null | User
+  user: undefined | User
 
   /**
    * The address of the session. It is used to bind the session to a specific device.
