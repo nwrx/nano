@@ -86,8 +86,8 @@ describe.concurrent('GET /session', () => {
       expect(response.status).toBe(401)
       expect(response.headers.get('Content-Type')).toBe('application/json')
       expect(response.headers.get('Set-Cookie')).toBe([
-        '__Host-Session-Id=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Strict',
-        '__Host-Session-Token=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Strict',
+        '__Secure-Session-Id=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Strict',
+        '__Secure-Session-Token=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Strict',
       ].join(','))
     })
   })

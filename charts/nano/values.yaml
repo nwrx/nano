@@ -6,8 +6,8 @@ config:
     trustProxy: true
     sessionDomain: nwrx.local  # Domain for session cookies
     sessionDuration: '86400000'  # 24 hours in milliseconds
-    sessionIdCookieName: __Host-Session-Id
-    sessionTokenCookieName: __Host-Session-Token
+    sessionIdCookieName: __Secure-Session-Id
+    sessionTokenCookieName: __Secure-Session-Token
     sessionEncryptionSecret: your_session_encryption_secret_here_change_in_production
     sessionEncryptionAlgorithm: aes-256-gcm
     userRecoveryTokenDuration: '3600000' # 1 hour in milliseconds
@@ -114,13 +114,13 @@ api:
   environment: []
   persistence:
     enabled: true
-    size: 20Gi
+    size: 10Gi
     storageClass: ''
     accessModes:
       - ReadWriteOnce
   # Deployment strategy
   strategy:
-    type: Recreate  # Use Recreate for ReadWriteOnce volumes
+    type: RollingUpdate
   service:
     type: ClusterIP
     port: 80
@@ -326,13 +326,13 @@ storage:
   environment: []
   persistence:
     enabled: true
-    size: 50Gi
+    size: 10Gi
     storageClass: ''
     accessModes:
       - ReadWriteOnce
   # Deployment strategy
   strategy:
-    type: Recreate  # Use Recreate for ReadWriteOnce volumes
+    type: Recreate
   service:
     type: ClusterIP
     port: 9000

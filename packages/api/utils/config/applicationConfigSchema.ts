@@ -84,7 +84,7 @@ export const APPLICATION_CONFIG_SCHEMA = createParser({
    * and authenticate the user.
    */
   NANO_SESSION_ID_COOKIE_NAME: [
-    [assert.undefined, () => '__Host-Session-Id'],
+    [assert.undefined, () => '__Secure-Session-Id'],
     [assert.notUndefined, assert.stringNotEmpty],
   ],
 
@@ -93,7 +93,7 @@ export const APPLICATION_CONFIG_SCHEMA = createParser({
    * and authenticate the user.
    */
   NANO_SESSION_TOKEN_COOKIE_NAME: [
-    [assert.undefined, () => '__Host-Session-Token'],
+    [assert.undefined, () => '__Secure-Session-Token'],
     [assert.notUndefined, assert.stringNotEmpty],
   ],
 

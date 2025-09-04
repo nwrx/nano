@@ -22,14 +22,14 @@ describe.concurrent('getEventInformation', () => {
     })
 
     it('should get both session ID and token from cookies', ({ moduleUser }) => {
-      const event = createTestEvent({ headers: { cookie: '__Host-Session-Id=id123;__Host-Session-Token=token123' } })
+      const event = createTestEvent({ headers: { cookie: '__Secure-Session-Id=id123;__Secure-Session-Token=token123' } })
       const result = getEventInformation.call(moduleUser, event)
       expect(result.sessionId).toStrictEqual('id123')
       expect(result.sessionToken).toStrictEqual('token123')
     })
 
     it('should handle whitespace in cookies', ({ moduleUser }) => {
-      const event = createTestEvent({ headers: { cookie: ' __Host-Session-Id = id123 ; __Host-Session-Token = token123 ' } })
+      const event = createTestEvent({ headers: { cookie: ' __Secure-Session-Id = id123 ; __Secure-Session-Token = token123 ' } })
       const result = getEventInformation.call(moduleUser, event)
       expect(result.sessionId).toStrictEqual('id123')
       expect(result.sessionToken).toStrictEqual('token123')
@@ -45,7 +45,7 @@ describe.concurrent('getEventInformation', () => {
       const event = createTestEvent({
         headers: {
           'x-forwarded-for': '127.0.0.1',
-          'cookie': '__Host-Session-Id=id123;__Host-Session-Token=token123',
+          'cookie': '__Secure-Session-Id=id123;__Secure-Session-Token=token123',
           'user-agent': 'user-agent',
         },
       })
@@ -84,14 +84,14 @@ describe.concurrent('getEventInformation', () => {
     })
 
     it('should get both session ID and token from cookies', ({ moduleUser }) => {
-      const peer = createTestPeer({ headers: { cookie: '__Host-Session-Id=id123;__Host-Session-Token=token123' } })
+      const peer = createTestPeer({ headers: { cookie: '__Secure-Session-Id=id123;__Secure-Session-Token=token123' } })
       const result = getEventInformation.call(moduleUser, peer)
       expect(result.sessionId).toStrictEqual('id123')
       expect(result.sessionToken).toStrictEqual('token123')
     })
 
     it('should handle whitespace in cookies', ({ moduleUser }) => {
-      const peer = createTestPeer({ headers: { cookie: ' __Host-Session-Id = id123 ; __Host-Session-Token = token123 ' } })
+      const peer = createTestPeer({ headers: { cookie: ' __Secure-Session-Id = id123 ; __Secure-Session-Token = token123 ' } })
       const result = getEventInformation.call(moduleUser, peer)
       expect(result.sessionId).toStrictEqual('id123')
       expect(result.sessionToken).toStrictEqual('token123')
@@ -107,7 +107,7 @@ describe.concurrent('getEventInformation', () => {
       const peer = createTestPeer({
         headers: {
           'x-forwarded-for': '127.0.0.1',
-          'cookie': '__Host-Session-Id=id123;__Host-Session-Token=token123',
+          'cookie': '__Secure-Session-Id=id123;__Secure-Session-Token=token123',
           'user-agent': 'user-agent',
         },
       })

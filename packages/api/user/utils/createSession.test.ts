@@ -98,7 +98,7 @@ describe.concurrent('authenticate', () => {
       const session = await createSession.call(moduleUser, event, { user, duration: 3600 })
       const cookies = getCookiesObject(event)
       expect(cookies[0]).toStrictEqual({
-        '__Host-Session-Id': session.id,
+        '__Secure-Session-Id': session.id,
         'Path': '/',
         'Secure': undefined,
         'HttpOnly': undefined,
@@ -114,7 +114,7 @@ describe.concurrent('authenticate', () => {
       const session = await createSession.call(moduleUser, event, { user, duration: 3600 })
       const cookies = getCookiesObject(event)
       expect(cookies[1]).toStrictEqual({
-        '__Host-Session-Token': expect.any(String),
+        '__Secure-Session-Token': expect.any(String),
         'Path': '/',
         'Secure': undefined,
         'HttpOnly': undefined,
