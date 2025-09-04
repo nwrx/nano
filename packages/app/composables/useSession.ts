@@ -1,11 +1,11 @@
-import type { application, UserObject } from '@nwrx/nano-api'
+import type { application, ModuleUser, UserObject } from '@nwrx/nano-api'
 import type { RouteRequestData } from '@unserved/client'
 
 type SigninCredentials = RouteRequestData<typeof application, 'POST /session'>
 type SignupCredentials = RouteRequestData<typeof application, 'POST /signup'>
 
 export const useSession = createSharedComposable(() => {
-  const client = useClient()
+  const client = useClient<ModuleUser>()
   const router = useRouter()
   const alerts = useAlerts()
   const session = ref<Partial<UserObject>>({})
@@ -13,7 +13,7 @@ export const useSession = createSharedComposable(() => {
   const getSession = async(force = false) => {
     if (!force && session.value.username) return session.value
     return await client.request('GET /session', {
-      onData: data => session.value = data ?? {},
+      onData: (data?: UserObject) => session.value = data ?? {},
     })
   }
 
