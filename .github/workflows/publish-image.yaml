@@ -10,6 +10,8 @@ on:
       - main
     paths:
       - 'packages/**'
+      - 'Dockerfile'
+      - 'package.json'
 
 jobs:
   ci:
