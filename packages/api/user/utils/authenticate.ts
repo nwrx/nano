@@ -56,22 +56,19 @@ export async function authenticate(this: ModuleUser, event: H3Event | Peer, opti
 
   // --- Decrypt the token to get the user session id.
   if (!userSession) throw this.errors.USER_SESSION_NOT_FOUND()
-  try {
-    const deciphered = await decrypt({ cipher: sessionToken, ...userSession.secret }, this.sessionEncryptionSecret)
-    if (deciphered !== userSession.id) throw this.errors.USER_SESSION_NOT_FOUND()
-  }
-  catch {
-    throw this.errors.USER_SESSION_NOT_FOUND()
-  }
+  let decipher: string | undefined
+  try { decipher = await decrypt({ cipher: sessionToken, ...userSession.secret }, this.sessionEncryptionSecret) }
+  catch { throw this.errors.USER_SESSION_NOT_FOUND() }
+  if (decipher !== userSession.id) throw this.errors.USER_SESSION_NOT_FOUND()
 
   // --- Assert the session exists and the user is not soft deleted.
   const now = new Date()
+  if (!userSession.user) throw this.errors.USER_INTERNAL_ERROR('The **user** relationship is not loaded')
   if (userSession.deletedAt) throw this.errors.USER_SESSION_NOT_FOUND()
-  if (!userSession.user) throw this.errors.USER_SESSION_NOT_FOUND()
-  if (userSession.user.deletedAt) throw this.errors.USER_SESSION_NOT_FOUND()
-  if (userSession.user.disabledAt) throw this.errors.USER_SESSION_NOT_FOUND()
-  if (userSession.address !== address) throw this.errors.USER_SESSION_NOT_FOUND()
-  if (userSession.userAgent !== userAgent) throw this.errors.USER_SESSION_NOT_FOUND()
+  if (userSession.user.deletedAt) throw this.errors.USER_NOT_FOUND(userSession.user.id)
+  if (userSession.user.disabledAt) throw this.errors.USER_DISABLED()
+  if (userSession.address !== address) throw this.errors.USER_SESSION_ADDRESS_MISMATCH()
+  if (userSession.userAgent !== userAgent) throw this.errors.USER_SESSION_USER_AGENT_MISMATCH()
   if (userSession.expiresAt < now) throw this.errors.USER_SESSION_EXPIRED()
 
   // --- Return the user associated with the session.

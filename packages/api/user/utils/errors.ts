@@ -88,11 +88,29 @@ export const ERRORS = {
   }),
 
   // Sessions
+  USER_INTERNAL_ERROR: (message: string) => createError({
+    name: 'E_USER_INTERNAL_ERROR',
+    statusCode: 500,
+    statusMessage: 'Internal Server Error',
+    message,
+  }),
   USER_SESSION_NOT_FOUND: () => createError({
     name: 'E_USER_SESSION_NOT_FOUND',
     statusCode: 401,
     statusMessage: 'Unauthorized',
     message: 'The user session was not found',
+  }),
+  USER_SESSION_ADDRESS_MISMATCH: () => createError({
+    name: 'E_USER_SESSION_ADDRESS_MISMATCH',
+    statusCode: 401,
+    statusMessage: 'Unauthorized',
+    message: 'The client address does not match the session address',
+  }),
+  USER_SESSION_USER_AGENT_MISMATCH: () => createError({
+    name: 'E_USER_SESSION_USER_AGENT_MISMATCH',
+    statusCode: 401,
+    statusMessage: 'Unauthorized',
+    message: 'The client user agent does not match the session user agent',
   }),
   USER_SESSION_EXPIRED: () => createError({
     name: 'E_USER_SESSION_EXPIRED',
@@ -116,7 +134,7 @@ export const ERRORS = {
     name: 'E_USER_ADDRESS_NOT_RESOLVED',
     statusCode: 400,
     statusMessage: 'Bad Request',
-    message: 'The address could not be resolved',
+    message: 'The client address could not be resolved',
   }),
 
   // Recovery
