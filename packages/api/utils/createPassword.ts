@@ -1,0 +1,94 @@
+import type { ScryptOptions } from 'node:crypto'
+import { randomBytes, scrypt } from 'node:crypto'
+
+/**
+ * Options to hash the password of the user. It includes the length of the
+ * hash that will be generated.
+ */
+export interface CreatePasswordOptions extends ScryptOptions {
+
+  /**
+   * The clear text password to hash. It will be hashed using the Scrypt
+   * algorithm and the options provided.
+   */
+  password: string
+
+  /**
+   * Length of the hash that will be generated. It is recommended to use
+   * a length of 512 bits.
+   *
+   * @default 512
+   */
+  keylen?: number
+
+  /**
+   * Encoding of the hash when stored in the database. It can be any
+   * of the supported encodings by Node.js.
+   *
+   * @default 'hex'
+   */
+  encoding?: BufferEncoding
+
+  /**
+   * The salt to hash the password. By default, a random salt is generated
+   * but it can be provided to hash the password with a specific salt and
+   * compare it with the stored hash.
+   *
+   * @default randomBytes(32).toString(encoding)
+   */
+  salt?: string
+}
+
+/** The result of hashing a password. It includes the hash, salt, and options used. */
+export interface Password {
+  hash: string
+  algorithm: 'scrypt'
+  N: number
+  r: number
+  p: number
+  maxmem: number
+  keylen: number
+  encoding: BufferEncoding
+  salt: string
+}
+
+/**
+ * Create a password hash using the Scrypt algorithm. It generates a random
+ * salt and hashes the password using the options provided. The default options
+ * are provided by OWASP and are recommended for password hashing.
+ *
+ * @param options The options to hash the password.
+ * @returns The salt, hash, and options used to hash the password.
+ * @see https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#scrypt
+ * @example await createPassword('password', USER_HASH_OPTIONS) // => { salt, hash, options }
+ */
+export async function createPassword(options: CreatePasswordOptions): Promise<Password> {
+  const {
+    password,
+    keylen = 512,
+    encoding = 'hex',
+    N = 16384,
+    r = 8,
+    p = 1,
+    maxmem = 64 * 1024 * 1024,
+    salt = randomBytes(32).toString(encoding),
+  } = options
+
+  // --- Hash the password using the scrypt algorithm.
+  const hashOptions = { N, r, p, maxmem }
+  const hash = await new Promise<string>((resolve, reject) =>
+    scrypt(password, salt, keylen, hashOptions, (error, derivedKey) => {
+      if (error) reject(error)
+      else resolve(derivedKey.toString(encoding))
+    }))
+
+  // --- Return the new password entity.
+  return {
+    hash,
+    algorithm: 'scrypt',
+    ...hashOptions,
+    keylen,
+    encoding,
+    salt,
+  }
+}

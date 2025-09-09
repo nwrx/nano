@@ -9,7 +9,7 @@ import { createDecipheriv, scrypt } from 'node:crypto'
  * @returns The decrypted value.
  * @example await decrypt({ cipher: '...', ... }, 'my-secret-key') // 'my-secret-value'
  */
-export async function decrypt(encrypted: Encrypted, secret: string): Promise<string> {
+export async function decrypt<T>(encrypted: Encrypted<T>, secret: string): Promise<T> {
 
   // --- Ensure the algorithm is GCM.
   const isGCM = ['aes-256-gcm', 'aes-128-gcm', 'aes-192-gcm'].includes(encrypted.algorithm)
@@ -35,5 +35,13 @@ export async function decrypt(encrypted: Encrypted, secret: string): Promise<str
   decipher.setAuthTag(tag)
   const d1 = decipher.update(encrypted.cipher, 'hex', 'utf8')
   const d2 = decipher.final('utf8')
-  return d1 + d2
+  const decrypted = d1 + d2
+
+  // --- Attempt to parse JSON, otherwise return as string.
+  try {
+    return JSON.parse(decrypted) as T
+  }
+  catch {
+    return decrypted as T
+  }
 }

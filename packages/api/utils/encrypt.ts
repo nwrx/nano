@@ -1,7 +1,10 @@
 import type { CipherGCMTypes } from 'node:crypto'
 import { createCipheriv, randomBytes, scrypt } from 'node:crypto'
 
-export interface Encrypted {
+export const SYMBOL_TYPE_ENCRYPTED = Symbol.for('Encrypted')
+
+export interface Encrypted<T = string> {
+  [SYMBOL_TYPE_ENCRYPTED]: T
   iv: string
   tag: string
   salt: string
@@ -18,7 +21,11 @@ export interface Encrypted {
  * @returns An object containing cipher as well as the iv, tag, salt, and algorithm used.
  * @example await encrypt('my-secret-value', 'my-secret-key', 'aes-256-gcm') // { cipher: '...', ... }
  */
-export async function encrypt(value: string, secret: string, algorithm: CipherGCMTypes): Promise<Encrypted> {
+export async function encrypt<T extends object | string>(
+  value: T,
+  secret: string,
+  algorithm: CipherGCMTypes,
+): Promise<Encrypted<T>> {
 
   // --- Ensure the algorithm is GCM.
   const isGCM = ['aes-256-gcm', 'aes-128-gcm', 'aes-192-gcm'].includes(algorithm)
@@ -40,8 +47,10 @@ export async function encrypt(value: string, secret: string, algorithm: CipherGC
   })
 
   // --- Create a cipher using the algorithm, key, and iv.
+  // --- If value is an object, stringify it.
+  const valueString = typeof value === 'string' ? value : JSON.stringify(value)
   const cipher = createCipheriv(algorithm, key, iv)
-  const d1 = cipher.update(value, 'utf8', 'hex')
+  const d1 = cipher.update(valueString, 'utf8', 'hex')
   const d2 = cipher.final('hex')
   return {
     iv: iv.toString('hex'),
@@ -49,5 +58,5 @@ export async function encrypt(value: string, secret: string, algorithm: CipherGC
     salt: salt.toString('hex'),
     cipher: d1 + d2,
     algorithm,
-  }
+  } as Encrypted<T>
 }
